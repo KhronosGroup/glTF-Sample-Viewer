@@ -1,82 +1,3 @@
-// Vertex Shader
-var VSHADER_SOURCE =
-  'attribute vec4 a_Position;\n' +
-  'attribute vec4 a_Normal;\n' +
-  'attribute vec4 a_Color;\n' + 
-  'uniform mat4 u_mvpMatrix;\n' +
-  'uniform mat4 u_NormalMatrix;\n' +
-  'varying vec4 v_Color;\n' +
-  'varying vec3 v_Normal;\n' +
-  'varying vec3 v_Position;\n' +
-  'void main(){\n' +
-  '  vec4 pos = u_mvpMatrix * a_Position;\n' + 
-  '  v_Position = vec3(pos.xyz) / pos.w;\n' + 
-  '  v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
-  '  v_Color = a_Color;\n' + 
-  '  gl_Position = vec4(v_Position, 1.0);\n' +
-  '}\n';
-
-// Fragment Shader
-var FSHADER_SOURCE =
-  'precision mediump float;\n' +
-  'uniform vec3 u_LightPosition;\n' +
-  'uniform samplerCube u_EnvSampler;\n' +
-  'uniform vec3 u_Camera;\n' +
-  'uniform vec3 u_BaseColor;\n' +
-  'uniform float u_Metallic;\n' +
-  'uniform float u_Roughness;\n' + 
-  'varying vec4 v_Color;\n' +
-  'varying vec3 v_Normal;\n' + 
-  'varying vec3 v_Position;\n' +
-
-  'const float M_PI = 3.141592653589793;\n' +
-
-  'void main(){\n' +
-  '  vec3 diffuseColor = u_BaseColor;\n' +
-  '  vec3 specularColor = vec3(0.8, 0.8, 0.8);\n' +
-  //'  vec3 ambientColor = vec3(0.1, 0.1, 0.1);\n' + 
-  '  vec3 n = normalize(v_Normal);\n' +
-  '  vec3 l = normalize(u_LightPosition - v_Position);\n' +
-  '  vec3 v = normalize(u_Camera - v_Position);\n' +
-  '  vec3 h = normalize(l + v);\n' +
-  '  float nDotV = max(0.0, dot(n,v));\n' +
-  '  float nDotL = max(0.0, dot(n,l));\n' +
-  '  float nDotH = max(0.0, dot(n,h));\n' +
-  '  float vDotH = max(0.0, dot(v,h));\n' +
-
-  // Fresnel Term: Schlick's Approximation
-  '  float r0 = u_Metallic;\n' +
-  '  float f = r0 + ((1.0 - r0) * pow(1.0 - nDotV, 5.0));\n' +
-
-  // Geometric Attenuation Term: Schlick-Beckmann
-  '  float roughness = u_Roughness;\n' +
-  '  float a = roughness * roughness;\n' + // UE4 definition
-  '  float k = ((roughness + 1.0) * (roughness + 1.0)) / 8.0;\n' +
-  '  float g1L = nDotL / ((nDotL * (1.0 - k)) + k);\n' +
-  '  float g1V = nDotV / ((nDotV * (1.0 - k)) + k);\n' +
-  '  float g = g1L * g1V;\n' +
-
-  // Normal Distribution Function: GGX (Trowbridge-Reitz)
-  '  float a2 = a * a;\n' +
-  '  float nDotH2 = nDotH * nDotH;\n' +
-  '  float denom = M_PI * (nDotH * nDotH * (a2 - 1.0) + 1.0) * (nDotH * nDotH * (a2 - 1.0) + 1.0);\n' +
-  '  float d = a2 / denom;\n' +
-
-  // BRDF
-  '  float brdf = (d * f * g) / (4.0 * nDotL * nDotV);\n' +
-
-  '  vec3 diffuse = 0.8 * diffuseColor * nDotL;\n' + 
-  '  vec3 specular = specularColor * brdf;\n' +
-  //'  vec3 camera = normalize(u_Camera);\n' +
-  //'  vec3 camToPos = normalize(v_Position - camera);\n' +
-  //'  vec3 reflected = normalize(reflect(camToPos, n));\n' +  
-  //'  vec3 testDir = vec3(1.0, 0.0, 0.0);\n' +
-  //'  float weight = max(dot(testDir, normal), 0.0);\n' +
-  //'  gl_FragColor = vec4(v_Color.xyz * weight, 1.0);\n' + 
-  //'  gl_FragColor = textureCube(u_EnvSampler, reflected);' +
-  '  gl_FragColor = vec4(diffuse + specular, v_Color.a);\n' +
-  '}\n';
-
 function initCubeBuffers(length, width, height, gl) {
   var x = length/2.0;
   var y = height/2.0;
@@ -288,8 +209,14 @@ function main() {
   }
 
   // Initialize shaders
+  $.ajaxSetup({
+    async: false
+  });
+
   var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vertexShader, VSHADER_SOURCE);
+  $.get("./shaders/pbr-vert.glsl", function(response) {
+    gl.shaderSource(vertexShader, response);
+  });
   gl.compileShader(vertexShader);
   var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
   if (!compiled) {
@@ -299,7 +226,9 @@ function main() {
   }
 
   var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fragmentShader, FSHADER_SOURCE);
+  $.get("./shaders/pbr-frag.glsl", function(response) {
+    gl.shaderSource(fragmentShader, response);
+  });
   gl.compileShader(fragmentShader);
   compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
   if (!compiled) {

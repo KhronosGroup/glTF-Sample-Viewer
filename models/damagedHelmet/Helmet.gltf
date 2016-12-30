@@ -1,0 +1,351 @@
+{
+	"asset": {
+		"generator": "Unity 5.4.3f1",
+		"version": "1"
+	},
+	"accessors": {
+		"accessor_position_helmet_LP_25516": {
+			"bufferView": "vec3BufferView",
+			"byteOffset": 0,
+			"byteStride": 12,
+			"componentType": 5126,
+			"count": 13600,
+			"max": [ 0.944977, 0.900995, 1 ],
+			"min": [ -0.944977, -0.900974, -1 ],
+			"type": "VEC3"
+		 },
+		"accessor_normal_helmet_LP_25516": {
+			"bufferView": "vec3BufferView",
+			"byteOffset": 163200,
+			"byteStride": 12,
+			"componentType": 5126,
+			"count": 13600,
+			"max": [ 1, 1, 1 ],
+			"min": [ -1, -1, -1 ],
+			"type": "VEC3"
+		 },
+		"accessor_uv0_helmet_LP_25516": {
+			"bufferView": "vec2BufferView",
+			"byteOffset": 0,
+			"byteStride": 8,
+			"componentType": 5126,
+			"count": 13600,
+			"max": [ 0.999976, 0.998666 ],
+			"min": [ 0.00244864, 0.00055312 ],
+			"type": "VEC2"
+		 },
+		"accessor_tangents_helmet_LP_25516": {
+			"bufferView": "vec4BufferView",
+			"byteOffset": 0,
+			"byteStride": 16,
+			"componentType": 5126,
+			"count": 13600,
+			"max": [ 1, 1, 1, 1 ],
+			"min": [ -1, -1, -1, -1 ],
+			"type": "VEC4"
+		 },
+		"accessor_indices_0_helmet_LP_25516": {
+			"bufferView": "ushortBufferView",
+			"byteOffset": 0,
+			"byteStride": 0,
+			"componentType": 5123,
+			"count": 46356,
+			"max": [ 13599 ],
+			"min": [ 0 ],
+			"type": "SCALAR"
+		 }
+	},
+	"buffers": {
+		"Helmet": {
+			"byteLength": 745512,
+			"type": "arraybuffer",
+			"uri": "Helmet.bin"
+		}
+	},
+	"bufferViews": {
+		"ushortBufferView": {
+			"buffer": "Helmet",
+			"byteLength": 92712,
+			"byteOffset": 0,
+			"target": 34963
+		},
+		"vec2BufferView": {
+			"buffer": "Helmet",
+			"byteLength": 108800,
+			"byteOffset": 92712,
+			"target": 34962
+		},
+		"vec3BufferView": {
+			"buffer": "Helmet",
+			"byteLength": 326400,
+			"byteOffset": 201512,
+			"target": 34962
+		},
+		"vec4BufferView": {
+			"buffer": "Helmet",
+			"byteLength": 217600,
+			"byteOffset": 527912,
+			"target": 34962
+		}
+	},
+	"extensionsUsed": [
+		"FRAUNHOFER_materials_pbr"
+	],
+	"images": {
+		"image_Default_albedo_9098": {
+			"uri": "Default_albedo.jpg"
+		},
+		"image_Default_MetalSmooth_21596_metallic": {
+			"uri": "Default_MetalSmooth_metallic.jpg"
+		},
+		"image_Default_MetalSmooth_21596_roughness": {
+			"uri": "Default_MetalSmooth_roughness.jpg"
+		},
+		"image_Default_normal_22700": {
+			"uri": "Default_normal.jpg"
+		},
+		"image_Default_AO_25064": {
+			"uri": "Default_AO.jpg"
+		},
+		"image_Default_emissive_22780": {
+			"uri": "Default_emissive.jpg"
+		}
+	},
+	"materials": {
+		"material_Helmet_mat_9926": {
+			"extensions": {
+				"FRAUNHOFER_materials_pbr": {
+					"materialModel": "PBR_metal_roughness",
+					"values": {
+						"baseColorFactor": [1, 1, 1, 1],
+						"baseColorTexture": "texture_Default_albedo_9098",
+						"roughnessFactor": 0,
+						"metallicFactor": 0,
+						"metallicTexture": "texture_Default_MetalSmooth_21596_metallic",
+						"roughnessTexture": "texture_Default_MetalSmooth_21596_roughness",
+						"normalFactor": 1,
+						"normalTexture": "texture_Default_normal_22700",
+						"aoFactor": 1,
+						"aoTexture": "texture_Default_AO_25064",
+						"emissiveFactor": [1, 1, 1, 1],
+						"emissiveTexture": "texture_Default_emissive_22780"
+					}
+				}
+			},
+			"name": "Helmet_mat"
+		}
+	},
+	"meshes": {
+		"mesh_helmet_LP_25516Helmet": {
+			"name": "mesh_helmet_LP_25516Helmet",
+			"primitives": [
+				{
+					"attributes": {
+						"POSITION": "accessor_position_helmet_LP_25516",
+						"NORMAL": "accessor_normal_helmet_LP_25516",
+						"TEXCOORD_0": "accessor_uv0_helmet_LP_25516",
+						"TANGENT": "accessor_tangents_helmet_LP_25516"
+					},
+					"indices": "accessor_indices_0_helmet_LP_25516",
+					"material": "material_Helmet_mat_9926",
+					"mode": 4
+				}
+			]
+		}
+	},
+	"nodes": {
+		"UnityGlTF_correctionMatrix": {
+			"name": "UnityGlTF_correctionMatrix",
+			"children": [
+				"node_Helmet_-291078"
+			],
+			"matrix": [-1, 0, -8.742278E-08, 0, 0, 1, 0, 0, 8.742278E-08, 0, -1, 0, 0, 0, 0, 1]
+		},
+		"node_Helmet_-291078": {
+			"name": "Helmet",
+			"meshes": [
+				"mesh_helmet_LP_25516Helmet"
+			],
+			"matrix": [6.501793, 0, 0, 0, 0, 6.501793, 0, 0, 0, 0, 6.501793, 0, 0, 0, 0, 1]
+		}
+	},
+	"programs": {
+		"program_Standard": {
+			"attributes": [
+				"a_position",
+				"a_normal",
+				"a_texcoord0"
+			],
+			"vertexShader": "",
+			"fragmentShader": ""
+		}
+	},
+	"samplers": {
+		"sampler_1_0_m": {
+			"magFilter": 9729,
+			"minFilter": 9985,
+			"wrapS": 10497,
+			"wrapT": 10497
+		}
+	},
+	"scene": "defaultScene",
+	"scenes": {
+		"defaultScene": {
+			"nodes": [
+				"UnityGlTF_correctionMatrix",
+				"UnityGlTF_correctionMatrix",
+				"UnityGlTF_correctionMatrix",
+				"UnityGlTF_correctionMatrix",
+				"UnityGlTF_correctionMatrix"
+			]
+		}
+	},
+	"techniques": {
+		"technique_Standard": {
+			"program": "program_Standard",
+			"parameters": {
+				"position": {
+					"type": 35665,
+					"semantic": "POSITION"
+				},
+				"normal": {
+					"type": 35665,
+					"semantic": "NORMAL"
+				},
+				"texcoord0": {
+					"type": 35664,
+					"semantic": "TEXCOORD_0"
+				},
+				"modelViewMatrix": {
+					"type": 35676,
+					"semantic": "MODELVIEW"
+				},
+				"projectionMatrix": {
+					"type": 35676,
+					"semantic": "PROJECTION"
+				},
+				"normalMatrix": {
+					"type": 35675,
+					"semantic": "MODELVIEWINVERSETRANSPOSE"
+				},
+				"baseColorFactor": {
+					"type": 35666
+				},
+				"baseColorTexture": {
+					"type": 35678
+				},
+				"roughnessFactor": {
+					"type": 5126
+				},
+				"roughnessFactor": {
+					"type": 5126
+				},
+				"metallicFactor": {
+					"type": 5126
+				},
+				"metallicTexture": {
+					"type": 35678
+				},
+				"normalFactor": {
+					"type": 5126
+				},
+				"normalTexture": {
+					"type": 35678
+				},
+				"aoFactor": {
+					"type": 5126
+				},
+				"aoTexture": {
+					"type": 35678
+				},
+				"emissiveFactor": {
+					"type": 35666
+				},
+				"emissiveTexture": {
+					"type": 35678
+				}
+			},
+			"attributes": {
+				"a_position": "position",
+				"a_normal": "normal",
+				"a_texcoord0": "texcoord0"
+			},
+			"uniforms": {
+				"u_modelViewMatrix": "modelViewMatrix",
+				"u_projectionMatrix": "projectionMatrix",
+				"u_normalMatrix": "normalMatrix",
+				"_Color": "baseColorFactor",
+				"_MainTex": "baseColorTexture",
+				"_Glossiness": "roughnessFactor",
+				"_GlossMapScale": "roughnessFactor",
+				"_Metallic": "metallicFactor",
+				"_MetallicGlossMap": "metallicTexture",
+				"_BumpScale": "normalFactor",
+				"_BumpMap": "normalTexture",
+				"_OcclusionStrength": "aoFactor",
+				"_OcclusionMap": "aoTexture",
+				"_EmissionColor": "emissiveFactor",
+				"_EmissionMap": "emissiveTexture"
+			}
+		}
+	},
+	"textures": {
+		"texture_Default_albedo_9098": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Default_albedo_9098",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Default_MetalSmooth_21596_metallic": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Default_MetalSmooth_21596_metallic",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Default_MetalSmooth_21596_roughness": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Default_MetalSmooth_21596_roughness",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Default_normal_22700": {
+			"extras": {
+				"yUp" : false
+			},
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Default_normal_22700",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Default_AO_25064": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Default_AO_25064",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Default_emissive_22780": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Default_emissive_22780",
+			"target": 3553,
+			"type": 5121
+		}
+	}
+}
