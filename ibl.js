@@ -177,22 +177,22 @@ function loadCubeMap(gl) {
   return 1;
 }
 
-function updateDiffuse(value, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
+function updateDiffuse(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
   var u_BaseColor = gl.getUniformLocation(gl.program, 'u_BaseColor');
   gl.uniform3f(u_BaseColor, value[0]/255, value[1]/255, value[2]/255);
-  draw(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 }
 
-function updateMetallic(value, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
+function updateMetallic(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
   var u_Metallic = gl.getUniformLocation(gl.program, 'u_Metallic');
   gl.uniform1f(u_Metallic, value);
-  draw(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 }
 
-function updateRoughness(value, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
+function updateRoughness(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
   var u_Roughness = gl.getUniformLocation(gl.program, 'u_Roughness');
   gl.uniform1f(u_Roughness, value);
-  draw(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 }
 
 function main() {
@@ -245,8 +245,7 @@ function main() {
   gl.program = program;
 
   // Set positions of vertices
-  initCubeBuffers(1.0, 1.0, 1.0, gl);
-  var scene = new Scene(gl, "./models/damagedHelmet/", "./models/damagedHelmet/Helmet.gltf");
+  //initCubeBuffers(1.0, 1.0, 1.0, gl);
   // Create cube map
   loadCubeMap(gl);
 
@@ -287,7 +286,10 @@ function main() {
   // Clear canvas
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  document.onkeydown = function(ev) {keydown(ev, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);};
+  // Load scene
+  var scene = new Scene(gl, "./models/damagedHelmet/", "./models/damagedHelmet/Helmet.gltf");
+
+  document.onkeydown = function(ev) {keydown(ev, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);};
 
   // Initialize GUI  
   var gui = new dat.GUI();
@@ -298,61 +300,34 @@ function main() {
     'Roughness': 0.5
   };
   folder.addColor(material, 'Base Color').onChange(function(value) {
-    updateDiffuse(value, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+    updateDiffuse(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
   });
   folder.add(material, 'Metallic', 0.0, 1.0).onChange(function(value) {
-    updateMetallic(value, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+    updateMetallic(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
   });
   folder.add(material, 'Roughness', 0.0, 1.0).onChange(function(value) {
-    updateRoughness(value, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+    updateRoughness(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
   });
   folder.open();
-  updateDiffuse(material["Base Color"], gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  updateMetallic(material["Metallic"], gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  updateRoughness(material["Roughness"], gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  updateDiffuse(material["Base Color"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  updateMetallic(material["Metallic"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  updateRoughness(material["Roughness"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 
-  // Draw
-  draw(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  // Draw 
+  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 }
 
+/****** KEYDOWN EVENT ******/
 var roll = 0.0;
 var pitch = 0.0;
-var translate = 0.0;
-function keydown(ev, gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
+function keydown(ev, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
   switch (ev.keyCode) {
     case 39: roll+=0.02; break;
     case 37: roll-=0.02; break;
     case 38: pitch+=0.02; break;
     case 40: pitch-=0.02; break;
-    case 87: translate+=0.1; break;
-    case 83: translate-=0.1; break;
     default: return;
   }
 
-  draw(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-}
-
-function draw(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  // Update model matrix
-  modelMatrix = mat4.create();
-  mat4.rotateY(modelMatrix, modelMatrix, roll);
-  mat4.rotateX(modelMatrix, modelMatrix, pitch);
-  //var translateVec = vec3.fromValues(0.0, translate, 0.0);
-  //mat4.translate(modelMatrix, modelMatrix, translateVec);
-
-  // Update mvp matrix
-  var mvpMatrix = mat4.create();
-  mat4.multiply(mvpMatrix, viewMatrix, modelMatrix);
-  mat4.multiply(mvpMatrix, projectionMatrix, mvpMatrix);
-  gl.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix);
-
-  // Update normal matrix
-  var normalMatrix = mat4.create();
-  mat4.invert(normalMatrix, modelMatrix);
-  mat4.transpose(normalMatrix, normalMatrix);
-  gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix); 
-
-  // Draw
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, 36);
+  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 }
