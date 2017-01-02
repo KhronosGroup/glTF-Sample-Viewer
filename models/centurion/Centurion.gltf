@@ -1,0 +1,692 @@
+{
+	"asset": {
+		"generator": "Unity 5.4.3f1",
+		"version": "1"
+	},
+	"accessors": {
+		"accessor_position_BotExport_13226": {
+			"bufferView": "vec3BufferView",
+			"byteOffset": 0,
+			"byteStride": 12,
+			"componentType": 5126,
+			"count": 35072,
+			"max": [ 1.27281, 0.9990715, 0.6991597 ],
+			"min": [ -1.189753, -1.008917, -1.791341 ],
+			"type": "VEC3"
+		 },
+		"accessor_normal_BotExport_13226": {
+			"bufferView": "vec3BufferView",
+			"byteOffset": 420864,
+			"byteStride": 12,
+			"componentType": 5126,
+			"count": 35072,
+			"max": [ 0.9999814, 1, 0.9998804 ],
+			"min": [ -0.9999781, -0.9999756, -0.9999999 ],
+			"type": "VEC3"
+		 },
+		"accessor_uv0_BotExport_13226": {
+			"bufferView": "vec2BufferView",
+			"byteOffset": 0,
+			"byteStride": 8,
+			"componentType": 5126,
+			"count": 35072,
+			"max": [ 0.9980469, 0.9980469 ],
+			"min": [ 0.001953106, 0.001953125 ],
+			"type": "VEC2"
+		 },
+		"accessor_tangents_BotExport_13226": {
+			"bufferView": "vec4BufferView",
+			"byteOffset": 0,
+			"byteStride": 16,
+			"componentType": 5126,
+			"count": 35072,
+			"max": [ 0.9998626, 0.9999595, 0.9999756, 1 ],
+			"min": [ -0.9999945, -0.9999604, -1, -1 ],
+			"type": "VEC4"
+		 },
+		"accessor_indices_0_BotExport_13226": {
+			"bufferView": "ushortBufferView",
+			"byteOffset": 0,
+			"byteStride": 0,
+			"componentType": 5123,
+			"count": 44529,
+			"max": [ 9802 ],
+			"min": [ 0 ],
+			"type": "SCALAR"
+		 },
+		"accessor_indices_1_BotExport_13226": {
+			"bufferView": "ushortBufferView",
+			"byteOffset": 89058,
+			"byteStride": 0,
+			"componentType": 5123,
+			"count": 75084,
+			"max": [ 24638 ],
+			"min": [ 9803 ],
+			"type": "SCALAR"
+		 },
+		"accessor_indices_2_BotExport_13226": {
+			"bufferView": "ushortBufferView",
+			"byteOffset": 239226,
+			"byteStride": 0,
+			"componentType": 5123,
+			"count": 54264,
+			"max": [ 35062 ],
+			"min": [ 24639 ],
+			"type": "SCALAR"
+		 },
+		"accessor_indices_3_BotExport_13226": {
+			"bufferView": "ushortBufferView",
+			"byteOffset": 347754,
+			"byteStride": 0,
+			"componentType": 5123,
+			"count": 24,
+			"max": [ 35071 ],
+			"min": [ 35063 ],
+			"type": "SCALAR"
+		 }
+	},
+	"buffers": {
+		"Centurion": {
+			"byteLength": 2031258,
+			"type": "arraybuffer",
+			"uri": "Centurion.bin"
+		}
+	},
+	"bufferViews": {
+		"ushortBufferView": {
+			"buffer": "Centurion",
+			"byteLength": 347802,
+			"byteOffset": 0,
+			"target": 34963
+		},
+		"vec2BufferView": {
+			"buffer": "Centurion",
+			"byteLength": 280576,
+			"byteOffset": 347802,
+			"target": 34962
+		},
+		"vec3BufferView": {
+			"buffer": "Centurion",
+			"byteLength": 841728,
+			"byteOffset": 628378,
+			"target": 34962
+		},
+		"vec4BufferView": {
+			"buffer": "Centurion",
+			"byteLength": 561152,
+			"byteOffset": 1470106,
+			"target": 34962
+		}
+	},
+	"extensionsUsed": [
+		"FRAUNHOFER_materials_pbr"
+	],
+	"images": {
+		"image_VerneBotLo_04_Skin_BaseColor_23288": {
+			"uri": "VerneBotLo_04_Skin_BaseColor.png"
+		},
+		"image_VerneBotLo_04_Skin_MetalGlossv3_22600_metallic": {
+			"uri": "VerneBotLo_04_Skin_MetalGlossv3_metallic.jpg"
+		},
+		"image_VerneBotLo_04_Skin_MetalGlossv3_22600_roughness": {
+			"uri": "VerneBotLo_04_Skin_MetalGlossv3_roughness.jpg"
+		},
+		"image_VerneBotLo_04_Skin_Normal_9536": {
+			"uri": "VerneBotLo_04_Skin_Normal.png"
+		},
+		"image_Skin_ambient_occlusion_11496": {
+			"uri": "Skin_ambient_occlusion.png"
+		},
+		"image_Bot_Pose_Body_DiffuseOpacity_12354": {
+			"uri": "Bot_Pose_Body_DiffuseOpacity.png"
+		},
+		"image_VerneBotLo_04_Body_MetalRough_23010_metallic": {
+			"uri": "VerneBotLo_04_Body_MetalRough_metallic.jpg"
+		},
+		"image_VerneBotLo_04_Body_MetalRough_23010_roughness": {
+			"uri": "VerneBotLo_04_Body_MetalRough_roughness.jpg"
+		},
+		"image_VerneBotLo_04_Body_Normal_24420": {
+			"uri": "VerneBotLo_04_Body_Normal.png"
+		},
+		"image_Body_ambient_occlusion_20366": {
+			"uri": "Body_ambient_occlusion.png"
+		},
+		"image_VerneBotLo_04_Body_Emissive_11048": {
+			"uri": "VerneBotLo_04_Body_Emissive.png"
+		},
+		"image_Bot_Pose_Clothes_DiffuseOpacity_22506": {
+			"uri": "Bot_Pose_Clothes_DiffuseOpacity.png"
+		},
+		"image_VerneBotLo_04_Clothes_MetalGlossv3_13192_metallic": {
+			"uri": "VerneBotLo_04_Clothes_MetalGlossv3_metallic.jpg"
+		},
+		"image_VerneBotLo_04_Clothes_MetalGlossv3_13192_roughness": {
+			"uri": "VerneBotLo_04_Clothes_MetalGlossv3_roughness.jpg"
+		},
+		"image_VerneBotLo_04_Clothes_Normal_20394": {
+			"uri": "VerneBotLo_04_Clothes_Normal.png"
+		},
+		"image_Clothes_ambient_occlusion_22502": {
+			"uri": "Clothes_ambient_occlusion.png"
+		},
+		"image_Bot_Pose_Ground_AlbedoOpacity_12936": {
+			"uri": "Bot_Pose_Ground_AlbedoOpacity.png"
+		},
+		"image_Bot_Pose_Ground_MetalGloss_13378_metallic": {
+			"uri": "Bot_Pose_Ground_MetalGloss_metallic.jpg"
+		},
+		"image_Bot_Pose_Ground_MetalGloss_13378_roughness": {
+			"uri": "Bot_Pose_Ground_MetalGloss_roughness.jpg"
+		},
+		"image_Bot_Pose_Ground_Normal_21812": {
+			"uri": "Bot_Pose_Ground_Normal.png"
+		}
+	},
+	"materials": {
+		"material_Skin_9210": {
+			"extensions": {
+				"FRAUNHOFER_materials_pbr": {
+					"materialModel": "PBR_metal_roughness",
+					"values": {
+						"baseColorFactor": [1, 1, 1, 1],
+						"baseColorTexture": "texture_VerneBotLo_04_Skin_BaseColor_23288",
+						"roughnessFactor": 0,
+						"metallicFactor": 0,
+						"metallicTexture": "texture_VerneBotLo_04_Skin_MetalGlossv3_22600_metallic",
+						"roughnessTexture": "texture_VerneBotLo_04_Skin_MetalGlossv3_22600_roughness",
+						"normalFactor": 1,
+						"normalTexture": "texture_VerneBotLo_04_Skin_Normal_9536",
+						"aoFactor": 1,
+						"aoTexture": "texture_Skin_ambient_occlusion_11496",
+						"emissiveFactor": [0, 0, 0, 1]
+					}
+				}
+			},
+			"name": "Skin"
+		},
+		"material_Body_24552": {
+			"extensions": {
+				"FRAUNHOFER_materials_pbr": {
+					"materialModel": "PBR_metal_roughness",
+					"values": {
+						"baseColorFactor": [1, 1, 1, 1],
+						"baseColorTexture": "texture_Bot_Pose_Body_DiffuseOpacity_12354",
+						"roughnessFactor": 0,
+						"metallicFactor": 0,
+						"metallicTexture": "texture_VerneBotLo_04_Body_MetalRough_23010_metallic",
+						"roughnessTexture": "texture_VerneBotLo_04_Body_MetalRough_23010_roughness",
+						"normalFactor": 1,
+						"normalTexture": "texture_VerneBotLo_04_Body_Normal_24420",
+						"aoFactor": 1,
+						"aoTexture": "texture_Body_ambient_occlusion_20366",
+						"emissiveFactor": [1, 1, 1, 1],
+						"emissiveTexture": "texture_VerneBotLo_04_Body_Emissive_11048"
+					}
+				}
+			},
+			"name": "Body"
+		},
+		"material_Clothes_23420": {
+			"extensions": {
+				"FRAUNHOFER_materials_pbr": {
+					"extras": {
+						"blendMode" : "alphaMask",
+						"cutoff" : 0.5
+					},
+					"materialModel": "PBR_metal_roughness",
+					"values": {
+						"baseColorFactor": [1, 1, 1, 1],
+						"baseColorTexture": "texture_Bot_Pose_Clothes_DiffuseOpacity_22506",
+						"roughnessFactor": 0.023,
+						"metallicFactor": 0,
+						"metallicTexture": "texture_VerneBotLo_04_Clothes_MetalGlossv3_13192_metallic",
+						"roughnessTexture": "texture_VerneBotLo_04_Clothes_MetalGlossv3_13192_roughness",
+						"normalFactor": 0,
+						"normalTexture": "texture_VerneBotLo_04_Clothes_Normal_20394",
+						"aoFactor": 1,
+						"aoTexture": "texture_Clothes_ambient_occlusion_22502",
+						"emissiveFactor": [0, 0, 0, 1]
+					}
+				}
+			},
+			"name": "Clothes"
+		},
+		"material_Ground_11112": {
+			"extensions": {
+				"FRAUNHOFER_materials_pbr": {
+					"extras": {
+						"blendMode" : "alphaBlend",
+						"cutoff" : 0.5
+					},
+					"materialModel": "PBR_metal_roughness",
+					"values": {
+						"baseColorFactor": [1, 1, 1, 1],
+						"baseColorTexture": "texture_Bot_Pose_Ground_AlbedoOpacity_12936",
+						"roughnessFactor": 0,
+						"metallicFactor": 0,
+						"metallicTexture": "texture_Bot_Pose_Ground_MetalGloss_13378_metallic",
+						"roughnessTexture": "texture_Bot_Pose_Ground_MetalGloss_13378_roughness",
+						"normalFactor": 1,
+						"normalTexture": "texture_Bot_Pose_Ground_Normal_21812",
+						"aoFactor": 1,
+						"emissiveFactor": [0, 0, 0, 1]
+					}
+				}
+			},
+			"name": "Ground"
+		}
+	},
+	"meshes": {
+		"mesh_BotExport_13226BotExport": {
+			"name": "mesh_BotExport_13226BotExport",
+			"primitives": [
+				{
+					"attributes": {
+						"POSITION": "accessor_position_BotExport_13226",
+						"NORMAL": "accessor_normal_BotExport_13226",
+						"TEXCOORD_0": "accessor_uv0_BotExport_13226",
+						"TANGENT": "accessor_tangents_BotExport_13226"
+					},
+					"indices": "accessor_indices_0_BotExport_13226",
+					"material": "material_Skin_9210",
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": "accessor_position_BotExport_13226",
+						"NORMAL": "accessor_normal_BotExport_13226",
+						"TEXCOORD_0": "accessor_uv0_BotExport_13226",
+						"TANGENT": "accessor_tangents_BotExport_13226"
+					},
+					"indices": "accessor_indices_1_BotExport_13226",
+					"material": "material_Body_24552",
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": "accessor_position_BotExport_13226",
+						"NORMAL": "accessor_normal_BotExport_13226",
+						"TEXCOORD_0": "accessor_uv0_BotExport_13226",
+						"TANGENT": "accessor_tangents_BotExport_13226"
+					},
+					"indices": "accessor_indices_2_BotExport_13226",
+					"material": "material_Clothes_23420",
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": "accessor_position_BotExport_13226",
+						"NORMAL": "accessor_normal_BotExport_13226",
+						"TEXCOORD_0": "accessor_uv0_BotExport_13226",
+						"TANGENT": "accessor_tangents_BotExport_13226"
+					},
+					"indices": "accessor_indices_3_BotExport_13226",
+					"material": "material_Ground_11112",
+					"mode": 4
+				}
+			]
+		}
+	},
+	"nodes": {
+		"UnityGlTF_correctionMatrix": {
+			"name": "UnityGlTF_correctionMatrix",
+			"children": [
+				"node_Centurion_-276554"
+			],
+			"matrix": [-1, 0, -8.742278E-08, 0, 0, 1, 0, 0, 8.742278E-08, 0, -1, 0, 0, 0, 0, 1]
+		},
+		"node_transform1_-276566": {
+			"name": "transform1"
+		},
+		"node_BotExport_1_-276560": {
+			"name": "BotExport 1",
+			"children": [
+				"node_transform2_-276574"
+			],
+			"translation": [ -0.04152858, 0.004922777, 0.5460908]
+		},
+		"node_PM3D_Plane3D_1_-276562": {
+			"name": "PM3D_Plane3D_1",
+			"children": [
+				"node_transform1_-276566"
+			],
+			"translation": [ -0.04152858, 0.004922777, 0.5460908]
+		},
+		"node_transform2_-276574": {
+			"name": "transform2"
+		},
+		"node_Centurion_-276554": {
+			"name": "Centurion",
+			"children": [
+				"node_BotExport_-276556",
+				"node_group_-276558"
+			],
+			"matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -3.11, 0, 0, 1]
+		},
+		"node_BotExport_-276556": {
+			"name": "BotExport",
+			"meshes": [
+				"mesh_BotExport_13226BotExport"
+			]
+		},
+		"node_group_-276558": {
+			"name": "group",
+			"children": [
+				"node_BotExport_1_-276560",
+				"node_PM3D_Plane3D_1_-276562"
+			],
+			"translation": [ 0.04152858, -0.004922777, -0.5460908]
+		}
+	},
+	"programs": {
+		"program_Standard": {
+			"attributes": [
+				"a_position",
+				"a_normal",
+				"a_texcoord0"
+			],
+			"vertexShader": "",
+			"fragmentShader": ""
+		}
+	},
+	"samplers": {
+		"sampler_1_0_m": {
+			"magFilter": 9729,
+			"minFilter": 9985,
+			"wrapS": 10497,
+			"wrapT": 10497
+		}
+	},
+	"scene": "defaultScene",
+	"scenes": {
+		"defaultScene": {
+			"nodes": [
+				"UnityGlTF_correctionMatrix"
+			]
+		}
+	},
+	"techniques": {
+		"technique_Standard": {
+			"program": "program_Standard",
+			"parameters": {
+				"position": {
+					"type": 35665,
+					"semantic": "POSITION"
+				},
+				"normal": {
+					"type": 35665,
+					"semantic": "NORMAL"
+				},
+				"texcoord0": {
+					"type": 35664,
+					"semantic": "TEXCOORD_0"
+				},
+				"modelViewMatrix": {
+					"type": 35676,
+					"semantic": "MODELVIEW"
+				},
+				"projectionMatrix": {
+					"type": 35676,
+					"semantic": "PROJECTION"
+				},
+				"normalMatrix": {
+					"type": 35675,
+					"semantic": "MODELVIEWINVERSETRANSPOSE"
+				},
+				"baseColorFactor": {
+					"type": 35666
+				},
+				"baseColorTexture": {
+					"type": 35678
+				},
+				"roughnessFactor": {
+					"type": 5126
+				},
+				"roughnessFactor": {
+					"type": 5126
+				},
+				"metallicFactor": {
+					"type": 5126
+				},
+				"metallicTexture": {
+					"type": 35678
+				},
+				"normalFactor": {
+					"type": 5126
+				},
+				"normalTexture": {
+					"type": 35678
+				},
+				"aoFactor": {
+					"type": 5126
+				},
+				"aoTexture": {
+					"type": 35678
+				},
+				"emissiveFactor": {
+					"type": 35666
+				},
+				"emissiveTexture": {
+					"type": 35678
+				}
+			},
+			"attributes": {
+				"a_position": "position",
+				"a_normal": "normal",
+				"a_texcoord0": "texcoord0"
+			},
+			"uniforms": {
+				"u_modelViewMatrix": "modelViewMatrix",
+				"u_projectionMatrix": "projectionMatrix",
+				"u_normalMatrix": "normalMatrix",
+				"_Color": "baseColorFactor",
+				"_MainTex": "baseColorTexture",
+				"_Glossiness": "roughnessFactor",
+				"_GlossMapScale": "roughnessFactor",
+				"_Metallic": "metallicFactor",
+				"_MetallicGlossMap": "metallicTexture",
+				"_BumpScale": "normalFactor",
+				"_BumpMap": "normalTexture",
+				"_OcclusionStrength": "aoFactor",
+				"_OcclusionMap": "aoTexture",
+				"_EmissionColor": "emissiveFactor",
+				"_EmissionMap": "emissiveTexture"
+			}
+		}
+	},
+	"textures": {
+		"texture_VerneBotLo_04_Skin_BaseColor_23288": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Skin_BaseColor_23288",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Skin_MetalGlossv3_22600_metallic": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Skin_MetalGlossv3_22600_metallic",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Skin_MetalGlossv3_22600_roughness": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Skin_MetalGlossv3_22600_roughness",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Skin_Normal_9536": {
+			"extras": {
+				"yUp" : false
+			},
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Skin_Normal_9536",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Skin_ambient_occlusion_11496": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Skin_ambient_occlusion_11496",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Bot_Pose_Body_DiffuseOpacity_12354": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Bot_Pose_Body_DiffuseOpacity_12354",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Body_MetalRough_23010_metallic": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Body_MetalRough_23010_metallic",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Body_MetalRough_23010_roughness": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Body_MetalRough_23010_roughness",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Body_Normal_24420": {
+			"extras": {
+				"yUp" : false
+			},
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Body_Normal_24420",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Body_ambient_occlusion_20366": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Body_ambient_occlusion_20366",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Body_Emissive_11048": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Body_Emissive_11048",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Bot_Pose_Clothes_DiffuseOpacity_22506": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Bot_Pose_Clothes_DiffuseOpacity_22506",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Clothes_MetalGlossv3_13192_metallic": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Clothes_MetalGlossv3_13192_metallic",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Clothes_MetalGlossv3_13192_roughness": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Clothes_MetalGlossv3_13192_roughness",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_VerneBotLo_04_Clothes_Normal_20394": {
+			"extras": {
+				"yUp" : false
+			},
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_VerneBotLo_04_Clothes_Normal_20394",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Clothes_ambient_occlusion_22502": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Clothes_ambient_occlusion_22502",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Bot_Pose_Ground_AlbedoOpacity_12936": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Bot_Pose_Ground_AlbedoOpacity_12936",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Bot_Pose_Ground_MetalGloss_13378_metallic": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Bot_Pose_Ground_MetalGloss_13378_metallic",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Bot_Pose_Ground_MetalGloss_13378_roughness": {
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Bot_Pose_Ground_MetalGloss_13378_roughness",
+			"target": 3553,
+			"type": 5121
+		},
+		"texture_Bot_Pose_Ground_Normal_21812": {
+			"extras": {
+				"yUp" : false
+			},
+			"format": 6408,
+			"internalFormat": 6408,
+			"flipY": true,
+			"sampler": "sampler_1_0_m",
+			"source": "image_Bot_Pose_Ground_Normal_21812",
+			"target": 3553,
+			"type": 5121
+		}
+	}
+}

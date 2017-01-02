@@ -212,7 +212,7 @@ function main() {
   $.ajaxSetup({
     async: false
   });
-
+ 
   var vertexShader = gl.createShader(gl.VERTEX_SHADER);
   $.get("./shaders/pbr-vert.glsl", function(response) {
     gl.shaderSource(vertexShader, response);
@@ -246,7 +246,7 @@ function main() {
 
   // Set positions of vertices
   initCubeBuffers(1.0, 1.0, 1.0, gl);
-
+  var scene = new Scene(gl, "./models/damagedHelmet/", "./models/damagedHelmet/Helmet.gltf");
   // Create cube map
   loadCubeMap(gl);
 
