@@ -7,6 +7,8 @@ class Scene {
     });
     var gltf = JSON.parse(json);
 
+    this.modelPath = model;
+
     var meshes = gltf.meshes;
     var primitives = meshes[Object.keys(meshes)[0]].primitives;
     for (var i = 0; i < primitives.length; i++) {
@@ -23,7 +25,8 @@ class Scene {
 
       // Material
       var materialName = primitive.material;
-      var material = gltf.materials[materialName];
+      this.material = gltf.materials[materialName].extensions.FRAUNHOFER_materials_pbr.values;
+      this.initTextures(gl, gltf);
     }
   }
 
@@ -34,11 +37,15 @@ class Scene {
       return -1;
     }
   
-    if (!initArrayBuffer(gl, this.vertices, 3, gl.FLOAT, 'a_Position', 12, 0)) {
+    if (!initArrayBuffer(gl, this.vertices, 3, gl.FLOAT, 'a_Position', this.verticesAccessor.byteStride, this.verticesAccessor.byteOffset)) {
       return -1;
     }  
 
-    if (!initArrayBuffer(gl, this.normals, 3, gl.FLOAT, 'a_Normal', 12, 163200)) {
+    if (!initArrayBuffer(gl, this.normals, 3, gl.FLOAT, 'a_Normal', this.normalsAccessor.byteStride, this.normalsAccessor.byteOffset)) {
+      return -1;
+    }
+
+    if (!initArrayBuffer(gl, this.texcoords, 2, gl.FLOAT, 'a_UV', this.texcoordsAccessor.byteStride, this.texcoordsAccessor.byteOffset)) {
       return -1;
     }
 
@@ -47,31 +54,51 @@ class Scene {
     
   }
 
+  initTextures(gl, gltf) {
+
+    // Base Color
+    var baseColorTexInfo = gltf.textures[this.material.baseColorTexture];
+    var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
+    var baseColorTex = gl.createTexture();
+    var u_BaseColorSampler = gl.getUniformLocation(gl.program, 'u_BaseColorSampler');
+    gl.activeTexture(gl.TEXTURE0);
+    var baseColorImage = new Image();
+    baseColorImage.onload = function(e) {
+      gl.bindTexture(gl.TEXTURE_2D, baseColorTex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, baseColorTexInfo.flipY);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, baseColorImage);
+    }
+    gl.uniform1i(u_BaseColorSampler, 0);
+    baseColorImage.src = baseColorSrc;
+  }
+
   drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  // Update model matrix
-  modelMatrix = mat4.create();
-  mat4.rotateY(modelMatrix, modelMatrix, roll);
-  mat4.rotateX(modelMatrix, modelMatrix, pitch);
-  //var translateVec = vec3.fromValues(0.0, translate, 0.0);
-  //mat4.translate(modelMatrix, modelMatrix, translateVec);
+    // Update model matrix
+    modelMatrix = mat4.create();
+    mat4.rotateY(modelMatrix, modelMatrix, roll);
+    mat4.rotateX(modelMatrix, modelMatrix, pitch);
 
-  // Update mvp matrix
-  var mvpMatrix = mat4.create();
-  mat4.multiply(mvpMatrix, viewMatrix, modelMatrix);
-  mat4.multiply(mvpMatrix, projectionMatrix, mvpMatrix);
-  gl.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix);
+    // Update mvp matrix
+    var mvpMatrix = mat4.create();
+    mat4.multiply(mvpMatrix, viewMatrix, modelMatrix);
+    mat4.multiply(mvpMatrix, projectionMatrix, mvpMatrix);
+    gl.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix);
 
-  // Update normal matrix
-  var normalMatrix = mat4.create();
-  mat4.invert(normalMatrix, modelMatrix);
-  mat4.transpose(normalMatrix, normalMatrix);
-  gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix); 
-
-
+    // Update normal matrix
+    var normalMatrix = mat4.create();
+    mat4.invert(normalMatrix, modelMatrix);
+    mat4.transpose(normalMatrix, normalMatrix);
+    gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix); 
 
     // Draw
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.drawElements(gl.TRIANGLES, 46356, gl.UNSIGNED_SHORT, 0);
+    if (this.indicesAccessor != null) {
+      gl.drawElements(gl.TRIANGLES, this.indicesAccessor.count, gl.UNSIGNED_SHORT, 0);
+    }
   }
 }
 
@@ -99,14 +126,19 @@ function getAccessorData(scene, gl, gltf, model, accessorName, attribute) {
     }
     switch (attribute) {
       case "POSITION": scene.vertices = data;
+        scene.verticesAccessor = accessor;
         break;
       case "NORMAL": scene.normals = data;
+        scene.normalsAccessor = accessor;
         break;
       case "TEXCOORD_0": scene.texcoords = data;
+        scene.texcoordsAccessor = accessor;
         break;
       case "TANGENT": scene.tangents = data;
+        scene.tangentsAccessor = accessor;
         break;
       case "INDEX": scene.indices = data;
+        scene.indicesAccessor = accessor;
         break;
     }
 

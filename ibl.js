@@ -247,7 +247,7 @@ function main() {
   // Set positions of vertices
   //initCubeBuffers(1.0, 1.0, 1.0, gl);
   // Create cube map
-  loadCubeMap(gl);
+  //loadCubeMap(gl);
 
   // Light
   var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
