@@ -59,21 +59,16 @@ class Scene {
     // Base Color
     var baseColorTexInfo = gltf.textures[this.material.baseColorTexture];
     var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
-    var baseColorTex = gl.createTexture();
-    var u_BaseColorSampler = gl.getUniformLocation(gl.program, 'u_BaseColorSampler');
-    gl.activeTexture(gl.TEXTURE0);
-    var baseColorImage = new Image();
-    baseColorImage.onload = function(e) {
-      gl.bindTexture(gl.TEXTURE_2D, baseColorTex);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, baseColorTexInfo.flipY);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, baseColorImage);
-    }
-    gl.uniform1i(u_BaseColorSampler, 0);
-    baseColorImage.src = baseColorSrc;
+    
+    // Metallic
+    var metallicTexInfo = gltf.textures[this.material.metallicTexture];
+    var metallicSrc = this.modelPath + gltf.images[metallicTexInfo.source].uri;
+    
+    // Roughness
+    var roughnessTexInfo = gltf.textures[this.material.roughnessTexture];
+    var roughnessSrc = this.modelPath + gltf.images[roughnessTexInfo.source].uri;
+
+    loadImages([baseColorSrc, metallicSrc, roughnessSrc], createTextures, gl);
   }
 
   drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
@@ -174,4 +169,61 @@ function initArrayBuffer(gl, data, num, type, attribute, stride, offset) {
   
   gl.enableVertexAttribArray(a_attribute);
   return true;
+}
+
+function loadImage(url, callback) {
+  var image = new Image();
+  image.src = url;
+  image.onload = callback;
+  return image;
+}
+
+function loadImages(urls, callback, gl) {
+  var images = [];
+  var imagesToLoad = urls.length;
+
+  var onImageLoad = function() {
+    imagesToLoad--;
+    if (imagesToLoad == 0) {
+      callback(images, gl);
+    }
+  };
+
+  for (var i = 0; i < imagesToLoad; i++) {
+    var image = loadImage(urls[i], onImageLoad);
+    images.push(image);
+  }
+}
+
+function createTextures(images, gl) {
+  var textures = [];
+  for (var i = 0; i < images.length; i++) {
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
+
+    textures.push(texture);
+  }
+
+  var u_BaseColorSampler = gl.getUniformLocation(gl.program, 'u_BaseColorSampler');
+  var u_MetallicSampler = gl.getUniformLocation(gl.program, 'u_MetallicSampler');
+  var u_RoughnessSampler = gl.getUniformLocation(gl.program, 'u_RoughnessSampler');
+
+  gl.uniform1i(u_BaseColorSampler, 0);
+  gl.uniform1i(u_MetallicSampler, 1);
+  gl.uniform1i(u_RoughnessSampler, 2);
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, textures[1]);
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, textures[2]);
 }

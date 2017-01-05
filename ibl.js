@@ -278,7 +278,7 @@ function main() {
   var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
 
   // Set clear color
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(0.2, 0.2, 0.2, 1.0);
   
   // Enable depth test
   gl.enable(gl.DEPTH_TEST);

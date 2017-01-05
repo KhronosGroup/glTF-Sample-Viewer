@@ -2,6 +2,8 @@ precision mediump float;
 uniform vec3 u_LightPosition;
 uniform samplerCube u_EnvSampler;
 uniform sampler2D u_BaseColorSampler;
+uniform sampler2D u_MetallicSampler;
+uniform sampler2D u_RoughnessSampler;
 uniform vec3 u_Camera;
 uniform vec3 u_BaseColor;
 uniform float u_Metallic;
@@ -27,11 +29,11 @@ void main(){
   float vDotH = max(0.0, dot(v,h));
 
   // Fresnel Term: Schlick's Approximation
-  float r0 = u_Metallic;
+  float r0 = texture2D(u_MetallicSampler, v_UV).x;
   float f = r0 + ((1.0 - r0) * pow(1.0 - nDotV, 5.0));
 
   // Geometric Attenuation Term: Schlick-Beckmann
-  float roughness = u_Roughness;
+  float roughness = texture2D(u_RoughnessSampler, v_UV).x;
   float a = roughness * roughness; // UE4 definition
   float k = ((roughness + 1.0) * (roughness + 1.0)) / 8.0;
   float g1L = nDotL / ((nDotL * (1.0 - k)) + k);
