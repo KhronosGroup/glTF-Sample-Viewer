@@ -201,6 +201,8 @@ function main() {
     console.log('Failed to retrieve the <canvas> element');
     return;
   }
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
   var gl = canvas.getContext("webgl");
   if (!gl) {
@@ -255,21 +257,21 @@ function main() {
 
   // Camera
   var u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
-  gl.uniform3f(u_Camera, 0.0, 0.0, 3.0);
+  gl.uniform3f(u_Camera, 0.0, 0.0, 2.0);
 
   // Model matrix
   var modelMatrix = mat4.create();
   
   // View matrix
   var viewMatrix = mat4.create();
-  var eye = vec3.fromValues(0.0, 0.0, 3.0);
+  var eye = vec3.fromValues(0.0, 0.0, 2.0);
   var at = vec3.fromValues(0.0, 0.0, 0.0);
   var up = vec3.fromValues(0.0, -1.0, 0.0);
   mat4.lookAt(viewMatrix, eye, at, up);
 
   // Projection matrix
   var projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, 30.0, 1.0, 0.1, 100.0);
+  mat4.perspective(projectionMatrix, 30.0, canvas.width/canvas.height, 0.1, 100.0);
 
   // Get location of mvp matrix uniform
   var u_mvpMatrix = gl.getUniformLocation(gl.program, 'u_mvpMatrix');

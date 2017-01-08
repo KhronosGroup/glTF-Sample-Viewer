@@ -49,6 +49,10 @@ class Scene {
       return -1;
     }
 
+    if (!initArrayBuffer(gl, this.tangents, 3, gl.FLOAT, 'a_Tangent', this.tangentsAccessor.byteStride, this.tangentsAccessor.byteOffset)) {
+      return -1;
+    }
+
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     
@@ -68,7 +72,11 @@ class Scene {
     var roughnessTexInfo = gltf.textures[this.material.roughnessTexture];
     var roughnessSrc = this.modelPath + gltf.images[roughnessTexInfo.source].uri;
 
-    loadImages([baseColorSrc, metallicSrc, roughnessSrc], createTextures, gl);
+    // Normals
+    var normalsTexInfo = gltf.textures[this.material.normalTexture];
+    var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
+
+    loadImages([baseColorSrc, metallicSrc, roughnessSrc, normalsSrc], createTextures, gl);
   }
 
   drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
@@ -215,10 +223,12 @@ function createTextures(images, gl) {
   var u_BaseColorSampler = gl.getUniformLocation(gl.program, 'u_BaseColorSampler');
   var u_MetallicSampler = gl.getUniformLocation(gl.program, 'u_MetallicSampler');
   var u_RoughnessSampler = gl.getUniformLocation(gl.program, 'u_RoughnessSampler');
+  var u_NormalSampler = gl.getUniformLocation(gl.program, 'u_NormalSampler');
 
   gl.uniform1i(u_BaseColorSampler, 0);
   gl.uniform1i(u_MetallicSampler, 1);
   gl.uniform1i(u_RoughnessSampler, 2);
+  gl.uniform1i(u_NormalSampler, 3);
 
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, textures[0]);
@@ -226,4 +236,6 @@ function createTextures(images, gl) {
   gl.bindTexture(gl.TEXTURE_2D, textures[1]);
   gl.activeTexture(gl.TEXTURE2);
   gl.bindTexture(gl.TEXTURE_2D, textures[2]);
+  gl.activeTexture(gl.TEXTURE3);
+  gl.bindTexture(gl.TEXTURE_2D, textures[3]);
 }

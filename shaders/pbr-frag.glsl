@@ -4,12 +4,14 @@ uniform samplerCube u_EnvSampler;
 uniform sampler2D u_BaseColorSampler;
 uniform sampler2D u_MetallicSampler;
 uniform sampler2D u_RoughnessSampler;
+uniform sampler2D u_NormalSampler;
 uniform vec3 u_Camera;
 uniform vec3 u_BaseColor;
 uniform float u_Metallic;
 uniform float u_Roughness;
 varying vec4 v_Color;
 varying vec2 v_UV;
+varying vec3 v_Tangent;
 varying vec3 v_Normal; 
 varying vec3 v_Position;
 
@@ -19,7 +21,16 @@ void main(){
   vec4 diffuseColor = texture2D(u_BaseColorSampler, v_UV);
   vec3 specularColor = vec3(0.8, 0.8, 0.8);
   //vec3 ambientColor = vec3(0.1, 0.1, 0.1);
+
+  // Normal Map
   vec3 n = normalize(v_Normal);
+  vec3 t = normalize(v_Tangent);
+  vec3 b = cross(n, t);
+  mat3 tbn = mat3(t, b, n);
+  n = texture2D(u_NormalSampler, v_UV).rgb;
+  n = normalize(n * 2.0 - 1.0);
+  n = normalize(tbn * n);
+
   vec3 l = normalize(u_LightPosition - v_Position);
   vec3 v = normalize(u_Camera - v_Position);
   vec3 h = normalize(l + v);
@@ -50,6 +61,7 @@ void main(){
   float brdf = (d * f * g) / (4.0 * nDotL * nDotV);
 
   vec4 diffuse = 0.8 * diffuseColor * nDotL;
+  //diffuse *= (1.0 - u_Metallic);
   vec4 specular = vec4(specularColor * brdf, 1.0);
   //vec3 camera = normalize(u_Camera);
   //vec3 camToPos = normalize(v_Position - camera);
@@ -58,7 +70,7 @@ void main(){
   //float weight = max(dot(testDir, normal), 0.0);
   //gl_FragColor = vec4(v_Color.xyz * weight, 1.0); 
   //gl_FragColor = textureCube(u_EnvSampler, reflected);
-  gl_FragColor = diffuse + specular;
+  gl_FragColor = clamp(diffuse + specular, 0.0, 1.0);
 }
 
 
