@@ -316,12 +316,26 @@ function main() {
   updateRoughness(material["Roughness"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
 
   // Draw 
-  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  var tick = function() {
+    animate(roll);
+    scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+/***** ANIMATE ******/
+var roll = 0.0;
+var pitch = 0.0;
+var prev = Date.now();
+function animate(angle) {
+  var curr = Date.now();
+  var elapsed = curr - prev;
+  prev = curr;
+  roll = angle + ((Math.PI / 8.0) * elapsed) / 1000.0;
 }
 
 /****** KEYDOWN EVENT ******/
-var roll = 0.0;
-var pitch = 0.0;
 function keydown(ev, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
   switch (ev.keyCode) {
     case 39: roll+=0.02; break;
