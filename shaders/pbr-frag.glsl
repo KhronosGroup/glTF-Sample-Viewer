@@ -18,9 +18,7 @@ varying vec3 v_Position;
 const float M_PI = 3.141592653589793;
 
 void main(){
-  vec4 diffuseColor = texture2D(u_BaseColorSampler, v_UV);
-  vec3 specularColor = vec3(0.8, 0.8, 0.8);
-  //vec3 ambientColor = vec3(0.1, 0.1, 0.1);
+  vec4 baseColor = texture2D(u_BaseColorSampler, v_UV);
 
   // Normal Map
   vec3 n = normalize(v_Normal);
@@ -40,8 +38,9 @@ void main(){
   float vDotH = max(0.0, dot(v,h));
 
   // Fresnel Term: Schlick's Approximation
-  float r0 = texture2D(u_MetallicSampler, v_UV).x;
-  float f = r0 + ((1.0 - r0) * pow(1.0 - nDotV, 5.0));
+  float metallic = texture2D(u_MetallicSampler, v_UV).x;
+  vec3 specularColor = (baseColor.rgb * metallic) + (vec3(0.04) * (1.0 - metallic));
+  vec3 f = specularColor + ((1.0 - specularColor) * pow(1.0 - vDotH, 5.0));
 
   // Geometric Attenuation Term: Schlick-Beckmann
   float roughness = texture2D(u_RoughnessSampler, v_UV).x;
@@ -54,22 +53,16 @@ void main(){
   // Normal Distribution Function: GGX (Trowbridge-Reitz)
   float a2 = a * a;
   float nDotH2 = nDotH * nDotH;
-  float denom = M_PI * (nDotH * nDotH * (a2 - 1.0) + 1.0) * (nDotH * nDotH * (a2 - 1.0) + 1.0);
+  float denom = M_PI * (nDotH2 * (a2 - 1.0) + 1.0) * (nDotH2 * (a2 - 1.0) + 1.0);
   float d = a2 / denom;
 
-  // BRDF
-  float brdf = (d * f * g) / (4.0 * nDotL * nDotV);
+  // Specular BRDF
+  vec3 specBRDF = (d * f * g) / (4.0 * nDotL * nDotV);
 
-  vec4 diffuse = 0.8 * diffuseColor * nDotL;
-  //diffuse *= (1.0 - u_Metallic);
-  vec4 specular = vec4(specularColor * brdf, 1.0);
-  //vec3 camera = normalize(u_Camera);
-  //vec3 camToPos = normalize(v_Position - camera);
-  //vec3 reflected = normalize(reflect(camToPos, n));
-  //vec3 testDir = vec3(1.0, 0.0, 0.0);
-  //float weight = max(dot(testDir, normal), 0.0);
-  //gl_FragColor = vec4(v_Color.xyz * weight, 1.0); 
-  //gl_FragColor = textureCube(u_EnvSampler, reflected);
+  metallic = 0.5; // Hack to look good before environment maps
+  vec3 diffuseColor = baseColor.rgb * (1.0 - metallic);
+  vec4 diffuse = vec4(diffuseColor * nDotL, 1.0);
+  vec4 specular = vec4(specularColor * specBRDF, 1.0);
   gl_FragColor = clamp(diffuse + specular, 0.0, 1.0);
 }
 
