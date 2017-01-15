@@ -2,13 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>BRDF Tool</title>
+    <title>WebGL PBR</title>
+    <style>
+      #my-info {
+        position: absolute;
+        right: 0px;
+        bottom: 0px;
+        color: white;
+        height: 30px;
+        padding: 15px;
+      }
+
+      #github-link {
+        position: absolute;
+        right: 0px;
+        bottom: 50px;
+        color: white;
+        height: 30px;
+        padding: 15px;
+      }
+
+      #github-link img {
+        height: 100%;
+        float: left;
+      }
+    </style>
   </head>
 
   <body style="margin:0; position:fixed" onload="main()">
     <canvas id="canvas" width="600" height="600">
-    Please use a browser that supports "canvas"
+      Please use a browser that supports "canvas"
     </canvas>
+    <p id="my-info" align="right">
+      Mohamad Moneimne<br>University of Pennsylvania
+    </p>
+    <a id="github-link" href="https://github.com/moneimne/WebGL-PBR">
+      <img src="logos/GitHub-Mark-Light-64px.png" />
+    </a>
     <script src="../dat.gui-master/build/dat.gui.min.js"></script>
     <script src="../gl-matrix-master/dist/gl-matrix-min.js"></script>
     <script src="jquery-3.1.1.js"></script>
