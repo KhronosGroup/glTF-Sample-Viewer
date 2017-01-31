@@ -144,22 +144,38 @@ function initCubeBuffers(length, width, height, gl) {
   return 1;
 }
 
-function loadCubeMap(gl) { 
+function loadCubeMap(gl, envMap, type) { 
   var texture = gl.createTexture();
-  var u_EnvSampler = gl.getUniformLocation(gl.program, 'u_EnvSampler');
-  gl.activeTexture(gl.TEXTURE0);
+  var textureNumber = 0;
+  var u_EnvSampler;
+  if (type === "diffuse") {
+    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_DiffuseEnvSampler');
+    gl.activeTexture(gl.TEXTURE6);
+    textureNumber = 6;
+  }
+  else if (type === "specular") {
+    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_SpecularEnvSampler');
+    gl.activeTexture(gl.TEXTURE7);
+    textureNumber = 7;
+  }
+  else {
+    console.log('Invalid type of cubemap loaded\n');
+    return -1;
+  }
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-  var faces = [["textures/desertsky_right.png", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
-               ["textures/desertsky_left.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
-               ["textures/desertsky_up.png", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
-               ["textures/desertsky_down.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
-               ["textures/desertsky_front.png", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
-               ["textures/desertsky_back.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
+  var path = "textures/" + envMap + "/" + type;
+
+  var faces = [[path +  "_right.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
+               [path + "_left.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
+               [path + "_top.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
+               [path + "_bottom.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
+               [path + "_front.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
+               [path + "_back.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
   for (var i = 0; i < faces.length; i++) {
     var face = faces[i][1];
     var image = new Image();
@@ -173,7 +189,7 @@ function loadCubeMap(gl) {
     image.src = faces[i][0];
   }
 
-  gl.uniform1i(u_EnvSampler, 0);
+  gl.uniform1i(u_EnvSampler, textureNumber);
   return 1;
 }
 
@@ -248,8 +264,10 @@ function main() {
 
   // Set positions of vertices
   //initCubeBuffers(1.0, 1.0, 1.0, gl);
-  // Create cube map
-  //loadCubeMap(gl);
+  // Create cube maps
+  var envMap = "papermill";
+  loadCubeMap(gl, envMap, "diffuse");
+  loadCubeMap(gl, envMap, "specular");
 
   // Light
   var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
@@ -332,7 +350,7 @@ function animate(angle) {
   var curr = Date.now();
   var elapsed = curr - prev;
   prev = curr;
-  roll = angle + ((Math.PI / 8.0) * elapsed) / 1000.0;
+  roll = angle + ((Math.PI / 16.0) * elapsed) / 1000.0;
 }
 
 /****** KEYDOWN EVENT ******/
