@@ -1,7 +1,11 @@
 precision mediump float;
+
+#extension GL_EXT_shader_texture_lod: enable
+
 uniform vec3 u_LightPosition;
 uniform samplerCube u_DiffuseEnvSampler;
 uniform samplerCube u_SpecularEnvSampler;
+uniform samplerCube u_EnvSampler;
 uniform sampler2D u_brdfLUT;
 uniform sampler2D u_BaseColorSampler;
 uniform sampler2D u_MetallicSampler;
@@ -36,9 +40,11 @@ void main(){
   float metallic = texture2D(u_MetallicSampler, v_UV).x;
   vec3 baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
 
+  float mipCount = 9.0; // resolution of 512x512
+  float lod = (roughness * mipCount);
   vec3 brdf = texture2D(u_brdfLUT, vec2(NoV, 1.0 - roughness)).rgb;
   vec3 diffuseLight = textureCube(u_DiffuseEnvSampler, n).rgb;
-  vec3 specularLight = textureCube(u_SpecularEnvSampler, r).rgb;
+  vec3 specularLight = textureCubeLodEXT(u_SpecularEnvSampler, r, lod).rgb;
 
   vec3 f0 = vec3(0.04);
   vec3 diffuseColor = baseColor * (1.0 - metallic);
