@@ -144,36 +144,69 @@ function initCubeBuffers(length, width, height, gl) {
   return 1;
 }
 
-function loadCubeMap(gl) { 
+function loadCubeMap(gl, envMap, type, mipLevel) { 
   var texture = gl.createTexture();
-  var u_EnvSampler = gl.getUniformLocation(gl.program, 'u_EnvSampler');
-  gl.activeTexture(gl.TEXTURE0);
+  var textureNumber = 0;
+  var mipLevels = 0;
+  var u_EnvSampler;
+  if (type === "diffuse") {
+    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_DiffuseEnvSampler');
+    gl.activeTexture(gl.TEXTURE1);
+    textureNumber = 1;
+    mipLevels = 1;
+  }
+  else if (type === "specular") {
+    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_SpecularEnvSampler');
+    gl.activeTexture(gl.TEXTURE2);
+    textureNumber = 2;
+    mipLevels = 10;
+  }
+  else if (type === "environment") {
+    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_EnvSampler');
+    gl.activeTexture(gl.TEXTURE0);
+    textureNumber = 0;
+    mipLevels = 1;
+  }
+  else {
+    console.log('Invalid type of cubemap loaded\n');
+    return -1;
+  }
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-  var faces = [["textures/desertsky_right.png", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
-               ["textures/desertsky_left.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
-               ["textures/desertsky_up.png", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
-               ["textures/desertsky_down.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
-               ["textures/desertsky_front.png", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
-               ["textures/desertsky_back.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
-  for (var i = 0; i < faces.length; i++) {
-    var face = faces[i][1];
-    var image = new Image();
-    image.onload = function(texture, face, image) {
-      return function() {
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texImage2D(face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-      }
-    } (texture, face, image);
-    image.src = faces[i][0];
+  if (mipLevels < 2) {
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  }
+  else {
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   }
 
-  gl.uniform1i(u_EnvSampler, 0);
+  var path = "textures/" + envMap + "/" + type + "/" + type;
+
+  for (var j = 0; j < mipLevels; j++) {
+    var faces = [[path +  "_right_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
+                [path + "_left_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
+                [path + "_top_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
+                [path + "_bottom_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
+                [path + "_front_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
+                [path + "_back_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
+    for (var i = 0; i < faces.length; i++) {
+      var face = faces[i][1];
+      var image = new Image();
+      image.onload = function(texture, face, image, j) {
+        return function() {
+          gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          gl.texImage2D(face, j, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        }
+      } (texture, face, image, j);
+      image.src = faces[i][0];
+    }
+  }
+
+  gl.uniform1i(u_EnvSampler, textureNumber);
   return 1;
 }
 
@@ -209,6 +242,9 @@ function main() {
     console.log('Failed to get the rendering context for WebGL');
     return;
   }
+
+  // Load extensions
+  gl.getExtension('EXT_shader_texture_lod');
 
   // Initialize shaders
   $.ajaxSetup({
@@ -248,8 +284,11 @@ function main() {
 
   // Set positions of vertices
   //initCubeBuffers(1.0, 1.0, 1.0, gl);
-  // Create cube map
-  //loadCubeMap(gl);
+  // Create cube maps
+  var envMap = "papermill";
+  //loadCubeMap(gl, envMap, "environment");
+  loadCubeMap(gl, envMap, "diffuse", 0);
+  loadCubeMap(gl, envMap, "specular", 0);
 
   // Light
   var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
@@ -332,7 +371,7 @@ function animate(angle) {
   var curr = Date.now();
   var elapsed = curr - prev;
   prev = curr;
-  roll = angle + ((Math.PI / 8.0) * elapsed) / 1000.0;
+  roll = angle + ((Math.PI / 16.0) * elapsed) / 1000.0;
 }
 
 /****** KEYDOWN EVENT ******/

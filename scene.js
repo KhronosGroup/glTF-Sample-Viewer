@@ -76,7 +76,10 @@ class Scene {
     var normalsTexInfo = gltf.textures[this.material.normalTexture];
     var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
 
-    loadImages([baseColorSrc, metallicSrc, roughnessSrc, normalsSrc], createTextures, gl);
+    // brdfLUT
+    var brdfLUT = "textures/brdfLUT.jpg";
+
+    loadImages([baseColorSrc, metallicSrc, roughnessSrc, normalsSrc, brdfLUT], createTextures, gl);
   }
 
   drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
@@ -213,8 +216,12 @@ function createTextures(images, gl) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
+    if (i < images.length - 1){
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    }
+    else {
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    }
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
 
     textures.push(texture);
@@ -224,18 +231,22 @@ function createTextures(images, gl) {
   var u_MetallicSampler = gl.getUniformLocation(gl.program, 'u_MetallicSampler');
   var u_RoughnessSampler = gl.getUniformLocation(gl.program, 'u_RoughnessSampler');
   var u_NormalSampler = gl.getUniformLocation(gl.program, 'u_NormalSampler');
+  var u_brdfLUT = gl.getUniformLocation(gl.program, 'u_brdfLUT');
 
-  gl.uniform1i(u_BaseColorSampler, 0);
-  gl.uniform1i(u_MetallicSampler, 1);
-  gl.uniform1i(u_RoughnessSampler, 2);
-  gl.uniform1i(u_NormalSampler, 3);
+  gl.uniform1i(u_BaseColorSampler, 3);
+  gl.uniform1i(u_MetallicSampler, 4);
+  gl.uniform1i(u_RoughnessSampler, 5);
+  gl.uniform1i(u_NormalSampler, 6);
+  gl.uniform1i(u_brdfLUT, 7);
 
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, textures[0]);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, textures[1]);
-  gl.activeTexture(gl.TEXTURE2);
-  gl.bindTexture(gl.TEXTURE_2D, textures[2]);
   gl.activeTexture(gl.TEXTURE3);
+  gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+  gl.activeTexture(gl.TEXTURE4);
+  gl.bindTexture(gl.TEXTURE_2D, textures[1]);
+  gl.activeTexture(gl.TEXTURE5);
+  gl.bindTexture(gl.TEXTURE_2D, textures[2]);
+  gl.activeTexture(gl.TEXTURE6);
   gl.bindTexture(gl.TEXTURE_2D, textures[3]);
+  gl.activeTexture(gl.TEXTURE7);
+  gl.bindTexture(gl.TEXTURE_2D, textures[4]);
 }
