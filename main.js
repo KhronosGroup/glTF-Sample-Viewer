@@ -360,7 +360,7 @@ function handleMouseUp(ev) {
   mouseDown = false;
 }
 
-function handleMouseMove(gl, scene) {
+function handleMouseMove(ev, gl, scene) {
   if (!mouseDown) {
     return;
   }
@@ -379,6 +379,6 @@ function handleMouseMove(gl, scene) {
   scene.drawScene(gl);
 }
 
-function handleScroll(ev, gl, scene) {
+function handleScroll(gl, scene) {
   console.log("hey");
 }
