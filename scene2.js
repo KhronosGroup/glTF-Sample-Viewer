@@ -67,6 +67,10 @@ class Scene {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
     
+    this.loadedBuffers = true;
+    if (this.loadedTextures) {
+      this.drawScene(gl);
+    }
   }
 
   initTextures(gl, gltf) {
@@ -133,6 +137,9 @@ class Scene {
     mat4.multiply(rotation, yRotation, xRotation);
     mat4.multiply(modelMatrix, rotation, modelMatrix);
 
+    // Update view matrix
+    this.viewMatrix[14] = -4.0 + translate; 
+
     // Update mvp matrix
     var mvpMatrix = mat4.create();
     mat4.multiply(mvpMatrix, this.viewMatrix, modelMatrix);
@@ -184,9 +191,6 @@ function getAccessorData(scene, gl, gltf, model, accessorName, attribute) {
         break;
       case "TEXCOORD_0": scene.texcoords = data;
         scene.texcoordsAccessor = accessor;
-        break;
-      case "TANGENT": scene.tangents = data;
-        scene.tangentsAccessor = accessor;
         break;
       case "INDEX": scene.indices = data;
         scene.indicesAccessor = accessor;
@@ -303,5 +307,8 @@ function createTextures(images, gl, scene) {
     gl.bindTexture(gl.TEXTURE_2D, textures[tex]);
   }
 
-  scene.drawScene(gl); 
+  scene.loadedTextures = true;
+  if (scene.loadedBuffers) {
+    scene.drawScene(gl); 
+  }
 }

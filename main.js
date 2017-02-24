@@ -1,152 +1,6 @@
-function initCubeBuffers(length, width, height, gl) {
-  var x = length/2.0;
-  var y = height/2.0;
-  var z = width/2.0;
-
-  // Vertices
-  var vertices = new Float32Array([
-    x, -y, -z, // Back triangle 1
-    -x, y, -z,
-    -x, -y, -z,
-
-    -x, y, -z,  // Back triangle 2
-    x, -y, -z,
-    x, y, -z,
-
-    x, y, z,    // Right triangle 1
-    x, y, -z,
-    x, -y, -z,
-
-    x, y, z,    // Right triangle 2
-    x, -y, -z,
-    x, -y, z,
-
-    x, y, z,    // Front triangle 1
-    x, -y, z,
-    -x, y, z,
-
-    x, -y, z,   // Front triangle 2
-    -x, -y, z,
-    -x, y, z,
-
-    -x, y, z,   // Left triangle 1
-    -x, -y, z,
-    -x, -y, -z,
-
-    -x, y, z,   // Left triangle 2
-    -x, -y, -z,
-    -x, y, -z,
-
-    -x, y, -z,  // Top triangle 1
-    x, y, z,
-    -x, y, z,
-
-    -x, y, -z,  // Top triangle 2
-    x, y, -z,
-    x, y, z,
-
-    -x, -y, z,  // Bottom triangle 1
-    x, -y, z,
-    -x, -y, -z,
-    
-    x, -y, z,   // Bottom triangle 2
-    x, -y, -z,
-    -x, -y, -z
-  ]);
-
-  var vertexBuffer = gl.createBuffer();
-  if (!vertexBuffer) {
-    console.log('Failed to create the buffer object');
-    return -1;
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    
-  var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-
-  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-
-  gl.enableVertexAttribArray(a_Position);
-
-  // Colors
-  var colors = new Float32Array([
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0, // back
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,
-   
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0, // right
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,
- 
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0, // front
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,
-  
-    1.0, 0.0, 1.0,  1.0, 0.0, 1.0,  1.0, 0.0, 1.0, // left
-    1.0, 0.0, 1.0,  1.0, 0.0, 1.0,  1.0, 0.0, 1.0,
-
-    0.0, 1.0, 1.0,  0.0, 1.0, 1.0,  0.0, 1.0, 1.0, // top
-    0.0, 1.0, 1.0,  0.0, 1.0, 1.0,  0.0, 1.0, 1.0,
-
-    1.0, 1.0, 0.0,  1.0, 1.0, 0.0,  1.0, 1.0, 0.0, // bottom
-    1.0, 1.0, 0.0,  1.0, 1.0, 0.0,  1.0, 1.0, 0.0,
-  ]);
-
-  var colorBuffer = gl.createBuffer();
-  if (!colorBuffer) {
-    console.log('Failed to create the buffer object');
-    return -1;
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-    
-  var a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-
-  gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, 0, 0);
-
-  gl.enableVertexAttribArray(a_Color);
-
-  // Normals
-  var normals = new Float32Array([
-    0.0, 0.0, -1.0,  0.0, 0.0, -1.0,  0.0, 0.0, -1.0, // Back face
-    0.0, 0.0, -1.0,  0.0, 0.0, -1.0,  0.0, 0.0, -1.0,
-
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0, // Right face
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,
- 
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0, // Front face
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,
-
-    -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0, // Left face
-    -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,
-
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0, // Top face
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,
-
-    0.0, -1.0, 0.0,  0.0, -1.0, 0.0,  0.0, -1.0, 0.0, // Bottom face
-    0.0, -1.0, 0.0,  0.0, -1.0, 0.0,  0.0, -1.0, 0.0
-  ]);
-
-  var normalBuffer = gl.createBuffer();
-  if (!normalBuffer) {
-    console.log('Failed to create the buffer object');
-    return -1;
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-
-  var a_Normal = gl.getAttribLocation(gl.program, 'a_Normal');
-  
-  gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);
-
-  gl.enableVertexAttribArray(a_Normal); 
-
-  return 1;
-}
-
 function loadCubeMap(gl, envMap, type, mipLevel) { 
   var texture = gl.createTexture();
-  var textureNumber = 0;
+  var textureNumber = -1;
   var mipLevels = 0;
   var u_EnvSampler;
   if (type === "diffuse") {
@@ -330,7 +184,7 @@ function main() {
   canvas.onmousedown = function(ev) {handleMouseDown(ev);};
   document.onmouseup = function(ev) {handleMouseUp(ev);};
   document.onmousemove = function(ev) {handleMouseMove(ev, gl, scene);};
-  window.onscroll = function() {handleScroll(gl, scene);};
+  document.onwheel = function(ev) {handleWheel(ev, gl, scene);};
 
   // Initialize GUI  
   var gui = new dat.GUI();
@@ -379,6 +233,13 @@ function handleMouseMove(ev, gl, scene) {
   scene.drawScene(gl);
 }
 
-function handleScroll(gl, scene) {
-  console.log("hey");
+function handleWheel(ev, gl, scene) {
+  ev.preventDefault();
+  if (ev.wheelDelta > 0) {
+    translate += 0.04;
+  }
+  else {
+    translate -= 0.04;
+  }
+  scene.drawScene(gl);
 }

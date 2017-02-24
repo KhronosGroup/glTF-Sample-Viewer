@@ -29,24 +29,20 @@ const float M_PI = 3.141592653589793;
 
 void main(){
   // Normal Map
+  vec3 ng = normalize(v_Normal);
   vec3 pos_dx = dFdx(v_Position);
   vec3 pos_dy = dFdy(v_Position);
   vec3 tex_dx = dFdx(vec3(v_UV, 0.0));
-  vec3 tex_dy = dFdx(vec3(v_UV, 0.0));
-  vec3 t = normalize(tex_dy.y * pos_dx - tex_dx.y * pos_dy);
-  vec3 b = normalize(tex_dy.x * pos_dy - tex_dy.x * pos_dx);
-  vec3 n = normalize(v_Normal);
-  //vec3 x = cross(n, t);
-  mat3 tbn = mat3(t, b, n);
-  //vec3 t = normalize(v_Tangent);
-  //vec3 b = cross(n, t);
-  //mat3 tbn = mat3(t, b, n);
-  n = texture2D(u_NormalSampler, v_UV).rgb;
-  n = normalize(n * 2.0 - 1.0);
-  n = normalize(tbn * n);
+  vec3 tex_dy = dFdy(vec3(v_UV, 0.0));
+  vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
+  t = normalize(t - ng * dot(ng, t));
+  vec3 b = normalize(cross(ng, t));
+  mat3 tbn = mat3(t, b, ng);
+  vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
+  n = normalize(tbn * (2.0 * n - 1.0));
   vec3 v = normalize(u_Camera - v_Position);
   vec3 r = -normalize(reflect(v, n));
-  float NoV = max(0.0, dot(n, v));
+  float NoV = clamp(dot(n, v), 0.0, 1.0);
 
   float roughness = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).y, 0.0, 1.0);
   float metallic = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).x, 0.0, 1.0);
