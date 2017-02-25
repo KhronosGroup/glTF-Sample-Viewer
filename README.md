@@ -1,7 +1,7 @@
 Physically-Based Rendering in glTF 2.0 using WebGL - Senior Design Project
 ==============================================
 
-[** Insert image from demo here **]
+![](images/BoomBox.jpg)
 
 This is a raw WebGL demo application for the introduction of physically-based materials to the core glTF 2.0 spec. This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of these materials within a WebGL project that isn't tied to any external graphics libraries. 
 
@@ -30,11 +30,11 @@ These parameters can be provided to the material in two ways. Either the paramet
 
 **Base Color of a Boombox**
 
-<img src="models/BoomBox/glTF/BoomBox_baseColor.png" width="300" height="300"/> -> [** Insert image of mapping in demo **]
+<img src="models/BoomBox/glTF/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="images/BoomBox-baseColor.jpg" width="300" height="300"/>
 
 **Metallic-Roughness of a Boombox**
 
-<img src="models/BoomBox/glTF/BoomBox_metallicRoughness.png" width="300" height="300"/> -> [** Insert image of mapping in demo **]
+<img src="models/BoomBox/glTF/BoomBox_metallicRoughness.png" width="300" height="300"/> -> <img src="images/BoomBox-metallicRoughness.jpg" width="300" height="300"/>
 
 Although these are the core parameters of the Metallic-Roughness material, often a user will want to provide additional maps for features such as normals, ambient occlusion, or emissiveness. Similarly to above, these are usually provided as a texture that corresponds to the parts of the mesh that have shifted normals, are occluded and/or are emissive, respectively. However, since these are not a part of the Metallic-Roughness material itself, they are provided as a separate portion to the material.
 
@@ -90,4 +90,15 @@ Some Results
 ------------
 
 Here are some resulting renders from the demo application.
-[** Insert renders here, ideally as gif turntables **]
+
+**BoomBox Model**
+
+![](images/BoomBox.jpg)
+
+**Telephone Model**
+
+![](images/Telephone.jpg)
+
+**BarramundiFish Model**
+
+![](images/BarramundiFish.jpg)
