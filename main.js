@@ -1,4 +1,4 @@
-function loadCubeMap(gl, envMap, type, mipLevel) { 
+function loadCubeMap(gl, envMap, type) { 
   var texture = gl.createTexture();
   var textureNumber = -1;
   var mipLevels = 0;
@@ -132,8 +132,8 @@ function main() {
   // Create cube maps
   var envMap = "papermill";
   //loadCubeMap(gl, envMap, "environment");
-  loadCubeMap(gl, envMap, "diffuse", 0);
-  loadCubeMap(gl, envMap, "specular", 0);
+  loadCubeMap(gl, envMap, "diffuse");
+  loadCubeMap(gl, envMap, "specular");
 
   // Light
   var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
@@ -155,7 +155,7 @@ function main() {
 
   // Projection matrix
   var projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.1, 100.0);
+  mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.01, 100.0);
 
   // Get location of mvp matrix uniform
   var u_mvpMatrix = gl.getUniformLocation(gl.program, 'u_mvpMatrix');

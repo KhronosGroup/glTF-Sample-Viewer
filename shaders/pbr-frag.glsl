@@ -43,7 +43,7 @@ void main(){
   vec3 v = normalize(u_Camera - v_Position);
   vec3 r = -normalize(reflect(v, n));
   float NoV = clamp(dot(n, v), 0.0, 1.0);
-
+  
   float roughness = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).y, 0.0, 1.0);
   float metallic = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).x, 0.0, 1.0);
   vec3 baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
@@ -71,5 +71,3 @@ void main(){
  
   gl_FragColor = vec4(color, 1.0);
 }
-
-
