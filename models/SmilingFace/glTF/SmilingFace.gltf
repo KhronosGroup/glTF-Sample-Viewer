@@ -1,0 +1,174 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 2711,
+      "type": "VEC2",
+      "max": [
+        0.9917339,
+        -0.0120319128
+      ],
+      "min": [
+        0.0116992,
+        -0.9939886
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 2711,
+      "type": "VEC3",
+      "max": [
+        0.9999155,
+        0.9999615,
+        0.9998227
+      ],
+      "min": [
+        -0.9999155,
+        -0.9979231,
+        -0.9995511
+      ]
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 2711,
+      "type": "VEC3",
+      "max": [
+        0.008106791,
+        0.008187642,
+        0.008632781
+      ],
+      "min": [
+        -0.008106791,
+        -0.00818764,
+        -0.007583367
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 14610,
+      "type": "SCALAR",
+      "max": [
+        2710
+      ],
+      "min": [
+        0
+      ]
+    }
+  ],
+  "asset": {
+    "generator": "glTF Tools for Unity",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 21688,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 21688,
+      "byteLength": 32532,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 54220,
+      "byteLength": 32532,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 86752,
+      "byteLength": 29220,
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "SmilingFace.bin",
+      "byteLength": 115972
+    }
+  ],
+  "extensionsUsed": [],
+  "images": [
+    {
+      "uri": "SmilingFace_baseColor.png"
+    },
+    {
+      "uri": "SmilingFace_metallicRoughness.png"
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 0,
+            "NORMAL": 1,
+            "POSITION": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ],
+      "name": "polySurface168"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      },
+      "name": "emoji_smiling_DF"
+    }
+  ],
+  "nodes": [
+    {
+      "children": [],
+      "mesh": 0,
+      "scale": [
+        100.0,
+        100.0,
+        100.0
+      ],
+      "name": "SmilingFace"
+    }
+  ],
+  "samplers": [
+    {}
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    }
+  ]
+}

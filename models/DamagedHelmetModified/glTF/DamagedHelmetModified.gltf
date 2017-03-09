@@ -1,0 +1,369 @@
+{
+  "accessors" : {
+    "accessor_position_helmet_LP_25516" : {
+      "bufferView" : "vec3BufferView",
+      "byteOffset" : 0,
+      "byteStride" : 12,
+      "componentType" : 5126,
+      "count" : 13600,
+      "type" : "VEC3",
+      "max" : [ 0.944977, 0.900995, 1 ],
+      "min" : [ -0.944977, -0.900974, -1 ]
+    },
+    "accessor_normal_helmet_LP_25516" : {
+      "bufferView" : "vec3BufferView",
+      "byteOffset" : 163200,
+      "byteStride" : 12,
+      "componentType" : 5126,
+      "count" : 13600,
+      "type" : "VEC3",
+      "max" : [ 1, 1, 1 ],
+      "min" : [ -1, -1, -1 ]
+    },
+    "accessor_uv0_helmet_LP_25516" : {
+      "bufferView" : "vec2BufferView",
+      "byteOffset" : 0,
+      "byteStride" : 8,
+      "componentType" : 5126,
+      "count" : 13600,
+      "type" : "VEC2",
+      "max" : [ 0.999976, 0.998666 ],
+      "min" : [ 0.00244864, 5.5312E-4 ]
+    },
+    "accessor_tangents_helmet_LP_25516" : {
+      "bufferView" : "vec4BufferView",
+      "byteOffset" : 0,
+      "byteStride" : 16,
+      "componentType" : 5126,
+      "count" : 13600,
+      "type" : "VEC4",
+      "max" : [ 1, 1, 1, 1 ],
+      "min" : [ -1, -1, -1, -1 ]
+    },
+    "accessor_indices_0_helmet_LP_25516" : {
+      "bufferView" : "ushortBufferView",
+      "byteOffset" : 0,
+      "byteStride" : 0,
+      "componentType" : 5123,
+      "count" : 46356,
+      "type" : "SCALAR",
+      "max" : [ 13599 ],
+      "min" : [ 0 ]
+    }
+  },
+  "asset" : {
+    "generator" : "Unity 5.4.3f1",
+    "version" : "1.1"
+  },
+  "buffers" : {
+    "Helmet" : {
+      "uri" : "Helmet.bin",
+      "byteLength" : 745512,
+      "type" : "arraybuffer"
+    }
+  },
+  "bufferViews" : {
+    "ushortBufferView" : {
+      "buffer" : "Helmet",
+      "byteOffset" : 0,
+      "byteLength" : 92712,
+      "target" : 34963
+    },
+    "vec2BufferView" : {
+      "buffer" : "Helmet",
+      "byteOffset" : 92712,
+      "byteLength" : 108800,
+      "target" : 34962
+    },
+    "vec3BufferView" : {
+      "buffer" : "Helmet",
+      "byteOffset" : 201512,
+      "byteLength" : 326400,
+      "target" : 34962
+    },
+    "vec4BufferView" : {
+      "buffer" : "Helmet",
+      "byteOffset" : 527912,
+      "byteLength" : 217600,
+      "target" : 34962
+    }
+  },
+  "images" : {
+    "image_Default_albedo_9098" : {
+      "uri" : "Default_albedo.jpg"
+    },
+    "image_Default_MetalSmooth_21596_metallicRoughness" : {
+      "uri" : "Default_MetalSmooth_metallicRoughness.jpg"
+    },
+    "image_Default_normal_22700" : {
+      "uri" : "Default_normal.jpg"
+    },
+    "image_Default_AO_25064" : {
+      "uri" : "Default_AO.jpg"
+    },
+    "image_Default_emissive_22780" : {
+      "uri" : "Default_emissive.jpg"
+    }
+  },
+  "meshes" : {
+    "mesh_helmet_LP_25516Helmet" : {
+      "name" : "mesh_helmet_LP_25516Helmet",
+      "primitives" : [ {
+        "attributes" : {
+          "POSITION" : "accessor_position_helmet_LP_25516",
+          "NORMAL" : "accessor_normal_helmet_LP_25516",
+          "TEXCOORD_0" : "accessor_uv0_helmet_LP_25516",
+          "TANGENT" : "accessor_tangents_helmet_LP_25516"
+        },
+        "indices" : "accessor_indices_0_helmet_LP_25516",
+        "material" : "pbrMaterial",
+        "mode" : 4
+      } ]
+    }
+  },
+  "nodes" : {
+    "node_Helmet" : {
+      "name" : "Helmet",
+      "meshes" : [ "mesh_helmet_LP_25516Helmet" ]
+    }
+  },
+  "samplers" : {
+    "sampler_1_0_m" : {
+      "magFilter" : 9729,
+      "minFilter" : 9985,
+      "wrapS" : 10497,
+      "wrapT" : 10497
+    }
+  },
+  "scene" : "defaultScene",
+  "scenes" : {
+    "defaultScene" : {
+      "nodes" : [ "node_Helmet" ]
+    }
+  },
+  
+  "programs" : {
+    "pbrProgram" : {
+      "attributes" : [ "a_position", "a_normal", "a_tangent", "a_texCoord0" ],
+      "fragmentShader" : "pbrFragmentShader",
+      "vertexShader" : "pbrVertexShader"
+    }
+  },
+  "shaders" : {
+    "pbrVertexShader" : {
+      "uri" : "pbr.vert",
+      "type" : 35633
+    },
+    "pbrFragmentShader" : {
+      "uri" : "pbr.frag",
+      "type" : 35632
+    }
+  },
+  
+  
+  "materials" : {
+    "pbrMaterial" : {
+      "technique" : "pbrTechnique",
+      "values" : {
+        "baseColorFactor" : [ 2.0, 2.0, 2.0, 1.0 ],
+        "baseColorTexture" : "baseColorTexture",
+        "hasBaseColorTexture" : [ 1 ],
+        "metallicFactor" : [ 0.8 ],
+        "roughnessFactor" : [ 1.0 ],
+        "metallicRoughnessTexture" : "metallicRoughnessTexture",
+        "hasMetallicRoughnessTexture" : [ 1 ],
+        "normalTexture" : "normalTexture",
+        "hasNormalTexture" : [ 1 ],
+        "normalScale" : [ 1.0 ],
+        "emissionTexture" : "emissionTexture",
+        "hasEmissionTexture" : [ 1 ],
+        "emissionFactor" : [ 1.0, 1.0, 1.0 ],
+        "occlusionTexture" : "occlusionTexture",
+        "hasOcclusionTexture" : [ 1 ],
+        "occlusionStrength" : [ 1.0 ]
+      }
+    }
+  },
+  "techniques" : {
+    "pbrTechnique" : {
+      "program" : "pbrProgram",
+      "parameters" : {
+        "position" : {
+          "type" : 35666,
+          "semantic" : "POSITION"
+        },
+        "normal" : {
+          "type" : 35666,
+          "semantic" : "NORMAL"
+        },
+        "tangent" : {
+          "type" : 35666,
+          "semantic" : "TANGENT"
+        },
+        
+        "modelViewMatrix" : {
+          "type" : 35676,
+          "semantic" : "MODELVIEW"
+        },
+        "projectionMatrix" : {
+          "type" : 35676,
+          "semantic" : "PROJECTION"
+        },
+        "normalMatrix" : {
+          "type" : 35675,
+          "semantic" : "MODELVIEWINVERSETRANSPOSE"
+        },
+        
+        "baseColorFactor" : {
+          "type" : 35666
+        },
+        "baseColorTexture" : {
+          "type" : 35678
+        },
+        "hasBaseColorTexture" : {
+          "type" : 5124
+        },
+        "baseColorTexCoord" : {
+          "semantic": "TEXCOORD_0",
+          "type" : 35664
+        },
+        
+        "metallicFactor" : {
+          "type" : 5126
+        },
+        "roughnessFactor" : {
+          "type" : 5126
+        },
+        "metallicRoughnessTexture" : {
+          "type" : 35678
+        },
+        "hasMetallicRoughnessTexture" : {
+          "type" : 5124
+        },
+        "metallicRoughnessTexCoord" : {
+          "semantic": "TEXCOORD_0",
+          "type" : 35664
+        },
+        
+        "normalTexture" : {
+          "type" : 35678
+        },
+        "hasNormalTexture" : {
+          "type" : 5124
+        },
+        "normalTexCoord" : {
+          "semantic": "TEXCOORD_0",
+          "type" : 35664
+        },
+        "normalScale" : {
+          "type" : 5126
+        },
+
+        "occlusionTexture" : {
+          "type" : 35678
+        },
+        "hasOcclusionTexture" : {
+          "type" : 5124
+        },
+        "occlusionTexCoord" : {
+          "semantic": "TEXCOORD_0",
+          "type" : 35664
+        },
+        "occlusionStrength" : {
+          "type" : 5126
+        },
+
+        "emissionTexture" : {
+          "type" : 35678
+        },
+        "hasEmissionTexture" : {
+          "type" : 5124
+        },
+        "emissionTexCoord" : {
+          "semantic": "TEXCOORD_0",
+          "type" : 35664
+        },
+        "emissionFactor" : {
+          "type" : 35665
+        }
+        
+      },
+      "attributes" : {
+        "a_position" : "position",
+        "a_normal" : "normal",
+        "a_tangent" : "tangent",
+        "a_baseColorTexCoord" : "baseColorTexCoord",
+        "a_metallicRoughnessTexCoord" : "metallicRoughnessTexCoord", 
+	"a_normalTexCoord" : "normalTexCoord",
+	"a_occlusionTexCoord" : "occlusionTexCoord",
+	"a_emissionTexCoord" : "emissionTexCoord"
+      },
+      "uniforms" : {
+        "u_modelViewMatrix" : "modelViewMatrix",
+        "u_projectionMatrix" : "projectionMatrix",
+        "u_normalMatrix" : "normalMatrix",
+        "u_baseColorFactor" : "baseColorFactor",
+        "u_baseColorTexture" : "baseColorTexture",
+        "u_hasBaseColorTexture" : "hasBaseColorTexture",
+        "u_metallicFactor" : "metallicFactor",
+        "u_roughnessFactor" : "roughnessFactor",
+        "u_metallicRoughnessTexture" : "metallicRoughnessTexture",
+        "u_hasMetallicRoughnessTexture" : "hasMetallicRoughnessTexture",
+        "u_normalTexture" : "normalTexture",
+        "u_normalScale" : "normalScale",
+        "u_occlusionTexture" : "occlusionTexture",
+        "u_hasOcclusionTexture" : "hasOcclusionTexture",
+        "u_occlusionStrength" : "occlusionStrength",
+        "u_emissionTexture" : "emissionTexture",
+        "u_hasEmissionTexture" : "hasEmissionTexture",
+        "u_emissionFactor" : "emissionFactor"
+      },
+      "states" : {
+        "enable" : [ 2884, 2929 ]
+      }
+    }
+  },
+  
+  "textures" : {
+    "baseColorTexture" : {
+      "format" : 6408,
+      "internalFormat" : 6408,
+      "sampler" : "sampler_1_0_m",
+      "source" : "image_Default_albedo_9098",
+      "target" : 3553,
+      "type" : 5121
+    },
+    "metallicRoughnessTexture" : {
+      "format" : 6408,
+      "internalFormat" : 6408,
+      "sampler" : "sampler_1_0_m",
+      "source" : "image_Default_MetalSmooth_21596_metallicRoughness",
+      "target" : 3553,
+      "type" : 5121
+    },
+    "normalTexture" : {
+      "format" : 6408,
+      "internalFormat" : 6408,
+      "sampler" : "sampler_1_0_m",
+      "source" : "image_Default_normal_22700",
+      "target" : 3553,
+      "type" : 5121
+    },
+    "occlusionTexture" : {
+      "format" : 6408,
+      "internalFormat" : 6408,
+      "sampler" : "sampler_1_0_m",
+      "source" : "image_Default_AO_25064",
+      "target" : 3553,
+      "type" : 5121
+    },
+    "emissionTexture" : {
+      "format" : 6408,
+      "internalFormat" : 6408,
+      "sampler" : "sampler_1_0_m",
+      "source" : "image_Default_emissive_22780",
+      "target" : 3553,
+      "type" : 5121
+    }
+  }
+}

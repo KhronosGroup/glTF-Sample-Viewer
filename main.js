@@ -1,152 +1,6 @@
-function initCubeBuffers(length, width, height, gl) {
-  var x = length/2.0;
-  var y = height/2.0;
-  var z = width/2.0;
-
-  // Vertices
-  var vertices = new Float32Array([
-    x, -y, -z, // Back triangle 1
-    -x, y, -z,
-    -x, -y, -z,
-
-    -x, y, -z,  // Back triangle 2
-    x, -y, -z,
-    x, y, -z,
-
-    x, y, z,    // Right triangle 1
-    x, y, -z,
-    x, -y, -z,
-
-    x, y, z,    // Right triangle 2
-    x, -y, -z,
-    x, -y, z,
-
-    x, y, z,    // Front triangle 1
-    x, -y, z,
-    -x, y, z,
-
-    x, -y, z,   // Front triangle 2
-    -x, -y, z,
-    -x, y, z,
-
-    -x, y, z,   // Left triangle 1
-    -x, -y, z,
-    -x, -y, -z,
-
-    -x, y, z,   // Left triangle 2
-    -x, -y, -z,
-    -x, y, -z,
-
-    -x, y, -z,  // Top triangle 1
-    x, y, z,
-    -x, y, z,
-
-    -x, y, -z,  // Top triangle 2
-    x, y, -z,
-    x, y, z,
-
-    -x, -y, z,  // Bottom triangle 1
-    x, -y, z,
-    -x, -y, -z,
-    
-    x, -y, z,   // Bottom triangle 2
-    x, -y, -z,
-    -x, -y, -z
-  ]);
-
-  var vertexBuffer = gl.createBuffer();
-  if (!vertexBuffer) {
-    console.log('Failed to create the buffer object');
-    return -1;
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    
-  var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-
-  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-
-  gl.enableVertexAttribArray(a_Position);
-
-  // Colors
-  var colors = new Float32Array([
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0, // back
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,
-   
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0, // right
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,
- 
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0, // front
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,
-  
-    1.0, 0.0, 1.0,  1.0, 0.0, 1.0,  1.0, 0.0, 1.0, // left
-    1.0, 0.0, 1.0,  1.0, 0.0, 1.0,  1.0, 0.0, 1.0,
-
-    0.0, 1.0, 1.0,  0.0, 1.0, 1.0,  0.0, 1.0, 1.0, // top
-    0.0, 1.0, 1.0,  0.0, 1.0, 1.0,  0.0, 1.0, 1.0,
-
-    1.0, 1.0, 0.0,  1.0, 1.0, 0.0,  1.0, 1.0, 0.0, // bottom
-    1.0, 1.0, 0.0,  1.0, 1.0, 0.0,  1.0, 1.0, 0.0,
-  ]);
-
-  var colorBuffer = gl.createBuffer();
-  if (!colorBuffer) {
-    console.log('Failed to create the buffer object');
-    return -1;
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-    
-  var a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-
-  gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, 0, 0);
-
-  gl.enableVertexAttribArray(a_Color);
-
-  // Normals
-  var normals = new Float32Array([
-    0.0, 0.0, -1.0,  0.0, 0.0, -1.0,  0.0, 0.0, -1.0, // Back face
-    0.0, 0.0, -1.0,  0.0, 0.0, -1.0,  0.0, 0.0, -1.0,
-
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0, // Right face
-    1.0, 0.0, 0.0,  1.0, 0.0, 0.0,  1.0, 0.0, 0.0,
- 
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0, // Front face
-    0.0, 0.0, 1.0,  0.0, 0.0, 1.0,  0.0, 0.0, 1.0,
-
-    -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0, // Left face
-    -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,
-
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0, // Top face
-    0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 1.0, 0.0,
-
-    0.0, -1.0, 0.0,  0.0, -1.0, 0.0,  0.0, -1.0, 0.0, // Bottom face
-    0.0, -1.0, 0.0,  0.0, -1.0, 0.0,  0.0, -1.0, 0.0
-  ]);
-
-  var normalBuffer = gl.createBuffer();
-  if (!normalBuffer) {
-    console.log('Failed to create the buffer object');
-    return -1;
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-
-  var a_Normal = gl.getAttribLocation(gl.program, 'a_Normal');
-  
-  gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);
-
-  gl.enableVertexAttribArray(a_Normal); 
-
-  return 1;
-}
-
-function loadCubeMap(gl, envMap, type, mipLevel) { 
+function loadCubeMap(gl, envMap, type) { 
   var texture = gl.createTexture();
-  var textureNumber = 0;
+  var textureNumber = -1;
   var mipLevels = 0;
   var u_EnvSampler;
   if (type === "diffuse") {
@@ -210,22 +64,14 @@ function loadCubeMap(gl, envMap, type, mipLevel) {
   return 1;
 }
 
-function updateDiffuse(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  var u_BaseColor = gl.getUniformLocation(gl.program, 'u_BaseColor');
-  gl.uniform3f(u_BaseColor, value[0]/255, value[1]/255, value[2]/255);
-  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-}
-
-function updateMetallic(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  var u_Metallic = gl.getUniformLocation(gl.program, 'u_Metallic');
-  gl.uniform1f(u_Metallic, value);
-  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-}
-
-function updateRoughness(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  var u_Roughness = gl.getUniformLocation(gl.program, 'u_Roughness');
-  gl.uniform1f(u_Roughness, value);
-  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+// Update model from dat.gui change
+function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
+  scene = new Scene(gl, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
+  scene.projectionMatrix = projectionMatrix;
+  scene.viewMatrix = viewMatrix;
+  scene.u_mvpMatrix = u_mvpMatrix;
+  scene.u_NormalMatrix = u_NormalMatrix;
+  return scene;
 }
 
 function main() {
@@ -245,6 +91,7 @@ function main() {
 
   // Load extensions
   gl.getExtension('EXT_shader_texture_lod');
+  gl.getExtension('OES_standard_derivatives');
 
   // Initialize shaders
   $.ajaxSetup({
@@ -282,13 +129,11 @@ function main() {
   gl.useProgram(program);
   gl.program = program;
 
-  // Set positions of vertices
-  //initCubeBuffers(1.0, 1.0, 1.0, gl);
   // Create cube maps
   var envMap = "papermill";
   //loadCubeMap(gl, envMap, "environment");
-  loadCubeMap(gl, envMap, "diffuse", 0);
-  loadCubeMap(gl, envMap, "specular", 0);
+  loadCubeMap(gl, envMap, "diffuse");
+  loadCubeMap(gl, envMap, "specular");
 
   // Light
   var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
@@ -296,21 +141,21 @@ function main() {
 
   // Camera
   var u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
-  gl.uniform3f(u_Camera, 0.0, 0.0, 2.0);
+  gl.uniform3f(u_Camera, 0.0, 0.0, -4.0);
 
   // Model matrix
   var modelMatrix = mat4.create();
   
   // View matrix
   var viewMatrix = mat4.create();
-  var eye = vec3.fromValues(0.0, 0.0, 2.0);
+  var eye = vec3.fromValues(0.0, 0.0, -4.0);
   var at = vec3.fromValues(0.0, 0.0, 0.0);
-  var up = vec3.fromValues(0.0, -1.0, 0.0);
+  var up = vec3.fromValues(0.0, 1.0, 0.0);
   mat4.lookAt(viewMatrix, eye, at, up);
 
   // Projection matrix
   var projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, 30.0, canvas.width/canvas.height, 0.1, 100.0);
+  mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.01, 100.0);
 
   // Get location of mvp matrix uniform
   var u_mvpMatrix = gl.getUniformLocation(gl.program, 'u_mvpMatrix');
@@ -328,61 +173,73 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Load scene
-  var scene = new Scene(gl, "./models/damagedHelmet/", "./models/damagedHelmet/Helmet.gltf");
+  //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
+  var scene = new Scene(gl, "./models/Avocado/glTF/", "./models/Avocado/glTF/Avocado.gltf");
+  scene.projectionMatrix = projectionMatrix;
+  scene.viewMatrix = viewMatrix;
+  scene.u_mvpMatrix = u_mvpMatrix;
+  scene.u_NormalMatrix = u_NormalMatrix;
 
-  document.onkeydown = function(ev) {keydown(ev, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);};
+  // Set control callbacks
+  canvas.onmousedown = function(ev) {handleMouseDown(ev);};
+  document.onmouseup = function(ev) {handleMouseUp(ev);};
+  document.onmousemove = function(ev) {handleMouseMove(ev, gl, scene);};
+  document.onwheel = function(ev) {handleWheel(ev, gl, scene);};
 
   // Initialize GUI  
   var gui = new dat.GUI();
   var folder = gui.addFolder("Metallic-Roughness Material");
-  var material = {
-    'Base Color': [180, 180, 180],
-    'Metallic': 0.5,
-    'Roughness': 0.5
-  };
-  folder.addColor(material, 'Base Color').onChange(function(value) {
-    updateDiffuse(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  });
-  folder.add(material, 'Metallic', 0.0, 1.0).onChange(function(value) {
-    updateMetallic(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  });
-  folder.add(material, 'Roughness', 0.0, 1.0).onChange(function(value) {
-    updateRoughness(value, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+
+  var text = {Model: "Avocado"};
+  folder.add(text, 'Model', ['Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone']).onChange(function(value) {
+    scene = updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
   });
   folder.open();
-  updateDiffuse(material["Base Color"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  updateMetallic(material["Metallic"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  updateRoughness(material["Roughness"], gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-
-  // Draw 
-  var tick = function() {
-    animate(roll);
-    scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-    requestAnimationFrame(tick);
-  };
-  tick();
 }
 
-/***** ANIMATE ******/
+// ***** Mouse Controls ***** //
+var mouseDown = false;
 var roll = 0.0;
 var pitch = 0.0;
-var prev = Date.now();
-function animate(angle) {
-  var curr = Date.now();
-  var elapsed = curr - prev;
-  prev = curr;
-  roll = angle + ((Math.PI / 16.0) * elapsed) / 1000.0;
+var translate = 0.0;
+var lastMouseX = null;
+var lastMouseY = null;
+function handleMouseDown(ev) {
+  mouseDown = true;
+  lastMouseX = ev.clientX;
+  lastMouseY = ev.clientY;
 }
 
-/****** KEYDOWN EVENT ******/
-function keydown(ev, gl, scene, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  switch (ev.keyCode) {
-    case 39: roll+=0.02; break;
-    case 37: roll-=0.02; break;
-    case 38: pitch+=0.02; break;
-    case 40: pitch-=0.02; break;
-    default: return;
-  }
+function handleMouseUp(ev) {
+  mouseDown = false;
+}
 
-  scene.drawScene(gl, modelMatrix, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+function handleMouseMove(ev, gl, scene) {
+  if (!mouseDown) {
+    return;
+  }
+  var newX = ev.clientX;
+  var newY = ev.clientY;
+
+  var deltaX = newX - lastMouseX;
+  roll += (deltaX / 100.0); 
+ 
+  var deltaY = newY - lastMouseY;
+  pitch += (deltaY / 100.0);
+
+  lastMouseX = newX;
+  lastMouseY = newY;
+
+  scene.drawScene(gl);
+}
+
+function handleWheel(ev, gl, scene) {
+  ev.preventDefault();
+  if (ev.wheelDelta > 0) {
+    translate += 0.04;
+  }
+  else {
+    translate -= 0.04;
+  }
+  scene.drawScene(gl);
 }
