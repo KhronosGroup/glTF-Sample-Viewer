@@ -5,7 +5,7 @@ class Scene {
     $.get(file, function(response) {
       json = response;
     });
-    var gltf = JSON.parse(json);
+    var gltf = (typeof json === 'string') ? JSON.parse(json) : json;
 
     this.modelPath = model;
 

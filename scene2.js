@@ -5,7 +5,7 @@ class Scene {
     $.get(file, function(response) {
       json = response;
     });
-    var gltf = JSON.parse(json);
+    var gltf = (typeof json === 'string') ? JSON.parse(json) : json;
 
     this.modelPath = model;
 
@@ -28,12 +28,12 @@ class Scene {
     var primitives = meshes[Object.keys(meshes)[0]].primitives;
     for (var i = 0; i < primitives.length; i++) {
       var primitive = primitives[Object.keys(primitives)[i]];
-    
+
       // Attributes
       for (var attribute in primitive.attributes) {
         getAccessorData(this, gl, gltf, model, primitive.attributes[attribute], attribute);
       }
-       
+
       // Indices
       var indicesAccessor = primitive.indices;
       getAccessorData(this, gl, gltf, model, indicesAccessor, "INDEX");
@@ -51,10 +51,10 @@ class Scene {
       console.log('Failed to create the buffer object');
       return -1;
     }
-  
+
     if (!initArrayBuffer(gl, this.vertices, 3, gl.FLOAT, 'a_Position', this.verticesAccessor.byteStride, this.verticesAccessor.byteOffset)) {
       console.log('Failed to initialize position buffer');
-    }  
+    }
 
     if (!initArrayBuffer(gl, this.normals, 3, gl.FLOAT, 'a_Normal', this.normalsAccessor.byteStride, this.normalsAccessor.byteOffset)) {
       console.log('Failed to initialize normal buffer');
@@ -66,7 +66,7 @@ class Scene {
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
-    
+
     this.loadedBuffers = true;
     if (this.loadedTextures) {
       this.drawScene(gl);
@@ -138,7 +138,7 @@ class Scene {
     mat4.multiply(modelMatrix, rotation, modelMatrix);
 
     // Update view matrix
-    this.viewMatrix[14] = -4.0 + translate; 
+    this.viewMatrix[14] = -4.0 + translate;
 
     // Update mvp matrix
     var mvpMatrix = mat4.create();
@@ -150,7 +150,7 @@ class Scene {
     var normalMatrix = mat4.create();
     mat4.invert(normalMatrix, modelMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
-    gl.uniformMatrix4fv(this.u_NormalMatrix, false, normalMatrix); 
+    gl.uniformMatrix4fv(this.u_NormalMatrix, false, normalMatrix);
 
     // Draw
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -202,7 +202,7 @@ function getAccessorData(scene, gl, gltf, model, accessorName, attribute) {
       scene.initBuffers(gl, gltf);
     }
   }
- 
+
   var oReq = new XMLHttpRequest();
   oReq.open("GET", model + bin, true);
   oReq.responseType = "blob";
@@ -222,11 +222,11 @@ function initArrayBuffer(gl, data, num, type, attribute, stride, offset) {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-  
+
   var a_attribute = gl.getAttribLocation(gl.program, attribute);
-  
+
   gl.vertexAttribPointer(a_attribute, num, type, false, stride, offset);
-  
+
   gl.enableVertexAttribArray(a_attribute);
   return true;
 }
@@ -309,6 +309,6 @@ function createTextures(images, gl, scene) {
 
   scene.loadedTextures = true;
   if (scene.loadedBuffers) {
-    scene.drawScene(gl); 
+    scene.drawScene(gl);
   }
 }
