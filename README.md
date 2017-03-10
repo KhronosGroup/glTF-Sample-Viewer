@@ -91,14 +91,10 @@ Some Results
 
 Here are some resulting renders from the demo application.
 
-**BoomBox Model**
-
-![](images/BoomBox.JPG)
-
 **Telephone Model**
 
-![](images/Telephone.JPG)
+![](images/Telephone.gif)
 
 **BarramundiFish Model**
 
-![](images/BarramundiFish.JPG)
+![](images/BarramundiFish.gif)
