@@ -195,6 +195,14 @@ function main() {
     scene = updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
   });
   folder.open();
+
+  var tick = function() {
+    animate(roll);
+    scene.drawScene(gl);
+    requestAnimationFrame(tick);
+  };
+  // Uncomment for turntable
+  //tick();
 }
 
 // ***** Mouse Controls ***** //
@@ -243,3 +251,13 @@ function handleWheel(ev, gl, scene) {
   }
   scene.drawScene(gl);
 }
+
+var prev = Date.now();
+function animate(angle) {
+  var curr = Date.now();
+  var elapsed = curr - prev;
+  prev = curr;
+  roll = angle + ((Math.PI / 4.0) * elapsed) / 1000.0;
+}
+
+
