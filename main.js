@@ -22,7 +22,8 @@ function loadCubeMap(gl, envMap, type) {
     mipLevels = 1;
   }
   else {
-    console.log('Invalid type of cubemap loaded\n');
+    var error = document.getElementById('error');
+    error.innerHTML += 'Invalid type of cubemap loaded<br>';
     return -1;
   }
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
@@ -76,8 +77,10 @@ function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix
 
 function main() {
   var canvas = document.getElementById('canvas');
+  var error = document.getElementById('error');
+  error.width = window.innerWidth;
   if (!canvas) {
-    console.log('Failed to retrieve the <canvas> element');
+    error.innerHTML += 'Failed to retrieve the canvas element<br>';
     return;
   }
   canvas.width = window.innerWidth;
@@ -85,7 +88,7 @@ function main() {
 
   var gl = canvas.getContext("webgl");
   if (!gl) {
-    console.log('Failed to get the rendering context for WebGL');
+    error.innerHTML += 'Failed to get the rendering context for WebGL<br>';
     return;
   }
 
@@ -105,9 +108,9 @@ function main() {
   gl.compileShader(vertexShader);
   var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
   if (!compiled) {
-    console.log('Failed to compile vertex shader');
+    error.innerHTML += 'Failed to compile the vertex shader<br>';
     var compilationLog = gl.getShaderInfoLog(vertexShader);
-    console.log('Shader compiler log: ' + compilationLog);
+    error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
   }
 
   var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -117,9 +120,9 @@ function main() {
   gl.compileShader(fragmentShader);
   compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
   if (!compiled) {
-    console.log('Failed to compile fragment shader');
+    error.innerHTML += 'Failed to compile the fragment shader<br>';
     var compilationLog = gl.getShaderInfoLog(fragmentShader);
-    console.log('Shader compiler log: ' + compilationLog);
+    error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
   }
 
   var program = gl.createProgram();

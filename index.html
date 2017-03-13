@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <title>WebGL PBR</title>
     <style>
+      #error {
+        background-color: red;
+      }
+
       #my-info {
         position: absolute;
         right: 0px;
@@ -29,7 +33,8 @@
     </style>
   </head>
 
-  <body style="margin:0; position:fixed" onload="main()">
+  <body style="margin:0; position:fixed; width:100%" onload="main()">
+    <div id="error"></div>
     <canvas id="canvas" width="600" height="600">
       Please use a browser that supports "canvas"
     </canvas>

@@ -46,22 +46,23 @@ class Scene {
   }
 
   initBuffers(gl, gltf) {
+    var error = document.getElementById('error');
     var indexBuffer = gl.createBuffer();
     if (!indexBuffer) {
-      console.log('Failed to create the buffer object');
+      error.innerHTML += 'Failed to create the buffer object<br>';
       return -1;
     }
 
     if (!initArrayBuffer(gl, this.vertices, 3, gl.FLOAT, 'a_Position', this.verticesAccessor.byteStride, this.verticesAccessor.byteOffset)) {
-      console.log('Failed to initialize position buffer');
+      error.innerHTML += 'Failed to initialize position buffer<br>';
     }
 
     if (!initArrayBuffer(gl, this.normals, 3, gl.FLOAT, 'a_Normal', this.normalsAccessor.byteStride, this.normalsAccessor.byteOffset)) {
-      console.log('Failed to initialize normal buffer');
+      error.innerHTML += 'Failed to initialize normal buffer<br>';
     }
 
     if (!initArrayBuffer(gl, this.texcoords, 2, gl.FLOAT, 'a_UV', this.texcoordsAccessor.byteStride, this.texcoordsAccessor.byteOffset)) {
-      console.log('Failed to initialize texture buffer');
+      error.innerHTML += 'Failed to initialize texture buffer<br>';
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -216,7 +217,8 @@ function getAccessorData(scene, gl, gltf, model, accessorName, attribute) {
 function initArrayBuffer(gl, data, num, type, attribute, stride, offset) {
   var buffer = gl.createBuffer();
   if (!buffer) {
-    console.log('Failed to create the buffer object');
+    var error = document.GetElementById('error');
+    error.innerHTML += 'Failed to create the buffer object<br>';
     return -1;
   }
 
