@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 #extension GL_EXT_shader_texture_lod: enable
 #extension GL_OES_standard_derivatives : enable
@@ -17,6 +17,7 @@ uniform vec3 u_Camera;
 uniform vec3 u_BaseColor;
 uniform float u_Metallic;
 uniform float u_Roughness;
+uniform bool u_useTextures;
 uniform bool u_isEmissive;
 uniform bool u_hasAO;
 varying vec4 v_Color;
@@ -26,6 +27,8 @@ varying vec3 v_Normal;
 varying vec3 v_Position;
 
 const float M_PI = 3.141592653589793;
+const float zero = 1E-5;
+const float one = 1.0 - zero;
 
 void main(){
   // Normal Map
@@ -42,14 +45,23 @@ void main(){
   n = normalize(tbn * (2.0 * n - 1.0));
   vec3 v = normalize(u_Camera - v_Position);
   vec3 r = -normalize(reflect(v, n));
-  float NoV = clamp(dot(n, v), 0.0, 1.0);
-  
-  float roughness = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).y, 0.0, 1.0);
-  float metallic = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).x, 0.0, 1.0);
-  vec3 baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
+  float NoV = clamp(dot(n, v), zero, one);
+
+  float roughness, metallic;
+  vec3 baseColor;
+  if (u_useTextures) { 
+    roughness = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).y, zero, one);
+    metallic = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).x, zero, one);
+    baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
+  }
+  else {
+    roughness = u_Roughness;
+    metallic = u_Metallic;
+    baseColor = u_BaseColor;
+  }
   float mipCount = 9.0; // resolution of 512x512
   float lod = (roughness * mipCount);
-  vec3 brdf = texture2D(u_brdfLUT, vec2(NoV, 1.0 - roughness)).rgb;
+  vec3 brdf = texture2D(u_brdfLUT, vec2(NoV, clamp(1.0 - roughness, zero, one))).rgb;
   vec3 diffuseLight = textureCube(u_DiffuseEnvSampler, n).rgb;
   vec3 specularLight = textureCubeLodEXT(u_SpecularEnvSampler, r, lod).rgb;
 
@@ -59,12 +71,12 @@ void main(){
 
   vec3 color = (diffuseLight * diffuseColor) + (specularLight * (specularColor * brdf.x + brdf.y));
   
-  if (u_hasAO) {
+  if (u_hasAO && u_useTextures) {
     vec3 ao = texture2D(u_OcclusionSampler, v_UV).rgb;
     color *= ao;
   }
 
-  if (u_isEmissive) {
+  if (u_isEmissive && u_useTextures) {
     vec3 emissive = texture2D(u_EmissiveSampler, v_UV).rgb;
     color += emissive;
   }

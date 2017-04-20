@@ -75,6 +75,30 @@ function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix
   return scene;
 }
 
+function updateBaseColor(value, gl, scene) {
+  var u_BaseColor = gl.getUniformLocation(gl.program, 'u_BaseColor');
+  gl.uniform3f(u_BaseColor, value[0]/255, value[1]/255, value[2]/255);
+  scene.drawScene(gl);
+}
+
+function updateMetallic(value, gl, scene) {
+  var u_Metallic = gl.getUniformLocation(gl.program, 'u_Metallic');
+  gl.uniform1f(u_Metallic, value);
+  scene.drawScene(gl);
+}
+
+function updateRoughness(value, gl, scene) {
+  var u_Roughness = gl.getUniformLocation(gl.program, 'u_Roughness');
+  gl.uniform1f(u_Roughness, value);
+  scene.drawScene(gl);
+}
+
+function updateUseTextures(value, gl, scene) {
+  var u_useTextures = gl.getUniformLocation(gl.program, 'u_useTextures');
+  gl.uniform1i(u_useTextures, value);
+  scene.drawScene(gl);  
+}
+
 function main() {
   var canvas = document.getElementById('canvas');
   var error = document.getElementById('error');
@@ -176,7 +200,6 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Load scene
-  //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
   var scene = new Scene(gl, "./models/Avocado/glTF/", "./models/Avocado/glTF/Avocado.gltf");
   scene.projectionMatrix = projectionMatrix;
   scene.viewMatrix = viewMatrix;
@@ -192,6 +215,29 @@ function main() {
   // Initialize GUI  
   var gui = new dat.GUI();
   var folder = gui.addFolder("Metallic-Roughness Material");
+  var material = {
+    'Base Color': [180, 180, 180],
+    'Metallic': 0.5,
+    'Roughness': 0.5,
+    'Use Textures': true
+  };
+  
+  folder.addColor(material, 'Base Color').onChange(function(value) {
+    updateBaseColor(value, gl, scene);
+  });
+  folder.add(material, 'Metallic', 0.001, 0.99).onChange(function(value) {
+    updateMetallic(value, gl, scene);
+  });
+  folder.add(material, 'Roughness', 0.001, 0.99).onChange(function(value) {
+    updateRoughness(value, gl, scene);
+  });
+  folder.add(material, 'Use Textures').onChange(function(value) {
+    updateUseTextures(value, gl, scene);
+  });
+  updateBaseColor(material["Base Color"], gl, scene);
+  updateMetallic(material["Metallic"], gl, scene);
+  updateRoughness(material["Roughness"], gl, scene);
+  updateUseTextures(material["Use Textures"], gl, scene);
 
   var text = {Model: "Avocado"};
   folder.add(text, 'Model', ['Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone']).onChange(function(value) {

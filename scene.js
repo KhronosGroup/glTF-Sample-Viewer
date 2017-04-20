@@ -94,7 +94,7 @@ class Scene {
     images.push(normalsSrc);
 
     // brdfLUT
-    var brdfLUT = "textures/brdfLUT.jpg";
+    var brdfLUT = "textures/brdfLUT.png";
     images.push(brdfLUT);
 
     // Emissive
