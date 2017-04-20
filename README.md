@@ -61,7 +61,7 @@ Once we have read in these values and passed them into the fragment shader corre
 
 It is first important to choose a microfacet model to describe how light interacts with a surface. In this project, I use the [Cook-Torrance Model](https://renderman.pixar.com/view/cook-torrance-shader) to compute lighting. However, there is a large difference between doing this based on lights within a scene versus an environment map. With discrete lights, we could just evaluate the BRDF with respect to each light and average the results to obtain the overall color, but this is not ideal if you want a scene to have complex lighting that comes from many sources.
 
-###Environment Maps
+### Environment Maps
 
 This is where environment maps come in! Environement maps can be thought of as a light source that surrounds the entire scene (usually as an encompassing cube or sphere) and contributes to the lighting based on the color and brightness across the entire image. As you might guess, it is extremely inefficient to assess the light contribution to a single point on a surface from every visible point on the environment map. In offline applications, we would typically resort to using importance sampling within the render and just choose a predefined number of samples. However, as described in [Unreal Engine's course notes on real-time PBR](http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf), we can reduce this to a single texture lookup by baking the diffuse and specular irradiance contributions of the environment map into textures. You could do this youself as described in the course notes, but there is also a resource called [IBL Baker](http://www.derkreature.com/iblbaker/) that will create these textures for you. The diffuse irradiance can be stored in a cube map, however, we expect the sharpness of specular reflection to diminish as the roughness of the object increases. Because of this, the different amounts of specular irradiance can be stored in the mip levels of the specular cube map and accessed in the fragment shader based on roughness.
 
@@ -73,15 +73,15 @@ This is where environment maps come in! Environement maps can be thought of as a
 
 ![](textures/papermill/specular/specular_front_0.jpg) ![](textures/papermill/specular/specular_front_1.jpg) ![](textures/papermill/specular/specular_front_2.jpg) ![](textures/papermill/specular/specular_front_3.jpg) ![](textures/papermill/specular/specular_front_4.jpg) ![](textures/papermill/specular/specular_front_5.jpg) ![](textures/papermill/specular/specular_front_6.jpg) ![](textures/papermill/specular/specular_front_7.jpg) ![](textures/papermill/specular/specular_front_8.jpg) ![](textures/papermill/specular/specular_front_9.jpg)
 
-###BRDF
+### BRDF
 At this point, we are able to pick out the diffuse and specular incoming light from our environment map, but we still need to evaluate the BRDF at this point. Instead of doing this computation explicitly, we use a BRDF lookup texture to find the BRDF value based on roughness and the viewing angle. It is important to note that this lookup table changes depending on which microfacet model we use! Since this project uses the Cook-Torrance model, we use the following texture in which the y-axis corresponds to the roughness and the x-axis corresponds to the dot product between the surface normal and viewing vector.
 
 ![](textures/brdfLUT.png)
 
-###Diffuse and Specular Color
+### Diffuse and Specular Color
 We now have the diffuse and specular incoming light and the BRDF, but we need to use all the information we have gathered thus far to actually compute the lighting. Here is where the `metallic` and `baseColor` values come into play. Although the `baseColor` dictates the inherent color of a point on a surface, the `metallic` value tells us how much of the `baseColor` is represented in the final color as diffuse versus specular. For the diffuse color, we do this by interpolating between black and the base color based on the `metallic` value such that the diffuse color is closer to black the more metallic it is. Conversely, for the specular color, we interpolate such that the surface holds more of the `baseColor` the more metallic it is.
 
-###Final Color
+### Final Color
 Finally, we can compute the final color by summing the contributions of diffuse and specular components the color in the following manner:
 
 `finalColor = (diffuseLight + diffuseColor) + (specularLight * (specularColor * brdf.x + brdf.y))`
