@@ -61,6 +61,13 @@ class Scene {
       error.innerHTML += 'Failed to initialize normal buffer<br>';
     }
 
+    if( this.tangentsAccessor )
+    {
+      if (!initArrayBuffer(gl, this.tangents, 4, gl.FLOAT, 'a_Tangent', this.tangentsAccessor.byteStride, this.tangentsAccessor.byteOffset)) {
+        error.innerHTML += 'Failed to initialize tangent buffer<br>';
+      }
+    }
+
     if (!initArrayBuffer(gl, this.texcoords, 2, gl.FLOAT, 'a_UV', this.texcoordsAccessor.byteStride, this.texcoordsAccessor.byteOffset)) {
       error.innerHTML += 'Failed to initialize texture buffer<br>';
     }
@@ -86,12 +93,16 @@ class Scene {
     // Metallic-Roughness
     var mrTexInfo = gltf.textures[pbrMat.metallicRoughnessTexture.index];
     var mrSrc = this.modelPath + gltf.images[mrTexInfo.source].uri;
+    // gltf.samplers[mrTexInfo.sampler].magFilter etc
     images.push(mrSrc);
 
     // Normals
-    var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
-    var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
-    images.push(normalsSrc);
+    if( this.material.normalTexture )
+    {
+      var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
+      var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
+      images.push(normalsSrc);
+    }
 
     // brdfLUT
     var brdfLUT = "textures/brdfLUT.png";
@@ -158,6 +169,8 @@ class Scene {
     if (this.indicesAccessor != null) {
       gl.drawElements(gl.TRIANGLES, this.indicesAccessor.count, gl.UNSIGNED_SHORT, 0);
     }
+
+    this.frontBuffer.drawImage(this.backBuffer, 0, 0);
   }
 }
 
@@ -189,6 +202,9 @@ function getAccessorData(scene, gl, gltf, model, accessorName, attribute) {
         break;
       case "NORMAL": scene.normals = data;
         scene.normalsAccessor = accessor;
+        break;
+      case "TANGENT": scene.tangents = data;
+        scene.tangentsAccessor = accessor;
         break;
       case "TEXCOORD_0": scene.texcoords = data;
         scene.texcoordsAccessor = accessor;
@@ -265,8 +281,8 @@ function createTextures(images, gl, scene) {
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
 

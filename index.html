@@ -8,29 +8,71 @@
         background-color: red;
       }
 
-      #my-info {
+      #pbrMath {
         position: absolute;
-        right: 0px;
-        bottom: 0px;
+        left: 10px;
+        bottom: 10px;
         color: white;
-        height: 30px;
         padding: 15px;
+        font-size: 50px;
       }
 
-      #github-link {
+      #inputs {
         position: absolute;
-        right: 0px;
-        bottom: 50px;
+        left: 10px;
+        bottom: 120px;
         color: white;
-        height: 30px;
         padding: 15px;
+        font-size: 50px;
+      }
+      
+
+      .pbrMathSub {
+        all:unset;
+        padding:0px;
+        font-size: 50px;
+        color: white;
+        display:inline-block;
+        vertical-align: middle;
       }
 
-      #github-link img {
-        height: 100%;
-        float: left;
+      .reset {
+        all:unset;
+        display:inline;
+      }
+
+      .activeComponent {
+        background-color: darkslategray;
+      }
+      .pinnedComponent {
+        background-color: darkslateblue;
+      }
+
+      hr.line {
+        display:block;
+        padding: 0;
+        border: 1px solid;
+        color: white;
+        text-align: center;
+        width:100%;
+        margin:1px;
+      }
+
+      #pixelPicker {
+        position:absolute;
+        right:0px;
+        bottom:0px;
+        color:white;
+        height:30px;
+        padding:10px;
       }
     </style>
+    
+    <script src="libs/dat.gui.min.js"></script>
+    <script src="libs/gl-matrix-min.js"></script>
+    <script src="jquery-3.1.1.js"></script>
+    <script src="scene.js"></script>
+    <script src="main.js"></script>
   </head>
 
   <body style="margin:0; position:fixed; width:100%" onload="main()">
@@ -38,16 +80,28 @@
     <canvas id="canvas" width="600" height="600">
       Please use a browser that supports "canvas"
     </canvas>
-    <p id="my-info" align="right">
-      Mohamad Moneimne<br>University of Pennsylvania
-    </p>
-    <a id="github-link" href="https://github.com/moneimne/WebGL-PBR">
-      <img src="logos/GitHub-Mark-Light-64px.png" />
-    </a>
-    <script src="libs/dat.gui.min.js"></script>
-    <script src="libs/gl-matrix-min.js"></script>
-    <script src="jquery-3.1.1.js"></script>
-    <script src="scene.js"></script>
-    <script src="main.js"></script>
+    <canvas id="canvas2d" width="600" height="600">
+    </canvas>
+    <div style="text-align:center" id="pbrMath">
+      <i>
+      <div class="pbrMathSub" id="mathAll"><i>f</i>(<i>l</i>,<i>v</i>,<i>h</i>) = </div>
+      <div class="pbrMathSub" id="mathDiff">Diff(l,n)</div> + 
+      <div class="pbrMathSub" id="mathSpec">
+        <div class="reset" id="mathF">F(l,h)</div>
+        <div class="reset" id="mathG">G(l,v,h)</div>
+        <div class="reset" id="mathD">D(h)</div>
+        <hr class="line">
+        <div class="reset">4(n*l)(n*v)</div>
+      </div>
+      </i>
+    </div>
+    <div style="text-align:center" id="inputs">
+      <i>
+      <div class="pbrMathSub" id="metallic">metallic</div>
+      <div class="pbrMathSub" id="roughness">roughness</div>
+      </i>
+    </div>
+
+    <div id="pixelPicker">x: y: z:</div>
   </body>
 </html>

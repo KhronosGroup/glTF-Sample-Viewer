@@ -37,6 +37,25 @@
       "byteOffset": 0,
       "componentType": 5126,
       "count": 5500,
+      "type": "VEC4",
+      "max": [
+        1.0,
+        0.9999261,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 5500,
       "type": "VEC3",
       "max": [
         0.183281645,
@@ -50,7 +69,7 @@
       ]
     },
     {
-      "bufferView": 3,
+      "bufferView": 4,
       "byteOffset": 0,
       "componentType": 5123,
       "count": 25920,
@@ -71,32 +90,33 @@
     {
       "buffer": 0,
       "byteOffset": 0,
-      "byteLength": 44000,
-      "target": 34962
+      "byteLength": 44000
     },
     {
       "buffer": 0,
       "byteOffset": 44000,
-      "byteLength": 66000,
-      "target": 34962
+      "byteLength": 66000
     },
     {
       "buffer": 0,
       "byteOffset": 110000,
-      "byteLength": 66000,
-      "target": 34962
+      "byteLength": 88000
     },
     {
       "buffer": 0,
-      "byteOffset": 176000,
-      "byteLength": 51840,
-      "target": 34962
+      "byteOffset": 198000,
+      "byteLength": 66000
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 264000,
+      "byteLength": 51840
     }
   ],
   "buffers": [
     {
       "uri": "Telephone.bin",
-      "byteLength": 227840
+      "byteLength": 315840
     }
   ],
   "extensionsUsed": [
@@ -107,7 +127,7 @@
       "uri": "Telephone_baseColor.png"
     },
     {
-      "uri": "Telephone_metallicRoughness.png"
+      "uri": "Telephone_roughnessMetallic.png"
     },
     {
       "uri": "Telephone_normal.png"
@@ -129,9 +149,10 @@
           "attributes": {
             "TEXCOORD_0": 0,
             "NORMAL": 1,
-            "POSITION": 2
+            "TANGENT": 2,
+            "POSITION": 3
           },
-          "indices": 3,
+          "indices": 4,
           "material": 0,
           "mode": 4
         }

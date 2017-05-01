@@ -66,68 +66,55 @@ function loadCubeMap(gl, envMap, type) {
 }
 
 // Update model from dat.gui change
-function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
+function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix, backBuffer, frontBuffer) {
   scene = new Scene(gl, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
   scene.projectionMatrix = projectionMatrix;
   scene.viewMatrix = viewMatrix;
   scene.u_mvpMatrix = u_mvpMatrix;
   scene.u_NormalMatrix = u_NormalMatrix;
+  scene.backBuffer = backBuffer;
+  scene.frontBuffer = frontBuffer;
   return scene;
-}
-
-function updateBaseColor(value, gl, scene) {
-  var u_BaseColor = gl.getUniformLocation(gl.program, 'u_BaseColor');
-  gl.uniform3f(u_BaseColor, value[0]/255, value[1]/255, value[2]/255);
-  scene.drawScene(gl);
-}
-
-function updateMetallic(value, gl, scene) {
-  var u_Metallic = gl.getUniformLocation(gl.program, 'u_Metallic');
-  gl.uniform1f(u_Metallic, value);
-  scene.drawScene(gl);
-}
-
-function updateRoughness(value, gl, scene) {
-  var u_Roughness = gl.getUniformLocation(gl.program, 'u_Roughness');
-  gl.uniform1f(u_Roughness, value);
-  scene.drawScene(gl);
-}
-
-function updateUseTextures(value, gl, scene) {
-  var u_useTextures = gl.getUniformLocation(gl.program, 'u_useTextures');
-  gl.uniform1i(u_useTextures, value);
-  scene.drawScene(gl);  
 }
 
 function main() {
   var canvas = document.getElementById('canvas');
+  var canvas2d = document.getElementById('canvas2d');
   var error = document.getElementById('error');
   error.width = window.innerWidth;
   if (!canvas) {
     error.innerHTML += 'Failed to retrieve the canvas element<br>';
     return;
   }
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = canvas2d.width = window.innerWidth;
+  canvas.height = canvas2d.height = window.innerHeight;
+  canvas.hidden = true;
 
-  var gl = canvas.getContext("webgl");
+  var gl = canvas.getContext("webgl", {}) || canvas.getContext("experimental-webgl", {});
   if (!gl) {
     error.innerHTML += 'Failed to get the rendering context for WebGL<br>';
     return;
   }
 
+  var ctx2d = canvas2d.getContext("2d");
+
   // Load extensions
-  gl.getExtension('EXT_shader_texture_lod');
+  var lodExt = gl.getExtension('EXT_shader_texture_lod');
   gl.getExtension('OES_standard_derivatives');
 
   // Initialize shaders
   $.ajaxSetup({
     async: false
   });
+
+  var shaderDefines = "#define USE_SAVED_TANGENTS 1\n#define USE_MATHS 1\n#define USE_IBL 1\n";
+  if( lodExt ) {
+    shaderDefines += "#define USE_TEX_LOD\n";
+  }
  
   var vertexShader = gl.createShader(gl.VERTEX_SHADER);
   $.get("./shaders/pbr-vert.glsl", function(response) {
-    gl.shaderSource(vertexShader, response);
+    gl.shaderSource(vertexShader, shaderDefines+response);
   });
   gl.compileShader(vertexShader);
   var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
@@ -139,7 +126,7 @@ function main() {
 
   var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
   $.get("./shaders/pbr-frag.glsl", function(response) {
-    gl.shaderSource(fragmentShader, response);
+    gl.shaderSource(fragmentShader, shaderDefines+response);
   });
   gl.compileShader(fragmentShader);
   compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
@@ -163,8 +150,11 @@ function main() {
   loadCubeMap(gl, envMap, "specular");
 
   // Light
-  var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
-  gl.uniform3f(u_LightPosition, 0.0, 0.0, 1.5);
+  var u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
+  gl.uniform3f(u_LightDirection, 0.0, 0.5, 0.5);
+  var u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
+  gl.uniform3f(u_LightColor, 0.0, 0.5, 0.5);
+
 
   // Camera
   var u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
@@ -190,6 +180,22 @@ function main() {
   // Get location of normal matrix uniform
   var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
 
+  // get scaling stuff
+  var u_scaleDiffSpecAmbient = gl.getUniformLocation(gl.program, 'u_scaleDiffSpecAmbient');
+  var u_scaleFGD = gl.getUniformLocation(gl.program, 'u_scaleFGD');
+
+  var scaleVals = {
+    diff:0.0,
+    spec:0.0,
+    IBL:0.5,
+    F:0.0,
+    G:0.0,
+    D:0.0,
+    metallic:0.0,
+    roughness:0.0,
+    pinned:false
+  }
+
   // Set clear color
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
   
@@ -200,54 +206,146 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Load scene
-  var scene = new Scene(gl, "./models/Avocado/glTF/", "./models/Avocado/glTF/Avocado.gltf");
+  //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
+  //var scene = new Scene(gl, "./models/MetalRoughSpheres/glTF/", "./models/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf");
+  var scene = new Scene(gl, "./models/BoomBox/glTF/", "./models/BoomBox/glTF/BoomBox.gltf")
   scene.projectionMatrix = projectionMatrix;
   scene.viewMatrix = viewMatrix;
   scene.u_mvpMatrix = u_mvpMatrix;
   scene.u_NormalMatrix = u_NormalMatrix;
+  scene.backBuffer = canvas;
+  scene.frontBuffer = ctx2d;
+
+  var redraw = function() {
+    scene.drawScene(gl);
+  }
 
   // Set control callbacks
-  canvas.onmousedown = function(ev) {handleMouseDown(ev);};
+  canvas2d.onmousedown = function(ev) {handleMouseDown(ev);};
   document.onmouseup = function(ev) {handleMouseUp(ev);};
-  document.onmousemove = function(ev) {handleMouseMove(ev, gl, scene);};
-  document.onwheel = function(ev) {handleWheel(ev, gl, scene);};
+  document.onmousemove = function(ev) {handleMouseMove(ev, redraw);};
+  document.onwheel = function(ev) {handleWheel(ev, redraw);};
 
   // Initialize GUI  
   var gui = new dat.GUI();
   var folder = gui.addFolder("Metallic-Roughness Material");
-  var material = {
-    'Base Color': [180, 180, 180],
-    'Metallic': 0.5,
-    'Roughness': 0.5,
-    'Use Textures': true
-  };
-  
-  folder.addColor(material, 'Base Color').onChange(function(value) {
-    updateBaseColor(value, gl, scene);
-  });
-  folder.add(material, 'Metallic', 0.001, 0.99).onChange(function(value) {
-    updateMetallic(value, gl, scene);
-  });
-  folder.add(material, 'Roughness', 0.001, 0.99).onChange(function(value) {
-    updateRoughness(value, gl, scene);
-  });
-  folder.add(material, 'Use Textures').onChange(function(value) {
-    updateUseTextures(value, gl, scene);
-  });
-  updateBaseColor(material["Base Color"], gl, scene);
-  updateMetallic(material["Metallic"], gl, scene);
-  updateRoughness(material["Roughness"], gl, scene);
-  updateUseTextures(material["Use Textures"], gl, scene);
 
-  var text = {Model: "Avocado"};
-  folder.add(text, 'Model', ['Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone']).onChange(function(value) {
-    scene = updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
+  var text = {Model: "BoomBox"};
+  folder.add(text, 'Model', ['MetalRoughSpheres', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone', 'Triangle']).onChange(function(value) {
+    scene = updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix, canvas, ctx2d);
   });
   folder.open();
 
+  var light = gui.addFolder("Directional Light");
+  var lightProps = {lightColor:[255,255,255], lightScale:1.0, lightRotation:75, lightPitch:40 };
+
+  var updateLight = function(value) {
+    gl.uniform3f(u_LightColor, lightProps.lightScale*lightProps.lightColor[0]/255, lightProps.lightScale*lightProps.lightColor[1]/255, lightProps.lightScale*lightProps.lightColor[2]/255);
+    var rot = lightProps.lightRotation * Math.PI / 180;
+    var pitch = lightProps.lightPitch * Math.PI / 180;
+    gl.uniform3f(u_LightDirection, Math.sin(rot)*Math.cos(pitch),
+                                   Math.sin(pitch),
+                                   Math.cos(rot)*Math.cos(pitch));
+    
+    redraw();
+  };
+
+  var updateDir = function(value) {
+    updateLight(value);
+  }
+
+  light.addColor(lightProps, "lightColor").onChange(updateDir);
+  light.add(lightProps, "lightScale", 0, 4).onChange(updateDir);
+  light.add(lightProps, "lightRotation", 0, 360).onChange(updateDir);
+  light.add(lightProps, "lightPitch", -90, 90).onChange(updateDir);
+  
+  light.open();
+
+
+  updateLight();
+
+  //mouseover scaling
+  var updateMathScales = function(v) {
+    var sEl = scaleVals.pinnedElement;
+    gl.uniform4f(u_scaleDiffSpecAmbient, sEl=="#mathDiff"?1.0:0.0, sEl=="#mathSpec"?1.0:0.0, scaleVals.IBL, sEl=="#metallic"?1.0:0.0);
+    gl.uniform4f(u_scaleFGD, sEl=="#mathF"?1.0:0.0, sEl=="#mathG"?1.0:0.0, sEl=="#mathD"?1.0:0.0, sEl=="#roughness"?1.0:0.0);
+    
+    //gl.uniform4f(u_scaleDiffSpecAmbient, scaleVals.diff, scaleVals.spec, scaleVals.IBL, scaleVals.metallic);
+    //gl.uniform4f(u_scaleFGD, scaleVals.F, scaleVals.G, scaleVals.D, scaleVals.roughness);
+    redraw();
+  }
+
+  gui.add(scaleVals, "IBL", 0., 1.).onChange(updateMathScales);
+
+  var createMouseOverScale = function() {
+    var localArgs = arguments;
+    var el = $(localArgs[0]);
+    el.hover(
+      function(ev) {
+        if(!scaleVals.pinned)
+        {
+          scaleVals.pinnedElement = localArgs[0];
+          el.addClass("activeComponent");
+          updateMathScales();
+        }
+      },
+      function(ev) {
+        if(!scaleVals.pinned)
+        {
+          scaleVals.pinnedElement = null;
+          el.removeClass("activeComponent");
+          updateMathScales();
+        }
+      });
+    
+    el.click(
+      function(ev) {
+        if( scaleVals.pinned && scaleVals.pinnedElement) {
+          scaleVals.pinnedElement = null;
+          $(scaleVals.pinnedElement).removeClass("pinnedComponent");
+        }
+        else {
+          scaleVals.pinnedElement = localArgs[0];
+          el.removeClass("activeComponent");
+          el.addClass("pinnedComponent");
+        }
+        scaleVals.pinned = !scaleVals.pinned;
+
+        ev.stopPropagation();
+      }
+    )
+  }
+
+  createMouseOverScale('#mathDiff', 'diff');
+  createMouseOverScale('#mathSpec', 'spec');
+  createMouseOverScale('#mathF', 'F');
+  createMouseOverScale('#mathG', 'G');
+  createMouseOverScale('#mathD', 'D');
+  createMouseOverScale("#metallic", "metallic");
+  createMouseOverScale("#roughness", "roughness");
+
+  $("#pbrMath").click(function(ev) {
+        if( scaleVals.pinned && scaleVals.pinnedElement) {
+          $(scaleVals.pinnedElement).removeClass("pinnedComponent");
+        }
+        scaleVals.pinned = false;
+  });
+
+  updateMathScales();
+
+  // picker
+  $(canvas2d).mousemove(function(e) {
+    var pos = $(canvas2d).position();
+    var x = e.pageX - pos.left;
+    var y = e.pageY - pos.top;
+    var coord = "x=" + x + ", y=" + y;
+    var p = ctx2d.getImageData(x, y, 1, 1).data; 
+    $('#pixelPicker').html("r: "+p[0]+" g: "+p[1]+" b: "+p[2]+"<br>r: "+(p[0]/255.).toFixed(2)+" g: "+(p[1]/255.).toFixed(2)+" b: "+(p[2]/255.).toFixed(2));
+  });
+
   var tick = function() {
     animate(roll);
-    scene.drawScene(gl);
+    redraw();
     requestAnimationFrame(tick);
   };
   // Uncomment for turntable
@@ -271,7 +369,7 @@ function handleMouseUp(ev) {
   mouseDown = false;
 }
 
-function handleMouseMove(ev, gl, scene) {
+function handleMouseMove(ev, redraw) {
   if (!mouseDown) {
     return;
   }
@@ -287,10 +385,10 @@ function handleMouseMove(ev, gl, scene) {
   lastMouseX = newX;
   lastMouseY = newY;
 
-  scene.drawScene(gl);
+  redraw();
 }
 
-function handleWheel(ev, gl, scene) {
+function handleWheel(ev, redraw) {
   ev.preventDefault();
   if (ev.wheelDelta > 0) {
     translate += 0.04;
@@ -298,7 +396,8 @@ function handleWheel(ev, gl, scene) {
   else {
     translate -= 0.04;
   }
-  scene.drawScene(gl);
+
+  redraw();
 }
 
 var prev = Date.now();
