@@ -269,9 +269,7 @@ function main() {
     var sEl = scaleVals.pinnedElement;
     gl.uniform4f(u_scaleDiffSpecAmbient, sEl=="#mathDiff"?1.0:0.0, sEl=="#mathSpec"?1.0:0.0, scaleVals.IBL, sEl=="#metallic"?1.0:0.0);
     gl.uniform4f(u_scaleFGD, sEl=="#mathF"?1.0:0.0, sEl=="#mathG"?1.0:0.0, sEl=="#mathD"?1.0:0.0, sEl=="#roughness"?1.0:0.0);
-    
-    //gl.uniform4f(u_scaleDiffSpecAmbient, scaleVals.diff, scaleVals.spec, scaleVals.IBL, scaleVals.metallic);
-    //gl.uniform4f(u_scaleFGD, scaleVals.F, scaleVals.G, scaleVals.D, scaleVals.roughness);
+
     redraw();
   }
 

@@ -77,12 +77,12 @@ float microfacetSmithGGX(float NdotL, float NdotV, float roughness)
   float NdotV2 = NdotV * NdotV;
   float v = ( -1. + sqrt ( roughness * (1. - NdotL2 ) / NdotL2 + 1.)) * 0.5;
   float l = ( -1. + sqrt ( roughness * (1. - NdotV2 ) / NdotV2 + 1.)) * 0.5;
-  return (1. / max((1. + v + l ),0.01));
+  return (1. / max((1. + v + l ),0.000001));
 }
 
 // spectre G
-float SmithVisibilityG1_TrowbridgeReitzGGX(float Ndotv, float alphaG){
-	float tanSquared = (1.0 - Ndotv * Ndotv) / (Ndotv * Ndotv);
+float SmithVisibilityG1_TrowbridgeReitzGGX(float NdotV, float alphaG){
+	float tanSquared = (1.0 - NdotV * NdotV) / max((NdotV * NdotV),0.00001);
 
 	return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));
 }
