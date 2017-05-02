@@ -224,8 +224,8 @@ function main() {
     var el = scaleVals.pinnedElement?scaleVals.pinnedElement:scaleVals.activeElement;
     var elId = el?el.attr('id'):null;
 
-    gl.shadowState['u_scaleDiffSpecAmbient'].vals = [elId=="#mathDiff"?1.0:0.0, elId=="#mathSpec"?1.0:0.0, scaleVals.IBL, elId=="#metallic"?1.0:0.0];
-    gl.shadowState['u_scaleFGD'] = [elId=="#mathF"?1.0:0.0, elId=="#mathG"?1.0:0.0, elId=="#mathD"?1.0:0.0, elId=="#roughness"?1.0:0.0];
+    gl.shadowState['u_scaleDiffSpecAmbient'].vals = [elId=="mathDiff"?1.0:0.0, elId=="mathSpec"?1.0:0.0, scaleVals.IBL, elId=="metallic"?1.0:0.0];
+    gl.shadowState['u_scaleFGD'].vals = [elId=="mathF"?1.0:0.0, elId=="mathG"?1.0:0.0, elId=="mathD"?1.0:0.0, elId=="roughness"?1.0:0.0];
 
     redraw();
   }
