@@ -23,6 +23,8 @@ uniform sampler2D u_EmissiveSampler;
 #endif
 #ifdef HAS_METALROUGHNESSMAP 
 uniform sampler2D u_MetallicRoughnessSampler;
+#else
+uniform vec2 u_MetallicRoughnessValues;
 #endif
 #ifdef HAS_OCCLUSIONMAP 
 uniform sampler2D u_OcclusionSampler;
@@ -171,8 +173,8 @@ void main() {
   float roughness = clamp(mrSample.g, 0.0005, 1.0);
   float metallic = clamp(mrSample.b, 0.0, 1.0);
   #else
-  float roughness = 0.0005;
-  float metallic = 0.0;
+  float roughness = u_MetallicRoughnessValues.y;
+  float metallic = u_MetallicRoughnessValues.x;
   #endif
 
   #ifdef HAS_BASECOLORMAP 
@@ -258,4 +260,5 @@ void main() {
   gl_FragColor = vec4(color, 1.0);
   //gl_FragColor = vec4(h * 0.5 + 0.5, 1.0);
   //gl_FragColor = vec4(NdotH, NdotH, NdotH, 1.0);
+  //gl_FragColor = vec4(specularLight, 1.0);
 }

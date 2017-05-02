@@ -64,8 +64,6 @@ class Scene {
       var indicesAccessor = primitive.indices;
       getAccessorData(this, gl, gltf, model, indicesAccessor, "INDEX");
 
-      
-
       loadImages(this.imageUris, createTextures, gl, this);
     }
   }
@@ -192,6 +190,14 @@ class Scene {
       // gltf.samplers[mrTexInfo.sampler].magFilter etc
       this.imageUris.push(mrSrc);
       this.defines.HAS_METALROUGHNESSMAP = 1;
+      if( gl.shadowState['u_MetallicRoughnessValues'] ) {
+        delete gl.shadowState['u_MetallicRoughnessValues'];
+      }
+    }
+    else {
+      var metallic = pbrMat.metallicFactor!=null?pbrMat.metallicFactor:1.0;
+      var roughness = pbrMat.roughnessFactor!=null?pbrMat.roughnessFactor:1.0;
+      gl.shadowState['u_MetallicRoughnessValues'] = {'funcName':'uniform2f','vals':[metallic, roughness]}
     }
 
     // Normals

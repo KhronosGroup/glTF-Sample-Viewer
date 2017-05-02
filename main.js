@@ -160,7 +160,7 @@ function main() {
   // Load scene
   //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
   //var scene = new Scene(gl, "./models/MetalRoughSpheres/glTF/", "./models/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf");
-  scene = updateModel("BoomBox", gl, viewMatrix, projectionMatrix, canvas, ctx2d);
+  scene = updateModel("Morph", gl, viewMatrix, projectionMatrix, canvas, ctx2d);
 
   // Set clear color
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
