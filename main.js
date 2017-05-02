@@ -172,7 +172,10 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   var redraw = function() {
+    
+    window.requestAnimationFrame(function() {
     scene.drawScene(gl);
+    })
   }
 
   // Set control callbacks
