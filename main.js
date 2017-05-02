@@ -217,7 +217,10 @@ function main() {
   scene.frontBuffer = ctx2d;
 
   var redraw = function() {
+    
+    window.requestAnimationFrame(function() {
     scene.drawScene(gl);
+    })
   }
 
   // Set control callbacks
