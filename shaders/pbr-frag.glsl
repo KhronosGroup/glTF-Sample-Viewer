@@ -5,29 +5,45 @@ precision highp float;
 
 uniform vec3 u_LightDirection;
 uniform vec3 u_LightColor;
+
+#ifdef USE_IBL 
 uniform samplerCube u_DiffuseEnvSampler;
 uniform samplerCube u_SpecularEnvSampler;
-uniform samplerCube u_EnvSampler;
 uniform sampler2D u_brdfLUT;
+#endif
+
+#ifdef HAS_BASECOLORMAP 
 uniform sampler2D u_BaseColorSampler;
+#endif
+#ifdef HAS_NORMALMAP 
 uniform sampler2D u_NormalSampler;
+#endif
+#ifdef HAS_EMISSIVEMAP 
 uniform sampler2D u_EmissiveSampler;
+#endif
+#ifdef HAS_METALROUGHNESSMAP 
 uniform sampler2D u_MetallicRoughnessSampler;
+#endif
+#ifdef HAS_OCCLUSIONMAP 
 uniform sampler2D u_OcclusionSampler;
+#endif
+
 uniform vec3 u_Camera;
-uniform bool u_isEmissive;
-uniform bool u_hasAO;
 uniform vec4 u_scaleDiffSpecAmbient;
 uniform vec4 u_scaleFGD;
-varying vec4 v_Color;
+
+varying vec3 v_Position;
+
 varying vec2 v_UV;
-#ifdef GENERATE_DERIVATIVE_TANGENTS
+
+#ifdef HAS_NORMALS 
+#ifdef HAS_TANGENTS 
+varying mat3 v_TBN;
+#else
 varying vec3 v_Normal; 
 #endif
-#ifdef USE_SAVED_TANGENTS
-varying mat3 v_TBN;
 #endif
-varying vec3 v_Position;
+
 
 const float M_PI = 3.141592653589793;
 
@@ -109,26 +125,36 @@ float NormalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG){
 }
 
 
-void main(){
+void main() {
+
   // Normal Map
-  #ifdef GENERATE_DERIVATIVE_TANGENTS
-  vec3 ng = normalize(v_Normal);
+  #ifndef HAS_TANGENTS
   vec3 pos_dx = dFdx(v_Position);
   vec3 pos_dy = dFdy(v_Position);
   vec3 tex_dx = dFdx(vec3(v_UV, 0.0));
   vec3 tex_dy = dFdy(vec3(v_UV, 0.0));
   vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
+
+  #ifdef HAS_NORMALS 
+  vec3 ng = normalize(v_Normal);
+  #else
+  vec3 ng = cross(pos_dx, pos_dy);
+  #endif
+
   t = normalize(t - ng * dot(ng, t));
   vec3 b = normalize(cross(ng, t));
   mat3 tbn = mat3(t, b, ng);
-  #endif
-
-  #ifdef USE_SAVED_TANGENTS
+  #else // HAS_TANGENTS && HAS_NORMALS
   mat3 tbn = v_TBN;
   #endif
 
+  #ifdef HAS_NORMALMAP 
   vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
   n = normalize(tbn * (2.0 * n - 1.0));
+  #else
+  vec3 n = tbn[2].xyz;
+  #endif
+
   vec3 v = normalize(u_Camera - v_Position);
   vec3 l = normalize(u_LightDirection);
   vec3 h = normalize(l+v);
@@ -140,9 +166,20 @@ void main(){
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
   
-  float roughness = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).g, 0.0005, 1.0);
-  float metallic = clamp(texture2D(u_MetallicRoughnessSampler, v_UV).b, 0.0, 1.0);
+  #ifdef HAS_METALROUGHNESSMAP 
+  vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
+  float roughness = clamp(mrSample.g, 0.0005, 1.0);
+  float metallic = clamp(mrSample.b, 0.0, 1.0);
+  #else
+  float roughness = 0.0005;
+  float metallic = 0.0;
+  #endif
+
+  #ifdef HAS_BASECOLORMAP 
   vec3 baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
+  #else
+  vec3 baseColor = vec3(1.0, 1.0, 1.0);
+  #endif
 
   vec3 f0 = vec3(0.04);
   // is this the same? test! 
@@ -151,7 +188,7 @@ void main(){
   vec3 specularColor = mix(f0, baseColor, metallic);
 
 
-  #ifdef USE_MATHS
+  #ifdef USE_MATHS 
   //vec3 diffuseContrib = max(NdotL,0.) * u_LightColor * diffuseColor;
   vec3 diffuseContrib = disneyDiffuse(NdotL, NdotV, LdotH, roughness, diffuseColor) * NdotL * u_LightColor;
 
@@ -177,13 +214,13 @@ void main(){
   vec3 color = (diffuseContrib + specContrib);
   #endif
 
-  #ifdef USE_IBL
+  #ifdef USE_IBL 
   float mipCount = 9.0; // resolution of 512x512
   float lod = (roughness * mipCount);
   vec3 brdf = texture2D(u_brdfLUT, vec2(NdotV, 1.0 - roughness)).rgb;
   vec3 diffuseLight = textureCube(u_DiffuseEnvSampler, n).rgb;
 
-  #ifdef USE_TEX_LOD
+  #ifdef USE_TEX_LOD 
   vec3 specularLight = textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod).rgb;
   #else
   vec3 specularLight = textureCube(u_SpecularEnvSampler, reflection).rgb;
@@ -194,17 +231,17 @@ void main(){
   color += IBLcolor * u_scaleDiffSpecAmbient.z;
   #endif
   
-  if (u_hasAO) {
+  #ifdef HAS_OCCLUSIONMAP 
     float ao = texture2D(u_OcclusionSampler, v_UV).r;
     color *= ao;
-  }
+  #endif
 
-  if (u_isEmissive) {
+  #ifdef HAS_EMISSIVEMAP 
     vec3 emissive = texture2D(u_EmissiveSampler, v_UV).rgb;
     color += emissive;
-  }
+  #endif
 
-  #ifdef USE_MATHS
+  #ifdef USE_MATHS 
   // mix in overrides
   color = mix(color, diffuseContrib, u_scaleDiffSpecAmbient.x);
   color = mix(color, specContrib, u_scaleDiffSpecAmbient.y);
@@ -221,5 +258,4 @@ void main(){
   gl_FragColor = vec4(color, 1.0);
   //gl_FragColor = vec4(h * 0.5 + 0.5, 1.0);
   //gl_FragColor = vec4(NdotH, NdotH, NdotH, 1.0);
-  //gl_FragColor = vec4(specularEnvironmentR0, 1.0);
 }

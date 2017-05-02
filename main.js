@@ -1,23 +1,24 @@
 function loadCubeMap(gl, envMap, type) { 
   var texture = gl.createTexture();
   var textureNumber = -1;
+  var activeTextureEnum = gl.TEXTURE0;
   var mipLevels = 0;
-  var u_EnvSampler;
+  var uniformName = 'u_EnvSampler';
   if (type === "diffuse") {
-    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_DiffuseEnvSampler');
-    gl.activeTexture(gl.TEXTURE1);
+    uniformName = 'u_DiffuseEnvSampler';
+    activeTextureEnum = gl.TEXTURE1;
     textureNumber = 1;
     mipLevels = 1;
   }
   else if (type === "specular") {
-    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_SpecularEnvSampler');
-    gl.activeTexture(gl.TEXTURE2);
+    uniformName = 'u_SpecularEnvSampler';
+    activeTextureEnum = gl.TEXTURE2;
     textureNumber = 2;
     mipLevels = 10;
   }
   else if (type === "environment") {
-    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_EnvSampler');
-    gl.activeTexture(gl.TEXTURE0);
+    uniformName= 'u_EnvSampler';
+    activeTextureEnum = gl.TEXTURE0;
     textureNumber = 0;
     mipLevels = 1;
   }
@@ -26,6 +27,7 @@ function loadCubeMap(gl, envMap, type) {
     error.innerHTML += 'Invalid type of cubemap loaded<br>';
     return -1;
   }
+  gl.activeTexture(activeTextureEnum);
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -52,6 +54,7 @@ function loadCubeMap(gl, envMap, type) {
       var image = new Image();
       image.onload = function(texture, face, image, j) {
         return function() {
+          gl.activeTexture(activeTextureEnum);
           gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
           gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
           gl.texImage2D(face, j, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
@@ -61,17 +64,16 @@ function loadCubeMap(gl, envMap, type) {
     }
   }
 
-  gl.uniform1i(u_EnvSampler, textureNumber);
+  gl.shadowState[uniformName] = {'funcName':'uniform1i', 'vals':[textureNumber]};
   return 1;
 }
 
 // Update model from dat.gui change
-function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix, backBuffer, frontBuffer) {
+function updateModel(value, gl,  viewMatrix, projectionMatrix, backBuffer, frontBuffer) {
   scene = new Scene(gl, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
+  scene.rebindState(gl);
   scene.projectionMatrix = projectionMatrix;
   scene.viewMatrix = viewMatrix;
-  scene.u_mvpMatrix = u_mvpMatrix;
-  scene.u_NormalMatrix = u_NormalMatrix;
   scene.backBuffer = backBuffer;
   scene.frontBuffer = frontBuffer;
   return scene;
@@ -99,7 +101,7 @@ function main() {
   var ctx2d = canvas2d.getContext("2d");
 
   // Load extensions
-  var lodExt = gl.getExtension('EXT_shader_texture_lod');
+  gl.hasLodExt = gl.getExtension('EXT_shader_texture_lod');
   gl.getExtension('OES_standard_derivatives');
 
   // Initialize shaders
@@ -107,58 +109,24 @@ function main() {
     async: false
   });
 
-  var shaderDefines = "#define USE_SAVED_TANGENTS 1\n#define USE_MATHS 1\n#define USE_IBL 1\n";
-  if( lodExt ) {
-    shaderDefines += "#define USE_TEX_LOD\n";
-  }
- 
-  var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  $.get("./shaders/pbr-vert.glsl", function(response) {
-    gl.shaderSource(vertexShader, shaderDefines+response);
-  });
-  gl.compileShader(vertexShader);
-  var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
-  if (!compiled) {
-    error.innerHTML += 'Failed to compile the vertex shader<br>';
-    var compilationLog = gl.getShaderInfoLog(vertexShader);
-    error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
-  }
-
-  var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  $.get("./shaders/pbr-frag.glsl", function(response) {
-    gl.shaderSource(fragmentShader, shaderDefines+response);
-  });
-  gl.compileShader(fragmentShader);
-  compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
-  if (!compiled) {
-    error.innerHTML += 'Failed to compile the fragment shader<br>';
-    var compilationLog = gl.getShaderInfoLog(fragmentShader);
-    error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
-  }
-
-  var program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  gl.useProgram(program);
-  gl.program = program;
+  gl.shadowState = {};
 
   // Create cube maps
   var envMap = "papermill";
   //loadCubeMap(gl, envMap, "environment");
   loadCubeMap(gl, envMap, "diffuse");
   loadCubeMap(gl, envMap, "specular");
+  // Get location of mvp matrix uniform
+  gl.shadowState['u_mvpMatrix'] = {'funcName':'uniformMatrix4fv'};
+  // Get location of normal matrix uniform
+  gl.shadowState['u_NormalMatrix'] = {'funcName':'uniformMatrix4fv'};
 
   // Light
-  var u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
-  gl.uniform3f(u_LightDirection, 0.0, 0.5, 0.5);
-  var u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
-  gl.uniform3f(u_LightColor, 0.0, 0.5, 0.5);
-
+  gl.shadowState['u_LightDirection'] = {'funcName':'uniform3f', 'vals':[0.0, 0.5, 0.5]};
+  gl.shadowState['u_LightColor'] = {'funcName':'uniform3f', 'vals':[1.0, 1.0, 1.0]};
 
   // Camera
-  var u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
-  gl.uniform3f(u_Camera, 0.0, 0.0, -4.0);
+  gl.shadowState['u_Camera'] = {'funcName':'uniform3f', vals:[0.0, 0.0, -4.0]};
 
   // Model matrix
   var modelMatrix = mat4.create();
@@ -174,15 +142,9 @@ function main() {
   var projectionMatrix = mat4.create();
   mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.01, 100.0);
 
-  // Get location of mvp matrix uniform
-  var u_mvpMatrix = gl.getUniformLocation(gl.program, 'u_mvpMatrix');
-
-  // Get location of normal matrix uniform
-  var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-
   // get scaling stuff
-  var u_scaleDiffSpecAmbient = gl.getUniformLocation(gl.program, 'u_scaleDiffSpecAmbient');
-  var u_scaleFGD = gl.getUniformLocation(gl.program, 'u_scaleFGD');
+  gl.shadowState['u_scaleDiffSpecAmbient'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
+  gl.shadowState['u_scaleFGD'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
 
   var scaleVals = {
     diff:0.0,
@@ -192,9 +154,13 @@ function main() {
     G:0.0,
     D:0.0,
     metallic:0.0,
-    roughness:0.0,
-    pinned:false
+    roughness:0.0
   }
+
+  // Load scene
+  //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
+  //var scene = new Scene(gl, "./models/MetalRoughSpheres/glTF/", "./models/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf");
+  scene = updateModel("BoomBox", gl, viewMatrix, projectionMatrix, canvas, ctx2d);
 
   // Set clear color
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
@@ -204,17 +170,6 @@ function main() {
 
   // Clear canvas
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  // Load scene
-  //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
-  //var scene = new Scene(gl, "./models/MetalRoughSpheres/glTF/", "./models/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf");
-  var scene = new Scene(gl, "./models/BoomBox/glTF/", "./models/BoomBox/glTF/BoomBox.gltf")
-  scene.projectionMatrix = projectionMatrix;
-  scene.viewMatrix = viewMatrix;
-  scene.u_mvpMatrix = u_mvpMatrix;
-  scene.u_NormalMatrix = u_NormalMatrix;
-  scene.backBuffer = canvas;
-  scene.frontBuffer = ctx2d;
 
   var redraw = function() {
     scene.drawScene(gl);
@@ -230,9 +185,10 @@ function main() {
   var gui = new dat.GUI();
   var folder = gui.addFolder("Metallic-Roughness Material");
 
+  
   var text = {Model: "BoomBox"};
-  folder.add(text, 'Model', ['MetalRoughSpheres', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone', 'Triangle']).onChange(function(value) {
-    scene = updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix, canvas, ctx2d);
+  folder.add(text, 'Model', ['MetalRoughSpheres', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone', 'Triangle', 'Morph']).onChange(function(value) {
+    scene = updateModel(value, gl, viewMatrix, projectionMatrix, canvas, ctx2d);
   });
   folder.open();
 
@@ -240,24 +196,23 @@ function main() {
   var lightProps = {lightColor:[255,255,255], lightScale:1.0, lightRotation:75, lightPitch:40 };
 
   var updateLight = function(value) {
-    gl.uniform3f(u_LightColor, lightProps.lightScale*lightProps.lightColor[0]/255, lightProps.lightScale*lightProps.lightColor[1]/255, lightProps.lightScale*lightProps.lightColor[2]/255);
+    gl.shadowState['u_LightColor'].vals = [ lightProps.lightScale*lightProps.lightColor[0]/255,
+                                            lightProps.lightScale*lightProps.lightColor[1]/255,
+                                            lightProps.lightScale*lightProps.lightColor[2]/255 ];
+
     var rot = lightProps.lightRotation * Math.PI / 180;
     var pitch = lightProps.lightPitch * Math.PI / 180;
-    gl.uniform3f(u_LightDirection, Math.sin(rot)*Math.cos(pitch),
-                                   Math.sin(pitch),
-                                   Math.cos(rot)*Math.cos(pitch));
+    gl.shadowState['u_LightDirection'].vals = [Math.sin(rot)*Math.cos(pitch),
+                                                Math.sin(pitch),
+                                                Math.cos(rot)*Math.cos(pitch)];
     
     redraw();
   };
 
-  var updateDir = function(value) {
-    updateLight(value);
-  }
-
-  light.addColor(lightProps, "lightColor").onChange(updateDir);
-  light.add(lightProps, "lightScale", 0, 4).onChange(updateDir);
-  light.add(lightProps, "lightRotation", 0, 360).onChange(updateDir);
-  light.add(lightProps, "lightPitch", -90, 90).onChange(updateDir);
+  light.addColor(lightProps, "lightColor").onChange(updateLight);
+  light.add(lightProps, "lightScale", 0, 4).onChange(updateLight);
+  light.add(lightProps, "lightRotation", 0, 360).onChange(updateLight);
+  light.add(lightProps, "lightPitch", -90, 90).onChange(updateLight);
   
   light.open();
 
@@ -266,49 +221,72 @@ function main() {
 
   //mouseover scaling
   var updateMathScales = function(v) {
-    var sEl = scaleVals.pinnedElement;
-    gl.uniform4f(u_scaleDiffSpecAmbient, sEl=="#mathDiff"?1.0:0.0, sEl=="#mathSpec"?1.0:0.0, scaleVals.IBL, sEl=="#metallic"?1.0:0.0);
-    gl.uniform4f(u_scaleFGD, sEl=="#mathF"?1.0:0.0, sEl=="#mathG"?1.0:0.0, sEl=="#mathD"?1.0:0.0, sEl=="#roughness"?1.0:0.0);
+    var el = scaleVals.pinnedElement?scaleVals.pinnedElement:scaleVals.activeElement;
+    var elId = el?el.attr('id'):null;
+
+    gl.shadowState['u_scaleDiffSpecAmbient'].vals = [elId=="#mathDiff"?1.0:0.0, elId=="#mathSpec"?1.0:0.0, scaleVals.IBL, elId=="#metallic"?1.0:0.0];
+    gl.shadowState['u_scaleFGD'] = [elId=="#mathF"?1.0:0.0, elId=="#mathG"?1.0:0.0, elId=="#mathD"?1.0:0.0, elId=="#roughness"?1.0:0.0];
 
     redraw();
   }
 
   gui.add(scaleVals, "IBL", 0., 1.).onChange(updateMathScales);
 
+  var setActiveComponent = function(el) {
+    if( scaleVals.activeElement ) {
+      scaleVals.activeElement.removeClass("activeComponent");
+    }
+    if( el && !scaleVals.pinnedElement ) {
+      el.addClass("activeComponent");
+    }
+    scaleVals.activeElement = el;
+
+    if(!scaleVals.pinnedElement) {
+      updateMathScales();
+    }
+  }
+
+  var setPinnedComponent = function(el) {
+    if( scaleVals.activeElement ) {
+      if( el ) {
+        scaleVals.activeElement.removeClass("activeComponent");
+      }
+      else {
+        scaleVals.activeElement.addClass("activeComponent");
+      }
+    }
+
+    if( scaleVals.pinnedElement ) {
+      scaleVals.pinnedElement.removeClass("pinnedComponent");
+    }
+    if( el ) {
+      el.addClass("pinnedComponent");
+    }
+
+    scaleVals.pinnedElement = el;
+
+    updateMathScales();
+  }
+
   var createMouseOverScale = function() {
     var localArgs = arguments;
     var el = $(localArgs[0]);
     el.hover(
       function(ev) {
-        if(!scaleVals.pinned)
-        {
-          scaleVals.pinnedElement = localArgs[0];
-          el.addClass("activeComponent");
-          updateMathScales();
-        }
+        setActiveComponent(el);
       },
       function(ev) {
-        if(!scaleVals.pinned)
-        {
-          scaleVals.pinnedElement = null;
-          el.removeClass("activeComponent");
-          updateMathScales();
-        }
+        setActiveComponent(null);
       });
     
     el.click(
       function(ev) {
-        if( scaleVals.pinned && scaleVals.pinnedElement) {
-          scaleVals.pinnedElement = null;
-          $(scaleVals.pinnedElement).removeClass("pinnedComponent");
+        if( scaleVals.pinnedElement) {
+          setPinnedComponent(null);
         }
         else {
-          scaleVals.pinnedElement = localArgs[0];
-          el.removeClass("activeComponent");
-          el.addClass("pinnedComponent");
+          setPinnedComponent(el);
         }
-        scaleVals.pinned = !scaleVals.pinned;
-
         ev.stopPropagation();
       }
     )
