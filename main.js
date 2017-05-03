@@ -1,4 +1,4 @@
-function loadCubeMap(gl, envMap, type) { 
+function loadCubeMap(gl, envMap, type, state) { 
   var texture = gl.createTexture();
   var textureNumber = -1;
   var activeTextureEnum = gl.TEXTURE0;
@@ -64,13 +64,13 @@ function loadCubeMap(gl, envMap, type) {
     }
   }
 
-  gl.shadowState[uniformName] = {'funcName':'uniform1i', 'vals':[textureNumber]};
+  state[uniformName] = {'funcName':'uniform1i', 'vals':[textureNumber]};
   return 1;
 }
 
 // Update model from dat.gui change
-function updateModel(value, gl,  viewMatrix, projectionMatrix, backBuffer, frontBuffer) {
-  scene = new Scene(gl, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
+function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffer, frontBuffer) {
+  scene = new Scene(gl, glState, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
   scene.rebindState(gl);
   scene.projectionMatrix = projectionMatrix;
   scene.viewMatrix = viewMatrix;
@@ -102,31 +102,32 @@ function main() {
 
   // Load extensions
   gl.hasLodExt = gl.getExtension('EXT_shader_texture_lod');
-  gl.getExtension('OES_standard_derivatives');
+  gl.hasDerivativesExt = gl.getExtension('OES_standard_derivatives');
+  gl.hasSRGBExt = gl.getExtension('EXT_SRGB');
 
   // Initialize shaders
   $.ajaxSetup({
     async: false
   });
 
-  gl.shadowState = {};
+  glState = {};
 
   // Create cube maps
   var envMap = "papermill";
   //loadCubeMap(gl, envMap, "environment");
-  loadCubeMap(gl, envMap, "diffuse");
-  loadCubeMap(gl, envMap, "specular");
+  loadCubeMap(gl, envMap, "diffuse", glState);
+  loadCubeMap(gl, envMap, "specular", glState);
   // Get location of mvp matrix uniform
-  gl.shadowState['u_mvpMatrix'] = {'funcName':'uniformMatrix4fv'};
+  glState['u_mvpMatrix'] = {'funcName':'uniformMatrix4fv'};
   // Get location of normal matrix uniform
-  gl.shadowState['u_NormalMatrix'] = {'funcName':'uniformMatrix4fv'};
+  glState['u_NormalMatrix'] = {'funcName':'uniformMatrix4fv'};
 
   // Light
-  gl.shadowState['u_LightDirection'] = {'funcName':'uniform3f', 'vals':[0.0, 0.5, 0.5]};
-  gl.shadowState['u_LightColor'] = {'funcName':'uniform3f', 'vals':[1.0, 1.0, 1.0]};
+  glState['u_LightDirection'] = {'funcName':'uniform3f', 'vals':[0.0, 0.5, 0.5]};
+  glState['u_LightColor'] = {'funcName':'uniform3f', 'vals':[1.0, 1.0, 1.0]};
 
   // Camera
-  gl.shadowState['u_Camera'] = {'funcName':'uniform3f', vals:[0.0, 0.0, -4.0]};
+  glState['u_Camera'] = {'funcName':'uniform3f', vals:[0.0, 0.0, -4.0]};
 
   // Model matrix
   var modelMatrix = mat4.create();
@@ -143,24 +144,14 @@ function main() {
   mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.01, 100.0);
 
   // get scaling stuff
-  gl.shadowState['u_scaleDiffSpecAmbient'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
-  gl.shadowState['u_scaleFGD'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
-
-  var scaleVals = {
-    diff:0.0,
-    spec:0.0,
-    IBL:0.5,
-    F:0.0,
-    G:0.0,
-    D:0.0,
-    metallic:0.0,
-    roughness:0.0
-  }
+  glState['u_scaleDiffBaseMR'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
+  glState['u_scaleFGDSpec'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
+  glState['u_scaleIBLAmbient'] = {'funcName':'uniform4f', vals:[1.0,1.0,1.0,1.0]};
 
   // Load scene
   //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
   //var scene = new Scene(gl, "./models/MetalRoughSpheres/glTF/", "./models/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf");
-  scene = updateModel("Morph", gl, viewMatrix, projectionMatrix, canvas, ctx2d);
+  scene = updateModel("BoomBox", gl, glState, viewMatrix, projectionMatrix,canvas, ctx2d);
 
   // Set clear color
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
@@ -168,13 +159,9 @@ function main() {
   // Enable depth test
   gl.enable(gl.DEPTH_TEST);
 
-  // Clear canvas
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
   var redraw = function() {
-    
     window.requestAnimationFrame(function() {
-    scene.drawScene(gl);
+      scene.drawScene(gl);
     })
   }
 
@@ -191,7 +178,7 @@ function main() {
   
   var text = {Model: "BoomBox"};
   folder.add(text, 'Model', ['MetalRoughSpheres', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone', 'Triangle', 'Morph']).onChange(function(value) {
-    scene = updateModel(value, gl, viewMatrix, projectionMatrix, canvas, ctx2d);
+    scene = updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
   });
   folder.open();
 
@@ -199,13 +186,13 @@ function main() {
   var lightProps = {lightColor:[255,255,255], lightScale:1.0, lightRotation:75, lightPitch:40 };
 
   var updateLight = function(value) {
-    gl.shadowState['u_LightColor'].vals = [ lightProps.lightScale*lightProps.lightColor[0]/255,
+    glState['u_LightColor'].vals = [ lightProps.lightScale*lightProps.lightColor[0]/255,
                                             lightProps.lightScale*lightProps.lightColor[1]/255,
                                             lightProps.lightScale*lightProps.lightColor[2]/255 ];
 
     var rot = lightProps.lightRotation * Math.PI / 180;
     var pitch = lightProps.lightPitch * Math.PI / 180;
-    gl.shadowState['u_LightDirection'].vals = [Math.sin(rot)*Math.cos(pitch),
+    glState['u_LightDirection'].vals = [Math.sin(rot)*Math.cos(pitch),
                                                 Math.sin(pitch),
                                                 Math.cos(rot)*Math.cos(pitch)];
     
@@ -223,12 +210,17 @@ function main() {
   updateLight();
 
   //mouseover scaling
+
+  var scaleVals = {
+    IBL:0.5,
+  }
   var updateMathScales = function(v) {
     var el = scaleVals.pinnedElement?scaleVals.pinnedElement:scaleVals.activeElement;
     var elId = el?el.attr('id'):null;
 
-    gl.shadowState['u_scaleDiffSpecAmbient'].vals = [elId=="mathDiff"?1.0:0.0, elId=="mathSpec"?1.0:0.0, scaleVals.IBL, elId=="metallic"?1.0:0.0];
-    gl.shadowState['u_scaleFGD'].vals = [elId=="mathF"?1.0:0.0, elId=="mathG"?1.0:0.0, elId=="mathD"?1.0:0.0, elId=="roughness"?1.0:0.0];
+    glState['u_scaleDiffBaseMR'].vals = [elId=="mathDiff"?1.0:0.0, elId=="baseColor"?1.0:0.0, elId=="metallic"?1.0:0.0, elId=="roughness"?1.0:0.0];
+    glState['u_scaleFGDSpec'].vals = [elId=="mathF"?1.0:0.0, elId=="mathG"?1.0:0.0, elId=="mathD"?1.0:0.0, elId=="mathSpec"?1.0:0.0];
+    glState['u_scaleIBLAmbient'].vals = [scaleVals.IBL,scaleVals.IBL,0.0,0.0];
 
     redraw();
   }
@@ -300,6 +292,7 @@ function main() {
   createMouseOverScale('#mathF', 'F');
   createMouseOverScale('#mathG', 'G');
   createMouseOverScale('#mathD', 'D');
+  createMouseOverScale("#baseColor", "baseColor");
   createMouseOverScale("#metallic", "metallic");
   createMouseOverScale("#roughness", "roughness");
 

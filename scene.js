@@ -1,5 +1,5 @@
 class Scene {
-  constructor(gl, model, file) {
+  constructor(gl, glState, model, file) {
 
     this.defines = {'USE_MATHS':1,
                     'USE_IBL':1,
@@ -13,6 +13,7 @@ class Scene {
     var gltf = (typeof json === 'string') ? JSON.parse(json) : json;
 
     this.modelPath = model;
+    this.glState = glState;
 
     // Transform
     this.transform = mat4.create();
@@ -64,20 +65,20 @@ class Scene {
       var indicesAccessor = primitive.indices;
       getAccessorData(this, gl, gltf, model, indicesAccessor, "INDEX");
 
-      loadImages(this.imageUris, createTextures, gl, this);
+      loadImages(this.imageUris, gl, this);
     }
   }
 
   rebindState(gl) {
     // this function is dumb.  just clear uniforms whenever a program gets compiled and rebind on apply if needed.
-    for(var uniform in gl.shadowState) {
-      gl.shadowState[uniform].uniformLocation = gl.getUniformLocation(gl.program, uniform);
+    for(var uniform in this.glState) {
+      this.glState[uniform].uniformLocation = gl.getUniformLocation(gl.program, uniform);
     }
   }
 
   applyState(gl) {
-    for(var uniform in gl.shadowState) {
-      var u = gl.shadowState[uniform];
+    for(var uniform in this.glState) {
+      var u = this.glState[uniform];
       if( u.funcName && u.uniformLocation != null && u.vals )
       {
         gl[u.funcName](u.uniformLocation, ...u.vals);
@@ -165,22 +166,27 @@ class Scene {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
     this.loadedBuffers = true;
-    if (this.loadedTextures) {
+    if (scene.pendingTextures == 0) {
       this.drawScene(gl);
     }
   }
 
   initTextures(gl, gltf) {
-
-    this.imageUris = [];
+    this.imageUris = {};
     var pbrMat = this.material.pbrMetallicRoughness;
+    var samplerIndex = 3; // skip the first three because of the cubemaps
 
     // Base Color
     if( pbrMat.baseColorTexture && gltf.textures.length > pbrMat.baseColorTexture.index ) {
       var baseColorTexInfo = gltf.textures[pbrMat.baseColorTexture.index];
       var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
-      this.imageUris.push(baseColorSrc);
+      this.imageUris['baseColor'] = {'uri':baseColorSrc,'samplerIndex':samplerIndex,'colorSpace':gl.hasSRGBExt.SRGB_EXT}; // colorSpace, samplerindex, uri
+      this.glState['u_BaseColorSampler'] = {'funcName':'uniform1i','vals':[samplerIndex]};
+      samplerIndex++;
       this.defines.HAS_BASECOLORMAP = 1;
+    }
+    else if(this.glState['u_BaseColorSampler']) {
+      delete this.glState['u_BaseColorSampler'];
     }
 
     // Metallic-Roughness
@@ -188,16 +194,21 @@ class Scene {
       var mrTexInfo = gltf.textures[pbrMat.metallicRoughnessTexture.index];
       var mrSrc = this.modelPath + gltf.images[mrTexInfo.source].uri;
       // gltf.samplers[mrTexInfo.sampler].magFilter etc
-      this.imageUris.push(mrSrc);
+      this.imageUris['metalRoughness'] = {'uri':mrSrc,'samplerIndex':samplerIndex,'colorSpace':gl.RGBA};
+      this.glState['u_MetallicRoughnessSampler'] = {'funcName':'uniform1i','vals':[samplerIndex]};
+      samplerIndex++;
       this.defines.HAS_METALROUGHNESSMAP = 1;
-      if( gl.shadowState['u_MetallicRoughnessValues'] ) {
-        delete gl.shadowState['u_MetallicRoughnessValues'];
+      if( this.glState['u_MetallicRoughnessValues'] ) {
+        delete this.glState['u_MetallicRoughnessValues'];
       }
     }
     else {
+      if(this.glState['u_MetallicRoughnessSampler']) {
+        delete this.glState['u_MetallicRoughnessSampler'];
+      }
       var metallic = pbrMat.metallicFactor!=null?pbrMat.metallicFactor:1.0;
       var roughness = pbrMat.roughnessFactor!=null?pbrMat.roughnessFactor:1.0;
-      gl.shadowState['u_MetallicRoughnessValues'] = {'funcName':'uniform2f','vals':[metallic, roughness]}
+      this.glState['u_MetallicRoughnessValues'] = {'funcName':'uniform2f','vals':[metallic, roughness]}
     }
 
     // Normals
@@ -205,28 +216,45 @@ class Scene {
     {
       var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
       var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
-      this.imageUris.push(normalsSrc);
+      this.imageUris['normal'] = {'uri':normalsSrc,'samplerIndex':samplerIndex,'colorSpace':gl.RGBA};
+      this.glState['u_NormalSampler'] = {'funcName':'uniform1i','vals':[samplerIndex]};
+      samplerIndex++;
       this.defines.HAS_NORMALMAP = 1;
+    }
+    else if(this.glState['u_NormalSampler']) {
+      delete this.glState['u_NormalSampler'];
     }
 
     // brdfLUT
     var brdfLUT = "textures/brdfLUT.png";
-    this.imageUris.push(brdfLUT);
+    this.imageUris['brdfLUT'] = {'uri':brdfLUT,'samplerIndex':samplerIndex,'colorSpace':gl.RGBA};
+    this.glState['u_brdfLUT'] = {'funcName':'uniform1i','vals':[samplerIndex]};
+    samplerIndex++;
 
     // Emissive
     if (this.material.emissiveTexture) {
       var emissiveTexInfo = gltf.textures[this.material.emissiveTexture.index];
       var emissiveSrc = this.modelPath + gltf.images[emissiveTexInfo.source].uri;
-      this.imageUris.push(emissiveSrc);
+      this.imageUris['emissive'] = {'uri':emissiveSrc,'samplerIndex':samplerIndex,'colorSpace':gl.hasSRGBExt.SRGB_EXT}; // colorSpace, samplerindex, uri
+      this.glState['u_EmissiveSampler'] = {'funcName':'uniform1i','vals':[samplerIndex]};
+      samplerIndex++;
       this.defines.HAS_EMISSIVEMAP = 1;
+    }
+    else if(this.glState['u_EmissiveSampler']) {
+      delete this.glState['u_EmissiveSampler'];
     }
 
     // AO
     if (this.material.occlusionTexture) {
       var occlusionTexInfo = gltf.textures[this.material.occlusionTexture.index];
       var occlusionSrc = this.modelPath + gltf.images[occlusionTexInfo.source].uri;
-      this.imageUris.push(occlusionSrc);
+      this.imageUris['occlusion'] = {'uri':occlusionSrc,'samplerIndex':samplerIndex,'colorSpace':gl.RGBA};
+      this.glState['u_OcclusionSampler'] = {'funcName':'uniform1i','vals':[samplerIndex]};
+      samplerIndex++;
       this.defines.HAS_OCCLUSIONMAP = 1;
+    }
+    else if(this.glState['u_OcclusionSampler']) {
+      delete this.glState['u_OcclusionSampler'];
     }
   }
 
@@ -249,13 +277,13 @@ class Scene {
     var mvpMatrix = mat4.create();
     mat4.multiply(mvpMatrix, this.viewMatrix, modelMatrix);
     mat4.multiply(mvpMatrix, this.projectionMatrix, mvpMatrix);
-    gl.shadowState['u_mvpMatrix'].vals = [false, mvpMatrix];
+    this.glState['u_mvpMatrix'].vals = [false, mvpMatrix];
 
     // Update normal matrix
     var normalMatrix = mat4.create();
     mat4.invert(normalMatrix, modelMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
-    gl.shadowState['u_NormalMatrix'].vals = [false, normalMatrix];
+    this.glState['u_NormalMatrix'].vals = [false, normalMatrix];
 
     this.applyState(gl);
     // Draw
@@ -281,7 +309,7 @@ function getAccessorData(scene, gl, gltf, model, accessorName, attribute) {
 
   reader.onload = function(e) {
     var arrayBuffer = reader.result;
-    var start = bufferView.byteOffset;
+    var start = bufferView.byteOffset!=null?bufferView.byteOffset:0;
     var end = start + bufferView.byteLength;
     var slicedBuffer = arrayBuffer.slice(start, end);
     var data;
@@ -344,34 +372,16 @@ function initArrayBuffer(gl, data, num, type, attribute, stride, offset) {
   return true;
 }
 
-function loadImage(url, callback) {
+function loadImage(imageInfo, gl, scene) {
+  var intToGLSamplerIndex = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2, gl.TEXTURE3, gl.TEXTURE4,
+                             gl.TEXTURE5, gl.TEXTURE6, gl.TEXTURE7, gl.TEXTURE8, gl.TEXTURE9];
   var image = new Image();
-  image.src = url;
-  image.onload = callback;
-  return image;
-}
-
-function loadImages(urls, callback, gl, scene) {
-  var images = [];
-  var imagesToLoad = urls.length;
-
-  var onImageLoad = function() {
-    imagesToLoad--;
-    if (imagesToLoad == 0) {
-      callback(images, gl, scene);
-    }
-  };
-
-  for (var i = 0; i < imagesToLoad; i++) {
-    var image = loadImage(urls[i], onImageLoad);
-    images.push(image);
-  }
-}
-
-function createTextures(images, gl, scene) {
-  var textures = [];
-  for (var i = 0; i < images.length; i++) {
+  scene.pendingTextures++;
+  image.src = imageInfo.uri;
+  image.onload = function() {
     var texture = gl.createTexture();
+    var glIndex = intToGLSamplerIndex[imageInfo.samplerIndex];
+    gl.activeTexture(glIndex);
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -379,73 +389,21 @@ function createTextures(images, gl, scene) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, imageInfo.colorSpace, imageInfo.colorSpace, gl.UNSIGNED_BYTE, image);
 
-    textures.push(texture);
-  }
-
-  var tex = 0
-  if( scene.defines.HAS_BASECOLORMAP ) {
-    gl.activeTexture(gl.TEXTURE3);
-    gl.bindTexture(gl.TEXTURE_2D, textures[tex])
-    gl.shadowState['u_BaseColorSampler'] = {'funcName':'uniform1i','vals':[3]};
-    tex++;
-  }
-  else if(gl.shadowState['u_BaseColorSampler']) {
-    delete gl.shadowState['u_BaseColorSampler'];
-  }
+    scene.pendingTextures--;
+    
+    if (scene.loadedBuffers == true && scene.pendingTextures == 0) {
+      scene.drawScene(gl);
+    }
+  };
   
-  if( scene.defines.HAS_METALROUGHNESSMAP ) {
-    gl.activeTexture(gl.TEXTURE4);
-    gl.bindTexture(gl.TEXTURE_2D, textures[tex])
-    gl.shadowState['u_MetallicRoughnessSampler'] = {'funcName':'uniform1i','vals':[4]};
-    tex++;
-  }
-  else if(gl.shadowState['u_MetallicRoughnessSampler']) {
-    delete gl.shadowState['u_MetallicRoughnessSampler'];
-  }
+  return image;
+}
 
-  if( scene.defines.HAS_NORMALMAP ) {
-    gl.activeTexture(gl.TEXTURE5);
-    gl.bindTexture(gl.TEXTURE_2D, textures[tex])
-    gl.shadowState['u_NormalSampler'] = {'funcName':'uniform1i','vals':[5]};
-    tex++;
-  }
-  else if(gl.shadowState['u_NormalSampler']) {
-    delete gl.shadowState['u_NormalSampler'];
-  }
-
-
-  gl.activeTexture(gl.TEXTURE6);
-  gl.bindTexture(gl.TEXTURE_2D, textures[tex]);
-  gl.shadowState['u_brdfLUT'] = {'funcName':'uniform1i','vals':[6]};
-  tex++;
-
-
-  if (scene.defines.HAS_EMISSIVEMAP) {
-    gl.activeTexture(gl.TEXTURE7);
-    gl.bindTexture(gl.TEXTURE_2D, textures[tex])
-    gl.shadowState['u_EmissiveSampler'] = {'funcName':'uniform1i','vals':[7]};
-    tex++;
-  }
-  else if(gl.shadowState['u_EmissiveSampler']) {
-    delete gl.shadowState['u_EmissiveSampler'];
-  }
-
-  if (scene.defines.HAS_OCCLUSIONMAP) {
-    gl.activeTexture(gl.TEXTURE8);
-    gl.bindTexture(gl.TEXTURE_2D, textures[tex])
-    gl.shadowState['u_OcclusionSampler'] = {'funcName':'uniform1i','vals':[8]};
-    tex++;
-  }
-  else if(gl.shadowState['u_OcclusionSampler']) {
-    delete gl.shadowState['u_OcclusionSampler'];
-  }
-  
-
-  scene.rebindState(gl);
-  scene.loadedTextures = true;
-  if (scene.loadedBuffers) {
-    scene.drawScene(gl);
+function loadImages(imageInfos, gl, scene) {
+  scene.pendingTextures = 0;
+  for (var i in imageInfos) {
+    loadImage(imageInfos[i], gl, scene);
   }
 }

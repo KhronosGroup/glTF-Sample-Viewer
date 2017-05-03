@@ -31,8 +31,9 @@ uniform sampler2D u_OcclusionSampler;
 #endif
 
 uniform vec3 u_Camera;
-uniform vec4 u_scaleDiffSpecAmbient;
-uniform vec4 u_scaleFGD;
+uniform vec4 u_scaleDiffBaseMR;
+uniform vec4 u_scaleFGDSpec;
+uniform vec4 u_scaleIBLAmbient;
 
 varying vec3 v_Position;
 
@@ -228,9 +229,9 @@ void main() {
   vec3 specularLight = textureCube(u_SpecularEnvSampler, reflection).rgb;
   #endif
 
-  vec3 IBLcolor = (diffuseLight * diffuseColor) + (specularLight * (specularColor * brdf.x + brdf.y));
+  vec3 IBLcolor = (diffuseLight * diffuseColor * u_scaleIBLAmbient.x) + (specularLight * (specularColor * brdf.x + brdf.y) *u_scaleIBLAmbient.y);
 
-  color += IBLcolor * u_scaleDiffSpecAmbient.z;
+  color += IBLcolor;
   #endif
   
   #ifdef HAS_OCCLUSIONMAP 
@@ -245,20 +246,19 @@ void main() {
 
   #ifdef USE_MATHS 
   // mix in overrides
-  color = mix(color, diffuseContrib, u_scaleDiffSpecAmbient.x);
-  color = mix(color, specContrib, u_scaleDiffSpecAmbient.y);
-  //color = mix(color, ambientContrib, u_scaleDiffSpecAmbient.z);
+  color = mix(color, F, u_scaleFGDSpec.x);
+  color = mix(color, vec3(G), u_scaleFGDSpec.y);
+  color = mix(color, vec3(D), u_scaleFGDSpec.z);
+  color = mix(color, specContrib, u_scaleFGDSpec.w);
 
-  color = mix(color, F, u_scaleFGD.x);
-  color = mix(color, vec3(G), u_scaleFGD.y);
-  color = mix(color, vec3(D), u_scaleFGD.z);
-
-  color = mix(color, vec3(metallic), u_scaleDiffSpecAmbient.w);
-  color = mix(color, vec3(roughness), u_scaleFGD.w);
+  color = mix(color, diffuseContrib, u_scaleDiffBaseMR.x);
+  color = mix(color, baseColor, u_scaleDiffBaseMR.y);
+  color = mix(color, vec3(metallic), u_scaleDiffBaseMR.z);
+  color = mix(color, vec3(roughness), u_scaleDiffBaseMR.w);
   #endif
  
   gl_FragColor = vec4(color, 1.0);
-  //gl_FragColor = vec4(h * 0.5 + 0.5, 1.0);
-  //gl_FragColor = vec4(NdotH, NdotH, NdotH, 1.0);
-  //gl_FragColor = vec4(specularLight, 1.0);
+  //gl_FragColor = vec4(n * 0.5 + 0.5, 1.0);
+  //gl_FragColor = vec4(NdotV, NdotV, NdotV, 1.0);
+  //gl_FragColor = vec4(v_UV.rg, 0.0, 1.0);
 }
