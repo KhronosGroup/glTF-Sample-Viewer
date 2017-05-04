@@ -360,13 +360,14 @@ function handleMouseMove(ev, redraw) {
   redraw();
 }
 
+var wheelSpeed = 1.04;
 function handleWheel(ev, redraw) {
   ev.preventDefault();
   if (ev.wheelDelta > 0) {
-    translate += 0.04;
+    translate *= wheelSpeed;
   }
   else {
-    translate -= 0.04;
+    translate /= wheelSpeed;
   }
 
   redraw();
