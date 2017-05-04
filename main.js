@@ -134,14 +134,14 @@ function main() {
   
   // View matrix
   var viewMatrix = mat4.create();
-  var eye = vec3.fromValues(0.0, 0.0, -4.0);
+  var eye = vec3.fromValues(0.0, 0.0, 4.0);
   var at = vec3.fromValues(0.0, 0.0, 0.0);
   var up = vec3.fromValues(0.0, 1.0, 0.0);
   mat4.lookAt(viewMatrix, eye, at, up);
 
   // Projection matrix
   var projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.01, 100.0);
+  mat4.perspective(projectionMatrix, 45.0*Math.PI/180.0, canvas.width/canvas.height, 0.01, 100.0);
 
   // get scaling stuff
   glState['u_scaleDiffBaseMR'] = {'funcName':'uniform4f', vals:[0.0,0.0,0.0,0.0]};
@@ -187,14 +187,14 @@ function main() {
 
   var updateLight = function(value) {
     glState['u_LightColor'].vals = [ lightProps.lightScale*lightProps.lightColor[0]/255,
-                                            lightProps.lightScale*lightProps.lightColor[1]/255,
-                                            lightProps.lightScale*lightProps.lightColor[2]/255 ];
+                                     lightProps.lightScale*lightProps.lightColor[1]/255,
+                                     lightProps.lightScale*lightProps.lightColor[2]/255 ];
 
     var rot = lightProps.lightRotation * Math.PI / 180;
     var pitch = lightProps.lightPitch * Math.PI / 180;
     glState['u_LightDirection'].vals = [Math.sin(rot)*Math.cos(pitch),
-                                                Math.sin(pitch),
-                                                Math.cos(rot)*Math.cos(pitch)];
+                                        Math.sin(pitch),
+                                        Math.cos(rot)*Math.cos(pitch)];
     
     redraw();
   };
@@ -326,9 +326,9 @@ function main() {
 
 // ***** Mouse Controls ***** //
 var mouseDown = false;
-var roll = 0.0;
+var roll = Math.PI;
 var pitch = 0.0;
-var translate = 0.0;
+var translate = 4.0;
 var lastMouseX = null;
 var lastMouseY = null;
 function handleMouseDown(ev) {

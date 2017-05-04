@@ -262,28 +262,31 @@ class Scene {
     // Update model matrix
     var modelMatrix = mat4.create();
     mat4.multiply(modelMatrix, modelMatrix, this.transform);
+
+    // Update view matrix
+    // roll, pitch and translate are all globals. :)
     var xRotation = mat4.create();
     mat4.rotateY(xRotation, xRotation, roll);
     var yRotation = mat4.create();
-    mat4.rotateX(yRotation, yRotation, -pitch);
-    var rotation = mat4.create();
-    mat4.multiply(rotation, yRotation, xRotation);
-    mat4.multiply(modelMatrix, rotation, modelMatrix);
+    mat4.rotateX(yRotation, yRotation, pitch);
+    this.viewMatrix = mat4.create();
+    mat4.multiply(this.viewMatrix, yRotation, xRotation);
+    this.viewMatrix[14] = -translate;
 
-    // Update view matrix
-    this.viewMatrix[14] = -4.0 + translate;
+    var cameraPos = [this.viewMatrix[14] * Math.sin(roll)*Math.cos(-pitch),
+                     this.viewMatrix[14] * Math.sin(-pitch),
+                     -this.viewMatrix[14] * Math.cos(roll)*Math.cos(-pitch)];
+    this.glState['u_Camera'].vals = cameraPos;
 
     // Update mvp matrix
+    var mvMatrix = mat4.create();
     var mvpMatrix = mat4.create();
-    mat4.multiply(mvpMatrix, this.viewMatrix, modelMatrix);
-    mat4.multiply(mvpMatrix, this.projectionMatrix, mvpMatrix);
+    mat4.multiply(mvMatrix, this.viewMatrix, modelMatrix);
+    mat4.multiply(mvpMatrix, this.projectionMatrix, mvMatrix);
     this.glState['u_mvpMatrix'].vals = [false, mvpMatrix];
 
     // Update normal matrix
-    var normalMatrix = mat4.create();
-    mat4.invert(normalMatrix, modelMatrix);
-    mat4.transpose(normalMatrix, normalMatrix);
-    this.glState['u_NormalMatrix'].vals = [false, normalMatrix];
+    this.glState['u_NormalMatrix'].vals = [false, modelMatrix];
 
     this.applyState(gl);
     // Draw

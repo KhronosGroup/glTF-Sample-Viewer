@@ -25,7 +25,7 @@ varying vec3 v_Normal;
 
 
 void main(){
-  vec4 pos = u_mvpMatrix * a_Position;
+  vec4 pos = u_NormalMatrix * a_Position;
   v_Position = vec3(pos.xyz) / pos.w;
 
 
@@ -46,7 +46,7 @@ void main(){
   v_UV = vec2(0.,0.);
   #endif
 
-  gl_Position = pos; // needs w for proper perspective correction
+  gl_Position = u_mvpMatrix * a_Position; // needs w for proper perspective correction
 }
 
 
