@@ -57,7 +57,8 @@ function loadCubeMap(gl, envMap, type, state) {
           gl.activeTexture(activeTextureEnum);
           gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
           gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-          gl.texImage2D(face, j, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+          // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
+          gl.texImage2D(face, j, gl.hasSRGBExt.SRGB_EXT, gl.hasSRGBExt.SRGB_EXT, gl.UNSIGNED_BYTE, image);
         }
       } (texture, face, image, j);
       image.src = faces[i][0];
@@ -224,7 +225,7 @@ function main() {
     redraw();
   }
 
-  gui.add(scaleVals, "IBL", 0., 1.).onChange(updateMathScales);
+  gui.add(scaleVals, "IBL", 0., 4.).onChange(updateMathScales);
 
   var setActiveComponent = function(el) {
     if( scaleVals.activeElement ) {
