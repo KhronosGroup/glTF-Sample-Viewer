@@ -302,7 +302,11 @@ class Scene {
     this.globalState = glState;
 
     // Transform
-    this.transform = mat4.create();
+    if (gltf.nodes[0].matrix) {
+      this.transform = mat4.clone(gltf.nodes[0].matrix);
+    } else {
+      this.transform = mat4.create();
+    }
     var scale = gltf.nodes[0].scale;
     var translate = gltf.nodes[0].translation;
     if (scale) {
