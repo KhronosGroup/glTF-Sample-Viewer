@@ -133,7 +133,7 @@ float GGX(PBRInfo pbrInputs)
 
 // spectre D
 float NormalDistributionFunction_TrowbridgeReitzGGX(PBRInfo pbrInputs){
-	float a = pbrInputs.roughness;
+  float a = pbrInputs.roughness;
 	float a2 = a * a;
 	float d = pbrInputs.NdotH * pbrInputs.NdotH * (a2 - 1.0) + 1.0;
 
@@ -184,10 +184,10 @@ void main() {
   
   #ifdef HAS_METALROUGHNESSMAP 
   vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
-  float roughness = clamp(mrSample.g, 0.0005, 1.0);
+  float roughness = clamp(mrSample.g, 0.04, 1.0);
   float metallic = clamp(mrSample.b, 0.0, 1.0);
   #else
-  float roughness = u_MetallicRoughnessValues.y;
+  float roughness = clamp(u_MetallicRoughnessValues.y, 0.04, 1.0);
   float metallic = u_MetallicRoughnessValues.x;
   #endif
 
@@ -199,8 +199,8 @@ void main() {
 
   vec3 f0 = vec3(0.04);
   // is this the same? test! 
-	//vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
-  vec3 diffuseColor = baseColor * (1.0 - metallic);
+	vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
+  //vec3 diffuseColor = baseColor * (1.0 - metallic);
   vec3 specularColor = mix(f0, baseColor, metallic);
 
 
@@ -287,6 +287,6 @@ void main() {
  
   gl_FragColor = vec4(color, 1.0);
   //gl_FragColor = vec4(n * 0.5 + 0.5, 1.0);
-  //gl_FragColor = vec4(NdotV, NdotV, NdotV, 1.0);
+  //gl_FragColor = vec4(VdotH, VdotH, VdotH, 1.0);
   //gl_FragColor = vec4(v_UV.rg, 0.0, 1.0);
 }

@@ -177,7 +177,7 @@ function main() {
 
   
   var text = {Model: "BoomBox"};
-  folder.add(text, 'Model', ['MetalRoughSpheres', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone', 'Triangle', 'Morph']).onChange(function(value) {
+  folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'FarmLandDiorama', 'Telephone', 'Triangle', 'WaterBottle']).onChange(function(value) {
     scene = updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
   });
   folder.open();
