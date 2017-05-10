@@ -71,6 +71,11 @@ vec3 disneyDiffuse(PBRInfo pbrInputs)
   return (pbrInputs.baseColor/M_PI)*(1.0+f90*pow((1.0-pbrInputs.NdotL),5.0))*(1.0+f90*pow((1.0-pbrInputs.NdotV),5.0));
 }
 
+vec3 lambertianDiffuse(PBRInfo pbrInputs)
+{
+  return PBRInfo.baseColor / M_PI;
+}
+
 // F
 // r
 vec3 fresnelSchlick2(PBRInfo pbrInputs)
@@ -219,10 +224,6 @@ void main() {
     specularEnvironmentR90
   );
 
-  //vec3 diffuseContrib = max(NdotL,0.) * u_LightColor * diffuseColor;
-  vec3 diffuseContrib = disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
-
-
   vec3 F = fresnelSchlick2(pbrInputs);
   //vec3 F = fresnelSchlick(pbrInputs);
   //float G = microfacetCookTorrance(pbrInputs);
@@ -230,6 +231,9 @@ void main() {
   //float G = microfacetSchlick(pbrInputs);
   float G = SmithVisibilityGGX(pbrInputs);
   float D = GGX(pbrInputs);
+
+  vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs) * NdotL * u_LightColor;
+  //vec3 diffuseContrib = disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
 
   vec3 specContrib = M_PI * u_LightColor * F * G * D / 4.0*NdotL*NdotV;
 
