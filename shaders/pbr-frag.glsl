@@ -71,16 +71,16 @@ vec3 disneyDiffuse(PBRInfo pbrInputs)
   return (pbrInputs.baseColor/M_PI)*(1.0+f90*pow((1.0-pbrInputs.NdotL),5.0))*(1.0+f90*pow((1.0-pbrInputs.NdotV),5.0));
 }
 
-// F
-// spectre version (why is it called ggx?  dunno)
-vec3 FresnelSchlickGGX(PBRInfo pbrInputs)
+vec3 lambertianDiffuse(PBRInfo pbrInputs)
 {
-	return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
+  return pbrInputs.baseColor / M_PI;
 }
 
+// F
+// r
 vec3 fresnelSchlick2(PBRInfo pbrInputs)
 {
-  return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(1.0 - pbrInputs.VdotH, 5.0);
+	return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
 }
 
 vec3 fresnelSchlick(PBRInfo pbrInputs)
@@ -97,13 +97,15 @@ float microfacetCookTorrance(PBRInfo pbrInputs)
 float microfacetSchlick(PBRInfo pbrInputs)
 {
   float k = pbrInputs.roughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415);
+  // alternately, k can be defined with
+  // float k = (pbrInputs.roughness + 1)*(pbrInputs.roughness + 1)/8;
 
   float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
   float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
   return l * n;
 }
 
-float microfacetSmithGGX(PBRInfo pbrInputs)
+float microfacetSmith_var1(PBRInfo pbrInputs)
 {
   float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
   float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
@@ -112,32 +114,26 @@ float microfacetSmithGGX(PBRInfo pbrInputs)
   return (1. / max((1. + v + l ),0.000001));
 }
 
-// spectre G
-float SmithVisibilityG1_TrowbridgeReitzGGX(float NdotV, float alphaG){
+float SmithVisibilityG1_var2(float NdotV, float r){
 	float tanSquared = (1.0 - NdotV * NdotV) / max((NdotV * NdotV),0.00001);
-
-	return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));
+	return 2.0 / (1.0 + sqrt(1.0 + r * r * tanSquared));
 }
 
-float SmithVisibilityG_TrowbridgeReitzGGX_Walter(PBRInfo pbrInputs){
-	return SmithVisibilityG1_TrowbridgeReitzGGX(pbrInputs.NdotL, pbrInputs.roughness) * SmithVisibilityG1_TrowbridgeReitzGGX(pbrInputs.NdotV, pbrInputs.roughness);
+float SmithG1(float NdotV, float r) {
+  return 2.0 * NdotV / (NdotV + sqrt(r*r+(1.0-r*r)*(NdotV*NdotV)));
 }
 
-// D
+
+float SmithVisibilityGGX(PBRInfo pbrInputs){
+	return SmithVisibilityG1_var2(pbrInputs.NdotL, pbrInputs.roughness) * SmithVisibilityG1_var2(pbrInputs.NdotV, pbrInputs.roughness);
+}
+
+// D  (spectre uses this)
 float GGX(PBRInfo pbrInputs)
 {
   float roughnessSq = pbrInputs.roughness*pbrInputs.roughness;
   float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
   return roughnessSq / (M_PI * f * f);
-}
-
-// spectre D
-float NormalDistributionFunction_TrowbridgeReitzGGX(PBRInfo pbrInputs){
-	float a = pbrInputs.roughness;
-	float a2 = a * a;
-	float d = pbrInputs.NdotH * pbrInputs.NdotH * (a2 - 1.0) + 1.0;
-
-	return a2 / (M_PI * d * d);
 }
 
 
@@ -184,10 +180,10 @@ void main() {
   
   #ifdef HAS_METALROUGHNESSMAP 
   vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
-  float roughness = clamp(mrSample.g, 0.0005, 1.0);
+  float roughness = clamp(mrSample.g, 0.04, 1.0);
   float metallic = clamp(mrSample.b, 0.0, 1.0);
   #else
-  float roughness = u_MetallicRoughnessValues.y;
+  float roughness = clamp(u_MetallicRoughnessValues.y, 0.04, 1.0);
   float metallic = u_MetallicRoughnessValues.x;
   #endif
 
@@ -199,8 +195,8 @@ void main() {
 
   vec3 f0 = vec3(0.04);
   // is this the same? test! 
-	//vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
-  vec3 diffuseColor = baseColor * (1.0 - metallic);
+	vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
+  //vec3 diffuseColor = baseColor * (1.0 - metallic);
   vec3 specularColor = mix(f0, baseColor, metallic);
 
 
@@ -228,17 +224,16 @@ void main() {
     specularEnvironmentR90
   );
 
-  //vec3 diffuseContrib = max(NdotL,0.) * u_LightColor * diffuseColor;
-  vec3 diffuseContrib = disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
-
-
   vec3 F = fresnelSchlick2(pbrInputs);
-  //vec3 F = fresnelSchlick(VdotH, vec3(metallic));
-  ///float G = microfacetCookTorrance(NdotV, NdotH, VdotH, NdotL);
-  //float G = microfacetSchlick(LdotH, NdotH, roughness);
-  float G = SmithVisibilityG_TrowbridgeReitzGGX_Walter(pbrInputs);
-  //float D = GGX(NdotH, roughness);
-  float D = NormalDistributionFunction_TrowbridgeReitzGGX(pbrInputs);
+  //vec3 F = fresnelSchlick(pbrInputs);
+  //float G = microfacetCookTorrance(pbrInputs);
+  //float G = microfacetSmith(pbrInputs);
+  //float G = microfacetSchlick(pbrInputs);
+  float G = SmithVisibilityGGX(pbrInputs);
+  float D = GGX(pbrInputs);
+
+  vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs) * NdotL * u_LightColor;
+  //vec3 diffuseContrib = (1.0 - F) * disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
 
   vec3 specContrib = M_PI * u_LightColor * F * G * D / 4.0*NdotL*NdotV;
 

@@ -301,25 +301,7 @@ class Scene {
 
     this.globalState = glState;
 
-    // Transform
-    if (gltf.nodes[0].matrix) {
-      this.transform = mat4.clone(gltf.nodes[0].matrix);
-    } else {
-      this.transform = mat4.create();
-    }
-    var scale = gltf.nodes[0].scale;
-    var translate = gltf.nodes[0].translation;
-    if (scale) {
-      this.transform[0] *= scale[0];
-      this.transform[5] *= scale[1];
-      this.transform[10] *= scale[2];
-    }
-    if (translate) {
-      this.transform[12] += translate[0];
-      this.transform[13] += translate[1];
-      this.transform[14] += translate[2];
-    }
-
+    this.nodes = gltf.nodes;
     this.meshes = [];
     for(var meshIdx in gltf.meshes)
     {
@@ -330,10 +312,39 @@ class Scene {
   drawScene(gl) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
-    for( var mesh in this.meshes )
-    {
-        this.meshes[mesh].drawMesh(gl, this.transform, this.viewMatrix, this.projectionMatrix, this.globalState);
+
+    var drawNodeRecursive = function(scene, node, parentTransform) {
+      // Transform
+      var localTransform;
+      if (node.matrix) {
+        localTransform = mat4.clone(node.matrix);
+      } else {
+        localTransform = mat4.create();
+        var scale = node.scale?node.scale:[1.0,1.0,1.0];
+        var rotation = node.rotation?node.rotation:[0.0,0.0,0.0,1.0];
+        var translate = node.translation?node.translation:[0.0,0.0,0.0];
+
+        mat4.fromRotationTranslationScale(localTransform, rotation, translate, scale);
+      }
+      
+      mat4.multiply(localTransform, localTransform, parentTransform);
+
+      if(node.mesh != null && node.mesh < scene.meshes.length) {
+        scene.meshes[node.mesh].drawMesh(gl, localTransform, scene.viewMatrix, scene.projectionMatrix, scene.globalState);
+      }
+
+      if( node.children != null && node.children.length > 0 ) {
+        for( var i = 0; i < node.children.length; i++ )
+        {
+          drawNodeRecursive(scene, scene.nodes[node.children[i]], localTransform);
+        }
+      }
     }
+
+    var firstNode = this.nodes[0];
+
+    drawNodeRecursive(this, firstNode, mat4.create());
+
     // draw to the front buffer
     this.frontBuffer.drawImage(this.backBuffer, 0, 0);
   }
@@ -411,7 +422,7 @@ function loadImage(imageInfo, gl, mesh) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_2D, 0, imageInfo.colorSpace, imageInfo.colorSpace, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,/*imageInfo.colorSpace, imageInfo.colorSpace,*/ gl.UNSIGNED_BYTE, image);
 
     mesh.pendingTextures--;
     

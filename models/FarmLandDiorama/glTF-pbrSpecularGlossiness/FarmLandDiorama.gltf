@@ -1,0 +1,1027 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 916,
+      "type": "VEC2",
+      "max": [
+        0.9847114,
+        -0.00450980663
+      ],
+      "min": [
+        0.030056268,
+        -0.992343068
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 916,
+      "type": "VEC3",
+      "max": [
+        1.0,
+        0.999995351,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.09985419,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 916,
+      "type": "VEC4",
+      "max": [
+        0.6784959,
+        0.9999993,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -0.911498666,
+        -1.0,
+        -0.1277864,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 916,
+      "type": "VEC3",
+      "max": [
+        0.466963351,
+        0.0656285658,
+        0.438480973
+      ],
+      "min": [
+        -0.458198041,
+        -0.00990039,
+        -0.416640878
+      ]
+    },
+    {
+      "bufferView": 4,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 4620,
+      "type": "SCALAR",
+      "max": [
+        915
+      ],
+      "min": [
+        0
+      ]
+    },
+    {
+      "bufferView": 5,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 1878,
+      "type": "VEC2",
+      "max": [
+        0.9940323,
+        -0.002858
+      ],
+      "min": [
+        0.002304,
+        -0.994791448
+      ]
+    },
+    {
+      "bufferView": 6,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 1878,
+      "type": "VEC3",
+      "max": [
+        0.997560859,
+        0.9999987,
+        0.98972553
+      ],
+      "min": [
+        -0.999452055,
+        -0.9999969,
+        -0.9843902
+      ]
+    },
+    {
+      "bufferView": 7,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 1878,
+      "type": "VEC4",
+      "max": [
+        0.988313556,
+        1.0,
+        0.9995652,
+        1.0
+      ],
+      "min": [
+        -0.9871122,
+        -1.0,
+        -0.997503936,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 8,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 1878,
+      "type": "VEC3",
+      "max": [
+        0.2866806,
+        0.18447952,
+        0.245499745
+      ],
+      "min": [
+        -0.383430332,
+        0.0250029564,
+        0.006850784
+      ]
+    },
+    {
+      "bufferView": 9,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 3336,
+      "type": "SCALAR",
+      "max": [
+        1877
+      ],
+      "min": [
+        0
+      ]
+    },
+    {
+      "bufferView": 10,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 963,
+      "type": "VEC2",
+      "max": [
+        0.9892804,
+        -0.009166747
+      ],
+      "min": [
+        0.00700352853,
+        -0.993793
+      ]
+    },
+    {
+      "bufferView": 11,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 963,
+      "type": "VEC3",
+      "max": [
+        0.9996735,
+        0.999595463,
+        0.999653339
+      ],
+      "min": [
+        -0.999615669,
+        -0.99994123,
+        -0.999641657
+      ]
+    },
+    {
+      "bufferView": 12,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 963,
+      "type": "VEC4",
+      "max": [
+        0.999652743,
+        1.0,
+        0.9995666,
+        1.0
+      ],
+      "min": [
+        -0.9998684,
+        -0.990247667,
+        -0.9985072,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 13,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 963,
+      "type": "VEC3",
+      "max": [
+        0.135211051,
+        0.235996082,
+        0.280170828
+      ],
+      "min": [
+        -0.154497683,
+        0.0271006245,
+        -0.0519060977
+      ]
+    },
+    {
+      "bufferView": 14,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 3771,
+      "type": "SCALAR",
+      "max": [
+        962
+      ],
+      "min": [
+        0
+      ]
+    },
+    {
+      "bufferView": 15,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4740,
+      "type": "VEC2",
+      "max": [
+        0.99280715,
+        -0.003798525
+      ],
+      "min": [
+        0.008489,
+        -0.991163
+      ]
+    },
+    {
+      "bufferView": 16,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4740,
+      "type": "VEC3",
+      "max": [
+        0.999866,
+        0.999966145,
+        0.999981046
+      ],
+      "min": [
+        -0.999972939,
+        -0.9999546,
+        -0.9999933
+      ]
+    },
+    {
+      "bufferView": 17,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4740,
+      "type": "VEC4",
+      "max": [
+        0.999748051,
+        1.0,
+        0.9981705,
+        1.0
+      ],
+      "min": [
+        -0.999581158,
+        -1.0,
+        -0.999923348,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 18,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4740,
+      "type": "VEC3",
+      "max": [
+        0.310139328,
+        0.06912803,
+        0.4325798
+      ],
+      "min": [
+        -0.451468676,
+        0.0215688255,
+        -0.4087289
+      ]
+    },
+    {
+      "bufferView": 19,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 7590,
+      "type": "SCALAR",
+      "max": [
+        4739
+      ],
+      "min": [
+        0
+      ]
+    },
+    {
+      "bufferView": 20,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4731,
+      "type": "VEC2",
+      "max": [
+        0.991321,
+        -0.00630957447
+      ],
+      "min": [
+        0.004802884,
+        -0.994172
+      ]
+    },
+    {
+      "bufferView": 21,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4731,
+      "type": "VEC3",
+      "max": [
+        0.9999293,
+        0.9995658,
+        0.9999578
+      ],
+      "min": [
+        -0.999924541,
+        -0.812159836,
+        -0.999308944
+      ]
+    },
+    {
+      "bufferView": 22,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4731,
+      "type": "VEC4",
+      "max": [
+        0.9990951,
+        0.9994037,
+        0.9999826,
+        1.0
+      ],
+      "min": [
+        -0.999752,
+        -0.9911129,
+        -1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 23,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4731,
+      "type": "VEC3",
+      "max": [
+        0.471100539,
+        0.355815679,
+        0.433850348
+      ],
+      "min": [
+        -0.4432733,
+        0.0122732362,
+        -0.412501872
+      ]
+    },
+    {
+      "bufferView": 24,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 11583,
+      "type": "SCALAR",
+      "max": [
+        4730
+      ],
+      "min": [
+        0
+      ]
+    }
+  ],
+  "asset": {
+    "generator": "glTF Tools for Unity",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 7328
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 7328,
+      "byteLength": 10992
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 18320,
+      "byteLength": 14656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 32976,
+      "byteLength": 10992
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 43968,
+      "byteLength": 9240
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 53208,
+      "byteLength": 15024
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 68232,
+      "byteLength": 22536
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 90768,
+      "byteLength": 30048
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 120816,
+      "byteLength": 22536
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 143352,
+      "byteLength": 6672
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 150024,
+      "byteLength": 7704
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 157728,
+      "byteLength": 11556
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 169284,
+      "byteLength": 15408
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 184692,
+      "byteLength": 11556
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 196248,
+      "byteLength": 7542
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 203792,
+      "byteLength": 37920
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 241712,
+      "byteLength": 56880
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 298592,
+      "byteLength": 75840
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 374432,
+      "byteLength": 56880
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 431312,
+      "byteLength": 15180
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 446492,
+      "byteLength": 37848
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 484340,
+      "byteLength": 56772
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 541112,
+      "byteLength": 75696
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 616808,
+      "byteLength": 56772
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 673580,
+      "byteLength": 23166
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "FarmLandDiorama.bin",
+      "byteLength": 696746
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_pbrSpecularGlossiness"
+  ],
+  "images": [
+    {
+      "uri": "FarmLandDiorama_baseColor.png"
+    },
+    {
+      "uri": "FarmLandDiorama_roughnessMetallic.png"
+    },
+    {
+      "uri": "FarmLandDiorama_normal.png"
+    },
+    {
+      "uri": "FarmLandDiorama_occlusion.png"
+    },
+    {
+      "uri": "FarmLandDiorama_diffuse.png"
+    },
+    {
+      "uri": "FarmLandDiorama_specularGlossiness.png"
+    },
+    {
+      "uri": "FarmLandDiorama_baseColor1.png"
+    },
+    {
+      "uri": "FarmLandDiorama_roughnessMetallic1.png"
+    },
+    {
+      "uri": "FarmLandDiorama_normal1.png"
+    },
+    {
+      "uri": "FarmLandDiorama_occlusion1.png"
+    },
+    {
+      "uri": "FarmLandDiorama_diffuse1.png"
+    },
+    {
+      "uri": "FarmLandDiorama_specularGlossiness1.png"
+    },
+    {
+      "uri": "FarmLandDiorama_baseColor2.png"
+    },
+    {
+      "uri": "FarmLandDiorama_roughnessMetallic2.png"
+    },
+    {
+      "uri": "FarmLandDiorama_normal2.png"
+    },
+    {
+      "uri": "FarmLandDiorama_occlusion2.png"
+    },
+    {
+      "uri": "FarmLandDiorama_diffuse2.png"
+    },
+    {
+      "uri": "FarmLandDiorama_specularGlossiness2.png"
+    },
+    {
+      "uri": "FarmLandDiorama_baseColor3.png"
+    },
+    {
+      "uri": "FarmLandDiorama_roughnessMetallic3.png"
+    },
+    {
+      "uri": "FarmLandDiorama_normal3.png"
+    },
+    {
+      "uri": "FarmLandDiorama_diffuse3.png"
+    },
+    {
+      "uri": "FarmLandDiorama_specularGlossiness3.png"
+    },
+    {
+      "uri": "FarmLandDiorama_baseColor4.png"
+    },
+    {
+      "uri": "FarmLandDiorama_roughnessMetallic4.png"
+    },
+    {
+      "uri": "FarmLandDiorama_normal4.png"
+    },
+    {
+      "uri": "FarmLandDiorama_occlusion4.png"
+    },
+    {
+      "uri": "FarmLandDiorama_diffuse4.png"
+    },
+    {
+      "uri": "FarmLandDiorama_specularGlossiness4.png"
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 0,
+            "NORMAL": 1,
+            "TANGENT": 2,
+            "POSITION": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ],
+      "name": "farm_land_diorama_a_Hero"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 5,
+            "NORMAL": 6,
+            "TANGENT": 7,
+            "POSITION": 8
+          },
+          "indices": 9,
+          "material": 1,
+          "mode": 4
+        }
+      ],
+      "name": "farm_land_diorama_b_Hero"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 10,
+            "NORMAL": 11,
+            "TANGENT": 12,
+            "POSITION": 13
+          },
+          "indices": 14,
+          "material": 2,
+          "mode": 4
+        }
+      ],
+      "name": "farm_land_diorama_c_Hero"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 15,
+            "NORMAL": 16,
+            "TANGENT": 17,
+            "POSITION": 18
+          },
+          "indices": 19,
+          "material": 3,
+          "mode": 4
+        }
+      ],
+      "name": "farm_land_diorama_d_Hero"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 20,
+            "NORMAL": 21,
+            "TANGENT": 22,
+            "POSITION": 23
+          },
+          "indices": 24,
+          "material": 4,
+          "mode": 4
+        }
+      ],
+      "name": "farm_land_diorama_e_Hero"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      },
+      "normalTexture": {
+        "index": 2
+      },
+      "occlusionTexture": {
+        "index": 3
+      },
+      "name": "7285_farm land diorama_a_col",
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseTexture": {
+            "index": 4
+          },
+          "specularGlossinessTexture": {
+            "index": 5
+          }
+        }
+      }
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 6
+        },
+        "metallicRoughnessTexture": {
+          "index": 7
+        }
+      },
+      "normalTexture": {
+        "index": 8
+      },
+      "occlusionTexture": {
+        "index": 9
+      },
+      "name": "7285_farm land diorama_b_col",
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseTexture": {
+            "index": 10
+          },
+          "specularGlossinessTexture": {
+            "index": 11
+          }
+        }
+      }
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 12
+        },
+        "metallicRoughnessTexture": {
+          "index": 13
+        }
+      },
+      "normalTexture": {
+        "index": 14
+      },
+      "occlusionTexture": {
+        "index": 15
+      },
+      "name": "7285_farm land diorama_c_col",
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseTexture": {
+            "index": 16
+          },
+          "specularGlossinessTexture": {
+            "index": 17
+          }
+        }
+      }
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 18
+        },
+        "metallicRoughnessTexture": {
+          "index": 19
+        }
+      },
+      "normalTexture": {
+        "index": 20
+      },
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "7285_farm land diorama_d_col",
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseTexture": {
+            "index": 21
+          },
+          "specularGlossinessTexture": {
+            "index": 22
+          }
+        }
+      }
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 23
+        },
+        "metallicRoughnessTexture": {
+          "index": 24
+        }
+      },
+      "normalTexture": {
+        "index": 25
+      },
+      "occlusionTexture": {
+        "index": 26
+      },
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "7285_farm land diorama_e_col",
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseTexture": {
+            "index": 27
+          },
+          "specularGlossinessTexture": {
+            "index": 28
+          }
+        }
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "children": [],
+      "mesh": 0,
+      "translation": [
+        0.009643316,
+        -0.13154836,
+        -0.114132367
+      ],
+      "name": "farm_land_diorama_a_Hero"
+    },
+    {
+      "children": [],
+      "mesh": 1,
+      "translation": [
+        0.009643316,
+        -0.13154836,
+        -0.114132367
+      ],
+      "name": "farm_land_diorama_b_Hero"
+    },
+    {
+      "children": [],
+      "mesh": 2,
+      "translation": [
+        0.009643316,
+        -0.13154836,
+        -0.114132367
+      ],
+      "name": "farm_land_diorama_c_Hero"
+    },
+    {
+      "children": [],
+      "mesh": 3,
+      "translation": [
+        0.009643316,
+        -0.13154836,
+        -0.114132367
+      ],
+      "name": "farm_land_diorama_d_Hero"
+    },
+    {
+      "children": [],
+      "mesh": 4,
+      "translation": [
+        0.009643316,
+        -0.13154836,
+        -0.114132367
+      ],
+      "name": "farm_land_diorama_e_Hero"
+    },
+    {
+      "children": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "translation": [
+        0.0,
+        0.0,
+        0.226
+      ],
+      "name": "FarmLandDiorama"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        5
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    },
+    {
+      "source": 2
+    },
+    {
+      "source": 3
+    },
+    {
+      "source": 4
+    },
+    {
+      "source": 5
+    },
+    {
+      "source": 6
+    },
+    {
+      "source": 7
+    },
+    {
+      "source": 8
+    },
+    {
+      "source": 9
+    },
+    {
+      "source": 10
+    },
+    {
+      "source": 11
+    },
+    {
+      "source": 12
+    },
+    {
+      "source": 13
+    },
+    {
+      "source": 14
+    },
+    {
+      "source": 15
+    },
+    {
+      "source": 16
+    },
+    {
+      "source": 17
+    },
+    {
+      "source": 18
+    },
+    {
+      "source": 19
+    },
+    {
+      "source": 20
+    },
+    {
+      "source": 21
+    },
+    {
+      "source": 22
+    },
+    {
+      "source": 23
+    },
+    {
+      "source": 24
+    },
+    {
+      "source": 25
+    },
+    {
+      "source": 26
+    },
+    {
+      "source": 27
+    },
+    {
+      "source": 28
+    }
+  ]
+}
