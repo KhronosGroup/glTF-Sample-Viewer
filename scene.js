@@ -315,12 +315,18 @@ class Scene {
 
     var drawNodeRecursive = function(scene, node, parentTransform) {
       // Transform
-      var localTransform = mat4.create();
-      var scale = node.scale?node.scale:[1.0,1.0,1.0];
-      var rotation = node.rotation?node.rotation:[0.0,0.0,0.0,1.0];
-      var translate = node.translation?node.translation:[0.0,0.0,0.0];
+      var localTransform;
+      if (node.matrix) {
+        localTransform = mat4.clone(node.matrix);
+      } else {
+        localTransform = mat4.create();
+        var scale = node.scale?node.scale:[1.0,1.0,1.0];
+        var rotation = node.rotation?node.rotation:[0.0,0.0,0.0,1.0];
+        var translate = node.translation?node.translation:[0.0,0.0,0.0];
 
-      mat4.fromRotationTranslationScale(localTransform, rotation, translate, scale);
+        mat4.fromRotationTranslationScale(localTransform, rotation, translate, scale);
+      }
+      
       mat4.multiply(localTransform, localTransform, parentTransform);
 
       if(node.mesh != null && node.mesh < scene.meshes.length) {
