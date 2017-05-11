@@ -73,7 +73,7 @@ vec3 disneyDiffuse(PBRInfo pbrInputs)
 
 vec3 lambertianDiffuse(PBRInfo pbrInputs)
 {
-  return PBRInfo.baseColor / M_PI;
+  return pbrInputs.baseColor / M_PI;
 }
 
 // F
@@ -233,7 +233,7 @@ void main() {
   float D = GGX(pbrInputs);
 
   vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs) * NdotL * u_LightColor;
-  //vec3 diffuseContrib = disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
+  //vec3 diffuseContrib = (1.0 - F) * disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
 
   vec3 specContrib = M_PI * u_LightColor * F * G * D / 4.0*NdotL*NdotV;
 
