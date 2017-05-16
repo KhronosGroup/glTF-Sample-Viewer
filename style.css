@@ -76,4 +76,6 @@ hr.line {
     color: white;
     height: 30px;
     padding: 10px;
+    font-family: monospace;
+    white-space: pre;
 }

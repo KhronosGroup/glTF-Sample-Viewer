@@ -349,6 +349,11 @@ function init(vertSource, fragSource) {
 
     updateMathScales();
 
+    function format255(p) {
+        var str = p.toString();
+        return ' '.repeat(3).substring(str.length) + str;
+    }
+
     // picker
     var pixelPicker = document.getElementById('pixelPicker');
     $(canvas2d).mousemove(function(e) {
@@ -358,7 +363,7 @@ function init(vertSource, fragSource) {
         var coord = "x=" + x + ", y=" + y;
         var p = ctx2d.getImageData(x, y, 1, 1).data;
         pixelPicker.innerHTML =
-            "r: " + p[0] + " g: " + p[1] + " b: " + p[2] +
+            "r:  " + format255(p[0]) + " g:  " + format255(p[1]) + " b:  " + format255(p[2]) +
             "<br>r: " + (p[0] / 255).toFixed(2) + " g: " + (p[1] / 255).toFixed(2) + " b: " + (p[2] / 255).toFixed(2);
     });
 
