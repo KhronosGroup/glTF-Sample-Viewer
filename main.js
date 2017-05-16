@@ -355,16 +355,18 @@ function init(vertSource, fragSource) {
     }
 
     // picker
-    var pixelPicker = document.getElementById('pixelPicker');
+    var pixelPickerText = document.getElementById('pixelPickerText');
+    var pixelPickerColor = document.getElementById('pixelPickerColor');
     $(canvas2d).mousemove(function(e) {
         var pos = $(canvas2d).position();
         var x = e.pageX - pos.left;
         var y = e.pageY - pos.top;
         var coord = "x=" + x + ", y=" + y;
         var p = ctx2d.getImageData(x, y, 1, 1).data;
-        pixelPicker.innerHTML =
+        pixelPickerText.innerHTML =
             "r:  " + format255(p[0]) + " g:  " + format255(p[1]) + " b:  " + format255(p[2]) +
             "<br>r: " + (p[0] / 255).toFixed(2) + " g: " + (p[1] / 255).toFixed(2) + " b: " + (p[2] / 255).toFixed(2);
+        pixelPickerColor.style.backgroundColor = 'rgb(' + p[0] + ',' + p[1] + ',' + p[2] + ')';
     });
 
     var tick = function() {
