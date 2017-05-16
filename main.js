@@ -257,7 +257,7 @@ function init(vertSource, fragSource) {
 
     var scaleVals = {
         IBL: 1.0,
-    }
+    };
     var updateMathScales = function(v) {
         var el = scaleVals.pinnedElement ? scaleVals.pinnedElement : scaleVals.activeElement;
         var elId = el ? el.attr('id') : null;
@@ -267,9 +267,9 @@ function init(vertSource, fragSource) {
         glState.uniforms['u_scaleIBLAmbient'].vals = [scaleVals.IBL, scaleVals.IBL, 0.0, 0.0];
 
         redraw();
-    }
+    };
 
-    gui.add(scaleVals, "IBL", 0., 4.).onChange(updateMathScales);
+    gui.add(scaleVals, "IBL", 0, 4).onChange(updateMathScales);
 
     var setActiveComponent = function(el) {
         if (scaleVals.activeElement) {
@@ -283,7 +283,7 @@ function init(vertSource, fragSource) {
         if (!scaleVals.pinnedElement) {
             updateMathScales();
         }
-    }
+    };
 
     var setPinnedComponent = function(el) {
         if (scaleVals.activeElement) {
@@ -305,7 +305,7 @@ function init(vertSource, fragSource) {
         scaleVals.pinnedElement = el;
 
         updateMathScales();
-    }
+    };
 
     var createMouseOverScale = function() {
         var localArgs = arguments;
@@ -328,8 +328,8 @@ function init(vertSource, fragSource) {
                 }
                 ev.stopPropagation();
             }
-        )
-    }
+        );
+    };
 
     createMouseOverScale('#mathDiff', 'diff');
     createMouseOverScale('#mathSpec', 'spec');
@@ -350,13 +350,16 @@ function init(vertSource, fragSource) {
     updateMathScales();
 
     // picker
+    var pixelPicker = document.getElementById('pixelPicker');
     $(canvas2d).mousemove(function(e) {
         var pos = $(canvas2d).position();
         var x = e.pageX - pos.left;
         var y = e.pageY - pos.top;
         var coord = "x=" + x + ", y=" + y;
         var p = ctx2d.getImageData(x, y, 1, 1).data;
-        $('#pixelPicker').html("r: " + p[0] + " g: " + p[1] + " b: " + p[2] + "<br>r: " + (p[0] / 255.).toFixed(2) + " g: " + (p[1] / 255.).toFixed(2) + " b: " + (p[2] / 255.).toFixed(2));
+        pixelPicker.innerHTML =
+            "r: " + p[0] + " g: " + p[1] + " b: " + p[2] +
+            "<br>r: " + (p[0] / 255).toFixed(2) + " g: " + (p[1] / 255).toFixed(2) + " b: " + (p[2] / 255).toFixed(2);
     });
 
     var tick = function() {

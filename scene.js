@@ -1,3 +1,7 @@
+function defined(value) {
+    return value !== undefined && value !== null;
+}
+
 class Mesh {
     constructor(gl, scene, globalState, modelPath, gltf, meshIdx) {
         this.modelPath = modelPath;
@@ -6,7 +10,7 @@ class Mesh {
         this.defines = {
             'USE_MATHS': 1,
             'USE_IBL': 1,
-        }
+        };
 
         this.glState = {
             uniforms: {},
@@ -18,10 +22,10 @@ class Mesh {
 
         var primitives = gltf.meshes[meshIdx].primitives;
         // todo:  multiple primitives doesn't work.
-        for (var i = 0; i < primitives.length; i++) {
+        for (let i = 0; i < primitives.length; i++) {
             var primitive = primitives[Object.keys(primitives)[i]];
 
-            for (var attribute in primitive.attributes) {
+            for (let attribute in primitive.attributes) {
                 switch (attribute) {
                     case "NORMAL":
                         this.defines.HAS_NORMALS = 1;
@@ -37,7 +41,7 @@ class Mesh {
 
             // Material
             var materialName = primitive.material;
-            if (materialName != null) {
+            if (defined(materialName)) {
                 this.material = gltf.materials[materialName];
             }
             var imageInfos = this.initTextures(gl, gltf);
@@ -46,12 +50,12 @@ class Mesh {
 
             this.accessorsLoading = 0;
             // Attributes
-            for (var attribute in primitive.attributes) {
+            for (let attribute in primitive.attributes) {
                 getAccessorData(this, gl, gltf, modelPath, primitive.attributes[attribute], attribute);
             }
 
             // Indices
-            getAccessorData(this, gl, gltf, modelPath, primitive.indices, "INDEX");
+            getAccessorData(this, gl, gltf, modelPath, primitive.indices, 'INDEX');
 
             loadImages(imageInfos, gl, this);
         }
@@ -60,16 +64,16 @@ class Mesh {
 
     initProgram(gl) {
         var definesToString = function(defines) {
-            var outStr = "";
+            var outStr = '';
             for (var def in defines) {
-                outStr += "#define " + def + " " + defines[def] + "\n";
+                outStr += '#define ' + def + ' ' + defines[def] + '\n';
             }
             return outStr;
-        }
+        };
 
         var shaderDefines = definesToString(this.defines);//"#define USE_SAVED_TANGENTS 1\n#define USE_MATHS 1\n#define USE_IBL 1\n";
         if (gl.hasLodExt) {
-            shaderDefines += "#define USE_TEX_LOD 1\n";
+            shaderDefines += '#define USE_TEX_LOD 1\n';
         }
 
         var vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -78,7 +82,7 @@ class Mesh {
         var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
         if (!compiled) {
             error.innerHTML += 'Failed to compile the vertex shader<br>';
-            var compilationLog = gl.getShaderInfoLog(vertexShader);
+            let compilationLog = gl.getShaderInfoLog(vertexShader);
             error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
         }
 
@@ -88,7 +92,7 @@ class Mesh {
         compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
         if (!compiled) {
             error.innerHTML += 'Failed to compile the fragment shader<br>';
-            var compilationLog = gl.getShaderInfoLog(fragmentShader);
+            let compilationLog = gl.getShaderInfoLog(fragmentShader);
             error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
         }
 
@@ -116,8 +120,8 @@ class Mesh {
 
         // set this outside of this function
         var cameraPos = [view[14] * Math.sin(roll) * Math.cos(-pitch),
-        view[14] * Math.sin(-pitch),
-        -view[14] * Math.cos(roll) * Math.cos(-pitch)];
+            view[14] * Math.sin(-pitch),
+            -view[14] * Math.cos(roll) * Math.cos(-pitch)];
         globalState.uniforms['u_Camera'].vals = cameraPos;
 
         // Update mvp matrix
@@ -134,7 +138,7 @@ class Mesh {
         applyState(gl, this.program, globalState, this.glState);
 
         // Draw
-        if (this.indicesAccessor != null) {
+        if (defined(this.indicesAccessor)) {
             gl.drawElements(gl.TRIANGLES, this.indicesAccessor.count, gl.UNSIGNED_SHORT, this.indicesAccessor.byteOffset);
         }
 
@@ -157,9 +161,11 @@ class Mesh {
         var a_attribute = gl.getAttribLocation(this.program, attribute);
 
         this.glState.attributes[attribute] = {
-            'cmds': [{ 'funcName': 'bindBuffer', 'vals': [gl.ARRAY_BUFFER, buffer] },
-            { 'funcName': 'vertexAttribPointer', 'vals': [a_attribute, num, type, false, stride, offset] },
-            { 'funcName': 'enableVertexAttribArray', 'vals': [a_attribute] }],
+            'cmds': [
+                { 'funcName': 'bindBuffer', 'vals': [gl.ARRAY_BUFFER, buffer] },
+                { 'funcName': 'vertexAttribPointer', 'vals': [a_attribute, num, type, false, stride, offset] },
+                { 'funcName': 'enableVertexAttribArray', 'vals': [a_attribute] }
+            ],
             'a_attribute': a_attribute
         };
         return true;
@@ -199,7 +205,7 @@ class Mesh {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
         this.loadedBuffers = true;
-        if (this.pendingTextures == 0) {
+        if (this.pendingTextures === 0) {
             this.scene.drawScene(gl);
         }
     }
@@ -239,9 +245,12 @@ class Mesh {
             if (this.glState.uniforms['u_MetallicRoughnessSampler']) {
                 delete this.glState.uniforms['u_MetallicRoughnessSampler'];
             }
-            var metallic = (pbrMat && pbrMat.metallicFactor != null) ? pbrMat.metallicFactor : 1.0;
-            var roughness = (pbrMat && pbrMat.roughnessFactor != null) ? pbrMat.roughnessFactor : 1.0;
-            this.glState.uniforms['u_MetallicRoughnessValues'] = { 'funcName': 'uniform2f', 'vals': [metallic, roughness] }
+            var metallic = (pbrMat && defined(pbrMat.metallicFactor)) ? pbrMat.metallicFactor : 1.0;
+            var roughness = (pbrMat && defined(pbrMat.roughnessFactor)) ? pbrMat.roughnessFactor : 1.0;
+            this.glState.uniforms['u_MetallicRoughnessValues'] = {
+                funcName: 'uniform2f',
+                vals: [metallic, roughness]
+            };
         }
 
         // Normals
@@ -249,7 +258,10 @@ class Mesh {
             var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
             var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
             imageInfos['normal'] = { 'uri': normalsSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.glState.uniforms['u_NormalSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            this.glState.uniforms['u_NormalSampler'] = {
+                funcName: 'uniform1i',
+                vals: [samplerIndex]
+            };
             samplerIndex++;
             this.defines.HAS_NORMALMAP = 1;
         }
@@ -258,7 +270,7 @@ class Mesh {
         }
 
         // brdfLUT
-        var brdfLUT = "textures/brdfLUT.png";
+        var brdfLUT = 'textures/brdfLUT.png';
         imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
         this.glState.uniforms['u_brdfLUT'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
         samplerIndex++;
@@ -324,16 +336,16 @@ class Scene {
 
             mat4.multiply(localTransform, localTransform, parentTransform);
 
-            if (node.mesh != null && node.mesh < scene.meshes.length) {
+            if (defined(node.mesh) && node.mesh < scene.meshes.length) {
                 scene.meshes[node.mesh].drawMesh(gl, localTransform, scene.viewMatrix, scene.projectionMatrix, scene.globalState);
             }
 
-            if (node.children != null && node.children.length > 0) {
+            if (defined(node.children) && node.children.length > 0) {
                 for (var i = 0; i < node.children.length; i++) {
                     drawNodeRecursive(scene, scene.nodes[node.children[i]], localTransform);
                 }
             }
-        }
+        };
 
         var firstNode = this.nodes[0];
 
@@ -355,7 +367,7 @@ function getAccessorData(mesh, gl, gltf, model, accessorName, attribute) {
 
     reader.onload = function(e) {
         var arrayBuffer = reader.result;
-        var start = bufferView.byteOffset != null ? bufferView.byteOffset : 0;
+        var start = defined(bufferView.byteOffset) ? bufferView.byteOffset : 0;
         var end = start + bufferView.byteLength;
         var slicedBuffer = arrayBuffer.slice(start, end);
         var data;
@@ -387,7 +399,7 @@ function getAccessorData(mesh, gl, gltf, model, accessorName, attribute) {
         if (mesh.accessorsLoading === 0) {
             mesh.initBuffers(gl, gltf);
         }
-    }
+    };
 
     var oReq = new XMLHttpRequest();
     oReq.open("GET", model + bin, true);
@@ -420,7 +432,7 @@ function loadImage(imageInfo, gl, mesh) {
 
         mesh.pendingTextures--;
 
-        if (mesh.loadedBuffers == true && mesh.pendingTextures == 0) {
+        if (mesh.loadedBuffers === true && mesh.pendingTextures === 0) {
             mesh.scene.drawScene(gl);
         }
     };
@@ -439,14 +451,14 @@ function applyState(gl, program, globalState, localState) {
     gl.useProgram(program);
 
     var applyUniform = function(u, uniformName) {
-        if (localState.uniformLocations[uniformName] == null) {
+        if (!defined(localState.uniformLocations[uniformName])) {
             localState.uniformLocations[uniformName] = gl.getUniformLocation(program, uniformName);
         }
 
-        if (u.funcName && localState.uniformLocations[uniformName] != null && u.vals) {
+        if (u.funcName && defined(localState.uniformLocations[uniformName]) && u.vals) {
             gl[u.funcName](localState.uniformLocations[uniformName], ...u.vals);
         }
-    }
+    };
 
     for (let uniform in globalState.uniforms) {
         applyUniform(globalState.uniforms[uniform], uniform);
