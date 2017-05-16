@@ -195,13 +195,18 @@ function init(vertSource, fragSource) {
   // Enable depth test
   gl.enable(gl.DEPTH_TEST);
 
+  var redrawQueued = false;
   var redraw = function() {
-    window.requestAnimationFrame(function() {
-      var scene = glState.scene;
-      if (scene) {
-        scene.drawScene(gl);
-      }
-    });
+    if (!redrawQueued) {
+      redrawQueued = true;
+      window.requestAnimationFrame(function() {
+        var scene = glState.scene;
+        if (scene) {
+          scene.drawScene(gl);
+        }
+        redrawQueued = false;
+      });
+    }
   };
 
   // Set control callbacks
