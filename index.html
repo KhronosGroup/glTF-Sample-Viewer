@@ -4,6 +4,15 @@
     <meta charset="utf-8" />
     <title>WebGL PBR</title>
     <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #222;
+        overflow: hidden;
+      }
+
       #error {
         background-color: red;
       }
@@ -75,7 +84,7 @@
     <script src="main.js"></script>
   </head>
 
-  <body style="margin:0; position:fixed; width:100%" onload="main()">
+  <body onload="main()">
     <div id="error"></div>
     <canvas id="canvas" width="600" height="600">
       Please use a browser that supports "canvas"

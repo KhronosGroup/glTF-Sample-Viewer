@@ -7,7 +7,13 @@ class Mesh {
                     'USE_IBL':1,
                    }
 
-    this.glState  = {"uniforms":{}, "uniformLocations":{}, "attributes":{}};
+    this.glState  = {
+      uniforms: {},
+      uniformLocations: {},
+      attributes: {},
+      vertSource: globalState.vertSource,
+      fragSource: globalState.fragSource
+    };
 
     var primitives = gltf.meshes[meshIdx].primitives;
     // todo:  multiple primitives doesn't work.
@@ -66,9 +72,7 @@ class Mesh {
     }
   
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    $.get("./shaders/pbr-vert.glsl", function(response) {
-      gl.shaderSource(vertexShader, shaderDefines+response);
-    });
+    gl.shaderSource(vertexShader, shaderDefines + this.glState.vertSource);
     gl.compileShader(vertexShader);
     var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
     if (!compiled) {
@@ -78,9 +82,7 @@ class Mesh {
     }
 
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    $.get("./shaders/pbr-frag.glsl", function(response) {
-      gl.shaderSource(fragmentShader, shaderDefines+response);
-    });
+    gl.shaderSource(fragmentShader, shaderDefines + this.glState.fragSource);
     gl.compileShader(fragmentShader);
     compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
     if (!compiled) {
@@ -291,14 +293,7 @@ class Mesh {
 }
 
 class Scene {
-  constructor(gl, glState, model, file) {
-    // Load gltf file
-    var json;
-    $.get(file, function(response) {
-      json = response;
-    });
-    var gltf = (typeof json === 'string') ? JSON.parse(json) : json;
-
+  constructor(gl, glState, model, gltf) {
     this.globalState = glState;
 
     this.nodes = gltf.nodes;
@@ -456,11 +451,11 @@ function applyState(gl, program, globalState, localState) {
     }
   }
 
-  for(var uniform in globalState.uniforms) {
+  for(let uniform in globalState.uniforms) {
     applyUniform(globalState.uniforms[uniform], uniform);
   }
 
-  for(var uniform in localState.uniforms) {
+  for(let uniform in localState.uniforms) {
     applyUniform(localState.uniforms[uniform], uniform);
   }
 
