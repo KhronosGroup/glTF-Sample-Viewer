@@ -118,6 +118,12 @@ class Mesh {
         mat4.multiply(view, yRotation, xRotation);
         view[14] = -translate;
 
+        if (this.material.doubleSided) {
+            gl.disable(gl.CULL_FACE);
+        } else {
+            gl.enable(gl.CULL_FACE);
+        }
+
         // set this outside of this function
         var cameraPos = [view[14] * Math.sin(roll) * Math.cos(-pitch),
             view[14] * Math.sin(-pitch),
