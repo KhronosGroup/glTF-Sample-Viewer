@@ -1,117 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>WebGL PBR</title>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: #222;
-        overflow: hidden;
-      }
+    <link rel="stylesheet" href="style.css">
 
-      #error {
-        background-color: red;
-      }
-
-      #pbrMath {
-        position: absolute;
-        left: 10px;
-        bottom: 10px;
-        color: white;
-        padding: 15px;
-        font-size: 50px;
-      }
-
-      #inputs {
-        position: absolute;
-        left: 10px;
-        bottom: 120px;
-        color: white;
-        padding: 15px;
-        font-size: 50px;
-      }
-      
-
-      .pbrMathSub {
-        all:unset;
-        padding:0px;
-        font-size: 50px;
-        color: white;
-        display:inline-block;
-        vertical-align: middle;
-      }
-
-      .reset {
-        all:unset;
-        display:inline;
-      }
-
-      .activeComponent {
-        background-color: darkslategray;
-      }
-      .pinnedComponent {
-        background-color: darkslateblue;
-      }
-
-      hr.line {
-        display:block;
-        padding: 0;
-        border: 1px solid;
-        color: white;
-        text-align: center;
-        width:100%;
-        margin:1px;
-      }
-
-      #pixelPicker {
-        position:absolute;
-        right:0px;
-        bottom:0px;
-        color:white;
-        height:30px;
-        padding:10px;
-      }
-    </style>
-    
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/gl-matrix-min.js"></script>
     <script src="jquery-3.1.1.js"></script>
     <script src="scene.js"></script>
     <script src="main.js"></script>
-  </head>
-
-  <body onload="main()">
+</head>
+<body onload="main()">
     <div id="error"></div>
     <canvas id="canvas" width="600" height="600">
-      Please use a browser that supports "canvas"
+        Please use a browser that supports "canvas"
     </canvas>
     <canvas id="canvas2d" width="600" height="600">
     </canvas>
-    <div style="text-align:center" id="pbrMath">
-      <i>
-      <div class="pbrMathSub" id="mathAll"><i>f</i>(<i>l</i>,<i>v</i>,<i>h</i>) = </div>
-      <div class="pbrMathSub" id="mathDiff">Diff(l,n)</div> + 
-      <div class="pbrMathSub" id="mathSpec">
-        <div class="reset" id="mathF">F(l,h)</div>
-        <div class="reset" id="mathG">G(l,v,h)</div>
-        <div class="reset" id="mathD">D(h)</div>
-        <hr class="line">
-        <div class="reset">4(n*l)(n*v)</div>
-      </div>
-      </i>
+    <div id="pbrMath">
+        <div class="pbrMathSub" id="mathAll"><i>f</i>(<i>l</i>,<i>v</i>,<i>h</i>) = </div>
+        <div class="pbrMathSub" id="mathDiff">Diff(l,n)</div> +
+        <div class="pbrMathSub" id="mathSpec">
+            <div class="reset" id="mathF">F(l,h)</div>
+            <div class="reset" id="mathG">G(l,v,h)</div>
+            <div class="reset" id="mathD">D(h)</div>
+            <hr class="line">
+            <div class="reset">4(n*l)(n*v)</div>
+        </div>
     </div>
-    <div style="text-align:center" id="inputs">
-      <i>
-      <div class="pbrMathSub" id="baseColor">base color</div><br>
-      <div class="pbrMathSub" id="metallic">metallic</div><br>
-      <div class="pbrMathSub" id="roughness">roughness</div>
-      </i>
+    <div id="inputs">
+        <div class="note">Click or hover to isolate:</div>
+        <div class="pbrMathSub" id="baseColor">base color</div><br>
+        <div class="pbrMathSub" id="metallic">metallic</div><br>
+        <div class="pbrMathSub" id="roughness">roughness</div>
     </div>
 
     <div id="pixelPicker">x: y: z:</div>
-  </body>
+</body>
 </html>
