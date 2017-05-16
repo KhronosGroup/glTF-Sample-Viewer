@@ -120,13 +120,12 @@ function init(vertSource, fragSource) {
     var canvas = document.getElementById('canvas');
     var canvas2d = document.getElementById('canvas2d');
     var error = document.getElementById('error');
-    error.width = window.innerWidth;
     if (!canvas) {
         error.innerHTML += 'Failed to retrieve the canvas element<br>';
         return;
     }
-    canvas.width = canvas2d.width = window.innerWidth;
-    canvas.height = canvas2d.height = window.innerHeight;
+    var canvasWidth = -1;
+    var canvasHeight = -1;
     canvas.hidden = true;
 
     var gl = canvas.getContext("webgl", {}) || canvas.getContext("experimental-webgl", {});
@@ -149,6 +148,18 @@ function init(vertSource, fragSource) {
         fragSource: fragSource,
         scene: null
     };
+
+    var projectionMatrix = mat4.create();
+    function resizeCanvasIfNeeded() {
+        var width = Math.max(1, window.innerWidth);
+        var height = Math.max(1, window.innerHeight);
+        if (width !== canvasWidth || height !== canvasHeight) {
+            canvas.width = canvas2d.width = canvasWidth = width;
+            canvas.height = canvas2d.height = canvasHeight = height;
+            gl.viewport(0, 0, width, height);
+            mat4.perspective(projectionMatrix, 45.0 * Math.PI / 180.0, width / height, 0.01, 100.0);
+        }
+    }
 
     // Create cube maps
     var envMap = "papermill";
@@ -177,10 +188,6 @@ function init(vertSource, fragSource) {
     var up = vec3.fromValues(0.0, 1.0, 0.0);
     mat4.lookAt(viewMatrix, eye, at, up);
 
-    // Projection matrix
-    var projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, 45.0 * Math.PI / 180.0, canvas.width / canvas.height, 0.01, 100.0);
-
     // get scaling stuff
     glState.uniforms['u_scaleDiffBaseMR'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
     glState.uniforms['u_scaleFGDSpec'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
@@ -201,6 +208,7 @@ function init(vertSource, fragSource) {
             redrawQueued = true;
             window.requestAnimationFrame(function() {
                 redrawQueued = false;
+                resizeCanvasIfNeeded();
                 var scene = glState.scene;
                 if (scene) {
                     scene.drawScene(gl);
@@ -378,6 +386,9 @@ function init(vertSource, fragSource) {
             window.requestAnimationFrame(sample2D);
         }
     });
+
+    // Redraw the scene after window size changes.
+    $(window).resize(redraw);
 
     var tick = function() {
         animate(roll);
