@@ -200,11 +200,11 @@ function init(vertSource, fragSource) {
     if (!redrawQueued) {
       redrawQueued = true;
       window.requestAnimationFrame(function() {
+        redrawQueued = false;
         var scene = glState.scene;
         if (scene) {
           scene.drawScene(gl);
         }
-        redrawQueued = false;
       });
     }
   };
