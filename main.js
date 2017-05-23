@@ -71,15 +71,52 @@ function loadCubeMap(gl, envMap, type, state) {
 
 // Update model from dat.gui change
 function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffer, frontBuffer) {
-  scene = new Scene(gl, glState, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
-  scene.projectionMatrix = projectionMatrix;
-  scene.viewMatrix = viewMatrix;
-  scene.backBuffer = backBuffer;
-  scene.frontBuffer = frontBuffer;
-  return scene;
+  var error = document.getElementById('error');
+  glState.scene = null;
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  $.ajax({
+    url: 'models/' + value + '/glTF/' + value + '.gltf',
+    dataType: 'json',
+    async: true,
+    error: (jqXhr, textStatus, errorThrown) => {
+      error.innerHTML += 'Failed to load model: ' + errorThrown + '<br>';
+    },
+    success: function(gltf) {
+      var scene = new Scene(gl, glState, "./models/" + value + "/glTF/", gltf);
+      scene.projectionMatrix = projectionMatrix;
+      scene.viewMatrix = viewMatrix;
+      scene.backBuffer = backBuffer;
+      scene.frontBuffer = frontBuffer;
+      glState.scene = scene;
+    }
+  });
 }
 
 function main() {
+  var error = document.getElementById('error');
+  var vertDeferred = $.ajax({
+    url: './shaders/pbr-vert.glsl',
+    dataType: 'text',
+    async: true,
+    error: (jqXhr, textStatus, errorThrown) => {
+      error.innerHTML += 'Failed to load the vertex shader: ' + errorThrown + '<br>';
+    }
+  });
+  var fragDeferred = $.ajax({
+    url: './shaders/pbr-frag.glsl',
+    dataType: 'text',
+    async: true,
+    error: (jqXhr, textStatus, errorThrown) => {
+      error.innerHTML += 'Failed to load the fragment shader: ' + errorThrown + '<br>';
+    }
+  });
+  $.when(vertDeferred, fragDeferred).then((vertSource, fragSource) => {
+    init(vertSource[0], fragSource[0]);
+  });
+}
+
+function init(vertSource, fragSource) {
   var canvas = document.getElementById('canvas');
   var canvas2d = document.getElementById('canvas2d');
   var error = document.getElementById('error');
@@ -105,12 +142,13 @@ function main() {
   gl.hasDerivativesExt = gl.getExtension('OES_standard_derivatives');
   gl.hasSRGBExt = gl.getExtension('EXT_SRGB');
 
-  // Initialize shaders
-  $.ajaxSetup({
-    async: false
-  });
-
-  glState = {"uniforms":{}, "attributes":{}};
+  glState = {
+    uniforms: {},
+    attributes: {},
+    vertSource: vertSource,
+    fragSource: fragSource,
+    scene: null
+  };
 
   // Create cube maps
   var envMap = "papermill";
@@ -149,9 +187,7 @@ function main() {
   glState.uniforms['u_scaleIBLAmbient'] = {'funcName':'uniform4f', vals:[1.0,1.0,1.0,1.0]};
 
   // Load scene
-  //var scene = new Scene(gl, "./models/DamagedHelmetModified/glTF/", "./models/DamagedHelmetModified/glTF/DamagedHelmetModified.gltf");
-  //var scene = new Scene(gl, "./models/MetalRoughSpheres/glTF/", "./models/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf");
-  scene = updateModel("BoomBox", gl, glState, viewMatrix, projectionMatrix,canvas, ctx2d);
+  updateModel("BoomBox", gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
 
   // Set clear color
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
@@ -159,11 +195,19 @@ function main() {
   // Enable depth test
   gl.enable(gl.DEPTH_TEST);
 
+  var redrawQueued = false;
   var redraw = function() {
-    window.requestAnimationFrame(function() {
-      scene.drawScene(gl);
-    })
-  }
+    if (!redrawQueued) {
+      redrawQueued = true;
+      window.requestAnimationFrame(function() {
+        redrawQueued = false;
+        var scene = glState.scene;
+        if (scene) {
+          scene.drawScene(gl);
+        }
+      });
+    }
+  };
 
   // Set control callbacks
   canvas2d.onmousedown = function(ev) {handleMouseDown(ev);};
@@ -178,7 +222,7 @@ function main() {
   
   var text = {Model: "BoomBox"};
   folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'FarmLandDiorama', 'Telephone', 'Triangle', 'WaterBottle']).onChange(function(value) {
-    scene = updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
+    updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
   });
   folder.open();
 
