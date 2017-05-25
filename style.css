@@ -1,0 +1,93 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #222;
+    overflow: hidden;
+}
+
+#error {
+    background-color: red;
+}
+
+#pbrMath {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    color: white;
+    padding: 15px;
+    font-size: 50px;
+    font-style: italic;
+    text-align: center;
+}
+
+#inputs {
+    position: absolute;
+    left: 10px;
+    bottom: 120px;
+    color: white;
+    padding: 15px;
+    font-size: 50px;
+    font-style: italic;
+    text-align: center;
+}
+
+
+.pbrMathSub {
+    padding: 0px;
+    font-size: 50px;
+    color: white;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.reset {
+    display: inline;
+}
+
+.activeComponent {
+    background-color: darkslategray;
+}
+
+.pinnedComponent {
+    background-color: darkslateblue;
+}
+
+hr.line {
+    display: block;
+    padding: 0;
+    border: 1px solid;
+    color: white;
+    text-align: center;
+    width: 100%;
+    margin: 1px;
+}
+
+.note {
+    font-style: normal;
+    font-size: 19px;
+}
+
+.pixelPicker {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    color: white;
+    height: 30px;
+    padding: 10px;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.pixelPicker span {
+    display: inline-block;
+    white-space: pre;
+}
+
+#pixelPickerColor {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 1px solid black;
+}
