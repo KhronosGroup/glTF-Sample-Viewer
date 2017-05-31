@@ -37,6 +37,25 @@
       "byteOffset": 0,
       "componentType": 5126,
       "count": 2188,
+      "type": "VEC4",
+      "max": [
+        0.99984026,
+        0.999033451,
+        0.9678841,
+        1.0
+      ],
+      "min": [
+        -0.999989867,
+        -0.999561965,
+        -0.999997139,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 2188,
       "type": "VEC3",
       "max": [
         0.0690619648,
@@ -50,7 +69,7 @@
       ]
     },
     {
-      "bufferView": 3,
+      "bufferView": 4,
       "byteOffset": 0,
       "componentType": 5123,
       "count": 11592,
@@ -71,32 +90,33 @@
     {
       "buffer": 0,
       "byteOffset": 0,
-      "byteLength": 17504,
-      "target": 34962
+      "byteLength": 17504
     },
     {
       "buffer": 0,
       "byteOffset": 17504,
-      "byteLength": 26256,
-      "target": 34962
+      "byteLength": 26256
     },
     {
       "buffer": 0,
       "byteOffset": 43760,
-      "byteLength": 26256,
-      "target": 34962
+      "byteLength": 35008
     },
     {
       "buffer": 0,
-      "byteOffset": 70016,
-      "byteLength": 23184,
-      "target": 34962
+      "byteOffset": 78768,
+      "byteLength": 26256
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 105024,
+      "byteLength": 23184
     }
   ],
   "buffers": [
     {
       "uri": "BarramundiFish.bin",
-      "byteLength": 93200
+      "byteLength": 128208
     }
   ],
   "extensionsUsed": [
@@ -107,7 +127,7 @@
       "uri": "BarramundiFish_baseColor.png"
     },
     {
-      "uri": "BarramundiFish_metallicRoughness.png"
+      "uri": "BarramundiFish_roughnessMetallic.png"
     },
     {
       "uri": "BarramundiFish_normal.png"
@@ -129,9 +149,10 @@
           "attributes": {
             "TEXCOORD_0": 0,
             "NORMAL": 1,
-            "POSITION": 2
+            "TANGENT": 2,
+            "POSITION": 3
           },
-          "indices": 3,
+          "indices": 4,
           "material": 0,
           "mode": 4
         }

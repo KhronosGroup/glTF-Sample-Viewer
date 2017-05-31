@@ -37,6 +37,25 @@
       "byteOffset": 0,
       "componentType": 5126,
       "count": 406,
+      "type": "VEC4",
+      "max": [
+        0.929839253,
+        0.998867154,
+        0.9930595,
+        1.0
+      ],
+      "min": [
+        -0.999970555,
+        -0.999693751,
+        -0.995075762,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 406,
       "type": "VEC3",
       "max": [
         0.02128091,
@@ -50,7 +69,7 @@
       ]
     },
     {
-      "bufferView": 3,
+      "bufferView": 4,
       "byteOffset": 0,
       "componentType": 5123,
       "count": 2046,
@@ -71,32 +90,33 @@
     {
       "buffer": 0,
       "byteOffset": 0,
-      "byteLength": 3248,
-      "target": 34962
+      "byteLength": 3248
     },
     {
       "buffer": 0,
       "byteOffset": 3248,
-      "byteLength": 4872,
-      "target": 34962
+      "byteLength": 4872
     },
     {
       "buffer": 0,
       "byteOffset": 8120,
-      "byteLength": 4872,
-      "target": 34962
+      "byteLength": 6496
     },
     {
       "buffer": 0,
-      "byteOffset": 12992,
-      "byteLength": 4092,
-      "target": 34962
+      "byteOffset": 14616,
+      "byteLength": 4872
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19488,
+      "byteLength": 4092
     }
   ],
   "buffers": [
     {
       "uri": "Avocado.bin",
-      "byteLength": 17084
+      "byteLength": 23580
     }
   ],
   "extensionsUsed": [
@@ -107,7 +127,7 @@
       "uri": "Avocado_baseColor.png"
     },
     {
-      "uri": "Avocado_metallicRoughness.png"
+      "uri": "Avocado_roughnessMetallic.png"
     },
     {
       "uri": "Avocado_normal.png"
@@ -126,9 +146,10 @@
           "attributes": {
             "TEXCOORD_0": 0,
             "NORMAL": 1,
-            "POSITION": 2
+            "TANGENT": 2,
+            "POSITION": 3
           },
-          "indices": 3,
+          "indices": 4,
           "material": 0,
           "mode": 4
         }

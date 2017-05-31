@@ -1,312 +1,457 @@
-function loadCubeMap(gl, envMap, type) { 
-  var texture = gl.createTexture();
-  var textureNumber = -1;
-  var mipLevels = 0;
-  var u_EnvSampler;
-  if (type === "diffuse") {
-    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_DiffuseEnvSampler');
-    gl.activeTexture(gl.TEXTURE1);
-    textureNumber = 1;
-    mipLevels = 1;
-  }
-  else if (type === "specular") {
-    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_SpecularEnvSampler');
-    gl.activeTexture(gl.TEXTURE2);
-    textureNumber = 2;
-    mipLevels = 10;
-  }
-  else if (type === "environment") {
-    u_EnvSampler = gl.getUniformLocation(gl.program, 'u_EnvSampler');
-    gl.activeTexture(gl.TEXTURE0);
-    textureNumber = 0;
-    mipLevels = 1;
-  }
-  else {
-    var error = document.getElementById('error');
-    error.innerHTML += 'Invalid type of cubemap loaded<br>';
-    return -1;
-  }
-  gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  if (mipLevels < 2) {
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  }
-  else {
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  }
-
-  var path = "textures/" + envMap + "/" + type + "/" + type;
-
-  for (var j = 0; j < mipLevels; j++) {
-    var faces = [[path +  "_right_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
-                [path + "_left_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
-                [path + "_top_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
-                [path + "_bottom_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
-                [path + "_front_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
-                [path + "_back_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
-    for (var i = 0; i < faces.length; i++) {
-      var face = faces[i][1];
-      var image = new Image();
-      image.onload = function(texture, face, image, j) {
-        return function() {
-          gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-          gl.texImage2D(face, j, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        }
-      } (texture, face, image, j);
-      image.src = faces[i][0];
+function loadCubeMap(gl, envMap, type, state) {
+    var texture = gl.createTexture();
+    var textureNumber = -1;
+    var activeTextureEnum = gl.TEXTURE0;
+    var mipLevels = 0;
+    var uniformName = 'u_EnvSampler';
+    if (type === "diffuse") {
+        uniformName = 'u_DiffuseEnvSampler';
+        activeTextureEnum = gl.TEXTURE1;
+        textureNumber = 1;
+        mipLevels = 1;
     }
-  }
+    else if (type === "specular") {
+        uniformName = 'u_SpecularEnvSampler';
+        activeTextureEnum = gl.TEXTURE2;
+        textureNumber = 2;
+        mipLevels = 10;
+    }
+    else if (type === "environment") {
+        uniformName = 'u_EnvSampler';
+        activeTextureEnum = gl.TEXTURE0;
+        textureNumber = 0;
+        mipLevels = 1;
+    }
+    else {
+        var error = document.getElementById('error');
+        error.innerHTML += 'Invalid type of cubemap loaded<br>';
+        return -1;
+    }
+    gl.activeTexture(activeTextureEnum);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (mipLevels < 2) {
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
+    else {
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
 
-  gl.uniform1i(u_EnvSampler, textureNumber);
-  return 1;
+    var path = "textures/" + envMap + "/" + type + "/" + type;
+
+    for (var j = 0; j < mipLevels; j++) {
+        var faces = [[path + "_right_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
+        [path + "_left_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
+        [path + "_top_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
+        [path + "_bottom_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
+        [path + "_front_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
+        [path + "_back_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]];
+        for (var i = 0; i < faces.length; i++) {
+            var face = faces[i][1];
+            var image = new Image();
+            image.onload = function(texture, face, image, j) {
+                return function() {
+                    gl.activeTexture(activeTextureEnum);
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+                    // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
+                    gl.texImage2D(face, j, gl.hasSRGBExt.SRGB_EXT, gl.hasSRGBExt.SRGB_EXT, gl.UNSIGNED_BYTE, image);
+                }
+            }(texture, face, image, j);
+            image.src = faces[i][0];
+        }
+    }
+
+    state.uniforms[uniformName] = { 'funcName': 'uniform1i', 'vals': [textureNumber] };
+    return 1;
 }
 
 // Update model from dat.gui change
-function updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix) {
-  scene = new Scene(gl, "./models/" + value + "/glTF/", "./models/" + value + "/glTF/" + value + ".gltf");
-  scene.projectionMatrix = projectionMatrix;
-  scene.viewMatrix = viewMatrix;
-  scene.u_mvpMatrix = u_mvpMatrix;
-  scene.u_NormalMatrix = u_NormalMatrix;
-  return scene;
-}
+function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffer, frontBuffer) {
+    var error = document.getElementById('error');
+    glState.scene = null;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-function updateBaseColor(value, gl, scene) {
-  var u_BaseColor = gl.getUniformLocation(gl.program, 'u_BaseColor');
-  gl.uniform3f(u_BaseColor, value[0]/255, value[1]/255, value[2]/255);
-  scene.drawScene(gl);
-}
-
-function updateMetallic(value, gl, scene) {
-  var u_Metallic = gl.getUniformLocation(gl.program, 'u_Metallic');
-  gl.uniform1f(u_Metallic, value);
-  scene.drawScene(gl);
-}
-
-function updateRoughness(value, gl, scene) {
-  var u_Roughness = gl.getUniformLocation(gl.program, 'u_Roughness');
-  gl.uniform1f(u_Roughness, value);
-  scene.drawScene(gl);
-}
-
-function updateUseTextures(value, gl, scene) {
-  var u_useTextures = gl.getUniformLocation(gl.program, 'u_useTextures');
-  gl.uniform1i(u_useTextures, value);
-  scene.drawScene(gl);  
+    $.ajax({
+        url: 'models/' + value + '/glTF/' + value + '.gltf',
+        dataType: 'json',
+        async: true,
+        error: (jqXhr, textStatus, errorThrown) => {
+            error.innerHTML += 'Failed to load model: ' + errorThrown + '<br>';
+        },
+        success: function(gltf) {
+            var scene = new Scene(gl, glState, "./models/" + value + "/glTF/", gltf);
+            scene.projectionMatrix = projectionMatrix;
+            scene.viewMatrix = viewMatrix;
+            scene.backBuffer = backBuffer;
+            scene.frontBuffer = frontBuffer;
+            glState.scene = scene;
+        }
+    });
 }
 
 function main() {
-  var canvas = document.getElementById('canvas');
-  var error = document.getElementById('error');
-  error.width = window.innerWidth;
-  if (!canvas) {
-    error.innerHTML += 'Failed to retrieve the canvas element<br>';
-    return;
-  }
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+    var error = document.getElementById('error');
+    var vertDeferred = $.ajax({
+        url: './shaders/pbr-vert.glsl',
+        dataType: 'text',
+        async: true,
+        error: (jqXhr, textStatus, errorThrown) => {
+            error.innerHTML += 'Failed to load the vertex shader: ' + errorThrown + '<br>';
+        }
+    });
+    var fragDeferred = $.ajax({
+        url: './shaders/pbr-frag.glsl',
+        dataType: 'text',
+        async: true,
+        error: (jqXhr, textStatus, errorThrown) => {
+            error.innerHTML += 'Failed to load the fragment shader: ' + errorThrown + '<br>';
+        }
+    });
+    $.when(vertDeferred, fragDeferred).then((vertSource, fragSource) => {
+        init(vertSource[0], fragSource[0]);
+    });
+}
 
-  var gl = canvas.getContext("webgl");
-  if (!gl) {
-    error.innerHTML += 'Failed to get the rendering context for WebGL<br>';
-    return;
-  }
+function init(vertSource, fragSource) {
+    var canvas = document.getElementById('canvas');
+    var canvas2d = document.getElementById('canvas2d');
+    var error = document.getElementById('error');
+    if (!canvas) {
+        error.innerHTML += 'Failed to retrieve the canvas element<br>';
+        return;
+    }
+    var canvasWidth = -1;
+    var canvasHeight = -1;
+    canvas.hidden = true;
 
-  // Load extensions
-  gl.getExtension('EXT_shader_texture_lod');
-  gl.getExtension('OES_standard_derivatives');
+    var gl = canvas.getContext("webgl", {}) || canvas.getContext("experimental-webgl", {});
+    if (!gl) {
+        error.innerHTML += 'Failed to get the rendering context for WebGL<br>';
+        return;
+    }
 
-  // Initialize shaders
-  $.ajaxSetup({
-    async: false
-  });
- 
-  var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  $.get("./shaders/pbr-vert.glsl", function(response) {
-    gl.shaderSource(vertexShader, response);
-  });
-  gl.compileShader(vertexShader);
-  var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
-  if (!compiled) {
-    error.innerHTML += 'Failed to compile the vertex shader<br>';
-    var compilationLog = gl.getShaderInfoLog(vertexShader);
-    error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
-  }
+    var ctx2d = canvas2d.getContext("2d");
 
-  var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  $.get("./shaders/pbr-frag.glsl", function(response) {
-    gl.shaderSource(fragmentShader, response);
-  });
-  gl.compileShader(fragmentShader);
-  compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
-  if (!compiled) {
-    error.innerHTML += 'Failed to compile the fragment shader<br>';
-    var compilationLog = gl.getShaderInfoLog(fragmentShader);
-    error.innerHTML += 'Shader compiler log: ' + compilationLog + '<br>';
-  }
+    // Load extensions
+    gl.hasLodExt = gl.getExtension('EXT_shader_texture_lod');
+    gl.hasDerivativesExt = gl.getExtension('OES_standard_derivatives');
+    gl.hasSRGBExt = gl.getExtension('EXT_SRGB');
 
-  var program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  gl.useProgram(program);
-  gl.program = program;
+    glState = {
+        uniforms: {},
+        attributes: {},
+        vertSource: vertSource,
+        fragSource: fragSource,
+        scene: null
+    };
 
-  // Create cube maps
-  var envMap = "papermill";
-  //loadCubeMap(gl, envMap, "environment");
-  loadCubeMap(gl, envMap, "diffuse");
-  loadCubeMap(gl, envMap, "specular");
+    var projectionMatrix = mat4.create();
+    function resizeCanvasIfNeeded() {
+        var width = Math.max(1, window.innerWidth);
+        var height = Math.max(1, window.innerHeight);
+        if (width !== canvasWidth || height !== canvasHeight) {
+            canvas.width = canvas2d.width = canvasWidth = width;
+            canvas.height = canvas2d.height = canvasHeight = height;
+            gl.viewport(0, 0, width, height);
+            mat4.perspective(projectionMatrix, 45.0 * Math.PI / 180.0, width / height, 0.01, 100.0);
+        }
+    }
 
-  // Light
-  var u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
-  gl.uniform3f(u_LightPosition, 0.0, 0.0, 1.5);
+    // Create cube maps
+    var envMap = "papermill";
+    //loadCubeMap(gl, envMap, "environment");
+    loadCubeMap(gl, envMap, "diffuse", glState);
+    loadCubeMap(gl, envMap, "specular", glState);
+    // Get location of mvp matrix uniform
+    glState.uniforms['u_mvpMatrix'] = { 'funcName': 'uniformMatrix4fv' };
+    // Get location of normal matrix uniform
+    glState.uniforms['u_NormalMatrix'] = { 'funcName': 'uniformMatrix4fv' };
 
-  // Camera
-  var u_Camera = gl.getUniformLocation(gl.program, 'u_Camera');
-  gl.uniform3f(u_Camera, 0.0, 0.0, -4.0);
+    // Light
+    glState.uniforms['u_LightDirection'] = { 'funcName': 'uniform3f', 'vals': [0.0, 0.5, 0.5] };
+    glState.uniforms['u_LightColor'] = { 'funcName': 'uniform3f', 'vals': [1.0, 1.0, 1.0] };
 
-  // Model matrix
-  var modelMatrix = mat4.create();
-  
-  // View matrix
-  var viewMatrix = mat4.create();
-  var eye = vec3.fromValues(0.0, 0.0, -4.0);
-  var at = vec3.fromValues(0.0, 0.0, 0.0);
-  var up = vec3.fromValues(0.0, 1.0, 0.0);
-  mat4.lookAt(viewMatrix, eye, at, up);
+    // Camera
+    glState.uniforms['u_Camera'] = { 'funcName': 'uniform3f', vals: [0.0, 0.0, -4.0] };
 
-  // Projection matrix
-  var projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, 70.0, canvas.width/canvas.height, 0.01, 100.0);
+    // Model matrix
+    var modelMatrix = mat4.create();
 
-  // Get location of mvp matrix uniform
-  var u_mvpMatrix = gl.getUniformLocation(gl.program, 'u_mvpMatrix');
+    // View matrix
+    var viewMatrix = mat4.create();
+    var eye = vec3.fromValues(0.0, 0.0, 4.0);
+    var at = vec3.fromValues(0.0, 0.0, 0.0);
+    var up = vec3.fromValues(0.0, 1.0, 0.0);
+    mat4.lookAt(viewMatrix, eye, at, up);
 
-  // Get location of normal matrix uniform
-  var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+    // get scaling stuff
+    glState.uniforms['u_scaleDiffBaseMR'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
+    glState.uniforms['u_scaleFGDSpec'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
+    glState.uniforms['u_scaleIBLAmbient'] = { 'funcName': 'uniform4f', vals: [1.0, 1.0, 1.0, 1.0] };
 
-  // Set clear color
-  gl.clearColor(0.2, 0.2, 0.2, 1.0);
-  
-  // Enable depth test
-  gl.enable(gl.DEPTH_TEST);
+    // Load scene
+    updateModel("BoomBox", gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
 
-  // Clear canvas
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // Set clear color
+    gl.clearColor(0.2, 0.2, 0.2, 1.0);
 
-  // Load scene
-  var scene = new Scene(gl, "./models/Avocado/glTF/", "./models/Avocado/glTF/Avocado.gltf");
-  scene.projectionMatrix = projectionMatrix;
-  scene.viewMatrix = viewMatrix;
-  scene.u_mvpMatrix = u_mvpMatrix;
-  scene.u_NormalMatrix = u_NormalMatrix;
+    // Enable depth test
+    gl.enable(gl.DEPTH_TEST);
 
-  // Set control callbacks
-  canvas.onmousedown = function(ev) {handleMouseDown(ev);};
-  document.onmouseup = function(ev) {handleMouseUp(ev);};
-  document.onmousemove = function(ev) {handleMouseMove(ev, gl, scene);};
-  document.onwheel = function(ev) {handleWheel(ev, gl, scene);};
+    var redrawQueued = false;
+    var redraw = function() {
+        if (!redrawQueued) {
+            redrawQueued = true;
+            window.requestAnimationFrame(function() {
+                redrawQueued = false;
+                resizeCanvasIfNeeded();
+                var scene = glState.scene;
+                if (scene) {
+                    scene.drawScene(gl);
+                }
+            });
+        }
+    };
 
-  // Initialize GUI  
-  var gui = new dat.GUI();
-  var folder = gui.addFolder("Metallic-Roughness Material");
-  var material = {
-    'Base Color': [180, 180, 180],
-    'Metallic': 0.5,
-    'Roughness': 0.5,
-    'Use Textures': true
-  };
-  
-  folder.addColor(material, 'Base Color').onChange(function(value) {
-    updateBaseColor(value, gl, scene);
-  });
-  folder.add(material, 'Metallic', 0.001, 0.99).onChange(function(value) {
-    updateMetallic(value, gl, scene);
-  });
-  folder.add(material, 'Roughness', 0.001, 0.99).onChange(function(value) {
-    updateRoughness(value, gl, scene);
-  });
-  folder.add(material, 'Use Textures').onChange(function(value) {
-    updateUseTextures(value, gl, scene);
-  });
-  updateBaseColor(material["Base Color"], gl, scene);
-  updateMetallic(material["Metallic"], gl, scene);
-  updateRoughness(material["Roughness"], gl, scene);
-  updateUseTextures(material["Use Textures"], gl, scene);
+    // Set control callbacks
+    canvas2d.onmousedown = function(ev) { handleMouseDown(ev); };
+    document.onmouseup = function(ev) { handleMouseUp(ev); };
+    document.onmousemove = function(ev) { handleMouseMove(ev, redraw); };
+    document.onwheel = function(ev) { handleWheel(ev, redraw); };
 
-  var text = {Model: "Avocado"};
-  folder.add(text, 'Model', ['Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'Telephone']).onChange(function(value) {
-    scene = updateModel(value, gl, scene, viewMatrix, projectionMatrix, u_mvpMatrix, u_NormalMatrix);
-  });
-  folder.open();
+    // Initialize GUI
+    var gui = new dat.GUI();
+    var folder = gui.addFolder("Metallic-Roughness Material");
 
-  var tick = function() {
-    animate(roll);
-    scene.drawScene(gl);
-    requestAnimationFrame(tick);
-  };
-  // Uncomment for turntable
-  //tick();
+
+    var text = { Model: "BoomBox" };
+    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'Triangle', 'WaterBottle']).onChange(function(value) {
+        updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
+    });
+    folder.open();
+
+    var light = gui.addFolder("Directional Light");
+    var lightProps = { lightColor: [255, 255, 255], lightScale: 1.0, lightRotation: 75, lightPitch: 40 };
+
+    var updateLight = function(value) {
+        glState.uniforms['u_LightColor'].vals = [lightProps.lightScale * lightProps.lightColor[0] / 255,
+        lightProps.lightScale * lightProps.lightColor[1] / 255,
+        lightProps.lightScale * lightProps.lightColor[2] / 255];
+
+        var rot = lightProps.lightRotation * Math.PI / 180;
+        var pitch = lightProps.lightPitch * Math.PI / 180;
+        glState.uniforms['u_LightDirection'].vals = [Math.sin(rot) * Math.cos(pitch),
+        Math.sin(pitch),
+        Math.cos(rot) * Math.cos(pitch)];
+
+        redraw();
+    };
+
+    light.addColor(lightProps, "lightColor").onChange(updateLight);
+    light.add(lightProps, "lightScale", 0, 10).onChange(updateLight);
+    light.add(lightProps, "lightRotation", 0, 360).onChange(updateLight);
+    light.add(lightProps, "lightPitch", -90, 90).onChange(updateLight);
+
+    light.open();
+
+
+    updateLight();
+
+    //mouseover scaling
+
+    var scaleVals = {
+        IBL: 1.0,
+    };
+    var updateMathScales = function(v) {
+        var el = scaleVals.pinnedElement ? scaleVals.pinnedElement : scaleVals.activeElement;
+        var elId = el ? el.attr('id') : null;
+
+        glState.uniforms['u_scaleDiffBaseMR'].vals = [elId == "mathDiff" ? 1.0 : 0.0, elId == "baseColor" ? 1.0 : 0.0, elId == "metallic" ? 1.0 : 0.0, elId == "roughness" ? 1.0 : 0.0];
+        glState.uniforms['u_scaleFGDSpec'].vals = [elId == "mathF" ? 1.0 : 0.0, elId == "mathG" ? 1.0 : 0.0, elId == "mathD" ? 1.0 : 0.0, elId == "mathSpec" ? 1.0 : 0.0];
+        glState.uniforms['u_scaleIBLAmbient'].vals = [scaleVals.IBL, scaleVals.IBL, 0.0, 0.0];
+
+        redraw();
+    };
+
+    gui.add(scaleVals, "IBL", 0, 4).onChange(updateMathScales);
+
+    var setActiveComponent = function(el) {
+        if (scaleVals.activeElement) {
+            scaleVals.activeElement.removeClass("activeComponent");
+        }
+        if (el && !scaleVals.pinnedElement) {
+            el.addClass("activeComponent");
+        }
+        scaleVals.activeElement = el;
+
+        if (!scaleVals.pinnedElement) {
+            updateMathScales();
+        }
+    };
+
+    var setPinnedComponent = function(el) {
+        if (scaleVals.activeElement) {
+            if (el) {
+                scaleVals.activeElement.removeClass("activeComponent");
+            }
+            else {
+                scaleVals.activeElement.addClass("activeComponent");
+            }
+        }
+
+        if (scaleVals.pinnedElement) {
+            scaleVals.pinnedElement.removeClass("pinnedComponent");
+        }
+        if (el) {
+            el.addClass("pinnedComponent");
+        }
+
+        scaleVals.pinnedElement = el;
+
+        updateMathScales();
+    };
+
+    var createMouseOverScale = function() {
+        var localArgs = arguments;
+        var el = $(localArgs[0]);
+        el.hover(
+            function(ev) {
+                setActiveComponent(el);
+            },
+            function(ev) {
+                setActiveComponent(null);
+            });
+
+        el.click(
+            function(ev) {
+                if (scaleVals.pinnedElement) {
+                    setPinnedComponent(null);
+                }
+                else {
+                    setPinnedComponent(el);
+                }
+                ev.stopPropagation();
+            }
+        );
+    };
+
+    createMouseOverScale('#mathDiff', 'diff');
+    createMouseOverScale('#mathSpec', 'spec');
+    createMouseOverScale('#mathF', 'F');
+    createMouseOverScale('#mathG', 'G');
+    createMouseOverScale('#mathD', 'D');
+    createMouseOverScale("#baseColor", "baseColor");
+    createMouseOverScale("#metallic", "metallic");
+    createMouseOverScale("#roughness", "roughness");
+
+    $("#pbrMath").click(function(ev) {
+        if (scaleVals.pinned && scaleVals.pinnedElement) {
+            $(scaleVals.pinnedElement).removeClass("pinnedComponent");
+        }
+        scaleVals.pinned = false;
+    });
+
+    updateMathScales();
+
+    function format255(p) {
+        var str = p.toString();
+        return ' '.repeat(3).substring(str.length) + str;
+    }
+
+    // picker
+    var pixelPickerText = document.getElementById('pixelPickerText');
+    var pixelPickerColor = document.getElementById('pixelPickerColor');
+    var pixelPickerPos = { x: 0, y: 0 };
+    var pixelPickerScheduled = false;
+    function sample2D() {
+        pixelPickerScheduled = false;
+        var x = pixelPickerPos.x;
+        var y = pixelPickerPos.y;
+        var p = ctx2d.getImageData(x, y, 1, 1).data;
+        pixelPickerText.innerHTML =
+            "r:  " + format255(p[0]) + " g:  " + format255(p[1]) + " b:  " + format255(p[2]) +
+            "<br>r: " + (p[0] / 255).toFixed(2) + " g: " + (p[1] / 255).toFixed(2) + " b: " + (p[2] / 255).toFixed(2);
+        pixelPickerColor.style.backgroundColor = 'rgb(' + p[0] + ',' + p[1] + ',' + p[2] + ')';
+    }
+    $(canvas2d).mousemove(function(e) {
+        var pos = $(canvas2d).position();
+        pixelPickerPos.x = e.pageX - pos.left;
+        pixelPickerPos.y = e.pageY - pos.top;
+        if (!pixelPickerScheduled) {
+            pixelPickerScheduled = true;
+            window.requestAnimationFrame(sample2D);
+        }
+    });
+
+    // Redraw the scene after window size changes.
+    $(window).resize(redraw);
+
+    var tick = function() {
+        animate(roll);
+        redraw();
+        requestAnimationFrame(tick);
+    };
+    // Uncomment for turntable
+    //tick();
 }
 
 // ***** Mouse Controls ***** //
 var mouseDown = false;
-var roll = 0.0;
+var roll = Math.PI;
 var pitch = 0.0;
-var translate = 0.0;
+var translate = 4.0;
 var lastMouseX = null;
 var lastMouseY = null;
 function handleMouseDown(ev) {
-  mouseDown = true;
-  lastMouseX = ev.clientX;
-  lastMouseY = ev.clientY;
+    mouseDown = true;
+    lastMouseX = ev.clientX;
+    lastMouseY = ev.clientY;
 }
 
 function handleMouseUp(ev) {
-  mouseDown = false;
+    mouseDown = false;
 }
 
-function handleMouseMove(ev, gl, scene) {
-  if (!mouseDown) {
-    return;
-  }
-  var newX = ev.clientX;
-  var newY = ev.clientY;
+function handleMouseMove(ev, redraw) {
+    if (!mouseDown) {
+        return;
+    }
+    var newX = ev.clientX;
+    var newY = ev.clientY;
 
-  var deltaX = newX - lastMouseX;
-  roll += (deltaX / 100.0); 
- 
-  var deltaY = newY - lastMouseY;
-  pitch += (deltaY / 100.0);
+    var deltaX = newX - lastMouseX;
+    roll += (deltaX / 100.0);
 
-  lastMouseX = newX;
-  lastMouseY = newY;
+    var deltaY = newY - lastMouseY;
+    pitch += (deltaY / 100.0);
 
-  scene.drawScene(gl);
+    lastMouseX = newX;
+    lastMouseY = newY;
+
+    redraw();
 }
 
-function handleWheel(ev, gl, scene) {
-  ev.preventDefault();
-  if (ev.wheelDelta > 0) {
-    translate += 0.04;
-  }
-  else {
-    translate -= 0.04;
-  }
-  scene.drawScene(gl);
+var wheelSpeed = 1.04;
+function handleWheel(ev, redraw) {
+    ev.preventDefault();
+    if (ev.wheelDelta > 0) {
+        translate *= wheelSpeed;
+    }
+    else {
+        translate /= wheelSpeed;
+    }
+
+    redraw();
 }
 
 var prev = Date.now();
 function animate(angle) {
-  var curr = Date.now();
-  var elapsed = curr - prev;
-  prev = curr;
-  roll = angle + ((Math.PI / 4.0) * elapsed) / 1000.0;
+    var curr = Date.now();
+    var elapsed = curr - prev;
+    prev = curr;
+    roll = angle + ((Math.PI / 4.0) * elapsed) / 1000.0;
 }
-
-

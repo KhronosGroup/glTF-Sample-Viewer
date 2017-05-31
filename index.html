@@ -1,53 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>WebGL PBR</title>
-    <style>
-      #error {
-        background-color: red;
-      }
+    <link rel="stylesheet" href="style.css">
 
-      #my-info {
-        position: absolute;
-        right: 0px;
-        bottom: 0px;
-        color: white;
-        height: 30px;
-        padding: 15px;
-      }
-
-      #github-link {
-        position: absolute;
-        right: 0px;
-        bottom: 50px;
-        color: white;
-        height: 30px;
-        padding: 15px;
-      }
-
-      #github-link img {
-        height: 100%;
-        float: left;
-      }
-    </style>
-  </head>
-
-  <body style="margin:0; position:fixed; width:100%" onload="main()">
-    <div id="error"></div>
-    <canvas id="canvas" width="600" height="600">
-      Please use a browser that supports "canvas"
-    </canvas>
-    <p id="my-info" align="right">
-      Mohamad Moneimne<br>University of Pennsylvania
-    </p>
-    <a id="github-link" href="https://github.com/moneimne/WebGL-PBR">
-      <img src="logos/GitHub-Mark-Light-64px.png" />
-    </a>
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/gl-matrix-min.js"></script>
     <script src="jquery-3.1.1.js"></script>
     <script src="scene.js"></script>
     <script src="main.js"></script>
-  </body>
+</head>
+<body onload="main()">
+    <div id="error"></div>
+    <canvas id="canvas" width="600" height="600">
+        Please use a browser that supports "canvas"
+    </canvas>
+    <canvas id="canvas2d" width="600" height="600">
+    </canvas>
+    <div id="pbrMath">
+        <div class="pbrMathSub" id="mathAll"><i>f</i>(<i>l</i>,<i>v</i>,<i>h</i>) = </div>
+        <div class="pbrMathSub" id="mathDiff">Diff(l,n)</div> +
+        <div class="pbrMathSub" id="mathSpec">
+            <div class="reset" id="mathF">F(l,h)</div>
+            <div class="reset" id="mathG">G(l,v,h)</div>
+            <div class="reset" id="mathD">D(h)</div>
+            <hr class="line">
+            <div class="reset">4(n*l)(n*v)</div>
+        </div>
+    </div>
+    <div id="inputs">
+        <div class="note">Click or hover to isolate:</div>
+        <div class="pbrMathSub" id="baseColor">base color</div><br>
+        <div class="pbrMathSub" id="metallic">metallic</div><br>
+        <div class="pbrMathSub" id="roughness">roughness</div>
+    </div>
+
+    <div class="pixelPicker">
+        <span id="pixelPickerColor"></span>
+        <span id="pixelPickerText"></span>
+    </div>
+</body>
 </html>
