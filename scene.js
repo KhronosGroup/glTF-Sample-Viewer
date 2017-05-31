@@ -1,3 +1,5 @@
+var assets = {};
+
 function defined(value) {
     return value !== undefined && value !== null;
 }
@@ -407,14 +409,29 @@ function getAccessorData(mesh, gl, gltf, model, accessorName, attribute) {
         }
     };
 
-    var oReq = new XMLHttpRequest();
-    oReq.open("GET", model + bin, true);
-    oReq.responseType = "blob";
-    oReq.onload = function(e) {
-        var blob = oReq.response;
+    var assetUrl = model + bin;
+    var promise;
+    if (assets.hasOwnProperty(assetUrl)) {
+        // We already requested this, and a promise already exists.
+        promise = assets[assetUrl];
+    } else {
+        // We didn't request this yet, create a promise for it.
+        var deferred = $.Deferred();
+        assets[assetUrl] = deferred;
+        promise = deferred.promise();
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", model + bin, true);
+        oReq.responseType = "blob";
+        oReq.onload = function(e) {
+            deferred.resolve(oReq.response);
+        };
+        oReq.send();
+    }
+
+    // This will fire when the promise is resolved, or immediately if the promise has previously resolved.
+    promise.then(function(blob) {
         reader.readAsArrayBuffer(blob);
-    };
-    oReq.send();
+    });
 }
 
 function loadImage(imageInfo, gl, mesh) {
