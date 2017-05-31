@@ -46,6 +46,19 @@ html, body {
     display: inline;
 }
 
+a.source,
+a.source:visited {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    color: white;
+    text-decoration: none;
+}
+
+a.source:hover {
+    text-decoration: underline;
+}
+
 .activeComponent {
     background-color: darkslategray;
 }
