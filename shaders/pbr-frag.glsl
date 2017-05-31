@@ -6,27 +6,27 @@ precision highp float;
 uniform vec3 u_LightDirection;
 uniform vec3 u_LightColor;
 
-#ifdef USE_IBL 
+#ifdef USE_IBL
 uniform samplerCube u_DiffuseEnvSampler;
 uniform samplerCube u_SpecularEnvSampler;
 uniform sampler2D u_brdfLUT;
 #endif
 
-#ifdef HAS_BASECOLORMAP 
+#ifdef HAS_BASECOLORMAP
 uniform sampler2D u_BaseColorSampler;
 #endif
-#ifdef HAS_NORMALMAP 
+#ifdef HAS_NORMALMAP
 uniform sampler2D u_NormalSampler;
 #endif
-#ifdef HAS_EMISSIVEMAP 
+#ifdef HAS_EMISSIVEMAP
 uniform sampler2D u_EmissiveSampler;
 #endif
-#ifdef HAS_METALROUGHNESSMAP 
+#ifdef HAS_METALROUGHNESSMAP
 uniform sampler2D u_MetallicRoughnessSampler;
 #else
 uniform vec2 u_MetallicRoughnessValues;
 #endif
-#ifdef HAS_OCCLUSIONMAP 
+#ifdef HAS_OCCLUSIONMAP
 uniform sampler2D u_OcclusionSampler;
 #endif
 
@@ -39,11 +39,11 @@ varying vec3 v_Position;
 
 varying vec2 v_UV;
 
-#ifdef HAS_NORMALS 
-#ifdef HAS_TANGENTS 
+#ifdef HAS_NORMALS
+#ifdef HAS_TANGENTS
 varying mat3 v_TBN;
 #else
-varying vec3 v_Normal; 
+varying vec3 v_Normal;
 #endif
 #endif
 
@@ -128,7 +128,7 @@ float SmithVisibilityGGX(PBRInfo pbrInputs){
 	return SmithVisibilityG1_var2(pbrInputs.NdotL, pbrInputs.roughness) * SmithVisibilityG1_var2(pbrInputs.NdotV, pbrInputs.roughness);
 }
 
-// D  (spectre uses this)
+// D
 float GGX(PBRInfo pbrInputs)
 {
   float roughnessSq = pbrInputs.roughness*pbrInputs.roughness;
@@ -147,7 +147,7 @@ void main() {
   vec3 tex_dy = dFdy(vec3(v_UV, 0.0));
   vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
-  #ifdef HAS_NORMALS 
+  #ifdef HAS_NORMALS
   vec3 ng = normalize(v_Normal);
   #else
   vec3 ng = cross(pos_dx, pos_dy);
@@ -160,7 +160,7 @@ void main() {
   mat3 tbn = v_TBN;
   #endif
 
-  #ifdef HAS_NORMALMAP 
+  #ifdef HAS_NORMALMAP
   vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
   n = normalize(tbn * (2.0 * n - 1.0));
   #else
@@ -177,8 +177,8 @@ void main() {
   float NdotH = clamp(dot(n,h), 0.0, 1.0);
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
-  
-  #ifdef HAS_METALROUGHNESSMAP 
+
+  #ifdef HAS_METALROUGHNESSMAP
   vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
   float roughness = clamp(mrSample.g, 0.04, 1.0);
   float metallic = clamp(mrSample.b, 0.0, 1.0);
@@ -187,21 +187,21 @@ void main() {
   float metallic = u_MetallicRoughnessValues.x;
   #endif
 
-  #ifdef HAS_BASECOLORMAP 
+  #ifdef HAS_BASECOLORMAP
   vec3 baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
   #else
   vec3 baseColor = vec3(1.0, 1.0, 1.0);
   #endif
 
   vec3 f0 = vec3(0.04);
-  // is this the same? test! 
+  // is this the same? test!
 	vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
   //vec3 diffuseColor = baseColor * (1.0 - metallic);
   vec3 specularColor = mix(f0, baseColor, metallic);
 
 
   #ifdef USE_MATHS
-  
+
   	// Compute reflectance.
 	float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
 
@@ -240,13 +240,13 @@ void main() {
   vec3 color = (diffuseContrib + specContrib);
   #endif
 
-  #ifdef USE_IBL 
+  #ifdef USE_IBL
   float mipCount = 9.0; // resolution of 512x512
   float lod = (roughness * mipCount);
   vec3 brdf = texture2D(u_brdfLUT, vec2(NdotV, 1.0 - roughness)).rgb;
   vec3 diffuseLight = textureCube(u_DiffuseEnvSampler, n).rgb;
 
-  #ifdef USE_TEX_LOD 
+  #ifdef USE_TEX_LOD
   vec3 specularLight = textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod).rgb;
   #else
   vec3 specularLight = textureCube(u_SpecularEnvSampler, reflection).rgb;
@@ -256,18 +256,18 @@ void main() {
 
   color += IBLcolor;
   #endif
-  
-  #ifdef HAS_OCCLUSIONMAP 
+
+  #ifdef HAS_OCCLUSIONMAP
     float ao = texture2D(u_OcclusionSampler, v_UV).r;
     color *= ao;
   #endif
 
-  #ifdef HAS_EMISSIVEMAP 
+  #ifdef HAS_EMISSIVEMAP
     vec3 emissive = texture2D(u_EmissiveSampler, v_UV).rgb;
     color += emissive;
   #endif
 
-  #ifdef USE_MATHS 
+  #ifdef USE_MATHS
   // mix in overrides
   color = mix(color, F, u_scaleFGDSpec.x);
   color = mix(color, vec3(G), u_scaleFGDSpec.y);
@@ -279,7 +279,7 @@ void main() {
   color = mix(color, vec3(metallic), u_scaleDiffBaseMR.z);
   color = mix(color, vec3(roughness), u_scaleDiffBaseMR.w);
   #endif
- 
+
   gl_FragColor = vec4(color, 1.0);
   //gl_FragColor = vec4(n * 0.5 + 0.5, 1.0);
   //gl_FragColor = vec4(NdotV, NdotV, NdotV, 1.0);
