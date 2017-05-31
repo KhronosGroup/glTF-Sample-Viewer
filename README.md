@@ -5,7 +5,7 @@ Physically-Based Rendering in glTF 2.0 using WebGL
 
 This is a raw WebGL demo application for the introduction of physically-based materials to the core glTF 2.0 spec. This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of these materials within a WebGL project that isn't tied to any external graphics libraries.
 
-If you would like to see this in action, [view the live demo](https://www.seas.upenn.edu/~moneimne/WebGL-PBR/).
+If you would like to see this in action, [view the live demo](http://github.khronos.org/glTF-WebGL-PBR/).
 
 > **Controls**
 >
