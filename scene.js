@@ -19,7 +19,8 @@ class Mesh {
             uniformLocations: {},
             attributes: {},
             vertSource: globalState.vertSource,
-            fragSource: globalState.fragSource
+            fragSource: globalState.fragSource,
+            sRGBifAvailable : globalState.sRGBifAvailable
         };
 
         var primitives = gltf.meshes[meshIdx].primitives;
@@ -227,7 +228,7 @@ class Mesh {
         if (pbrMat && pbrMat.baseColorTexture && gltf.textures.length > pbrMat.baseColorTexture.index) {
             var baseColorTexInfo = gltf.textures[pbrMat.baseColorTexture.index];
             var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
-            imageInfos['baseColor'] = { 'uri': baseColorSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.hasSRGBExt.SRGB_EXT }; // colorSpace, samplerindex, uri
+            imageInfos['baseColor'] = { 'uri': baseColorSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.glState.sRGBifAvailable }; // colorSpace, samplerindex, uri
             this.glState.uniforms['u_BaseColorSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             samplerIndex++;
             this.defines.HAS_BASECOLORMAP = 1;
@@ -287,7 +288,7 @@ class Mesh {
         if (this.material && this.material.emissiveTexture) {
             var emissiveTexInfo = gltf.textures[this.material.emissiveTexture.index];
             var emissiveSrc = this.modelPath + gltf.images[emissiveTexInfo.source].uri;
-            imageInfos['emissive'] = { 'uri': emissiveSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.hasSRGBExt.SRGB_EXT }; // colorSpace, samplerindex, uri
+            imageInfos['emissive'] = { 'uri': emissiveSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.glState.sRGBifAvailable }; // colorSpace, samplerindex, uri
             this.glState.uniforms['u_EmissiveSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             samplerIndex++;
             this.defines.HAS_EMISSIVEMAP = 1;
