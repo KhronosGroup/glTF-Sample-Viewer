@@ -23,9 +23,8 @@ uniform sampler2D u_EmissiveSampler;
 #endif
 #ifdef HAS_METALROUGHNESSMAP
 uniform sampler2D u_MetallicRoughnessSampler;
-#else
-uniform vec2 u_MetallicRoughnessValues;
 #endif
+uniform vec2 u_MetallicRoughnessValues;
 #ifdef HAS_OCCLUSIONMAP
 uniform sampler2D u_OcclusionSampler;
 #endif
@@ -178,13 +177,12 @@ void main() {
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
 
-  #ifdef HAS_METALROUGHNESSMAP
-  vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
-  float roughness = clamp(mrSample.g, 0.04, 1.0);
-  float metallic = clamp(mrSample.b, 0.0, 1.0);
-  #else
   float roughness = clamp(u_MetallicRoughnessValues.y, 0.04, 1.0);
   float metallic = u_MetallicRoughnessValues.x;
+  #ifdef HAS_METALROUGHNESSMAP
+  vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
+  roughness = clamp(mrSample.g * roughness, 0.04, 1.0);
+  metallic = clamp(mrSample.b * metallic, 0.0, 1.0);
   #endif
 
   #ifdef HAS_BASECOLORMAP
