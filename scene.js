@@ -238,6 +238,12 @@ class Mesh {
         }
 
         // Metallic-Roughness
+        var metallic = (pbrMat && defined(pbrMat.metallicFactor)) ? pbrMat.metallicFactor : 1.0;
+        var roughness = (pbrMat && defined(pbrMat.roughnessFactor)) ? pbrMat.roughnessFactor : 1.0;
+        this.glState.uniforms['u_MetallicRoughnessValues'] = {
+            funcName: 'uniform2f',
+            vals: [metallic, roughness]
+        };
         if (pbrMat && pbrMat.metallicRoughnessTexture && gltf.textures.length > pbrMat.metallicRoughnessTexture.index) {
             var mrTexInfo = gltf.textures[pbrMat.metallicRoughnessTexture.index];
             var mrSrc = this.modelPath + gltf.images[mrTexInfo.source].uri;
@@ -254,12 +260,6 @@ class Mesh {
             if (this.glState.uniforms['u_MetallicRoughnessSampler']) {
                 delete this.glState.uniforms['u_MetallicRoughnessSampler'];
             }
-            var metallic = (pbrMat && defined(pbrMat.metallicFactor)) ? pbrMat.metallicFactor : 1.0;
-            var roughness = (pbrMat && defined(pbrMat.roughnessFactor)) ? pbrMat.roughnessFactor : 1.0;
-            this.glState.uniforms['u_MetallicRoughnessValues'] = {
-                funcName: 'uniform2f',
-                vals: [metallic, roughness]
-            };
         }
 
         // Normals
