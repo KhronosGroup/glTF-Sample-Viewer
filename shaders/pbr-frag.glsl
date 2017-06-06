@@ -171,8 +171,8 @@ void main() {
   vec3 h = normalize(l+v);
   vec3 reflection = -normalize(reflect(v, n));
 
-  float NdotL = clamp(dot(n,l), 0.0, 1.0);
-  float NdotV = clamp(dot(n,v), 0.0, 1.0);
+  float NdotL = clamp(dot(n,l), 0.0001, 1.0);
+  float NdotV = clamp(dot(n,v), 0.0001, 1.0);
   float NdotH = clamp(dot(n,h), 0.0, 1.0);
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
@@ -233,7 +233,7 @@ void main() {
   vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs) * NdotL * u_LightColor;
   //vec3 diffuseContrib = (1.0 - F) * disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
 
-  vec3 specContrib = M_PI * u_LightColor * F * G * D / 4.0*NdotL*NdotV;
+  vec3 specContrib = M_PI * u_LightColor * F * G * D / (4.0 * NdotL * NdotV);
 
   vec3 color = (diffuseContrib + specContrib);
   #endif
