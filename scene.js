@@ -252,9 +252,6 @@ class Mesh {
             this.glState.uniforms['u_MetallicRoughnessSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             samplerIndex++;
             this.defines.HAS_METALROUGHNESSMAP = 1;
-            if (this.glState.uniforms['u_MetallicRoughnessValues']) {
-                delete this.glState.uniforms['u_MetallicRoughnessValues'];
-            }
         }
         else {
             if (this.glState.uniforms['u_MetallicRoughnessSampler']) {
