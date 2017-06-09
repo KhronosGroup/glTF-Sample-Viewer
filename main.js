@@ -136,9 +136,6 @@ function init(vertSource, fragSource) {
 
     var ctx2d = canvas2d.getContext("2d");
 
-    // Load extensions
-    gl.hasLodExt = gl.getExtension('EXT_shader_texture_lod');
-    gl.hasDerivativesExt = gl.getExtension('OES_standard_derivatives');
     var hasSRGBExt = gl.getExtension('EXT_SRGB');
 
     glState = {
@@ -147,6 +144,8 @@ function init(vertSource, fragSource) {
         vertSource: vertSource,
         fragSource: fragSource,
         scene: null,
+        hasLODExtension:gl.getExtension('EXT_shader_texture_lod'),
+        hasDerivativesExtension:gl.getExtension('OES_standard_derivatives'),
         sRGBifAvailable: (hasSRGBExt ? hasSRGBExt.SRGB_EXT : gl.RGBA)
     };
 
@@ -170,7 +169,7 @@ function init(vertSource, fragSource) {
     // Get location of mvp matrix uniform
     glState.uniforms['u_mvpMatrix'] = { 'funcName': 'uniformMatrix4fv' };
     // Get location of normal matrix uniform
-    glState.uniforms['u_NormalMatrix'] = { 'funcName': 'uniformMatrix4fv' };
+    glState.uniforms['u_modelMatrix'] = { 'funcName': 'uniformMatrix4fv' };
 
     // Light
     glState.uniforms['u_LightDirection'] = { 'funcName': 'uniform3f', 'vals': [0.0, 0.5, 0.5] };
