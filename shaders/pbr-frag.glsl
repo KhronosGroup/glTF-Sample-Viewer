@@ -171,8 +171,8 @@ void main() {
   vec3 h = normalize(l+v);
   vec3 reflection = -normalize(reflect(v, n));
 
-  float NdotL = clamp(dot(n,l), 0.0, 1.0);
-  float NdotV = clamp(dot(n,v), 0.0, 1.0);
+  float NdotL = clamp(dot(n,l), 0.001, 1.0);
+  float NdotV = abs(dot(n,v)) + 0.001;
   float NdotH = clamp(dot(n,h), 0.0, 1.0);
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
@@ -200,14 +200,14 @@ void main() {
 
   #ifdef USE_MATHS
 
-  	// Compute reflectance.
-	float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
+  // Compute reflectance.
+  float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
 
-	// For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
+  // For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
   // For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
   float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
-	vec3 specularEnvironmentR0 = specularColor.rgb;
-	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
+  vec3 specularEnvironmentR0 = specularColor.rgb;
+  vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
   PBRInfo pbrInputs = PBRInfo(
     NdotL,
@@ -230,12 +230,12 @@ void main() {
   float G = SmithVisibilityGGX(pbrInputs);
   float D = GGX(pbrInputs);
 
-  vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs) * NdotL * u_LightColor;
-  //vec3 diffuseContrib = (1.0 - F) * disneyDiffuse(pbrInputs) * NdotL * u_LightColor;
+  vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs);
+  //vec3 diffuseContrib = (1.0 - F) * disneyDiffuse(pbrInputs);
 
-  vec3 specContrib = M_PI * u_LightColor * F * G * D / 4.0*NdotL*NdotV;
+  vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
 
-  vec3 color = (diffuseContrib + specContrib);
+  vec3 color = NdotL * u_LightColor * (diffuseContrib + specContrib);
   #endif
 
   #ifdef USE_IBL
