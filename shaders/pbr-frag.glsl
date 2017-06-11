@@ -17,17 +17,22 @@ uniform sampler2D u_BaseColorSampler;
 #endif
 #ifdef HAS_NORMALMAP
 uniform sampler2D u_NormalSampler;
+uniform float u_NormalScale;
 #endif
 #ifdef HAS_EMISSIVEMAP
 uniform sampler2D u_EmissiveSampler;
+uniform vec3 u_EmissiveFactor;
 #endif
 #ifdef HAS_METALROUGHNESSMAP
 uniform sampler2D u_MetallicRoughnessSampler;
 #endif
-uniform vec2 u_MetallicRoughnessValues;
 #ifdef HAS_OCCLUSIONMAP
 uniform sampler2D u_OcclusionSampler;
+uniform float u_OcclusionStrength;
 #endif
+
+uniform vec2 u_MetallicRoughnessValues;
+uniform vec4 u_BaseColorFactor;
 
 uniform vec3 u_Camera;
 uniform vec4 u_scaleDiffBaseMR;
@@ -169,7 +174,7 @@ void main() {
 
   #ifdef HAS_NORMALMAP
   vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
-  n = normalize(tbn * (2.0 * n - 1.0));
+  n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
   #else
   vec3 n = tbn[2].xyz;
   #endif
@@ -194,16 +199,16 @@ void main() {
   #endif
 
   #ifdef HAS_BASECOLORMAP
-  vec3 baseColor = texture2D(u_BaseColorSampler, v_UV).rgb;
+  vec4 baseColor = texture2D(u_BaseColorSampler, v_UV) * u_BaseColorFactor;
   #else
-  vec3 baseColor = vec3(1.0, 1.0, 1.0);
+  vec4 baseColor = u_BaseColorFactor;
   #endif
 
   vec3 f0 = vec3(0.04);
   // is this the same? test!
 	vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
   //vec3 diffuseColor = baseColor * (1.0 - metallic);
-  vec3 specularColor = mix(f0, baseColor, metallic);
+  vec3 specularColor = mix(f0, baseColor.rgb, metallic);
 
 
   #ifdef USE_MATHS
@@ -265,11 +270,11 @@ void main() {
 
   #ifdef HAS_OCCLUSIONMAP
     float ao = texture2D(u_OcclusionSampler, v_UV).r;
-    color *= ao;
+    color = mix(color, color * ao, u_OcclusionStrength);
   #endif
 
   #ifdef HAS_EMISSIVEMAP
-    vec3 emissive = texture2D(u_EmissiveSampler, v_UV).rgb;
+    vec3 emissive = texture2D(u_EmissiveSampler, v_UV).rgb * u_EmissiveFactor;
     color += emissive;
   #endif
 
@@ -281,12 +286,12 @@ void main() {
   color = mix(color, specContrib, u_scaleFGDSpec.w);
 
   color = mix(color, diffuseContrib, u_scaleDiffBaseMR.x);
-  color = mix(color, baseColor, u_scaleDiffBaseMR.y);
+  color = mix(color, baseColor.rgb, u_scaleDiffBaseMR.y);
   color = mix(color, vec3(metallic), u_scaleDiffBaseMR.z);
   color = mix(color, vec3(roughness), u_scaleDiffBaseMR.w);
   #endif
 
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(color, baseColor.a);
   //gl_FragColor = vec4(n * 0.5 + 0.5, 1.0);
   //gl_FragColor = vec4(NdotV, NdotV, NdotV, 1.0);
   //gl_FragColor = vec4(v_UV.rg, 0.0, 1.0);
