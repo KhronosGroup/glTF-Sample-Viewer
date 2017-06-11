@@ -49,7 +49,7 @@ class Mesh {
             }
             var imageInfos = this.initTextures(gl, gltf);
 
-            this.initProgram(gl);
+            this.initProgram(gl, globalState);
 
             this.accessorsLoading = 0;
             // Attributes
@@ -65,7 +65,7 @@ class Mesh {
     }
 
 
-    initProgram(gl) {
+    initProgram(gl, globalState) {
         var definesToString = function(defines) {
             var outStr = '';
             for (var def in defines) {
@@ -75,7 +75,7 @@ class Mesh {
         };
 
         var shaderDefines = definesToString(this.defines);//"#define USE_SAVED_TANGENTS 1\n#define USE_MATHS 1\n#define USE_IBL 1\n";
-        if (gl.hasLodExt) {
+        if (globalState.hasLODExtension) {
             shaderDefines += '#define USE_TEX_LOD 1\n';
         }
 
@@ -111,27 +111,11 @@ class Mesh {
         var modelMatrix = mat4.create();
         mat4.multiply(modelMatrix, modelMatrix, transform);
 
-        // Update view matrix
-        // roll, pitch and translate are all globals. :)
-        var xRotation = mat4.create();
-        mat4.rotateY(xRotation, xRotation, roll);
-        var yRotation = mat4.create();
-        mat4.rotateX(yRotation, yRotation, pitch);
-        view = mat4.create();
-        mat4.multiply(view, yRotation, xRotation);
-        view[14] = -translate;
-
         if (this.material.doubleSided) {
             gl.disable(gl.CULL_FACE);
         } else {
             gl.enable(gl.CULL_FACE);
         }
-
-        // set this outside of this function
-        var cameraPos = [view[14] * Math.sin(roll) * Math.cos(-pitch),
-            view[14] * Math.sin(-pitch),
-            -view[14] * Math.cos(roll) * Math.cos(-pitch)];
-        globalState.uniforms['u_Camera'].vals = cameraPos;
 
         // Update mvp matrix
         var mvMatrix = mat4.create();
@@ -142,7 +126,7 @@ class Mesh {
         globalState.uniforms['u_mvpMatrix'].vals = [false, mvpMatrix];
 
         // Update normal matrix
-        globalState.uniforms['u_NormalMatrix'].vals = [false, modelMatrix];
+        globalState.uniforms['u_modelMatrix'].vals = [false, modelMatrix];
 
         applyState(gl, this.program, globalState, this.glState);
 
@@ -352,6 +336,22 @@ class Scene {
                 }
             }
         };
+
+        // set up the camera position and view matrix
+        var cameraPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+        this.globalState.uniforms['u_Camera'].vals = cameraPos;
+
+        // Update view matrix
+        // roll, pitch and translate are all globals.
+        var xRotation = mat4.create();
+        mat4.rotateY(xRotation, xRotation, roll);
+        var yRotation = mat4.create();
+        mat4.rotateX(yRotation, yRotation, pitch);
+        this.viewMatrix = mat4.create();
+        mat4.multiply(this.viewMatrix, yRotation, xRotation);
+        this.viewMatrix[14] = -translate;
 
         var firstNode = this.nodes[0];
 

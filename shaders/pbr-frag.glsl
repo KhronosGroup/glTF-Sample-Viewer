@@ -62,7 +62,8 @@ struct PBRInfo
 
 const float M_PI = 3.141592653589793;
 
-// diffuse
+// The following equations model the diffuse term of the lighting equation
+// Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
 vec3 disneyDiffuse(PBRInfo pbrInputs)
 {
   float f90 = 2.*pbrInputs.LdotH*pbrInputs.LdotH*pbrInputs.roughness - 0.5;
@@ -70,30 +71,34 @@ vec3 disneyDiffuse(PBRInfo pbrInputs)
   return (pbrInputs.baseColor/M_PI)*(1.0+f90*pow((1.0-pbrInputs.NdotL),5.0))*(1.0+f90*pow((1.0-pbrInputs.NdotV),5.0));
 }
 
+// basic Lambertian diffuse, implementation from Lambert's Photometria https://archive.org/details/lambertsphotome00lambgoog
 vec3 lambertianDiffuse(PBRInfo pbrInputs)
 {
   return pbrInputs.baseColor / M_PI;
 }
 
-// F
-// r
+// The following equations model the Fresnel reflectance term of the spec equation (aka F())
+// implementation of fresnel from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
 vec3 fresnelSchlick2(PBRInfo pbrInputs)
 {
 	return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
 }
 
+// Simplified implementation of fresnel from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
 vec3 fresnelSchlick(PBRInfo pbrInputs)
 {
   return pbrInputs.metalness + (vec3(1.0) - pbrInputs.metalness) * pow(1.0 - pbrInputs.VdotH, 5.0);
 }
 
-// G
-float microfacetCookTorrance(PBRInfo pbrInputs)
+// The following equations model the geometric occlusion term of the spec equation  (aka G())
+// Implementation from “A Reflectance Model for Computer Graphics” by Robert Cook and Kenneth Torrance,
+float geometricOcclusionCookTorrance(PBRInfo pbrInputs)
 {
   return min(min(2.*pbrInputs.NdotV*pbrInputs.NdotH/pbrInputs.VdotH, 2.*pbrInputs.NdotL*pbrInputs.NdotH/pbrInputs.VdotH),1.0);
 }
 
-float microfacetSchlick(PBRInfo pbrInputs)
+// implementation of microfacet occlusion from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
+float geometricOcclusionSchlick(PBRInfo pbrInputs)
 {
   float k = pbrInputs.roughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415);
   // alternately, k can be defined with
@@ -104,7 +109,8 @@ float microfacetSchlick(PBRInfo pbrInputs)
   return l * n;
 }
 
-float microfacetSmith_var1(PBRInfo pbrInputs)
+// the following Smith implementations are from “Geometrical Shadowing of a Random Rough Surface” by Bruce G. Smith
+float geometricOcclusionSmith(PBRInfo pbrInputs)
 {
   float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
   float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
@@ -113,21 +119,24 @@ float microfacetSmith_var1(PBRInfo pbrInputs)
   return (1. / max((1. + v + l ),0.000001));
 }
 
-float SmithVisibilityG1_var2(float NdotV, float r){
+float SmithG1_var2(float NdotV, float r)
+{
 	float tanSquared = (1.0 - NdotV * NdotV) / max((NdotV * NdotV),0.00001);
 	return 2.0 / (1.0 + sqrt(1.0 + r * r * tanSquared));
 }
 
-float SmithG1(float NdotV, float r) {
+float SmithG1(float NdotV, float r)
+{
   return 2.0 * NdotV / (NdotV + sqrt(r*r+(1.0-r*r)*(NdotV*NdotV)));
 }
 
-
-float SmithVisibilityGGX(PBRInfo pbrInputs){
-	return SmithVisibilityG1_var2(pbrInputs.NdotL, pbrInputs.roughness) * SmithVisibilityG1_var2(pbrInputs.NdotV, pbrInputs.roughness);
+float geometricOcclusionSmithGGX(PBRInfo pbrInputs)
+{
+	return SmithG1_var2(pbrInputs.NdotL, pbrInputs.roughness) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.roughness);
 }
 
-// D
+// The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
+// implementation from “Average Irregularity Representation of a Roughened Surface for Ray Reflection” by T. S. Trowbridge, and K. P. Reitz
 float GGX(PBRInfo pbrInputs)
 {
   float roughnessSq = pbrInputs.roughness*pbrInputs.roughness;
@@ -137,7 +146,6 @@ float GGX(PBRInfo pbrInputs)
 
 
 void main() {
-
   // Normal Map
   #ifndef HAS_TANGENTS
   vec3 pos_dx = dFdx(v_Position);
@@ -224,10 +232,10 @@ void main() {
 
   vec3 F = fresnelSchlick2(pbrInputs);
   //vec3 F = fresnelSchlick(pbrInputs);
-  //float G = microfacetCookTorrance(pbrInputs);
-  //float G = microfacetSmith(pbrInputs);
-  //float G = microfacetSchlick(pbrInputs);
-  float G = SmithVisibilityGGX(pbrInputs);
+  //float G = geometricOcclusionCookTorrance(pbrInputs);
+  //float G = geometricOcclusionSmith(pbrInputs);
+  //float G = geometricOcclusionSchlick(pbrInputs);
+  float G = geometricOcclusionSmithGGX(pbrInputs);
   float D = GGX(pbrInputs);
 
   vec3 diffuseContrib = (1.0 - F) * lambertianDiffuse(pbrInputs);
