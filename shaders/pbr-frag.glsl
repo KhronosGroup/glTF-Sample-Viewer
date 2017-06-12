@@ -66,6 +66,7 @@ struct PBRInfo
 };
 
 const float M_PI = 3.141592653589793;
+const float c_MinRoughness = 0.04;
 
 // The following equations model the diffuse term of the lighting equation
 // Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
@@ -190,13 +191,16 @@ void main() {
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
 
-  float roughness = clamp(u_MetallicRoughnessValues.y, 0.04, 1.0);
+  float roughness = u_MetallicRoughnessValues.y;
   float metallic = u_MetallicRoughnessValues.x;
   #ifdef HAS_METALROUGHNESSMAP
   vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
-  roughness = clamp(mrSample.g * roughness, 0.04, 1.0);
-  metallic = clamp(mrSample.b * metallic, 0.0, 1.0);
+  roughness = mrSample.g * roughness;
+  metallic = mrSample.b * metallic;
   #endif
+
+  roughness = clamp(roughness, c_MinRoughness, 1.0);
+  metallic = clamp(metallic, 0.0, 1.0);
 
   #ifdef HAS_BASECOLORMAP
   vec4 baseColor = texture2D(u_BaseColorSampler, v_UV) * u_BaseColorFactor;
