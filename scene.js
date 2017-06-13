@@ -111,7 +111,7 @@ class Mesh {
         var modelMatrix = mat4.create();
         mat4.multiply(modelMatrix, modelMatrix, transform);
 
-        if (this.material.doubleSided) {
+        if (this.material && this.material.doubleSided) {
             gl.disable(gl.CULL_FACE);
         } else {
             gl.enable(gl.CULL_FACE);
