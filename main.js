@@ -96,7 +96,7 @@ function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffe
 function main() {
     var error = document.getElementById('error');
     var vertDeferred = $.ajax({
-        url: './shaders/pbr-vert.glsl',
+        url: './shaders/pbr-vert.vert',
         dataType: 'text',
         async: true,
         error: (jqXhr, textStatus, errorThrown) => {
@@ -104,7 +104,7 @@ function main() {
         }
     });
     var fragDeferred = $.ajax({
-        url: './shaders/pbr-frag.glsl',
+        url: './shaders/pbr-frag.frag',
         dataType: 'text',
         async: true,
         error: (jqXhr, textStatus, errorThrown) => {
