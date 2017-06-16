@@ -18,32 +18,14 @@
                 1
             ],
             "matrix": [
-                1.0,                0.0,                0.0,                0.0,
-                0.0,                1.0,                0.0,                0.0,
-                0.0,                0.0,                1.0,                0.0,
-                0.0,                0.0,                0.0,                1.0
+                -1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, -1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0
             ]
         },
         {
-            "mesh": 0,
-            "matrix": [
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ]
+            "mesh": 0
         }
     ],
     "meshes": [
@@ -70,10 +52,10 @@
             "componentType": 5123,
             "count": 23322,
             "max": [
-                3982.0
+                3982
             ],
             "min": [
-                0.0
+                0
             ],
             "type": "SCALAR"
         },
@@ -112,8 +94,8 @@
             "type": "VEC3"
         },
         {
-            "bufferView": 1,
-            "byteOffset": 95592,
+            "bufferView": 2,
+            "byteOffset": 0,
             "componentType": 5126,
             "count": 3983,
             "max": [
@@ -143,7 +125,12 @@
             "normalTexture": {
                 "index": 2
             },
-            "doubleSided": true
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ]
         }
     ],
     "textures": [
@@ -189,13 +176,22 @@
         {
             "buffer": 0,
             "byteOffset": 0,
-            "byteLength": 127456,
+            "byteLength": 95592,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 95592,
+            "byteLength": 31864,
+            "byteStride": 8,
             "target": 34962
         }
     ],
     "buffers": [
         {
-            "uri": "buffer0.bin"
+            "byteLength": 174100,
+            "uri": "NormalTangentTest0.bin"
         }
     ]
 }
