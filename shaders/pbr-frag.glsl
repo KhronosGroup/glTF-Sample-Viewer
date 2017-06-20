@@ -63,7 +63,7 @@ struct PBRInfo
   vec3 baseColor;
   vec3 reflectance0;
   vec3 reflectance90;
-  float alphaG;
+  float alpha;
 };
 
 const float M_PI = 3.141592653589793;
@@ -73,7 +73,7 @@ const float c_MinRoughness = 0.04;
 // Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
 vec3 disneyDiffuse(PBRInfo pbrInputs)
 {
-  float f90 = 2.*pbrInputs.LdotH*pbrInputs.LdotH*pbrInputs.alphaG - 0.5;
+  float f90 = 2.*pbrInputs.LdotH*pbrInputs.LdotH*pbrInputs.alpha - 0.5;
 
   return (pbrInputs.baseColor/M_PI)*(1.0+f90*pow((1.0-pbrInputs.NdotL),5.0))*(1.0+f90*pow((1.0-pbrInputs.NdotV),5.0));
 }
@@ -107,7 +107,7 @@ float geometricOcclusionCookTorrance(PBRInfo pbrInputs)
 // implementation of microfacet occlusion from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
 float geometricOcclusionSchlick(PBRInfo pbrInputs)
 {
-  float k = pbrInputs.roughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415);
+  float k = pbrInputs.alpha * 0.79788; // 0.79788 = sqrt(2.0/3.1415);
   // alternately, k can be defined with
   // float k = (pbrInputs.roughness + 1)*(pbrInputs.roughness + 1)/8;
 
@@ -121,8 +121,8 @@ float geometricOcclusionSmith(PBRInfo pbrInputs)
 {
   float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
   float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
-  float v = ( -1. + sqrt ( pbrInputs.roughness * (1. - NdotL2 ) / NdotL2 + 1.)) * 0.5;
-  float l = ( -1. + sqrt ( pbrInputs.roughness * (1. - NdotV2 ) / NdotV2 + 1.)) * 0.5;
+  float v = ( -1. + sqrt ( pbrInputs.alpha * (1. - NdotL2 ) / NdotL2 + 1.)) * 0.5;
+  float l = ( -1. + sqrt ( pbrInputs.alpha * (1. - NdotV2 ) / NdotV2 + 1.)) * 0.5;
   return (1. / max((1. + v + l ),0.000001));
 }
 
@@ -139,14 +139,14 @@ float SmithG1(float NdotV, float r)
 
 float geometricOcclusionSmithGGX(PBRInfo pbrInputs)
 {
-	return SmithG1_var2(pbrInputs.NdotL, pbrInputs.alphaG) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.alphaG);
+	return SmithG1_var2(pbrInputs.NdotL, pbrInputs.alpha) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.alpha);
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
 // implementation from “Average Irregularity Representation of a Roughened Surface for Ray Reflection” by T. S. Trowbridge, and K. P. Reitz
 float GGX(PBRInfo pbrInputs)
 {
-  float roughnessSq = pbrInputs.alphaG*pbrInputs.alphaG;
+  float roughnessSq = pbrInputs.alpha*pbrInputs.alpha;
   float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
   return roughnessSq / (M_PI * f * f);
 }
@@ -226,7 +226,9 @@ void main() {
   float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
   vec3 specularEnvironmentR0 = specularColor.rgb;
   vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
-  float alphaG = roughness*roughness+0.0005;
+
+  // roughness is perceptual roughness; alpha is material roughness
+  float alpha = roughness*roughness;
 
   PBRInfo pbrInputs = PBRInfo(
     NdotL,
@@ -239,7 +241,7 @@ void main() {
     diffuseColor,
     specularEnvironmentR0,
     specularEnvironmentR90,
-    alphaG
+    alpha
   );
 
   vec3 F = fresnelSchlick2(pbrInputs);
