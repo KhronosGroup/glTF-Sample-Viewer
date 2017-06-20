@@ -111,7 +111,7 @@ class Mesh {
         var modelMatrix = mat4.create();
         mat4.multiply(modelMatrix, modelMatrix, transform);
 
-        if (this.material.doubleSided) {
+        if (this.material && this.material.doubleSided) {
             gl.disable(gl.CULL_FACE);
         } else {
             gl.enable(gl.CULL_FACE);
@@ -209,6 +209,11 @@ class Mesh {
         var samplerIndex = 3; // skip the first three because of the cubemaps
 
         // Base Color
+        var baseColorFactor = pbrMat && defined(pbrMat.baseColorFactor) ? pbrMat.baseColorFactor : [1.0, 1.0, 1.0, 1.0];
+        this.glState.uniforms['u_BaseColorFactor'] = {
+            funcName: 'uniform4f',
+            vals: baseColorFactor
+        };
         if (pbrMat && pbrMat.baseColorTexture && gltf.textures.length > pbrMat.baseColorTexture.index) {
             var baseColorTexInfo = gltf.textures[pbrMat.baseColorTexture.index];
             var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
@@ -245,6 +250,7 @@ class Mesh {
 
         // Normals
         if (this.material && this.material.normalTexture && gltf.textures.length > this.material.normalTexture.index) {
+            var normalScale = defined(this.material.normalTexture.scale) ? this.material.normalTexture.scale : 1.0;
             var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
             var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
             imageInfos['normal'] = { 'uri': normalsSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
@@ -252,6 +258,7 @@ class Mesh {
                 funcName: 'uniform1i',
                 vals: [samplerIndex]
             };
+            this.glState.uniforms['u_NormalScale'] = { 'funcName': 'uniform1f', 'vals': [normalScale] };
             samplerIndex++;
             this.defines.HAS_NORMALMAP = 1;
         }
@@ -261,7 +268,7 @@ class Mesh {
 
         // brdfLUT
         var brdfLUT = 'textures/brdfLUT.png';
-        imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
+        imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA, 'clamp': true };
         this.glState.uniforms['u_brdfLUT'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
         samplerIndex++;
 
@@ -273,6 +280,11 @@ class Mesh {
             this.glState.uniforms['u_EmissiveSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             samplerIndex++;
             this.defines.HAS_EMISSIVEMAP = 1;
+            var emissiveFactor = defined(this.material.emissiveFactor) ? this.material.emissiveFactor : [0.0, 0.0, 0.0];
+            this.glState.uniforms['u_EmissiveFactor'] = {
+                funcName: 'uniform3f',
+                vals: emissiveFactor
+            };
         }
         else if (this.glState.uniforms['u_EmissiveSampler']) {
             delete this.glState.uniforms['u_EmissiveSampler'];
@@ -280,10 +292,12 @@ class Mesh {
 
         // AO
         if (this.material && this.material.occlusionTexture) {
+            var occlusionStrength = defined(this.material.occlusionTexture.strength) ? this.material.occlusionTexture.strength : 1.0;
             var occlusionTexInfo = gltf.textures[this.material.occlusionTexture.index];
             var occlusionSrc = this.modelPath + gltf.images[occlusionTexInfo.source].uri;
             imageInfos['occlusion'] = { 'uri': occlusionSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
             this.glState.uniforms['u_OcclusionSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            this.glState.uniforms['u_OcclusionStrength'] = { 'funcName': 'uniform1f', 'vals': [occlusionStrength] };
             samplerIndex++;
             this.defines.HAS_OCCLUSIONMAP = 1;
         }
@@ -444,8 +458,8 @@ function loadImage(imageInfo, gl, mesh) {
         gl.activeTexture(glIndex);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, imageInfo.clamp ? gl.CLAMP_TO_EDGE : gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, imageInfo.clamp ? gl.CLAMP_TO_EDGE : gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);

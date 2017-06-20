@@ -229,7 +229,7 @@ function init(vertSource, fragSource) {
 
 
     var text = { Model: "BoomBox" };
-    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'Triangle', 'WaterBottle']).onChange(function(value) {
+    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'TextureSettingsTest', 'Triangle', 'WaterBottle']).onChange(function(value) {
         updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
     });
     folder.open();
