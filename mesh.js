@@ -204,7 +204,7 @@ class Mesh {
     initTextures(gl, gltf) {
         var imageInfos = {};
         var pbrMat = this.material ? this.material.pbrMetallicRoughness : null;
-        var samplerIndex = 3; // skip the first three because of the cubemaps
+        var samplerIndex;
 
         // Base Color
         var baseColorFactor = pbrMat && defined(pbrMat.baseColorFactor) ? pbrMat.baseColorFactor : [1.0, 1.0, 1.0, 1.0];
@@ -215,9 +215,9 @@ class Mesh {
         if (pbrMat && pbrMat.baseColorTexture && gltf.textures.length > pbrMat.baseColorTexture.index) {
             var baseColorTexInfo = gltf.textures[pbrMat.baseColorTexture.index];
             var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
+            samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['baseColor'] = { 'uri': baseColorSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.glState.sRGBifAvailable }; // colorSpace, samplerindex, uri
             this.glState.uniforms['u_BaseColorSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
-            samplerIndex++;
             this.defines.HAS_BASECOLORMAP = 1;
         }
         else if (this.glState.uniforms['u_BaseColorSampler']) {
@@ -235,9 +235,9 @@ class Mesh {
             var mrTexInfo = gltf.textures[pbrMat.metallicRoughnessTexture.index];
             var mrSrc = this.modelPath + gltf.images[mrTexInfo.source].uri;
             // gltf.samplers[mrTexInfo.sampler].magFilter etc
+            samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['metalRoughness'] = { 'uri': mrSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
             this.glState.uniforms['u_MetallicRoughnessSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
-            samplerIndex++;
             this.defines.HAS_METALROUGHNESSMAP = 1;
         }
         else {
@@ -251,13 +251,13 @@ class Mesh {
             var normalScale = defined(this.material.normalTexture.scale) ? this.material.normalTexture.scale : 1.0;
             var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
             var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
+            samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['normal'] = { 'uri': normalsSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
             this.glState.uniforms['u_NormalSampler'] = {
                 funcName: 'uniform1i',
                 vals: [samplerIndex]
             };
             this.glState.uniforms['u_NormalScale'] = { 'funcName': 'uniform1f', 'vals': [normalScale] };
-            samplerIndex++;
             this.defines.HAS_NORMALMAP = 1;
         }
         else if (this.glState.uniforms['u_NormalSampler']) {
@@ -266,17 +266,17 @@ class Mesh {
 
         // brdfLUT
         var brdfLUT = 'textures/brdfLUT.png';
+        samplerIndex = this.scene.getNextSamplerIndex();
         imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA, 'clamp': true };
         this.glState.uniforms['u_brdfLUT'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
-        samplerIndex++;
 
         // Emissive
         if (this.material && this.material.emissiveTexture) {
             var emissiveTexInfo = gltf.textures[this.material.emissiveTexture.index];
             var emissiveSrc = this.modelPath + gltf.images[emissiveTexInfo.source].uri;
+            samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['emissive'] = { 'uri': emissiveSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.glState.sRGBifAvailable }; // colorSpace, samplerindex, uri
             this.glState.uniforms['u_EmissiveSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
-            samplerIndex++;
             this.defines.HAS_EMISSIVEMAP = 1;
             var emissiveFactor = defined(this.material.emissiveFactor) ? this.material.emissiveFactor : [0.0, 0.0, 0.0];
             this.glState.uniforms['u_EmissiveFactor'] = {
@@ -293,10 +293,10 @@ class Mesh {
             var occlusionStrength = defined(this.material.occlusionTexture.strength) ? this.material.occlusionTexture.strength : 1.0;
             var occlusionTexInfo = gltf.textures[this.material.occlusionTexture.index];
             var occlusionSrc = this.modelPath + gltf.images[occlusionTexInfo.source].uri;
+            samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['occlusion'] = { 'uri': occlusionSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
             this.glState.uniforms['u_OcclusionSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             this.glState.uniforms['u_OcclusionStrength'] = { 'funcName': 'uniform1f', 'vals': [occlusionStrength] };
-            samplerIndex++;
             this.defines.HAS_OCCLUSIONMAP = 1;
         }
         else if (this.glState.uniforms['u_OcclusionSampler']) {
@@ -386,14 +386,12 @@ class Mesh {
 //
 
 function loadImage(imageInfo, gl, mesh) {
-    var intToGLSamplerIndex = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2, gl.TEXTURE3, gl.TEXTURE4,
-    gl.TEXTURE5, gl.TEXTURE6, gl.TEXTURE7, gl.TEXTURE8, gl.TEXTURE9];
     var image = new Image();
     mesh.pendingTextures++;
     image.src = imageInfo.uri;
     image.onload = function() {
         var texture = gl.createTexture();
-        var glIndex = intToGLSamplerIndex[imageInfo.samplerIndex];
+        var glIndex = gl.TEXTURE0 + imageInfo.samplerIndex;  // gl.TEXTUREn enums are in numeric order.
         gl.activeTexture(glIndex);
         gl.bindTexture(gl.TEXTURE_2D, texture);
 

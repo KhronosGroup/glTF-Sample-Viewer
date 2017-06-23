@@ -5,9 +5,18 @@ class Scene {
         this.nodes = gltf.nodes;
         this.meshes = [];
         this.assets = {};
+        this.samplerIndex = 3; // skip the first three because of the cubemaps
         for (var meshIdx in gltf.meshes) {
             this.meshes.push(new Mesh(gl, this, this.globalState, model, gltf, meshIdx));
         }
+    }
+
+    getNextSamplerIndex() {
+        var result = this.samplerIndex++;
+        if (result > 31) {
+            throw new Error('Too many texture samplers in use.');
+        }
+        return result;
     }
 
     drawScene(gl) {
