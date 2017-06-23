@@ -4,6 +4,7 @@ class Scene {
 
         this.nodes = gltf.nodes;
         this.meshes = [];
+        this.assets = {};
         for (var meshIdx in gltf.meshes) {
             this.meshes.push(new Mesh(gl, this, this.globalState, model, gltf, meshIdx));
         }

@@ -42,6 +42,16 @@ function loadCubeMap(gl, envMap, type, state) {
 
     var path = "textures/" + envMap + "/" + type + "/" + type;
 
+    function onLoadEnvironmentImage(texture, face, image, j) {
+        return function() {
+            gl.activeTexture(activeTextureEnum);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
+            gl.texImage2D(face, j, state.sRGBifAvailable, state.sRGBifAvailable, gl.UNSIGNED_BYTE, image);
+        };
+    }
+
     for (var j = 0; j < mipLevels; j++) {
         var faces = [[path + "_right_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
         [path + "_left_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
@@ -52,15 +62,7 @@ function loadCubeMap(gl, envMap, type, state) {
         for (var i = 0; i < faces.length; i++) {
             var face = faces[i][1];
             var image = new Image();
-            image.onload = function(texture, face, image, j) {
-                return function() {
-                    gl.activeTexture(activeTextureEnum);
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-                    // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
-                    gl.texImage2D(face, j, state.sRGBifAvailable, state.sRGBifAvailable, gl.UNSIGNED_BYTE, image);
-                }
-            }(texture, face, image, j);
+            image.onload = onLoadEnvironmentImage(texture, face, image, j);
             image.src = faces[i][0];
         }
     }

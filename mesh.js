@@ -1,5 +1,3 @@
-var assets = {};
-
 function defined(value) {
     return value !== undefined && value !== null;
 }
@@ -54,11 +52,11 @@ class Mesh {
             this.accessorsLoading = 0;
             // Attributes
             for (let attribute in primitive.attributes) {
-                getAccessorData(this, gl, gltf, modelPath, primitive.attributes[attribute], attribute);
+                this.getAccessorData(gl, gltf, modelPath, primitive.attributes[attribute], attribute);
             }
 
             // Indices
-            getAccessorData(this, gl, gltf, modelPath, primitive.indices, 'INDEX');
+            this.getAccessorData(gl, gltf, modelPath, primitive.indices, 'INDEX');
 
             loadImages(imageInfos, gl, this);
         }
@@ -307,81 +305,85 @@ class Mesh {
 
         return imageInfos;
     }
+
+    getAccessorData(gl, gltf, modelPath, accessorName, attribute) {
+        var mesh = this;
+        this.accessorsLoading++;
+        var accessor = gltf.accessors[accessorName];
+        var bufferView = gltf.bufferViews[accessor.bufferView];
+        var buffer = gltf.buffers[bufferView.buffer];
+        var bin = buffer.uri;
+
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            var arrayBuffer = reader.result;
+            var start = defined(bufferView.byteOffset) ? bufferView.byteOffset : 0;
+            var end = start + bufferView.byteLength;
+            var slicedBuffer = arrayBuffer.slice(start, end);
+            var data;
+            if (accessor.componentType === 5126) {
+                data = new Float32Array(slicedBuffer);
+            }
+            else if (accessor.componentType === 5123) {
+                data = new Uint16Array(slicedBuffer);
+            }
+            switch (attribute) {
+                case "POSITION": mesh.vertices = data;
+                    mesh.verticesAccessor = accessor;
+                    break;
+                case "NORMAL": mesh.normals = data;
+                    mesh.normalsAccessor = accessor;
+                    break;
+                case "TANGENT": mesh.tangents = data;
+                    mesh.tangentsAccessor = accessor;
+                    break;
+                case "TEXCOORD_0": mesh.texcoords = data;
+                    mesh.texcoordsAccessor = accessor;
+                    break;
+                case "INDEX": mesh.indices = data;
+                    mesh.indicesAccessor = accessor;
+                    break;
+                default:
+                    console.warn('Unknown attribute semantic: ' + attribute);
+            }
+
+            mesh.accessorsLoading--;
+            if (mesh.accessorsLoading === 0) {
+                mesh.initBuffers(gl, gltf);
+            }
+        };
+
+        var assets = mesh.scene.assets;
+        var assetUrl = modelPath + bin;
+        var promise;
+        if (assets.hasOwnProperty(assetUrl)) {
+            // We already requested this, and a promise already exists.
+            promise = assets[assetUrl];
+        } else {
+            // We didn't request this yet, create a promise for it.
+            var deferred = $.Deferred();
+            assets[assetUrl] = deferred;
+            promise = deferred.promise();
+            var oReq = new XMLHttpRequest();
+            oReq.open("GET", assetUrl, true);
+            oReq.responseType = "blob";
+            oReq.onload = function(e) {
+                deferred.resolve(oReq.response);
+            };
+            oReq.send();
+        }
+
+        // This will fire when the promise is resolved, or immediately if the promise has previously resolved.
+        promise.then(function(blob) {
+            reader.readAsArrayBuffer(blob);
+        });
+    }
 }
 
 //
 // **** NOTE: The following functions are global ****
 //
-
-function getAccessorData(mesh, gl, gltf, model, accessorName, attribute) {
-    mesh.accessorsLoading++;
-    var accessor = gltf.accessors[accessorName];
-    var bufferView = gltf.bufferViews[accessor.bufferView];
-    var buffer = gltf.buffers[bufferView.buffer];
-    var bin = buffer.uri;
-
-    var reader = new FileReader();
-
-    reader.onload = function(e) {
-        var arrayBuffer = reader.result;
-        var start = defined(bufferView.byteOffset) ? bufferView.byteOffset : 0;
-        var end = start + bufferView.byteLength;
-        var slicedBuffer = arrayBuffer.slice(start, end);
-        var data;
-        if (accessor.componentType === 5126) {
-            data = new Float32Array(slicedBuffer);
-        }
-        else if (accessor.componentType === 5123) {
-            data = new Uint16Array(slicedBuffer);
-        }
-        switch (attribute) {
-            case "POSITION": mesh.vertices = data;
-                mesh.verticesAccessor = accessor;
-                break;
-            case "NORMAL": mesh.normals = data;
-                mesh.normalsAccessor = accessor;
-                break;
-            case "TANGENT": mesh.tangents = data;
-                mesh.tangentsAccessor = accessor;
-                break;
-            case "TEXCOORD_0": mesh.texcoords = data;
-                mesh.texcoordsAccessor = accessor;
-                break;
-            case "INDEX": mesh.indices = data;
-                mesh.indicesAccessor = accessor;
-                break;
-        }
-
-        mesh.accessorsLoading--;
-        if (mesh.accessorsLoading === 0) {
-            mesh.initBuffers(gl, gltf);
-        }
-    };
-
-    var assetUrl = model + bin;
-    var promise;
-    if (assets.hasOwnProperty(assetUrl)) {
-        // We already requested this, and a promise already exists.
-        promise = assets[assetUrl];
-    } else {
-        // We didn't request this yet, create a promise for it.
-        var deferred = $.Deferred();
-        assets[assetUrl] = deferred;
-        promise = deferred.promise();
-        var oReq = new XMLHttpRequest();
-        oReq.open("GET", model + bin, true);
-        oReq.responseType = "blob";
-        oReq.onload = function(e) {
-            deferred.resolve(oReq.response);
-        };
-        oReq.send();
-    }
-
-    // This will fire when the promise is resolved, or immediately if the promise has previously resolved.
-    promise.then(function(blob) {
-        reader.readAsArrayBuffer(blob);
-    });
-}
 
 function loadImage(imageInfo, gl, mesh) {
     var intToGLSamplerIndex = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2, gl.TEXTURE3, gl.TEXTURE4,
