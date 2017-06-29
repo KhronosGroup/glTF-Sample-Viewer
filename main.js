@@ -194,7 +194,8 @@ function init(vertSource, fragSource) {
     glState.uniforms['u_scaleIBLAmbient'] = { 'funcName': 'uniform4f', vals: [1.0, 1.0, 1.0, 1.0] };
 
     // Load scene
-    updateModel("BoomBox", gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
+    var defaultModelName = 'DamagedHelmet';
+    updateModel(defaultModelName, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
 
     // Set clear color
     gl.clearColor(0.2, 0.2, 0.2, 1.0);
@@ -228,8 +229,8 @@ function init(vertSource, fragSource) {
     var folder = gui.addFolder("Metallic-Roughness Material");
 
 
-    var text = { Model: "BoomBox" };
-    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'TextureSettingsTest', 'Triangle', 'WaterBottle']).onChange(function(value) {
+    var text = { Model: defaultModelName };
+    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'DamagedHelmet', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'TextureSettingsTest', 'Triangle', 'WaterBottle']).onChange(function(value) {
         updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
     });
     folder.open();
