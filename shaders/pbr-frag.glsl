@@ -58,11 +58,12 @@ struct PBRInfo
   float NdotH;
   float LdotH;
   float VdotH;
-  float roughness;
+  float perceptualRoughness;
   float metalness;
   vec3 baseColor;
   vec3 reflectance0;
   vec3 reflectance90;
+  float alphaRoughness;
 };
 
 const float M_PI = 3.141592653589793;
@@ -72,7 +73,7 @@ const float c_MinRoughness = 0.04;
 // Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
 vec3 disneyDiffuse(PBRInfo pbrInputs)
 {
-  float f90 = 2.*pbrInputs.LdotH*pbrInputs.LdotH*pbrInputs.roughness - 0.5;
+  float f90 = 2.*pbrInputs.LdotH*pbrInputs.LdotH*pbrInputs.alphaRoughness - 0.5;
 
   return (pbrInputs.baseColor/M_PI)*(1.0+f90*pow((1.0-pbrInputs.NdotL),5.0))*(1.0+f90*pow((1.0-pbrInputs.NdotV),5.0));
 }
@@ -106,9 +107,9 @@ float geometricOcclusionCookTorrance(PBRInfo pbrInputs)
 // implementation of microfacet occlusion from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
 float geometricOcclusionSchlick(PBRInfo pbrInputs)
 {
-  float k = pbrInputs.roughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415);
+  float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
   // alternately, k can be defined with
-  // float k = (pbrInputs.roughness + 1)*(pbrInputs.roughness + 1)/8;
+  // float k = (pbrInputs.alphaRoughness + 1)*(pbrInputs.alphaRoughness + 1)/8;
 
   float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
   float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
@@ -120,8 +121,8 @@ float geometricOcclusionSmith(PBRInfo pbrInputs)
 {
   float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
   float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
-  float v = ( -1. + sqrt ( pbrInputs.roughness * (1. - NdotL2 ) / NdotL2 + 1.)) * 0.5;
-  float l = ( -1. + sqrt ( pbrInputs.roughness * (1. - NdotV2 ) / NdotV2 + 1.)) * 0.5;
+  float v = ( -1. + sqrt ( pbrInputs.alphaRoughness * (1. - NdotL2 ) / NdotL2 + 1.)) * 0.5;
+  float l = ( -1. + sqrt ( pbrInputs.alphaRoughness * (1. - NdotV2 ) / NdotV2 + 1.)) * 0.5;
   return (1. / max((1. + v + l ),0.000001));
 }
 
@@ -138,14 +139,14 @@ float SmithG1(float NdotV, float r)
 
 float geometricOcclusionSmithGGX(PBRInfo pbrInputs)
 {
-	return SmithG1_var2(pbrInputs.NdotL, pbrInputs.roughness) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.roughness);
+	return SmithG1_var2(pbrInputs.NdotL, pbrInputs.alphaRoughness) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.alphaRoughness);
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
 // implementation from “Average Irregularity Representation of a Roughened Surface for Ray Reflection” by T. S. Trowbridge, and K. P. Reitz
 float GGX(PBRInfo pbrInputs)
 {
-  float roughnessSq = pbrInputs.roughness*pbrInputs.roughness;
+  float roughnessSq = pbrInputs.alphaRoughness*pbrInputs.alphaRoughness;
   float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
   return roughnessSq / (M_PI * f * f);
 }
@@ -191,15 +192,15 @@ void main() {
   float LdotH = clamp(dot(l,h), 0.0, 1.0);
   float VdotH = clamp(dot(v,h), 0.0, 1.0);
 
-  float roughness = u_MetallicRoughnessValues.y;
+  float perceptualRoughness = u_MetallicRoughnessValues.y;
   float metallic = u_MetallicRoughnessValues.x;
   #ifdef HAS_METALROUGHNESSMAP
   vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
-  roughness = mrSample.g * roughness;
+  perceptualRoughness = mrSample.g * perceptualRoughness;
   metallic = mrSample.b * metallic;
   #endif
 
-  roughness = clamp(roughness, c_MinRoughness, 1.0);
+  perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
   metallic = clamp(metallic, 0.0, 1.0);
 
   #ifdef HAS_BASECOLORMAP
@@ -226,17 +227,21 @@ void main() {
   vec3 specularEnvironmentR0 = specularColor.rgb;
   vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
+  // roughness is authored as perceptual roughness; as is convention, convert to material roughness by squaring the perceptual roughness
+  float alphaRoughness = perceptualRoughness*perceptualRoughness;
+
   PBRInfo pbrInputs = PBRInfo(
     NdotL,
     NdotV,
     NdotH,
     LdotH,
     VdotH,
-    roughness,
+    perceptualRoughness,
     metallic,
     diffuseColor,
     specularEnvironmentR0,
-    specularEnvironmentR90
+    specularEnvironmentR90,
+    alphaRoughness
   );
 
   vec3 F = fresnelSchlick2(pbrInputs);
@@ -257,8 +262,8 @@ void main() {
 
   #ifdef USE_IBL
   float mipCount = 9.0; // resolution of 512x512
-  float lod = (roughness * mipCount);
-  vec3 brdf = texture2D(u_brdfLUT, vec2(NdotV, 1.0 - roughness)).rgb;
+  float lod = (perceptualRoughness * mipCount);
+  vec3 brdf = texture2D(u_brdfLUT, vec2(NdotV, 1.0 - perceptualRoughness)).rgb;
   vec3 diffuseLight = textureCube(u_DiffuseEnvSampler, n).rgb;
 
   #ifdef USE_TEX_LOD
@@ -292,7 +297,7 @@ void main() {
   color = mix(color, diffuseContrib, u_scaleDiffBaseMR.x);
   color = mix(color, baseColor.rgb, u_scaleDiffBaseMR.y);
   color = mix(color, vec3(metallic), u_scaleDiffBaseMR.z);
-  color = mix(color, vec3(roughness), u_scaleDiffBaseMR.w);
+  color = mix(color, vec3(perceptualRoughness), u_scaleDiffBaseMR.w);
   #endif
 
   gl_FragColor = vec4(color, baseColor.a);
