@@ -35,9 +35,11 @@ uniform vec2 u_MetallicRoughnessValues;
 uniform vec4 u_BaseColorFactor;
 
 uniform vec3 u_Camera;
-uniform vec4 u_scaleDiffBaseMR;
-uniform vec4 u_scaleFGDSpec;
-uniform vec4 u_scaleIBLAmbient;
+
+// debugging flags used for shader output of intermediate PBR variables
+uniform vec4 u_ScaleDiffBaseMR;
+uniform vec4 u_ScaleFGDSpec;
+uniform vec4 u_ScaleIBLAmbient;
 
 varying vec3 v_Position;
 
@@ -73,9 +75,9 @@ const float c_MinRoughness = 0.04;
 // Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
 vec3 disneyDiffuse(PBRInfo pbrInputs)
 {
-  float f90 = 2.*pbrInputs.LdotH*pbrInputs.LdotH*pbrInputs.alphaRoughness - 0.5;
+  float f90 = 2.0 * pbrInputs.LdotH * pbrInputs.LdotH * pbrInputs.alphaRoughness - 0.5;
 
-  return (pbrInputs.baseColor/M_PI)*(1.0+f90*pow((1.0-pbrInputs.NdotL),5.0))*(1.0+f90*pow((1.0-pbrInputs.NdotV),5.0));
+  return (pbrInputs.baseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
 }
 
 // basic Lambertian diffuse, implementation from Lambert's Photometria https://archive.org/details/lambertsphotome00lambgoog
@@ -88,7 +90,7 @@ vec3 lambertianDiffuse(PBRInfo pbrInputs)
 // implementation of fresnel from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
 vec3 fresnelSchlick2(PBRInfo pbrInputs)
 {
-	return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
+  return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
 }
 
 // Simplified implementation of fresnel from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
@@ -101,7 +103,7 @@ vec3 fresnelSchlick(PBRInfo pbrInputs)
 // Implementation from “A Reflectance Model for Computer Graphics” by Robert Cook and Kenneth Torrance,
 float geometricOcclusionCookTorrance(PBRInfo pbrInputs)
 {
-  return min(min(2.*pbrInputs.NdotV*pbrInputs.NdotH/pbrInputs.VdotH, 2.*pbrInputs.NdotL*pbrInputs.NdotH/pbrInputs.VdotH),1.0);
+  return min(min(2.0 * pbrInputs.NdotV * pbrInputs.NdotH / pbrInputs.VdotH, 2.0 * pbrInputs.NdotL * pbrInputs.NdotH / pbrInputs.VdotH), 1.0);
 }
 
 // implementation of microfacet occlusion from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
@@ -109,7 +111,7 @@ float geometricOcclusionSchlick(PBRInfo pbrInputs)
 {
   float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
   // alternately, k can be defined with
-  // float k = (pbrInputs.alphaRoughness + 1)*(pbrInputs.alphaRoughness + 1)/8;
+  // float k = (pbrInputs.perceptualRoughness + 1) * (pbrInputs.perceptualRoughness + 1) / 8;
 
   float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
   float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
@@ -121,25 +123,25 @@ float geometricOcclusionSmith(PBRInfo pbrInputs)
 {
   float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
   float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
-  float v = ( -1. + sqrt ( pbrInputs.alphaRoughness * (1. - NdotL2 ) / NdotL2 + 1.)) * 0.5;
-  float l = ( -1. + sqrt ( pbrInputs.alphaRoughness * (1. - NdotV2 ) / NdotV2 + 1.)) * 0.5;
-  return (1. / max((1. + v + l ),0.000001));
+  float v = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotL2 ) / NdotL2 + 1.)) * 0.5;
+  float l = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotV2 ) / NdotV2 + 1.)) * 0.5;
+  return (1.0 / max((1.0 + v + l ), 0.000001));
 }
 
 float SmithG1_var2(float NdotV, float r)
 {
-	float tanSquared = (1.0 - NdotV * NdotV) / max((NdotV * NdotV),0.00001);
-	return 2.0 / (1.0 + sqrt(1.0 + r * r * tanSquared));
+  float tanSquared = (1.0 - NdotV * NdotV) / max((NdotV * NdotV), 0.00001);
+  return 2.0 / (1.0 + sqrt(1.0 + r * r * tanSquared));
 }
 
 float SmithG1(float NdotV, float r)
 {
-  return 2.0 * NdotV / (NdotV + sqrt(r*r+(1.0-r*r)*(NdotV*NdotV)));
+  return 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
 }
 
 float geometricOcclusionSmithGGX(PBRInfo pbrInputs)
 {
-	return SmithG1_var2(pbrInputs.NdotL, pbrInputs.alphaRoughness) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.alphaRoughness);
+  return SmithG1_var2(pbrInputs.NdotL, pbrInputs.alphaRoughness) * SmithG1_var2(pbrInputs.NdotV, pbrInputs.alphaRoughness);
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
@@ -151,8 +153,8 @@ float GGX(PBRInfo pbrInputs)
   return roughnessSq / (M_PI * f * f);
 }
 
-
-void main() {
+void main()
+{
   // Normal Map
   #ifndef HAS_TANGENTS
   vec3 pos_dx = dFdx(v_Position);
@@ -186,11 +188,11 @@ void main() {
   vec3 h = normalize(l+v);
   vec3 reflection = -normalize(reflect(v, n));
 
-  float NdotL = clamp(dot(n,l), 0.001, 1.0);
-  float NdotV = abs(dot(n,v)) + 0.001;
-  float NdotH = clamp(dot(n,h), 0.0, 1.0);
-  float LdotH = clamp(dot(l,h), 0.0, 1.0);
-  float VdotH = clamp(dot(v,h), 0.0, 1.0);
+  float NdotL = clamp(dot(n, l), 0.001, 1.0);
+  float NdotV = abs(dot(n, v)) + 0.001;
+  float NdotH = clamp(dot(n, h), 0.0, 1.0);
+  float LdotH = clamp(dot(l, h), 0.0, 1.0);
+  float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
   float perceptualRoughness = u_MetallicRoughnessValues.y;
   float metallic = u_MetallicRoughnessValues.x;
@@ -211,7 +213,7 @@ void main() {
 
   vec3 f0 = vec3(0.04);
   // is this the same? test!
-	vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0., 0., 0.), metallic);
+  vec3 diffuseColor = mix(baseColor.rgb * (1.0 - f0), vec3(0.0, 0.0, 0.0), metallic);
   //vec3 diffuseColor = baseColor * (1.0 - metallic);
   vec3 specularColor = mix(f0, baseColor.rgb, metallic);
 
@@ -272,7 +274,7 @@ void main() {
   vec3 specularLight = textureCube(u_SpecularEnvSampler, reflection).rgb;
   #endif
 
-  vec3 IBLcolor = (diffuseLight * diffuseColor * u_scaleIBLAmbient.x) + (specularLight * (specularColor * brdf.x + brdf.y) *u_scaleIBLAmbient.y);
+  vec3 IBLcolor = (diffuseLight * diffuseColor * u_ScaleIBLAmbient.x) + (specularLight * (specularColor * brdf.x + brdf.y) *u_ScaleIBLAmbient.y);
 
   color += IBLcolor;
   #endif
@@ -289,15 +291,15 @@ void main() {
 
   #ifdef USE_MATHS
   // mix in overrides
-  color = mix(color, F, u_scaleFGDSpec.x);
-  color = mix(color, vec3(G), u_scaleFGDSpec.y);
-  color = mix(color, vec3(D), u_scaleFGDSpec.z);
-  color = mix(color, specContrib, u_scaleFGDSpec.w);
+  color = mix(color, F, u_ScaleFGDSpec.x);
+  color = mix(color, vec3(G), u_ScaleFGDSpec.y);
+  color = mix(color, vec3(D), u_ScaleFGDSpec.z);
+  color = mix(color, specContrib, u_ScaleFGDSpec.w);
 
-  color = mix(color, diffuseContrib, u_scaleDiffBaseMR.x);
-  color = mix(color, baseColor.rgb, u_scaleDiffBaseMR.y);
-  color = mix(color, vec3(metallic), u_scaleDiffBaseMR.z);
-  color = mix(color, vec3(perceptualRoughness), u_scaleDiffBaseMR.w);
+  color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
+  color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
+  color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
+  color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
   #endif
 
   gl_FragColor = vec4(color, baseColor.a);

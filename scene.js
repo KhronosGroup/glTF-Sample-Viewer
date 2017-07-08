@@ -123,10 +123,10 @@ class Mesh {
         mat4.multiply(mvMatrix, view, modelMatrix);
         mat4.multiply(mvpMatrix, projection, mvMatrix);
         // these should actually be local to the mesh (not in global)
-        globalState.uniforms['u_mvpMatrix'].vals = [false, mvpMatrix];
+        globalState.uniforms['u_MVPMatrix'].vals = [false, mvpMatrix];
 
         // Update normal matrix
-        globalState.uniforms['u_modelMatrix'].vals = [false, modelMatrix];
+        globalState.uniforms['u_ModelMatrix'].vals = [false, modelMatrix];
 
         applyState(gl, this.program, globalState, this.glState);
 
