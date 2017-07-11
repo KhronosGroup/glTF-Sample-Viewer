@@ -167,9 +167,9 @@ function init(vertSource, fragSource) {
     loadCubeMap(gl, envMap, "diffuse", glState);
     loadCubeMap(gl, envMap, "specular", glState);
     // Get location of mvp matrix uniform
-    glState.uniforms['u_mvpMatrix'] = { 'funcName': 'uniformMatrix4fv' };
+    glState.uniforms['u_MVPMatrix'] = { 'funcName': 'uniformMatrix4fv' };
     // Get location of normal matrix uniform
-    glState.uniforms['u_modelMatrix'] = { 'funcName': 'uniformMatrix4fv' };
+    glState.uniforms['u_ModelMatrix'] = { 'funcName': 'uniformMatrix4fv' };
 
     // Light
     glState.uniforms['u_LightDirection'] = { 'funcName': 'uniform3f', 'vals': [0.0, 0.5, 0.5] };
@@ -189,9 +189,9 @@ function init(vertSource, fragSource) {
     mat4.lookAt(viewMatrix, eye, at, up);
 
     // get scaling stuff
-    glState.uniforms['u_scaleDiffBaseMR'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
-    glState.uniforms['u_scaleFGDSpec'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
-    glState.uniforms['u_scaleIBLAmbient'] = { 'funcName': 'uniform4f', vals: [1.0, 1.0, 1.0, 1.0] };
+    glState.uniforms['u_ScaleDiffBaseMR'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
+    glState.uniforms['u_ScaleFGDSpec'] = { 'funcName': 'uniform4f', vals: [0.0, 0.0, 0.0, 0.0] };
+    glState.uniforms['u_ScaleIBLAmbient'] = { 'funcName': 'uniform4f', vals: [1.0, 1.0, 1.0, 1.0] };
 
     // Load scene
     var defaultModelName = 'DamagedHelmet';
@@ -271,9 +271,9 @@ function init(vertSource, fragSource) {
         var el = scaleVals.pinnedElement ? scaleVals.pinnedElement : scaleVals.activeElement;
         var elId = el ? el.attr('id') : null;
 
-        glState.uniforms['u_scaleDiffBaseMR'].vals = [elId == "mathDiff" ? 1.0 : 0.0, elId == "baseColor" ? 1.0 : 0.0, elId == "metallic" ? 1.0 : 0.0, elId == "roughness" ? 1.0 : 0.0];
-        glState.uniforms['u_scaleFGDSpec'].vals = [elId == "mathF" ? 1.0 : 0.0, elId == "mathG" ? 1.0 : 0.0, elId == "mathD" ? 1.0 : 0.0, elId == "mathSpec" ? 1.0 : 0.0];
-        glState.uniforms['u_scaleIBLAmbient'].vals = [scaleVals.IBL, scaleVals.IBL, 0.0, 0.0];
+        glState.uniforms['u_ScaleDiffBaseMR'].vals = [elId == "mathDiff" ? 1.0 : 0.0, elId == "baseColor" ? 1.0 : 0.0, elId == "metallic" ? 1.0 : 0.0, elId == "roughness" ? 1.0 : 0.0];
+        glState.uniforms['u_ScaleFGDSpec'].vals = [elId == "mathF" ? 1.0 : 0.0, elId == "mathG" ? 1.0 : 0.0, elId == "mathD" ? 1.0 : 0.0, elId == "mathSpec" ? 1.0 : 0.0];
+        glState.uniforms['u_ScaleIBLAmbient'].vals = [scaleVals.IBL, scaleVals.IBL, 0.0, 0.0];
 
         redraw();
     };
