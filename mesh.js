@@ -196,9 +196,7 @@ class Mesh {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
         this.loadedBuffers = true;
-        if (this.pendingTextures === 0) {
-            this.scene.drawScene(gl);
-        }
+        this.scene.drawScene(gl);
     }
 
     initTextures(gl, gltf) {
@@ -387,7 +385,7 @@ class Mesh {
 
 function loadImage(imageInfo, gl, mesh) {
     var image = new Image();
-    mesh.pendingTextures++;
+    mesh.scene.pendingTextures++;
     image.src = imageInfo.uri;
     image.onload = function() {
         var texture = gl.createTexture();
@@ -402,9 +400,9 @@ function loadImage(imageInfo, gl, mesh) {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,/*imageInfo.colorSpace, imageInfo.colorSpace,*/ gl.UNSIGNED_BYTE, image);
 
-        mesh.pendingTextures--;
+        mesh.scene.pendingTextures--;
 
-        if (mesh.loadedBuffers === true && mesh.pendingTextures === 0) {
+        if (mesh.loadedBuffers === true && mesh.scene.pendingTextures === 0) {
             mesh.scene.drawScene(gl);
         }
     };
@@ -413,7 +411,7 @@ function loadImage(imageInfo, gl, mesh) {
 }
 
 function loadImages(imageInfos, gl, mesh) {
-    mesh.pendingTextures = 0;
+    mesh.scene.pendingTextures = 0;
     for (var i in imageInfos) {
         loadImage(imageInfos[i], gl, mesh);
     }

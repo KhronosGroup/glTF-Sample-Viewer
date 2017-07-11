@@ -76,6 +76,9 @@ function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffe
     var error = document.getElementById('error');
     glState.scene = null;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    var canvas2d = document.getElementById('canvas2d');
+    frontBuffer.clearRect(0, 0, canvas2d.width, canvas2d.height);
+    document.getElementById('loadSpinner').style.display = 'block';
 
     $.ajax({
         url: 'models/' + value + '/glTF/' + value + '.gltf',

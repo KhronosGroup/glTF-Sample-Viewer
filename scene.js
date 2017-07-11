@@ -5,6 +5,7 @@ class Scene {
         this.nodes = gltf.nodes;
         this.meshes = [];
         this.assets = {};
+        this.pendingTextures = 0;
         this.samplerIndex = 3; // skip the first three because of the cubemaps
         for (var meshIdx in gltf.meshes) {
             this.meshes.push(new Mesh(gl, this, this.globalState, model, gltf, meshIdx));
@@ -22,6 +23,10 @@ class Scene {
     drawScene(gl) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        if (this.pendingTextures > 0) {
+            return;
+        }
+        document.getElementById('loadSpinner').style.display = 'none';
 
         var drawNodeRecursive = function(scene, node, parentTransform) {
             // Transform
