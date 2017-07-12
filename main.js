@@ -79,6 +79,7 @@ function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffe
     var canvas2d = document.getElementById('canvas2d');
     frontBuffer.clearRect(0, 0, canvas2d.width, canvas2d.height);
     document.getElementById('loadSpinner').style.display = 'block';
+    resetCamera();
 
     $.ajax({
         url: 'models/' + value + '/glTF/' + value + '.gltf',
@@ -406,12 +407,20 @@ function init(vertSource, fragSource) {
 }
 
 // ***** Mouse Controls ***** //
-var mouseDown = false;
-var roll = Math.PI;
-var pitch = 0.0;
-var translate = 4.0;
+var mouseDown;
+var roll;
+var pitch;
+var translate;
 var lastMouseX = null;
 var lastMouseY = null;
+
+function resetCamera() {
+    roll = Math.PI;
+    pitch = 0.0;
+    translate = 4.0;
+    mouseDown = false;
+}
+
 function handleMouseDown(ev) {
     mouseDown = true;
     lastMouseX = ev.clientX;
