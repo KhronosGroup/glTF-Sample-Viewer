@@ -21,6 +21,8 @@ class Mesh {
             sRGBifAvailable : globalState.sRGBifAvailable
         };
 
+        ++scene.pendingBuffers;
+
         var primitives = gltf.meshes[meshIdx].primitives;
         // todo:  multiple primitives doesn't work.
         for (let i = 0; i < primitives.length; i++) {
@@ -58,7 +60,7 @@ class Mesh {
             // Indices
             this.getAccessorData(gl, gltf, modelPath, primitive.indices, 'INDEX');
 
-            loadImages(imageInfos, gl, this);
+            scene.loadImages(imageInfos, gl, this);
         }
     }
 
@@ -195,7 +197,7 @@ class Mesh {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
-        this.loadedBuffers = true;
+        --this.scene.pendingBuffers;
         this.scene.drawScene(gl);
     }
 
@@ -383,39 +385,6 @@ class Mesh {
 // **** NOTE: The following functions are global ****
 //
 
-function loadImage(imageInfo, gl, mesh) {
-    var image = new Image();
-    mesh.scene.pendingTextures++;
-    image.src = imageInfo.uri;
-    image.onload = function() {
-        var texture = gl.createTexture();
-        var glIndex = gl.TEXTURE0 + imageInfo.samplerIndex;  // gl.TEXTUREn enums are in numeric order.
-        gl.activeTexture(glIndex);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, imageInfo.clamp ? gl.CLAMP_TO_EDGE : gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, imageInfo.clamp ? gl.CLAMP_TO_EDGE : gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,/*imageInfo.colorSpace, imageInfo.colorSpace,*/ gl.UNSIGNED_BYTE, image);
-
-        mesh.scene.pendingTextures--;
-
-        if (mesh.loadedBuffers === true && mesh.scene.pendingTextures === 0) {
-            mesh.scene.drawScene(gl);
-        }
-    };
-
-    return image;
-}
-
-function loadImages(imageInfos, gl, mesh) {
-    mesh.scene.pendingTextures = 0;
-    for (var i in imageInfos) {
-        loadImage(imageInfos[i], gl, mesh);
-    }
-}
 
 function applyState(gl, program, globalState, localState) {
     gl.useProgram(program);
