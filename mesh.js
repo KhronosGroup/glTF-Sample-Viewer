@@ -12,14 +12,15 @@ class Mesh {
             'USE_IBL': 1,
         };
 
-        this.glState = {
+        this.localState = {
             uniforms: {},
             uniformLocations: {},
-            attributes: {},
-            vertSource: globalState.vertSource,
-            fragSource: globalState.fragSource,
-            sRGBifAvailable : globalState.sRGBifAvailable
+            attributes: {}
         };
+
+        this.vertSource = globalState.vertSource;
+        this.fragSource = globalState.fragSource;
+        this.sRGBifAvailable = globalState.sRGBifAvailable;
 
         ++scene.pendingBuffers;
 
@@ -80,7 +81,7 @@ class Mesh {
         }
 
         var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, shaderDefines + this.glState.vertSource);
+        gl.shaderSource(vertexShader, shaderDefines + this.vertSource);
         gl.compileShader(vertexShader);
         var compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
         if (!compiled) {
@@ -90,7 +91,7 @@ class Mesh {
         }
 
         var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, shaderDefines + this.glState.fragSource);
+        gl.shaderSource(fragmentShader, shaderDefines + this.fragSource);
         gl.compileShader(fragmentShader);
         compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
         if (!compiled) {
@@ -128,14 +129,14 @@ class Mesh {
         // Update normal matrix
         globalState.uniforms['u_ModelMatrix'].vals = [false, modelMatrix];
 
-        applyState(gl, this.program, globalState, this.glState);
+        this.applyState(gl, globalState);
 
         // Draw
         if (defined(this.indicesAccessor)) {
             gl.drawElements(gl.TRIANGLES, this.indicesAccessor.count, gl.UNSIGNED_SHORT, this.indicesAccessor.byteOffset);
         }
 
-        disableState(gl, globalState, this.glState);
+        this.disableState(gl);
     }
 
     initArrayBuffer(gl, data, num, type, attribute, stride, offset) {
@@ -153,7 +154,7 @@ class Mesh {
 
         var a_attribute = gl.getAttribLocation(this.program, attribute);
 
-        this.glState.attributes[attribute] = {
+        this.localState.attributes[attribute] = {
             'cmds': [
                 { 'funcName': 'bindBuffer', 'vals': [gl.ARRAY_BUFFER, buffer] },
                 { 'funcName': 'vertexAttribPointer', 'vals': [a_attribute, num, type, false, stride, offset] },
@@ -208,7 +209,7 @@ class Mesh {
 
         // Base Color
         var baseColorFactor = pbrMat && defined(pbrMat.baseColorFactor) ? pbrMat.baseColorFactor : [1.0, 1.0, 1.0, 1.0];
-        this.glState.uniforms['u_BaseColorFactor'] = {
+        this.localState.uniforms['u_BaseColorFactor'] = {
             funcName: 'uniform4f',
             vals: baseColorFactor
         };
@@ -216,18 +217,18 @@ class Mesh {
             var baseColorTexInfo = gltf.textures[pbrMat.baseColorTexture.index];
             var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
             samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['baseColor'] = { 'uri': baseColorSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.glState.sRGBifAvailable }; // colorSpace, samplerindex, uri
-            this.glState.uniforms['u_BaseColorSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            imageInfos['baseColor'] = { 'uri': baseColorSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.sRGBifAvailable }; // colorSpace, samplerindex, uri
+            this.localState.uniforms['u_BaseColorSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             this.defines.HAS_BASECOLORMAP = 1;
         }
-        else if (this.glState.uniforms['u_BaseColorSampler']) {
-            delete this.glState.uniforms['u_BaseColorSampler'];
+        else if (this.localState.uniforms['u_BaseColorSampler']) {
+            delete this.localState.uniforms['u_BaseColorSampler'];
         }
 
         // Metallic-Roughness
         var metallic = (pbrMat && defined(pbrMat.metallicFactor)) ? pbrMat.metallicFactor : 1.0;
         var roughness = (pbrMat && defined(pbrMat.roughnessFactor)) ? pbrMat.roughnessFactor : 1.0;
-        this.glState.uniforms['u_MetallicRoughnessValues'] = {
+        this.localState.uniforms['u_MetallicRoughnessValues'] = {
             funcName: 'uniform2f',
             vals: [metallic, roughness]
         };
@@ -237,12 +238,12 @@ class Mesh {
             // gltf.samplers[mrTexInfo.sampler].magFilter etc
             samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['metalRoughness'] = { 'uri': mrSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.glState.uniforms['u_MetallicRoughnessSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            this.localState.uniforms['u_MetallicRoughnessSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             this.defines.HAS_METALROUGHNESSMAP = 1;
         }
         else {
-            if (this.glState.uniforms['u_MetallicRoughnessSampler']) {
-                delete this.glState.uniforms['u_MetallicRoughnessSampler'];
+            if (this.localState.uniforms['u_MetallicRoughnessSampler']) {
+                delete this.localState.uniforms['u_MetallicRoughnessSampler'];
             }
         }
 
@@ -253,39 +254,39 @@ class Mesh {
             var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
             samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['normal'] = { 'uri': normalsSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.glState.uniforms['u_NormalSampler'] = {
+            this.localState.uniforms['u_NormalSampler'] = {
                 funcName: 'uniform1i',
                 vals: [samplerIndex]
             };
-            this.glState.uniforms['u_NormalScale'] = { 'funcName': 'uniform1f', 'vals': [normalScale] };
+            this.localState.uniforms['u_NormalScale'] = { 'funcName': 'uniform1f', 'vals': [normalScale] };
             this.defines.HAS_NORMALMAP = 1;
         }
-        else if (this.glState.uniforms['u_NormalSampler']) {
-            delete this.glState.uniforms['u_NormalSampler'];
+        else if (this.localState.uniforms['u_NormalSampler']) {
+            delete this.localState.uniforms['u_NormalSampler'];
         }
 
         // brdfLUT
         var brdfLUT = 'textures/brdfLUT.png';
         samplerIndex = this.scene.getNextSamplerIndex();
         imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA, 'clamp': true };
-        this.glState.uniforms['u_brdfLUT'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+        this.localState.uniforms['u_brdfLUT'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
 
         // Emissive
         if (this.material && this.material.emissiveTexture) {
             var emissiveTexInfo = gltf.textures[this.material.emissiveTexture.index];
             var emissiveSrc = this.modelPath + gltf.images[emissiveTexInfo.source].uri;
             samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['emissive'] = { 'uri': emissiveSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.glState.sRGBifAvailable }; // colorSpace, samplerindex, uri
-            this.glState.uniforms['u_EmissiveSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            imageInfos['emissive'] = { 'uri': emissiveSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.sRGBifAvailable }; // colorSpace, samplerindex, uri
+            this.localState.uniforms['u_EmissiveSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             this.defines.HAS_EMISSIVEMAP = 1;
             var emissiveFactor = defined(this.material.emissiveFactor) ? this.material.emissiveFactor : [0.0, 0.0, 0.0];
-            this.glState.uniforms['u_EmissiveFactor'] = {
+            this.localState.uniforms['u_EmissiveFactor'] = {
                 funcName: 'uniform3f',
                 vals: emissiveFactor
             };
         }
-        else if (this.glState.uniforms['u_EmissiveSampler']) {
-            delete this.glState.uniforms['u_EmissiveSampler'];
+        else if (this.localState.uniforms['u_EmissiveSampler']) {
+            delete this.localState.uniforms['u_EmissiveSampler'];
         }
 
         // AO
@@ -295,12 +296,12 @@ class Mesh {
             var occlusionSrc = this.modelPath + gltf.images[occlusionTexInfo.source].uri;
             samplerIndex = this.scene.getNextSamplerIndex();
             imageInfos['occlusion'] = { 'uri': occlusionSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.glState.uniforms['u_OcclusionSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
-            this.glState.uniforms['u_OcclusionStrength'] = { 'funcName': 'uniform1f', 'vals': [occlusionStrength] };
+            this.localState.uniforms['u_OcclusionSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            this.localState.uniforms['u_OcclusionStrength'] = { 'funcName': 'uniform1f', 'vals': [occlusionStrength] };
             this.defines.HAS_OCCLUSIONMAP = 1;
         }
-        else if (this.glState.uniforms['u_OcclusionSampler']) {
-            delete this.glState.uniforms['u_OcclusionSampler'];
+        else if (this.localState.uniforms['u_OcclusionSampler']) {
+            delete this.localState.uniforms['u_OcclusionSampler'];
         }
 
         return imageInfos;
@@ -379,46 +380,44 @@ class Mesh {
             reader.readAsArrayBuffer(blob);
         });
     }
-}
 
-//
-// **** NOTE: The following functions are global ****
-//
+    applyState(gl, globalState) {
+        var program = this.program;
+        var localState = this.localState;
+        gl.useProgram(program);
 
+        var applyUniform = function(u, uniformName) {
+            if (!defined(localState.uniformLocations[uniformName])) {
+                localState.uniformLocations[uniformName] = gl.getUniformLocation(program, uniformName);
+            }
 
-function applyState(gl, program, globalState, localState) {
-    gl.useProgram(program);
+            if (u.funcName && defined(localState.uniformLocations[uniformName]) && u.vals) {
+                gl[u.funcName](localState.uniformLocations[uniformName], ...u.vals);
+            }
+        };
 
-    var applyUniform = function(u, uniformName) {
-        if (!defined(localState.uniformLocations[uniformName])) {
-            localState.uniformLocations[uniformName] = gl.getUniformLocation(program, uniformName);
+        for (let uniform in globalState.uniforms) {
+            applyUniform(globalState.uniforms[uniform], uniform);
         }
 
-        if (u.funcName && defined(localState.uniformLocations[uniformName]) && u.vals) {
-            gl[u.funcName](localState.uniformLocations[uniformName], ...u.vals);
+        for (let uniform in localState.uniforms) {
+            applyUniform(localState.uniforms[uniform], uniform);
         }
-    };
 
-    for (let uniform in globalState.uniforms) {
-        applyUniform(globalState.uniforms[uniform], uniform);
-    }
-
-    for (let uniform in localState.uniforms) {
-        applyUniform(localState.uniforms[uniform], uniform);
-    }
-
-    for (var attrib in localState.attributes) {
-        var a = localState.attributes[attrib];
-        for (var cmd in a.cmds) {
-            var c = a.cmds[cmd];
-            gl[c.funcName](...c.vals);
+        for (var attrib in localState.attributes) {
+            var a = localState.attributes[attrib];
+            for (var cmd in a.cmds) {
+                var c = a.cmds[cmd];
+                gl[c.funcName](...c.vals);
+            }
         }
     }
-}
 
-function disableState(gl, globalState, localState) {
-    for (var attrib in localState.attributes) {
-        // do something.
-        gl.disableVertexAttribArray(localState.attributes[attrib].a_attribute);
+    disableState(gl) {
+        var localState = this.localState;
+        for (var attrib in localState.attributes) {
+            // do something.
+            gl.disableVertexAttribArray(localState.attributes[attrib].a_attribute);
+        }
     }
 }
