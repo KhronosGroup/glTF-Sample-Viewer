@@ -202,6 +202,19 @@ class Mesh {
         this.scene.drawScene(gl);
     }
 
+    getImageInfo(gl, gltf, textureIndex, funcName, uniformName, colorSpace) {
+        var textureInfo = gltf.textures[textureIndex];
+        var uri = this.modelPath + gltf.images[textureInfo.source].uri;
+        var samplerIndex = this.scene.getNextSamplerIndex();
+        this.localState.uniforms[uniformName] = { 'funcName': funcName, 'vals': [samplerIndex] };
+
+        return {
+            'uri': uri,
+            'samplerIndex': samplerIndex,
+            'colorSpace': colorSpace
+        };
+    }
+
     initTextures(gl, gltf) {
         var imageInfos = {};
         var pbrMat = this.material ? this.material.pbrMetallicRoughness : null;
@@ -214,11 +227,7 @@ class Mesh {
             vals: baseColorFactor
         };
         if (pbrMat && pbrMat.baseColorTexture && gltf.textures.length > pbrMat.baseColorTexture.index) {
-            var baseColorTexInfo = gltf.textures[pbrMat.baseColorTexture.index];
-            var baseColorSrc = this.modelPath + gltf.images[baseColorTexInfo.source].uri;
-            samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['baseColor'] = { 'uri': baseColorSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.sRGBifAvailable }; // colorSpace, samplerindex, uri
-            this.localState.uniforms['u_BaseColorSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            imageInfos['baseColor'] = this.getImageInfo(gl, gltf, pbrMat.baseColorTexture.index, 'uniform1i', 'u_BaseColorSampler', this.sRGBifAvailable);
             this.defines.HAS_BASECOLORMAP = 1;
         }
         else if (this.localState.uniforms['u_BaseColorSampler']) {
@@ -233,31 +242,17 @@ class Mesh {
             vals: [metallic, roughness]
         };
         if (pbrMat && pbrMat.metallicRoughnessTexture && gltf.textures.length > pbrMat.metallicRoughnessTexture.index) {
-            var mrTexInfo = gltf.textures[pbrMat.metallicRoughnessTexture.index];
-            var mrSrc = this.modelPath + gltf.images[mrTexInfo.source].uri;
-            // gltf.samplers[mrTexInfo.sampler].magFilter etc
-            samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['metalRoughness'] = { 'uri': mrSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.localState.uniforms['u_MetallicRoughnessSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            imageInfos['metalRoughness'] = this.getImageInfo(gl, gltf, pbrMat.metallicRoughnessTexture.index, 'uniform1i', 'u_MetallicRoughnessSampler', gl.RGBA);
             this.defines.HAS_METALROUGHNESSMAP = 1;
         }
-        else {
-            if (this.localState.uniforms['u_MetallicRoughnessSampler']) {
-                delete this.localState.uniforms['u_MetallicRoughnessSampler'];
-            }
+        else if (this.localState.uniforms['u_MetallicRoughnessSampler']) {
+            delete this.localState.uniforms['u_MetallicRoughnessSampler'];
         }
 
         // Normals
         if (this.material && this.material.normalTexture && gltf.textures.length > this.material.normalTexture.index) {
+            imageInfos['normal'] = this.getImageInfo(gl, gltf, this.material.normalTexture.index, 'uniform1i', 'u_NormalSampler', gl.RGBA);
             var normalScale = defined(this.material.normalTexture.scale) ? this.material.normalTexture.scale : 1.0;
-            var normalsTexInfo = gltf.textures[this.material.normalTexture.index];
-            var normalsSrc = this.modelPath + gltf.images[normalsTexInfo.source].uri;
-            samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['normal'] = { 'uri': normalsSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.localState.uniforms['u_NormalSampler'] = {
-                funcName: 'uniform1i',
-                vals: [samplerIndex]
-            };
             this.localState.uniforms['u_NormalScale'] = { 'funcName': 'uniform1f', 'vals': [normalScale] };
             this.defines.HAS_NORMALMAP = 1;
         }
@@ -273,11 +268,7 @@ class Mesh {
 
         // Emissive
         if (this.material && this.material.emissiveTexture) {
-            var emissiveTexInfo = gltf.textures[this.material.emissiveTexture.index];
-            var emissiveSrc = this.modelPath + gltf.images[emissiveTexInfo.source].uri;
-            samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['emissive'] = { 'uri': emissiveSrc, 'samplerIndex': samplerIndex, 'colorSpace': this.sRGBifAvailable }; // colorSpace, samplerindex, uri
-            this.localState.uniforms['u_EmissiveSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
+            imageInfos['emissive'] = this.getImageInfo(gl, gltf, this.material.emissiveTexture.index, 'uniform1i', 'u_EmissiveSampler', this.sRGBifAvailable);
             this.defines.HAS_EMISSIVEMAP = 1;
             var emissiveFactor = defined(this.material.emissiveFactor) ? this.material.emissiveFactor : [0.0, 0.0, 0.0];
             this.localState.uniforms['u_EmissiveFactor'] = {
@@ -291,12 +282,8 @@ class Mesh {
 
         // AO
         if (this.material && this.material.occlusionTexture) {
+            imageInfos['occlusion'] = this.getImageInfo(gl, gltf, this.material.occlusionTexture.index, 'uniform1i', 'u_OcclusionSampler', gl.RGBA);
             var occlusionStrength = defined(this.material.occlusionTexture.strength) ? this.material.occlusionTexture.strength : 1.0;
-            var occlusionTexInfo = gltf.textures[this.material.occlusionTexture.index];
-            var occlusionSrc = this.modelPath + gltf.images[occlusionTexInfo.source].uri;
-            samplerIndex = this.scene.getNextSamplerIndex();
-            imageInfos['occlusion'] = { 'uri': occlusionSrc, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA };
-            this.localState.uniforms['u_OcclusionSampler'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
             this.localState.uniforms['u_OcclusionStrength'] = { 'funcName': 'uniform1f', 'vals': [occlusionStrength] };
             this.defines.HAS_OCCLUSIONMAP = 1;
         }
