@@ -42,6 +42,16 @@ function loadCubeMap(gl, envMap, type, state) {
 
     var path = "textures/" + envMap + "/" + type + "/" + type;
 
+    function onLoadEnvironmentImage(texture, face, image, j) {
+        return function() {
+            gl.activeTexture(activeTextureEnum);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
+            gl.texImage2D(face, j, state.sRGBifAvailable, state.sRGBifAvailable, gl.UNSIGNED_BYTE, image);
+        };
+    }
+
     for (var j = 0; j < mipLevels; j++) {
         var faces = [[path + "_right_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
         [path + "_left_" + j + ".jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
@@ -52,15 +62,7 @@ function loadCubeMap(gl, envMap, type, state) {
         for (var i = 0; i < faces.length; i++) {
             var face = faces[i][1];
             var image = new Image();
-            image.onload = function(texture, face, image, j) {
-                return function() {
-                    gl.activeTexture(activeTextureEnum);
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-                    // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
-                    gl.texImage2D(face, j, state.sRGBifAvailable, state.sRGBifAvailable, gl.UNSIGNED_BYTE, image);
-                }
-            }(texture, face, image, j);
+            image.onload = onLoadEnvironmentImage(texture, face, image, j);
             image.src = faces[i][0];
         }
     }
@@ -74,6 +76,10 @@ function updateModel(value, gl, glState, viewMatrix, projectionMatrix, backBuffe
     var error = document.getElementById('error');
     glState.scene = null;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    var canvas2d = document.getElementById('canvas2d');
+    frontBuffer.clearRect(0, 0, canvas2d.width, canvas2d.height);
+    document.getElementById('loadSpinner').style.display = 'block';
+    resetCamera();
 
     $.ajax({
         url: 'models/' + value + '/glTF/' + value + '.gltf',
@@ -401,12 +407,20 @@ function init(vertSource, fragSource) {
 }
 
 // ***** Mouse Controls ***** //
-var mouseDown = false;
-var roll = Math.PI;
-var pitch = 0.0;
-var translate = 4.0;
+var mouseDown;
+var roll;
+var pitch;
+var translate;
 var lastMouseX = null;
 var lastMouseY = null;
+
+function resetCamera() {
+    roll = Math.PI;
+    pitch = 0.0;
+    translate = 4.0;
+    mouseDown = false;
+}
+
 function handleMouseDown(ev) {
     mouseDown = true;
     lastMouseX = ev.clientX;

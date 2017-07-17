@@ -104,3 +104,34 @@ hr.line {
     margin-right: 10px;
     border: 1px solid black;
 }
+
+@keyframes spinKeys {
+    0%,50%,100% {
+        animation-timing-function: cubic-bezier(0.5,0.5,0.5,0.5);
+    }
+
+    0% {
+        transform: rotate(0);
+    }
+
+    50% {
+        transform: rotate(180deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#loadSpinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    margin: -50px 0 0 -50px;
+    border: 5px solid;
+    border-color: #fff transparent transparent transparent;
+    border-radius: 50%;
+    animation: spinKeys 4s infinite linear;
+}
