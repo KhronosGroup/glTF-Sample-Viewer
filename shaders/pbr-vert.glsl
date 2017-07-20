@@ -36,7 +36,7 @@ void main()
   vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
   v_TBN = mat3(tangentW, bitangentW, normalW);
   #else // HAS_TANGENTS != 1
-  v_Normal = normalize(vec3(u_ModelMatrix * a_Normal));
+  v_Normal = normalize(vec3(u_ModelMatrix * vec4(a_Normal.xyz, 0.0)));
   #endif
   #endif
 
