@@ -101,3 +101,77 @@ Here are some resulting renders from the demo application.
 **BarramundiFish Model**
 
 ![](images/BarramundiFish.gif)
+
+Appendix
+------------
+
+In this section, you'll find alternative implementations for the various terms found in the lighting equation.
+
+### Surface Reflection Ratio (F)
+
+**Frensel Schlick**
+Simplified implementation of fresnel from "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick.
+
+```
+vec3 fresnelSchlick(PBRInfo pbrInputs)
+{
+  return pbrInputs.metalness + (vec3(1.0) - pbrInputs.metalness) * pow(1.0 - pbrInputs.VdotH, 5.0);
+}
+```
+
+### Geometric Occlusion (G)
+
+**Cook Torrance**
+The following equations model the geometric occlusion term of the spec equation  (aka G()). Implementation from "A Reflectance Model for Computer Graphics" by Robert Cook and Kenneth Torrance,
+
+```
+float geometricOcclusion(PBRInfo pbrInputs)
+{
+  return min(min(2.0 * pbrInputs.NdotV * pbrInputs.NdotH / pbrInputs.VdotH, 2.0 * pbrInputs.NdotL * pbrInputs.NdotH / pbrInputs.VdotH), 1.0);
+}
+```
+
+**Schlick**
+Implementation of microfacet occlusion from "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
+
+```
+float geometricOcclusion(PBRInfo pbrInputs)
+{
+  float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
+  // alternately, k can be defined with
+  // float k = (pbrInputs.perceptualRoughness + 1) * (pbrInputs.perceptualRoughness + 1) / 8;
+
+  float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
+  float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
+  return l * n;
+}
+```
+
+**Smith**
+The following Smith implementations are from “Geometrical Shadowing of a Random Rough Surface” by Bruce G. Smith
+
+```
+float geometricOcclusion(PBRInfo pbrInputs)
+{
+  float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
+  float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
+  float v = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotL2 ) / NdotL2 + 1.)) * 0.5;
+  float l = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotV2 ) / NdotV2 + 1.)) * 0.5;
+  return (1.0 / max((1.0 + v + l ), 0.000001));
+}
+```
+
+### Diffuse Term
+The following equations model the diffuse term of the lighting equation.
+
+***Disney***
+Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
+
+```
+vec3 disneyDiffuse(PBRInfo pbrInputs)
+{
+  float f90 = 2.0 * pbrInputs.LdotH * pbrInputs.LdotH * pbrInputs.alphaRoughness - 0.5;
+
+  return (pbrInputs.baseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
+}
+```
