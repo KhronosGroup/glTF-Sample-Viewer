@@ -1,3 +1,16 @@
+//
+// This fragment shader defines a reference implementation for Physically Based Shading of
+// a microfacet surface material defined by a glTF model.
+//
+// References:
+// [1] Real Shading in Unreal Engine 4
+//     http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+// [2] Physically Based Shading at Disney
+//     http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf
+// [3] README.md - Environment Maps
+//     https://github.com/KhronosGroup/glTF-WebGL-PBR/#environment-maps
+// [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
+//     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 #extension GL_EXT_shader_texture_lod: enable
 #extension GL_OES_standard_derivatives : enable
 
@@ -46,37 +59,39 @@ varying vec3 v_Position;
 varying vec2 v_UV;
 
 #ifdef HAS_NORMALS
-#ifdef HAS_TANGENTS
-varying mat3 v_TBN;
-#else
-varying vec3 v_Normal;
-#endif
+  #ifdef HAS_TANGENTS
+    varying mat3 v_TBN;
+  #else
+    varying vec3 v_Normal;
+  #endif
 #endif
 
+// Encapsulate the various inputs used by the various functions in the shading equation
+// We store values in this struct to simply the integration of alternative implementations
+// of the shading terms, outlined in the Readme.MD Appendix.
 struct PBRInfo
 {
-  float NdotL;
-  float NdotV;
-  float NdotH;
-  float LdotH;
-  float VdotH;
-  float perceptualRoughness;
-  float metalness;
-  vec3 baseColor;
-  vec3 reflectance0;
-  vec3 reflectance90;
-  float alphaRoughness;
-  vec3 diffuseColor;
-  vec3 specularColor;
+  float NdotL;                  // cos angle between normal and light direction
+  float NdotV;                  // cos angle between normal and view direction
+  float NdotH;                  // cos angle between normal and half vector
+  float LdotH;                  // cos angle between light direction and half vector
+  float VdotH;                  // cos angle between view direction and half vector
+  float perceptualRoughness;    // roughness value, as authored by the model creator (input to shader)
+  float metalness;              // metallic value at the surface
+  vec3 baseColor;               // base color of the surface
+  vec3 reflectance0;            // full reflectance color (normal incidence angle)
+  vec3 reflectance90;           // reflectance color at grazing angle
+  float alphaRoughness;         // roughness mapped to a more linear change in the roughness (proposed by [2])
+  vec3 diffuseColor;            // color contribution from diffuse lighting
+  vec3 specularColor;           // color contribution from specular lighting
 };
 
 const float M_PI = 3.141592653589793;
 const float c_MinRoughness = 0.04;
 
-// helper function to get the tangent space matrix under several possible model configurations
-mat3 tangentSpaceMatrix()
+// Helper function to get the tangent space matrix under several possible model configurations
+mat3 getTangentSpaceMatrix()
 {
-  // Normal Map
   #ifndef HAS_TANGENTS
     vec3 pos_dx = dFdx(v_Position);
     vec3 pos_dy = dFdy(v_Position);
@@ -100,10 +115,14 @@ mat3 tangentSpaceMatrix()
   return tbn;
 }
 
+// Calculation of the lighting contribution from an optional Image Based Light source.
+// Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
+// See our README.md on Environment Maps [3] for additional discussion.
 vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
 {
     float mipCount = 9.0; // resolution of 512x512
     float lod = (pbrInputs.perceptualRoughness * mipCount);
+    // retrieve a scale and bias to F0. See [1], Figure 3
     vec3 brdf = texture2D(u_brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness)).rgb;
     vec3 diffuseLight = textureCube(u_DiffuseEnvSampler, n).rgb;
 
@@ -123,35 +142,42 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     return diffuse + specular;
 }
 
-// basic Lambertian diffuse, implementation from Lambert's Photometria https://archive.org/details/lambertsphotome00lambgoog
+// Basic Lambertian diffuse
+// implementation from Lambert's Photometria https://archive.org/details/lambertsphotome00lambgoog
+// See also [1], Equation 1
 vec3 diffuse(PBRInfo pbrInputs)
 {
   return pbrInputs.baseColor / M_PI;
 }
 
 // The following equations model the Fresnel reflectance term of the spec equation (aka F())
-// implementation of fresnel from “An Inexpensive BRDF Model for Physically based Rendering” by Christophe Schlick
-vec3 fresnelSchlick(PBRInfo pbrInputs)
+// implementation of fresnel from [4], Equation 15
+vec3 specularReflection(PBRInfo pbrInputs)
 {
   return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
 }
 
-float GSmithSub(float NdotV, float r)
-{
-  float tanSquared = (1.0 - NdotV * NdotV) / max((NdotV * NdotV), 0.00001);
-  return 2.0 / (1.0 + sqrt(1.0 + r * r * tanSquared));
-}
-
+// This calculates the specular geometric attenuation (aka G()),
+// where rougher material will reflect less light back to the viewer.
+// This implementation is based on [1] Equation 4, and we adopt their modifications to
+// alphaRoughness as input as originally proposed in [2].
 float geometricOcclusion(PBRInfo pbrInputs)
 {
-  return GSmithSub(pbrInputs.NdotL, pbrInputs.alphaRoughness) * GSmithSub(pbrInputs.NdotV, pbrInputs.alphaRoughness);
+  float NdotL = pbrInputs.NdotL;
+  float NdotV = pbrInputs.NdotV;
+  float r = pbrInputs.alphaRoughness;
+
+  float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
+  float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
+  return attenuationL * attenuationV;
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
-// implementation from “Average Irregularity Representation of a Roughened Surface for Ray Reflection” by T. S. Trowbridge, and K. P. Reitz
-float GGX(PBRInfo pbrInputs)
+// Implementation from "Average Irregularity Representation of a Roughened Surface for Ray Reflection" by T. S. Trowbridge, and K. P. Reitz
+// Follows the distribution function recommended in the SIGGRAPH 2013 course notes from EPIC Games [1], Equation 3.
+float microfacetDistribution(PBRInfo pbrInputs)
 {
-  float roughnessSq = pbrInputs.alphaRoughness*pbrInputs.alphaRoughness;
+  float roughnessSq = pbrInputs.alphaRoughness * pbrInputs.alphaRoughness;
   float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
   return roughnessSq / (M_PI * f * f);
 }
@@ -164,13 +190,14 @@ void main()
   float perceptualRoughness = u_MetallicRoughnessValues.y;
   float metallic = u_MetallicRoughnessValues.x;
   #ifdef HAS_METALROUGHNESSMAP
+    // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
+    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
     vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
     perceptualRoughness = mrSample.g * perceptualRoughness;
     metallic = mrSample.b * metallic;
   #endif
   // Roughness is authored as perceptual roughness; as is convention,
-  // convert to material roughness by squaring the perceptual roughness.
-  // TODO: citation
+  // convert to material roughness by squaring the perceptual roughness [2].
   float alphaRoughness = perceptualRoughness * perceptualRoughness;
   perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
   metallic = clamp(metallic, 0.0, 1.0);
@@ -198,7 +225,7 @@ void main()
 
   // Find the normal for this fragment, pulling either from a predefined normal map
   // or from the interpolated mesh normal and tangent attributes.
-  mat3 tbn = tangentSpaceMatrix();
+  mat3 tbn = getTangentSpaceMatrix();
   #ifdef HAS_NORMALMAP
     vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
     n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
@@ -206,9 +233,9 @@ void main()
     vec3 n = tbn[2].xyz;
   #endif
 
-  vec3 v = normalize(u_Camera - v_Position);        // View vector
-  vec3 l = normalize(u_LightDirection);             // Light Direction
-  vec3 h = normalize(l+v);                          // Half vector
+  vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
+  vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
+  vec3 h = normalize(l+v);                          // Half vector between both l and v
   vec3 reflection = -normalize(reflect(v, n));
 
   float NdotL = clamp(dot(n, l), 0.001, 1.0);
@@ -233,9 +260,10 @@ void main()
     specularColor
   );
 
-  vec3 F = fresnelSchlick(pbrInputs);
+  // Calculate the shading terms for the microfacet specular shading model
+  vec3 F = specularReflection(pbrInputs);
   float G = geometricOcclusion(pbrInputs);
-  float D = GGX(pbrInputs);
+  float D = microfacetDistribution(pbrInputs);
 
   // Calculation of analytical lighting contribution
   vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
