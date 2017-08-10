@@ -106,49 +106,50 @@ Appendix
 ------------
 
 In this section, you'll find alternative implementations for the various terms found in the lighting equation.
+These functions may be swapped into pbr-frag.glsl to tune your desired rendering performance and presentation.
 
 ### Surface Reflection Ratio (F)
 
 **Frensel Schlick**
-Simplified implementation of fresnel from "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick.
+Simplified implementation of fresnel from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
 
 ```
 vec3 specularReflection(PBRInfo pbrInputs)
 {
-  return pbrInputs.metalness + (vec3(1.0) - pbrInputs.metalness) * pow(1.0 - pbrInputs.VdotH, 5.0);
+    return pbrInputs.metalness + (vec3(1.0) - pbrInputs.metalness) * pow(1.0 - pbrInputs.VdotH, 5.0);
 }
 ```
 
 ### Geometric Occlusion (G)
 
 **Cook Torrance**
-The following equations model the geometric occlusion term of the spec equation  (aka G()). Implementation from "A Reflectance Model for Computer Graphics" by Robert Cook and Kenneth Torrance,
+Implementation from [A Reflectance Model for Computer Graphics](http://graphics.pixar.com/library/ReflectanceModel/) by Robert Cook and Kenneth Torrance,
 
 ```
 float geometricOcclusion(PBRInfo pbrInputs)
 {
-  return min(min(2.0 * pbrInputs.NdotV * pbrInputs.NdotH / pbrInputs.VdotH, 2.0 * pbrInputs.NdotL * pbrInputs.NdotH / pbrInputs.VdotH), 1.0);
+    return min(min(2.0 * pbrInputs.NdotV * pbrInputs.NdotH / pbrInputs.VdotH, 2.0 * pbrInputs.NdotL * pbrInputs.NdotH / pbrInputs.VdotH), 1.0);
 }
 ```
 
 **Schlick**
-Implementation of microfacet occlusion from "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
+Implementation of microfacet occlusion from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
 
 ```
 float geometricOcclusion(PBRInfo pbrInputs)
 {
-  float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
-  // alternately, k can be defined with
-  // float k = (pbrInputs.perceptualRoughness + 1) * (pbrInputs.perceptualRoughness + 1) / 8;
+    float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
+    // alternately, k can be defined with
+    // float k = (pbrInputs.perceptualRoughness + 1) * (pbrInputs.perceptualRoughness + 1) / 8;
 
-  float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
-  float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
-  return l * n;
+    float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
+    float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
+    return l * n;
 }
 ```
 
 **Smith**
-The following Smith implementations are from “Geometrical Shadowing of a Random Rough Surface” by Bruce G. Smith
+The following implementation is from "Geometrical Shadowing of a Random Rough Surface" by Bruce G. Smith
 
 ```
 float geometricOcclusion(PBRInfo pbrInputs)
@@ -165,13 +166,13 @@ float geometricOcclusion(PBRInfo pbrInputs)
 The following equations model the diffuse term of the lighting equation.
 
 ***Disney***
-Implementation of diffuse from "Physically-Based Shading at Disney" by Brent Burley
+Implementation of diffuse from [Physically-Based Shading at Disney](http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf) by Brent Burley.  See Section 5.3.
 
 ```
 vec3 diffuse(PBRInfo pbrInputs)
 {
-  float f90 = 2.0 * pbrInputs.LdotH * pbrInputs.LdotH * pbrInputs.alphaRoughness - 0.5;
+    float f90 = 2.0 * pbrInputs.LdotH * pbrInputs.LdotH * pbrInputs.alphaRoughness - 0.5;
 
-  return (pbrInputs.baseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
+    return (pbrInputs.baseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
 }
 ```

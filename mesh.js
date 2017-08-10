@@ -8,8 +8,7 @@ class Mesh {
         this.scene = scene;
 
         this.defines = {
-            'USE_MATHS': 1,
-            'USE_IBL': 1,
+            'USE_IBL': 1
         };
 
         this.localState = {
@@ -75,7 +74,7 @@ class Mesh {
             return outStr;
         };
 
-        var shaderDefines = definesToString(this.defines);//"#define USE_SAVED_TANGENTS 1\n#define USE_MATHS 1\n#define USE_IBL 1\n";
+        var shaderDefines = definesToString(this.defines);
         if (globalState.hasLODExtension) {
             shaderDefines += '#define USE_TEX_LOD 1\n';
         }
