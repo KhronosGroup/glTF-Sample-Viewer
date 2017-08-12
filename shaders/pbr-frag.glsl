@@ -78,7 +78,6 @@ struct PBRInfo
     float VdotH;                  // cos angle between view direction and half vector
     float perceptualRoughness;    // roughness value, as authored by the model creator (input to shader)
     float metalness;              // metallic value at the surface
-    vec3 baseColor;               // base color of the surface
     vec3 reflectance0;            // full reflectance color (normal incidence angle)
     vec3 reflectance90;           // reflectance color at grazing angle
     float alphaRoughness;         // roughness mapped to a more linear change in the roughness (proposed by [2])
@@ -156,7 +155,7 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
 // See also [1], Equation 1
 vec3 diffuse(PBRInfo pbrInputs)
 {
-    return pbrInputs.baseColor / M_PI;
+    return pbrInputs.diffuseColor / M_PI;
 }
 
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
@@ -205,11 +204,11 @@ void main()
     perceptualRoughness = mrSample.g * perceptualRoughness;
     metallic = mrSample.b * metallic;
 #endif
+    perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
+    metallic = clamp(metallic, 0.0, 1.0);
     // Roughness is authored as perceptual roughness; as is convention,
     // convert to material roughness by squaring the perceptual roughness [2].
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
-    perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
-    metallic = clamp(metallic, 0.0, 1.0);
 
     // The albedo may be defined from a base texture or a flat color
 #ifdef HAS_BASECOLORMAP
@@ -252,7 +251,6 @@ void main()
         VdotH,
         perceptualRoughness,
         metallic,
-        baseColor.rgb,
         specularEnvironmentR0,
         specularEnvironmentR90,
         alphaRoughness,
