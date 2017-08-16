@@ -1,0 +1,4912 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 7224,
+            "max": [
+                0.473,
+                0.0725,
+                0.0725
+            ],
+            "min": [
+                -0.0964,
+                -0.0725,
+                -0.0725
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 7224,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 20670,
+            "max": [
+                7223
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 1776,
+            "max": [
+                0.03425,
+                0.162025,
+                0.0100001
+            ],
+            "min": [
+                -0.03425,
+                -1.25028e-13,
+                -0.0100001
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 4,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 1776,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 4512,
+            "max": [
+                1775
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 1114,
+            "max": [
+                0.03425,
+                0.0325,
+                0.01
+            ],
+            "min": [
+                -0.03425,
+                -1.25028e-13,
+                -0.01
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 7,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 1114,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 8,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 2868,
+            "max": [
+                1113
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 9,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 244,
+            "max": [
+                0.011,
+                0.01125,
+                0.01125
+            ],
+            "min": [
+                -0.011,
+                -0.01125,
+                -0.01125
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 10,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 244,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 11,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 684,
+            "max": [
+                243
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 12,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 208,
+            "max": [
+                0.0053,
+                0.00850002,
+                0.005
+            ],
+            "min": [
+                -0.05,
+                -0.00850002,
+                -0.005
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 13,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 208,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 14,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 528,
+            "max": [
+                207
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 15,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 164,
+            "max": [
+                0.008,
+                0.00825,
+                0.00825
+            ],
+            "min": [
+                0,
+                -0.00825,
+                -0.00825
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 16,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 164,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 17,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 408,
+            "max": [
+                163
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 18,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3329,
+            "max": [
+                0.0425,
+                0.053,
+                0.0425
+            ],
+            "min": [
+                -0.0425,
+                9.71306e-14,
+                -0.0425
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 19,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3329,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 20,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 9003,
+            "max": [
+                3328
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 21,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 104,
+            "max": [
+                0.0225,
+                0.0095,
+                0.0095
+            ],
+            "min": [
+                -0.0225,
+                -0.0095,
+                -0.0095
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 22,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 104,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 23,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 288,
+            "max": [
+                103
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 24,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 228,
+            "max": [
+                0.010386,
+                0.00075,
+                0.00970217
+            ],
+            "min": [
+                -0.010386,
+                -0.00075,
+                -0.0105
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 25,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 228,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 26,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 636,
+            "max": [
+                227
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 27,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 272,
+            "max": [
+                0.04445,
+                0.00138,
+                0.0444155
+            ],
+            "min": [
+                -0.044312,
+                0,
+                -0.0444155
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 28,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 272,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 29,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 780,
+            "max": [
+                271
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 30,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 272,
+            "max": [
+                0.04444,
+                0.00138,
+                0.0444055
+            ],
+            "min": [
+                -0.044302,
+                0,
+                -0.0444055
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 31,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 272,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 32,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 780,
+            "max": [
+                271
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 33,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 272,
+            "max": [
+                0.0445,
+                0.002,
+                0.0444655
+            ],
+            "min": [
+                -0.0443621,
+                0,
+                -0.0444655
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 34,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 272,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 35,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 780,
+            "max": [
+                271
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 36,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 1824,
+            "max": [
+                0.0317343,
+                0.0318274,
+                -0.0021
+            ],
+            "min": [
+                -0.0318129,
+                -0.0318175,
+                -0.0301
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 37,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 1824,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 38,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 4536,
+            "max": [
+                1823
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 39,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 5078,
+            "max": [
+                0.052008,
+                0.052008,
+                0.0504928
+            ],
+            "min": [
+                -0.052008,
+                -0.052008,
+                0.0031
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 40,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 5078,
+            "max": [
+                1,
+                1,
+                1
+            ],
+            "min": [
+                -1,
+                -1,
+                -1
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 41,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 15876,
+            "max": [
+                5077
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        }
+    ],
+    "asset": {
+        "copyright": "Copyright 2017 (c) PTC Inc.",
+        "generator": "pv2gltf",
+        "version": "2.0",
+        "minVersion": "2.0"
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 86688,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteLength": 86688,
+            "byteOffset": 86688,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteLength": 41340,
+            "byteOffset": 173376,
+            "target": 34963
+        },
+        {
+            "buffer": 1,
+            "byteLength": 21312,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 1,
+            "byteLength": 21312,
+            "byteOffset": 21312,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 1,
+            "byteLength": 9024,
+            "byteOffset": 42624,
+            "target": 34963
+        },
+        {
+            "buffer": 2,
+            "byteLength": 13368,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 2,
+            "byteLength": 13368,
+            "byteOffset": 13368,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 2,
+            "byteLength": 5736,
+            "byteOffset": 26736,
+            "target": 34963
+        },
+        {
+            "buffer": 3,
+            "byteLength": 2928,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 3,
+            "byteLength": 2928,
+            "byteOffset": 2928,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 3,
+            "byteLength": 1368,
+            "byteOffset": 5856,
+            "target": 34963
+        },
+        {
+            "buffer": 4,
+            "byteLength": 2496,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 4,
+            "byteLength": 2496,
+            "byteOffset": 2496,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 4,
+            "byteLength": 1056,
+            "byteOffset": 4992,
+            "target": 34963
+        },
+        {
+            "buffer": 5,
+            "byteLength": 1968,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 5,
+            "byteLength": 1968,
+            "byteOffset": 1968,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 5,
+            "byteLength": 816,
+            "byteOffset": 3936,
+            "target": 34963
+        },
+        {
+            "buffer": 6,
+            "byteLength": 39948,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 6,
+            "byteLength": 39948,
+            "byteOffset": 39948,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 6,
+            "byteLength": 18006,
+            "byteOffset": 79896,
+            "target": 34963
+        },
+        {
+            "buffer": 7,
+            "byteLength": 1248,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 7,
+            "byteLength": 1248,
+            "byteOffset": 1248,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 7,
+            "byteLength": 576,
+            "byteOffset": 2496,
+            "target": 34963
+        },
+        {
+            "buffer": 8,
+            "byteLength": 2736,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 8,
+            "byteLength": 2736,
+            "byteOffset": 2736,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 8,
+            "byteLength": 1272,
+            "byteOffset": 5472,
+            "target": 34963
+        },
+        {
+            "buffer": 9,
+            "byteLength": 3264,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 9,
+            "byteLength": 3264,
+            "byteOffset": 3264,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 9,
+            "byteLength": 1560,
+            "byteOffset": 6528,
+            "target": 34963
+        },
+        {
+            "buffer": 10,
+            "byteLength": 3264,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 10,
+            "byteLength": 3264,
+            "byteOffset": 3264,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 10,
+            "byteLength": 1560,
+            "byteOffset": 6528,
+            "target": 34963
+        },
+        {
+            "buffer": 11,
+            "byteLength": 3264,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 11,
+            "byteLength": 3264,
+            "byteOffset": 3264,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 11,
+            "byteLength": 1560,
+            "byteOffset": 6528,
+            "target": 34963
+        },
+        {
+            "buffer": 12,
+            "byteLength": 21888,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 12,
+            "byteLength": 21888,
+            "byteOffset": 21888,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 12,
+            "byteLength": 9072,
+            "byteOffset": 43776,
+            "target": 34963
+        },
+        {
+            "buffer": 13,
+            "byteLength": 60936,
+            "byteOffset": 0,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 13,
+            "byteLength": 60936,
+            "byteOffset": 60936,
+            "byteStride": 12,
+            "target": 34962
+        },
+        {
+            "buffer": 13,
+            "byteLength": 31752,
+            "byteOffset": 121872,
+            "target": 34963
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 214716,
+            "uri": "Crank-0.bin"
+        },
+        {
+            "byteLength": 51648,
+            "uri": "Crank-1.bin"
+        },
+        {
+            "byteLength": 32472,
+            "uri": "Crank-2.bin"
+        },
+        {
+            "byteLength": 7224,
+            "uri": "Crank-3.bin"
+        },
+        {
+            "byteLength": 6048,
+            "uri": "Crank-4.bin"
+        },
+        {
+            "byteLength": 4752,
+            "uri": "Crank-5.bin"
+        },
+        {
+            "byteLength": 97902,
+            "uri": "Crank-57.bin"
+        },
+        {
+            "byteLength": 3072,
+            "uri": "Crank-58.bin"
+        },
+        {
+            "byteLength": 6744,
+            "uri": "Crank-59.bin"
+        },
+        {
+            "byteLength": 8088,
+            "uri": "Crank-61.bin"
+        },
+        {
+            "byteLength": 8088,
+            "uri": "Crank-62.bin"
+        },
+        {
+            "byteLength": 8088,
+            "uri": "Crank-63.bin"
+        },
+        {
+            "byteLength": 52848,
+            "uri": "Crank-113.bin"
+        },
+        {
+            "byteLength": 153624,
+            "uri": "Crank-114.bin"
+        }
+    ],
+    "materials": [
+        {
+            "name": "mat@0",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.900000,
+                    0.900000,
+                    0.000000,
+                    1.000000
+                ],
+                "metallicFactor": 1.0,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@1",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.684000,
+                    0.900000,
+                    0.900000,
+                    1.000000
+                ],
+                "metallicFactor": 1.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@2",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.385414,
+                    0.746242,
+                    0.900000,
+                    1.000000
+                ],
+                "metallicFactor": 0.99500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@3",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.603000,
+                    0.603000,
+                    0.585000,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@4",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.900000,
+                    0.722843,
+                    0.074665,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@5",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.900000,
+                    0.722843,
+                    0.074665,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@6",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.461686,
+                    0.551811,
+                    0.900000,
+                    1.000000
+                ],
+                "metallicFactor": 0.99500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@7",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.603000,
+                    0.603000,
+                    0.585000,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@8",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.144000,
+                    0.144000,
+                    0.144000,
+                    0.510000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@9",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.144000,
+                    0.144000,
+                    0.144000,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@10",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.144000,
+                    0.144000,
+                    0.144000,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@11",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.144000,
+                    0.144000,
+                    0.144000,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@12",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.900000,
+                    0.711000,
+                    0.288000,
+                    1.000000
+                ],
+                "metallicFactor": 1.000000,
+                "roughnessFactor": 0.100000
+            },
+            "doubleSided": false
+        },
+        {
+            "name": "mat@13",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.547200,
+                    0.526154,
+                    0.451192,
+                    1.000000
+                ],
+                "metallicFactor": 0.500000,
+                "roughnessFactor": 0.500000
+            },
+            "doubleSided": false
+        }
+    ],
+    "meshes": [
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm~1",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 1,
+                        "POSITION": 0
+                    },
+                    "indices": 2,
+                    "material": 0,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_2~2",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 4,
+                        "POSITION": 3
+                    },
+                    "indices": 5,
+                    "material": 1,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_3~3",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 7,
+                        "POSITION": 6
+                    },
+                    "indices": 8,
+                    "material": 2,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_4~4",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 10,
+                        "POSITION": 9
+                    },
+                    "indices": 11,
+                    "material": 3,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_5~5",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 13,
+                        "POSITION": 12
+                    },
+                    "indices": 14,
+                    "material": 4,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_6~6",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 16,
+                        "POSITION": 15
+                    },
+                    "indices": 17,
+                    "material": 5,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_7~7",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 19,
+                        "POSITION": 18
+                    },
+                    "indices": 20,
+                    "material": 6,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_8~8",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 22,
+                        "POSITION": 21
+                    },
+                    "indices": 23,
+                    "material": 7,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_9~9",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 25,
+                        "POSITION": 24
+                    },
+                    "indices": 26,
+                    "material": 8,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_10~10",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 28,
+                        "POSITION": 27
+                    },
+                    "indices": 29,
+                    "material": 9,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_11~11",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 31,
+                        "POSITION": 30
+                    },
+                    "indices": 32,
+                    "material": 10,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_12~12",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 34,
+                        "POSITION": 33
+                    },
+                    "indices": 35,
+                    "material": 11,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_13~13",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 37,
+                        "POSITION": 36
+                    },
+                    "indices": 38,
+                    "material": 12,
+                    "mode": 4
+                }
+            ]
+        },
+        {
+            "name": "l-Creo 3D_0_01-2_crankshaft_asm_14~14",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 40,
+                        "POSITION": 39
+                    },
+                    "indices": 41,
+                    "material": 13,
+                    "mode": 4
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "children": [
+                1
+            ],
+            "name": "Illustration",
+            "extras": {
+                "idpath": "/",
+                "nodeiid": 0
+            }
+        },
+        {
+            "children": [
+                2,
+                3,
+                4,
+                12,
+                20,
+                28,
+                36,
+                44,
+                52,
+                60,
+                68,
+                76,
+                84,
+                92,
+                100,
+                108,
+                116,
+                124,
+                132,
+                133,
+                134
+            ],
+            "name": "01-2_CRANKSHAFT.ASM",
+            "extras": {
+                "idpath": "/0",
+                "nodeiid": 1
+            }
+        },
+        {
+            "name": "01-2_CRANKSHAFT_GROUND.PRT",
+            "extras": {
+                "idpath": "/0/0",
+                "nodeiid": 2
+            }
+        },
+        {
+            "mesh": 0,
+            "name": "01-2_CRANKSHAFT.PRT",
+            "extras": {
+                "idpath": "/0/1",
+                "nodeiid": 3
+            }
+        },
+        {
+            "children": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+            ],
+            "matrix": [
+                0,
+                0.836964,
+                -0.547257,
+                0,
+                -5.55112e-17,
+                0.547257,
+                0.836964,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0.08,
+                0.0425,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/2",
+                "nodeiid": 4
+            }
+        },
+        {
+            "mesh": 1,
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/2/0",
+                "nodeiid": 5
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.74228e-08,
+                0,
+                6.76051e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/2/1",
+                "nodeiid": 6
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                0.1467,
+                -1.38778e-17,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/2/2",
+                "nodeiid": 7
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/2/3",
+                "nodeiid": 8
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/2/4",
+                "nodeiid": 9
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/2/5",
+                "nodeiid": 10
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/2/6",
+                "nodeiid": 11
+            }
+        },
+        {
+            "children": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+            ],
+            "matrix": [
+                0,
+                0.547257,
+                -0.836964,
+                0,
+                0,
+                0.836964,
+                0.547257,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0.186,
+                0,
+                0.0425,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/3",
+                "nodeiid": 12
+            }
+        },
+        {
+            "mesh": 1,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/3/0",
+                "nodeiid": 13
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                -1,
+                -8.74228e-08,
+                0,
+                7.11711e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/3/1",
+                "nodeiid": 14
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -6.93889e-18,
+                0.1467,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/3/2",
+                "nodeiid": 15
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/3/3",
+                "nodeiid": 16
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/3/4",
+                "nodeiid": 17
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/3/5",
+                "nodeiid": 18
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/3/6",
+                "nodeiid": 19
+            }
+        },
+        {
+            "children": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+            ],
+            "matrix": [
+                0,
+                0.547257,
+                -0.836964,
+                0,
+                0,
+                0.836964,
+                0.547257,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0.292,
+                -0.0425,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/4",
+                "nodeiid": 20
+            }
+        },
+        {
+            "mesh": 1,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/4/0",
+                "nodeiid": 21
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                -1,
+                -8.74228e-08,
+                0,
+                7.11711e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/4/1",
+                "nodeiid": 22
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -3.46945e-18,
+                0.1467,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/4/2",
+                "nodeiid": 23
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/4/3",
+                "nodeiid": 24
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/4/4",
+                "nodeiid": 25
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/4/5",
+                "nodeiid": 26
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/4/6",
+                "nodeiid": 27
+            }
+        },
+        {
+            "children": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+            ],
+            "matrix": [
+                0,
+                0.836964,
+                -0.547257,
+                0,
+                -5.55112e-17,
+                0.547257,
+                0.836964,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0.398,
+                0,
+                -0.0425,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/5",
+                "nodeiid": 28
+            }
+        },
+        {
+            "mesh": 1,
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/5/0",
+                "nodeiid": 29
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.74228e-08,
+                0,
+                6.76051e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/5/1",
+                "nodeiid": 30
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                -6.93889e-18,
+                0.1467,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/5/2",
+                "nodeiid": 31
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/5/3",
+                "nodeiid": 32
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/5/4",
+                "nodeiid": 33
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/5/5",
+                "nodeiid": 34
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/5/6",
+                "nodeiid": 35
+            }
+        },
+        {
+            "children": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+            ],
+            "matrix": [
+                0,
+                0.836964,
+                0.547257,
+                0,
+                -5.55112e-17,
+                0.547257,
+                -0.836964,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0.06,
+                0.0425,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/6",
+                "nodeiid": 36
+            }
+        },
+        {
+            "mesh": 1,
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/6/0",
+                "nodeiid": 37
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.74228e-08,
+                0,
+                6.76051e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/6/1",
+                "nodeiid": 38
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                0.1467,
+                -6.93889e-18,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/6/2",
+                "nodeiid": 39
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/6/3",
+                "nodeiid": 40
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/6/4",
+                "nodeiid": 41
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/6/5",
+                "nodeiid": 42
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/6/6",
+                "nodeiid": 43
+            }
+        },
+        {
+            "children": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+            ],
+            "matrix": [
+                0,
+                0.836964,
+                0.547257,
+                0,
+                -5.55112e-17,
+                0.547257,
+                -0.836964,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0.166,
+                0,
+                0.0425,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/7",
+                "nodeiid": 44
+            }
+        },
+        {
+            "mesh": 1,
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/7/0",
+                "nodeiid": 45
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.74228e-08,
+                0,
+                6.76051e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/7/1",
+                "nodeiid": 46
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                -6.93889e-18,
+                0.1467,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/7/2",
+                "nodeiid": 47
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/7/3",
+                "nodeiid": 48
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/7/4",
+                "nodeiid": 49
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                0,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                0,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/7/5",
+                "nodeiid": 50
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                0,
+                -1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/7/6",
+                "nodeiid": 51
+            }
+        },
+        {
+            "children": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+            ],
+            "matrix": [
+                0,
+                0.547257,
+                0.836964,
+                0,
+                0,
+                0.836964,
+                -0.547257,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0.272,
+                -0.0425,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/8",
+                "nodeiid": 52
+            }
+        },
+        {
+            "mesh": 1,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/8/0",
+                "nodeiid": 53
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                -1,
+                -8.74228e-08,
+                0,
+                7.11711e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/8/1",
+                "nodeiid": 54
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -3.46945e-18,
+                0.1467,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/8/2",
+                "nodeiid": 55
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/8/3",
+                "nodeiid": 56
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/8/4",
+                "nodeiid": 57
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/8/5",
+                "nodeiid": 58
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/8/6",
+                "nodeiid": 59
+            }
+        },
+        {
+            "children": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+            ],
+            "matrix": [
+                0,
+                0.547257,
+                0.836964,
+                0,
+                0,
+                0.836964,
+                -0.547257,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0.378,
+                0,
+                -0.0425,
+                1
+            ],
+            "name": "CONNECTING_ROD.ASM",
+            "extras": {
+                "idpath": "/0/9",
+                "nodeiid": 60
+            }
+        },
+        {
+            "mesh": 1,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD.PRT",
+            "extras": {
+                "idpath": "/0/9/0",
+                "nodeiid": 61
+            }
+        },
+        {
+            "mesh": 2,
+            "matrix": [
+                1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                -1,
+                -8.74228e-08,
+                0,
+                7.11711e-16,
+                8.74228e-08,
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_CAP.PRT",
+            "extras": {
+                "idpath": "/0/9/1",
+                "nodeiid": 62
+            }
+        },
+        {
+            "mesh": 3,
+            "matrix": [
+                0,
+                0,
+                1,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -6.93889e-18,
+                0.1467,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BUSHING.PRT",
+            "extras": {
+                "idpath": "/0/9/2",
+                "nodeiid": 63
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                -0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/9/3",
+                "nodeiid": 64
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/9/4",
+                "nodeiid": 65
+            }
+        },
+        {
+            "mesh": 4,
+            "matrix": [
+                -5.55112e-17,
+                1,
+                2.98023e-08,
+                0,
+                2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                1,
+                5.55112e-17,
+                -2.98023e-08,
+                0,
+                0.02825,
+                0.02,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT.PRT",
+            "extras": {
+                "idpath": "/0/9/5",
+                "nodeiid": 66
+            }
+        },
+        {
+            "mesh": 5,
+            "matrix": [
+                5.55112e-17,
+                -1,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0.02825,
+                -0.016,
+                0,
+                1
+            ],
+            "name": "CONNECTING_ROD_BOLT_NUT.PRT",
+            "extras": {
+                "idpath": "/0/9/6",
+                "nodeiid": 67
+            }
+        },
+        {
+            "children": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0,
+                -0.707107,
+                0.707107,
+                0,
+                0.08,
+                0.106696,
+                0.106696,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/10",
+                "nodeiid": 68
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/10/0",
+                "nodeiid": 69
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/10/1",
+                "nodeiid": 70
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/10/2",
+                "nodeiid": 71
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/10/3",
+                "nodeiid": 72
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/10/4",
+                "nodeiid": 73
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/10/5",
+                "nodeiid": 74
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                0,
+                0.037,
+                -1.38778e-17,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/10/6",
+                "nodeiid": 75
+            }
+        },
+        {
+            "children": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0,
+                -0.707107,
+                0.707107,
+                0,
+                0.186,
+                0.106696,
+                0.106696,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/11",
+                "nodeiid": 76
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/11/0",
+                "nodeiid": 77
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/11/1",
+                "nodeiid": 78
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/11/2",
+                "nodeiid": 79
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/11/3",
+                "nodeiid": 80
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                -1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/11/4",
+                "nodeiid": 81
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/11/5",
+                "nodeiid": 82
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                0,
+                0.037,
+                -1.38778e-17,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/11/6",
+                "nodeiid": 83
+            }
+        },
+        {
+            "children": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0,
+                -0.707107,
+                0.707107,
+                0,
+                0.292,
+                0.064196,
+                0.064196,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/12",
+                "nodeiid": 84
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/12/0",
+                "nodeiid": 85
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/12/1",
+                "nodeiid": 86
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/12/2",
+                "nodeiid": 87
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/12/3",
+                "nodeiid": 88
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/12/4",
+                "nodeiid": 89
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/12/5",
+                "nodeiid": 90
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                0,
+                0.037,
+                0,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/12/6",
+                "nodeiid": 91
+            }
+        },
+        {
+            "children": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0,
+                -0.707107,
+                0.707107,
+                0,
+                0.398,
+                0.064196,
+                0.064196,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/13",
+                "nodeiid": 92
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/13/0",
+                "nodeiid": 93
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                -5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/13/1",
+                "nodeiid": 94
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/13/2",
+                "nodeiid": 95
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/13/3",
+                "nodeiid": 96
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/13/4",
+                "nodeiid": 97
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                0,
+                5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/13/5",
+                "nodeiid": 98
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                2.34489e-15,
+                0,
+                0,
+                0.037,
+                0,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/13/6",
+                "nodeiid": 99
+            }
+        },
+        {
+            "children": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                -0.707107,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0.06,
+                0.106696,
+                -0.106696,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/14",
+                "nodeiid": 100
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/14/0",
+                "nodeiid": 101
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/14/1",
+                "nodeiid": 102
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/14/2",
+                "nodeiid": 103
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/14/3",
+                "nodeiid": 104
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/14/4",
+                "nodeiid": 105
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/14/5",
+                "nodeiid": 106
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                0,
+                0.037,
+                1.38778e-17,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/14/6",
+                "nodeiid": 107
+            }
+        },
+        {
+            "children": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                -0.707107,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0.166,
+                0.064196,
+                -0.064196,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/15",
+                "nodeiid": 108
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/15/0",
+                "nodeiid": 109
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/15/1",
+                "nodeiid": 110
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/15/2",
+                "nodeiid": 111
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/15/3",
+                "nodeiid": 112
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/15/4",
+                "nodeiid": 113
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/15/5",
+                "nodeiid": 114
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                0,
+                0.037,
+                0,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/15/6",
+                "nodeiid": 115
+            }
+        },
+        {
+            "children": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                -0.707107,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0.272,
+                0.064196,
+                -0.064196,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/16",
+                "nodeiid": 116
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/16/0",
+                "nodeiid": 117
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/16/1",
+                "nodeiid": 118
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/16/2",
+                "nodeiid": 119
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/16/3",
+                "nodeiid": 120
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/16/4",
+                "nodeiid": 121
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/16/5",
+                "nodeiid": 122
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                0,
+                0.037,
+                0,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/16/6",
+                "nodeiid": 123
+            }
+        },
+        {
+            "children": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+            ],
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.707107,
+                -0.707107,
+                0,
+                0,
+                0.707107,
+                0.707107,
+                0,
+                0.378,
+                0.106696,
+                -0.106696,
+                1
+            ],
+            "name": "01-2_PISTON.ASM",
+            "extras": {
+                "idpath": "/0/17",
+                "nodeiid": 124
+            }
+        },
+        {
+            "mesh": 6,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_PISTON.PRT",
+            "extras": {
+                "idpath": "/0/17/0",
+                "nodeiid": 125
+            }
+        },
+        {
+            "mesh": 7,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.02275,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_PIN.PRT",
+            "extras": {
+                "idpath": "/0/17/1",
+                "nodeiid": 126
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                -5.55112e-17,
+                1,
+                0,
+                -1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0.024369,
+                0.02275,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/17/2",
+                "nodeiid": 127
+            }
+        },
+        {
+            "mesh": 8,
+            "matrix": [
+                -2.98023e-08,
+                5.55112e-17,
+                -1,
+                0,
+                1,
+                -2.98023e-08,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                -0.024369,
+                0.02275,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_RETAINER.PRT",
+            "extras": {
+                "idpath": "/0/17/3",
+                "nodeiid": 128
+            }
+        },
+        {
+            "mesh": 9,
+            "matrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                -1,
+                -8.42937e-08,
+                0,
+                0,
+                8.42937e-08,
+                -1,
+                0,
+                0,
+                0.04638,
+                1.38778e-17,
+                1
+            ],
+            "name": "01-2_PISTON_TOP_COMP.PRT",
+            "extras": {
+                "idpath": "/0/17/4",
+                "nodeiid": 129
+            }
+        },
+        {
+            "mesh": 10,
+            "matrix": [
+                -1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                0,
+                0.04138,
+                0,
+                1
+            ],
+            "name": "PISTON_BOT_COMP.PRT",
+            "extras": {
+                "idpath": "/0/17/5",
+                "nodeiid": 130
+            }
+        },
+        {
+            "mesh": 11,
+            "matrix": [
+                0,
+                -5.55112e-17,
+                1,
+                0,
+                -8.74228e-08,
+                -1,
+                -5.55112e-17,
+                0,
+                1,
+                -8.74228e-08,
+                -2.34489e-15,
+                0,
+                0,
+                0.037,
+                1.38778e-17,
+                1
+            ],
+            "name": "PISTON_OIL_COMP.PRT",
+            "extras": {
+                "idpath": "/0/17/6",
+                "nodeiid": 131
+            }
+        },
+        {
+            "mesh": 12,
+            "matrix": [
+                -2.98023e-08,
+                -1,
+                -2.98023e-08,
+                0,
+                -2.98023e-08,
+                -2.98023e-08,
+                1,
+                0,
+                -1,
+                2.98023e-08,
+                -2.98023e-08,
+                0,
+                -0.0751,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_VALVE_TIMING_SPROCKET.PRT",
+            "extras": {
+                "idpath": "/0/18",
+                "nodeiid": 132
+            }
+        },
+        {
+            "mesh": 13,
+            "matrix": [
+                -8.37223e-08,
+                0.230899,
+                0.972978,
+                0,
+                9.79808e-09,
+                0.972978,
+                -0.230899,
+                0,
+                -1,
+                -9.79808e-09,
+                -8.37223e-08,
+                0,
+                -0.07322,
+                0,
+                0,
+                1
+            ],
+            "name": "01-2_DAMPER_PULLEY.PRT",
+            "extras": {
+                "idpath": "/0/19",
+                "nodeiid": 133
+            }
+        },
+        {
+            "name": "content",
+            "extras": {
+                "idpath": "/0/20",
+                "nodeiid": 134
+            }
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ]
+        }
+    ]
+}
