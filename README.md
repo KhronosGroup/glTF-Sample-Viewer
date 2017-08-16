@@ -63,7 +63,7 @@ It is first important to choose a microfacet model to describe how light interac
 
 ### Environment Maps
 
-This is where environment maps come in! Environement maps can be thought of as a light source that surrounds the entire scene (usually as an encompassing cube or sphere) and contributes to the lighting based on the color and brightness across the entire image. As you might guess, it is extremely inefficient to assess the light contribution to a single point on a surface from every visible point on the environment map. In offline applications, we would typically resort to using importance sampling within the render and just choose a predefined number of samples. However, as described in [Unreal Engine's course notes on real-time PBR](http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf), we can reduce this to a single texture lookup by baking the diffuse and specular irradiance contributions of the environment map into textures. You could do this youself as described in the course notes, but there is also a resource called [IBL Baker](http://www.derkreature.com/iblbaker/) that will create these textures for you. The diffuse irradiance can be stored in a cube map, however, we expect the sharpness of specular reflection to diminish as the roughness of the object increases. Because of this, the different amounts of specular irradiance can be stored in the mip levels of the specular cube map and accessed in the fragment shader based on roughness.
+This is where environment maps come in! Environment maps can be thought of as a light source that surrounds the entire scene (usually as an encompassing cube or sphere) and contributes to the lighting based on the color and brightness across the entire image. As you might guess, it is extremely inefficient to assess the light contribution to a single point on a surface from every visible point on the environment map. In offline applications, we would typically resort to using importance sampling within the render and just choose a predefined number of samples. However, as described in [Unreal Engine's course notes on real-time PBR](http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf), we can reduce this to a single texture lookup by baking the diffuse and specular irradiance contributions of the environment map into textures. You could do this youself as described in the course notes, but there is also a resource called [IBL Baker](http://www.derkreature.com/iblbaker/) that will create these textures for you. The diffuse irradiance can be stored in a cube map, however, we expect the sharpness of specular reflection to diminish as the roughness of the object increases. Because of this, the different amounts of specular irradiance can be stored in the mip levels of the specular cube map and accessed in the fragment shader based on roughness.
 
 **Diffuse Front Face**
 
@@ -101,3 +101,78 @@ Here are some resulting renders from the demo application.
 **BarramundiFish Model**
 
 ![](images/BarramundiFish.gif)
+
+Appendix
+------------
+
+In this section, you'll find alternative implementations for the various terms found in the lighting equation.
+These functions may be swapped into pbr-frag.glsl to tune your desired rendering performance and presentation.
+
+### Surface Reflection Ratio (F)
+
+**Frensel Schlick**
+Simplified implementation of fresnel from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
+
+```
+vec3 specularReflection(PBRInfo pbrInputs)
+{
+    return pbrInputs.metalness + (vec3(1.0) - pbrInputs.metalness) * pow(1.0 - pbrInputs.VdotH, 5.0);
+}
+```
+
+### Geometric Occlusion (G)
+
+**Cook Torrance**
+Implementation from [A Reflectance Model for Computer Graphics](http://graphics.pixar.com/library/ReflectanceModel/) by Robert Cook and Kenneth Torrance,
+
+```
+float geometricOcclusion(PBRInfo pbrInputs)
+{
+    return min(min(2.0 * pbrInputs.NdotV * pbrInputs.NdotH / pbrInputs.VdotH, 2.0 * pbrInputs.NdotL * pbrInputs.NdotH / pbrInputs.VdotH), 1.0);
+}
+```
+
+**Schlick**
+Implementation of microfacet occlusion from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
+
+```
+float geometricOcclusion(PBRInfo pbrInputs)
+{
+    float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
+    // alternately, k can be defined with
+    // float k = (pbrInputs.perceptualRoughness + 1) * (pbrInputs.perceptualRoughness + 1) / 8;
+
+    float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
+    float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
+    return l * n;
+}
+```
+
+**Smith**
+The following implementation is from "Geometrical Shadowing of a Random Rough Surface" by Bruce G. Smith
+
+```
+float geometricOcclusion(PBRInfo pbrInputs)
+{
+  float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
+  float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
+  float v = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotL2 ) / NdotL2 + 1.)) * 0.5;
+  float l = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotV2 ) / NdotV2 + 1.)) * 0.5;
+  return (1.0 / max((1.0 + v + l ), 0.000001));
+}
+```
+
+### Diffuse Term
+The following equations model the diffuse term of the lighting equation.
+
+***Disney***
+Implementation of diffuse from [Physically-Based Shading at Disney](http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf) by Brent Burley.  See Section 5.3.
+
+```
+vec3 diffuse(PBRInfo pbrInputs)
+{
+    float f90 = 2.0 * pbrInputs.LdotH * pbrInputs.LdotH * pbrInputs.alphaRoughness - 0.5;
+
+    return (pbrInputs.diffuseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
+}
+```
