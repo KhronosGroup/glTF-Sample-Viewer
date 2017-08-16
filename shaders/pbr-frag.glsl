@@ -30,6 +30,9 @@ uniform sampler2D u_MetallicRoughnessSampler;
 uniform sampler2D u_OcclusionSampler;
 uniform float u_OcclusionStrength;
 #endif
+#ifdef HAS_ALPHAMASK
+uniform float u_AlphaMask;
+#endif
 
 uniform vec2 u_MetallicRoughnessValues;
 uniform vec4 u_BaseColorFactor;
@@ -300,6 +303,11 @@ void main()
   color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
   color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
   color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
+  #endif
+
+  #ifdef HAS_ALPHAMASK
+  if (baseColor.a <= u_AlphaMask) discard;
+  else baseColor.a = 1.0;
   #endif
 
   gl_FragColor = vec4(color, baseColor.a);
