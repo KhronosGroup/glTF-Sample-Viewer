@@ -89,19 +89,6 @@ Finally, we can compute the final color by summing the contributions of diffuse 
 
 `finalColor = (diffuseLight + diffuseColor) + (specularLight * (specularColor * brdf.x + brdf.y))`
 
-Some Results
-------------
-
-Here are some resulting renders from the demo application.
-
-**Telephone Model**
-
-![](images/Telephone.gif)
-
-**BarramundiFish Model**
-
-![](images/BarramundiFish.gif)
-
 Appendix
 ------------
 
