@@ -105,7 +105,14 @@ Here are some resulting renders from the demo application.
 Appendix
 ------------
 
-In this section, you'll find alternative implementations for the various terms found in the lighting equation.
+The core lighting equation this sample uses is the Schlick BRDF model from [An Inexpensive BRDF Model for Physically-based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf)
+
+```
+vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
+vec3 diffuseContrib = (1.0 - F) * diffuse;
+```
+
+Below here you'll find common implementations for the various terms found in the lighting equation.
 These functions may be swapped into pbr-frag.glsl to tune your desired rendering performance and presentation.
 
 ### Surface Reflection Ratio (F)
@@ -162,10 +169,34 @@ float geometricOcclusion(PBRInfo pbrInputs)
 }
 ```
 
-### Diffuse Term
-The following equations model the diffuse term of the lighting equation.
+### Microfaced Distribution (D)
 
-***Disney***
+**Trowbridge-Reitz**
+Implementation of microfaced distrubtion from [Average Irregularity Representation of a Roughened Surface for Ray Reflection](https://www.osapublishing.org/josa/abstract.cfm?uri=josa-65-5-531) by T. S. Trowbridge, and K. P. Reitz
+
+```
+float microfacetDistribution(PBRInfo pbrInputs)
+{
+    float roughnessSq = pbrInputs.alphaRoughness * pbrInputs.alphaRoughness;
+    float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
+    return roughnessSq / (M_PI * f * f);
+}
+```
+
+### Diffuse Term
+The following equations are commonly used models of the diffuse term of the lighting equation.
+
+**Lambert**
+Implementation of diffuse from [Lambert's Photometria](https://archive.org/details/lambertsphotome00lambgoog) by Johann Heinrich Lambert
+
+```
+vec3 diffuse(PBRInfo pbrInputs)
+{
+    return pbrInputs.diffuseColor / M_PI;
+}
+```
+
+**Disney**
 Implementation of diffuse from [Physically-Based Shading at Disney](http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf) by Brent Burley.  See Section 5.3.
 
 ```
