@@ -19,7 +19,11 @@ class Mesh {
 
         this.vertSource = globalState.vertSource;
         this.fragSource = globalState.fragSource;
-        this.sRGBifAvailable = globalState.sRGBifAvailable;
+        this.hasSRGBExt = globalState.hasSRGBExt;
+
+        if(!this.hasSRGBExt) {
+            this.defines.MANUAL_SRGB = 1;
+        }
 
         ++scene.pendingBuffers;
 
@@ -226,7 +230,7 @@ class Mesh {
             vals: baseColorFactor
         };
         if (pbrMat && pbrMat.baseColorTexture && gltf.textures.length > pbrMat.baseColorTexture.index) {
-            imageInfos['baseColor'] = this.getImageInfo(gl, gltf, pbrMat.baseColorTexture.index, 'uniform1i', 'u_BaseColorSampler', this.sRGBifAvailable);
+            imageInfos['baseColor'] = this.getImageInfo(gl, gltf, pbrMat.baseColorTexture.index, 'uniform1i', 'u_BaseColorSampler', this.hasSRGBExt ? this.hasSRGBExt.SRGB_EXT : gl.RGBA);
             this.defines.HAS_BASECOLORMAP = 1;
         }
         else if (this.localState.uniforms['u_BaseColorSampler']) {
@@ -262,12 +266,12 @@ class Mesh {
         // brdfLUT
         var brdfLUT = 'textures/brdfLUT.png';
         samplerIndex = this.scene.getNextSamplerIndex();
-        imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': gl.RGBA, 'clamp': true };
+        imageInfos['brdfLUT'] = { 'uri': brdfLUT, 'samplerIndex': samplerIndex, 'colorSpace': this.hasSRGBExt ? this.hasSRGBExt.SRGB_EXT : gl.RGBA, 'clamp': true };
         this.localState.uniforms['u_brdfLUT'] = { 'funcName': 'uniform1i', 'vals': [samplerIndex] };
 
         // Emissive
         if (this.material && this.material.emissiveTexture) {
-            imageInfos['emissive'] = this.getImageInfo(gl, gltf, this.material.emissiveTexture.index, 'uniform1i', 'u_EmissiveSampler', this.sRGBifAvailable);
+            imageInfos['emissive'] = this.getImageInfo(gl, gltf, this.material.emissiveTexture.index, 'uniform1i', 'u_EmissiveSampler', this.hasSRGBExt ? this.hasSRGBExt.SRGB_EXT : gl.RGBA);
             this.defines.HAS_EMISSIVEMAP = 1;
             var emissiveFactor = defined(this.material.emissiveFactor) ? this.material.emissiveFactor : [0.0, 0.0, 0.0];
             this.localState.uniforms['u_EmissiveFactor'] = {

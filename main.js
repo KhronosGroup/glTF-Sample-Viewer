@@ -48,7 +48,7 @@ function loadCubeMap(gl, envMap, type, state) {
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
             // todo:  should this be srgb?  or rgba?  what's the HDR scale on this?
-            gl.texImage2D(face, j, state.sRGBifAvailable, state.sRGBifAvailable, gl.UNSIGNED_BYTE, image);
+            gl.texImage2D(face, j, state.hasSRGBExt ? state.hasSRGBExt.SRGB_EXT : gl.RGBA, state.hasSRGBExt ? state.hasSRGBExt.SRGB_EXT : gl.RGBA, gl.UNSIGNED_BYTE, image);
         };
     }
 
@@ -142,8 +142,6 @@ function init(vertSource, fragSource) {
 
     var ctx2d = canvas2d.getContext("2d");
 
-    var hasSRGBExt = gl.getExtension('EXT_SRGB');
-
     glState = {
         uniforms: {},
         attributes: {},
@@ -152,7 +150,7 @@ function init(vertSource, fragSource) {
         scene: null,
         hasLODExtension:gl.getExtension('EXT_shader_texture_lod'),
         hasDerivativesExtension:gl.getExtension('OES_standard_derivatives'),
-        sRGBifAvailable: (hasSRGBExt ? hasSRGBExt.SRGB_EXT : gl.RGBA)
+        hasSRGBExt:gl.getExtension('EXT_SRGB')
     };
 
     var projectionMatrix = mat4.create();
