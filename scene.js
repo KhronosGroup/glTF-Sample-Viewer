@@ -96,7 +96,7 @@ class Scene {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-            gl.texImage2D(gl.TEXTURE_2D, 0, imageInfo.colorSpace, imageInfo.colorSpace, gl.UNSIGNED_BYTE, image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,/*imageInfo.colorSpace, imageInfo.colorSpace,*/ gl.UNSIGNED_BYTE, image);
 
             scene.pendingTextures--;
             scene.drawScene(gl);
