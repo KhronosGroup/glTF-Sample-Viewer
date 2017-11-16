@@ -25,7 +25,7 @@ A surface using the Metallic-Roughness material is governed by three parameters:
 * `metallic` -  A float describing how metallic the surface is
 * `roughness` - A float describing how rough the surface is
 
-These parameters can be provided to the material in two ways. Either the parameters can be given constant values, which would dictate the shading of an entire mesh uniformly, or textures can be provided that map varying values over a mesh. In this project, all of the glTF files followed the latter case. It is important to note here that although `metallic` and `roughness` are separate parameters, they are provided as a single texture in which the `metallic` values are in the red channel and the `roughness` values are in the blue channel to save on space.
+These parameters can be provided to the material in two ways. Either the parameters can be given constant values, which would dictate the shading of an entire mesh uniformly, or textures can be provided that map varying values over a mesh. In this project, all of the glTF files followed the latter case. It is important to note here that although `metallic` and `roughness` are separate parameters, they are provided as a single texture in which the `metallic` values are in the blue channel and the `roughness` values are in the green channel to save on space.
 
 **Base Color of a Boombox**
 
@@ -87,7 +87,7 @@ We now have the diffuse and specular incoming light and the BRDF, but we need to
 
 Finally, we can compute the final color by summing the contributions of diffuse and specular components the color in the following manner:
 
-`finalColor = (diffuseLight + diffuseColor) + (specularLight * (specularColor * brdf.x + brdf.y))`
+`finalColor = (diffuseLight * diffuseColor) + (specularLight * (specularColor * brdf.x + brdf.y))`
 
 Appendix
 ------------
