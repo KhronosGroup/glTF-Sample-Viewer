@@ -5,6 +5,7 @@ html, body {
     height: 100%;
     background: #222;
     overflow: hidden;
+    user-select: none;
 }
 
 #error {
