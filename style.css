@@ -41,6 +41,8 @@ html, body {
     color: white;
     display: inline-block;
     vertical-align: middle;
+    cursor: pointer;
+    transition: background-color .3s ease;
 }
 
 .reset {
