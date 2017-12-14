@@ -5,7 +5,6 @@ html, body {
     height: 100%;
     background: #222;
     overflow: hidden;
-    user-select: none;
 }
 
 #error {
@@ -34,6 +33,9 @@ html, body {
     text-align: center;
 }
 
+#pbrMath, #inputs, .dg {
+    user-select: none;
+}
 
 .pbrMathSub {
     padding: 0px;
