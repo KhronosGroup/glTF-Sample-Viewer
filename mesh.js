@@ -126,11 +126,98 @@ class Mesh {
         var mvpMatrix = mat4.create();
         mat4.multiply(mvMatrix, view, modelMatrix);
         mat4.multiply(mvpMatrix, projection, mvMatrix);
+
+        var modelInverse = mat4.create();
+        var normalMatrix = mat4.create();
+
+        /*  NOTE:
+
+            Normal vectors must be transformed by the transpose of the inverse of the model-matrix when that matrix is not orthonormal.
+
+            See e.g. https://www.gdcvault.com/play/1015322/Fundamentals-of-Grassmann or other sources for an explanation.
+
+            In short, lets illustrate the problem, and show the solution.
+
+            Suppose we have normal vector n and any tangent vector v at some point p of the model's surface.
+
+            By the definition of a 'normal' vector, n is orthonormal to v.
+
+            Mathematically, this means that [1]:
+
+            n^T * v = 0
+
+            where * means matrix multiplication and ^T means transpose.
+
+            (another way of writing this in non-matrix form is n . v = 0, where . is the dot product between n and v)
+
+            Say our model's surface is a sphere and that our model-to-world matrix is a non-uniform scaling matrix.
+
+            The sphere will be transformed to an ellipsoid, but when transforming the normal vectors using the same matrix,
+            these transformed normal vectors are not orthogonal to the ellipsoid anymore!
+            See https://alfonse.bitbucket.io/oldtut/Illumination/CircleNormalScaling.svg
+
+            So these transformed normal vectors are not 'normal' at all...
+
+            So what matrix should we use to transform the original normal vectors into new correct normals?
+
+            Say that U is such a matrix, then U*n (the transformed normal) must be orthogonal to M*v (the transformed tangent), meaning
+
+            (U*n)^T * (M*v) = 0
+
+            <=> (transpose of product is reversed product of transposes)
+
+            (n^T * U^T) * (M * v) = 0
+
+            <=> (matrix multiplication is associative)
+
+            n^T * (U^T * M) * v = 0
+
+            From [1] above, we already know that
+
+            n^T      *        v = 0
+
+            so if we could just find U so that U^T * M = I (the identity matrix), we're done.
+
+            That's easy
+
+            U^T * M = I
+
+            <=> (multiply both sides to the right with M^-1, the inverse of M)
+
+            U^T = I * M^-1
+
+            <=> (transpose both sides, and transposing twice cancels out)
+
+            U = (M^-1)^T
+
+            So here you have it, U must be the transpose of the inverse of M.
+
+            Normal vectors to describe planes and the cross product that only works in 3D
+            are an indication that something is very rotten in vector math land...
+
+            Indeed, when we go back in time, and look at the 19th century math that existed before vector math became popular,
+            we find beautiful but forgotten object-oriented frameworks like Grassmann and Clifford algebra.
+
+            These work the same in all dimensions, and do not exhibit the above problems, offering much more bang for the buck.
+
+            It is only recently that some game engine developers discovered this math, e.g. the Terathon C4 engine.
+
+            For a nice little Javascript library that demonstrates the crazy power of this ancient algebras,
+            see https://github.com/enkimute/ganja.js
+        */
+
+        // TODO: We don't need a 4x4 matrix here, just 3x3
+        mat4.invert(modelInverse, modelMatrix);
+        mat4.transpose(normalMatrix, modelInverse);
+
         // these should actually be local to the mesh (not in global)
         globalState.uniforms['u_MVPMatrix'].vals = [false, mvpMatrix];
 
-        // Update normal matrix
+        // Update model transformation matrix
         globalState.uniforms['u_ModelMatrix'].vals = [false, modelMatrix];
+
+        // Update normal transformation matrix
+        globalState.uniforms['u_NormalMatrix'].vals = [false, normalMatrix];
 
         this.applyState(gl, globalState);
 
