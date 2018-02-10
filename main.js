@@ -172,8 +172,10 @@ function init(vertSource, fragSource) {
     loadCubeMap(gl, envMap, "specular", glState);
     // Get location of mvp matrix uniform
     glState.uniforms['u_MVPMatrix'] = { 'funcName': 'uniformMatrix4fv' };
-    // Get location of normal matrix uniform
+    // Get location of model matrix uniform
     glState.uniforms['u_ModelMatrix'] = { 'funcName': 'uniformMatrix4fv' };
+    // Get location of normal matrix uniform
+    glState.uniforms['u_NormalMatrix'] = { 'funcName': 'uniformMatrix4fv' };
 
     // Light
     glState.uniforms['u_LightDirection'] = { 'funcName': 'uniform3f', 'vals': [0.0, 0.5, 0.5] };
@@ -234,7 +236,7 @@ function init(vertSource, fragSource) {
 
 
     var text = { Model: defaultModelName };
-    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'DamagedHelmet', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'TextureSettingsTest', 'Triangle', 'WaterBottle']).onChange(function(value) {
+    folder.add(text, 'Model', ['MetalRoughSpheres', 'AppleTree', 'Avocado', 'BarramundiFish', 'BoomBox', 'Corset', 'DamagedHelmet', 'FarmLandDiorama', 'NormalTangentTest', 'Telephone', 'TextureSettingsTest', 'Triangle', 'WaterBottle', 'InterpolatedNormalsTest', 'NonUniformScalingTest']).onChange(function(value) {
         updateModel(value, gl, glState, viewMatrix, projectionMatrix, canvas, ctx2d);
     });
     folder.open();
