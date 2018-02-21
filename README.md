@@ -99,6 +99,13 @@ vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
 vec3 diffuseContrib = (1.0 - F) * diffuse;
 ```
 
+If you're familiar with implementing the phong model, you may think that the diffuse and specular contributions simply need to be summed up to obtain the final lighting. However, in the context of a BRDF, the diffuse and specular components are not accounting for the *energy* of the incident light, which can cause some confusion.
+Using a BRDF, the diffuse and specular parts describe the *bidirectional reflectance*, which we have to scale by the *energy* received from the light in order to obtain the final intensity that reaches the eye of the viewer (as outlined in the respective [paper by Cook and Torrance](http://graphics.pixar.com/library/ReflectanceModel/).
+According to the basic cosine law (as described by [Lambert](https://archive.org/details/lambertsphotome00lambgoog)), the energy is computed using the dot product between the light's direction and the surface normal. Therefore, the final intensity that will be used for shading is computed as follows:
+```
+vec3 color = NdotL * u_LightColor * (diffuseContrib + specContrib);
+```
+
 Below here you'll find common implementations for the various terms found in the lighting equation.
 These functions may be swapped into pbr-frag.glsl to tune your desired rendering performance and presentation.
 
