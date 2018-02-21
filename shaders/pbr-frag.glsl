@@ -132,7 +132,8 @@ vec3 getNormal()
     vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
     n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
 #else
-    vec3 n = tbn[2].xyz;
+    // The tbn matrix is linearly interpolated, so we need to re-normalize
+    vec3 n = normalize(tbn[2].xyz);
 #endif
 
     return n;
