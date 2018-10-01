@@ -230,6 +230,10 @@ function init(vertSource, fragSource) {
     document.onmousemove = function(ev) { handleMouseMove(ev, redraw); };
     document.onwheel = function(ev) { handleWheel(ev, redraw); };
 
+    canvas2d.ontouchstart = function(ev) { handleToucheStart(ev); };
+    document.ontouchend = function(ev) { handleTouchEnd(ev); };
+    document.ontouchmove = function(ev) { handleTouchMove(ev, redraw); };
+
     // Initialize GUI
     var gui = new dat.GUI();
     var folder = gui.addFolder("Metallic-Roughness Material");
@@ -419,6 +423,7 @@ function resetCamera() {
     pitch = 0.0;
     translate = 4.0;
     mouseDown = false;
+    touchStart = false;
 }
 
 function handleMouseDown(ev) {
@@ -459,6 +464,41 @@ function handleWheel(ev, redraw) {
     else {
         translate /= wheelSpeed;
     }
+
+    redraw();
+}
+
+// ***** Touch Controls ***** //
+var touchStart;
+var lastTouchX = null;
+var lastTouchY = null;
+
+function handleToucheStart(ev) {
+    touchStart = true;
+    lastTouchX = ev.touches[0].clientX;
+    lastTouchY = ev.touches[0].clientY;
+}
+
+function handleTouchEnd(ev) {
+    touchStart = false;
+}
+
+function handleTouchMove(ev, redraw) {
+    if (!touchStart) {
+        return;
+    }
+
+    var newX = ev.touches[0].clientX;
+    var newY = ev.touches[0].clientY;
+
+    var deltaX = newX - lastTouchX;
+    roll += (deltaX / 100.0);
+
+    var deltaY = newY - lastTouchY;
+    pitch += (deltaY / 100.0);
+
+    lastTouchX = newX;
+    lastTouchY = newY;
 
     redraw();
 }
