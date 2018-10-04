@@ -1,3 +1,5 @@
+**Warnings!** This branch is a WIP refactor of [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-WebGL-PBR). Don't expect things to work smoothly just yet!
+
 Physically-Based Rendering in glTF 2.0 using WebGL
 ==================================================
 
