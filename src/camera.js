@@ -9,7 +9,6 @@ class gltfCamera
         this.xmag = xmag;
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
-        this.parameters = [ "znear", "zfar", "yfov", "xmag", "ymag", "aspectRatio" ];
     }
 
     getProjectionMatrix()
@@ -36,12 +35,12 @@ class gltfCamera
         if(jsonCamera.perspective !== undefined)
         {
             this.type = "perspective";
-            fromParams(this.parameters, this, jsonCamera.perspective);
+            fromKeys(this, jsonCamera.perspective);
         }
         else if(jsonCamera.orthographic !== undefined)
         {
             this.type = "orthographic";
-            fromParams(this.parameters, this, jsonCamera.orthographic);
+            fromKeys(this, jsonCamera.orthographic);
         }
     }
 };
