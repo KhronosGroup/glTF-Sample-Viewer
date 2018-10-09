@@ -25,15 +25,9 @@ class Renderer
         this.uniformTypes[this.gl.FLOAT_MAT4] = 'uniformMatrix4fv';
     }
 
-    updateUniform(name, values)
-    {
-        const loc = gl.getUniformLocation(name);
-        if(loc)
-        {
-            const info = gl.getActiveUniform(this.program, loc);
-            gl[this.uniformTypes[info.type]](...values);
-        }
-    }
+    /////////////////////////////////////////////////////////////////////
+    // Render glTF scene graph
+    /////////////////////////////////////////////////////////////////////
 
     // app state
     init()
@@ -112,5 +106,21 @@ class Renderer
     drawImage()
     {
         this.frontBuffer.drawImage(this.backBuffer, 0, 0);
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // WebGL helpers & implementation detail
+    /////////////////////////////////////////////////////////////////////
+
+    // upload the values of a uniform with the given name using type resolve to get correct function call
+    // vec3 => gl.uniform3f(value)
+    updateUniform(name, values)
+    {
+        const loc = gl.getUniformLocation(name);
+        if(loc)
+        {
+            const info = gl.getActiveUniform(this.program, loc);
+            gl[this.uniformTypes[info.type]](...values);
+        }
     }
 };

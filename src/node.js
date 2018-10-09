@@ -8,12 +8,17 @@ class Node
     // TODO: children, primitives
 
     //  vec3 pos, quat rot, vec3 scale
-    constructor(pos, rot, scale, children)
+    constructor(pos = [0, 0, 0], rot = [0.0, 0.0, 0.0, 1.0], scale = [1.0, 1.0, 1.0])
     {
         this.pos = pos;
         this.rot = rot;
         this.scale = scale;
-        this.children = children;
+    }
+
+    // child index
+    addChild(child)
+    {
+        this.children.push(child);
     }
 
     // vec3
