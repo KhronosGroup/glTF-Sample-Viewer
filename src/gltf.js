@@ -13,7 +13,7 @@ class glTF
     {
         for (let i in jsonNodes)
         {
-            let node = new Node();
+            let node = new gltfNode();
             node.fromJson(jsonNodes[i]);
             this.nodes.push(node);
         }
@@ -23,7 +23,7 @@ class glTF
     {
         for (let i in jsonCameras)
         {
-            let camera = new Camera();
+            let camera = new gltfCamera();
             camera.fromJson(jsonCameras[i]);
             this.cameras.push(camera);
         }
@@ -31,8 +31,14 @@ class glTF
 
     fromJson(json)
     {
-        this.fromJsonNodes(json.nodes);
-        this.fromJsonCameras(json.cameras);
+        if(json.nodes !== undefined)
+        {
+            this.fromJsonNodes(json.nodes);
+        }
+        if(json.cameras !== undefined)
+        {
+            this.fromJsonCameras(json.cameras);
+        }
     }
 
     // addPointLight, addTexture, addSampler, addMesh

@@ -1,6 +1,6 @@
 // All WebGL calls are in this class
 
-class Renderer
+class gltfRenderer
 {
     constructor(gl, frontBuffer, backBuffer)
     {

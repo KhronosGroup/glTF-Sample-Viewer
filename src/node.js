@@ -3,7 +3,7 @@
 // primitives & materials
 // child indices (reference to scene array of nodes)
 
-class Node
+class gltfNode
 {
     // TODO: children, primitives
 
