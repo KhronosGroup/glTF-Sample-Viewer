@@ -1,6 +1,6 @@
 function main() {
     $.ajax({
-        url: 'BoomBox/glTF/BoomBox.gltf',
+        url: '../models/BoomBox/glTF/BoomBox.gltf',
         dataType: 'json',
         async: true,
         error: (jqXhr, textStatus, errorThrown) => {

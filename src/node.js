@@ -62,9 +62,9 @@ class Node
 
     decomposeMatrix(matrix)
     {
-        this.scale = ...;
-        this.rotation = ...;
-        this.translation = ...;
+        //this.scale = ...;
+        //this.rotation = ...;
+        //this.translation = ...;
     }
 
     // vec3
