@@ -29,15 +29,31 @@ class glTF
         }
     }
 
+    fromJsonMeshes(jsonMeshes)
+    {
+        for (let i = 0; i < jsonMeshes.length; ++i)
+        {
+            let mesh = new gltfMesh();
+            mesh.fromJson(jsonMeshes[i]);
+            this.meshes.push(mesh);
+        }
+    }
+
     fromJson(json)
     {
         if(json.nodes !== undefined)
         {
             this.fromJsonNodes(json.nodes);
         }
+
         if(json.cameras !== undefined)
         {
             this.fromJsonCameras(json.cameras);
+        }
+
+        if (json.meshes !== undefined)
+        {
+            this.fromJsonMeshes(json.meshes);
         }
     }
 
