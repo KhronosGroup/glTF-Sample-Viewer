@@ -7,30 +7,76 @@ class Node
 {
     // TODO: children, primitives
 
-    //  vec3 pos, quat rot, vec3 scale
-    constructor(pos = [0, 0, 0], rot = [0.0, 0.0, 0.0, 1.0], scale = [1.0, 1.0, 1.0])
+    //  vec3 translation, quat rotation, vec3 scale
+    constructor(translation = [0, 0, 0], rotation = [0.0, 0.0, 0.0, 1.0], scale = [1.0, 1.0, 1.0])
     {
-        this.pos = pos;
-        this.rot = rot;
+        this.translation = translation;
+        this.rotation = rotation;
         this.scale = scale;
+        this.children = [];
+        this.name = "";
     }
 
-    // child index
-    addChild(child)
+    fromMatrix(matrix)
     {
-        this.children.push(child);
+        // decompose from matrix
+        // into T * R * S
+        // convert from Euler representation
+        // to Quaternion rep later
+    }
+
+    fromJson(jsonNode)
+    {
+        if (jsonNode.name !== undefined)
+        {
+            this.name = jsonNode.name;
+        }
+
+        if (jsonNode.children !== undefined)
+        {
+            this.children = jsonNode.children;
+        }
+
+        if (jsonNode.matrix !== undefined)
+        {
+            decomposeMatrix(jsonNode.matrix);
+        }
+        else
+        {
+            if (jsonNode.scale !== undefined)
+            {
+                this.scale = jsonNode.scale;
+            }
+
+            if (jsonNode.rotation !== undefined)
+            {
+                this.rotation = jsonNode.rotation;
+            }
+
+            if (jsonNode.translation !== undefined)
+            {
+                this.translation = jsonNode.translation;
+            }
+        }
+    }
+
+    decomposeMatrix(matrix)
+    {
+        this.scale = ...;
+        this.rotation = ...;
+        this.translation = ...;
     }
 
     // vec3
-    translate(pos)
+    translate(translation)
     {
-        this.pos = pos;
+        this.translation = translation;
     }
 
     // quat
-    rotate(rot)
+    rotate(rotation)
     {
-        this.rot = rot;
+        this.rotation = rotation;
     }
 
     // vec3
@@ -45,7 +91,7 @@ class Node
     {
         var transform = mat4.create();
 
-        mat4.fromRotationTranslationScale(transform, rotation, translate, scale);
+        mat4.fromRotationTranslationScale(transform, this.rotation, this.translate, this.scale);
 
         return transform;
     }

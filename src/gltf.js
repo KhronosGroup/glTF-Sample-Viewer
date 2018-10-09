@@ -1,12 +1,12 @@
 class glTF
 {
-    // constructor(nodes, scenes, textures, samplers, meshes) {
-    //     this.nodes = nodes;
-    //     this.scenes = scenes;
-    //     this.textures = textures;
-    //     this.samplers = samplers;
-    //     this.meshes = meshes;
-    // }
+    constructor() {
+        this.nodes = [];
+        this.scenes = [];
+        this.textures = [];
+        this.samplers = [];
+        this.meshes = [];
+    }
 
     addNode(node)
     {
@@ -21,6 +21,21 @@ class glTF
     addCamera(camera)
     {
         this.cameras.push(camera);
+    }
+
+    fromJsonNodes(jsonNodes)
+    {
+        for (let i in jsonNodes)
+        {
+            let node = new Node();
+            node.fromJson(jsonNodes[i]);
+            this.addNode(node);
+        }
+    }
+
+    fromJson(json)
+    {
+        this.fromJsonNodes(json.nodes);
     }
 
     // addPointLight, addTexture, addSampler, addMesh
