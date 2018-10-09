@@ -7,7 +7,7 @@ function main() {
             error.innerHTML += 'Failed to load model: ' + errorThrown + '<br>';
         },
         success: function(json) {
-            let gltf = new glTF();
+            let gltf = new glTF(url);
             gltf.fromJson(json);
             console.log(gltf);
         }

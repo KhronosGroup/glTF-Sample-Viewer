@@ -1,11 +1,15 @@
 class gltfPrimitive
 {
-    constructor(accessors = [])
+    constructor(attributes = {}, indices = [], mode = 4, targets = [])
     {
-        this.accessors = accessors;
+        this.attributes = attributes;
+        this.indices = indices;
+        this.mode = mode;
+        this.targets = targets;
     }
 
     fromJson(jsonPrimitive)
     {
+        fromKeys(this, jsonPrimitive);
     }
 }

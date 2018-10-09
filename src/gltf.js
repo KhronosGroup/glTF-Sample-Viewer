@@ -1,6 +1,6 @@
 class glTF
 {
-    constructor() {
+    constructor(file) {
         this.nodes = [];
         this.scenes = [];
         this.cameras = [];
@@ -8,6 +8,7 @@ class glTF
         this.images = [];
         this.samplers = [];
         this.meshes = [];
+        this.path = file.substr(0, file.lastIndexOf("/"));
     }
 
     fromJsonNodes(jsonNodes)

@@ -14,7 +14,7 @@ class gltfMesh
             this.name = jsonMesh.name;
         }
 
-        for (let p in jsonMesh.primitives)
+        for (let p = 0; i < jsonMesh.primitives.length; ++i)
         {
             let primitive = new gltfPrimitive();
             primitive.fromJson(jsonMesh.primitives[p]);
