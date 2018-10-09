@@ -14,10 +14,10 @@ class gltfMesh
             this.name = jsonMesh.name;
         }
 
-        for (let p = 0; i < jsonMesh.primitives.length; ++i)
+        for (let i = 0; i < jsonMesh.primitives.length; ++i)
         {
             let primitive = new gltfPrimitive();
-            primitive.fromJson(jsonMesh.primitives[p]);
+            primitive.fromJson(jsonMesh.primitives[i]);
             this.primitives.push(primitive);
         }
 
