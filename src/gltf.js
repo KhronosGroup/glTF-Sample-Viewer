@@ -8,6 +8,8 @@ class glTF
         this.images = [];
         this.samplers = [];
         this.meshes = [];
+        this.buffers = [];
+        this.bufferViews = [];
         this.path = file.substr(0, file.lastIndexOf("/") + 1);
     }
 
@@ -71,6 +73,26 @@ class glTF
         }
     }
 
+    fromJsonBuffers(jsonBuffers)
+    {
+        for (let i = 0; i < jsonBuffers.length; ++i)
+        {
+            let buffer = new gltfBuffer();
+            buffer.fromJson(jsonBuffers[i]);
+            this.buffers.push(buffer);
+        }
+    }
+
+    fromJsonBufferViews(jsonBufferViews)
+    {
+        for (let i = 0; i < jsonBufferViews.length; ++i)
+        {
+            let bufferView = new gltfBufferView();
+            bufferView.fromJson(jsonBufferViews[i]);
+            this.bufferViews.push(bufferView);
+        }
+    }
+
     fromJson(json)
     {
         if(json.nodes !== undefined)
@@ -101,6 +123,16 @@ class glTF
         if(json.images !== undefined)
         {
             this.fromJsonImages(json.images);
+        }
+
+        if(json.buffers !== undefined)
+        {
+            this.fromJsonBuffers(json.buffers);
+        }
+
+        if(json.bufferViews !== undefined)
+        {
+            this.fromJsonBufferViews(json.bufferViews);
         }
     }
 
