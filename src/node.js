@@ -8,7 +8,9 @@ class Node
     // TODO: children, primitives
 
     //  vec3 translation, quat rotation, vec3 scale
-    constructor(translation = [0, 0, 0], rotation = [0.0, 0.0, 0.0, 1.0], scale = [1.0, 1.0, 1.0])
+    constructor(translation = jsToGl([0, 0, 0]),
+                rotation = jsToGl([0, 0, 0, 1]),
+                scale = jsToGl([1.0, 1.0, 1.0]))
     {
         this.translation = translation;
         this.rotation = rotation;
@@ -37,6 +39,8 @@ class Node
             this.children = jsonNode.children;
         }
 
+        this.mesh = jsonNode.mesh;
+
         if (jsonNode.matrix !== undefined)
         {
             decomposeMatrix(jsonNode.matrix);
@@ -45,26 +49,27 @@ class Node
         {
             if (jsonNode.scale !== undefined)
             {
-                this.scale = jsonNode.scale;
+                this.scale = jsToGl(jsonNode.scale);
             }
 
             if (jsonNode.rotation !== undefined)
             {
-                this.rotation = jsonNode.rotation;
+                this.rotation = jsToGl(jsonNode.rotation);
             }
 
             if (jsonNode.translation !== undefined)
             {
-                this.translation = jsonNode.translation;
+                this.translation = jsToGl(jsonNode.translation);
             }
         }
     }
 
-    decomposeMatrix(matrix)
+    decomposeMatrix(matrixData)
     {
-        this.scale = ...;
-        this.rotation = ...;
-        this.translation = ...;
+        let matrix = jsToGl(matrixData);
+        mat4.getScaling(this.scale, matrix);
+        mat4.getRotation(this.rotation, matrix);
+        mat4.getTranslation(this.translation, matrix);
     }
 
     // vec3
