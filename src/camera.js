@@ -1,14 +1,3 @@
-fromParams(target, jsonObj)
-{
-    for(var p in target.parameters)
-    {
-        if(jsonObj[p] !== undefined)
-        {
-            target[p] = jsonObj[p];
-        }
-    }
-}
-
 class Camera
 {
     constructor(type = "perspective", znear = 0.0, zfar = undefined, yfov = Math.PI / 4.0, aspectRatio = 16.0 / 9.0, xmag = 1.0, ymag = 1.0)
@@ -20,9 +9,8 @@ class Camera
         this.xmag = xmag;
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
-        this.parameters = [ "type", "znear", "zfar", "yfov", "xmag", "ymag", "aspectRatio" ];
+        this.parameters = [ "znear", "zfar", "yfov", "xmag", "ymag", "aspectRatio" ];
     }
-
 
     getProjectionMatrix()
     {
@@ -45,6 +33,15 @@ class Camera
 
     fromJson(jsonCamera)
     {
-        fromParams(this, jsonCamera);
+        if(jsonCamera.perspective !== undefined)
+        {
+            this.type = "perspective";
+            fromParams(this.parameters, this, jsonCamera.perspective);
+        }
+        else if(jsonCamera.orthographic !== undefined)
+        {
+            this.type = "orthographic";
+            fromParams(this.parameters, this, jsonCamera.orthographic);
+        }
     }
 };
