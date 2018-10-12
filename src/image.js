@@ -28,28 +28,30 @@ class gltfImage
         }
     }
 
-    load(monitor, bufferViews)
+    load(promises, bufferViews)
     {
         if(this.image !== undefined) // alread loaded
+        {
             return;
+        }
+
+        let promise = new Promise(function(x, y){});
 
         if(this.uri !== undefined) // load from uir
         {
             this.image = new Image();
             this.image.uri = this.uri;
-            monitor.pendingImages++;
         }
         else if(this.bufferView != undefined)
         {
-            monitor.pendingImages++;
-
             // TODO: load from buffer view bufferViews[this.bufferView]
         }
 
+        promises.push(promise);
+
         // callback on loaded
-        this.image.onload = function()
-        {
-            monitor.pendingImages--;
+        this.image.onload = function() {
+            promise.resolve();
         };
     }
 };
