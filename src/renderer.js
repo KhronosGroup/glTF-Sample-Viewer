@@ -14,6 +14,7 @@ class gltfRenderer
         // TODO: change shader folder to src/shaders & add actuall shaders
         this.shaderCache = new ShaderCache("../shaders/", ["pbr-frag.glsl", "pbr-vert.glsl"]);
 
+        this.uniformTypes = new Map();
         this.uniformTypes[this.gl.FLOAT] = 'uniform1f';
         this.uniformTypes[this.gl.FLOAT_VEC2] = 'uniform2f';
         this.uniformTypes[this.gl.FLOAT_VEC3] = 'uniform3f';
