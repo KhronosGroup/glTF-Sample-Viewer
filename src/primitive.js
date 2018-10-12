@@ -12,4 +12,4 @@ class gltfPrimitive
     {
         fromKeys(this, jsonPrimitive);
     }
-}
+};

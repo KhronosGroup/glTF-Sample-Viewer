@@ -1,15 +1,15 @@
 class gltfBufferView
 {
-    constructor()
+    constructor(buffer = undefined,
+                byteOffset = 0, byteLength = undefined, byteStride = undefined,
+                target = undefined, name = undefined)
     {
-        this.buffer = undefined;
-        this.byteOffset = 0;
-        this.byteLength = 0;
-        this.byteStride = 0;
-        this.target = undefined;
-        this.name = "";
-        this.extensions = {};
-        //this.extras = undefined;
+        this.buffer = buffer;
+        this.byteOffset = byteOffset;
+        this.byteLength = byteLength;
+        this.byteStride = byteStride;
+        this.target = target;
+        this.name = name;
     }
 
     fromJson(jsonBufferView)

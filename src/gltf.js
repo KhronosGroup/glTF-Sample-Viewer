@@ -1,7 +1,10 @@
 class glTF
 {
-    constructor(file) {
+    constructor(file)
+    {
+        this.accessors = [];
         this.nodes = [];
+        this.scene = 0;
         this.scenes = [];
         this.cameras = [];
         this.textures = [];
@@ -93,6 +96,16 @@ class glTF
         }
     }
 
+    fromJsonAccessors(jsonAccessors)
+    {
+        for (let i = 0; i < jsonAccessors.length; ++i)
+        {
+            let accessor = new gltfAccessor();
+            accessor.fromJson(jsonAccessors[i]);
+            this.accessors.push(accessor);
+        }
+    }
+
     fromJson(json)
     {
         if(json.nodes !== undefined)
@@ -134,7 +147,10 @@ class glTF
         {
             this.fromJsonBufferViews(json.bufferViews);
         }
-    }
 
-    // addPointLight, addTexture, addSampler, addMesh
+        if (json.accessors !== undefined)
+        {
+            this.fromJsonAccessors(json.accessors);
+        }
+    }
 };

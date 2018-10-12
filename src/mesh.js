@@ -1,10 +1,10 @@
 class gltfMesh
 {
-    constructor(name = "", primitives = [], weights = [])
+    constructor(primitives = [], weights = [], name = undefined)
     {
-        this.name = name;
         this.primitives = primitives;
         this.weights = weights;
+        this.name = name;
     }
 
     fromJson(jsonMesh)
@@ -26,4 +26,4 @@ class gltfMesh
             this.weights = jsonMesh.weights;
         }
     }
-}
+};

@@ -1,6 +1,10 @@
 class gltfCamera
 {
-    constructor(type = "perspective", znear = 0.0, zfar = undefined, yfov = Math.PI / 4.0, aspectRatio = 16.0 / 9.0, xmag = 1.0, ymag = 1.0)
+    constructor(type = "perspective",
+                znear = 0.0, zfar = undefined, yfov = Math.PI / 4.0,
+                aspectRatio = 16.0 / 9.0,
+                xmag = 1.0, ymag = 1.0,
+                name = undefined)
     {
         this.type = type;
         this.znear = znear;
@@ -9,6 +13,7 @@ class gltfCamera
         this.xmag = xmag;
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
+        this.name = name;
     }
 
     getProjectionMatrix()
@@ -32,6 +37,7 @@ class gltfCamera
 
     fromJson(jsonCamera)
     {
+        this.name = name;
         if(jsonCamera.perspective !== undefined)
         {
             this.type = "perspective";

@@ -1,10 +1,10 @@
 class gltfTexture
 {
-    constructor()
+    constructor(sampler = undefined, source = undefined, texture = undefined)
     {
-        this.sampler = undefined; // index to gltfSampler, default sampler ?
-        this.source = undefined; // index to gltfImage
-        this.texture = undefined; // gl texture
+        this.sampler = sampler; // index to gltfSampler, default sampler ?
+        this.source = source; // index to gltfImage
+        this.texture = texture; // gl texture
     }
 
     fromJson(jsonTexture)
