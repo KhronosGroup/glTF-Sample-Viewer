@@ -31,3 +31,13 @@ function fromParams(parameters, target, jsonObj)
         }
     }
 }
+
+function stringHash(str, seed = 0)
+{
+    for(var i = 0; i < str.length; ++i)
+    {
+        seed = Math.imul(31, seed) + str.charCodeAt(i) | 0;
+    }
+
+    return h;
+}

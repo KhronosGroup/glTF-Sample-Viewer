@@ -34,3 +34,28 @@ function BindTexture(gl, gltf, textureIndex)
     gl.activateTexture(gl.TEXTURE0 + gltfTexture.sampler);
     gl.bindTexture(gl.TEXTURE_2D, gltfTexture.texture);
 }
+
+function CompileShader(gl, isVert, shaderSource)
+{
+    let shader = gl.createShader(isVert ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
+    gl.shaderSource(shader, shaderSource);
+    gl.compileShader(shader);
+    let compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+
+    if (!compiled) {
+
+        console.log(gl.getShaderInfoLog(shader));
+    }
+
+    return shader;
+}
+
+function LinkProgram(gl, vertex, fragment)
+{
+    let program = gl.createProgram();
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+
+    return program;
+}
