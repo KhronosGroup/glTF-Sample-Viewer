@@ -1,6 +1,6 @@
 class gltfLoader
 {
-    load(gltf)
+    static load(gltf)
     {
         let promises = [];
         for (let image of gltf.images)
