@@ -2,9 +2,6 @@ function main() {
 
     let gltfURL = '../models/BoomBox/glTF/BoomBox.gltf';
 
-    let scache = new ShaderCache("../shaders/", ["pbr-frag.glsl", "pbr-vert.glsl"]);
-    //scache.getShader("pbr-frag", "");
-
     let loadGLTF = axios.get(gltfURL);
     loadGLTF.then(function(json)
     {
