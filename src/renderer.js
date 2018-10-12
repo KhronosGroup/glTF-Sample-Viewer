@@ -79,7 +79,7 @@ class gltfRenderer
 
         // TODO:
         // - normal matrix
-        // - set uniforms
+        // - set transform uniforms
 
         // draw primitive:
         // TODO: index into gltf shared meshes & textures etc
@@ -100,6 +100,7 @@ class gltfRenderer
         // - select shader permutation & compile and link (need shader cache/lookup)
         // - set textures & transforms
         // - set samplers
+        // - set the material uniforms
     }
 
     // draw final image to frontbuffer

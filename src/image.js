@@ -1,15 +1,17 @@
 class gltfImage
 {
-    constructor(uri = "", bufferView = undefined, mimeType = "image/jpeg", image = undefined)
+    constructor(uri = undefined, bufferView = undefined, mimeType = "image/jpeg", image = undefined, name = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;
         this.mimeType = mimeType;
         this.image = image;
+        this.name = name;
     }
 
     fromJson(jsonNode)
     {
+        this.name = jsonNode.name;
         if(jsonNode.uri !== undefined)
         {
             this.uri = jsonNode.uri;

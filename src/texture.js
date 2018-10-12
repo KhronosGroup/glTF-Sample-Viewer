@@ -12,3 +12,17 @@ class gltfTexture
         fromKeys(this, jsonTexture);
     }
 };
+
+class gltfTextureInfo
+{
+    constructor(index = undefined, texCoord = 0)
+    {
+        this.index = index;
+        this.texCoord = texCoord;
+    }
+
+    fromJson(jsonTextureInfo)
+    {
+        fromKeys(this, jsonTextureInfo);
+    }
+};

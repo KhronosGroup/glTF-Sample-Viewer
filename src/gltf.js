@@ -4,7 +4,7 @@ class glTF
     {
         this.accessors = [];
         this.nodes = [];
-        this.scene = 0;
+        this.scene = undefined; // the default scene to show.
         this.scenes = [];
         this.cameras = [];
         this.textures = [];
@@ -13,6 +13,7 @@ class glTF
         this.meshes = [];
         this.buffers = [];
         this.bufferViews = [];
+        this.materials = [];
         this.path = file.substr(0, file.lastIndexOf("/") + 1);
     }
 
@@ -106,6 +107,26 @@ class glTF
         }
     }
 
+    fromJsonScenes(jsonScenes)
+    {
+        for (let i = 0; i < jsonScenes.length; ++i)
+        {
+            let scene = new gltfScene();
+            scene.fromJson(jsonScenes[i]);
+            this.scenes.push(scene);
+        }
+    }
+
+    fromJsonMaterials(jsonMaterials)
+    {
+        for (let i = 0; i < jsonMaterials.length; ++i)
+        {
+            let material = new gltfMaterial();
+            material.fromJson(jsonMaterials[i]);
+            this.materials.push(material);
+        }
+    }
+
     fromJson(json)
     {
         if(json.nodes !== undefined)
@@ -151,6 +172,33 @@ class glTF
         if (json.accessors !== undefined)
         {
             this.fromJsonAccessors(json.accessors);
+        }
+
+        // Load the default scene too.
+        if (json.scenes !== undefined)
+        {
+            if (json.scene === undefined && json.scenes.length > 0)
+            {
+                this.scene = 0;
+            }
+            else
+            {
+                this.scene = json.scene;
+            }
+        }
+        else
+        {
+            json.scene = undefined;
+        }
+
+        if (json.scenes !== undefined)
+        {
+            this.fromJsonScenes(json.scenes);
+        }
+
+        if (json.materials !== undefined)
+        {
+            this.fromJsonMaterials(json.materials);
         }
     }
 };

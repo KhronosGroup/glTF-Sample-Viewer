@@ -10,7 +10,7 @@ class gltfNode
     //  vec3 translation, quat rotation, vec3 scale
     constructor(translation = jsToGl([0, 0, 0]),
                 rotation = jsToGl([0, 0, 0, 1]),
-                scale = jsToGl([1.0, 1.0, 1.0]),
+                scale = jsToGl([1, 1, 1]),
                 children = [],
                 name = undefined)
     {
@@ -19,14 +19,6 @@ class gltfNode
         this.scale = scale;
         this.children = children;
         this.name = name;
-    }
-
-    fromMatrix(matrix)
-    {
-        // decompose from matrix
-        // into T * R * S
-        // convert from Euler representation
-        // to Quaternion rep later
     }
 
     fromJson(jsonNode)
