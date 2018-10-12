@@ -135,6 +135,4 @@ class glTF
             this.fromJsonBufferViews(json.bufferViews);
         }
     }
-
-    // addPointLight, addTexture, addSampler, addMesh
 };
