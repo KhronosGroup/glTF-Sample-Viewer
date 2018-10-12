@@ -17,6 +17,60 @@ class gltfMaterial
         this.pbrMetallicRoughness = pbrMetallicRoughness;
     }
 
+    getShaderIdentifier()
+    {
+        if (this.pbrMetallicRoughness !== undefined)
+        {
+            return "metallic-roughness.frag";
+        }
+
+        return "unlit.frag";
+    }
+
+    getDefines()
+    {
+        let defines = [];
+
+        if (this.normalTexture !== undefined)
+        {
+            defines.push("HAS_NORMAL_MAP");
+        }
+
+        if (this.occlusionTexture !== undefined)
+        {
+            defines.push("HAS_OCCLUSION_MAP");
+        }
+
+        if (this.emissiveTexture !== undefined)
+        {
+            defines.push("HAS_EMISSIVE_MAP");
+        }
+
+        if (this.pbrMetallicRoughness !== undefined)
+        {
+            defines.concat(this.pbrMetallicRoughness.getDefines());
+        }
+
+        return defines;
+    }
+
+    getProperties()
+    {
+        let properties = new Map();
+
+        properties["u_emissiveFactor"] = this.emissiveFactor;
+
+        if (this.pbrMetallicRoughness !== undefined)
+        {
+            for (let [property, value] of this.pbrMetallicRoughness.getProperties().entries())
+            {
+                properties[property] = value;
+            }
+        }
+
+        return propeties;
+    }
+
     fromJson(jsonMaterial)
     {
         fromKeys(this, jsonMaterial); // Most things:
@@ -67,7 +121,35 @@ class gltfMetallicRoughness
         this.baseColorTexture = baseColorTexture;
         this.metallicFactor = metallicFactor;
         this.roughnessFactor = roughnessFactor;
-        this.metallicRoughnessTexture = undefined;
+        this.metallicRoughnessTexture = metallicRoughnessTexture;
+    }
+
+    getDefines()
+    {
+        let defines = [];
+
+        if (this.baseColorTexture !== undefined)
+        {
+            defines.push("HAS_BASE_COLOR_MAP");
+        }
+
+        if (this.metallicRoughnessTexture !== undefined)
+        {
+            defines.push("HAS_METALLIC_ROUGHNESS_MAP");
+        }
+
+        return defines;
+    }
+
+    getProperties()
+    {
+        let properties = new Map();
+
+        properties["u_baseColorFactor"] = this.baseColorFactor;
+        properties["u_metallicFactor"] = this.metallicFactor;
+        properties["u_roughnessFactor"] = this.roughnessFactor;
+
+        return properties;
     }
 
     fromJson(jsonMetallicRoughness)
