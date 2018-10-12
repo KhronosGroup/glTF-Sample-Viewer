@@ -9,6 +9,10 @@ class gltfRenderer
         this.backBuffer = backBuffer;
         this.width = 1600;
         this.height = 900;
+        this.program = undefined; // current active shader
+
+        // TODO: change shader folder to src/shaders & add actuall shaders
+        this.shaderCache = new ShaderCache("../shaders/", ["pbr-frag.glsl", "pbr-vert.glsl"]);
 
         this.uniformTypes[this.gl.FLOAT] = 'uniform1f';
         this.uniformTypes[this.gl.FLOAT_VEC2] = 'uniform2f';
@@ -96,11 +100,27 @@ class gltfRenderer
     // vertices with given material
     drawPrimitive(gltf, primitive)
     {
+        const material = gltf.materials[primitive.material];
+
+        //select shader permutation & compile and link
+        let fragmentShader = this.shaderCache.getShader(gl, material.getShaderIdentifier(), material.getDefines());
+        let vertexhader = this.shaderCache.getShader(gl, primitive.getShaderIdentifier(), primitive.getDefines());
+
+        this.program = LinkProgram(gl, vertexhader, fragmentShader);
+
+        if(this.program === undefined)
+        {
+            return;
+        }
+
+        for(let [uniform, val] of material.getProperties().entries())
+        {
+            updateUniform(uniform, val);
+        }
+
         // TODO:
-        // - select shader permutation & compile and link (need shader cache/lookup)
         // - set textures & transforms
         // - set samplers
-        // - set the material uniforms
     }
 
     // draw final image to frontbuffer
