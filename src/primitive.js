@@ -7,6 +7,7 @@ class gltfPrimitive
         this.material = material;
         this.mode = mode;
         this.defines = [];
+        this.skip = true;
     }
 
     fromJson(jsonPrimitive)
@@ -18,7 +19,8 @@ class gltfPrimitive
         {
             switch (attrib) {
                 case "POSITION":
-                    this.defines.push("HAS_VERTEX_POSITION"); // should be mandatory
+                    this.skip = false;
+                    //this.defines.push("HAS_VERTEX_POSITION"); // should be mandatory
                     break;
                 case "NORMAL":
                 this.defines.push("HAS_VERTEX_NORMAL");
