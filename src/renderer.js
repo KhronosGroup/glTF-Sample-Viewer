@@ -117,9 +117,22 @@ class gltfRenderer
             return;
         }
 
+        const drawIndexed = primitive.indices !== undefined;
+        if (drawIndexed)
+        {
+            if (!SetIndices(gltf, indexAccessor))
+            {
+                return;
+            }
+        }
+
+        let vertexCount = 0;
         for (let [attributeName, accessorIndex] of primitive.attributes.entries())
         {
-            if (!EnableAttribute(gltf, this.program, attributeName, accessorIndex))
+            let gltfAccessor = gltf.accessors[accessorIndex];
+            vertexCount = gltfAccessor.count;
+
+            if (!EnableAttribute(gltf, this.program, attributeName, gltfAccessor))
             {
                 return; // skip this primitive.
             }
@@ -137,6 +150,16 @@ class gltfRenderer
 
         // TODO:
         // - set transforms
+
+        if (drawIndexed)
+        {
+            let indexAccessor = gltf.accessors[primitive.indices];
+            gl.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
+        }
+        else
+        {
+            gl.drawArrays(primitive.mode, 0, vertexCount);
+        }
 
         for (let attributeName in primitive.attributes)
         {

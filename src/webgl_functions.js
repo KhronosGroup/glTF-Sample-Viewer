@@ -30,9 +30,34 @@ function SetTexture(gltf, textureInfo)
     }
 }
 
-function EnableAttribute(gltf, shaderProgram, attributeName, accessorIndex)
+function SetIndices(gltf, accessorIndex)
 {
     let gltfAccessor = gltf.accessors[accessorIndex];
+
+    if (gltfAccessor.glBuffer === undefined)
+    {
+        gltfAccessor.glBuffer = gl.createBuffer();
+
+        let data = gltfAccessor.getTypedView();
+
+        if (data === undefined)
+        {
+            return false;
+        }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    }
+    else
+    {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+    }
+
+    return true;
+}
+
+function EnableAttribute(gltf, shaderProgram, attributeName, gltfAccessor)
+{
     let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
 
     if (gltfAccessor.glBuffer === undefined)
