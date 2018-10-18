@@ -18,6 +18,7 @@ class gltfNode
         this.rotation = rotation;
         this.scale = scale;
         this.children = children;
+        this.camera = undefined;
         this.name = name;
     }
 
@@ -34,6 +35,7 @@ class gltfNode
         }
 
         this.mesh = jsonNode.mesh;
+        this.camera = jsonNode.camera;
 
         if (jsonNode.matrix !== undefined)
         {

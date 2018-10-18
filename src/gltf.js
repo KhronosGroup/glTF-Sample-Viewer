@@ -24,6 +24,12 @@ class glTF
             let node = new gltfNode();
             node.fromJson(jsonNodes[i]);
             this.nodes.push(node);
+
+            // assign the corresponding camera node
+            if(node.camera !== undefined)
+            {
+                this.cameras[node.camera].node = i;
+            }
         }
     }
 
@@ -129,14 +135,14 @@ class glTF
 
     fromJson(json)
     {
-        if(json.nodes !== undefined)
-        {
-            this.fromJsonNodes(json.nodes);
-        }
-
         if(json.cameras !== undefined)
         {
             this.fromJsonCameras(json.cameras);
+        }
+
+        if(json.nodes !== undefined)
+        {
+            this.fromJsonNodes(json.nodes);
         }
 
         if (json.meshes !== undefined)

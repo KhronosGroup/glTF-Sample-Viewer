@@ -27,6 +27,14 @@ class gltfRenderer
         this.uniformTypes[gl.FLOAT_MAT2] = 'uniformMatrix2fv';
         this.uniformTypes[gl.FLOAT_MAT3] = 'uniformMatrix3fv';
         this.uniformTypes[gl.FLOAT_MAT4] = 'uniformMatrix4fv';
+
+        this.modelMatrix = mat4.create();
+        this.viewMatrix = mat4.create();
+        this.projMatrix = mat4.create();
+        this.viewProjMatrix = mat4.create();
+        this.mvpMatrix = mat4.create();
+        this.modelInverse = mat4.create();
+        this.normalMatrix = mat4.create();
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -63,11 +71,23 @@ class gltfRenderer
         // upload lights
 
         // upload camera matrices
-        var camera = gltf.cameras[cameraIndex];
+
+        if(cameraIndex !== -1)
+        {
+            const camera = gltf.cameras[cameraIndex];
+            this.projMatrix = camera.getProjectionMatrix();
+            if(camera.node !== undefined)
+            {
+                const view = gltf.nodes[camera.node];
+                this.viewMatrix = view.getTransform();
+            }
+        }
+
+        mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewProjMatrix);
 
         // TODO: pass a scene transfrom to be able to translate & rotate using the mouse
-        var transform = mat4.create();
-        var scene = gltf.scenes[sceneIndex];
+        let transform = mat4.create();
+        let scene = gltf.scenes[sceneIndex];
 
         for (var i = 0; i < scene.nodes.length; i++) {
             drawNode(gltf, scene, i, transform, recursive);
@@ -77,30 +97,27 @@ class gltfRenderer
     // same transform, recursive
     drawNode(gltf, scene, nodeIndex, parentTransform, recursive)
     {
-        var node = gltf.nodes[scene.nodes[nodeIndex]];
+        let node = gltf.nodes[scene.nodes[nodeIndex]];
 
-        // upload model matrix
-        var transform = node.getTransform();
-        mat4.multiply(transform, transform, parentTransform);
-
-        // TODO:
-        // - normal matrix
-        // - set transform uniforms
+        // update model & mvp & normal matrix
+        mat4.multiply(this.modelMatrix, node.getTransform(), parentTransform);
+        mat4.multiply(this.mvpMatrix, this.viewProjMatrix, this.modelMatrix);
+        mat4.invert(this.modelInverse, this.modelMatrix);
+        mat4.transpose(this.normalMatrix, this.modelInverse);
 
         // draw primitive:
-        // TODO: index into gltf shared meshes & textures etc
         for (var i = 0; i < node.primitives.length; i++) {
-            this.drawPrimitive(gltf, node.primitives[i]);
+            this.drawPrimitive(gltf, node.primitives[i], i == 0);
         }
 
         // draw children (TODO: cycles must be detected)
         for (var i = 0; i < node.children.length && recursive; i++) {
-            this.drawNode(gltf, scene, i, transform, recursive);
+            this.drawNode(gltf, scene, i, this.modelMatrix, recursive);
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive)
+    drawPrimitive(gltf, primitive, firstPrimitive)
     {
         if (primitive.skip) return;
 
@@ -115,6 +132,20 @@ class gltfRenderer
         if(this.program === undefined)
         {
             return;
+        }
+
+        if(firstPrimitive) // TODO:check for changed vertex shader permutation
+        {
+            // update model dependant matrices once per node
+            this.updateUniform("u_MVPMatrix", this.mvpMatrix);
+            this.updateUniform("u_ModelMatrix", this.modelMatrix);
+            this.updateUniform("u_NormalMatrix", this.mvpMatrix);
+        }
+
+        if (material.doubleSided) {
+            gl.disable(gl.CULL_FACE);
+        } else {
+            gl.enable(gl.CULL_FACE);
         }
 
         const drawIndexed = primitive.indices !== undefined;

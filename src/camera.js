@@ -14,6 +14,7 @@ class gltfCamera
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
         this.name = name;
+        this.node = undefined;
     }
 
     getProjectionMatrix()
