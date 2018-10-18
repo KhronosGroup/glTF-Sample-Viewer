@@ -1,6 +1,6 @@
 class gltfBuffer
 {
-    construct(uri = undefined, byteLength = undefined, name = undefined)
+    constructor(uri = undefined, byteLength = undefined, name = undefined)
     {
         this.uri = uri;
         this.byteLength = byteLength;
@@ -8,22 +8,23 @@ class gltfBuffer
         this.buffer = undefined;
     }
 
-    load(promises)
+    load(folder, promises)
     {
-        if (this.buffer === undefined)
+        if (this.buffer !== undefined)
         {
             return;
         }
 
-        let responseBuffer = this.buffer;
+        let responseBuffer = undefined;
         if (this.uri !== undefined)
         {
-            let promise = axios.get(this.uri, { responseType: 'arraybuffer'});
+            let promise = axios.get(folder + this.uri, { responseType: 'arraybuffer'});
             promise.then(function (response) {
-                responseBuffer = new Buffer(response.data, 'binary')
+                responseBuffer = response.data;
             });
             promises.push(promise);
         }
+        this.buffer = responseBuffer;
     }
 
     fromJson(jsonBuffer)

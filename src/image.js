@@ -28,30 +28,32 @@ class gltfImage
         }
     }
 
-    load(promises, bufferViews)
+    load(folder, promises, bufferViews)
     {
         if(this.image !== undefined) // alread loaded
         {
             return;
         }
 
-        let promise = new Promise(function(x, y){});
+        let image = new Image();
+        let uri = this.uri;
+        let bufferView = undefined;
 
-        if(this.uri !== undefined) // load from uir
+        promises.push(new Promise(function(resolve, reject)
         {
-            this.image = new Image();
-            this.image.uri = this.uri;
-        }
-        else if(this.bufferView != undefined)
-        {
-            // TODO: load from buffer view bufferViews[this.bufferView]
-        }
+            if(uri !== undefined) // load from uir
+            {
+                image = new Image();
+                image.onload = resolve;
+                image.onerror = resolve;
+                image.src = folder + uri;
+            }
+            else if(bufferView != undefined)
+            {
+                // TODO: load from buffer view bufferViews[this.bufferView]
+            }
+        }));
 
-        promises.push(promise);
-
-        // callback on loaded
-        this.image.onload = function() {
-            promise.resolve();
-        };
+        this.image = image;
     }
 };
