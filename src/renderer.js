@@ -10,6 +10,16 @@ class gltfRenderer
         this.height = 900;
         this.program = undefined; // current active shader
 
+        this.extensions = ["EXT_shader_texture_lod", "OES_standard_derivatives","EXT_SRGB"];
+
+        for (let extension of this.extensions)
+        {
+            if(gl.getExtension(extension) === null)
+            {
+                console.warn("Extension " + extension + " not supported");
+            }
+        }
+
         // TODO: change shader folder to src/shaders & add actuall shaders
         this.shaderCache = new ShaderCache("shaders/", ["primitive.vert", "metallic-roughness.frag"]);
 
@@ -68,19 +78,24 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(gltf, sceneIndex, cameraIndex, recursive)
     {
-        // upload lights
+        // TODO: upload lights
 
-        // upload camera matrices
+        // construct camera matrices
+        let camera = undefined;
 
         if(cameraIndex !== -1)
         {
-            const camera = gltf.cameras[cameraIndex];
-            this.projMatrix = camera.getProjectionMatrix();
-            if(camera.node !== undefined)
-            {
-                const view = gltf.nodes[camera.node];
-                this.viewMatrix = view.getTransform();
-            }
+            camera = gltf.cameras[cameraIndex];
+        }else
+        {
+            camera = new gltfCamera(); // default camera
+        }
+
+        this.projMatrix = camera.getProjectionMatrix();
+        if(camera.node !== undefined)
+        {
+            const view = gltf.nodes[camera.node];
+            this.viewMatrix = view.getTransform();
         }
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewProjMatrix);
@@ -90,7 +105,7 @@ class gltfRenderer
         let scene = gltf.scenes[sceneIndex];
 
         for (var i = 0; i < scene.nodes.length; i++) {
-            drawNode(gltf, scene, i, transform, recursive);
+            this.drawNode(gltf, scene, i, transform, recursive);
         }
     }
 
@@ -106,8 +121,12 @@ class gltfRenderer
         mat4.transpose(this.normalMatrix, this.modelInverse);
 
         // draw primitive:
-        for (var i = 0; i < node.primitives.length; i++) {
-            this.drawPrimitive(gltf, node.primitives[i], i == 0);
+        let mesh = gltf.meshes[node.mesh];
+        if(mesh !== undefined)
+        {
+            for (var i = 0; i < mesh.primitives.length; i++) {
+                this.drawPrimitive(gltf, mesh.primitives[i], i == 0);
+            }
         }
 
         // draw children (TODO: cycles must be detected)
@@ -125,9 +144,12 @@ class gltfRenderer
 
         //select shader permutation & compile and link
         let fragmentShader = this.shaderCache.getShader(material.getShaderIdentifier(), material.getDefines());
-        let vertexhader = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
+        let vertexShader = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
-        this.program = LinkProgram(vertexhader, fragmentShader);
+        if(fragmentShader && vertexShader)
+        {
+            this.program = LinkProgram(vertexShader, fragmentShader);
+        }
 
         if(this.program === undefined)
         {
@@ -171,7 +193,7 @@ class gltfRenderer
 
         for(let [uniform, val] of material.getProperties().entries())
         {
-            updateUniform(uniform, val);
+            this.updateUniform(uniform, val);
         }
 
         for(let tex of material.getTextures())
@@ -210,13 +232,21 @@ class gltfRenderer
 
     // upload the values of a uniform with the given name using type resolve to get correct function call
     // vec3 => gl.uniform3f(value)
-    updateUniform(name, values)
+    updateUniform(name, value)
     {
-        const loc = gl.getUniformLocation(name);
+        const loc = gl.getUniformLocation(this.program, name);
         if(loc)
         {
             const info = gl.getActiveUniform(this.program, loc);
-            gl[this.uniformTypes[info.type]](...values);
+            switch (info.type) {
+                case gl.FLOAT_MAT2:
+                case gl.FLOAT_MAT3:
+                case gl.FLOAT_MAT4:
+                    gl[this.uniformTypes[info.type]](loc, false, value);
+                    break;
+                default:
+                    gl[this.uniformTypes[info.type]](loc, value);
+            }
         }
     }
 };

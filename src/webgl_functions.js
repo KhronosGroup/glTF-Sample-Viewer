@@ -116,6 +116,7 @@ function CompileShader(isVert, shaderSource)
     if (!compiled) {
 
         console.log(gl.getShaderInfoLog(shader));
+        return null;
     }
 
     return shader;

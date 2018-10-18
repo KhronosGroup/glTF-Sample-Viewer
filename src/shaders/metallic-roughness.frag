@@ -113,8 +113,8 @@ vec3 getNormal()
 #ifndef HAS_TANGENTS
     vec3 pos_dx = dFdx(v_Position);
     vec3 pos_dy = dFdy(v_Position);
-    vec3 tex_dx = dFdx(vec3(v_UV, 0.0));
-    vec3 tex_dy = dFdy(vec3(v_UV, 0.0));
+    vec3 tex_dx = dFdx(vec3(v_ColorUV, 0.0));
+    vec3 tex_dy = dFdy(vec3(v_ColorUV, 0.0));
     vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
 #ifdef HAS_NORMALS
@@ -131,7 +131,7 @@ vec3 getNormal()
 #endif
 
 #ifdef HAS_NORMAL_MAP
-    vec3 n = texture2D(u_NormalSampler, v_UV).rgb;
+    vec3 n = texture2D(u_NormalSampler, v_ColorUV).rgb;
     n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
 #else
     // The tbn matrix is linearly interpolated, so we need to re-normalize
@@ -220,7 +220,7 @@ void main()
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_UV);
+    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_ColorUV);
     perceptualRoughness = mrSample.g * perceptualRoughness;
     metallic = mrSample.b * metallic;
 #endif
@@ -232,7 +232,7 @@ void main()
 
     // The albedo may be defined from a base texture or a flat color
 #ifdef HAS_BASE_COLOR_MAP
-    vec4 baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, v_UV)) * u_BaseColorFactor;
+    vec4 baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, v_ColorUV)) * u_BaseColorFactor;
 #else
     vec4 baseColor = u_BaseColorFactor;
 #endif
@@ -296,12 +296,12 @@ void main()
 
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-    float ao = texture2D(u_OcclusionSampler, v_UV).r;
+    float ao = texture2D(u_OcclusionSampler, v_ColorUV).r;
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
 #ifdef HAS_EMISSIVE_MAP
-    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, v_UV)).rgb * u_EmissiveFactor;
+    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, v_ColorUV)).rgb * u_EmissiveFactor;
     color += emissive;
 #endif
 

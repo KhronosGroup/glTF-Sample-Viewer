@@ -39,5 +39,5 @@ function stringHash(str, seed = 0)
         seed = Math.imul(31, seed) + str.charCodeAt(i) | 0;
     }
 
-    return h;
+    return seed;
 }

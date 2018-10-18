@@ -28,11 +28,16 @@ function main() {
         gltf.fromJson(json.data);
         console.log(gltf);
 
-        gltfLoader.load(gltf); // loader resources.
-
-        gltf.accessors[0].getTypedView(gltf);
+        gltfLoader.load(gltf); // loade resources.
 
         let renderer = new gltfRenderer(frontBuffer, backBuffer);
+
+        renderer.init();
+        renderer.resize(canvas.width, canvas.height);
+        renderer.drawScene(gltf, 0, -1, true);
+
+        renderer.drawImage();
+
     }).catch(function(err)
     {
         console.log(err);

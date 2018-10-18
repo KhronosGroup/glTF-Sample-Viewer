@@ -61,16 +61,16 @@ class ShaderCache
         // if not present, check sources and compile it
         // if not present, return null object
 
-        if(this.sources.has(shaderIdentifier) == false)
+        const src = this.sources[shaderIdentifier];
+        if(src === undefined)
         {
             console.log("Shader source for " + shaderIdentifier + " not found");
             return null;
         }
 
         const isVert = shaderIdentifier.endsWith(".vert");
-        let hash = strinHash(shaderIdentifier);
+        let hash = stringHash(shaderIdentifier);
 
-        const src = this.sources[shaderIdentifier];
         let defines = "";
         for(let define of permutationDefines)
         {
