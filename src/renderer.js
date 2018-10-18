@@ -37,6 +37,8 @@ class gltfRenderer
     // app state
     init()
     {
+        //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
+
         gl.enable(gl.DEPTH_TEST);
     }
 
@@ -119,9 +121,13 @@ class gltfRenderer
             updateUniform(uniform, val);
         }
 
+        for(let tex of material.getTextures())
+        {
+            SetTexture(gl, gltf, tex); // binds texture and sampler
+        }
+
         // TODO:
-        // - set textures & transforms
-        // - set samplers
+        // - set transforms
     }
 
     // draw final image to frontbuffer

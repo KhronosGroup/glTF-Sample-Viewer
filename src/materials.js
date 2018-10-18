@@ -1,74 +1,53 @@
 class gltfMaterial
 {
-    constructor(normalTexture = undefined, occlusionTexture = undefined,
-                emissiveTexture = undefined, emissiveFactor = jsToGl([0, 0, 0]),
-                alphaMode = "OPAQUE", alphaCutoff = 0.5, doubleSided = false,
-                name = undefined,
-                pbrMetallicRoughness = undefined) // add more materials here!
+    constructor(emissiveFactor = jsToGl([0, 0, 0]), alphaMode = "OPAQUE", alphaCutoff = 0.5, doubleSided = false,
+                baseColorFactor = jsToGl([1, 1, 1, 1]), metallicFactor = 1.0, roughnessFactor = 1.0, // Metallic-Roughness
+                diffuseFactor = jsToGl([1, 1, 1, 1]), specularFactor = jsToGl([1, 1, 1]), glossinessFactor = 1.0, // Specular Glossiness
+                name = undefined)
     {
-        this.normalTexture = normalTexture;
-        this.occlusionTexture = occlusionTexture;
-        this.emissiveTexture = emissiveTexture;
+        this.textures = []; // array of gltfTextureInfos
         this.emissiveFactor = emissiveFactor;
         this.alphaMode = alphaMode;
         this.alphaCutoff = alphaCutoff;
         this.doubleSided = doubleSided;
         this.name = name;
-        this.pbrMetallicRoughness = pbrMetallicRoughness;
+        this.type = "unlit";
+
+        this.metallicFactor = metallicFactor;
+        this.roughnessFactor = roughnessFactor;
+        this.baseColorFactor = baseColorFactor;
+
+        this.diffuseFactor = diffuseFactor;
+        this.specularFactor = specularFactor;
+        this.glossinessFactor = glossinessFactor;
+
+        this.properties = new Map();
+        this.defines = [];
     }
 
     getShaderIdentifier()
     {
-        if (this.pbrMetallicRoughness !== undefined)
+        switch (this.type)
         {
-            return "metallic-roughness.frag";
+            case "MR": return "metallic-roughness.frag";
+            case "SG": return "specular-glossiness.frag" ;
+            default: return "unlit.frag";
         }
-
-        return "unlit.frag";
     }
 
     getDefines()
     {
-        let defines = [];
-
-        if (this.normalTexture !== undefined)
-        {
-            defines.push("HAS_NORMAL_MAP");
-        }
-
-        if (this.occlusionTexture !== undefined)
-        {
-            defines.push("HAS_OCCLUSION_MAP");
-        }
-
-        if (this.emissiveTexture !== undefined)
-        {
-            defines.push("HAS_EMISSIVE_MAP");
-        }
-
-        if (this.pbrMetallicRoughness !== undefined)
-        {
-            defines.concat(this.pbrMetallicRoughness.getDefines());
-        }
-
-        return defines;
+        return this.defines;
     }
 
     getProperties()
     {
-        let properties = new Map();
+        return this.properties;
+    }
 
-        properties["u_emissiveFactor"] = this.emissiveFactor;
-
-        if (this.pbrMetallicRoughness !== undefined)
-        {
-            for (let [property, value] of this.pbrMetallicRoughness.getProperties().entries())
-            {
-                properties[property] = value;
-            }
-        }
-
-        return propeties;
+    getTextures()
+    {
+        return this.textures;
     }
 
     fromJson(jsonMaterial)
@@ -76,25 +55,30 @@ class gltfMaterial
         fromKeys(this, jsonMaterial); // Most things:
         // i.e. alphaMode + alphaCutoff, doubleSided.
 
+        this.properties["u_emissiveFactor"] = this.emissiveFactor;
+
         if (jsonMaterial.normalTexture !== undefined)
         {
             let normalTexture = new gltfTextureInfo();
-            normalTexture.fromJson(jsonMaterial.normalTexture);
-            this.normalTexture = normalTexture;
+            normalTexture.fromJson(jsonMaterial.normalTexture, gl.RGBA);
+            this.textures.push(normalTexture);
+            this.defines.push("HAS_NORMAL_MAP");
         }
 
         if (jsonMaterial.occlusionTexture !== undefined)
         {
             let occlusionTexture = new gltfTextureInfo();
-            occlusionTexture.fromJson(jsonMaterial.occlusionTexture);
-            this.occlusionTexture = occlusionTexture;
+            occlusionTexture.fromJson(jsonMaterial.occlusionTexture, gl.RGBA);
+            this.textures.push(occlusionTexture);
+            this.defines.push("HAS_OCCLUSION_MAP");
         }
 
         if (jsonMaterial.emissiveTexture !== undefined)
         {
             let emissiveTexture = new gltfTextureInfo();
-            emissiveTexture.fromJson(jsonMaterial.emissiveTexture);
-            this.emissiveTexture = emissiveTexture;
+            emissiveTexture.fromJson(jsonMaterial.emissiveTexture, gl.RGBA);
+            this.textures.push(emissiveTexture);
+            this.defines.push("HAS_EMISSIVE_MAP");
         }
 
         if (jsonMaterial.emissiveFactor !== undefined)
@@ -104,75 +88,90 @@ class gltfMaterial
 
         if (jsonMaterial.pbrMetallicRoughness !== undefined)
         {
-            let pbrMetallicRoughness = new gltfMetallicRoughness();
-            pbrMetallicRoughness.fromJson(jsonMaterial.pbrMetallicRoughness);
-            this.pbrMetallicRoughness = pbrMetallicRoughness;
+            this.type = "MR";
+            this.fromJsonMetallicRoughness(jsonMaterial.pbrMetallicRoughness);
         }
-    }
-};
 
-class gltfMetallicRoughness
-{
-    constructor(baseColorFactor = jsToGl([1, 1, 1, 1]), baseColorTexture = undefined,
-                metallicFactor = 1.0, roughnessFactor = 1.0,
-                metallicRoughnessTexture = undefined)
-    {
-        this.baseColorFactor = baseColorFactor;
-        this.baseColorTexture = baseColorTexture;
-        this.metallicFactor = metallicFactor;
-        this.roughnessFactor = roughnessFactor;
-        this.metallicRoughnessTexture = metallicRoughnessTexture;
-    }
-
-    getDefines()
-    {
-        let defines = [];
-
-        if (this.baseColorTexture !== undefined)
+        if (jsonMaterial.pbrSpecularGlossiness !== undefined)
         {
-            defines.push("HAS_BASE_COLOR_MAP");
+            this.type = "SG";
+            this.fromJsonSpecularGlossiness(jsonMaterial.pbrSpecularGlossiness); // converts parameters to Metallic Roughness
         }
-
-        if (this.metallicRoughnessTexture !== undefined)
-        {
-            defines.push("HAS_METALLIC_ROUGHNESS_MAP");
-        }
-
-        return defines;
     }
 
-    getProperties()
+    fromJsonMetallicRoughness(jsonMetallicRoughness)
     {
-        let properties = new Map();
-
-        properties["u_baseColorFactor"] = this.baseColorFactor;
-        properties["u_metallicFactor"] = this.metallicFactor;
-        properties["u_roughnessFactor"] = this.roughnessFactor;
-
-        return properties;
-    }
-
-    fromJson(jsonMetallicRoughness)
-    {
-        fromKeys(this, jsonMetallicRoughness); // Copy over most parameters here.
-
         if (jsonMetallicRoughness.baseColorFactor !== undefined)
         {
             this.baseColorFactor = jsToGl(jsonMetallicRoughness.baseColorFactor);
         }
 
+        if (jsonMetallicRoughness.metallicFactor !== undefined)
+        {
+            this.metallicFactor = jsonMetallicRoughness.metallicFactor;
+        }
+
+        if (jsonMetallicRoughness.roughnessFactor !== undefined)
+        {
+            this.roughnessFactor = jsonMetallicRoughness.roughnessFactor;
+        }
+
+        this.properties["u_baseColorFactor"] = this.baseColorFactor;
+        this.properties["u_metallicFactor"] = this.metallicFactor;
+        this.properties["u_roughnessFactor"] = this.roughnessFactor;
+
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
             let baseColorTexture = new gltfTextureInfo();
-            baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture);
-            this.baseColorTexture = baseColorTexture;
+            baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture, gl.RGBA); // TODO: sRGB ext
+            this.textures.push(baseColorTexture);
+            this.defines.push("HAS_BASE_COLOR_MAP");
         }
 
         if (jsonMetallicRoughness.metallicRoughnessTexture !== undefined)
         {
             let metallicRoughnessTexture = new gltfTextureInfo();
-            metallicRoughnessTexture.fromJson(jsonMetallicRoughness.metallicRoughnessTexture);
-            this.metallicRoughnessTexture = metallicRoughnessTexture;
+            metallicRoughnessTexture.fromJson(jsonMetallicRoughness.metallicRoughnessTexture, gl.RGBA);
+            this.textures.push(metallicRoughnessTexture);
+            this.defines.push("HAS_METALLIC_ROUGHNESS_MAP");
+        }
+    }
+
+    fromJsonSpecularGlossiness(jsonSpecularGlossiness)
+    {
+        if (jsonSpecularGlossiness.diffuseFactor !== undefined)
+        {
+            this.diffuseFactor = jsToGl(jsonSpecularGlossiness.diffuseFactor);
+        }
+
+        if (jsonSpecularGlossiness.specularFactor !== undefined)
+        {
+            this.specularFactor = jsToGl(jsonSpecularGlossiness.specularFactor);
+        }
+
+        if (jsonSpecularGlossiness.glossinessFactor !== undefined)
+        {
+            this.glossinessFactor = jsonSpecularGlossiness.glossinessFactor;
+        }
+
+        this.properties["u_diffuseFactor"] = this.diffuseFactor;
+        this.properties["u_specularFactor"] = this.specularFactor;
+        this.properties["u_glossinessFactor"] = this.glossinessFactor;
+
+        if (jsonSpecularGlossiness.diffuseTexture !== undefined)
+        {
+            let diffuseTexture = new gltfTextureInfo();
+            diffuseTexture.fromJson(jsonSpecularGlossiness.diffuseTexture, gl.RGBA); // TODO: sRGB ext
+            this.textures.push(diffuseTexture);
+            this.defines.push("HAS_DIFFUSE_MAP");
+        }
+
+        if (jsonSpecularGlossiness.specularGlossinessTexture !== undefined)
+        {
+            let specularGlossinessTexture = new gltfTextureInfo();
+            specularGlossinessTexture.fromJson(jsonSpecularGlossiness.specularGlossinessTexture, gl.RGBA);
+            this.textures.push(specularGlossinessTexture);
+            this.defines.push("HAS_SPECULAR_GLOSSINESS_MAP");
         }
     }
 };

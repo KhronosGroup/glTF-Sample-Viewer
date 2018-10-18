@@ -15,14 +15,16 @@ class gltfTexture
 
 class gltfTextureInfo
 {
-    constructor(index = undefined, texCoord = 0)
+    constructor(index = undefined, texCoord = 0, colorSpace = gl.RGBA) // linear by default
     {
-        this.index = index;
-        this.texCoord = texCoord;
+        this.index = index; // reference to gltfTexture
+        this.texCoord = texCoord; // which UV set to use
+        this.colorSpace = colorSpace;
     }
 
-    fromJson(jsonTextureInfo)
+    fromJson(jsonTextureInfo, colorSpace = gl.RGBA)
     {
         fromKeys(this, jsonTextureInfo);
+        this.colorSpace = colorSpace;
     }
 };
