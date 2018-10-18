@@ -127,12 +127,12 @@ class gltfRenderer
         }
 
         let vertexCount = 0;
-        for (let [attributeName, accessorIndex] of primitive.attributes.entries())
+        for (let [attribute, accessorIndex] of primitive.attributes.entries())
         {
             let gltfAccessor = gltf.accessors[accessorIndex];
             vertexCount = gltfAccessor.count;
 
-            if (!EnableAttribute(gltf, this.program, attributeName, gltfAccessor))
+            if (!EnableAttribute(gltf, this.program, primitive.attributeNames[attribute], gltfAccessor))
             {
                 return; // skip this primitive.
             }
