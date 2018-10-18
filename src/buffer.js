@@ -5,7 +5,7 @@ class gltfBuffer
         this.uri = uri;
         this.byteLength = byteLength;
         this.name = name;
-        this.buffer = undefined;
+        this.buffer = undefined; // raw data blob
     }
 
     load(folder, promises)

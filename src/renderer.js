@@ -117,6 +117,14 @@ class gltfRenderer
             return;
         }
 
+        for (let [attributeName, accessorIndex] of primitive.attributes.entries())
+        {
+            if (!EnableAttribute(gltf, this.program, attributeName, accessorIndex))
+            {
+                return; // skip this primitive.
+            }
+        }
+
         for(let [uniform, val] of material.getProperties().entries())
         {
             updateUniform(uniform, val);
@@ -129,6 +137,11 @@ class gltfRenderer
 
         // TODO:
         // - set transforms
+
+        for (let attributeName in primitive.attributes)
+        {
+            DisableAttribute(this.program, attributeName);
+        }
     }
 
     // draw final image to frontbuffer

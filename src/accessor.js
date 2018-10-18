@@ -17,14 +17,21 @@ class gltfAccessor
         this.sparse = sparse;
         this.name = name;
         this.typedView = undefined;
+        this.glBuffer = undefined;
 
-        this.bufferMap = new Map();
-        this.bufferMap[gl.BYTE] = "";
-        this.bufferMap[gl.UNSIGNED_BYTE] = "Uint8Array";
-        this.bufferMap[gl.SHORT] = "Int16Array";
-        this.bufferMap[gl.UNSIGNED_SHORT] = "Uint16Array";
-        this.bufferMap[gl.UNSIGNED_INT] = "Uint32Array";
-        this.bufferMap[gl.FLOAT] = "Float32Array";
+        this.componentCount = new Map();
+        this.componentCount["SCALAR"] = 1;
+        this.componentCount["VEC2"]   = 2;
+        this.componentCount["VEC3"]   = 3;
+        this.componentCount["VEC4"]   = 4;
+        this.componentCount["MAT2"]   = 4;
+        this.componentCount["MAT3"]   = 9;
+        this.componentCount["MAT4"]   = 16;
+    }
+
+    getComponentCount()
+    {
+        return this.componentCount[this.type];
     }
 
     getTypedView(gltf)

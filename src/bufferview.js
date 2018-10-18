@@ -1,7 +1,7 @@
 class gltfBufferView
 {
     constructor(buffer = undefined,
-                byteOffset = 0, byteLength = undefined, byteStride = undefined,
+                byteOffset = 0, byteLength = undefined, byteStride = 0,
                 target = undefined, name = undefined)
     {
         this.buffer = buffer;

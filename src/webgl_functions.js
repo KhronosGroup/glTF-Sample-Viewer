@@ -30,6 +30,57 @@ function SetTexture(gltf, textureInfo)
     }
 }
 
+function EnableAttribute(gltf, shaderProgram, attributeName, accessorIndex)
+{
+    let gltfAccessor = gltf.accessors[accessorIndex];
+    let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
+
+    if (gltfAccessor.glBuffer === undefined)
+    {
+        gltfAccessor.glBuffer = gl.createBuffer();
+
+        let data = gltfAccessor.getTypedView();
+
+        if (data === undefined)
+        {
+            return false;
+        }
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gltfAccessor.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    }
+    else
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, gltfAccessor.glBuffer);
+    }
+
+    let attributeLocation = gl.getAttribLocation(shaderProgram, attributeName);
+
+    if (attributeLocation == -1)
+    {
+        console.log("Attribute name '" + attributeName + "' doesn't exist!");
+        return false;
+    }
+
+    gl.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
+                           gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+    gl.enableVertexAttribArray(attributeLocation);
+
+    return true;
+}
+
+function DisableAttribute(shaderProgram, attributeName)
+{
+    let attributeLocation = gl.getAttribLocation(shaderProgram, attributeName);
+
+    if (attributeLocation == -1)
+    {
+        console.log("Attribute name '" + attributeName + "' doesn't exist!");
+    }
+
+    gl.disableVertexAttribArray(attributeLocation);
+}
+
 function CompileShader(isVert, shaderSource)
 {
     let shader = gl.createShader(isVert ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
