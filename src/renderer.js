@@ -2,9 +2,8 @@
 
 class gltfRenderer
 {
-    constructor(gl, frontBuffer, backBuffer)
+    constructor(frontBuffer, backBuffer)
     {
-        this.gl = gl;
         this.frontBuffer = frontBuffer;
         this.backBuffer = backBuffer;
         this.width = 1600;
@@ -15,19 +14,19 @@ class gltfRenderer
         this.shaderCache = new ShaderCache("../shaders/", ["pbr-frag.glsl", "pbr-vert.glsl"]);
 
         this.uniformTypes = new Map();
-        this.uniformTypes[this.gl.FLOAT] = 'uniform1f';
-        this.uniformTypes[this.gl.FLOAT_VEC2] = 'uniform2f';
-        this.uniformTypes[this.gl.FLOAT_VEC3] = 'uniform3f';
-        this.uniformTypes[this.gl.FLOAT_VEC4] = 'uniform4f';
+        this.uniformTypes[gl.FLOAT] = 'uniform1f';
+        this.uniformTypes[gl.FLOAT_VEC2] = 'uniform2f';
+        this.uniformTypes[gl.FLOAT_VEC3] = 'uniform3f';
+        this.uniformTypes[gl.FLOAT_VEC4] = 'uniform4f';
 
-        this.uniformTypes[this.gl.INT] = 'uniform1i';
-        this.uniformTypes[this.gl.INT_VEC2] = 'uniform2i';
-        this.uniformTypes[this.gl.INT_VEC3] = 'uniform3i';
-        this.uniformTypes[this.gl.INT_VEC4] = 'uniform4i';
+        this.uniformTypes[gl.INT] = 'uniform1i';
+        this.uniformTypes[gl.INT_VEC2] = 'uniform2i';
+        this.uniformTypes[gl.INT_VEC3] = 'uniform3i';
+        this.uniformTypes[gl.INT_VEC4] = 'uniform4i';
 
-        this.uniformTypes[this.gl.FLOAT_MAT2] = 'uniformMatrix2fv';
-        this.uniformTypes[this.gl.FLOAT_MAT3] = 'uniformMatrix3fv';
-        this.uniformTypes[this.gl.FLOAT_MAT4] = 'uniformMatrix4fv';
+        this.uniformTypes[gl.FLOAT_MAT2] = 'uniformMatrix2fv';
+        this.uniformTypes[gl.FLOAT_MAT3] = 'uniformMatrix3fv';
+        this.uniformTypes[gl.FLOAT_MAT4] = 'uniformMatrix4fv';
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -106,10 +105,10 @@ class gltfRenderer
         const material = gltf.materials[primitive.material];
 
         //select shader permutation & compile and link
-        let fragmentShader = this.shaderCache.getShader(gl, material.getShaderIdentifier(), material.getDefines());
-        let vertexhader = this.shaderCache.getShader(gl, primitive.getShaderIdentifier(), primitive.getDefines());
+        let fragmentShader = this.shaderCache.getShader(material.getShaderIdentifier(), material.getDefines());
+        let vertexhader = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
-        this.program = LinkProgram(gl, vertexhader, fragmentShader);
+        this.program = LinkProgram(vertexhader, fragmentShader);
 
         if(this.program === undefined)
         {
@@ -123,7 +122,7 @@ class gltfRenderer
 
         for(let tex of material.getTextures())
         {
-            SetTexture(gl, gltf, tex); // binds texture and sampler
+            SetTexture(gltf, tex); // binds texture and sampler
         }
 
         // TODO:

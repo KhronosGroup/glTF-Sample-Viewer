@@ -1,6 +1,6 @@
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
-function SetSampler(gl, gltfSamplerObj, type) // TEXTURE_2D
+function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
 {
     gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
     gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.warpT);
@@ -8,7 +8,7 @@ function SetSampler(gl, gltfSamplerObj, type) // TEXTURE_2D
     gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
 }
 
-function SetTexture(gl, gltf, textureInfo)
+function SetTexture(gltf, textureInfo)
 {
     let gltfTexture = gltf.textures[textureInfo.index];
 
@@ -24,21 +24,13 @@ function SetTexture(gl, gltf, textureInfo)
 
     if(init)
     {
-        SetSampler(gl, gltf.samplers[gltfTexture.sampler]);
+        SetSampler(gltf.samplers[gltfTexture.sampler]);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
         gl.texImage2D(gl.TEXTURE_2D, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltf.images[gltfTexture.src].image);
     }
 }
 
-// function BindTexture(gl, gltf, textureIndex)
-// {
-//     let gltfTexture = gltf.textures[textureIndex];
-
-//     gl.activateTexture(gl.TEXTURE0 + gltfTexture.sampler);
-//     gl.bindTexture(gl.TEXTURE_2D, gltfTexture.texture);
-// }
-
-function CompileShader(gl, isVert, shaderSource)
+function CompileShader(isVert, shaderSource)
 {
     let shader = gl.createShader(isVert ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
     gl.shaderSource(shader, shaderSource);
@@ -53,7 +45,7 @@ function CompileShader(gl, isVert, shaderSource)
     return shader;
 }
 
-function LinkProgram(gl, vertex, fragment)
+function LinkProgram(vertex, fragment)
 {
     let program = gl.createProgram();
     gl.attachShader(program, vertex);

@@ -30,7 +30,7 @@ function main() {
 
         gltfLoader.load(gltf); // loader resources.
 
-        let renderer = new gltfRenderer(gl, frontBuffer, backBuffer);
+        let renderer = new gltfRenderer(frontBuffer, backBuffer);
     }).catch(function(err)
     {
         console.log(err);

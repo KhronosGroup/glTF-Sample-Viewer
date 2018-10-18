@@ -54,8 +54,8 @@ class ShaderCache
         }
     }
 
-    // example args: gl, "pbr.vert", ["NORMALS", "TANGENTS"}
-    getShader(gl, shaderIdentifier, permutationDefines)
+    // example args: "pbr.vert", ["NORMALS", "TANGENTS"]
+    getShader(shaderIdentifier, permutationDefines)
     {
         // first check shaders for the exact permutation
         // if not present, check sources and compile it
@@ -86,7 +86,7 @@ class ShaderCache
         }
         else // compile this variant
         {
-            shader = CompileShader(gl, isVert, defines + src);
+            shader = CompileShader(isVert, defines + src);
             if(shader)
             {
                 this.shaders[hash] = shader;
