@@ -11,7 +11,7 @@ class gltfRenderer
         this.program = undefined; // current active shader
 
         // TODO: change shader folder to src/shaders & add actuall shaders
-        this.shaderCache = new ShaderCache("../shaders/", ["pbr-frag.glsl", "pbr-vert.glsl"]);
+        this.shaderCache = new ShaderCache("shaders/", ["primitive.vert", "metallic-roughness.frag"]);
 
         this.uniformTypes = new Map();
         this.uniformTypes[gl.FLOAT] = 'uniform1f';
