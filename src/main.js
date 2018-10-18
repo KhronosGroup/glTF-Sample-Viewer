@@ -30,6 +30,8 @@ function main() {
 
         gltfLoader.load(gltf); // loader resources.
 
+        gltf.accessors[0].getTypedView(gltf);
+
         let renderer = new gltfRenderer(frontBuffer, backBuffer);
     }).catch(function(err)
     {

@@ -102,6 +102,8 @@ class gltfRenderer
     // vertices with given material
     drawPrimitive(gltf, primitive)
     {
+        if (primitive.skip) return;
+
         const material = gltf.materials[primitive.material];
 
         //select shader permutation & compile and link
