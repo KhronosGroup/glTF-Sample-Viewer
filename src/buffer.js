@@ -15,16 +15,15 @@ class gltfBuffer
             return;
         }
 
-        let responseBuffer = undefined;
+        let self = this;
         if (this.uri !== undefined)
         {
             let promise = axios.get(folder + this.uri, { responseType: 'arraybuffer'});
             promise.then(function (response) {
-                responseBuffer = response.data;
+                self.buffer = response.data;
             });
             promises.push(promise);
         }
-        this.buffer = responseBuffer;
     }
 
     fromJson(jsonBuffer)
