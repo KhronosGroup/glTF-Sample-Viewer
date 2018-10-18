@@ -78,21 +78,21 @@ class gltfMaterial
 
         if (jsonMaterial.normalTexture !== undefined)
         {
-            var normalTexture = new gltfTextureInfo();
+            let normalTexture = new gltfTextureInfo();
             normalTexture.fromJson(jsonMaterial.normalTexture);
             this.normalTexture = normalTexture;
         }
 
-        if (jsonMaterial.occlusiontexture !== undefined)
+        if (jsonMaterial.occlusionTexture !== undefined)
         {
-            var occlusiontexture = new gltfTextureInfo();
-            occlusiontexture.fromJson(jsonMaterial.occlusiontexture);
-            this.occlusiontexture = occlusiontexture;
+            let occlusionTexture = new gltfTextureInfo();
+            occlusionTexture.fromJson(jsonMaterial.occlusionTexture);
+            this.occlusionTexture = occlusionTexture;
         }
 
         if (jsonMaterial.emissiveTexture !== undefined)
         {
-            var emissiveTexture = new gltfTextureInfo();
+            let emissiveTexture = new gltfTextureInfo();
             emissiveTexture.fromJson(jsonMaterial.emissiveTexture);
             this.emissiveTexture = emissiveTexture;
         }
@@ -104,7 +104,7 @@ class gltfMaterial
 
         if (jsonMaterial.pbrMetallicRoughness !== undefined)
         {
-            var pbrMetallicRoughness = new gltfMetallicRoughness();
+            let pbrMetallicRoughness = new gltfMetallicRoughness();
             pbrMetallicRoughness.fromJson(jsonMaterial.pbrMetallicRoughness);
             this.pbrMetallicRoughness = pbrMetallicRoughness;
         }
@@ -163,14 +163,14 @@ class gltfMetallicRoughness
 
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
-            var baseColorTexture = new gltfTextureInfo();
+            let baseColorTexture = new gltfTextureInfo();
             baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture);
             this.baseColorTexture = baseColorTexture;
         }
 
         if (jsonMetallicRoughness.metallicRoughnessTexture !== undefined)
         {
-            var metallicRoughnessTexture = new gltfTextureInfo();
+            let metallicRoughnessTexture = new gltfTextureInfo();
             metallicRoughnessTexture.fromJson(jsonMetallicRoughness.metallicRoughnessTexture);
             this.metallicRoughnessTexture = metallicRoughnessTexture;
         }
