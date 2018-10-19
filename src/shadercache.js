@@ -76,7 +76,7 @@ class ShaderCache
         for(let define of permutationDefines)
         {
             hash ^= stringHash(define);
-            defines += "#define " + define + "1\n";
+            defines += "#define " + define + " 1\n";
         }
 
         let shader = this.shaders.get(hash);
