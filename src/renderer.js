@@ -98,7 +98,7 @@ class gltfRenderer
             this.viewMatrix = view.getTransform();
         }
 
-        mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewProjMatrix);
+        mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
         // TODO: pass a scene transfrom to be able to translate & rotate using the mouse
         let transform = mat4.create();
