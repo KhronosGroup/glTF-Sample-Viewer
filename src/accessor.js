@@ -20,13 +20,13 @@ class gltfAccessor
         this.glBuffer = undefined;
 
         this.componentCount = new Map();
-        this.componentCount["SCALAR"] = 1;
-        this.componentCount["VEC2"]   = 2;
-        this.componentCount["VEC3"]   = 3;
-        this.componentCount["VEC4"]   = 4;
-        this.componentCount["MAT2"]   = 4;
-        this.componentCount["MAT3"]   = 9;
-        this.componentCount["MAT4"]   = 16;
+        this.componentCount.set("SCALAR", 1);
+        this.componentCount.set("VEC2", 2);
+        this.componentCount.set("VEC3", 3);
+        this.componentCount.set("VEC4", 4);
+        this.componentCount.set("MAT2", 4);
+        this.componentCount.set("MAT3", 9);
+        this.componentCount.set("MAT4", 16);
     }
 
     getComponentCount()

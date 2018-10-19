@@ -23,21 +23,6 @@ class gltfRenderer
         // TODO: change shader folder to src/shaders & add actuall shaders
         this.shaderCache = new ShaderCache("shaders/", ["primitive.vert", "metallic-roughness.frag"]);
 
-        this.uniformTypes = new Map();
-        this.uniformTypes[gl.FLOAT] = 'uniform1f';
-        this.uniformTypes[gl.FLOAT_VEC2] = 'uniform2f';
-        this.uniformTypes[gl.FLOAT_VEC3] = 'uniform3f';
-        this.uniformTypes[gl.FLOAT_VEC4] = 'uniform4f';
-
-        this.uniformTypes[gl.INT] = 'uniform1i';
-        this.uniformTypes[gl.INT_VEC2] = 'uniform2i';
-        this.uniformTypes[gl.INT_VEC3] = 'uniform3i';
-        this.uniformTypes[gl.INT_VEC4] = 'uniform4i';
-
-        this.uniformTypes[gl.FLOAT_MAT2] = 'uniformMatrix2fv';
-        this.uniformTypes[gl.FLOAT_MAT3] = 'uniformMatrix3fv';
-        this.uniformTypes[gl.FLOAT_MAT4] = 'uniformMatrix4fv';
-
         this.modelMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -241,13 +226,19 @@ class gltfRenderer
         {
             const info = gl.getActiveUniform(this.program, loc);
             switch (info.type) {
-                case gl.FLOAT_MAT2:
-                case gl.FLOAT_MAT3:
-                case gl.FLOAT_MAT4:
-                    gl[this.uniformTypes[info.type]](loc, false, value);
-                    break;
-                default:
-                    gl[this.uniformTypes[info.type]](loc, value);
+                case gl.FLOAT: gl.uniform1f(loc, value); break;
+                case gl.FLOAT_VEC2: gl.uniform2f(loc, value); break;
+                case gl.FLOAT_VEC3: gl.uniform3f(loc, value); break;
+                case gl.FLOAT_VEC4: gl.uniform4f(loc, value); break;
+
+                case gl.INT: gl.uniform1i(loc, value); break;
+                case gl.INT_VEC2: gl.uniform2i(loc, value); break;
+                case gl.INT_VEC3: gl.uniform3i(loc, value); break;
+                case gl.INT_VEC4: gl.uniform4i(loc, value); break;
+
+                case gl.FLOAT_MAT2: gl.uniformMatrix2fv(loc, false, value); break;
+                case gl.FLOAT_MAT3: gl.uniformMatrix3fv(loc, false, value); break;
+                case gl.FLOAT_MAT4: gl.uniformMatrix4fv(loc, false, value); break;
             }
         }
     }

@@ -23,7 +23,7 @@ class ShaderCache
             {
                 let name = shaderFiles[fileIdx];
                 let response = responseArray[fileIdx];
-                self.sources[name] = response.data;
+                self.sources.set(name, response.data);
             }
 
             // TODO: remove any // or /* style comments
@@ -90,7 +90,7 @@ class ShaderCache
             shader = CompileShader(isVert, defines + src);
             if(shader)
             {
-                this.shaders[hash] = shader;
+                this.shaders.set(hash, shader);
             }
         }
 
