@@ -24,11 +24,11 @@ function SetTexture(gltf, textureInfo)
     {
         SetSampler(gltf.samplers[gltfTexture.sampler], textureInfo.type);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        let gltfImage =  gltf.images[gltfTexture.src];
+        let gltfImage =  gltf.images[gltfTexture.source];
 
         if (gltfImage === undefined)
         {
-            console.warn("Image is undefined for texture: " + gltfTexture.src);
+            console.warn("Image is undefined for texture: " + gltfTexture.source);
             return false;
         }
 

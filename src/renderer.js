@@ -195,7 +195,7 @@ class gltfRenderer
         if (drawIndexed)
         {
             let indexAccessor = gltf.accessors[primitive.indices];
-            gl.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
+            gl.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
         }
         else
         {
