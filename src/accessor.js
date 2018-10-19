@@ -72,10 +72,11 @@ class gltfAccessor
         if (this.typedView === undefined)
         {
             console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
-        }else
-        {
-            console.log("Buffer accessor for view " + this.bufferView + " byteLength " + this.typedView.byteLength);
         }
+        // else
+        // {
+        //     console.log("Buffer accessor for view " + this.bufferView + " byteLength " + this.typedView.byteLength);
+        // }
 
         return this.typedView;
     }

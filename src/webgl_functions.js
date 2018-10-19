@@ -10,33 +10,61 @@ function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
 
 function SetTexture(gltf, textureInfo)
 {
-    let gltfTexture = gltf.textures[textureInfo.index];
+    let gltfTex = gltf.textures[textureInfo.index];
 
-    if(gltfTexture.texture === undefined)
+    if(gltfTex === undefined)
     {
-        gltfTexture.texture = gl.createTexture();
+        console.warn("Texture is undefined: " + textureInfo.index);
+        return false;
     }
 
-    gl.activeTexture(gl.TEXTURE0 + gltfTexture.sampler);
-    gl.bindTexture(gl.TEXTURE_2D, gltfTexture.texture);
-
-    if(!gltfTexture.initialized)
+    if(gltfTex.texture === undefined)
     {
-        SetSampler(gltf.samplers[gltfTexture.sampler], textureInfo.type);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        let gltfImage =  gltf.images[gltfTexture.source];
+        gltfTex.texture = gl.createTexture();
+    }
 
-        if (gltfImage === undefined)
+    gl.activeTexture(gl.TEXTURE0 + gltfTex.sampler);
+    gl.bindTexture(textureInfo.type, gltfTex.texture);
+
+    if(!gltfTex.initialized)
+    {
+        const gltfSampler = gltf.samplers[gltfTex.sampler];
+
+        if(gltfSampler === undefined)
         {
-            console.warn("Image is undefined for texture: " + gltfTexture.source);
+            console.warn("Sampler is undefined for texture: " + gltfTex.source);
             return false;
         }
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
-        gltfTexture.initialized = true;
+        SetSampler(gltfSampler, textureInfo.type);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        let gltfImage =  gltf.images[gltfTex.source];
+
+        if (gltfImage === undefined)
+        {
+            console.warn("Image is undefined for texture: " + gltfTex.source);
+            return false;
+        }
+
+        // TODO: cubemaps
+        gl.texImage2D(textureInfo.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
+
+        // TODO: check for power-of-two
+        switch (gltfSampler.minFilter) {
+            case gl.NEAREST_MIPMAP_NEAREST:
+            case gl.NEAREST_MIPMAP_LINEAR:
+            case gl.LINEAR_MIPMAP_NEAREST:
+            case gl.LINEAR_MIPMAP_LINEAR:
+                gl.generateMipmap(textureInfo.type);
+                break;
+            default:
+                break;
+        }
+
+        gltfTex.initialized = true;
     }
 
-    return gltfTexture.initialized;
+    return gltfTex.initialized;
 }
 
 function SetIndices(gltf, accessorIndex)

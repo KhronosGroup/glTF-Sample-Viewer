@@ -1,10 +1,16 @@
 function main() {
 
-    let gltfURL = 'BoomBox/glTF/BoomBox.gltf';
+    let gltfURL = '../models/BoomBox/glTF/BoomBox.gltf';
 
     let loadGLTF = axios.get(gltfURL);
-    loadGLTF.then(function(json)
+    loadGLTF.then(function(response)
     {
+        if(response.data === undefined)
+        {
+            console.log("Failed to load " + gltfURL);
+            return;
+        }
+
         let backBuffer = document.getElementById('canvas');
         let error = document.getElementById('error');
 
@@ -25,7 +31,7 @@ function main() {
         let frontBuffer = canvas2d.getContext("2d");
 
         let gltf = new glTF(gltfURL, { responseType: 'json' });
-        gltf.fromJson(json.data);
+        gltf.fromJson(response.data);
         console.log(gltf);
 
         gltfLoader.load(gltf); // loade resources.
