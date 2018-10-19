@@ -1,6 +1,6 @@
 function main() {
 
-    let gltfURL = '../models/BoomBox/glTF/BoomBox.gltf';
+    let gltfURL = 'BoomBox/glTF/BoomBox.gltf';
 
     let loadGLTF = axios.get(gltfURL);
     loadGLTF.then(function(json)
@@ -35,14 +35,14 @@ function main() {
         renderer.init();
         renderer.resize(backBuffer.width, backBuffer.height);
 
-        renderer.newFrame();
-        renderer.drawScene(gltf, 0, -1, true);
-        renderer.drawImage();
+        var render = function(elapsed) {
+            renderer.newFrame();
+            renderer.drawScene(gltf, 0, -1, true);
+            renderer.drawImage();
+            window.requestAnimationFrame(render);
+        };
 
-        renderer.newFrame();
-        renderer.drawScene(gltf, 0, -1, true);
-        renderer.drawImage();
-
+        window.requestAnimationFrame(render);
     }).catch(function(err)
     {
         console.log(err);

@@ -186,11 +186,11 @@ class gltfRenderer
 
         for(let tex of material.getTextures())
         {
-            SetTexture(gltf, tex); // binds texture and sampler
+            if (!SetTexture(gltf, tex)) // binds texture and sampler
+            {
+                return;
+            }
         }
-
-        // TODO:
-        // - set transforms
 
         if (drawIndexed)
         {

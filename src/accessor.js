@@ -67,6 +67,11 @@ class gltfAccessor
             }
         }
 
+        if (this.typedView === undefined)
+        {
+            console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
+        }
+
         return this.typedView;
     }
 

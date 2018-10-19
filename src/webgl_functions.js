@@ -3,7 +3,7 @@
 function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
 {
     gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
-    gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.warpT);
+    gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
     gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
     gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
 }
@@ -12,22 +12,31 @@ function SetTexture(gltf, textureInfo)
 {
     let gltfTexture = gltf.textures[textureInfo.index];
 
-    let init = false;
     if(gltfTexture.texture === undefined)
     {
         gltfTexture.texture = gl.createTexture();
-        init = true;
     }
 
-    gl.activateTexture(gl.TEXTURE0 + gltfTexture.sampler);
+    gl.activeTexture(gl.TEXTURE0 + gltfTexture.sampler);
     gl.bindTexture(gl.TEXTURE_2D, gltfTexture.texture);
 
-    if(init)
+    if(!gltfTexture.initialized)
     {
-        SetSampler(gltf.samplers[gltfTexture.sampler]);
+        SetSampler(gltf.samplers[gltfTexture.sampler], textureInfo.type);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texImage2D(gl.TEXTURE_2D, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltf.images[gltfTexture.src].image);
+        let gltfImage =  gltf.images[gltfTexture.src];
+
+        if (gltfImage === undefined)
+        {
+            console.warn("Image is undefined for texture: " + gltfTexture.src);
+            return false;
+        }
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
+        gltfTexture.initialized = true;
     }
+
+    return gltfTexture.initialized;
 }
 
 function SetIndices(gltf, accessorIndex)
@@ -115,7 +124,7 @@ function CompileShader(isVert, shaderSource)
 
     if (!compiled) {
 
-        console.log(gl.getShaderInfoLog(shader));
+        console.warn(gl.getShaderInfoLog(shader));
         return null;
     }
 
