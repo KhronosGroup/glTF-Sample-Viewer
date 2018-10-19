@@ -28,6 +28,11 @@ function main() {
         }
 
         let canvas2d = document.getElementById('canvas2d');
+
+        // Resize canvas front and back buffer to fit the window.
+        backBuffer.width  = canvas2d.width  = window.innerWidth;
+        backBuffer.height = canvas2d.height = window.innerHeight;
+
         let frontBuffer = canvas2d.getContext("2d");
 
         let gltf = new glTF(gltfURL, { responseType: 'json' });
@@ -41,17 +46,15 @@ function main() {
         renderer.init();
         renderer.resize(backBuffer.width, backBuffer.height);
 
-        var render = function(elapsed) {
+        // The main rendering loop!
+        function render(elapsedFrameTime) {
             renderer.newFrame();
             renderer.drawScene(gltf, 0, -1, true);
             renderer.drawImage();
             window.requestAnimationFrame(render);
-        };
-
-        window.requestAnimationFrame(render);
+        } window.requestAnimationFrame(render);
     }).catch(function(err)
     {
         console.log(err);
-        //error.innerHTML += 'Failed to load model: ' + errorThrown + '<br>';
     });
 }

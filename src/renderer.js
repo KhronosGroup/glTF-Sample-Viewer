@@ -228,8 +228,6 @@ class gltfRenderer
         let loc = gl.getUniformLocation(this.program, name);
         let uniformCount = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
 
-        console.log(name + " " + value);
-
         if(loc)
         {
             for (let i = 0; i < uniformCount; ++i)
