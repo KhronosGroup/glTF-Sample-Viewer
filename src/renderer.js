@@ -149,7 +149,7 @@ class gltfRenderer
             // update model dependant matrices once per node
             this.updateUniform("u_MVPMatrix", this.mvpMatrix);
             this.updateUniform("u_ModelMatrix", this.modelMatrix);
-            this.updateUniform("u_NormalMatrix", this.mvpMatrix);
+            this.updateUniform("u_NormalMatrix", this.normalMatrix);
         }
 
         if (material.doubleSided) {
