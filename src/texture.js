@@ -22,12 +22,14 @@ class gltfTextureInfo
         this.texCoord = texCoord; // which UV set to use
         this.colorSpace = colorSpace;
         this.type = type;
+        this.samplerName = "";
     }
 
-    fromJson(jsonTextureInfo, colorSpace = gl.RGBA, type = gl.TEXTURE_2D)
+    fromJson(jsonTextureInfo, samplerName, colorSpace = gl.RGBA, type = gl.TEXTURE_2D)
     {
         fromKeys(this, jsonTextureInfo);
         this.colorSpace = colorSpace;
         this.type = type;
+        this.samplerName = samplerName;
     }
 };

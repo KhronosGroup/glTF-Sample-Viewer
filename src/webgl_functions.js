@@ -8,7 +8,7 @@ function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
     gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
 }
 
-function SetTexture(gltf, textureInfo)
+function SetTexture(program, gltf, textureInfo, texSlot)
 {
     let gltfTex = gltf.textures[textureInfo.index];
 
@@ -23,8 +23,19 @@ function SetTexture(gltf, textureInfo)
         gltfTex.texture = gl.createTexture();
     }
 
-    gl.activeTexture(gl.TEXTURE0 + gltfTex.sampler);
+    const loc = gl.getUniformLocation(program, textureInfo.samplerName);
+
+    if(loc === undefined)
+    {
+        console.warn("Sampler location not found: " + textureInfo.samplerName);
+        return false;
+    }
+
+    // TODO: get sampler location
+    gl.activeTexture(gl.TEXTURE0 + texSlot);
     gl.bindTexture(textureInfo.type, gltfTex.texture);
+
+    gl.uniform1i(loc, texSlot);
 
     if(!gltfTex.initialized)
     {

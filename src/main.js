@@ -1,6 +1,6 @@
 function main() {
 
-    let gltfURL = '../models/BoomBox/glTF/BoomBox.gltf';
+    let gltfURL = 'BoomBox/glTF/BoomBox.gltf';
 
     let loadGLTF = axios.get(gltfURL);
     loadGLTF.then(function(response)

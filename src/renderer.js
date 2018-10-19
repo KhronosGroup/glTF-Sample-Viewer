@@ -184,9 +184,9 @@ class gltfRenderer
             this.updateUniform(uniform, val);
         }
 
-        for(let tex of material.getTextures())
+        for(let i = 0; i < material.textures.length; ++i)
         {
-            if (!SetTexture(gltf, tex)) // binds texture and sampler
+            if (!SetTexture(this.program, gltf, material.textures[i], i)) // binds texture and sampler
             {
                 return;
             }
