@@ -29,8 +29,8 @@ class ShaderCache
             // TODO: remove any // or /* style comments
 
             // resovle / expande sources (TODO: break include cycles)
-            for (let src of self.sources) {
-                for (let includeName of self.shaderFiles) {
+            for (let src in self.sources.entries()) {
+                for (let includeName of shaderFiles) {
                     //var pattern = RegExp(/#include</ + includeName + />/);
                     let pattern = "#include<" + includeName + ">";
 
@@ -59,7 +59,7 @@ class ShaderCache
         // if not present, check sources and compile it
         // if not present, return null object
 
-        const src = this.sources[shaderIdentifier];
+        const src = this.sources.get(shaderIdentifier);
         if(src === undefined)
         {
             if(this.loaded)

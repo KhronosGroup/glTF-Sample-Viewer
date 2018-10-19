@@ -7,7 +7,6 @@ class gltfPrimitive
         this.material = material;
         this.mode = mode;
         this.defines = [];
-        //this.attributeNames = new Map();
         this.skip = true;
     }
 

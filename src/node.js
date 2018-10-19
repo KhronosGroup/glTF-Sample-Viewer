@@ -92,7 +92,7 @@ class gltfNode
     {
         var transform = mat4.create();
 
-        mat4.fromRotationTranslationScale(transform, this.rotation, this.translate, this.scale);
+        mat4.fromRotationTranslationScale(transform, this.rotation, this.translation, this.scale);
 
         return transform;
     }

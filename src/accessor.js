@@ -31,7 +31,7 @@ class gltfAccessor
 
     getComponentCount()
     {
-        return this.componentCount[this.type];
+        return this.componentCount.get(this.type);
     }
 
     getTypedView(gltf)

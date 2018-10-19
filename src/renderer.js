@@ -100,7 +100,8 @@ class gltfRenderer
         let node = gltf.nodes[scene.nodes[nodeIndex]];
 
         // update model & mvp & normal matrix
-        mat4.multiply(this.modelMatrix, node.getTransform(), parentTransform);
+        let nodeTransform = node.getTransform();
+        mat4.multiply(this.modelMatrix, nodeTransform, parentTransform);
         mat4.multiply(this.mvpMatrix, this.viewProjMatrix, this.modelMatrix);
         mat4.invert(this.modelInverse, this.modelMatrix);
         mat4.transpose(this.normalMatrix, this.modelInverse);
