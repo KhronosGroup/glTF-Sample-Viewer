@@ -10,10 +10,14 @@ function jsToGl(array)
     return tensor;
 }
 
-function fromKeys(target, jsonObj)
+function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
     {
+        if(ignore && ignore.find(function(elem){return elem == k}) !== undefined)
+        {
+            continue; // skip
+        }
         if(jsonObj[k] !== undefined)
         {
             target[k] = jsonObj[k];

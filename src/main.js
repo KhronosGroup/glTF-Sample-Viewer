@@ -15,7 +15,7 @@ function main() {
 
         backBuffer.hidden = true;
 
-        gl = canvas.getContext("webgl", {}) || canvas.getContext("experimental-webgl", {});
+        gl = backBuffer.getContext("webgl", {}) || backBuffer.getContext("experimental-webgl", {});
         if (!gl) {
             error.innerHTML += 'Failed to get the rendering context for WebGL<br>';
             return;
@@ -33,9 +33,14 @@ function main() {
         let renderer = new gltfRenderer(frontBuffer, backBuffer);
 
         renderer.init();
-        renderer.resize(canvas.width, canvas.height);
-        renderer.drawScene(gltf, 0, -1, true);
+        renderer.resize(backBuffer.width, backBuffer.height);
 
+        renderer.newFrame();
+        renderer.drawScene(gltf, 0, -1, true);
+        renderer.drawImage();
+
+        renderer.newFrame();
+        renderer.drawScene(gltf, 0, -1, true);
         renderer.drawImage();
 
     }).catch(function(err)

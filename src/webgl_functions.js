@@ -38,7 +38,7 @@ function SetIndices(gltf, accessorIndex)
     {
         gltfAccessor.glBuffer = gl.createBuffer();
 
-        let data = gltfAccessor.getTypedView();
+        let data = gltfAccessor.getTypedView(gltf);
 
         if (data === undefined)
         {
@@ -64,7 +64,7 @@ function EnableAttribute(gltf, shaderProgram, attributeName, gltfAccessor)
     {
         gltfAccessor.glBuffer = gl.createBuffer();
 
-        let data = gltfAccessor.getTypedView();
+        let data = gltfAccessor.getTypedView(gltf);
 
         if (data === undefined)
         {

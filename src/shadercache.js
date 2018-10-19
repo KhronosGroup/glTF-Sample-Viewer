@@ -4,12 +4,13 @@ class ShaderCache
 {
     constructor(shaderFolder, shaderFiles)
     {
-        let sources = new Map();
-
         this.shaders = new Map(); // name & permutations hashed -> compiled shader
-        this.sources = sources; // shader name -> source coce
-        this.programs = [];
+        this.sources = new Map();; // shader name -> source coce
+        //this.programs = [];
 
+        this.loaded = false;
+
+        let self = this;
         let loadPromises = [];
         for (let file of shaderFiles)
         {
@@ -22,36 +23,33 @@ class ShaderCache
             {
                 let name = shaderFiles[fileIdx];
                 let response = responseArray[fileIdx];
-                sources[name] = response.data;
+                self.sources[name] = response.data;
             }
+
+            // TODO: remove any // or /* style comments
+
+            // resovle / expande sources (TODO: break include cycles)
+            for (let src of self.sources) {
+                for (let includeName of self.shaderFiles) {
+                    //var pattern = RegExp(/#include</ + includeName + />/);
+                    let pattern = "#include<" + includeName + ">";
+
+                    // only replace the first occurance
+                    src = src.replace(pattern, self.sources[includeName]);
+
+                    // remove the others
+                    while (src.search(pattern) != -1) {
+                        src = src.replace(pattern, "");
+                    }
+                }
+            }
+
+            self.loaded = true;
         })
         .catch(function(err) {
             console.log(err);
         });
 
-        // TODO: remove any // or /* style comments
-
-        // resovle / expande sources (TODO: break include cycles)
-        for(let src of sources)
-        {
-            //let inclMap = new Map();
-            for(let includeName of shaderFiles)
-            {
-                //var pattern = RegExp(/#include</ + includeName + />/);
-                let pattern = "#include<" + includeName + ">";
-
-                // only replace the first occurance
-                src = src.replace(pattern, sources[includeName]);
-
-                // remove the others
-                while(src.search(pattern) != -1)
-                {
-                    src = src.replace(pattern, "");
-                }
-
-                //inclMap[includeName] = true;
-            }
-        }
     }
 
     // example args: "pbr.vert", ["NORMALS", "TANGENTS"]
@@ -64,7 +62,10 @@ class ShaderCache
         const src = this.sources[shaderIdentifier];
         if(src === undefined)
         {
-            console.log("Shader source for " + shaderIdentifier + " not found");
+            if(this.loaded)
+            {
+                console.log("Shader source for " + shaderIdentifier + " not found");
+            }
             return null;
         }
 

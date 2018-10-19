@@ -58,7 +58,7 @@ void main()
     #endif
 
     #ifdef HAS_UV_SET2
-    v_JointWeightUV = a_UV1;
+    v_JointWeightUV = a_UV2;
     #endif
 
     // TODO: skinning & morphing

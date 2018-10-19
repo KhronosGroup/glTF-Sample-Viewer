@@ -70,9 +70,9 @@ class gltfRenderer
     // frame state
     newFrame()
     {
-        gl.clearColor(0.2, 0.2, 0.2, 1.0);
+        gl.clearColor(1.0, 0.2, 0.2, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        frontBuffer.clearRect(0, 0, this.width, this.height);
+        this.frontBuffer.clearRect(0, 0, this.width, this.height);
     }
 
     // render complete gltf scene with given camera
@@ -156,6 +156,8 @@ class gltfRenderer
             return;
         }
 
+        gl.useProgram(this.program);
+
         if(firstPrimitive) // TODO:check for changed vertex shader permutation
         {
             // update model dependant matrices once per node
@@ -173,19 +175,19 @@ class gltfRenderer
         const drawIndexed = primitive.indices !== undefined;
         if (drawIndexed)
         {
-            if (!SetIndices(gltf, indexAccessor))
+            if (!SetIndices(gltf, primitive.indices))
             {
                 return;
             }
         }
 
         let vertexCount = 0;
-        for (let [attribute, accessorIndex] of primitive.attributes.entries())
+        for (let attrib of primitive.attributes)
         {
-            let gltfAccessor = gltf.accessors[accessorIndex];
+            let gltfAccessor = gltf.accessors[attrib.accessor];
             vertexCount = gltfAccessor.count;
 
-            if (!EnableAttribute(gltf, this.program, primitive.attributeNames[attribute], gltfAccessor))
+            if (!EnableAttribute(gltf, this.program, attrib.name, gltfAccessor))
             {
                 return; // skip this primitive.
             }
@@ -214,9 +216,9 @@ class gltfRenderer
             gl.drawArrays(primitive.mode, 0, vertexCount);
         }
 
-        for (let attributeName in primitive.attributes)
+        for (let attrib of primitive.attributes)
         {
-            DisableAttribute(this.program, attributeName);
+            DisableAttribute(this.program, attrib.name);
         }
     }
 
