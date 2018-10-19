@@ -17,8 +17,10 @@
 precision highp float;
 
 // TODO: array of punctual lights
-uniform vec3 u_LightDirection;
-uniform vec3 u_LightColor;
+//uniform vec3 u_LightDirection;
+const vec3 u_LightDirection = vec3(0, -0.125, -0.125);
+const vec3 u_LightColor = vec3(1, 1, 1);
+//uniform vec3 u_LightColor;
 
 #ifdef USE_IBL
 uniform samplerCube u_DiffuseEnvSampler;
@@ -46,7 +48,8 @@ uniform sampler2D u_BaseColorSampler;
 uniform sampler2D u_MetallicRoughnessSampler;
 #endif
 
-uniform vec2 u_MetallicRoughnessValues;
+uniform float u_MetallicFactor;
+uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
 
 uniform vec3 u_Camera;
@@ -215,8 +218,8 @@ void main()
     // Metallic and Roughness material properties are packed together
     // In glTF, these factors can be specified by fixed scalar values
     // or from a metallic-roughness map
-    float perceptualRoughness = u_MetallicRoughnessValues.y;
-    float metallic = u_MetallicRoughnessValues.x;
+    float perceptualRoughness = u_RoughnessFactor;
+    float metallic = u_MetallicFactor;
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data

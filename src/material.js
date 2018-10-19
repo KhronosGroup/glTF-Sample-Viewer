@@ -55,7 +55,7 @@ class gltfMaterial
         fromKeys(this, jsonMaterial);
         // i.e. alphaMode + alphaCutoff, doubleSided.
 
-        this.properties.set("u_emissiveFactor", this.emissiveFactor);
+        this.properties.set("u_EmissiveFactor", this.emissiveFactor);
 
         if (jsonMaterial.normalTexture !== undefined)
         {
@@ -116,9 +116,9 @@ class gltfMaterial
             this.roughnessFactor = jsonMetallicRoughness.roughnessFactor;
         }
 
-        this.properties.set("u_baseColorFactor", this.baseColorFactor);
-        this.properties.set("u_metallicFactor", this.metallicFactor);
-        this.properties.set("u_roughnessFactor", this.roughnessFactor);
+        this.properties.set("u_BaseColorFactor", jsToGl(this.baseColorFactor));
+        this.properties.set("u_MetallicFactor", this.metallicFactor);
+        this.properties.set("u_RoughnessFactor", this.roughnessFactor);
 
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
@@ -154,9 +154,9 @@ class gltfMaterial
             this.glossinessFactor = jsonSpecularGlossiness.glossinessFactor;
         }
 
-        this.properties.set("u_diffuseFactor", this.diffuseFactor);
-        this.properties.set("u_specularFactor", this.specularFactor);
-        this.properties.set("u_glossinessFactor", this.glossinessFactor);
+        this.properties.set("u_DiffuseFactor", jsToGl(this.diffuseFactor));
+        this.properties.set("u_SpecularFactor", jsToGl(this.specularFactor));
+        this.properties.set("u_GlossinessFactor", this.glossinessFactor);
 
         if (jsonSpecularGlossiness.diffuseTexture !== undefined)
         {

@@ -30,6 +30,7 @@ class gltfRenderer
         this.mvpMatrix = mat4.create();
         this.modelInverse = mat4.create();
         this.normalMatrix = mat4.create();
+        this.cameraPos = jsToGl([0.0, 0.0, 1.0]);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -80,6 +81,7 @@ class gltfRenderer
         if(camera.node !== undefined)
         {
             const view = gltf.nodes[camera.node];
+            this.cameraPos = view.translation;
             this.viewMatrix = view.getTransform();
         }
 
@@ -150,6 +152,7 @@ class gltfRenderer
             this.updateUniform("u_MVPMatrix", this.mvpMatrix);
             this.updateUniform("u_ModelMatrix", this.modelMatrix);
             this.updateUniform("u_NormalMatrix", this.normalMatrix);
+            this.updateUniform("u_Camera", this.cameraPos);
         }
 
         if (material.doubleSided) {
@@ -222,25 +225,40 @@ class gltfRenderer
     // vec3 => gl.uniform3f(value)
     updateUniform(name, value)
     {
-        const loc = gl.getUniformLocation(this.program, name);
+        let loc = gl.getUniformLocation(this.program, name);
+        let uniformCount = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
+
+        console.log(name + " " + value);
+
         if(loc)
         {
-            const info = gl.getActiveUniform(this.program, loc);
-            switch (info.type) {
-                case gl.FLOAT: gl.uniform1f(loc, value); break;
-                case gl.FLOAT_VEC2: gl.uniform2f(loc, value); break;
-                case gl.FLOAT_VEC3: gl.uniform3f(loc, value); break;
-                case gl.FLOAT_VEC4: gl.uniform4f(loc, value); break;
+            for (let i = 0; i < uniformCount; ++i)
+            {
+                let info = gl.getActiveUniform(this.program, i);
+                if (info.name == name)
+                {
+                    switch (info.type) {
+                        case gl.FLOAT: gl.uniform1f(loc, value); break;
+                        case gl.FLOAT_VEC2: gl.uniform2fv(loc, value); break;
+                        case gl.FLOAT_VEC3: gl.uniform3fv(loc, value); break;
+                        case gl.FLOAT_VEC4: gl.uniform4fv(loc, value); break;
 
-                case gl.INT: gl.uniform1i(loc, value); break;
-                case gl.INT_VEC2: gl.uniform2i(loc, value); break;
-                case gl.INT_VEC3: gl.uniform3i(loc, value); break;
-                case gl.INT_VEC4: gl.uniform4i(loc, value); break;
+                        case gl.INT: gl.uniform1i(loc, value); break;
+                        case gl.INT_VEC2: gl.uniform2iv(loc, value); break;
+                        case gl.INT_VEC3: gl.uniform3iv(loc, value); break;
+                        case gl.INT_VEC4: gl.uniform4iv(loc, value); break;
 
-                case gl.FLOAT_MAT2: gl.uniformMatrix2fv(loc, false, value); break;
-                case gl.FLOAT_MAT3: gl.uniformMatrix3fv(loc, false, value); break;
-                case gl.FLOAT_MAT4: gl.uniformMatrix4fv(loc, false, value); break;
+                        case gl.FLOAT_MAT2: gl.uniformMatrix2fv(loc, false, value); break;
+                        case gl.FLOAT_MAT3: gl.uniformMatrix3fv(loc, false, value); break;
+                        case gl.FLOAT_MAT4: gl.uniformMatrix4fv(loc, false, value); break;
+                    }
+                    break;
+                }
             }
+        }
+        else
+        {
+            console.warn("Couldn't find uniform name: " + name);
         }
     }
 };
