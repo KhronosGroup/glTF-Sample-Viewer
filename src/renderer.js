@@ -76,7 +76,7 @@ class gltfRenderer
         else
         {
             camera = new gltfCamera(); // perspective
-            var eye = vec3.fromValues(0.0, 0.0, 4.0);
+            var eye = vec3.fromValues(2, 2.0, -4.0);
             var at  = vec3.fromValues(0.0, 0.0, 0.0);
             var up  = vec3.fromValues(0.0, 1.0, 0.0);
             mat4.lookAt(this.viewMatrix, eye, at, up);

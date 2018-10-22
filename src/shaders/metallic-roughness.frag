@@ -18,7 +18,7 @@ precision highp float;
 
 // TODO: array of punctual lights
 //uniform vec3 u_LightDirection;
-const vec3 u_LightDirection = vec3(0, -0.125, -0.125);
+const vec3 u_LightDirection = vec3(0.0, +0.125, -0.125);
 const vec3 u_LightColor = vec3(1, 1, 1);
 //uniform vec3 u_LightColor;
 
