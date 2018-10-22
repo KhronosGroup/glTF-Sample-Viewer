@@ -1,16 +1,18 @@
-// All WebGL calls are in this class
-
 class gltfRenderer
 {
     constructor(frontBuffer, backBuffer)
     {
         this.frontBuffer = frontBuffer;
         this.backBuffer = backBuffer;
+        this.program = undefined; // current active shader
         this.width = 1600;
         this.height = 900;
-        this.program = undefined; // current active shader
 
-        this.extensions = ["EXT_shader_texture_lod", "OES_standard_derivatives","EXT_SRGB"];
+        this.extensions = [
+            "EXT_shader_texture_lod",
+            "OES_standard_derivatives",
+            "EXT_SRGB"
+        ];
 
         for (let extension of this.extensions)
         {
@@ -20,8 +22,12 @@ class gltfRenderer
             }
         }
 
-        // TODO: change shader folder to src/shaders & add actuall shaders
-        this.shaderCache = new ShaderCache("shaders/", ["primitive.vert", "metallic-roughness.frag"]);
+        // TODO: change shader folder to src/shaders & add actual shaders.
+
+        this.shaderCache = new ShaderCache("shaders/", [
+            "primitive.vert",
+            "metallic-roughness.frag"
+        ]);
 
         this.modelMatrix = mat4.create();
         this.viewMatrix = mat4.create();
@@ -56,7 +62,7 @@ class gltfRenderer
     // frame state
     newFrame()
     {
-        gl.clearColor(1.0, 0.2, 0.2, 1.0);
+        gl.clearColor(0.392, 0.584, 0.929, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.frontBuffer.clearRect(0, 0, this.width, this.height);
     }
@@ -72,12 +78,18 @@ class gltfRenderer
         if(cameraIndex !== -1)
         {
             camera = gltf.cameras[cameraIndex];
-        }else
+        }
+        else
         {
-            camera = new gltfCamera(); // default camera
+            camera = new gltfCamera(); // perspective
+            var eye = vec3.fromValues(0.0, 0.0, 4.0);
+            var at  = vec3.fromValues(0.0, 0.0, 0.0);
+            var up  = vec3.fromValues(0.0, 1.0, 0.0);
+            mat4.lookAt(this.viewMatrix, eye, at, up);
         }
 
         this.projMatrix = camera.getProjectionMatrix();
+
         if(camera.node !== undefined)
         {
             const view = gltf.nodes[camera.node];
@@ -88,10 +100,12 @@ class gltfRenderer
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
         // TODO: pass a scene transfrom to be able to translate & rotate using the mouse
+
         let transform = mat4.create();
         let scene = gltf.scenes[sceneIndex];
 
-        for (var i = 0; i < scene.nodes.length; i++) {
+        for (var i = 0; i < scene.nodes.length; i++)
+        {
             this.drawNode(gltf, scene, i, transform, recursive);
         }
     }
