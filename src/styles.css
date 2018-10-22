@@ -1,0 +1,27 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #6495ED;
+}
+
+#backBuffer {
+    width:  100%;
+    height: 100%;
+}
+
+#frontBuffer {
+    width:  100%;
+    height: 100%;
+}
+
+#logger {
+    padding: 4px;
+    display: none;
+    color: white;
+    font-weight: bold;
+    font-family: monospace;
+    background-color: #FF3333;
+}
