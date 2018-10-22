@@ -53,7 +53,7 @@ function gltf_rv(frontBufferId, backBufferId,
 
         gltf.fromJson(response.data);
 
-        // Only render when all images have been are loaded.
+        // Only render when all assets have been/are loaded.
 
         let assetPromises = gltfLoader.load(gltf);
         Promise.all(assetPromises).then(function(response) {
