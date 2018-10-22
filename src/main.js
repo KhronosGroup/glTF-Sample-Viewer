@@ -58,7 +58,7 @@ function gltf_rv(frontBufferId, backBufferId,
         let assetPromises = gltfLoader.load(gltf);
         Promise.all(assetPromises).then(function(response) {
 
-            let renderer = new gltfRenderer(frontBuffer, backBuffer);
+            renderer = new gltfRenderer(frontBuffer, backBuffer);
             renderer.init(); // Finally, setup the GL state machine.
             renderer.resize(backBuffer.width, backBuffer.height);
 

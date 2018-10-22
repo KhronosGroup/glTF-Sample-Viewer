@@ -4,11 +4,10 @@ class ShaderCache
 {
     constructor(shaderFolder, shaderFiles)
     {
-        this.shaders = new Map(); // name & permutations hashed -> compiled shader
-        this.sources = new Map();; // shader name -> source coce
-        //this.programs = [];
-
-        this.loaded = false;
+        this.shaders  = new Map(); // name & permutations hashed -> compiled shader
+        this.sources  = new Map();; // shader name -> source coce
+        this.programs = new Map(); // (vertex shader, fragment shader) -> program!!
+        this.loaded   = false;
 
         let self = this;
         let loadPromises = [];
@@ -97,4 +96,7 @@ class ShaderCache
         return shader;
     }
 
+    getProgram(vertexShader, fragmentShader)
+    {
+    }
 };

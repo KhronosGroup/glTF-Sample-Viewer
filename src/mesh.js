@@ -6,7 +6,7 @@ class gltfMesh
         this.name = name;
     }
 
-    fromJson(jsonMesh)
+    fromJson(jsonMesh, defaultMaterial)
     {
         if (jsonMesh.name !== undefined)
         {
@@ -16,7 +16,7 @@ class gltfMesh
         for (let i = 0; i < jsonMesh.primitives.length; ++i)
         {
             let primitive = new gltfPrimitive();
-            primitive.fromJson(jsonMesh.primitives[i]);
+            primitive.fromJson(jsonMesh.primitives[i], defaultMaterial);
             this.primitives.push(primitive);
         }
     }

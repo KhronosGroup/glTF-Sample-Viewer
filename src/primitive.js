@@ -10,9 +10,15 @@ class gltfPrimitive
         this.skip = true;
     }
 
-    fromJson(jsonPrimitive)
+    fromJson(jsonPrimitive, defaultMaterial)
     {
         fromKeys(this, jsonPrimitive, ["attributes"]);
+
+        // Use the default glTF material.
+        if (this.material === undefined)
+        {
+            this.material = defaultMaterial;
+        }
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
         for(let attrib of Object.keys(jsonPrimitive.attributes))

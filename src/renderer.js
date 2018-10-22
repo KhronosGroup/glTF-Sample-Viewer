@@ -22,8 +22,6 @@ class gltfRenderer
             }
         }
 
-        // TODO: change shader folder to src/shaders & add actual shaders.
-
         this.shaderCache = new ShaderCache("shaders/", [
             "primitive.vert",
             "metallic-roughness.frag"
@@ -145,8 +143,8 @@ class gltfRenderer
         const material = gltf.materials[primitive.material];
 
         //select shader permutation & compile and link
-        let fragmentShader = this.shaderCache.getShader(material.getShaderIdentifier(), material.getDefines());
-        let vertexShader = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
+        let fragmentShader = this.shaderCache.getShader(material.getShaderIdentifier(),  material.getDefines());
+        let vertexShader   = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
         if(fragmentShader && vertexShader)
         {
@@ -237,9 +235,9 @@ class gltfRenderer
 
     // upload the values of a uniform with the given name using type resolve to get correct function call
     // vec3 => gl.uniform3f(value)
-    updateUniform(name, value)
+    updateUniform(uniformName, value)
     {
-        let loc = gl.getUniformLocation(this.program, name);
+        let loc = gl.getUniformLocation(this.program, uniformName);
         let uniformCount = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
 
         if(loc)
@@ -247,7 +245,7 @@ class gltfRenderer
             for (let i = 0; i < uniformCount; ++i)
             {
                 let info = gl.getActiveUniform(this.program, i);
-                if (info.name == name)
+                if (info.name == uniformName)
                 {
                     switch (info.type) {
                         case gl.FLOAT: gl.uniform1f(loc, value); break;
@@ -270,7 +268,7 @@ class gltfRenderer
         }
         else
         {
-            console.warn("Couldn't find uniform name: " + name);
+            console.warn("Couldn't find uniform name: " + uniformName);
         }
     }
 };

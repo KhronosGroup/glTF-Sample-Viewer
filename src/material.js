@@ -25,6 +25,17 @@ class gltfMaterial
         this.defines = [];
     }
 
+    static getDefaults()
+    {
+        let defaultMaterial = new gltfMaterial();
+        defaultMaterial.type = "MR";
+        defaultMaterial.properties.set("u_EmissiveFactor", defaultMaterial.emissiveFactor);
+        defaultMaterial.properties.set("u_BaseColorFactor", defaultMaterial.baseColorFactor);
+        defaultMaterial.properties.set("u_MetallicFactor", defaultMaterial.metallicFactor);
+        defaultMaterial.properties.set("u_RoughnessFactor", defaultMaterial.roughnessFactor);
+        return defaultMaterial;
+    }
+
     getShaderIdentifier()
     {
         switch (this.type)
@@ -116,7 +127,7 @@ class gltfMaterial
             this.roughnessFactor = jsonMetallicRoughness.roughnessFactor;
         }
 
-        this.properties.set("u_BaseColorFactor", jsToGl(this.baseColorFactor));
+        this.properties.set("u_BaseColorFactor", this.baseColorFactor);
         this.properties.set("u_MetallicFactor", this.metallicFactor);
         this.properties.set("u_RoughnessFactor", this.roughnessFactor);
 
@@ -154,8 +165,8 @@ class gltfMaterial
             this.glossinessFactor = jsonSpecularGlossiness.glossinessFactor;
         }
 
-        this.properties.set("u_DiffuseFactor", jsToGl(this.diffuseFactor));
-        this.properties.set("u_SpecularFactor", jsToGl(this.specularFactor));
+        this.properties.set("u_DiffuseFactor", this.diffuseFactor);
+        this.properties.set("u_SpecularFactor", this.specularFactor);
         this.properties.set("u_GlossinessFactor", this.glossinessFactor);
 
         if (jsonSpecularGlossiness.diffuseTexture !== undefined)

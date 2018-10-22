@@ -14,6 +14,7 @@ class glTF
         this.buffers = [];
         this.bufferViews = [];
         this.materials = [];
+        this.defaultMaterial = -1;
         this.path = file.substr(0, file.lastIndexOf("/") + 1);
     }
 
@@ -48,7 +49,7 @@ class glTF
         for (let i = 0; i < jsonMeshes.length; ++i)
         {
             let mesh = new gltfMesh();
-            mesh.fromJson(jsonMeshes[i]);
+            mesh.fromJson(jsonMeshes[i], this.defaultMaterial);
             this.meshes.push(mesh);
         }
     }
@@ -145,6 +146,14 @@ class glTF
             this.fromJsonNodes(json.nodes);
         }
 
+        if (json.materials !== undefined)
+        {
+            this.fromJsonMaterials(json.materials);
+        }
+
+        this.materials.push(gltfMaterial.getDefaults());
+        this.defaultMaterial = this.materials.length - 1;
+
         if (json.meshes !== undefined)
         {
             this.fromJsonMeshes(json.meshes);
@@ -200,11 +209,6 @@ class glTF
         if (json.scenes !== undefined)
         {
             this.fromJsonScenes(json.scenes);
-        }
-
-        if (json.materials !== undefined)
-        {
-            this.fromJsonMaterials(json.materials);
         }
     }
 };
