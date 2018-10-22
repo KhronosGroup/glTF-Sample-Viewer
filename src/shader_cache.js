@@ -5,8 +5,8 @@ class ShaderCache
     constructor(shaderFolder, shaderFiles)
     {
         this.shaders  = new Map(); // name & permutations hashed -> compiled shader
-        this.sources  = new Map();; // shader name -> source coce
-        this.programs = new Map(); // (vertex shader, fragment shader) -> program!!
+        this.sources  = new Map();; // shader name -> source code
+        this.programs = new Map(); // (vertex shader, fragment shader) -> program
         this.loaded   = false;
 
         let self = this;
@@ -82,7 +82,7 @@ class ShaderCache
 
         if(shader) // shader already compiled
         {
-            return shader;
+            return hash;
         }
         else // compile this variant
         {
@@ -93,10 +93,26 @@ class ShaderCache
             }
         }
 
-        return shader;
+        return hash;
     }
 
-    getProgram(vertexShader, fragmentShader)
+    getProgram(vertexShaderHash, fragmentShaderHash)
     {
+        let hash = vertexShaderHash ^ fragmentShaderHash;
+
+        let program = this.programs.get(hash);
+
+        if (program) // program already linked
+        {
+            return program;
+        }
+        else // link this shader program type!
+        {
+            let vertexShader = this.shaders.get(vertexShaderHash);
+            let fragmentShader = this.shaders.get(fragmentShaderHash);
+            program = LinkProgram(vertexShader, fragmentShader);
+        }
+
+        return program;
     }
 };

@@ -137,13 +137,14 @@ class gltfRenderer
 
         const material = gltf.materials[primitive.material];
 
-        //select shader permutation & compile and link
+        //select shader permutation, compile and link program.
+
         let fragmentShader = this.shaderCache.getShader(material.getShaderIdentifier(),  material.getDefines());
         let vertexShader   = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
         if(fragmentShader && vertexShader)
         {
-            this.program = LinkProgram(vertexShader, fragmentShader);
+            this.program = this.shaderCache.getProgram(vertexShader, fragmentShader); // Based the shader hashes.
         }
 
         if(this.program === undefined)

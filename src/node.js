@@ -39,7 +39,7 @@ class gltfNode
 
         if (jsonNode.matrix !== undefined)
         {
-            decomposeMatrix(jsonNode.matrix);
+            this.decomposeMatrix(jsonNode.matrix);
         }
         else
         {
