@@ -1,7 +1,8 @@
 class gltfCamera
 {
     constructor(type = "perspective",
-                znear = 0.0, zfar = 100.0, yfov = Math.PI / 4.0,
+                znear = 0.01, zfar = 100.0,
+                yfov = 45.0 * Math.PI / 180.0,
                 aspectRatio = 16.0 / 9.0,
                 xmag = 1.0, ymag = 1.0,
                 name = undefined)

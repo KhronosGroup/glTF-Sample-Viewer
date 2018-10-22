@@ -49,7 +49,7 @@ function gltf_rv(canvasId, loggerId,
             function render(elapsedTime)
             {
                 renderer.newFrame();
-                renderer.drawScene(gltf, 0, 0, true);
+                renderer.drawScene(gltf, 0, -1, true);
                 window.requestAnimationFrame(render);
             }
 

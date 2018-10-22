@@ -149,6 +149,7 @@ function DisableAttribute(shaderProgram, attributeName)
     if (attributeLocation == -1)
     {
         console.log("Attribute name '" + attributeName + "' doesn't exist!");
+        return;
     }
 
     gl.disableVertexAttribArray(attributeLocation);

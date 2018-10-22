@@ -1,0 +1,32 @@
+{
+  "name": "gltf-rv",
+  "version": "1.0.0",
+  "description": "The official glTF reference viewer.",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ux3d/glTF-WebGL-PBR.git"
+  },
+  "keywords": [
+    "gltf",
+    "webgl",
+    "pbr"
+  ],
+  "author": "Khronos Group Inc.",
+  "license": "MIT",
+  "dependencies": {
+    "open": "0.0.5"
+  },
+  "devDependencies": {
+    "electron": "^3.0.2",
+    "electron-packager": "^12.1.2"
+  },
+  "bugs": {
+    "url": "https://github.com/ux3d/glTF-WebGL-PBR/issues"
+  },
+  "homepage": "https://github.com/ux3d/glTF-WebGL-PBR#readme"
+}
