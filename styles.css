@@ -7,21 +7,20 @@ html, body {
     background: #6495ED;
 }
 
-#backBuffer {
+#canvas {
     width:  100%;
-    height: 100%;
-}
-
-#frontBuffer {
-    width:  100%;
+    margin:  0px;
     height: 100%;
 }
 
 #logger {
+    width: 100%;
+    opacity: 0.9;
     padding: 4px;
     display: none;
     color: white;
     font-weight: bold;
+    position: absolute;
     font-family: monospace;
     background-color: #FF3333;
 }

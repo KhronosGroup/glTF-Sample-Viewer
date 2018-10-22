@@ -3,7 +3,7 @@
 Physically-Based Rendering in glTF 2.0 using WebGL
 ==================================================
 
-[![](images/BoomBox.JPG)](http://github.khronos.org/glTF-WebGL-PBR/)
+[![](assets/images/BoomBox.JPG)](http://github.khronos.org/glTF-WebGL-PBR/)
 
 This is a raw WebGL demo application for the introduction of physically-based materials to the core glTF 2.0 spec. This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of these materials within a WebGL project that isn't tied to any external graphics libraries. For a DirectX sample please head over to [this repo](https://github.com/Microsoft/glTF-DXViewer) instead.
 
@@ -31,11 +31,11 @@ These parameters can be provided to the material in two ways. Either the paramet
 
 **Base Color of a Boombox**
 
-<img src="models/BoomBox/glTF/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="images/BoomBox-baseColor.JPG" width="300" height="300"/>
+<img src="models/BoomBox/glTF/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-baseColor.JPG" width="300" height="300"/>
 
 **Metallic-Roughness of a Boombox**
 
-<img src="models/BoomBox/glTF/BoomBox_occlusionRoughnessMetallic.png" width="300" height="300"/> -> <img src="images/BoomBox-metallicRoughness.JPG" width="300" height="300"/>
+<img src="models/BoomBox/glTF/BoomBox_occlusionRoughnessMetallic.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-metallicRoughness.JPG" width="300" height="300"/>
 
 Although these are the core parameters of the Metallic-Roughness material, often a user will want to provide additional maps for features such as normals, ambient occlusion, or emissiveness. Similarly to above, these are usually provided as a texture that corresponds to the parts of the mesh that have shifted normals, are occluded and/or are emissive, respectively. However, since these are not a part of the Metallic-Roughness material itself, they are provided as a separate portion to the material.
 
@@ -69,17 +69,17 @@ This is where environment maps come in! Environment maps can be thought of as a 
 
 **Diffuse Front Face**
 
-![](textures/papermill/diffuse/diffuse_front_0.jpg)
+![](assets/images/papermill/diffuse/diffuse_front_0.jpg)
 
 **Specular Front Face**
 
-![](textures/papermill/specular/specular_front_0.jpg) ![](textures/papermill/specular/specular_front_1.jpg) ![](textures/papermill/specular/specular_front_2.jpg) ![](textures/papermill/specular/specular_front_3.jpg) ![](textures/papermill/specular/specular_front_4.jpg) ![](textures/papermill/specular/specular_front_5.jpg) ![](textures/papermill/specular/specular_front_6.jpg) ![](textures/papermill/specular/specular_front_7.jpg) ![](textures/papermill/specular/specular_front_8.jpg) ![](textures/papermill/specular/specular_front_9.jpg)
+![](assets/images/papermill/specular/specular_front_0.jpg) ![](assets/images/papermill/specular/specular_front_1.jpg) ![](assets/images/papermill/specular/specular_front_2.jpg) ![](assets/images/papermill/specular/specular_front_3.jpg) ![](assets/images/papermill/specular/specular_front_4.jpg) ![](assets/images/papermill/specular/specular_front_5.jpg) ![](assets/images/papermill/specular/specular_front_6.jpg) ![](assets/images/papermill/specular/specular_front_7.jpg) ![](assets/images/papermill/specular/specular_front_8.jpg) ![](assets/images/papermill/specular/specular_front_9.jpg)
 
 ### BRDF
 
 At this point, we can pick out the diffuse and specular incoming light from our environment map, but we still need to evaluate the BRDF at this point. Instead of doing this computation explicitly, we use a BRDF lookup table to find the BRDF value based on roughness and the viewing angle. It is important to note that this lookup table changes depending on which microfacet model we use! Since this project uses the Cook-Torrance model, we use the following texture in which the y-axis corresponds to the roughness and the x-axis corresponds to the dot product between the surface normal and viewing vector.
 
-![](textures/brdfLUT.png)
+![](assets/images/brdfLUT.png)
 
 ### Diffuse and Specular Color
 

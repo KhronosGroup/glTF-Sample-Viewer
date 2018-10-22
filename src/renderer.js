@@ -1,16 +1,14 @@
 class gltfRenderer
 {
-    constructor(frontBuffer, backBuffer)
+    constructor(canvas)
     {
-        this.frontBuffer = frontBuffer;
-        this.backBuffer = backBuffer;
-        this.program = undefined; // current active shader
-        this.width = 1600;
-        this.height = 900;
+        this.canvas = canvas;
+        this.program = undefined; // current shader
 
         this.extensions = [
             "EXT_shader_texture_lod",
             "OES_standard_derivatives",
+            "OES_element_index_uint",
             "EXT_SRGB"
         ];
 
@@ -22,7 +20,7 @@ class gltfRenderer
             }
         }
 
-        this.shaderCache = new ShaderCache("shaders/", [
+        this.shaderCache = new ShaderCache("src/shaders/", [
             "primitive.vert",
             "metallic-roughness.frag"
         ]);
@@ -45,24 +43,22 @@ class gltfRenderer
     init()
     {
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
-
         gl.enable(gl.DEPTH_TEST);
+        gl.clearColor(0.392, 0.584, 0.929, 1.0);
+        gl.clearDepth(1.0);
     }
 
-    // TODO: update camera aspect ratio
     resize(width, height)
     {
+        this.canvas.width  = width;
+        this.canvas.height = height;
         gl.viewport(0, 0, width, height);
-        this.width = width;
-        this.height = height;
     }
 
     // frame state
     newFrame()
     {
-        gl.clearColor(0.392, 0.584, 0.929, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        this.frontBuffer.clearRect(0, 0, this.width, this.height);
     }
 
     // render complete gltf scene with given camera
@@ -129,7 +125,6 @@ class gltfRenderer
             }
         }
 
-        // draw children (TODO: cycles must be detected)
         for (var i = 0; i < node.children.length && recursive; i++) {
             this.drawNode(gltf, scene, i, this.modelMatrix, recursive);
         }
@@ -210,7 +205,7 @@ class gltfRenderer
         if (drawIndexed)
         {
             let indexAccessor = gltf.accessors[primitive.indices];
-            gl.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
+            gl.drawElements(primitive.mode, indexAccessor.count, gl.UNSIGNED_SHORT, 0);
         }
         else
         {
@@ -221,12 +216,6 @@ class gltfRenderer
         {
             DisableAttribute(this.program, attrib.name);
         }
-    }
-
-    // draw final image to frontbuffer
-    drawImage()
-    {
-        this.frontBuffer.drawImage(this.backBuffer, 0, 0);
     }
 
     /////////////////////////////////////////////////////////////////////

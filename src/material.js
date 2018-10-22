@@ -29,6 +29,7 @@ class gltfMaterial
     {
         let defaultMaterial = new gltfMaterial();
         defaultMaterial.type = "MR";
+        defaultMaterial.name = "Default Material";
         defaultMaterial.properties.set("u_EmissiveFactor", defaultMaterial.emissiveFactor);
         defaultMaterial.properties.set("u_BaseColorFactor", defaultMaterial.baseColorFactor);
         defaultMaterial.properties.set("u_MetallicFactor", defaultMaterial.metallicFactor);

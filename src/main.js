@@ -1,6 +1,5 @@
-function gltf_rv(frontBufferId, backBufferId,
-                 models = [], loggerId = undefined,
-                 configuration = undefined)
+function gltf_rv(canvasId, loggerId,
+                 models = [])
 {
     let logger = document.getElementById(loggerId);
     log = function(message)
@@ -14,33 +13,17 @@ function gltf_rv(frontBufferId, backBufferId,
         }
     }
 
-    let backBuffer  = document.getElementById(backBufferId);
-    if (!backBuffer)
+    let canvas = document.getElementById(canvasId);
+    if (!canvas)
     {
-        log("Failed to retrieve the WebGL back buffer!");
+        log("Failed to retrieve the WebGL canvas!");
         return false;
     }
 
-    backBuffer.hidden = true;
-
-    gl = backBuffer.getContext("webgl") || backBuffer.getContext("experimental-webgl");
+    gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     if (!gl)
     {
         log("Failed to get an WebGL rendering context!");
-        return false;
-    }
-
-    let frontBufferCanvas = document.getElementById(frontBufferId);
-    if (!frontBufferCanvas)
-    {
-        log("Couldn't find the WebGL 2.0 front buffer!");
-        return false;
-    }
-
-    let frontBuffer = frontBufferCanvas.getContext("2d");
-    if (!frontBuffer)
-    {
-        log("Failed to get some 2-D rendering context!");
         return false;
     }
 
@@ -58,16 +41,15 @@ function gltf_rv(frontBufferId, backBufferId,
         let assetPromises = gltfLoader.load(gltf);
         Promise.all(assetPromises).then(function(response) {
 
-            renderer = new gltfRenderer(frontBuffer, backBuffer);
-            renderer.init(); // Finally, setup the GL state machine.
-            renderer.resize(backBuffer.width, backBuffer.height);
+            renderer = new gltfRenderer(canvas);
+            renderer.init();
+            renderer.resize(window.innerWidth,
+                            window.innerHeight);
 
-            // The main rendering loop!
             function render(elapsedTime)
             {
                 renderer.newFrame();
-                renderer.drawScene(gltf, 0, -1, true);
-                renderer.drawImage();
+                renderer.drawScene(gltf, 0, 0, true);
                 window.requestAnimationFrame(render);
             }
 
@@ -75,7 +57,7 @@ function gltf_rv(frontBufferId, backBufferId,
 
         });
     }).catch(function(message) {
-        log("glTF load error :" + message);
+        log("glTF error: " + message);
         return false;
     });
 

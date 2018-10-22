@@ -3,47 +3,46 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>WebGL PBR</title>
-    <link rel="stylesheet" href="style.css">
+    <title>glTF WebGL Reference Viewer</title>
+
+    <meta name="author" content="Khronos Group Inc.">
+    <meta name="description" content="The official glTF reference viewer">
+    <meta name="keywords" content="glTF, WebGL, Reference, Viewer, PBR">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="assets/images/gltf.png">
 
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/gl-matrix-min.js"></script>
-    <script src="libs/jquery-3.1.1.js"></script>
-    <script src="mesh.js"></script>
-    <script src="scene.js"></script>
-    <script src="main.js"></script>
+    <script src="libs/axios.min.js"></script>
+
+    <script src="src/utils.js"></script>
+    <script src="src/loader.js"></script>
+    <script src="src/image.js"></script>
+    <script src="src/texture.js"></script>
+    <script src="src/sampler.js"></script>
+    <script src="src/material.js"></script>
+    <script src="src/webgl.js"></script>
+    <script src="src/shader_cache.js"></script>
+    <script src="src/camera.js"></script>
+    <script src="src/primitive.js"></script>
+    <script src="src/buffer.js"></script>
+    <script src="src/buffer_view.js"></script>
+    <script src="src/accessor.js"></script>
+    <script src="src/mesh.js"></script>
+    <script src="src/node.js"></script>
+    <script src="src/scene.js"></script>
+    <script src="src/gltf.js"></script>
+
+    <script src="src/renderer.js"></script>
+    <script src="src/main.js"></script>
 </head>
-<body onload="main()">
-    <div id="error"></div>
-    <canvas id="canvas" width="600" height="600">
-        Please use a browser that supports "canvas"
-    </canvas>
-    <canvas id="canvas2d" width="600" height="600">
-    </canvas>
-    <a class="source" href="https://github.com/KhronosGroup/glTF-WebGL-PBR">source on GitHub</a>
-    <div id="pbrMath">
-        <div class="pbrMathSub" id="mathAll"><i>f</i>(<i>l</i>,<i>v</i>,<i>h</i>) = </div>
-        <div class="pbrMathSub" id="mathDiff">Diff(l,n)</div> +
-        <div class="pbrMathSub" id="mathSpec">
-            <div class="reset" id="mathF">F(l,h)</div>
-            <div class="reset" id="mathG">G(l,v,h)</div>
-            <div class="reset" id="mathD">D(h)</div>
-            <hr class="line">
-            <div class="reset">4(n*l)(n*v)</div>
-        </div>
-    </div>
-    <div id="inputs">
-        <div class="note">Click or hover to isolate:</div>
-        <div class="pbrMathSub" id="baseColor">base color</div><br>
-        <div class="pbrMathSub" id="metallic">metallic</div><br>
-        <div class="pbrMathSub" id="roughness">roughness</div>
-    </div>
 
-    <div class="pixelPicker">
-        <span id="pixelPickerColor"></span>
-        <span id="pixelPickerText"></span>
-    </div>
-
-    <div id="loadSpinner"></div>
+<body onload="gltf_rv('canvas', 'logger', [
+                  'models/Cube/Cube.gltf'
+              ]);">
+    <div id="logger"></div> <!-- Logger -->
+    <canvas id="canvas">No Canvas!</canvas>
 </body>
 </html>

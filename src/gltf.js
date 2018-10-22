@@ -201,10 +201,6 @@ class glTF
                 this.scene = json.scene;
             }
         }
-        else
-        {
-            json.scene = undefined;
-        }
 
         if (json.scenes !== undefined)
         {
