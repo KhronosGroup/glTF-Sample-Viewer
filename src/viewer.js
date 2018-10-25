@@ -1,6 +1,6 @@
 class gltfViewer
 {
-    constructor(canvas)
+    constructor()
     {
         this.roll = Math.PI;
         this.pitch = 0.0;

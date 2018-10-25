@@ -75,7 +75,7 @@ function gltf_rv(canvasId, loggerId,
             renderer.resize(window.innerWidth,
                             window.innerHeight);
 
-            let viewer = new gltfViewer(canvas);
+            let viewer = new gltfViewer();
 
             document.onmousedown = viewer.onMouseDown.bind(viewer);
             document.onmouseup = viewer.onMouseUp.bind(viewer);
