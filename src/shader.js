@@ -20,7 +20,7 @@ class gltfShader
 
     // upload the values of a uniform with the given name using type resolve to get correct function call
     // vec3 => gl.uniform3f(value)
-    updateUniform(uniformName, value)
+    updateUniform(uniformName, value, log = true)
     {
         const uniform = this.uniforms.get(uniformName);
 
@@ -42,7 +42,7 @@ class gltfShader
                 case gl.FLOAT_MAT4: gl.uniformMatrix4fv(uniform.loc, false, value); break;
             }
         }
-        else
+        else if(log)
         {
             console.warn("Unkown uniform: " + uniformName);
         }

@@ -38,7 +38,7 @@ class gltfRenderer
     {
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         gl.enable(gl.DEPTH_TEST);
-        gl.clearColor(0.392, 0.584, 0.929, 1.0);
+        gl.clearColor(0.2, 0.2, 0.2, 1.0);
         gl.clearDepth(1.0);
     }
 
@@ -100,7 +100,7 @@ class gltfRenderer
         let transform = mat4.create();
         let scene = gltf.scenes[sceneIndex];
 
-        for (var i = 0; i < scene.nodes.length; i++)
+        for (let i of scene.nodes)
         {
             this.drawNode(gltf, scene, i, transform, recursive);
         }
@@ -109,7 +109,13 @@ class gltfRenderer
     // same transform, recursive
     drawNode(gltf, scene, nodeIndex, parentTransform, recursive)
     {
-        let node = gltf.nodes[scene.nodes[nodeIndex]];
+        let node = gltf.nodes[nodeIndex];
+
+        if(node === undefined)
+        {
+            console.log("Undefined node " + nodeIndex);
+            return;
+        }
 
         // update model & mvp & normal matrix
         let nodeTransform = node.getTransform();
@@ -122,13 +128,16 @@ class gltfRenderer
         let mesh = gltf.meshes[node.mesh];
         if(mesh !== undefined)
         {
-            for (var i = 0; i < mesh.primitives.length; i++) {
+            for (let i = 0; i < mesh.primitives.length; i++) {
                 this.drawPrimitive(gltf, mesh.primitives[i], i == 0);
             }
         }
 
-        for (var i = 0; i < node.children.length && recursive; i++) {
-            this.drawNode(gltf, scene, i, this.modelMatrix, recursive);
+        if(recursive)
+        {
+            for (let i of node.children) {
+                this.drawNode(gltf, scene, i, this.modelMatrix, recursive);
+            }
         }
     }
 
@@ -161,7 +170,7 @@ class gltfRenderer
             // update model dependant matrices once per node
             this.shader.updateUniform("u_MVPMatrix", this.mvpMatrix);
             this.shader.updateUniform("u_ModelMatrix", this.modelMatrix);
-            this.shader.updateUniform("u_NormalMatrix", this.normalMatrix);
+            this.shader.updateUniform("u_NormalMatrix", this.normalMatrix, false);
             this.shader.updateUniform("u_Camera", this.currentCameraPosition);
         }
 
