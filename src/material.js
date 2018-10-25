@@ -136,7 +136,9 @@ class gltfMaterial
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
             let baseColorTexture = new gltfTextureInfo();
-            baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture, "u_BaseColorSampler", gl.RGBA); // TODO: sRGB ext
+            let srgb = gl.SRGB;
+            let rgba = gl.RGBA;
+            baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture, "u_BaseColorSampler", gl.SRGB);
             this.textures.push(baseColorTexture);
             this.defines.push("HAS_BASE_COLOR_MAP");
         }
@@ -174,7 +176,7 @@ class gltfMaterial
         if (jsonSpecularGlossiness.diffuseTexture !== undefined)
         {
             let diffuseTexture = new gltfTextureInfo();
-            diffuseTexture.fromJson(jsonSpecularGlossiness.diffuseTexture,"u_DiffuseSampler", gl.RGBA); // TODO: sRGB ext
+            diffuseTexture.fromJson(jsonSpecularGlossiness.diffuseTexture,"u_DiffuseSampler", gl.SRGB);
             this.textures.push(diffuseTexture);
             this.defines.push("HAS_DIFFUSE_MAP");
         }

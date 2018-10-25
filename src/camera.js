@@ -20,7 +20,7 @@ class gltfCamera
 
     getProjectionMatrix()
     {
-        var proj = mat4.create();
+        let proj = mat4.create();
 
         if (this.type == "perspective")
         {

@@ -23,6 +23,17 @@ class gltfRenderer
             }
         }
 
+        let hasSRGB_EXT = gl.getExtension("EXT_SRGB");
+
+        if (hasSRGB_EXT)
+        {
+            gl.SRGB = hasSRGB_EXT.SRGB_EXT;
+        }
+        else
+        {
+            gl.SRGB = gl.RGBA;
+        }
+
         this.shaderCache = new ShaderCache("src/shaders/", [
             "primitive.vert",
             "metallic-roughness.frag"
@@ -37,11 +48,11 @@ class gltfRenderer
         this.normalMatrix = mat4.create();
 
         this.defaultCamera = new gltfCamera();
-        let eye = vec3.fromValues(2.0, 2.0, -4.0);
+        let eye = vec3.fromValues(0.0, 0.0, -4.0);
         let at  = vec3.fromValues(0.0, 0.0,  0.0);
         let up  = vec3.fromValues(0.0, 1.0,  0.0);
         mat4.lookAt(this.viewMatrix, eye, at, up);
-        this.currentCameraPosition = at;
+        this.currentCameraPosition = eye;
     }
 
     /////////////////////////////////////////////////////////////////////

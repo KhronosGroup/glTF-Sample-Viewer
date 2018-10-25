@@ -71,9 +71,12 @@ class ShaderCache
         const isVert = shaderIdentifier.endsWith(".vert");
         let hash = stringHash(shaderIdentifier);
 
+        // console.log(shaderIdentifier);
+
         let defines = "";
         for(let define of permutationDefines)
         {
+            // console.log(define);
             hash ^= stringHash(define);
             defines += "#define " + define + " 1\n";
         }
