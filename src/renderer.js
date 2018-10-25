@@ -86,11 +86,18 @@ class gltfRenderer
 
         this.projMatrix = currentCamera.getProjectionMatrix();
 
+
         if(currentCamera.node !== undefined)
         {
             const view = gltf.nodes[currentCamera.node];
             this.currentCameraPosition = view.translation;
             this.viewMatrix = view.getTransform();
+        }
+
+        if (viewer !== undefined)
+        {
+            this.viewMatrix = viewer.getViewTransform();
+            mat4.getTranslation(this.currentCameraPosition, this.viewMatrix);
         }
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
