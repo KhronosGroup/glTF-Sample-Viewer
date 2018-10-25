@@ -195,7 +195,7 @@ class gltfRenderer
             let gltfAccessor = gltf.accessors[attrib.accessor];
             vertexCount = gltfAccessor.count;
 
-            if (!EnableAttribute(gltf, this.shader.program, attrib.name, gltfAccessor))
+            if (!EnableAttribute(gltf, this.shader.getAttribLocation(attrib.name), gltfAccessor))
             {
                 return; // skip this primitive.
             }
@@ -226,7 +226,7 @@ class gltfRenderer
 
         for (let attrib of primitive.attributes)
         {
-            DisableAttribute(this.shader.program, attrib.name);
+            gl.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
         }
     }
 };
