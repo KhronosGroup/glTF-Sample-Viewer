@@ -5,6 +5,9 @@ class gltfRenderer
         this.canvas = canvas;
         this.program = undefined; // current shader
 
+        this.currentWidth  = this.canvas.width;
+        this.currentHeight = this.canvas.height;
+
         this.extensions = [
             "EXT_shader_texture_lod",
             "OES_standard_derivatives",
@@ -32,7 +35,13 @@ class gltfRenderer
         this.mvpMatrix = mat4.create();
         this.modelInverse = mat4.create();
         this.normalMatrix = mat4.create();
-        this.cameraPos = jsToGl([0.0, 0.0, 1.0]);
+
+        this.defaultCamera = new gltfCamera();
+        let eye = vec3.fromValues(2.0, 2.0, -4.0);
+        let at  = vec3.fromValues(0.0, 0.0,  0.0);
+        let up  = vec3.fromValues(0.0, 1.0,  0.0);
+        mat4.lookAt(this.viewMatrix, eye, at, up);
+        this.currentCameraPosition = at;
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -50,9 +59,22 @@ class gltfRenderer
 
     resize(width, height)
     {
-        this.canvas.width  = width;
-        this.canvas.height = height;
-        gl.viewport(0, 0, width, height);
+        if (this.currentWidth !== width || this.currentHeight !== height)
+        {
+            this.canvas.width  = width;
+            this.canvas.height = height;
+            this.currentHeight = height;
+            this.currentWidth  = width;
+
+            let aspectRatio = width / height;
+            gl.viewport(0, 0, width, height);
+
+            this.defaultCamera.aspectRatio = aspectRatio;
+            for (let i = 0; i < gltf.cameras.length; ++i)
+            {
+                gltf.cameras[i].aspectRatio = aspectRatio;
+            }
+        }
     }
 
     // frame state
@@ -66,28 +88,23 @@ class gltfRenderer
     {
         // TODO: upload lights
 
-        // construct camera matrices
-        let camera = undefined;
+        let currentCamera = undefined;
 
         if(cameraIndex !== -1)
         {
-            camera = gltf.cameras[cameraIndex];
+            currentCamera = gltf.cameras[cameraIndex];
         }
         else
         {
-            camera = new gltfCamera(); // perspective
-            var eye = vec3.fromValues(2, 2.0, -4.0);
-            var at  = vec3.fromValues(0.0, 0.0, 0.0);
-            var up  = vec3.fromValues(0.0, 1.0, 0.0);
-            mat4.lookAt(this.viewMatrix, eye, at, up);
+            currentCamera = this.defaultCamera;
         }
 
-        this.projMatrix = camera.getProjectionMatrix();
+        this.projMatrix = currentCamera.getProjectionMatrix();
 
-        if(camera.node !== undefined)
+        if(currentCamera.node !== undefined)
         {
-            const view = gltf.nodes[camera.node];
-            this.cameraPos = view.translation;
+            const view = gltf.nodes[currentCamera.node];
+            this.currentCameraPosition = view.translation;
             this.viewMatrix = view.getTransform();
         }
 
@@ -160,7 +177,7 @@ class gltfRenderer
             this.updateUniform("u_MVPMatrix", this.mvpMatrix);
             this.updateUniform("u_ModelMatrix", this.modelMatrix);
             this.updateUniform("u_NormalMatrix", this.normalMatrix);
-            this.updateUniform("u_Camera", this.cameraPos);
+            this.updateUniform("u_Camera", this.currentCameraPosition);
         }
 
         if (material.doubleSided) {

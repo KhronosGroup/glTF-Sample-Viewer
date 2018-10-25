@@ -49,6 +49,8 @@ function gltf_rv(canvasId, loggerId,
             function render(elapsedTime)
             {
                 renderer.newFrame();
+                renderer.resize(window.innerWidth,
+                                window.innerHeight);
                 renderer.drawScene(gltf, 0, -1, true);
                 window.requestAnimationFrame(render);
             }
