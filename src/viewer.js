@@ -49,8 +49,6 @@ class gltfViewer
         else {
             this.translate /= this.wheelSpeed;
         }
-
-        console.log("test");
     }
 
     onMouseMove(event)
@@ -68,6 +66,11 @@ class gltfViewer
 
         let deltaY = newY - this.lastMouseY;
         this.pitch += (deltaY / 100.0);
+
+        if (Math.abs(this.pitch) >= Math.PI)
+        {
+            this.pitch = Math.PI;
+        }
 
         this.lastMouseX = newX;
         this.lastMouseY = newY;

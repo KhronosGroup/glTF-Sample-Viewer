@@ -135,8 +135,8 @@ class gltfRenderer
         let mesh = gltf.meshes[node.mesh];
         if(mesh !== undefined)
         {
-            for (let i = 0; i < mesh.primitives.length; i++) {
-                this.drawPrimitive(gltf, mesh.primitives[i], i == 0, nodeTransform, mvpMatrix, normalMatrix);
+            for (let primitive of mesh.primitives) {
+                this.drawPrimitive(gltf, primitive, nodeTransform, mvpMatrix, normalMatrix);
             }
         }
 
@@ -149,7 +149,7 @@ class gltfRenderer
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, firstPrimitive, modelMatrix, mvpMatrix, normalMatrix)
+    drawPrimitive(gltf, primitive, modelMatrix, mvpMatrix, normalMatrix)
     {
         if (primitive.skip) return;
 
@@ -172,14 +172,11 @@ class gltfRenderer
 
         gl.useProgram(this.shader.program);
 
-        if(firstPrimitive) // TODO:check for changed vertex shader permutation
-        {
-            // update model dependant matrices once per node
-            this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
-            this.shader.updateUniform("u_ModelMatrix", modelMatrix);
-            this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
-            this.shader.updateUniform("u_Camera", this.currentCameraPosition);
-        }
+        // update model dependant matrices once per node
+        this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
+        this.shader.updateUniform("u_ModelMatrix", modelMatrix);
+        this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
+        this.shader.updateUniform("u_Camera", this.currentCameraPosition);
 
         if (material.doubleSided) {
             gl.disable(gl.CULL_FACE);
