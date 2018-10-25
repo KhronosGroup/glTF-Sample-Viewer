@@ -23,6 +23,8 @@ class gltfTextureInfo
         this.colorSpace = colorSpace;
         this.type = type;
         this.samplerName = "";
+        this.strength = 1.0; // occlusion
+        this.scale = 1.0; // normal
     }
 
     fromJson(jsonTextureInfo, samplerName, colorSpace = gl.RGBA, type = gl.TEXTURE_2D)

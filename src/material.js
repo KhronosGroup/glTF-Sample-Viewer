@@ -67,14 +67,13 @@ class gltfMaterial
         fromKeys(this, jsonMaterial);
         // i.e. alphaMode + alphaCutoff, doubleSided.
 
-        this.properties.set("u_EmissiveFactor", this.emissiveFactor);
-
         if (jsonMaterial.normalTexture !== undefined)
         {
             let normalTexture = new gltfTextureInfo();
             normalTexture.fromJson(jsonMaterial.normalTexture,"u_NormalSampler", gl.RGBA);
             this.textures.push(normalTexture);
             this.defines.push("HAS_NORMAL_MAP");
+            this.properties.set("u_NormalScale", normalTexture.scale);
         }
 
         if (jsonMaterial.occlusionTexture !== undefined)
@@ -83,6 +82,7 @@ class gltfMaterial
             occlusionTexture.fromJson(jsonMaterial.occlusionTexture,"u_OcclusionSampler", gl.RGBA);
             this.textures.push(occlusionTexture);
             this.defines.push("HAS_OCCLUSION_MAP");
+            this.properties.set("u_OcclusionStrength", occlusionTexture.strength);
         }
 
         if (jsonMaterial.emissiveTexture !== undefined)
@@ -97,6 +97,7 @@ class gltfMaterial
         {
             this.emissiveFactor = jsToGl(jsonMaterial.emissiveFactor);
         }
+        this.properties.set("u_EmissiveFactor", this.emissiveFactor);
 
         if (jsonMaterial.pbrMetallicRoughness !== undefined)
         {
