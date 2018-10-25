@@ -141,7 +141,7 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(),  material.getDefines());
+        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), material.getDefines().concat(primitive.getDefines()));
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
         if(fragmentHash && vertexHash)
