@@ -8,32 +8,6 @@ class gltfRenderer
         this.currentWidth  = this.canvas.width;
         this.currentHeight = this.canvas.height;
 
-        this.extensions = [
-            "EXT_shader_texture_lod",
-            "OES_standard_derivatives",
-            "OES_element_index_uint",
-            "EXT_SRGB"
-        ];
-
-        for (let extension of this.extensions)
-        {
-            if(gl.getExtension(extension) === null)
-            {
-                console.warn("Extension " + extension + " not supported");
-            }
-        }
-
-        let hasSRGB_EXT = gl.getExtension("EXT_SRGB");
-
-        if (hasSRGB_EXT)
-        {
-            gl.SRGB = hasSRGB_EXT.SRGB_EXT;
-        }
-        else
-        {
-            gl.SRGB = gl.RGBA;
-        }
-
         this.shaderCache = new ShaderCache("src/shaders/", [
             "primitive.vert",
             "metallic-roughness.frag"
@@ -95,7 +69,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, sceneIndex, cameraIndex, recursive)
+    drawScene(gltf, sceneIndex, cameraIndex, recursive, viewer = undefined)
     {
         // TODO: upload lights
 

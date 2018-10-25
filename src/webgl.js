@@ -47,7 +47,25 @@ function SetTexture(program, gltf, textureInfo, texSlot)
             return false;
         }
 
+        // In WebGL SRGB textures can't generate mipmapsmipmaps, so we
+        // need to convert the sampler to the "correct" format here:
+        if (gl.hasSRGBExtension && textureInfo.colorSpace == gl.SRGB)
+        {
+            switch (gltfSampler.minFilter) {
+                case gl.NEAREST_MIPMAP_NEAREST:
+                case gl.NEAREST_MIPMAP_LINEAR:
+                    gltfSampler.minFilter = gl.NEAREST;
+                    break;
+                case gl.LINEAR_MIPMAP_NEAREST:
+                case gl.LINEAR_MIPMAP_LINEAR:
+                    gltfSampler.minFilter = gl.LINEAR;
+                    break;
+                default:  break;
+            }
+        }
+
         SetSampler(gltfSampler, textureInfo.type);
+
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
         let gltfImage =  gltf.images[gltfTex.source];
 
@@ -60,16 +78,19 @@ function SetTexture(program, gltf, textureInfo, texSlot)
         // TODO: cubemaps
         gl.texImage2D(textureInfo.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
 
-        // TODO: check for power-of-two
-        switch (gltfSampler.minFilter) {
-            case gl.NEAREST_MIPMAP_NEAREST:
-            case gl.NEAREST_MIPMAP_LINEAR:
-            case gl.LINEAR_MIPMAP_NEAREST:
-            case gl.LINEAR_MIPMAP_LINEAR:
-                gl.generateMipmap(textureInfo.type);
-                break;
-            default:
-                break;
+        if ((gl.hasSRGBExtension && textureInfo.colorSpace != gl.SRGB) || !gl.hasSRGBExtension)
+        {
+            // TODO: check for power-of-two
+            switch (gltfSampler.minFilter) {
+                case gl.NEAREST_MIPMAP_NEAREST:
+                case gl.NEAREST_MIPMAP_LINEAR:
+                case gl.LINEAR_MIPMAP_NEAREST:
+                case gl.LINEAR_MIPMAP_LINEAR:
+                    gl.generateMipmap(textureInfo.type);
+                    break;
+                default:
+                    break;
+            }
         }
 
         gltfTex.initialized = true;
