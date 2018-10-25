@@ -5,6 +5,7 @@ class gltfShader
         this.program = program;
         this.hash = hash;
         this.uniforms = new Map();
+        this.attributes = new Map();
 
         if(this.program !== undefined)
         {
@@ -15,6 +16,29 @@ class gltfShader
                 const loc = gl.getUniformLocation(this.program, info.name);
                 this.uniforms.set(info.name, {type: info.type, loc: loc});
             }
+
+            const attribCount = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+            for(let i = 0; i < attribCount; ++i)
+            {
+                const info = gl.getActiveAttrib(this.program, i);
+                const loc = gl.getAttribLocation(this.program, info.name);
+                this.attributes.set(info.name, loc);
+            }
+        }
+    }
+
+    getAttribLocation(name)
+    {
+        const loc = this.attributes.get(name);
+
+        if(loc !== undefined)
+        {
+            return loc;
+        }
+        else
+        {
+            console.log("Attribute name '" + attributeName + "' doesn't exist!");
+            return -1;
         }
     }
 

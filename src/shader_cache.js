@@ -83,12 +83,9 @@ class ShaderCache
 
         let shader = this.shaders.get(hash);
 
-        if(shader) // shader already compiled
+        if(shader === undefined)
         {
-            return hash;
-        }
-        else // compile this variant
-        {
+            // compile this variant
             shader = CompileShader(isVert, defines + src);
             if(shader)
             {

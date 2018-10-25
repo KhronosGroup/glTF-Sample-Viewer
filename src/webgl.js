@@ -125,8 +125,13 @@ function SetIndices(gltf, accessorIndex)
     return true;
 }
 
-function EnableAttribute(gltf, shaderProgram, attributeName, gltfAccessor)
+function EnableAttribute(gltf, attributeLocation, gltfAccessor)
 {
+    if(attributeLocation == -1)
+    {
+        return false;
+    }
+
     let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
 
     if (gltfAccessor.glBuffer === undefined)
@@ -148,32 +153,11 @@ function EnableAttribute(gltf, shaderProgram, attributeName, gltfAccessor)
         gl.bindBuffer(gl.ARRAY_BUFFER, gltfAccessor.glBuffer);
     }
 
-    let attributeLocation = gl.getAttribLocation(shaderProgram, attributeName);
-
-    if (attributeLocation == -1)
-    {
-        console.log("Attribute name '" + attributeName + "' doesn't exist!");
-        return false;
-    }
-
     gl.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
                            gltfAccessor.normalized, gltfBufferView.byteStride, 0);
     gl.enableVertexAttribArray(attributeLocation);
 
     return true;
-}
-
-function DisableAttribute(shaderProgram, attributeName)
-{
-    let attributeLocation = gl.getAttribLocation(shaderProgram, attributeName);
-
-    if (attributeLocation == -1)
-    {
-        console.log("Attribute name '" + attributeName + "' doesn't exist!");
-        return;
-    }
-
-    gl.disableVertexAttribArray(attributeLocation);
 }
 
 function CompileShader(isVert, shaderSource)
