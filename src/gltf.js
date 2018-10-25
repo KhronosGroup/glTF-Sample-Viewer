@@ -79,7 +79,7 @@ class glTF
         for (let i = 0; i < jsonTextures.length; ++i)
         {
             let texture = new gltfTexture();
-            texture.fromJson(jsonTextures[i]);
+            texture.fromJson(jsonTextures[i], this.defaultSampler);
             this.textures.push(texture);
         }
     }
@@ -163,6 +163,9 @@ class glTF
         {
             this.fromJsonSamplers(json.samplers);
         }
+
+        this.samplers.push(new gltfSampler());
+        this.defaultSampler = this.samplers.length - 1;
 
         if(json.textures !== undefined)
         {

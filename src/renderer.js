@@ -5,8 +5,8 @@ class gltfRenderer
         this.canvas = canvas;
         this.shader = undefined; // current shader
 
-        this.currentWidth  = this.canvas.width;
-        this.currentHeight = this.canvas.height;
+        this.currentWidth  = 0;
+        this.currentHeight = 0;
 
         this.shaderCache = new ShaderCache("src/shaders/", [
             "primitive.vert",

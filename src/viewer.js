@@ -1,13 +1,19 @@
 class gltfViewer
 {
-    constructor()
+    constructor(canvas)
     {
-        this.roll = Math.PI;
+        this.roll  = Math.PI;
         this.pitch = 0.0;
-        this.translate = 4.0;
+        this.zoom  = 4.0;
+
+        this.canvas = canvas;
+
+        canvas.style.cursor = "grab";
 
         this.lastMouseX = 0.0;
         this.lastMouseY = 0.0;
+
+        this.scale = 180;
 
         this.wheelSpeed = 1.04;
         this.mouseDown = false;
@@ -23,7 +29,7 @@ class gltfViewer
 
         let viewMatrix = mat4.create();
         mat4.multiply(viewMatrix, yRotation, xRotation);
-        viewMatrix[14] = -this.translate;
+        viewMatrix[14] = -this.zoom;
 
         return viewMatrix;
     }
@@ -33,28 +39,36 @@ class gltfViewer
         this.mouseDown = true;
         this.lastMouseX = event.clientX;
         this.lastMouseY = event.clientY;
+        canvas.style.cursor = "none";
     }
 
     onMouseUp(event)
     {
         this.mouseDown = false;
+        canvas.style.cursor = "grab";
     }
 
     onMouseWheel(event)
     {
         event.preventDefault();
-        if (event.deltaY > 0) {
-            this.translate *= this.wheelSpeed;
+        if (event.deltaY > 0)
+        {
+            this.zoom *= this.wheelSpeed;
         }
-        else {
-            this.translate /= this.wheelSpeed;
+        else
+        {
+            this.zoom /= this.wheelSpeed;
         }
+
+        canvas.style.cursor = "none";
     }
 
     onMouseMove(event)
     {
+
         if (!this.mouseDown)
         {
+            canvas.style.cursor = "grab";
             return;
         }
 
@@ -62,14 +76,18 @@ class gltfViewer
         let newY = event.clientY;
 
         let deltaX = newX - this.lastMouseX;
-        this.roll += (deltaX / 100.0);
+        this.roll += (deltaX / this.scale);
 
         let deltaY = newY - this.lastMouseY;
-        this.pitch += (deltaY / 100.0);
+        this.pitch += (deltaY / this.scale);
 
-        if (Math.abs(this.pitch) >= Math.PI)
+        if (this.pitch >= Math.PI / 2.0)
         {
-            this.pitch = Math.PI;
+            this.pitch = +Math.PI / 2.0;
+        }
+        else if (this.pitch <= -Math.PI / 2.0)
+        {
+            this.pitch = -Math.PI / 2.0;
         }
 
         this.lastMouseX = newX;

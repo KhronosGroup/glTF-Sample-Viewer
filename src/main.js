@@ -1,5 +1,5 @@
-function gltf_rv(canvasId, loggerId,
-                 models = [])
+function gltf_rv(canvasId, gltfFiles = [],
+                 loggerId = undefined)
 {
     let logger = document.getElementById(loggerId);
     log = function(message)
@@ -27,75 +27,62 @@ function gltf_rv(canvasId, loggerId,
         return false;
     }
 
-
-    extensions = [
+    let requiredWebglExtensions = [
         "EXT_shader_texture_lod",
         "OES_standard_derivatives",
         "OES_element_index_uint",
         "EXT_SRGB"
     ];
 
-    for (let extension of extensions)
-    {
-        if(gl.getExtension(extension) === null)
-        {
-            console.warn("Extension " + extension + " not supported");
-        }
-    }
+    LoadWebGLExtensions(requiredWebglExtensions);
 
-    let hasEXT_SRGB = gl.getExtension("EXT_SRGB");
+    let gltfFile = gltfFiles[0]; // FIXME: select
 
-    if (hasEXT_SRGB)
-    {
-        gl.SRGB = hasEXT_SRGB.SRGB_EXT;
-        gl.hasSRGBExtension = true;
-    }
-    else
-    {
-        gl.SRGB = gl.RGBA;
-        gl.hasSRGBExtension = false;
-    }
+    axios.get(gltfFile).then(function(response) {
 
-    let gltfFile = models[0]; // just pick the first one for now :)
-    let gltfGetRequest = axios.get(gltfFile);
-    gltfGetRequest.then(function(response) {
-        gltf = new glTF(gltfFile, {
-            responseType: 'json'
-        });
+        gltf = new glTF(gltfFile);
 
         gltf.fromJson(response.data);
 
-        // Only render when all assets have been/are loaded.
+        // Only render when all assets have been/are loaded:
 
         let assetPromises = gltfLoader.load(gltf);
+
         Promise.all(assetPromises).then(function(response) {
 
             let renderer = new gltfRenderer(canvas);
+
             renderer.init();
-            renderer.resize(window.innerWidth,
-                            window.innerHeight);
+            renderer.resize(canvas.clientWidth,
+                            canvas.clientHeight);
 
-            let viewer = new gltfViewer();
+            let viewer = new gltfViewer(canvas);
 
-            canvas.onmousedown = viewer.onMouseDown.bind(viewer);
-            document.onmouseup = viewer.onMouseUp.bind(viewer);
+            canvas.onmousedown   = viewer.onMouseDown.bind(viewer);
+            document.onmouseup   = viewer.onMouseUp.bind(viewer);
             document.onmousemove = viewer.onMouseMove.bind(viewer);
-            document.onwheel = viewer.onMouseWheel.bind(viewer);
+            canvas.onwheel       = viewer.onMouseWheel.bind(viewer);
 
             function render(elapsedTime)
             {
                 renderer.newFrame();
-                renderer.resize(window.innerWidth,
-                                window.innerHeight);
+
+                // Will only resize canvas if needed.
+                renderer.resize(canvas.clientWidth,
+                                canvas.clientHeight);
+ 
+                // TODO: select the correct cameraIndex later.
                 renderer.drawScene(gltf, 0, -1, true, viewer);
+
                 window.requestAnimationFrame(render);
             }
 
             window.requestAnimationFrame(render);
 
         });
-    }).catch(function(message) {
-        log("glTF error: " + message);
+
+    }).catch(function(error) {
+        log("glTF " + error);
         return false;
     });
 

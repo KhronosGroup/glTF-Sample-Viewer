@@ -1,3 +1,26 @@
+function LoadWebGLExtensions(webglExtensions)
+{
+    for (let extension of webglExtensions)
+    {
+        if(gl.getExtension(extension) === null)
+        {
+            console.warn("Extension " + extension + " not supported!");
+        }
+    }
+
+    let EXT_SRGB = gl.getExtension("EXT_SRGB");
+
+    if (EXT_SRGB)
+    {
+        gl.SRGB = EXT_SRGB.SRGB_EXT;
+        gl.supports_EXT_SRGB = true;
+    }
+    else
+    {
+        gl.SRGB = gl.RGBA;
+        gl.supports_EXT_SRGB = false;
+    }
+}
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
 function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
@@ -49,7 +72,7 @@ function SetTexture(program, gltf, textureInfo, texSlot)
 
         // In WebGL SRGB textures can't generate mipmapsmipmaps, so we
         // need to convert the sampler to the "correct" format here:
-        if (gl.hasSRGBExtension && textureInfo.colorSpace == gl.SRGB)
+        if (gl.supports_EXT_SRGB && textureInfo.colorSpace == gl.SRGB)
         {
             switch (gltfSampler.minFilter) {
                 case gl.NEAREST_MIPMAP_NEAREST:
@@ -78,7 +101,7 @@ function SetTexture(program, gltf, textureInfo, texSlot)
         // TODO: cubemaps
         gl.texImage2D(textureInfo.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
 
-        if ((gl.hasSRGBExtension && textureInfo.colorSpace != gl.SRGB) || !gl.hasSRGBExtension)
+        if ((gl.supports_EXT_SRGB && textureInfo.colorSpace != gl.SRGB) || !gl.supports_EXT_SRGB)
         {
             // TODO: check for power-of-two
             switch (gltfSampler.minFilter) {

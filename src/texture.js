@@ -8,9 +8,14 @@ class gltfTexture
         this.initialized = false;
     }
 
-    fromJson(jsonTexture)
+    fromJson(jsonTexture, defaultSampler)
     {
         fromKeys(this, jsonTexture);
+
+        if (this.sampler === undefined)
+        {
+            this.sampler = defaultSampler;
+        }
     }
 };
 
