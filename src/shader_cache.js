@@ -52,7 +52,7 @@ class ShaderCache
     }
 
     // example args: "pbr.vert", ["NORMALS", "TANGENTS"]
-    getShader(shaderIdentifier, permutationDefines)
+    selectShader(shaderIdentifier, permutationDefines)
     {
         // first check shaders for the exact permutation
         // if not present, check sources and compile it
@@ -91,14 +91,18 @@ class ShaderCache
             {
                 this.shaders.set(hash, shader);
             }
+            else
+            {
+                return undefined;
+            }
         }
 
         return hash;
     }
 
-    getProgram(vertexShaderHash, fragmentShaderHash)
+    getShaderProgram(vertexShaderHash, fragmentShaderHash)
     {
-        let hash = vertexShaderHash ^ fragmentShaderHash;
+        const hash = vertexShaderHash ^ fragmentShaderHash;
 
         let program = this.programs.get(hash);
 
@@ -108,11 +112,15 @@ class ShaderCache
         }
         else // link this shader program type!
         {
-            let vertexShader = this.shaders.get(vertexShaderHash);
-            let fragmentShader = this.shaders.get(fragmentShaderHash);
-            program = LinkProgram(vertexShader, fragmentShader);
+            let linkedProg = LinkProgram(this.shaders.get(vertexShaderHash), this.shaders.get(fragmentShaderHash));
+            if(linkedProg)
+            {
+                let program = new gltfShader(linkedProg, hash);
+                this.programs.set(hash, program);
+                return program;
+            }
         }
 
-        return program;
+        return undefined;
     }
 };

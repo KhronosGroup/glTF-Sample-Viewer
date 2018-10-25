@@ -3,7 +3,7 @@ class gltfRenderer
     constructor(canvas)
     {
         this.canvas = canvas;
-        this.program = undefined; // current shader
+        this.shader = undefined; // current shader
 
         this.extensions = [
             "EXT_shader_texture_lod",
@@ -139,28 +139,28 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        let fragmentShader = this.shaderCache.getShader(material.getShaderIdentifier(),  material.getDefines());
-        let vertexShader   = this.shaderCache.getShader(primitive.getShaderIdentifier(), primitive.getDefines());
+        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(),  material.getDefines());
+        const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
-        if(fragmentShader && vertexShader)
+        if(fragmentHash && vertexHash)
         {
-            this.program = this.shaderCache.getProgram(vertexShader, fragmentShader); // Based the shader hashes.
+            this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
         }
 
-        if(this.program === undefined)
+        if(this.shader === undefined)
         {
             return;
         }
 
-        gl.useProgram(this.program);
+        gl.useProgram(this.shader.program);
 
         if(firstPrimitive) // TODO:check for changed vertex shader permutation
         {
             // update model dependant matrices once per node
-            this.updateUniform("u_MVPMatrix", this.mvpMatrix);
-            this.updateUniform("u_ModelMatrix", this.modelMatrix);
-            this.updateUniform("u_NormalMatrix", this.normalMatrix);
-            this.updateUniform("u_Camera", this.cameraPos);
+            this.shader.updateUniform("u_MVPMatrix", this.mvpMatrix);
+            this.shader.updateUniform("u_ModelMatrix", this.modelMatrix);
+            this.shader.updateUniform("u_NormalMatrix", this.normalMatrix);
+            this.shader.updateUniform("u_Camera", this.cameraPos);
         }
 
         if (material.doubleSided) {
@@ -184,7 +184,7 @@ class gltfRenderer
             let gltfAccessor = gltf.accessors[attrib.accessor];
             vertexCount = gltfAccessor.count;
 
-            if (!EnableAttribute(gltf, this.program, attrib.name, gltfAccessor))
+            if (!EnableAttribute(gltf, this.shader.program, attrib.name, gltfAccessor))
             {
                 return; // skip this primitive.
             }
@@ -192,12 +192,12 @@ class gltfRenderer
 
         for(let [uniform, val] of material.getProperties().entries())
         {
-            this.updateUniform(uniform, val);
+            this.shader.updateUniform(uniform, val);
         }
 
         for(let i = 0; i < material.textures.length; ++i)
         {
-            if (!SetTexture(this.program, gltf, material.textures[i], i)) // binds texture and sampler
+            if (!SetTexture(this.shader.program, gltf, material.textures[i], i)) // binds texture and sampler
             {
                 return;
             }
@@ -215,50 +215,7 @@ class gltfRenderer
 
         for (let attrib of primitive.attributes)
         {
-            DisableAttribute(this.program, attrib.name);
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////
-    // WebGL helpers & implementation detail
-    /////////////////////////////////////////////////////////////////////
-
-    // upload the values of a uniform with the given name using type resolve to get correct function call
-    // vec3 => gl.uniform3f(value)
-    updateUniform(uniformName, value)
-    {
-        let loc = gl.getUniformLocation(this.program, uniformName);
-        let uniformCount = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
-
-        if(loc)
-        {
-            for (let i = 0; i < uniformCount; ++i)
-            {
-                let info = gl.getActiveUniform(this.program, i);
-                if (info.name == uniformName)
-                {
-                    switch (info.type) {
-                        case gl.FLOAT: gl.uniform1f(loc, value); break;
-                        case gl.FLOAT_VEC2: gl.uniform2fv(loc, value); break;
-                        case gl.FLOAT_VEC3: gl.uniform3fv(loc, value); break;
-                        case gl.FLOAT_VEC4: gl.uniform4fv(loc, value); break;
-
-                        case gl.INT: gl.uniform1i(loc, value); break;
-                        case gl.INT_VEC2: gl.uniform2iv(loc, value); break;
-                        case gl.INT_VEC3: gl.uniform3iv(loc, value); break;
-                        case gl.INT_VEC4: gl.uniform4iv(loc, value); break;
-
-                        case gl.FLOAT_MAT2: gl.uniformMatrix2fv(loc, false, value); break;
-                        case gl.FLOAT_MAT3: gl.uniformMatrix3fv(loc, false, value); break;
-                        case gl.FLOAT_MAT4: gl.uniformMatrix4fv(loc, false, value); break;
-                    }
-                    break;
-                }
-            }
-        }
-        else
-        {
-            console.warn("Couldn't find uniform name: " + uniformName);
+            DisableAttribute(this.shader.program, attrib.name);
         }
     }
 };
