@@ -13,13 +13,9 @@ class gltfRenderer
             "metallic-roughness.frag"
         ]);
 
-        this.modelMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
         this.viewProjMatrix = mat4.create();
-        this.mvpMatrix = mat4.create();
-        this.modelInverse = mat4.create();
-        this.normalMatrix = mat4.create();
 
         this.defaultCamera = new gltfCamera();
         let eye = vec3.fromValues(0.0, 0.0, -4.0);
@@ -124,32 +120,36 @@ class gltfRenderer
             return;
         }
 
+        let mvpMatrix = mat4.create();
+        let modelInverse = mat4.create();
+        let normalMatrix = mat4.create();
+
         // update model & mvp & normal matrix
         let nodeTransform = node.getTransform();
-        mat4.multiply(this.modelMatrix, nodeTransform, parentTransform);
-        mat4.multiply(this.mvpMatrix, this.viewProjMatrix, this.modelMatrix);
-        mat4.invert(this.modelInverse, this.modelMatrix);
-        mat4.transpose(this.normalMatrix, this.modelInverse);
+        mat4.multiply(nodeTransform, parentTransform, nodeTransform);
+        mat4.multiply(mvpMatrix, this.viewProjMatrix, nodeTransform);
+        mat4.invert(modelInverse, nodeTransform);
+        mat4.transpose(normalMatrix, modelInverse);
 
         // draw primitive:
         let mesh = gltf.meshes[node.mesh];
         if(mesh !== undefined)
         {
             for (let i = 0; i < mesh.primitives.length; i++) {
-                this.drawPrimitive(gltf, mesh.primitives[i], i == 0);
+                this.drawPrimitive(gltf, mesh.primitives[i], i == 0, nodeTransform, mvpMatrix, normalMatrix);
             }
         }
 
         if(recursive)
         {
             for (let i of node.children) {
-                this.drawNode(gltf, scene, i, this.modelMatrix, recursive);
+                this.drawNode(gltf, scene, i, nodeTransform, recursive);
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, firstPrimitive)
+    drawPrimitive(gltf, primitive, firstPrimitive, modelMatrix, mvpMatrix, normalMatrix)
     {
         if (primitive.skip) return;
 
@@ -175,9 +175,9 @@ class gltfRenderer
         if(firstPrimitive) // TODO:check for changed vertex shader permutation
         {
             // update model dependant matrices once per node
-            this.shader.updateUniform("u_MVPMatrix", this.mvpMatrix);
-            this.shader.updateUniform("u_ModelMatrix", this.modelMatrix);
-            this.shader.updateUniform("u_NormalMatrix", this.normalMatrix, false);
+            this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
+            this.shader.updateUniform("u_ModelMatrix", modelMatrix);
+            this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
             this.shader.updateUniform("u_Camera", this.currentCameraPosition);
         }
 

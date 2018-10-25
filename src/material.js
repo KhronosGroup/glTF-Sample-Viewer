@@ -136,8 +136,6 @@ class gltfMaterial
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
             let baseColorTexture = new gltfTextureInfo();
-            let srgb = gl.SRGB;
-            let rgba = gl.RGBA;
             baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture, "u_BaseColorSampler", gl.SRGB);
             this.textures.push(baseColorTexture);
             this.defines.push("HAS_BASE_COLOR_MAP");
