@@ -117,12 +117,15 @@ function addEnvironmentMap(glTF)
 
     glTF.images.push(new gltfImage("assets/images/brdfLUT.png", gl.TEXTURE_2D));
 
+    let samplerIdx = glTF.samplers.length;
+    glTF.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));
+
     // u_DiffuseEnvSampler tex
-    gltf.textures.push(new gltfTexture(glTF.defaultSampler, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+    gltf.textures.push(new gltfTexture(samplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
 
     // u_SpecularEnvSampler tex
-    gltf.textures.push(new gltfTexture(glTF.defaultSampler, [++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+    gltf.textures.push(new gltfTexture(samplerIdx, [++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
 
     // u_brdfLUT tex
-    gltf.textures.push(new gltfTexture(glTF.defaultSampler, [++imageIdx], gl.TEXTURE_2D));
+    gltf.textures.push(new gltfTexture(samplerIdx, [++imageIdx], gl.TEXTURE_2D));
 }

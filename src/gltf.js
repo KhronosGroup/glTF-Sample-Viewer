@@ -15,6 +15,8 @@ class glTF
         this.bufferViews = [];
         this.materials = [];
         this.defaultMaterial = -1;
+        this.defaultSampler  = -1;
+        this.cubemapSampler  = -1;
         this.path = file.substr(0, file.lastIndexOf("/") + 1);
     }
 
