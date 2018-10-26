@@ -40,8 +40,9 @@ class gltfMaterial
     {
         switch (this.type)
         {
+            case "SG": // fall through till we sparate shaders
             case "MR": return "metallic-roughness.frag";
-            case "SG": return "specular-glossiness.frag" ;
+            //case "SG": return "specular-glossiness.frag" ;
             default: return "unlit.frag";
         }
     }
@@ -104,10 +105,18 @@ class gltfMaterial
             this.fromJsonMetallicRoughness(jsonMaterial.pbrMetallicRoughness);
         }
 
-        if (jsonMaterial.pbrSpecularGlossiness !== undefined)
+        if(jsonMaterial.extensions !== undefined)
+        {
+            this.fromJsonMaterialExtensions(jsonMaterial.extensions);
+        }
+    }
+
+    fromJsonMaterialExtensions(jsonExtensions)
+    {
+        if (jsonExtensions.KHR_materials_pbrSpecularGlossiness !== undefined)
         {
             this.type = "SG";
-            this.fromJsonSpecularGlossiness(jsonMaterial.pbrSpecularGlossiness); // converts parameters to Metallic Roughness
+            this.fromJsonSpecularGlossiness(jsonExtensions.KHR_materials_pbrSpecularGlossiness);
         }
     }
 
@@ -151,6 +160,8 @@ class gltfMaterial
 
     fromJsonSpecularGlossiness(jsonSpecularGlossiness)
     {
+        this.defines.push("MATERIAL_SPECULARGLOSSINESS");
+
         if (jsonSpecularGlossiness.diffuseFactor !== undefined)
         {
             this.diffuseFactor = jsToGl(jsonSpecularGlossiness.diffuseFactor);
