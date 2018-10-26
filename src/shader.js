@@ -37,7 +37,22 @@ class gltfShader
         }
         else
         {
-            console.log("Attribute name '" + attributeName + "' doesn't exist!");
+            console.log("Attribute name '" + name + "' doesn't exist!");
+            return -1;
+        }
+    }
+
+    getUniformLocation(name)
+    {
+        const uniform = this.uniforms.get(name);
+
+        if(uniform !== undefined)
+        {
+            return uniform.loc;
+        }
+        else
+        {
+            console.log("Uniform name '" + name + "' doesn't exist!");
             return -1;
         }
     }

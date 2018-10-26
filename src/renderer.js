@@ -157,7 +157,10 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), material.getDefines().concat(primitive.getDefines()));
+        let fragDefines =  material.getDefines().concat(primitive.getDefines());
+        //fragDefines.push("USE_IBL"); // TODO: make optional
+
+        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
         if(fragmentHash && vertexHash)
@@ -212,7 +215,8 @@ class gltfRenderer
 
         for(let i = 0; i < material.textures.length; ++i)
         {
-            if (!SetTexture(this.shader.program, gltf, material.textures[i], i)) // binds texture and sampler
+            let info = material.textures[i];
+            if (!SetTexture(this.shader.getUniformLocation(info.samplerName), gltf, info, i)) // binds texture and sampler
             {
                 return;
             }
