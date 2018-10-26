@@ -51,9 +51,8 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
         gltfTex.texture = gl.createTexture();
     }
 
-    // TODO: get sampler location
     gl.activeTexture(gl.TEXTURE0 + texSlot);
-    gl.bindTexture(textureInfo.type, gltfTex.texture);
+    gl.bindTexture(gltfTex.type, gltfTex.texture);
 
     gl.uniform1i(loc, texSlot);
 
@@ -63,7 +62,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
         if(gltfSampler === undefined)
         {
-            console.warn("Sampler is undefined for texture: " + gltfTex.source);
+            console.warn("Sampler is undefined for texture: " + textureInfo.index);
             return false;
         }
 
@@ -84,19 +83,34 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             }
         }
 
-        SetSampler(gltfSampler, textureInfo.type);
+        SetSampler(gltfSampler, gltfTex.type);
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        let gltfImage =  gltf.images[gltfTex.source];
 
-        if (gltfImage === undefined)
+        let images = [];
+
+        if(gltfTex.source.length !== undefined)
         {
-            console.warn("Image is undefined for texture: " + gltfTex.source);
-            return false;
+            // assume we have an array of textures (this is an unofficial extension to what glTF json can represent)
+            images = gltfTex.source;
+        }
+        else
+        {
+            images = [gltfTex.source];
         }
 
-        // TODO: cubemaps
-        gl.texImage2D(textureInfo.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
+        for(let src of images)
+        {
+            let gltfImage =  gltf.images[src];
+
+            if (gltfImage === undefined)
+            {
+                console.warn("Image is undefined for texture: " + gltfTex.source);
+                return false;
+            }
+
+            gl.texImage2D(gltfImage.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
+        }
 
         if ((gl.supports_EXT_SRGB && textureInfo.colorSpace != gl.SRGB) || !gl.supports_EXT_SRGB)
         {
@@ -106,7 +120,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
                 case gl.NEAREST_MIPMAP_LINEAR:
                 case gl.LINEAR_MIPMAP_NEAREST:
                 case gl.LINEAR_MIPMAP_LINEAR:
-                    gl.generateMipmap(textureInfo.type);
+                    gl.generateMipmap(gltfTex.type);
                     break;
                 default:
                     break;
