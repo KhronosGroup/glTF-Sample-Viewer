@@ -159,6 +159,7 @@ class gltfRenderer
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
         fragDefines.push("USE_IBL"); // TODO: make optional
+        fragDefines.push("USE_TEX_LOD");
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
