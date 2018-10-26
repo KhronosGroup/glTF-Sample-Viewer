@@ -19,6 +19,14 @@ class gltfViewer
         this.mouseDown = false;
     }
 
+    getCameraPosition()
+    {
+        let cameraPos = [-this.zoom * Math.sin(this.roll) * Math.cos(-this.pitch),
+                         -this.zoom * Math.sin(-this.pitch),
+                          this.zoom * Math.cos(this.roll) * Math.cos(-this.pitch)];
+        return jsToGl(cameraPos);
+    }
+
     getViewTransform()
     {
         let xRotation = mat4.create();

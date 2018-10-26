@@ -1,21 +1,22 @@
 class gltfImage
 {
-    constructor(uri = undefined, bufferView = undefined, mimeType = "image/jpeg", image = undefined, name = undefined, type = gl.TEXTURE_2D)
+    constructor(uri = undefined, type = gl.TEXTURE_2D, bufferView = undefined, name = undefined, mimeType = "image/jpeg", image = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;
         this.mimeType = mimeType;
-        this.image = image;
+        this.image = image; // javascript image
         this.name = name;
-        this.type = type;
+        this.type = type; // nonstandard
     }
 
-    fromJson(jsonImage)
+    fromJson(jsonImage, path = "")
     {
         fromKeys(this, jsonImage);
+        this.uri = path + this.uri;
     }
 
-    load(folder, promises, bufferViews)
+    load(promises, bufferViews) //folder,
     {
         if(this.image !== undefined) // alread loaded
         {
@@ -33,7 +34,7 @@ class gltfImage
                 image = new Image();
                 image.onload = resolve;
                 image.onerror = resolve;
-                image.src = folder + uri;
+                image.src = uri;
             }
             else if(bufferView != undefined)
             {

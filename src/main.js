@@ -44,6 +44,9 @@ function gltf_rv(canvasId, gltfFiles = [],
 
         gltf.fromJson(response.data);
 
+        // TODO: insert textures & images for environmap
+        addEnvironmentMap(gltf);
+
         // Only render when all assets have been/are loaded:
 
         let assetPromises = gltfLoader.load(gltf);
@@ -70,7 +73,7 @@ function gltf_rv(canvasId, gltfFiles = [],
                 // Will only resize canvas if needed.
                 renderer.resize(canvas.clientWidth,
                                 canvas.clientHeight);
- 
+
                 // TODO: select the correct cameraIndex later.
                 renderer.drawScene(gltf, 0, -1, true, viewer);
 
@@ -87,4 +90,39 @@ function gltf_rv(canvasId, gltfFiles = [],
     });
 
     return true;
+}
+
+// assume the glTF is already parsed, but not loaded
+function addEnvironmentMap(glTF)
+{
+    let imageIdx = glTF.images.length;
+
+    // u_DiffuseEnvSampler faces
+    glTF.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+    glTF.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_bottom_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+    glTF.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_front_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+    glTF.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_left_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+    glTF.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+    glTF.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+
+    //let diffuseSources = [imageIdx, imageIdx++, imageIdx++, imageIdx++, imageIdx++,imageIdx++];
+
+    // u_SpecularEnvSampler faces
+    glTF.images.push(new gltfImage("assets/images/papermill/specular/specular_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+    glTF.images.push(new gltfImage("assets/images/papermill/specular/specular_bottom_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+    glTF.images.push(new gltfImage("assets/images/papermill/specular/specular_front_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+    glTF.images.push(new gltfImage("assets/images/papermill/specular/specular_left_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+    glTF.images.push(new gltfImage("assets/images/papermill/specular/specular_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+    glTF.images.push(new gltfImage("assets/images/papermill/specular/specular_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+
+    glTF.images.push(new gltfImage("assets/images/brdfLUT.png", gl.TEXTURE_2D));
+
+    // u_DiffuseEnvSampler tex
+    gltf.textures.push(new gltfTexture(glTF.defaultSampler, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+
+    // u_SpecularEnvSampler tex
+    gltf.textures.push(new gltfTexture(glTF.defaultSampler, [++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+
+    // u_brdfLUT tex
+    gltf.textures.push(new gltfTexture(glTF.defaultSampler, [++imageIdx], gl.TEXTURE_2D));
 }

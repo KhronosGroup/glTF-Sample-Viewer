@@ -93,7 +93,7 @@ class gltfRenderer
         if (viewer !== undefined)
         {
             this.viewMatrix = viewer.getViewTransform();
-            mat4.getTranslation(this.currentCameraPosition, this.viewMatrix);
+            this.currentCameraPosition = viewer.getCameraPosition();
         }
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
@@ -158,7 +158,7 @@ class gltfRenderer
         //select shader permutation, compile and link program.
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
-        //fragDefines.push("USE_IBL"); // TODO: make optional
+        fragDefines.push("USE_IBL"); // TODO: make optional
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
@@ -222,6 +222,8 @@ class gltfRenderer
             }
         }
 
+        this.applyEnvironmentMap(gltf, material.textures.length);
+
         if (drawIndexed)
         {
             let indexAccessor = gltf.accessors[primitive.indices];
@@ -236,5 +238,20 @@ class gltfRenderer
         {
             gl.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
         }
+    }
+
+    applyEnvironmentMap(gltf, texSlotOffset)
+    {
+        let diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3); // TODO: srgb
+        let specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2); // TODO: srgb
+        let lut = new gltfTextureInfo(gltf.textures.length - 1); // TODO: srgb
+
+        SetTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, diffuseEnvMap, texSlotOffset);
+        SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, specularEnvMap, texSlotOffset + 1);
+        SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, lut, texSlotOffset + 2);
+
+        this.shader.updateUniform("u_ScaleDiffBaseMR", jsToGl([0, 0, 0, 0]));
+        this.shader.updateUniform("u_ScaleFGDSpec", jsToGl([0, 0, 0, 0]));
+        this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, 0, 0]));
     }
 };

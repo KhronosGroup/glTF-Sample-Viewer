@@ -69,7 +69,7 @@ class glTF
         for (let i = 0; i < jsonImages.length; ++i)
         {
             let image = new gltfImage();
-            image.fromJson(jsonImages[i]);
+            image.fromJson(jsonImages[i], this.path);
             this.images.push(image);
         }
     }

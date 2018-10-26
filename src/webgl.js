@@ -101,15 +101,15 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
         for(let src of images)
         {
-            let gltfImage =  gltf.images[src];
+            let image =  gltf.images[src];
 
-            if (gltfImage === undefined)
+            if (image === undefined)
             {
                 console.warn("Image is undefined for texture: " + gltfTex.source);
                 return false;
             }
 
-            gl.texImage2D(gltfImage.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, gltfImage.image);
+            gl.texImage2D(image.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
         }
 
         if ((gl.supports_EXT_SRGB && textureInfo.colorSpace != gl.SRGB) || !gl.supports_EXT_SRGB)

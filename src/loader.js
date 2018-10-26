@@ -6,7 +6,7 @@ class gltfLoader
 
         for (let image of gltf.images)
         {
-            image.load(gltf.path, promises, gltf.bufferViews);
+            image.load(promises, gltf.bufferViews);
         }
 
         for (let buffer of gltf.buffers)

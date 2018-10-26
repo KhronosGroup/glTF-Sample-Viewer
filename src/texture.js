@@ -1,6 +1,6 @@
 class gltfTexture
 {
-    constructor(sampler = undefined, source = undefined, texture = undefined, type = gl.TEXTURE_2D)
+    constructor(sampler = undefined, source = undefined, type = gl.TEXTURE_2D, texture = undefined)
     {
         this.sampler = sampler; // index to gltfSampler, default sampler ?
         this.source = source; // index to gltfImage
@@ -22,12 +22,12 @@ class gltfTexture
 
 class gltfTextureInfo
 {
-    constructor(index = undefined, texCoord = 0, colorSpace = gl.RGBA) // linear by default
+    constructor(index = undefined, texCoord = 0, colorSpace = gl.RGBA, samplerName = "") // linear by default
     {
         this.index = index; // reference to gltfTexture
         this.texCoord = texCoord; // which UV set to use
         this.colorSpace = colorSpace;
-        this.samplerName = "";
+        this.samplerName = samplerName;
         this.strength = 1.0; // occlusion
         this.scale = 1.0; // normal
     }
