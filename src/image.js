@@ -1,31 +1,18 @@
 class gltfImage
 {
-    constructor(uri = undefined, bufferView = undefined, mimeType = "image/jpeg", image = undefined, name = undefined)
+    constructor(uri = undefined, bufferView = undefined, mimeType = "image/jpeg", image = undefined, name = undefined, type = gl.TEXTURE_2D)
     {
         this.uri = uri;
         this.bufferView = bufferView;
         this.mimeType = mimeType;
         this.image = image;
         this.name = name;
+        this.type = type;
     }
 
-    fromJson(jsonNode)
+    fromJson(jsonImage)
     {
-        this.name = jsonNode.name;
-        if(jsonNode.uri !== undefined)
-        {
-            this.uri = jsonNode.uri;
-        }
-
-        if(jsonNode.bufferView !== undefined)
-        {
-            this.bufferView = jsonNode.bufferView;
-        }
-
-        if(jsonNode.mimeType !== undefined)
-        {
-            this.mimeType = jsonNode.mimeType;
-        }
+        fromKeys(this, jsonImage);
     }
 
     load(folder, promises, bufferViews)
