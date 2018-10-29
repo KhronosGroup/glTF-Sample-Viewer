@@ -1,6 +1,6 @@
 class gltfImage
 {
-    constructor(uri = undefined, type = gl.TEXTURE_2D, bufferView = undefined, name = undefined, mimeType = "image/jpeg", image = undefined)
+    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = "image/jpeg", image = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;
@@ -8,6 +8,7 @@ class gltfImage
         this.image = image; // javascript image
         this.name = name;
         this.type = type; // nonstandard
+        this.miplevel = miplevel; // nonstandard
     }
 
     fromJson(jsonImage, path = "")

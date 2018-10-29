@@ -225,7 +225,27 @@ class gltfViewer
     // assume the glTF is already parsed, but not loaded
     addEnvironmentMap(gltf)
     {
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));
+        const cubeSamplerIdx = gltf.samplers.length - 1;
+
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "Default"));
+        const envmapIdx = gltf.samplers.length - 1;
+
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.REPEAT,  gl.REPEAT, "Default"));
+        const defaultIdx = gltf.samplers.length - 1;
+
         let imageIdx = gltf.images.length;
+
+        let indices = [];
+
+        function AddSide(basePath, side)
+        {
+            for(let i = 0; i < 10; ++i)
+            {
+                gltf.images.push(new gltfImage(basePath + i + ".jpg", side, i));
+                indices.push(++imageIdx);
+            }
+        };
 
         // u_DiffuseEnvSampler faces
         gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
@@ -235,29 +255,22 @@ class gltfViewer
         gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
         gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
 
-        //let diffuseSources = [imageIdx, imageIdx++, imageIdx++, imageIdx++, imageIdx++,imageIdx++];
+        // u_DiffuseEnvSampler tex
+        gltf.textures.push(new gltfTexture(envmapIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
 
-        // u_SpecularEnvSampler faces
-        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
-        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_bottom_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
-        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_front_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
-        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_left_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
-        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
-        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+        // u_SpecularEnvSampler tex
+        AddSide("assets/images/papermill/specular/specular_back_",  gl.TEXTURE_CUBE_MAP_NEGATIVE_Z);
+        AddSide("assets/images/papermill/specular/specular_bottom_",  gl.TEXTURE_CUBE_MAP_NEGATIVE_Y);
+        AddSide("assets/images/papermill/specular/specular_front_",  gl.TEXTURE_CUBE_MAP_POSITIVE_Z);
+        AddSide("assets/images/papermill/specular/specular_left_",  gl.TEXTURE_CUBE_MAP_NEGATIVE_X);
+        AddSide("assets/images/papermill/specular/specular_right_",  gl.TEXTURE_CUBE_MAP_POSITIVE_X);
+        AddSide("assets/images/papermill/specular/specular_top_",  gl.TEXTURE_CUBE_MAP_POSITIVE_Y);
+
+        gltf.textures.push(new gltfTexture(cubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
 
         gltf.images.push(new gltfImage("assets/images/brdfLUT.png", gl.TEXTURE_2D));
 
-        let samplerIdx = gltf.samplers.length;
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));
-
-        // u_DiffuseEnvSampler tex
-        gltf.textures.push(new gltfTexture(samplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
-
-        // u_SpecularEnvSampler tex
-        gltf.textures.push(new gltfTexture(samplerIdx, [++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
-
         // u_brdfLUT tex
-        gltf.textures.push(new gltfTexture(samplerIdx, [++imageIdx], gl.TEXTURE_2D));
+        gltf.textures.push(new gltfTexture(defaultIdx, [++imageIdx], gl.TEXTURE_2D));
     }
-
 }

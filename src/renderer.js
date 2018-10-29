@@ -241,6 +241,10 @@ class gltfRenderer
         let specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2); // TODO: srgb
         let lut = new gltfTextureInfo(gltf.textures.length - 1); // TODO: srgb
 
+        diffuseEnvMap.generateMips = false;
+        specularEnvMap.generateMips = false;
+        lut.generateMips = false;
+
         SetTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, diffuseEnvMap, texSlotOffset);
         SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, specularEnvMap, texSlotOffset + 1);
         SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, lut, texSlotOffset + 2);

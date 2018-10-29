@@ -1,7 +1,7 @@
 class gltfSampler
 {
-    constructor(magFilter = 9729, minFilter = 9987,
-                wrapS = 10497, wrapT = 10497,
+    constructor(magFilter = gl.LINEAR, minFilter = gl.LINEAR_MIPMAP_LINEAR,
+                wrapS = gl.REPEAT, wrapT = gl.REPEAT,
                 name = undefined)
     {
         this.magFilter = magFilter;

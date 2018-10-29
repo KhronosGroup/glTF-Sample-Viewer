@@ -32,7 +32,7 @@ class gltfTexture
 
 class gltfTextureInfo
 {
-    constructor(index = undefined, texCoord = 0, colorSpace = gl.RGBA, samplerName = "") // linear by default
+    constructor(index = undefined, texCoord = 0, colorSpace = gl.RGBA, samplerName = "", generateMips = true) // linear by default
     {
         this.index = index; // reference to gltfTexture
         this.texCoord = texCoord; // which UV set to use
@@ -40,6 +40,7 @@ class gltfTextureInfo
         this.samplerName = samplerName;
         this.strength = 1.0; // occlusion
         this.scale = 1.0; // normal
+        this.generateMips = generateMips;
     }
 
     fromJson(jsonTextureInfo, samplerName, colorSpace = gl.RGBA)

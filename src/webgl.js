@@ -66,7 +66,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             return false;
         }
 
-        // In WebGL SRGB textures can't generate mipmapsmipmaps, so we
+        // In WebGL SRGB textures can't generate mipmaps, so we
         // need to convert the sampler to the "correct" format here:
         if (gl.supports_EXT_SRGB && textureInfo.colorSpace == gl.SRGB)
         {
@@ -109,10 +109,10 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
                 return false;
             }
 
-            gl.texImage2D(image.type, 0, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
+            gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
         }
 
-        if ((gl.supports_EXT_SRGB && textureInfo.colorSpace != gl.SRGB) || !gl.supports_EXT_SRGB)
+        if (textureInfo.generateMips && ((gl.supports_EXT_SRGB && textureInfo.colorSpace != gl.SRGB) || !gl.supports_EXT_SRGB))
         {
             // TODO: check for power-of-two
             switch (gltfSampler.minFilter) {
