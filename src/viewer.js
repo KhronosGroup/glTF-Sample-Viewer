@@ -54,7 +54,7 @@ class gltfViewer
             },
         };
 
-        this.gui.add(text, "model", ['models/Telephone/glTF/Telephone.gltf', 'models/BoomBox/glTF/BoomBox.gltf']).onChange(function(gltfFile) {
+        this.gui.add(text, "model", ['models/Telephone/glTF/Telephone.gltf', 'models/BoomBox/glTF-pbrSpecularGlossiness/BoomBox.gltf']).onChange(function(gltfFile) {
             self.load(gltfFile);
         });
 
@@ -231,9 +231,6 @@ class gltfViewer
         gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "Default"));
         const envmapIdx = gltf.samplers.length - 1;
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.REPEAT,  gl.REPEAT, "Default"));
-        const defaultIdx = gltf.samplers.length - 1;
-
         let imageIdx = gltf.images.length;
 
         let indices = [];
@@ -271,6 +268,6 @@ class gltfViewer
         gltf.images.push(new gltfImage("assets/images/brdfLUT.png", gl.TEXTURE_2D));
 
         // u_brdfLUT tex
-        gltf.textures.push(new gltfTexture(defaultIdx, [++imageIdx], gl.TEXTURE_2D));
+        gltf.textures.push(new gltfTexture(envmapIdx, [++imageIdx], gl.TEXTURE_2D));
     }
 }

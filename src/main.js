@@ -43,7 +43,7 @@ function gltf_rv(canvasId, gltfFiles = [],
     document.onmousemove = viewer.onMouseMove.bind(viewer);
     canvas.onwheel = viewer.onMouseWheel.bind(viewer);
 
-    let gltfFile = gltfFiles[0]; // FIXME: select
+    let gltfFile = "models/Telephone/glTF/Telephone.gltf";
 
     viewer.load(gltfFile);
     viewer.render();
