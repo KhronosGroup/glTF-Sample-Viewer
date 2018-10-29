@@ -18,13 +18,16 @@ class gltfViewer
         this.wheelSpeed = 1.04;
         this.mouseDown = false;
 
-        if (!headless)
+        if (headless == false)
         {
             this.initGUI();
         }
 
         this.gltf = undefined;
         this.newGltf = undefined;
+
+        this.currentScene  = 0;
+        this.currentCamera = -1;
 
         this.rendering = false;
         this.renderer = new gltfRenderer(canvas);
@@ -36,9 +39,27 @@ class gltfViewer
     {
         this.gui = new dat.GUI();
 
-        this.sceneFolder = this.gui.addFolder("glTF Scene");
         this.environmentLightingFolder = this.gui.addFolder("Environment Lighting");
         this.performanceFolder = this.gui.addFolder("Performance");
+
+        let self = this;
+
+        let text = {
+            model: 'models/Telephone/glTF/Telephone.gltf',
+            nextScene: function() {
+                self.currentScene++;
+            },
+            previousScene: function() {
+                self.currentScene--;
+            },
+        };
+
+        this.gui.add(text, "model", ['models/Telephone/glTF/Telephone.gltf', 'models/BoomBox/glTF/BoomBox.gltf']).onChange(function(gltfFile) {
+            self.load(gltfFile);
+        });
+
+        this.gui.add(text, "nextScene");
+        this.gui.add(text, "previousScene");
 
         this.stats = new Stats();
         this.stats.dom.height = "48px";
@@ -97,8 +118,19 @@ class gltfViewer
                 // Will only resize canvas if needed.
                 viewer.renderer.resize(canvas.clientWidth, canvas.clientHeight);
 
-                // TODO: select the correct cameraIndex later.
-                viewer.renderer.drawScene(viewer.gltf, 0, -1, true, viewer);
+                if (viewer.currentScene >= 0 && viewer.currentScene < viewer.gltf.scenes.length)
+                {
+                    viewer.renderer.drawScene(viewer.gltf, viewer.currentScene, viewer.currentCamera, true, viewer);
+                }
+                else
+                {
+                    viewer.currentScene = 0;
+                }
+            }
+
+            if (viewer.headless == false)
+            {
+                viewer.stats.update();
             }
 
             window.requestAnimationFrame(renderCallback);
