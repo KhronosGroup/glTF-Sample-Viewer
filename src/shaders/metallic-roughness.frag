@@ -229,6 +229,28 @@ float microfacetDistribution(PBRInfo pbrInputs)
     return roughnessSq / (M_PI * f * f);
 }
 
+float getPerceivedBrightness(vec3 vector)
+{
+    return sqrt(0.299 * vector.r * vector.r + 0.587 * vector.g * vector.g + 0.114 * vector.b * vector.b);
+}
+
+float solveMetallic(vec3 diffuse, vec3 specular, float oneMinusSpecularStrength) {
+    float specularBrightness = getPerceivedBrightness(specular);
+
+    if (specularBrightness < c_MinRoughness) {
+        return 0.0;
+    }
+
+    float diffuseBrightness = getPerceivedBrightness(diffuse);
+
+    float a = c_MinRoughness;
+    float b = diffuseBrightness * oneMinusSpecularStrength / (1.0 - c_MinRoughness) + specularBrightness - 2.0 * c_MinRoughness;
+    float c = c_MinRoughness - specularBrightness;
+    float D = b * b - 4.0 * a * c;
+
+    return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
+}
+
 void main()
 {
     // Metallic and Roughness material properties are packed together
@@ -248,13 +270,13 @@ void main()
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
     vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_ColorUV);
-    perceptualRoughness = mrSample.g;
-    metallic = mrSample.b * metallic;
+    perceptualRoughness = mrSample.g * u_RoughnessFactor;
+    metallic = mrSample.b * u_MetallicFactor;
 #endif
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
     vec4 sgSample = texture2D(u_SpecularGlossinessSampler, v_ColorUV);
-    perceptualRoughness = (1.0 - sgSample.a) * perceptualRoughness;
+    perceptualRoughness = (1.0 - sgSample.a) * u_RoughnessFactor;
     f0 = sgSample.rgb;
 #endif
 
@@ -285,7 +307,11 @@ void main()
 
     // f0 = specular
     specularColor = f0;
-    diffuseColor = baseColor.rgb * (1.0 - max(max(f0.r, f0.g), f0.b));
+    float oneMinusSpecularStrength = 1.0 - max(max(f0.r, f0.g), f0.b);
+    diffuseColor = baseColor.rgb * oneMinusSpecularStrength;
+
+    // TODO: do conversion between metallic M-R and S-G metallic!
+    metallic = solveMetallic(baseColor.rgb, specularColor, oneMinusSpecularStrength);
 
 #else // !MATERIAL_SPECULARGLOSSINESS
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0);

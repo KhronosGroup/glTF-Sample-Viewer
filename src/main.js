@@ -43,7 +43,7 @@ function gltf_rv(canvasId, gltfFiles = [],
     document.onmousemove = viewer.onMouseMove.bind(viewer);
     canvas.onwheel = viewer.onMouseWheel.bind(viewer);
 
-    let gltfFile = "models/Telephone/glTF/Telephone.gltf";
+    let gltfFile = "models/BoomBox/glTF/BoomBox.gltf";
 
     viewer.load(gltfFile);
     viewer.render();

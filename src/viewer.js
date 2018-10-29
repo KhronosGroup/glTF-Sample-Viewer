@@ -45,7 +45,7 @@ class gltfViewer
         let self = this;
 
         let text = {
-            model: 'models/Telephone/glTF/Telephone.gltf',
+            model: 'models/BoomBox/glTF/BoomBox.gltf',
             nextScene: function() {
                 self.currentScene++;
             },
@@ -54,7 +54,7 @@ class gltfViewer
             },
         };
 
-        this.gui.add(text, "model", ['models/Telephone/glTF/Telephone.gltf', 'models/BoomBox/glTF-pbrSpecularGlossiness/BoomBox.gltf']).onChange(function(gltfFile) {
+        this.gui.add(text, "model", ['models/BoomBox/glTF/BoomBox.gltf', 'models/BoomBox/glTF-pbrSpecularGlossiness/BoomBox.gltf']).onChange(function(gltfFile) {
             self.load(gltfFile);
         });
 
