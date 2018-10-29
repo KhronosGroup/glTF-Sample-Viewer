@@ -1,6 +1,6 @@
 class gltfRenderer
 {
-    constructor(canvas)
+    constructor(canvas, viewer)
     {
         this.canvas = canvas;
         this.shader = undefined; // current shader
@@ -17,12 +17,17 @@ class gltfRenderer
         this.projMatrix = mat4.create();
         this.viewProjMatrix = mat4.create();
 
+        this.viewer = viewer;
+
         this.defaultCamera = new gltfCamera();
         let eye = vec3.fromValues(0.0, 0.0, -4.0);
         let at  = vec3.fromValues(0.0, 0.0,  0.0);
         let up  = vec3.fromValues(0.0, 1.0,  0.0);
         mat4.lookAt(this.viewMatrix, eye, at, up);
         this.currentCameraPosition = eye;
+
+        this.init();
+        this.resize(canvas.canvasWidth, canvas.canvasHeight);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -57,7 +62,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, sceneIndex, cameraIndex, recursive, viewer = undefined)
+    drawScene(gltf, sceneIndex, cameraIndex, recursive)
     {
         // TODO: upload lights
 
@@ -83,11 +88,11 @@ class gltfRenderer
             this.viewMatrix = view.getTransform();
         }
 
-        if (viewer !== undefined)
+        if (this.viewer !== undefined)
         {
-            // TODO: remove viewer from this call
-            this.viewMatrix = viewer.getViewTransform();
-            this.currentCameraPosition = viewer.getCameraPosition();
+            // TODO: eventually remove viewer from this call!
+            this.viewMatrix = this.viewer.getViewTransform();
+            this.currentCameraPosition = this.viewer.getCameraPosition();
         }
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
@@ -152,8 +157,11 @@ class gltfRenderer
         //select shader permutation, compile and link program.
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
-        fragDefines.push("USE_IBL"); // TODO: make optional
-        fragDefines.push("USE_TEX_LOD");
+
+        if (this.viewer.parameters.useIBL) {
+            fragDefines.push("USE_IBL");
+            fragDefines.push("USE_TEX_LOD");
+        }
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
@@ -217,7 +225,9 @@ class gltfRenderer
             }
         }
 
-        this.applyEnvironmentMap(gltf, material.textures.length);
+        if (this.viewer.parameters.useIBL) {
+            this.applyEnvironmentMap(gltf, material.textures.length);
+        }
 
         if (drawIndexed)
         {

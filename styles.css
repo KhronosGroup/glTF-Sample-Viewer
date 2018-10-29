@@ -25,3 +25,7 @@ html, body {
     font-family: monospace;
     background-color: #FF3333;
 }
+
+.dg li.gui-stats:not(.folder) {
+    height: 48px;
+}

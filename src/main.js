@@ -1,4 +1,4 @@
-function gltf_rv(canvasId, gltfFiles = [],
+function gltf_rv(canvasId, modelIndex,
                  loggerId = undefined)
 {
     let logger = document.getElementById(loggerId);
@@ -17,14 +17,14 @@ function gltf_rv(canvasId, gltfFiles = [],
     if (!canvas)
     {
         log("Failed to retrieve the WebGL canvas!");
-        return false;
+        return null;
     }
 
     gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     if (!gl)
     {
         log("Failed to get an WebGL rendering context!");
-        return false;
+        return null;
     }
 
     let requiredWebglExtensions = [
@@ -36,17 +36,26 @@ function gltf_rv(canvasId, gltfFiles = [],
 
     LoadWebGLExtensions(requiredWebglExtensions);
 
-    viewer = new gltfViewer(canvas);
+    let models = [
+        "models/BoomBox/glTF/BoomBox.gltf",
+        "models/Telephone/glTF/Telephone.gltf",
+        "models/Avocado/glTF/Avocado.gltf",
+        "models/Corset/glTF/Corset.gltf",
+    ];
+
+    let configs = {
+        headless: false,
+    };
+
+    let viewer = new gltfViewer(canvas, configs, models);
 
     canvas.onmousedown = viewer.onMouseDown.bind(viewer);
     document.onmouseup = viewer.onMouseUp.bind(viewer);
     document.onmousemove = viewer.onMouseMove.bind(viewer);
     canvas.onwheel = viewer.onMouseWheel.bind(viewer);
+    canvas.ontouchstart = viewer.onTouchStart.bind(viewer);
+    document.ontouchend = viewer.onTouchEnd.bind(viewer);
+    document.ontouchmove = viewer.onTouchMove.bind(viewer);
 
-    let gltfFile = "models/BoomBox/glTF/BoomBox.gltf";
-
-    viewer.load(gltfFile);
-    viewer.render();
-
-    return true;
+    return viewer; // Succeeded in creating a glTF viewer!
 }

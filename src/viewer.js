@@ -1,95 +1,74 @@
 class gltfViewer
 {
-    constructor(canvas, headless = false)
+    constructor(canvas, config, models)
     {
+        this.canvas = canvas;
+        this.config = config;
+
         this.roll  = Math.PI;
         this.pitch = 0.0;
         this.zoom  = 4.0;
-
-        this.canvas = canvas;
-
-        canvas.style.cursor = "grab";
-
-        this.lastMouseX = 0.0;
-        this.lastMouseY = 0.0;
-
         this.scale = 180;
 
+        this.lastMouseX = 0.00;
+        this.lastMouseY = 0.00;
         this.wheelSpeed = 1.04;
         this.mouseDown = false;
 
-        if (headless == false)
-        {
-            this.initGUI();
-        }
+        this.lastTouchX = 0.00;
+        this.lastTouchY = 0.00;
+        this.touchDown = false;
+
+        canvas.style.cursor = "grab";
 
         this.gltf = undefined;
-        this.newGltf = undefined;
 
-        this.currentScene  = 0;
-        this.currentCamera = -1;
+        this.models = models;
 
-        this.rendering = false;
-        this.renderer = new gltfRenderer(canvas);
-        this.renderer.init();
-        this.renderer.resize(canvas.clientWidth, canvas.clientHeight);
-    }
-
-    initGUI()
-    {
-        this.gui = new dat.GUI();
-
-        this.environmentLightingFolder = this.gui.addFolder("Environment Lighting");
-        this.performanceFolder = this.gui.addFolder("Performance");
+        this.sceneIndex  =  0;
+        this.cameraIndex = -1;
 
         let self = this;
 
-        let text = {
-            model: 'models/BoomBox/glTF/BoomBox.gltf',
-            nextScene: function() {
-                self.currentScene++;
-            },
-            previousScene: function() {
-                self.currentScene--;
-            },
+        this.parameters = {
+            model: models[0],
+
+            useIBL: true,
+
+            nextScene: function() { self.sceneIndex++; },
+            prevScene: function() { self.sceneIndex--; }
         };
 
-        this.gui.add(text, "model", ['models/BoomBox/glTF/BoomBox.gltf', 'models/BoomBox/glTF-pbrSpecularGlossiness/BoomBox.gltf']).onChange(function(gltfFile) {
-            self.load(gltfFile);
-        });
+        if (config.headless == undefined ||
+            config.headless == false)
+        {
+            this.initUserInterface();
+        }
 
-        this.gui.add(text, "nextScene");
-        this.gui.add(text, "previousScene");
+        this.currentlyRendering = false;
+        this.renderer = new gltfRenderer(canvas, this);
 
-        this.stats = new Stats();
-        this.stats.dom.height = "48px";
-        [].forEach.call(this.stats.dom.children,(child) =>
-                        (child.style.display = ''));
+        if (this.parameters.model !== undefined)
+        {
+            this.load(this.parameters.model);
+        }
 
-        let perfList = document.createElement("li");
-        this.stats.dom.style.position = 'static';
-        perfList.appendChild(this.stats.dom);
-        perfList.classList.add("gui-stats");
-        this.performanceFolder.__ul.appendChild(perfList);
+        this.render(); // Starts a rendering loop.
     }
 
     load(gltfFile)
     {
         let self = this;
         axios.get(gltfFile).then(function(response) {
-            let newGltf = new glTF(gltfFile); // unload glTF resouce
+            let incompleteGltf = new glTF(gltfFile);
+            incompleteGltf.fromJson(response.data);
 
-            newGltf.fromJson(response.data);
+            self.addEnvironmentMap(incompleteGltf);
 
-            // TODO: insert textures & images for environmap
-            self.addEnvironmentMap(newGltf);
-
-            // Only render when all assets have been/are loaded:
-
-            let assetPromises = gltfLoader.load(newGltf);
+            let assetPromises = gltfLoader.load(incompleteGltf);
 
             Promise.all(assetPromises).then(function() {
-                self.rendering = false;
+                self.currentlyRendering = false;
 
                 if (self.gltf !== undefined)
                 {
@@ -97,9 +76,22 @@ class gltfViewer
                     self.gltf = undefined;
                 }
 
-                self.gltf = newGltf;
+                if (incompleteGltf.scene !== undefined)
+                {
+                    self.sceneIndex = incompleteGltf.scene;
+                }
+                else if (incompleteGltf.scenes.length != 0)
+                {
+                    self.sceneIndex = 0;
+                }
+                else
+                {
+                    throw "couldn't find any valid scene!";
+                }
 
-                self.rendering = true;
+                self.gltf = incompleteGltf;
+
+                self.currentlyRendering = true;
             });
         }).catch(function(error) {
             log("glTF " + error);
@@ -108,35 +100,45 @@ class gltfViewer
 
     render()
     {
-        let viewer = this;
-        function renderCallback(elapsedTime)
+        let self = this;
+        function renderFrame(elapsedTime)
         {
-            if (viewer.rendering)
+            if (!self.config.headless)
             {
-                viewer.renderer.newFrame();
+                self.stats.begin();
+            }
 
-                // Will only resize canvas if needed.
-                viewer.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+            if (self.currentlyRendering)
+            {
+                self.renderer.newFrame();
 
-                if (viewer.currentScene >= 0 && viewer.currentScene < viewer.gltf.scenes.length)
+                self.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+
+                if (self.sceneIndex < 0)
                 {
-                    viewer.renderer.drawScene(viewer.gltf, viewer.currentScene, viewer.currentCamera, true, viewer);
+                    self.sceneIndex = 0;
                 }
-                else
+                else if (self.sceneIndex >= self.gltf.scenes.length)
                 {
-                    viewer.currentScene = 0;
+                    self.sceneIndex = self.gltf.scenes.length - 1;
+                }
+
+                if (self.gltf.scenes.length != 0)
+                {
+                    self.renderer.drawScene(self.gltf, self.sceneIndex, self.cameraIndex, true, self);
                 }
             }
 
-            if (viewer.headless == false)
+            if (!self.config.headless)
             {
-                viewer.stats.update();
+                self.stats.end();
             }
 
-            window.requestAnimationFrame(renderCallback);
+            window.requestAnimationFrame(renderFrame);
         }
 
-        window.requestAnimationFrame(renderCallback);
+        // After this start executing render loop.
+        window.requestAnimationFrame(renderFrame);
     }
 
     getCameraPosition()
@@ -193,7 +195,6 @@ class gltfViewer
 
     onMouseMove(event)
     {
-
         if (!this.mouseDown)
         {
             canvas.style.cursor = "grab";
@@ -209,6 +210,14 @@ class gltfViewer
         let deltaY = newY - this.lastMouseY;
         this.pitch += (deltaY / this.scale);
 
+        this.clampPitch();
+
+        this.lastMouseX = newX;
+        this.lastMouseY = newY;
+    }
+
+    clampPitch()
+    {
         if (this.pitch >= Math.PI / 2.0)
         {
             this.pitch = +Math.PI / 2.0;
@@ -217,12 +226,84 @@ class gltfViewer
         {
             this.pitch = -Math.PI / 2.0;
         }
-
-        this.lastMouseX = newX;
-        this.lastMouseY = newY;
     }
 
-    // assume the glTF is already parsed, but not loaded
+    onTouchStart(event)
+    {
+        this.touchDown = true;
+        this.lastTouchX = event.touches[0].clientX;
+        this.lastTouchY = event.touches[0].clientY;
+    }
+
+    onTouchEnd(event)
+    {
+        this.touchStart = false;
+    }
+
+    onTouchMove(event)
+    {
+        if (!touchDown)
+        {
+            return;
+        }
+
+        let newX = event.touches[0].clientX;
+        let newY = event.touches[0].clientY;
+
+        let deltaX = newX - this.lastTouchX;
+        this.roll += (deltaX / this.scale);
+
+        let deltaY = newY - this.lastTouchY;
+        this.pitch += (deltaY / this.scale);
+
+        this.clampPitch();
+
+        this.lastTouchX = newX;
+        this.lastTouchY = newY;
+    }
+
+    initUserInterface()
+    {
+        this.gui = new dat.GUI({ width: 440 });
+
+        this.gui.close();
+
+        let self = this;
+
+        let viewerFolder = this.gui.addFolder("GLTF Viewer");
+
+        viewerFolder.add(this.parameters, "model", this.models).onChange(function(model) {
+            self.load(model)
+        }).name("Model");
+
+        let sceneFolder = viewerFolder.addFolder("Scene Index");
+
+        sceneFolder.add(this.parameters, "prevScene").name("←");
+        sceneFolder.add(this.parameters, "nextScene").name("→");
+
+        viewerFolder.open();
+
+        let environmentFolder = this.gui.addFolder("Environment");
+
+        environmentFolder.add(this.parameters, "useIBL").name("Image-Based Lighting");
+
+        // TODO: add stuff like tonemapping algorithm and direction light.
+
+        let performanceFolder = this.gui.addFolder("Performance");
+
+        this.stats = new Stats();
+
+        this.stats.domElement.height = "48px";
+        [].forEach.call(this.stats.domElement.children, (child) => (child.style.display = ''));
+        this.stats.domElement.style.position = "static";
+
+        let statsList = document.createElement("li");
+        statsList.appendChild(this.stats.domElement);
+        statsList.classList.add("gui-stats");
+
+        performanceFolder.__ul.appendChild(statsList);
+    }
+
     addEnvironmentMap(gltf)
     {
         gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));

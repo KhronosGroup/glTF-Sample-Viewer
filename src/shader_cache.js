@@ -107,7 +107,7 @@ class ShaderCache
             shader = CompileShader(isVert, defines + src);
             if(shader)
             {
-                console.log(defines);
+                // console.log(defines);
                 this.shaders.set(hash, shader);
             }
             else
