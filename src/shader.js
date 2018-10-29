@@ -27,6 +27,16 @@ class gltfShader
         }
     }
 
+    destroy()
+    {
+        if (this.program !== undefined)
+        {
+            this.deleteProgram(this.program);
+        }
+
+        this.program = undefined;
+    }
+
     getAttribLocation(name)
     {
         const loc = this.attributes.get(name);

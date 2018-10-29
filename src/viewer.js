@@ -1,6 +1,6 @@
 class gltfViewer
 {
-    constructor(canvas)
+    constructor(canvas, headless = false)
     {
         this.roll  = Math.PI;
         this.pitch = 0.0;
@@ -17,6 +17,94 @@ class gltfViewer
 
         this.wheelSpeed = 1.04;
         this.mouseDown = false;
+
+        if (!headless)
+        {
+            this.initGUI();
+        }
+
+        this.gltf = undefined;
+        this.newGltf = undefined;
+
+        this.rendering = false;
+        this.renderer = new gltfRenderer(canvas);
+        this.renderer.init();
+        this.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+    }
+
+    initGUI()
+    {
+        this.gui = new dat.GUI();
+
+        this.sceneFolder = this.gui.addFolder("glTF Scene");
+        this.environmentLightingFolder = this.gui.addFolder("Environment Lighting");
+        this.performanceFolder = this.gui.addFolder("Performance");
+
+        this.stats = new Stats();
+        this.stats.dom.height = "48px";
+        [].forEach.call(this.stats.dom.children,(child) =>
+                        (child.style.display = ''));
+
+        let perfList = document.createElement("li");
+        this.stats.dom.style.position = 'static';
+        perfList.appendChild(this.stats.dom);
+        perfList.classList.add("gui-stats");
+        this.performanceFolder.__ul.appendChild(perfList);
+    }
+
+    load(gltfFile)
+    {
+        let self = this;
+        axios.get(gltfFile).then(function(response) {
+            let newGltf = new glTF(gltfFile); // unload glTF resouce
+
+            newGltf.fromJson(response.data);
+
+            // TODO: insert textures & images for environmap
+            self.addEnvironmentMap(newGltf);
+
+            // Only render when all assets have been/are loaded:
+
+            let assetPromises = gltfLoader.load(newGltf);
+
+            Promise.all(assetPromises).then(function() {
+                self.rendering = false;
+
+                if (self.gltf !== undefined)
+                {
+                    gltfLoader.unload(self.gltf);
+                    self.gltf = undefined;
+                }
+
+                self.gltf = newGltf;
+
+                self.rendering = true;
+            });
+        }).catch(function(error) {
+            log("glTF " + error);
+        });
+    }
+
+    render()
+    {
+        let viewer = this;
+        function renderCallback(elapsedTime)
+        {
+            if (viewer.rendering)
+            {
+                viewer.renderer.newFrame();
+
+                // Will only resize canvas if needed.
+                viewer.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+
+                // TODO: select the correct cameraIndex later.
+                viewer.renderer.drawScene(viewer.gltf, 0, -1, true, viewer);
+            }
+
+            window.requestAnimationFrame(renderCallback);
+        }
+
+        window.requestAnimationFrame(renderCallback);
     }
 
     getCameraPosition()
@@ -101,4 +189,43 @@ class gltfViewer
         this.lastMouseX = newX;
         this.lastMouseY = newY;
     }
+
+    // assume the glTF is already parsed, but not loaded
+    addEnvironmentMap(gltf)
+    {
+        let imageIdx = gltf.images.length;
+
+        // u_DiffuseEnvSampler faces
+        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_bottom_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_front_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_left_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+
+        //let diffuseSources = [imageIdx, imageIdx++, imageIdx++, imageIdx++, imageIdx++,imageIdx++];
+
+        // u_SpecularEnvSampler faces
+        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_bottom_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_front_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_left_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+        gltf.images.push(new gltfImage("assets/images/papermill/specular/specular_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+
+        gltf.images.push(new gltfImage("assets/images/brdfLUT.png", gl.TEXTURE_2D));
+
+        let samplerIdx = gltf.samplers.length;
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));
+
+        // u_DiffuseEnvSampler tex
+        gltf.textures.push(new gltfTexture(samplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+
+        // u_SpecularEnvSampler tex
+        gltf.textures.push(new gltfTexture(samplerIdx, [++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+
+        // u_brdfLUT tex
+        gltf.textures.push(new gltfTexture(samplerIdx, [++imageIdx], gl.TEXTURE_2D));
+    }
+
 }

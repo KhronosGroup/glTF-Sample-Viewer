@@ -5,7 +5,8 @@ class gltfCamera
                 yfov = 45.0 * Math.PI / 180.0,
                 aspectRatio = 16.0 / 9.0,
                 xmag = 1.0, ymag = 1.0,
-                name = undefined)
+                name = undefined,
+                node = undefined)
     {
         this.type = type;
         this.znear = znear;
@@ -15,7 +16,12 @@ class gltfCamera
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
         this.name = name;
-        this.node = undefined;
+        this.node = node;
+    }
+
+    clone()
+    {
+        return gltfCamera(this.type, this.znear, this.zfar, this.yfov, this.aspectRatio, this.xmag, this.ymag, this.name, this.node);
     }
 
     getProjectionMatrix()

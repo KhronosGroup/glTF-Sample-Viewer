@@ -4,7 +4,7 @@ class gltfTexture
     {
         this.sampler = sampler; // index to gltfSampler, default sampler ?
         this.source = source; // index to gltfImage
-        this.texture = texture; // gl texture
+        this.glTexture = texture; // gl texture
         this.initialized = false;
         this.type = type;
     }
@@ -17,6 +17,16 @@ class gltfTexture
         {
             this.sampler = defaultSampler;
         }
+    }
+
+    destroy()
+    {
+        if (this.glTexture !== undefined)
+        {
+            gl.deleteTexture(this.glTexture);
+        }
+
+        this.glTexture = undefined;
     }
 };
 

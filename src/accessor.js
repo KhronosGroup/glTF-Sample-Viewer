@@ -85,4 +85,14 @@ class gltfAccessor
     {
         fromKeys(this, jsonAccessor);
     }
+
+    destroy()
+    {
+        if (this.glBuffer !== undefined)
+        {
+            gl.deleteBuffer(this.glBuffer);
+        }
+
+        this.glBuffer = undefined;
+    }
 };

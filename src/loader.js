@@ -16,4 +16,22 @@ class gltfLoader
 
         return promises;
     }
+
+    static unload(gltf)
+    {
+        for (let image of gltf.images)
+        {
+            image.image = undefined;
+        }
+
+        for (let texture of gltf.textures)
+        {
+            texture.destroy();
+        }
+
+        for (let accessor of gltf.accessors)
+        {
+            accessor.destroy();
+        }
+    }
 };

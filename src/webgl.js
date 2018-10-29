@@ -46,13 +46,13 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
         return false;
     }
 
-    if(gltfTex.texture === undefined)
+    if(gltfTex.glTexture === undefined)
     {
-        gltfTex.texture = gl.createTexture();
+        gltfTex.glTexture = gl.createTexture();
     }
 
     gl.activeTexture(gl.TEXTURE0 + texSlot);
-    gl.bindTexture(gltfTex.type, gltfTex.texture);
+    gl.bindTexture(gltfTex.type, gltfTex.glTexture);
 
     gl.uniform1i(loc, texSlot);
 

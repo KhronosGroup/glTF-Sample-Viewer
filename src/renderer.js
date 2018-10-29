@@ -46,15 +46,7 @@ class gltfRenderer
             this.canvas.height = height;
             this.currentHeight = height;
             this.currentWidth  = width;
-
-            let aspectRatio = width / height;
             gl.viewport(0, 0, width, height);
-
-            this.defaultCamera.aspectRatio = aspectRatio;
-            for (let i = 0; i < gltf.cameras.length; ++i)
-            {
-                gltf.cameras[i].aspectRatio = aspectRatio;
-            }
         }
     }
 
@@ -73,15 +65,16 @@ class gltfRenderer
 
         if(cameraIndex !== -1)
         {
-            currentCamera = gltf.cameras[cameraIndex];
+            currentCamera = gltf.cameras[cameraIndex].clone();
         }
         else
         {
             currentCamera = this.defaultCamera;
         }
 
-        this.projMatrix = currentCamera.getProjectionMatrix();
+        currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
+        this.projMatrix = currentCamera.getProjectionMatrix();
 
         if(currentCamera.node !== undefined)
         {
@@ -92,6 +85,7 @@ class gltfRenderer
 
         if (viewer !== undefined)
         {
+            // TODO: remove viewer from this call
             this.viewMatrix = viewer.getViewTransform();
             this.currentCameraPosition = viewer.getCameraPosition();
         }
@@ -254,5 +248,10 @@ class gltfRenderer
         this.shader.updateUniform("u_ScaleDiffBaseMR", jsToGl([0, 0, 0, 0]));
         this.shader.updateUniform("u_ScaleFGDSpec", jsToGl([0, 0, 0, 0]));
         this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, 0, 0]));
+    }
+
+    destroy()
+    {
+        this.shaderCache.destroy();
     }
 };

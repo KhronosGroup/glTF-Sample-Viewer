@@ -51,6 +51,24 @@ class ShaderCache
 
     }
 
+    destroy()
+    {
+        for (let [identifier, shader] of this.shaders.entries())
+        {
+            gl.deleteShader(shader);
+            shader = undefined;
+        }
+
+        this.shaders.clear();
+
+        for (let [shader_hash, program] of this.programs)
+        {
+            program.destroy();
+        }
+
+        this.programs.clear();
+    }
+
     // example args: "pbr.vert", ["NORMALS", "TANGENTS"]
     selectShader(shaderIdentifier, permutationDefines)
     {
