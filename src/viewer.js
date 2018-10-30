@@ -1,6 +1,6 @@
 class gltfViewer
 {
-    constructor(canvas, config, models)
+    constructor(canvas, config, modelIndex)
     {
         this.canvas = canvas;
         this.config = config;
@@ -23,7 +23,7 @@ class gltfViewer
 
         this.gltf = undefined;
 
-        this.models = models;
+        this.models = [];
 
         this.sceneIndex  =  0;
         this.cameraIndex = -1;
@@ -31,7 +31,7 @@ class gltfViewer
         let self = this;
 
         this.parameters = {
-            model: models[0],
+            model: "",
 
             useIBL: true,
 
@@ -42,16 +42,15 @@ class gltfViewer
         if (config.headless == undefined ||
             config.headless == false)
         {
-            this.initUserInterface();
+            this.initUserInterface(modelIndex);
+        }
+        else
+        {
+            // TODO: render / load model index
         }
 
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this);
-
-        if (this.parameters.model !== undefined)
-        {
-            this.load(this.parameters.model);
-        }
 
         this.render(); // Starts a rendering loop.
     }
@@ -262,7 +261,7 @@ class gltfViewer
         this.lastTouchY = newY;
     }
 
-    initUserInterface()
+    initUserInterface(modelIndex)
     {
         this.gui = new dat.GUI({ width: 440 });
 
@@ -272,9 +271,30 @@ class gltfViewer
 
         let viewerFolder = this.gui.addFolder("GLTF Viewer");
 
-        viewerFolder.add(this.parameters, "model", this.models).onChange(function(model) {
-            self.load(model)
-        }).name("Model");
+        function initModels()
+        {
+            self.parameters.model = self.models[0];
+            viewerFolder.add(self.parameters, "model", self.models).onChange(function(model) { self.load(model) }).name("Model");
+            self.load(self.parameters.model);
+        };
+
+        axios.get(modelIndex).then(function(response)
+        {
+            let jsonIndex = response.data;
+
+            if (jsonIndex === undefined) {
+                self.models.push("models/BoomBox/glTF/BoomBox.gltf");
+
+            } else {
+                self.models = self.parseModelIndex(jsonIndex);
+            }
+
+            initModels();
+        }).catch(function(error) {
+            self.models.push("models/BoomBox/glTF/BoomBox.gltf");
+            initModels();
+            log("glTF " + error);
+        });
 
         let sceneFolder = viewerFolder.addFolder("Scene Index");
 
@@ -302,6 +322,25 @@ class gltfViewer
         statsList.classList.add("gui-stats");
 
         performanceFolder.__ul.appendChild(statsList);
+    }
+
+    parseModelIndex(jsonIndex, path = "assets/models/2.0/")
+    {
+        let models = [];
+
+        for(let entry of jsonIndex)
+        {
+            if(entry.variants !== undefined)
+            {
+                for(let variant of Object.keys(entry.variants))
+                {
+                    const gltf = entry.variants[variant];
+                    models.push(path + entry.name + '/' + variant + '/' + gltf);
+                }
+            }
+        }
+
+        return models;
     }
 
     addEnvironmentMap(gltf)

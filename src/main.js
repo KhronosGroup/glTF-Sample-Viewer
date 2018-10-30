@@ -36,18 +36,11 @@ function gltf_rv(canvasId, modelIndex,
 
     LoadWebGLExtensions(requiredWebglExtensions);
 
-    let models = [
-        "models/BoomBox/glTF/BoomBox.gltf",
-        "models/Telephone/glTF/Telephone.gltf",
-        "models/Avocado/glTF/Avocado.gltf",
-        "models/Corset/glTF/Corset.gltf",
-    ];
-
     let configs = {
-        headless: false,
+        headless: false
     };
 
-    let viewer = new gltfViewer(canvas, configs, models);
+    let viewer = new gltfViewer(canvas, configs, modelIndex);
 
     canvas.onmousedown = viewer.onMouseDown.bind(viewer);
     document.onmouseup = viewer.onMouseUp.bind(viewer);
