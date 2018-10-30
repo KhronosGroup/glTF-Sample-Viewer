@@ -121,7 +121,7 @@ class ShaderCache
 
     getShaderProgram(vertexShaderHash, fragmentShaderHash)
     {
-        const hash = vertexShaderHash ^ fragmentShaderHash;
+        const hash = CombineHashes(vertexShaderHash, fragmentShaderHash);
 
         let program = this.programs.get(hash);
 
