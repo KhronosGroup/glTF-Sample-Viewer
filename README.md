@@ -1,5 +1,3 @@
-**Warnings!** This branch is a WIP refactor of [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-WebGL-PBR). Don't expect things to work smoothly just yet!
-
 Physically-Based Rendering in glTF 2.0 using WebGL
 ==================================================
 
@@ -203,3 +201,29 @@ vec3 diffuse(PBRInfo pbrInputs)
     return (pbrInputs.diffuseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
 }
 ```
+
+Features
+--------
+
+- [x] Async loading/unloading of glTF files
+- [ ] Loading of binary glTF files (GLB)
+- [x] Support for Metallic-Roughness materials
+- [x] Support for the KHR_materials_pbrSpecularGlossiness
+- [x] Basic support for Image-Based Lighting
+- [ ] Extension for HDR environment maps
+- [x] Correctly handles sampling information from glTF
+- [x] Caches shader program permutations
+- [x] Support multiple primitives per mesh
+- [x] Support multiple scenes per glTF asset
+- [x] Partial support for multiple cameras
+- [ ] Support for alpha coverage
+- [x] Async loading/unloading of glTF buffers and images
+- [x] Flexible and extensible parsing of glTF structures
+- [ ] Partial support for desktop/headless rendering
+- [ ] Handles anti-aliasing via WebGL MSAA
+- [x] Straightforward rendering of the scene graph
+- [ ] Selection of tonemapping algorithms for IBL
+- [ ] Support for the KHR_materials_unlit extension
+- [ ] Support for the KHR_texture_transform extension
+- [ ] Support for the KHR_lights_punctual extension
+- [ ] Educational GUI for inspecting BRDF components
