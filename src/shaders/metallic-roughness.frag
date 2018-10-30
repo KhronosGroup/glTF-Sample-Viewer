@@ -214,8 +214,12 @@ float geometricOcclusion(PBRInfo pbrInputs)
     float NdotV = pbrInputs.NdotV;
     float r = pbrInputs.alphaRoughness;
 
-    float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
-    float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
+    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + r * r * (1.0 - (NdotL * NdotL))));
+    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + r * r * (1.0 - (NdotV * NdotV))));
+
+    //float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
+    //float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
+
     return attenuationL * attenuationV;
 }
 
@@ -256,54 +260,29 @@ void main()
     // Metallic and Roughness material properties are packed together
     // In glTF, these factors can be specified by fixed scalar values
     // or from a metallic-roughness map
-    float perceptualRoughness = u_RoughnessFactor;
-    float metallic = u_MetallicFactor;
-
+    float perceptualRoughness = 0.0;
+    float metallic = 0.0;
+    vec4 baseColor = vec4(0);
+    vec3 diffuseColor = vec3(0.0);
+    vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
-    f0 = u_SpecularFactor;
-    perceptualRoughness = 1.0 - u_GlossinessFactor;
-#endif
-
-#ifdef HAS_METALLIC_ROUGHNESS_MAP
-    // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
-    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_ColorUV);
-    perceptualRoughness = mrSample.g * u_RoughnessFactor;
-    metallic = mrSample.b * u_MetallicFactor;
-#endif
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
     vec4 sgSample = texture2D(u_SpecularGlossinessSampler, v_ColorUV);
-    perceptualRoughness = (1.0 - sgSample.a) * u_RoughnessFactor;
-    f0 = sgSample.rgb;
-#endif
-
-    perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
-    metallic = clamp(metallic, 0.0, 1.0);
-    // Roughness is authored as perceptual roughness; as is convention,
-    // convert to material roughness by squaring the perceptual roughness [2].
-
-    float alphaRoughness = perceptualRoughness * perceptualRoughness;
-
-    vec4 baseColor = u_BaseColorFactor;
-
-    vec3 diffuseColor = vec3(0.0);
-    vec3 specularColor= vec3(0.0);
-
-    // The albedo may be defined from a base texture or a flat color
-#ifdef HAS_BASE_COLOR_MAP
-    baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, v_ColorUV)) * u_BaseColorFactor;
-#endif
-
-#ifdef MATERIAL_SPECULARGLOSSINESS
+    perceptualRoughness = (1.0 - sgSample.a * u_GlossinessFactor); // glossiness to roughness
+    f0 = sgSample.rgb * u_SpecularFactor; // specular
+#else
+    f0 = u_SpecularFactor;
+    perceptualRoughness = 1.0 - u_GlossinessFactor;
+#endif // ! HAS_SPECULAR_GLOSSINESS_MAP
 
 #ifdef HAS_DIFFUSE_MAP
     baseColor = SRGBtoLINEAR(texture2D(u_DiffuseSampler, v_ColorUV)) * u_DiffuseFactor;
 #else
     baseColor = u_DiffuseFactor;
-#endif
+#endif // !HAS_DIFFUSE_MAP
 
     // f0 = specular
     specularColor = f0;
@@ -313,12 +292,39 @@ void main()
     // TODO: do conversion between metallic M-R and S-G metallic!
     metallic = solveMetallic(baseColor.rgb, specularColor, oneMinusSpecularStrength);
 
-#else // !MATERIAL_SPECULARGLOSSINESS
+#else // METALLIC ROUGHNESS MATERIAL
+
+#ifdef HAS_METALLIC_ROUGHNESS_MAP
+    // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
+    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
+    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_ColorUV);
+    perceptualRoughness = mrSample.g * u_RoughnessFactor;
+    metallic = mrSample.b * u_MetallicFactor;
+#else
+    metallic = u_MetallicFactor;
+    perceptualRoughness = u_RoughnessFactor;
+#endif
+
+    // The albedo may be defined from a base texture or a flat color
+#ifdef HAS_BASE_COLOR_MAP
+    baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, v_ColorUV)) * u_BaseColorFactor;
+#else
+    baseColor = u_BaseColorFactor;
+#endif
+
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
     diffuseColor *= 1.0 - metallic;
 
     specularColor = mix(f0, baseColor.rgb, metallic);
-#endif
+
+#endif // ! MATERIAL_SPECULARGLOSSINESS
+
+    perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
+    metallic = clamp(metallic, 0.0, 1.0);
+
+    // Roughness is authored as perceptual roughness; as is convention,
+    // convert to material roughness by squaring the perceptual roughness [2].
+    float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
     // Compute reflectance.
     float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
@@ -396,4 +402,8 @@ void main()
     color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
+    //gl_FragColor = vec4(vec3(diffuseContrib), baseColor.a);
+    //gl_FragColor = vec4(vec3(G), baseColor.a);
+    //gl_FragColor = vec4(n, baseColor.a);
+    //gl_FragColor = vec4(vec3(alphaRoughness), baseColor.a);
 }

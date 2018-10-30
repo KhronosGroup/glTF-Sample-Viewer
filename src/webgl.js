@@ -12,7 +12,7 @@ function LoadWebGLExtensions(webglExtensions)
 
     if (EXT_SRGB)
     {
-        gl.SRGB = EXT_SRGB.SRGB_EXT;
+        gl.SRGB = EXT_SRGB.SRGB_ALPHA_EXT;
         gl.supports_EXT_SRGB = true;
     }
     else

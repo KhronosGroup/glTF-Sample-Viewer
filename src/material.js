@@ -99,15 +99,16 @@ class gltfMaterial
             this.properties.set("u_EmissiveFactor", this.emissiveFactor);
         }
 
-        if (jsonMaterial.pbrMetallicRoughness !== undefined)
-        {
-            this.type = "MR";
-            this.fromJsonMetallicRoughness(jsonMaterial.pbrMetallicRoughness);
-        }
-
         if(jsonMaterial.extensions !== undefined)
         {
             this.fromJsonMaterialExtensions(jsonMaterial.extensions);
+        }
+
+        // dont do MR if we parsed SG before
+        if (jsonMaterial.pbrMetallicRoughness !== undefined && this.type != "SG")
+        {
+            this.type = "MR";
+            this.fromJsonMetallicRoughness(jsonMaterial.pbrMetallicRoughness);
         }
     }
 
@@ -192,7 +193,7 @@ class gltfMaterial
         if (jsonSpecularGlossiness.specularGlossinessTexture !== undefined)
         {
             let specularGlossinessTexture = new gltfTextureInfo();
-            specularGlossinessTexture.fromJson(jsonSpecularGlossiness.specularGlossinessTexture,"u_SpecularGlossinessSampler", gl.RGBA);
+            specularGlossinessTexture.fromJson(jsonSpecularGlossiness.specularGlossinessTexture,"u_SpecularGlossinessSampler", gl.SRGB);
             this.textures.push(specularGlossinessTexture);
             this.defines.push("HAS_SPECULAR_GLOSSINESS_MAP");
         }
