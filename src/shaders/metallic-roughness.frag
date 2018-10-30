@@ -402,8 +402,4 @@ void main()
     color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
-    //gl_FragColor = vec4(vec3(diffuseContrib), baseColor.a);
-    //gl_FragColor = vec4(vec3(G), baseColor.a);
-    //gl_FragColor = vec4(n, baseColor.a);
-    //gl_FragColor = vec4(vec3(alphaRoughness), baseColor.a);
 }

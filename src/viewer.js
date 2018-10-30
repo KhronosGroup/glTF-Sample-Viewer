@@ -328,14 +328,19 @@ class gltfViewer
     {
         let models = [];
 
+        let ignoreVariants = ["glTF-Binary", "glTF-Draco", "glTF-Embedded"];
+
         for(let entry of jsonIndex)
         {
             if(entry.variants !== undefined)
             {
                 for(let variant of Object.keys(entry.variants))
                 {
-                    const gltf = entry.variants[variant];
-                    models.push(path + entry.name + '/' + variant + '/' + gltf);
+                    if (!ignoreVariants.includes(variant))
+                    {
+                        const gltf = entry.variants[variant];
+                        models.push(path + entry.name + '/' + variant + '/' + gltf);
+                    }
                 }
             }
         }
