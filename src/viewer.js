@@ -1,9 +1,9 @@
 class gltfViewer
 {
-    constructor(canvas, config, modelIndex)
+    constructor(canvas, modelIndex, headless = false)
     {
         this.canvas = canvas;
-        this.config = config;
+        this.headless = headless;
 
         this.roll  = Math.PI;
         this.pitch = 0.0;
@@ -39,14 +39,13 @@ class gltfViewer
             prevScene: function() { self.sceneIndex--; }
         };
 
-        if (config.headless == undefined ||
-            config.headless == false)
+        if (this.headless == false)
         {
             this.initUserInterface(modelIndex);
         }
         else
         {
-            // TODO: render / load model index
+            this.hideSpinner();
         }
 
         this.currentlyRendering = false;
@@ -55,9 +54,14 @@ class gltfViewer
         this.render(); // Starts a rendering loop.
     }
 
-    load(gltfFile)
+    load(gltfFile, basePath = "")
     {
+        // Started loading the glTF 2.0 models.
+        if (!this.headless) this.showSpinner();
+
         let self = this;
+
+        gltfFile = basePath + gltfFile;
         axios.get(gltfFile).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
             incompleteGltf.fromJson(response.data);
@@ -90,10 +94,14 @@ class gltfViewer
 
                 self.gltf = incompleteGltf;
 
+                // Finished load all of the glTF assets
+                if (!self.headless) self.hideSpinner();
+
                 self.currentlyRendering = true;
             });
         }).catch(function(error) {
-            log("glTF " + error);
+            console.warn("glTF " + error);
+            if (!self.headless) self.hideSpinner();
         });
     }
 
@@ -102,7 +110,7 @@ class gltfViewer
         let self = this;
         function renderFrame(elapsedTime)
         {
-            if (!self.config.headless)
+            if (!self.headless)
             {
                 self.stats.begin();
             }
@@ -128,7 +136,7 @@ class gltfViewer
                 }
             }
 
-            if (!self.config.headless)
+            if (!self.headless)
             {
                 self.stats.end();
             }
@@ -263,48 +271,50 @@ class gltfViewer
 
     initUserInterface(modelIndex)
     {
-        this.gui = new dat.GUI({ width: 440 });
+        this.gui = new dat.GUI({ width: 300 });
 
-        this.gui.close();
-
-        let self = this;
+        // Find out the root path of the models that are going to be loaded.
+        let path = modelIndex.substring(0, modelIndex.lastIndexOf("/") + 1);
 
         let viewerFolder = this.gui.addFolder("GLTF Viewer");
 
-        function initModels()
+        let self = this;
+
+        function initModelsDropdown()
         {
             self.parameters.model = self.models[0];
-            viewerFolder.add(self.parameters, "model", self.models).onChange(function(model) { self.load(model) }).name("Model");
-            self.load(self.parameters.model);
+            viewerFolder.add(self.parameters, "model", self.models).onChange(function(model) {
+                self.load(model, path)
+            }).name("Model");
+
+            self.load(self.parameters.model, path);
+
+            let sceneFolder = viewerFolder.addFolder("Scene Index");
+            sceneFolder.add(self.parameters, "prevScene").name("←");
+            sceneFolder.add(self.parameters, "nextScene").name("→");
+
+            viewerFolder.open();
         };
 
         axios.get(modelIndex).then(function(response)
         {
             let jsonIndex = response.data;
 
-            if (jsonIndex === undefined) {
-                self.models.push("models/BoomBox/glTF/BoomBox.gltf");
-
+            if (jsonIndex === undefined)
+            {
+                self.models.push("BoomBox/glTF/BoomBox.gltf");
             } else {
-                self.models = self.parseModelIndex(jsonIndex);
+                self.models = self.parseModelIndex(jsonIndex, path);
             }
 
-            initModels();
+            initModelsDropdown();
         }).catch(function(error) {
-            self.models.push("models/BoomBox/glTF/BoomBox.gltf");
-            initModels();
-            log("glTF " + error);
+            self.models.push("BoomBox/glTF/BoomBox.gltf");
+            initModelsDropdown();
+            console.warn("glTF " + error);
         });
 
-        let sceneFolder = viewerFolder.addFolder("Scene Index");
-
-        sceneFolder.add(this.parameters, "prevScene").name("←");
-        sceneFolder.add(this.parameters, "nextScene").name("→");
-
-        viewerFolder.open();
-
         let environmentFolder = this.gui.addFolder("Environment");
-
         environmentFolder.add(this.parameters, "useIBL").name("Image-Based Lighting");
 
         // TODO: add stuff like tonemapping algorithm and direction light.
@@ -324,7 +334,7 @@ class gltfViewer
         performanceFolder.__ul.appendChild(statsList);
     }
 
-    parseModelIndex(jsonIndex, path = "assets/models/2.0/")
+    parseModelIndex(jsonIndex, path = "")
     {
         let models = [];
 
@@ -339,7 +349,7 @@ class gltfViewer
                     if (!ignoreVariants.includes(variant))
                     {
                         const gltf = entry.variants[variant];
-                        models.push(path + entry.name + '/' + variant + '/' + gltf);
+                        models.push(entry.name + '/' + variant + '/' + gltf);
                     }
                 }
             }
@@ -394,5 +404,23 @@ class gltfViewer
 
         // u_brdfLUT tex
         gltf.textures.push(new gltfTexture(envmapIdx, [++imageIdx], gl.TEXTURE_2D));
+    }
+
+    showSpinner()
+    {
+        let spinner = document.getElementById("gltf-rv-model-spinner");
+        if (spinner !== undefined)
+        {
+            spinner.style.display = "block";
+        }
+    }
+
+    hideSpinner()
+    {
+        let spinner = document.getElementById("gltf-rv-model-spinner");
+        if (spinner !== undefined)
+        {
+            spinner.style.display = "none";
+        }
     }
 }

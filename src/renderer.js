@@ -13,6 +13,15 @@ class gltfRenderer
             "metallic-roughness.frag"
         ]);
 
+        let requiredWebglExtensions = [
+            "EXT_shader_texture_lod",
+            "OES_standard_derivatives",
+            "OES_element_index_uint",
+            "EXT_SRGB"
+        ];
+
+        LoadWebGLExtensions(requiredWebglExtensions);
+
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
         this.viewProjMatrix = mat4.create();
