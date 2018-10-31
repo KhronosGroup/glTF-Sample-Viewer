@@ -20,6 +20,19 @@ function LoadWebGLExtensions(webglExtensions)
         gl.SRGB = gl.RGBA;
         gl.supports_EXT_SRGB = false;
     }
+
+    let EXT_texture_filter_anisotropic = gl.getExtension("EXT_texture_filter_anisotropic");
+
+    if (EXT_texture_filter_anisotropic)
+    {
+        gl.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
+        gl.maxAnisotropy = gl.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        gl.supports_EXT_texture_filter_anisotropic = true;
+    }
+    else
+    {
+        gl.supports_EXT_texture_filter_anisotropic = false;
+    }
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
@@ -29,6 +42,11 @@ function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
     gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
     gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
     gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
+
+    if (gl.supports_EXT_texture_filter_anisotropic)
+    {
+        gl.texParameterf(type, gl.anisotropy, gl.maxAnisotropy); // => 16xAF
+    }
 }
 
 function SetTexture(loc, gltf, textureInfo, texSlot)

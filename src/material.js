@@ -93,7 +93,7 @@ class gltfMaterial
         if (jsonMaterial.emissiveTexture !== undefined)
         {
             let emissiveTexture = new gltfTextureInfo();
-            emissiveTexture.fromJson(jsonMaterial.emissiveTexture,"u_EmissiveSampler", gl.RGBA);
+            emissiveTexture.fromJson(jsonMaterial.emissiveTexture,"u_EmissiveSampler", gl.SRGB);
             this.textures.push(emissiveTexture);
             this.defines.push("HAS_EMISSIVE_MAP");
             this.properties.set("u_EmissiveFactor", this.emissiveFactor);

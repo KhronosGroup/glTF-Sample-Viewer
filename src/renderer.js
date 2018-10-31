@@ -17,7 +17,8 @@ class gltfRenderer
             "EXT_shader_texture_lod",
             "OES_standard_derivatives",
             "OES_element_index_uint",
-            "EXT_SRGB"
+            "EXT_SRGB",
+            "EXT_texture_filter_anisotropic"
         ];
 
         LoadWebGLExtensions(requiredWebglExtensions);
@@ -234,7 +235,8 @@ class gltfRenderer
             }
         }
 
-        if (this.viewer.parameters.useIBL) {
+        if (this.viewer.parameters.useIBL)
+        {
             this.applyEnvironmentMap(gltf, material.textures.length);
         }
 
