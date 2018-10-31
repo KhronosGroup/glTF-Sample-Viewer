@@ -310,8 +310,8 @@ class gltfViewer
 
             if (jsonIndex === undefined)
             {
-                // TODO: remove this hack later when we can.
-                self.models.push("BoomBox/glTF/BoomBox.gltf");
+                // TODO: remove this later, fallback if no submodule :-)
+                self.models = self.parseModelIndex(jsonIndex, "models/");
                 initModelsDropdown("models/");
                 self.roll = Math.PI;
                 self.zoom = 4.0;
@@ -321,12 +321,17 @@ class gltfViewer
             }
 
         }).catch(function(error) {
-            // TODO: remove this hack later when we can.
-            self.models.push("BoomBox/glTF/BoomBox.gltf");
-            initModelsDropdown("models/");
-            console.warn("glTF " + error);
-            self.roll = Math.PI;
-            self.zoom = 4.0;
+            console.warn("glTF: failed to load model-index from assets!");
+            axios.get("models/model-index.json").then(function(response) {
+                let jsonIndex = response.data;
+                // TODO: remove this later, fallback if no submodule :-)
+                self.models = self.parseModelIndex(jsonIndex, "models/");
+                initModelsDropdown("models/");
+                self.roll = Math.PI;
+                self.zoom = 4.0;
+            }).catch(function(error) {
+                console.warn("Failed to load model-index fallback too!");
+            });
         });
 
         let environmentFolder = this.gui.addFolder("Environment");
