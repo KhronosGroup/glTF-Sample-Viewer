@@ -5,9 +5,9 @@ class gltfViewer
         this.canvas = canvas;
         this.headless = headless;
 
-        this.roll  = Math.PI;
+        this.roll  = 0.0;
         this.pitch = 0.0;
-        this.zoom  = 4.0;
+        this.zoom  = 0.048;
         this.scale = 180;
 
         this.lastMouseX = 0.00;
@@ -280,14 +280,22 @@ class gltfViewer
 
         let self = this;
 
-        function initModelsDropdown()
+        function initModelsDropdown(basePath)
         {
-            self.parameters.model = self.models[0];
+            if (self.models.includes("BoomBox/glTF/BoomBox.gltf"))
+            {
+                self.parameters.model = "BoomBox/glTF/BoomBox.gltf";
+            }
+            else
+            {
+                self.parameters.model = self.models[0];
+            }
+
             viewerFolder.add(self.parameters, "model", self.models).onChange(function(model) {
-                self.load(model, path)
+                self.load(model, basePath)
             }).name("Model");
 
-            self.load(self.parameters.model, path);
+            self.load(self.parameters.model, basePath);
 
             let sceneFolder = viewerFolder.addFolder("Scene Index");
             sceneFolder.add(self.parameters, "prevScene").name("←");
@@ -302,16 +310,23 @@ class gltfViewer
 
             if (jsonIndex === undefined)
             {
+                // TODO: remove this hack later when we can.
                 self.models.push("BoomBox/glTF/BoomBox.gltf");
+                initModelsDropdown("models/");
+                self.roll = Math.PI;
+                self.zoom = 4.0;
             } else {
                 self.models = self.parseModelIndex(jsonIndex, path);
+                initModelsDropdown(path);
             }
 
-            initModelsDropdown();
         }).catch(function(error) {
+            // TODO: remove this hack later when we can.
             self.models.push("BoomBox/glTF/BoomBox.gltf");
-            initModelsDropdown();
+            initModelsDropdown("models/");
             console.warn("glTF " + error);
+            self.roll = Math.PI;
+            self.zoom = 4.0;
         });
 
         let environmentFolder = this.gui.addFolder("Environment");
