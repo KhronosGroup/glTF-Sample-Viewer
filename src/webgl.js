@@ -84,9 +84,9 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             return false;
         }
 
-        // In WebGL SRGB textures can't generate mipmaps, so we
-        // need to convert the sampler to the "correct" format here:
-        if (gl.supports_EXT_SRGB && textureInfo.colorSpace == gl.SRGB)
+        // In WebGL sRGB textures can't be used to generated mipmaps. So we need to convert them to
+        // use "correct" filtering. However, if we're generating mips ourselves, then we're fine :)
+        if (gl.supports_EXT_SRGB && textureInfo.colorSpace == gl.SRGB && textureInfo.generateMips)
         {
             switch (gltfSampler.minFilter) {
                 case gl.NEAREST_MIPMAP_NEAREST:

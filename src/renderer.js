@@ -263,9 +263,10 @@ class gltfRenderer
 
     applyEnvironmentMap(gltf, texSlotOffset)
     {
-        let diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3); // TODO: srgb
-        let specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2); // TODO: srgb
-        let lut = new gltfTextureInfo(gltf.textures.length - 1); // TODO: srgb
+        let diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0, gl.SRGB);
+        let specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0, gl.SRGB);
+        let lut = new gltfTextureInfo(gltf.textures.length - 1); // FIXME: sRGB or not?
+        // see discussion here https://github.com/KhronosGroup/glTF-WebGL-PBR/issues/64
 
         diffuseEnvMap.generateMips = false;
         specularEnvMap.generateMips = false;
