@@ -104,6 +104,6 @@ class gltfNode
             this.changed = false;
         }
 
-        return this.transform;
+        return mat4.clone(this.transform);
     }
 };

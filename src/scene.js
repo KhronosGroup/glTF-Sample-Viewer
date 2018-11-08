@@ -24,14 +24,18 @@ class gltfScene
         {
             let node = gltf.nodes[nodeIndex];
             let mesh = gltf.meshes[node.mesh];
-            for (let primitive of mesh.primitives)
+
+            if (mesh !== undefined)
             {
-                if (primitive.skip === false)
+                for (let primitive of mesh.primitives)
                 {
-                    const material = gltf.materials[primitive.material];
-                    if (material !== undefined && (not ? material.alphaMode !== mode : material.alphaMode === mode))
+                    if (primitive.skip === false)
                     {
-                        Nodes.push(nodeIndex);
+                        const material = gltf.materials[primitive.material];
+                        if (material !== undefined && (not ? material.alphaMode !== mode : material.alphaMode === mode))
+                        {
+                            Nodes.push(nodeIndex);
+                        }
                     }
                 }
             }
