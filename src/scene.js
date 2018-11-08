@@ -20,8 +20,9 @@ class gltfScene
     getSceneWithAlphaMode(gltf, mode = 'OPAQUE', not = false)
     {
         let Nodes = [];
-        function AddNode (node)
+        function AddNode (nodeIndex)
         {
+            let node = gltf.nodes[nodeIndex];
             let mesh = gltf.meshes[node.mesh];
             for (let primitive of mesh.primitives)
             {
@@ -30,7 +31,7 @@ class gltfScene
                     const material = gltf.materials[primitive.material];
                     if (material !== undefined && (not ? material.alphaMode !== mode : material.alphaMode === mode))
                     {
-                        Nodes.push(n);
+                        Nodes.push(nodeIndex);
                     }
                 }
             }
@@ -38,19 +39,19 @@ class gltfScene
             // recurse into children
             for(let c of node.children)
             {
-                AddNode(gltf.nodes[c]);
+                AddNode(c);
             }
         }
 
         for (let n of this.nodes)
         {
-            AddNode(gltf.nodes[n])
+            AddNode(n)
         }
 
         return new gltfScene(Nodes, this.name);
     }
 
-    sortSceneByDepth(gltf, cameraPos, rootTransform)
+    sortSceneByDepth(gltf, viewProjMatrix, rootTransform)
     {
         // vector of {abs position, nodeIndex}
         let posNodes = [];
@@ -61,12 +62,13 @@ class gltfScene
 
             let transform = node.getTransform(); // local transform
             mat4.multiply(transform, parentTransform, transform);
+            mat4.multiply(transform, viewProjMatrix, transform);
 
             let pos = jsToGl([0, 0, 0]); // world pos
             mat4.getTranslation(pos, transform);
 
             // TODO: we could clip objects behind the camera
-            posNodes.push({depth: (pos.z - cameraPos.z), idx: nodeIndex});
+            posNodes.push({depth: pos[2], idx: nodeIndex});
 
             // recurse into children
             for(let c of node.children)
@@ -81,9 +83,9 @@ class gltfScene
         }
 
         // high z far from camera first
-        posNodes.sort(function(a,b) {return b.depth - a.depth});
+        posNodes.sort(function(a,b) {return a.depth - b.depth});
 
-        this.nodes.clear();
+        this.nodes = [];
         for(let node of posNodes)
         {
             this.nodes.push(node.idx)

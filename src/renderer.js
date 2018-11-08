@@ -113,7 +113,7 @@ class gltfRenderer
 
         if(sortByDepth)
         {
-            scene.sortSceneByDepth(gltf, this.currentCameraPosition, transform);
+            scene.sortSceneByDepth(gltf, this.viewProjMatrix, transform);
         }
 
         for (let i of scene.nodes)
@@ -202,6 +202,20 @@ class gltfRenderer
             gl.disable(gl.CULL_FACE);
         } else {
             gl.enable(gl.CULL_FACE);
+        }
+
+        if(material.alphaMode === 'OPAQUE')
+        {
+            gl.disable(gl.BLEND);
+        }else{
+            gl.enable(gl.BLEND);
+
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // non pre mult alpha
+
+            // pre multiplied alpha
+            //gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+            //gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         }
 
         const drawIndexed = primitive.indices !== undefined;
