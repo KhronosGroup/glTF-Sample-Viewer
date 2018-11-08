@@ -132,7 +132,8 @@ class gltfViewer
 
                 if (self.gltf.scenes.length != 0)
                 {
-                    self.renderer.drawScene(self.gltf, self.sceneIndex, self.cameraIndex, true, self);
+                    const scene = self.gltf.scenes[self.sceneIndex];
+                    self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true, self);
                 }
             }
 

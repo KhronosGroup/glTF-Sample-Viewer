@@ -20,6 +20,7 @@ class gltfNode
         this.children = children;
         this.camera = undefined;
         this.name = name;
+        this.changed = true;
     }
 
     fromJson(jsonNode)
@@ -58,6 +59,7 @@ class gltfNode
                 this.translation = jsToGl(jsonNode.translation);
             }
         }
+        this.changed = true;
     }
 
     decomposeMatrix(matrixData)
@@ -66,34 +68,42 @@ class gltfNode
         mat4.getScaling(this.scale, matrix);
         mat4.getRotation(this.rotation, matrix);
         mat4.getTranslation(this.translation, matrix);
+        this.changed = true;
     }
 
     // vec3
     translate(translation)
     {
         this.translation = translation;
+        this.changed = true;
     }
 
     // quat
     rotate(rotation)
     {
         this.rotation = rotation;
+        this.changed = true;
     }
 
     // vec3
     scale(scale)
     {
         this.scale = scale;
+        this.changed = true;
     }
 
     // TODO: WEIGHTS
 
+    // local transform
     getTransform()
     {
-        var transform = mat4.create();
+        if(this.transform === undefined || this.changed)
+        {
+            this.transform =  mat4.create();
+            mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
+            this.changed = false;
+        }
 
-        mat4.fromRotationTranslationScale(transform, this.rotation, this.translation, this.scale);
-
-        return transform;
+        return this.transform;
     }
 };
