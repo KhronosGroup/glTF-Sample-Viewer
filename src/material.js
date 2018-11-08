@@ -99,6 +99,11 @@ class gltfMaterial
             this.properties.set("u_EmissiveFactor", this.emissiveFactor);
         }
 
+        if(this.alphaMode !== 'MASK') // only set cutoff value for mask material
+        {
+            this.alphaCutoff = 0.0;
+        }
+
         this.properties.set("u_AlphaCutoff", this.alphaCutoff);
 
         if(jsonMaterial.extensions !== undefined)
