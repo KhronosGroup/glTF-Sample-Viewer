@@ -130,10 +130,26 @@ class gltfViewer
                     self.sceneIndex = self.gltf.scenes.length - 1;
                 }
 
-                if (self.gltf.scenes.length != 0)
+                if (self.gltf.scenes.length !== 0)
                 {
                     const scene = self.gltf.scenes[self.sceneIndex];
-                    self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true, self);
+
+                    let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'OPAQUE', true); // get non opaque
+                    if(alphaScene.nodes.length > 0)
+                    {
+                        // first render opaque objects, oder is not important but could improve performance 'early z rejection'
+                        let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'OPAQUE');
+                        self.renderer.drawScene(self.gltf, opaqueScene, self.cameraIndex, true);
+
+                        // render transparent objects ordered by distance from camera
+                        self.renderer.drawScene(self.gltf, alphaScene, self.cameraIndex, true, true);
+                    }
+                    else
+                    {
+                        // no alpha materials, render as is
+                        self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true);
+                    }
+
                 }
             }
 

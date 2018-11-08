@@ -72,7 +72,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, cameraIndex, recursive)
+    drawScene(gltf, scene, cameraIndex, recursive, sortByDepth = false)
     {
         // TODO: upload lights
 
@@ -110,6 +110,11 @@ class gltfRenderer
         // TODO: pass a scene transfrom to be able to translate & rotate using the mouse
 
         let transform = mat4.create();
+
+        if(sortByDepth)
+        {
+            scene.sortSceneByDepth(gltf, this.currentCameraPosition, transform);
+        }
 
         for (let i of scene.nodes)
         {
