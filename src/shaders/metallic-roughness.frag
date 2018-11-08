@@ -112,17 +112,9 @@ const float c_MinRoughness = 0.04;
 
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
-    #ifdef MANUAL_SRGB
-    #ifdef SRGB_FAST_APPROXIMATION
-    vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
-    #else //SRGB_FAST_APPROXIMATION
-    vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
-    vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
-    #endif //SRGB_FAST_APPROXIMATION
-    return vec4(linOut,srgbIn.w);;
-    #else //MANUAL_SRGB
-    return srgbIn;
-    #endif //MANUAL_SRGB
+    // FIXME: this is the "fast" sRGB approximation.
+    vec3 gammaCorrection = pow(srgbIn.xyz, vec3(2.2));
+    return vec4(gammaCorrection, srgbIn.w);
 }
 
 // Find the normal for this fragment, pulling either from a predefined normal map
@@ -170,7 +162,7 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     float mipCount = 9.0; // resolution of 512x512
     float lod = (pbrInputs.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec3 brdf = texture2D(u_brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness)).rgb;
+    vec3 brdf = SRGBtoLINEAR(texture2D(u_brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
     vec3 diffuseLight = SRGBtoLINEAR(textureCube(u_DiffuseEnvSampler, n)).rgb;
 
 #ifdef USE_TEX_LOD

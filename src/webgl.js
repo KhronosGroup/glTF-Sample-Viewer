@@ -8,19 +8,6 @@ function LoadWebGLExtensions(webglExtensions)
         }
     }
 
-    let EXT_SRGB = gl.getExtension("EXT_SRGB");
-
-    if (EXT_SRGB)
-    {
-        gl.SRGB = EXT_SRGB.SRGB_ALPHA_EXT;
-        gl.supports_EXT_SRGB = true;
-    }
-    else
-    {
-        gl.SRGB = gl.RGBA;
-        gl.supports_EXT_SRGB = false;
-    }
-
     let EXT_texture_filter_anisotropic = gl.getExtension("EXT_texture_filter_anisotropic");
 
     if (EXT_texture_filter_anisotropic)
@@ -84,23 +71,6 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             return false;
         }
 
-        // In WebGL sRGB textures can't be used to generated mipmaps. So we need to convert them to
-        // use "correct" filtering. However, if we're generating mips ourselves, then we're fine :)
-        if (gl.supports_EXT_SRGB && textureInfo.colorSpace == gl.SRGB && textureInfo.generateMips)
-        {
-            switch (gltfSampler.minFilter) {
-                case gl.NEAREST_MIPMAP_NEAREST:
-                case gl.NEAREST_MIPMAP_LINEAR:
-                    gltfSampler.minFilter = gl.NEAREST;
-                    break;
-                case gl.LINEAR_MIPMAP_NEAREST:
-                case gl.LINEAR_MIPMAP_LINEAR:
-                    gltfSampler.minFilter = gl.LINEAR;
-                    break;
-                default:  break;
-            }
-        }
-
         SetSampler(gltfSampler, gltfTex.type);
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
@@ -130,7 +100,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
         }
 
-        if (textureInfo.generateMips && ((gl.supports_EXT_SRGB && textureInfo.colorSpace != gl.SRGB) || !gl.supports_EXT_SRGB))
+        if (textureInfo.generateMips)
         {
             // TODO: check for power-of-two
             switch (gltfSampler.minFilter) {
