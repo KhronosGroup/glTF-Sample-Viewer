@@ -69,6 +69,7 @@ uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
 
 uniform vec3 u_Camera;
+uniform float u_AlphaCutoff;
 
 // debugging flags used for shader output of intermediate PBR variables
 uniform vec4 u_ScaleDiffBaseMR;
@@ -318,6 +319,11 @@ void main()
     specularColor = mix(f0, baseColor.rgb, metallic);
 
 #endif // ! MATERIAL_SPECULARGLOSSINESS
+
+    if(baseColor.a < u_AlphaCutoff)
+    {
+        discard;
+    }
 
     perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
