@@ -7,7 +7,7 @@ function gltf_rv(canvasId, index, headless = false)
         return null;
     }
 
-    gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    gl = canvas.getContext("webgl", { alpha: false }) || canvas.getContext("experimental-webgl", { alpha: false });
     if (!gl)
     {
         console.warn("Failed to get an WebGL rendering context!");

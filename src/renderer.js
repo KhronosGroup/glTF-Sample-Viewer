@@ -49,7 +49,9 @@ class gltfRenderer
     {
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
         gl.clearColor(0.2, 0.2, 0.2, 1.0);
+        gl.colorMask(true, true, true, true);
         gl.clearDepth(1.0);
     }
 
@@ -74,6 +76,9 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(gltf, scene, cameraIndex, recursive, sortByDepth = false)
     {
+        // if (spector !== undefined) {
+        //     spector.setMarker("Draw scene alpha " + sortByDepth);
+        // }
         // TODO: upload lights
 
         let currentCamera = undefined;
@@ -204,18 +209,21 @@ class gltfRenderer
             gl.enable(gl.CULL_FACE);
         }
 
-        if(material.alphaMode === 'OPAQUE')
+        if(material.alphaMode === 'BLEND')
         {
-            gl.disable(gl.BLEND);
-        }else{
             gl.enable(gl.BLEND);
-
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // non pre mult alpha
+            //gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // non pre mult alpha
+            gl.blendEquation(gl.FUNC_ADD);
 
             // pre multiplied alpha
-            //gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-            //gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+            // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        }
+        else
+        {
+            gl.disable(gl.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;

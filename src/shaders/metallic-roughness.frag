@@ -263,7 +263,7 @@ void main()
     // or from a metallic-roughness map
     float perceptualRoughness = 0.0;
     float metallic = 0.0;
-    vec4 baseColor = vec4(0);
+    vec4 baseColor = vec4(0.0, 0.0, 0.0, 1.0);
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
@@ -320,10 +320,12 @@ void main()
 
 #endif // ! MATERIAL_SPECULARGLOSSINESS
 
+#ifdef ALPHAMODE_MASK
     if(baseColor.a < u_AlphaCutoff)
     {
         discard;
     }
+#endif
 
     perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);

@@ -1,6 +1,6 @@
 class gltfMaterial
 {
-    constructor(emissiveFactor = jsToGl([0, 0, 0]), alphaMode = "OPAQUE", alphaCutoff = 0.0, doubleSided = false,
+    constructor(emissiveFactor = jsToGl([0, 0, 0]), alphaMode = "OPAQUE", alphaCutoff = 0.5, doubleSided = false,
                 baseColorFactor = jsToGl([1, 1, 1, 1]), metallicFactor = 1.0, roughnessFactor = 1.0, // Metallic-Roughness
                 diffuseFactor = jsToGl([1, 1, 1, 1]), specularFactor = jsToGl([1, 1, 1]), glossinessFactor = 1.0, // Specular Glossiness
                 name = undefined)
@@ -99,12 +99,11 @@ class gltfMaterial
             this.properties.set("u_EmissiveFactor", this.emissiveFactor);
         }
 
-        if(this.alphaMode !== 'MASK') // only set cutoff value for mask material
+        if(this.alphaMode === 'MASK') // only set cutoff value for mask material
         {
-            this.alphaCutoff = 0.0;
+            this.defines.push("ALPHAMODE_MASK");
+            this.properties.set("u_AlphaCutoff", this.alphaCutoff);
         }
-
-        this.properties.set("u_AlphaCutoff", this.alphaCutoff);
 
         if(jsonMaterial.extensions !== undefined)
         {
