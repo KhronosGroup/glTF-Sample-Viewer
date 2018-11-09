@@ -17,10 +17,8 @@
 precision highp float;
 
 // TODO: array of punctual lights
-//uniform vec3 u_LightDirection;
 const vec3 u_LightDirection = vec3(0.7399, 0.6428, 0.1983);
 const vec3 u_LightColor = vec3(1, 1, 1);
-//uniform vec3 u_LightColor;
 
 #ifdef USE_IBL
 uniform samplerCube u_DiffuseEnvSampler;
@@ -32,30 +30,41 @@ uniform sampler2D u_brdfLUT;
 #ifdef HAS_NORMAL_MAP
 uniform sampler2D u_NormalSampler;
 uniform float u_NormalScale;
+uniform int u_NormalUVSet;
 #endif
+
 #ifdef HAS_EMISSIVE_MAP
 uniform sampler2D u_EmissiveSampler;
+uniform int u_EmissiveUVSet;
 uniform vec3 u_EmissiveFactor;
 #endif
+
 #ifdef HAS_OCCLUSION_MAP
 uniform sampler2D u_OcclusionSampler;
+uniform int u_OcclusionUVSet;
 uniform float u_OcclusionStrength;
 #endif
 
 // Metallic Roughness Material
 #ifdef HAS_BASE_COLOR_MAP
 uniform sampler2D u_BaseColorSampler;
+uniform int u_BaseColorUVSet;
 #endif
+
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
 uniform sampler2D u_MetallicRoughnessSampler;
+uniform int u_MetallicRoughnessUVSet;
 #endif
 
 // Specular Glossiness Material
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
 uniform sampler2D u_SpecularGlossinessSampler;
+uniform int u_SpecularGlossinessUVSet;
 #endif
+
 #ifdef HAS_DIFFUSE_MAP
 uniform sampler2D u_DiffuseSampler;
+uniform int u_DiffuseUVSet;
 #endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -69,7 +78,7 @@ uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
 
 uniform vec3 u_Camera;
-uniform float u_AlphaCutoff;
+uniform float u_AlphaCutoff; // TODO: put info define?
 
 // debugging flags used for shader output of intermediate PBR variables
 uniform vec4 u_ScaleDiffBaseMR;
@@ -78,7 +87,8 @@ uniform vec4 u_ScaleIBLAmbient;
 
 // inputs
 varying vec3 v_Position;
-varying vec2 v_ColorUV;
+varying vec2 v_UVCoord1; // TODO: put into define?
+varying vec2 v_UVCoord2;
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
@@ -87,6 +97,19 @@ varying mat3 v_TBN;
 varying vec3 v_Normal;
 #endif
 #endif
+
+vec2 getUVCoord(const int set)
+{
+    if(set < 1)
+    {
+        return v_UVCoord1;
+    }
+
+    return v_UVCoord2;
+
+    // TODO: KHR_texture_transform
+    // add uv matrix for each texture and multiply selected texcoord
+}
 
 // Encapsulate the various inputs used by the various functions in the shading equation
 // We store values in this struct to simplify the integration of alternative implementations
@@ -121,12 +144,18 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 // or from the interpolated mesh normal and tangent attributes.
 vec3 getNormal()
 {
+#ifdef HAS_NORMAL_MAP
+    vec2 UV = getUVCoord(u_NormalUVSet);
+#else
+    vec2 UV = v_UVCoord1;
+#endif
+
     // Retrieve the tangent space matrix
 #ifndef HAS_TANGENTS
     vec3 pos_dx = dFdx(v_Position);
     vec3 pos_dy = dFdy(v_Position);
-    vec3 tex_dx = dFdx(vec3(v_ColorUV, 0.0));
-    vec3 tex_dy = dFdy(vec3(v_ColorUV, 0.0));
+    vec3 tex_dx = dFdx(vec3(UV, 0.0));
+    vec3 tex_dy = dFdy(vec3(UV, 0.0));
     vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
 #ifdef HAS_NORMALS
@@ -143,7 +172,7 @@ vec3 getNormal()
 #endif
 
 #ifdef HAS_NORMAL_MAP
-    vec3 n = texture2D(u_NormalSampler, v_ColorUV).rgb;
+    vec3 n = texture2D(u_NormalSampler, UV).rgb;
     n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
 #else
     // The tbn matrix is linearly interpolated, so we need to re-normalize
@@ -263,7 +292,7 @@ void main()
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = SRGBtoLINEAR(texture2D(u_SpecularGlossinessSampler, v_ColorUV));
+    vec4 sgSample = SRGBtoLINEAR(texture2D(u_SpecularGlossinessSampler, getUVCoord(u_SpecularGlossinessUVSet)));
     perceptualRoughness = (1.0 - sgSample.a * u_GlossinessFactor); // glossiness to roughness
     f0 = sgSample.rgb * u_SpecularFactor; // specular
 #else
@@ -272,7 +301,7 @@ void main()
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
 
 #ifdef HAS_DIFFUSE_MAP
-    baseColor = SRGBtoLINEAR(texture2D(u_DiffuseSampler, v_ColorUV)) * u_DiffuseFactor;
+    baseColor = SRGBtoLINEAR(texture2D(u_DiffuseSampler, getUVCoord(u_DiffuseUVSet))) * u_DiffuseFactor;
 #else
     baseColor = u_DiffuseFactor;
 #endif // !HAS_DIFFUSE_MAP
@@ -290,7 +319,7 @@ void main()
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, v_ColorUV);
+    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, getUVCoord(u_MetallicRoughnessUVSet));
     perceptualRoughness = mrSample.g * u_RoughnessFactor;
     metallic = mrSample.b * u_MetallicFactor;
 #else
@@ -300,7 +329,7 @@ void main()
 
     // The albedo may be defined from a base texture or a flat color
 #ifdef HAS_BASE_COLOR_MAP
-    baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, v_ColorUV)) * u_BaseColorFactor;
+    baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, getUVCoord(u_BaseColorUVSet))) * u_BaseColorFactor;
 #else
     baseColor = u_BaseColorFactor;
 #endif
@@ -380,12 +409,12 @@ void main()
 
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-    float ao = texture2D(u_OcclusionSampler, v_ColorUV).r;
+    float ao = texture2D(u_OcclusionSampler,  getUVCoord(u_OcclusionUVSet)).r;
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
 #ifdef HAS_EMISSIVE_MAP
-    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, v_ColorUV)).rgb * u_EmissiveFactor;
+    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getUVCoord(u_EmissiveUVSet))).rgb * u_EmissiveFactor;
     color += emissive;
 #endif
 

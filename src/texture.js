@@ -41,11 +41,14 @@ class gltfTextureInfo
         this.strength = 1.0; // occlusion
         this.scale = 1.0; // normal
         this.generateMips = generateMips;
+
+        this.extensions = undefined;
     }
 
     fromJson(jsonTextureInfo, samplerName, colorSpace = gl.RGBA)
     {
         fromKeys(this, jsonTextureInfo);
+
         this.colorSpace = colorSpace;
         this.samplerName = samplerName;
     }

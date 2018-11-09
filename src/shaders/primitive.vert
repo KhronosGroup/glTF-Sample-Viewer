@@ -23,8 +23,8 @@ uniform mat4 u_NormalMatrix;
 
 // outputs
 varying vec3 v_Position;
-varying vec2 v_ColorUV; // vertex color UVs
-varying vec2 v_JointWeightUV;
+varying vec2 v_UVCoord1; // vertex color UVs
+varying vec2 v_UVCoord2; // TODO: put into HAS_UV_SET defines?
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
@@ -50,15 +50,15 @@ void main()
     #endif
     #endif // !HAS_NORMALS
 
-    v_ColorUV = vec2(0.,0.);
-    v_JointWeightUV = vec2(0.,0.);
+    v_UVCoord1 = vec2(0.,0.);
+    v_UVCoord2 = vec2(0.,0.);
 
     #ifdef HAS_UV_SET1
-    v_ColorUV = a_UV1;
+    v_UVCoord1 = a_UV1;
     #endif
 
     #ifdef HAS_UV_SET2
-    v_JointWeightUV = a_UV2;
+    v_UVCoord2 = a_UV2;
     #endif
 
     // TODO: skinning & morphing
