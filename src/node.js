@@ -19,6 +19,7 @@ class gltfNode
         this.scale = scale;
         this.children = children;
         this.camera = undefined;
+        this.light = undefined; // non-standard
         this.name = name;
         this.changed = true;
     }
@@ -33,6 +34,14 @@ class gltfNode
         if (jsonNode.children !== undefined)
         {
             this.children = jsonNode.children;
+        }
+
+        if (jsonNode.extensions !== undefined)
+        {
+            if (jsonNode.extensions.KHR_lights_punctual !== undefined)
+            {
+                this.light = jsonNode.extensions.KHR_lights_punctual.light;
+            }
         }
 
         this.mesh = jsonNode.mesh;
