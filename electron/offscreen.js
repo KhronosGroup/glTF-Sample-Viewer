@@ -12,26 +12,43 @@ let mainWindow;
 function createWindow () {
     mainWindow = new BrowserWindow({ width: 1920, height: 1080,
         webPreferences: {
-        offscreen: true
+            offscreen: true
       }
     });
 
     mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, "../index.html"),
+        pathname: path.join(__dirname, "../headless.html"),
         protocol: 'file',
         slashes: true
     }));
 
-    setTimeout(function() {
+    let rendererReady = false;
+    let writeLock = false;
+
+    // In main process.
+    const {ipcMain} = require('electron')
+    ipcMain.on('rendererReady', (event) => {
+        if (rendererReady)
+            return;
+
+        rendererReady = true;
+
         mainWindow.webContents.on('paint', (event, dirty, image) => {
-          fs.writeFile('output.png', image.toPNG(), (err) => {
+            if (writeLock)
+                return;
+
+            writeLock = true;
+
+            lastImage = image;
+
+            fs.writeFile('output.png', lastImage.toPNG(), (err) => {
                 if (err) throw err;
                 console.log('The file has been saved!');
 
                 app.quit();
             });
         });
-    }, 3000);
+    });
 }
 
 app.on('ready', createWindow);

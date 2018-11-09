@@ -1,4 +1,4 @@
-function gltf_rv(canvasId, index, headless = false)
+function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined)
 {
     let canvas = document.getElementById(canvasId);
     if (!canvas)
@@ -14,7 +14,7 @@ function gltf_rv(canvasId, index, headless = false)
         return null;
     }
 
-    let viewer = new gltfViewer(canvas, index, headless);
+    let viewer = new gltfViewer(canvas, index, headless, onRendererReady);
 
     canvas.onmousedown = viewer.onMouseDown.bind(viewer);
     document.onmouseup = viewer.onMouseUp.bind(viewer);

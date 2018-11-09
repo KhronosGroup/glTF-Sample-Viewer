@@ -1,9 +1,10 @@
 class gltfViewer
 {
-    constructor(canvas, modelIndex, headless = false)
+    constructor(canvas, modelIndex, headless = false, onRendererReady = undefined)
     {
         this.canvas = canvas;
         this.headless = headless;
+        this.onRendererReady = onRendererReady;
 
         this.roll  = 0.0;
         this.pitch = 0.0;
@@ -150,6 +151,11 @@ class gltfViewer
                         self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true);
                     }
 
+                }
+
+                if (self.onRendererReady)
+                {
+                    self.onRendererReady();
                 }
             }
 
