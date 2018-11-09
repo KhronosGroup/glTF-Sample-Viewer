@@ -16,7 +16,24 @@
 
 precision highp float;
 
-// TODO: array of punctual lights
+struct Light
+{
+    vec3 direction;
+    float range;
+
+    vec3 color;
+    float intensity;
+
+    vec3 position;
+    float innerConeAngle;
+
+    float outerConeAngle;
+    int type;
+    vec2 padding;
+};
+
+uniform Light u_Lights[LIGHT_COUNT];
+
 const vec3 u_LightDirection = vec3(0.7399, 0.6428, 0.1983);
 const vec3 u_LightColor = vec3(1, 1, 1);
 
@@ -446,6 +463,8 @@ void main()
     vec3 specularEnvironmentR0 = specularColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
+// TODO: LIGHTING LOOP START
+
     vec3 n = getNormal();                             // normal at surface point
     vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
     vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
@@ -482,7 +501,11 @@ void main()
     vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
     vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
+
+    // TODO: add colors for all the lights in the loop
     vec3 color = NdotL * u_LightColor * (diffuseContrib + specContrib);
+
+// TODO: LIGHTING LOOP END
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL

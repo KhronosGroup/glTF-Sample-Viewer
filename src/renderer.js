@@ -22,6 +22,9 @@ class gltfRenderer
 
         LoadWebGLExtensions(requiredWebglExtensions);
 
+        this.lightCount = 0;
+        this.defaultLight = new gltfLight();
+
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
         this.viewProjMatrix = mat4.create();
@@ -109,6 +112,8 @@ class gltfRenderer
             this.currentCameraPosition = this.viewer.getCameraPosition();
         }
 
+        this.lightCount = gltf.lights.length > 0 ? gltf.lights.length : 1;
+
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
         // TODO: pass a scene transfrom to be able to translate & rotate using the mouse
@@ -171,9 +176,12 @@ class gltfRenderer
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
 
-        if (this.viewer.parameters.useIBL) {
-            fragDefines.push("USE_IBL");
-            fragDefines.push("USE_TEX_LOD");
+        fragDefines.push("LIGHT_COUNT " + this.lightCount);
+
+        if (this.viewer.parameters.useIBL)
+        {
+            fragDefines.push("USE_IBL 1");
+            fragDefines.push("USE_TEX_LOD 1");
         }
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
@@ -190,6 +198,8 @@ class gltfRenderer
         }
 
         gl.useProgram(this.shader.program);
+
+        // this.applyLights(gltf);
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
@@ -279,6 +289,31 @@ class gltfRenderer
         {
             gl.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
         }
+    }
+
+    applyLights(gltf)
+    {
+        let uniformLights = [];
+
+        function addLight(light)
+        {
+            const transform = gltf.nodes[light.node].worldTransform;
+            uniformLights.push(light.toUniform(transform));
+        }
+
+        if (gltf.lights.length > 0)
+        {
+            for (let l of gltf.lights)
+            {
+                addLight(l);
+            }
+        }
+        else
+        {
+            addLight(this.defaultLight);
+        }
+
+        this.shader.updateUniform("u_Lights", uniformLights);
     }
 
     applyEnvironmentMap(gltf, texSlotOffset)

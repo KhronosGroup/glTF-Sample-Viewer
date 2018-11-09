@@ -96,7 +96,7 @@ class ShaderCache
         {
             // console.log(define);
             hash ^= stringHash(define);
-            defines += "#define " + define + " 1\n";
+            defines += "#define " + define + "\n";
         }
 
         let shader = this.shaders.get(hash);
