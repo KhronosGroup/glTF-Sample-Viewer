@@ -122,12 +122,12 @@ class gltfRenderer
 
         for (let i of scene.nodes)
         {
-            this.drawNode(gltf, scene, i, transform, recursive);
+            this.drawNode(gltf, scene, i, recursive);
         }
     }
 
     // same transform, recursive
-    drawNode(gltf, scene, nodeIndex, parentTransform, recursive)
+    drawNode(gltf, scene, nodeIndex, recursive)
     {
         let node = gltf.nodes[nodeIndex];
 
@@ -138,29 +138,24 @@ class gltfRenderer
         }
 
         let mvpMatrix = mat4.create();
-        let modelInverse = mat4.create();
-        let normalMatrix = mat4.create();
 
-        // update model & mvp & normal matrix
-        let nodeTransform = node.getTransform();
-        mat4.multiply(nodeTransform, parentTransform, nodeTransform);
+        // update mvp
+        const nodeTransform = node.worldTransform;
         mat4.multiply(mvpMatrix, this.viewProjMatrix, nodeTransform);
-        mat4.invert(modelInverse, nodeTransform);
-        mat4.transpose(normalMatrix, modelInverse);
 
         // draw primitive:
         let mesh = gltf.meshes[node.mesh];
         if(mesh !== undefined)
         {
             for (let primitive of mesh.primitives) {
-                this.drawPrimitive(gltf, primitive, nodeTransform, mvpMatrix, normalMatrix);
+                this.drawPrimitive(gltf, primitive, nodeTransform, mvpMatrix, node.normalMatrix);
             }
         }
 
         if(recursive)
         {
             for (let i of node.children) {
-                this.drawNode(gltf, scene, i, nodeTransform, recursive);
+                this.drawNode(gltf, scene, i, recursive);
             }
         }
     }

@@ -134,6 +134,7 @@ class gltfViewer
                 if (self.gltf.scenes.length !== 0)
                 {
                     const scene = self.gltf.scenes[self.sceneIndex];
+                    scene.applyTransformHierarchy(self.gltf)
 
                     let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
                     if(alphaScene.nodes.length > 0)
@@ -150,7 +151,6 @@ class gltfViewer
                         // no alpha materials, render as is
                         self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true);
                     }
-
                 }
 
                 if (self.onRendererReady)

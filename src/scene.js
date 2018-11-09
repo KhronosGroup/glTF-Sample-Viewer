@@ -16,6 +16,26 @@ class gltfScene
         this.name = jsonScene.name;
     }
 
+    applyTransformHierarchy(gltf, rootTransform = mat4.create())
+    {
+        function applyTransform(gltf, node, parentTransform)
+        {
+            mat4.multiply(node.worldTransform, parentTransform, node.getTransform());
+            mat4.invert(node.inverseWorldTransform, node.worldTransform);
+            mat4.transpose(node.normalMatrix, node.inverseWorldTransform);
+
+            for (let c of node.children)
+            {
+                applyTransform(gltf, gltf.nodes[c], node.worldTransform);
+            }
+        }
+
+        for (let n of this.nodes)
+        {
+            applyTransform(gltf, gltf.nodes[n], rootTransform);
+        }
+    }
+
     // can only be called after gltf as been fully parsed and constructed
     getSceneWithAlphaMode(gltf, mode = 'OPAQUE', not = false)
     {
