@@ -62,7 +62,7 @@ class gltfMaterial
         return this.textures;
     }
 
-    parseTextureInfoExtensions(textureInfo)
+    parseTextureInfoExtensions(textureInfo, textureKey)
     {
         if(textureInfo.extensions === undefined)
         {
@@ -71,7 +71,7 @@ class gltfMaterial
 
         if(textureInfo.extensions.KHR_texture_transform !== undefined)
         {
-            const uvTransform = textureInfoExtensions.KHR_texture_transform;
+            const uvTransform = textureInfo.extensions.KHR_texture_transform;
 
             // override uvset
             if(uvTransform.texCoord !== undefined)
@@ -79,25 +79,37 @@ class gltfMaterial
                 textureInfo.texCoord = uvTransform.texCoord;
             }
 
-            const s =  Math.sin(uvTransform.rotation);
-            const c =  Math.sin(uvTransform.rotation);
+            let rotation = mat3.create();
+            let scale = mat3.create();
+            let translation = mat3.create();
 
-            const rotation = jsToGl([
-                c, s, 0.0,
-                -s, c, 0.0,
-                0.0, 0.0, 1.0]);
+            if(uvTransform.rotation !== undefined)
+            {
+                const s =  Math.sin(uvTransform.rotation);
+                const c =  Math.sin(uvTransform.rotation);
 
-            const scale = jsToGl([uvTransform.scale.x, 0,0, 0, uvTransform.scale.y, 0, 0,0,1]);
+                rotation = jsToGl([
+                    c, s, 0.0,
+                    -s, c, 0.0,
+                    0.0, 0.0, 1.0]);
+            }
 
-            const translation  = jsToGl([1,0,0, 0,1,0, uvTransform.offset.x, uvTransform.offset.y, 1]);
+            if(uvTransform.scale !== undefined)
+            {
+                scale = jsToGl([uvTransform.scale[0],0,0, 0,uvTransform.scale[1],0, 0,0,1]);
+            }
+
+            if(uvTransform.offset !== undefined)
+            {
+                translation = jsToGl([1,0,0, 0,1,0, uvTransform.offset[0], uvTransform.offset[1], 1]);
+            }
 
             let uvMatrix = mat3.create();
             mat3.multiply(uvMatrix, translation, rotation);
             mat3.multiply(uvMatrix, uvMatrix, scale);
 
-            // TODO: matrix for each texture sampler, needs tex name
-            //this.defines.push("HAS_UV_MATRIX");
-            //this.properties.set("u_uvMatrix", uvMatrix);
+            this.defines.push("HAS_" + textureKey.toUpperCase() + "_UV_TRANSFORM");
+            this.properties.set("u_" + textureKey + "UVTransform", uvMatrix);
         }
     }
 
@@ -115,7 +127,7 @@ class gltfMaterial
         {
             let normalTexture = new gltfTextureInfo();
             normalTexture.fromJson(jsonMaterial.normalTexture,"u_NormalSampler");
-            this.parseTextureInfoExtensions(normalTexture);
+            this.parseTextureInfoExtensions(normalTexture, "Normal");
             this.textures.push(normalTexture);
             this.defines.push("HAS_NORMAL_MAP");
             this.properties.set("u_NormalScale", normalTexture.scale);
@@ -126,7 +138,7 @@ class gltfMaterial
         {
             let occlusionTexture = new gltfTextureInfo();
             occlusionTexture.fromJson(jsonMaterial.occlusionTexture,"u_OcclusionSampler");
-            this.parseTextureInfoExtensions(occlusionTexture);
+            this.parseTextureInfoExtensions(occlusionTexture, "Occlusion");
             this.textures.push(occlusionTexture);
             this.defines.push("HAS_OCCLUSION_MAP");
             this.properties.set("u_OcclusionStrength", occlusionTexture.strength);
@@ -137,7 +149,7 @@ class gltfMaterial
         {
             let emissiveTexture = new gltfTextureInfo();
             emissiveTexture.fromJson(jsonMaterial.emissiveTexture,"u_EmissiveSampler");
-            this.parseTextureInfoExtensions(emissiveTexture);
+            this.parseTextureInfoExtensions(emissiveTexture, "Emissive");
             this.textures.push(emissiveTexture);
             this.defines.push("HAS_EMISSIVE_MAP");
             this.properties.set("u_EmissiveFactor", this.emissiveFactor);
@@ -197,7 +209,7 @@ class gltfMaterial
         {
             let baseColorTexture = new gltfTextureInfo();
             baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture, "u_BaseColorSampler");
-            this.parseTextureInfoExtensions(baseColorTexture);
+            this.parseTextureInfoExtensions(baseColorTexture, "BaseColor");
             this.textures.push(baseColorTexture);
             this.defines.push("HAS_BASE_COLOR_MAP");
             this.properties.set("u_BaseColorUVSet", baseColorTexture.texCoord);
@@ -207,7 +219,7 @@ class gltfMaterial
         {
             let metallicRoughnessTexture = new gltfTextureInfo();
             metallicRoughnessTexture.fromJson(jsonMetallicRoughness.metallicRoughnessTexture, "u_MetallicRoughnessSampler");
-            this.parseTextureInfoExtensions(metallicRoughnessTexture);
+            this.parseTextureInfoExtensions(metallicRoughnessTexture, "MetallicRoughness");
             this.textures.push(metallicRoughnessTexture);
             this.defines.push("HAS_METALLIC_ROUGHNESS_MAP");
             this.properties.set("u_MetallicRoughnessUVSet", metallicRoughnessTexture.texCoord);
@@ -241,7 +253,7 @@ class gltfMaterial
         {
             let diffuseTexture = new gltfTextureInfo();
             diffuseTexture.fromJson(jsonSpecularGlossiness.diffuseTexture,"u_DiffuseSampler");
-            this.parseTextureInfoExtensions(diffuseTexture);
+            this.parseTextureInfoExtensions(diffuseTexture, "Diffuse");
             this.textures.push(diffuseTexture);
             this.defines.push("HAS_DIFFUSE_MAP");
             this.properties.set("u_DiffuseUVSet", diffuseTexture.texCoord);
@@ -251,7 +263,7 @@ class gltfMaterial
         {
             let specularGlossinessTexture = new gltfTextureInfo();
             specularGlossinessTexture.fromJson(jsonSpecularGlossiness.specularGlossinessTexture,"u_SpecularGlossinessSampler");
-            this.parseTextureInfoExtensions(specularGlossinessTexture);
+            this.parseTextureInfoExtensions(specularGlossinessTexture, "SpecularGlossiness");
             this.textures.push(specularGlossinessTexture);
             this.defines.push("HAS_SPECULAR_GLOSSINESS_MAP");
             this.properties.set("u_SpecularGlossinessUVSet", specularGlossinessTexture.texCoord);
