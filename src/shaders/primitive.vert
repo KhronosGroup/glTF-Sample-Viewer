@@ -23,8 +23,8 @@ uniform mat4 u_NormalMatrix;
 
 // outputs
 varying vec3 v_Position;
-varying vec2 v_UVCoord1; // vertex color UVs
-varying vec2 v_UVCoord2; // TODO: put into HAS_UV_SET defines?
+varying vec2 v_UVCoord1;
+varying vec2 v_UVCoord2;
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS

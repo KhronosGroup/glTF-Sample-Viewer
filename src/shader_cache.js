@@ -103,15 +103,16 @@ class ShaderCache
 
         if(shader === undefined)
         {
+            console.log(defines);
             // compile this variant
             shader = CompileShader(isVert, defines + src);
             if(shader)
             {
-                console.log(defines);
                 this.shaders.set(hash, shader);
             }
             else
             {
+                console.log(shaderIdentifier + " compilation failed!");
                 return undefined;
             }
         }
