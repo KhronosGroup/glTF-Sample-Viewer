@@ -389,7 +389,9 @@ void main()
     // TODO: do conversion between metallic M-R and S-G metallic!
     metallic = solveMetallic(baseColor.rgb, specularColor, oneMinusSpecularStrength);
 
-#else // METALLIC ROUGHNESS MATERIAL
+#endif // ! MATERIAL_SPECULARGLOSSINESS
+
+#ifdef MATERIAL_METALLICROUGHNESS
 
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
@@ -414,13 +416,18 @@ void main()
 
     specularColor = mix(f0, baseColor.rgb, metallic);
 
-#endif // ! MATERIAL_SPECULARGLOSSINESS
+#endif // ! MATERIAL_METALLICROUGHNESS
 
 #ifdef ALPHAMODE_MASK
     if(baseColor.a < u_AlphaCutoff)
     {
         discard;
     }
+#endif
+
+#ifdef MATERIAL_UNLIT
+    gl_FragColor = vec4(pow(baseColor.rgb, vec3(1.0/2.2)), baseColor.a);
+    return;
 #endif
 
     perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);

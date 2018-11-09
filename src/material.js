@@ -40,10 +40,10 @@ class gltfMaterial
     {
         switch (this.type)
         {
+            default:
             case "SG": // fall through till we sparate shaders
             case "MR": return "metallic-roughness.frag";
             //case "SG": return "specular-glossiness.frag" ;
-            default: return "unlit.frag";
         }
     }
 
@@ -182,10 +182,18 @@ class gltfMaterial
             this.type = "SG";
             this.fromJsonSpecularGlossiness(jsonExtensions.KHR_materials_pbrSpecularGlossiness);
         }
+
+        if(jsonExtensions.KHR_materials_unlit !== undefined)
+        {
+            this.type = "unlit";
+            this.defines.push("MATERIAL_UNLIT");
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
     {
+        this.defines.push("MATERIAL_METALLICROUGHNESS");
+
         if (jsonMetallicRoughness.baseColorFactor !== undefined)
         {
             this.baseColorFactor = jsToGl(jsonMetallicRoughness.baseColorFactor);
