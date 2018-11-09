@@ -71,7 +71,7 @@ class gltfMaterial
 
         if(textureInfo.extensions.KHR_texture_transform !== undefined)
         {
-            const uvTransform = textureInfoExtensions.KHR_texture_transform;
+            const uvTransform = textureInfo.extensions.KHR_texture_transform;
 
             // override uvset
             if(uvTransform.texCoord !== undefined)
@@ -79,17 +79,30 @@ class gltfMaterial
                 textureInfo.texCoord = uvTransform.texCoord;
             }
 
-            const s =  Math.sin(uvTransform.rotation);
-            const c =  Math.sin(uvTransform.rotation);
+            let rotation = mat3.create();
+            let scale = mat3.create();
+            let translation = mat3.create();
 
-            const rotation = jsToGl([
-                c, s, 0.0,
-                -s, c, 0.0,
-                0.0, 0.0, 1.0]);
+            if(uvTransform.rotation !== undefined)
+            {
+                const s =  Math.sin(uvTransform.rotation);
+                const c =  Math.sin(uvTransform.rotation);
 
-            const scale = jsToGl([uvTransform.scale.x, 0,0, 0, uvTransform.scale.y, 0, 0,0,1]);
+                rotation = jsToGl([
+                    c, s, 0.0,
+                    -s, c, 0.0,
+                    0.0, 0.0, 1.0]);
+            }
 
-            const translation  = jsToGl([1,0,0, 0,1,0, uvTransform.offset.x, uvTransform.offset.y, 1]);
+            if(uvTransform.scale !== undefined)
+            {
+                scale = jsToGl([uvTransform.scale[0],0,0, 0,uvTransform.scale[1],0, 0,0,1]);
+            }
+
+            if(uvTransform.offset !== undefined)
+            {
+                translation = jsToGl([1,0,0, 0,1,0, uvTransform.offset[0], uvTransform.offset[1], 1]);
+            }
 
             let uvMatrix = mat3.create();
             mat3.multiply(uvMatrix, translation, rotation);
