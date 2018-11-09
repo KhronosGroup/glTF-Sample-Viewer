@@ -7,6 +7,7 @@ class glTF
         this.scene = undefined; // the default scene to show.
         this.scenes = [];
         this.cameras = [];
+        this.lights = [];
         this.textures = [];
         this.images = [];
         this.samplers = [];
@@ -24,14 +25,23 @@ class glTF
     {
         for (let i = 0; i < jsonNodes.length; ++i)
         {
+            const jsonNode = jsonNodes[i];
             let node = new gltfNode();
-            node.fromJson(jsonNodes[i]);
+            node.fromJson(jsonNode);
             this.nodes.push(node);
 
             // assign the corresponding camera node
             if(node.camera !== undefined)
             {
                 this.cameras[node.camera].node = i;
+            }
+
+            if(jsonNode.extensions !== undefined)
+            {
+                if (jsonNode.extensions.KHR_lights_punctual !== undefined)
+                {
+                    this.lights[jsonNode.extensions.KHR_lights_punctual.light].node = i;
+                }
             }
         }
     }
@@ -43,6 +53,17 @@ class glTF
             let camera = new gltfCamera();
             camera.fromJson(jsonCameras[i]);
             this.cameras.push(camera);
+        }
+    }
+
+    // pass extenstions.KHR_lights_punctual.lights to this
+    fromJsonLights(jsonLights)
+    {
+        for (let i = 0; i < jsonLights.length; ++i)
+        {
+            let light = new gltfLight();
+            light.fromJson(jsonLights[i]);
+            this.lights.push(light);
         }
     }
 
@@ -141,6 +162,17 @@ class glTF
         if(json.cameras !== undefined)
         {
             this.fromJsonCameras(json.cameras);
+        }
+
+        if(json.extensions !== undefined)
+        {
+            if(json.extensions.KHR_lights_punctual !== undefined)
+            {
+                if(json.extensions.KHR_lights_punctual.lights !== undefined)
+                {
+                    this.fromJsonLights(json.extensions.KHR_lights_punctual.lights);
+                }
+            }
         }
 
         if(json.nodes !== undefined)
