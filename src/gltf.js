@@ -35,6 +35,14 @@ class glTF
             {
                 this.cameras[node.camera].node = i;
             }
+
+            if(jsonNode.extensions !== undefined)
+            {
+                if (jsonNode.extensions.KHR_lights_punctual !== undefined)
+                {
+                    this.lights[jsonNode.extensions.KHR_lights_punctual.light].node = i;
+                }
+            }
         }
     }
 

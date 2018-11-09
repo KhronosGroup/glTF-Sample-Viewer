@@ -41,14 +41,6 @@ class gltfNode
             this.children = jsonNode.children;
         }
 
-        if (jsonNode.extensions !== undefined)
-        {
-            if (jsonNode.extensions.KHR_lights_punctual !== undefined)
-            {
-                this.light = jsonNode.extensions.KHR_lights_punctual.light;
-            }
-        }
-
         this.mesh = jsonNode.mesh;
         this.camera = jsonNode.camera;
 
