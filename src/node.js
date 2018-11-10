@@ -20,6 +20,12 @@ class gltfNode
         this.children = children;
         this.camera = undefined;
         this.name = name;
+
+        // non-standard:
+        this.worldTransform = mat4.create();
+        this.inverseWorldTransform = mat4.create();
+        this.normalMatrix = mat4.create();
+        this.light = undefined;
         this.changed = true;
     }
 
