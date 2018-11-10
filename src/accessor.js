@@ -63,6 +63,9 @@ class gltfAccessor
             case gl.UNSIGNED_SHORT:
                 this.typedView = new Uint16Array(buffer.buffer, offset, count);
                 break;
+            case gl.UNSIGNED_INT:
+                this.typedView = new Uint32Array(buffer.buffer, offset, count);
+                break;
             case gl.FLOAT:
                 this.typedView = new Float32Array(buffer.buffer, offset, count);
                 break;
