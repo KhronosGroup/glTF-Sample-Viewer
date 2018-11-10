@@ -86,7 +86,7 @@ class gltfMaterial
             if(uvTransform.rotation !== undefined)
             {
                 const s =  Math.sin(uvTransform.rotation);
-                const c =  Math.sin(uvTransform.rotation);
+                const c =  Math.cos(uvTransform.rotation);
 
                 rotation = jsToGl([
                     c, s, 0.0,
@@ -101,12 +101,12 @@ class gltfMaterial
 
             if(uvTransform.offset !== undefined)
             {
-                translation = jsToGl([1,0,0, 0,1,0, uvTransform.offset[0], uvTransform.offset[1], 1]);
+                translation = jsToGl([1,0,uvTransform.offset[0], 0,1,uvTransform.offset[1], 0, 0, 1]);
             }
 
             let uvMatrix = mat3.create();
-            mat3.multiply(uvMatrix, translation, rotation);
-            mat3.multiply(uvMatrix, uvMatrix, scale);
+            mat3.multiply(uvMatrix, rotation, scale);
+            mat3.multiply(uvMatrix, uvMatrix, translation);
 
             this.defines.push("HAS_" + textureKey.toUpperCase() + "_UV_TRANSFORM 1");
             this.properties.set("u_" + textureKey + "UVTransform", uvMatrix);
