@@ -300,16 +300,10 @@ class gltfRenderer
             uniformLights.push(light.toUniform(gltf));
         }
 
-        if (gltf.lights.length > 0)
+        let lights = gltf.lights.length > 0 ? gltf.lights : [ this.defaultLight ];
+        for (let light of lights)
         {
-            for (let l of gltf.lights)
-            {
-                addLight(l);
-            }
-        }
-        else
-        {
-            addLight(this.defaultLight);
+            addLight(light);
         }
 
         this.shader.updateUniform("u_Lights", uniformLights);
