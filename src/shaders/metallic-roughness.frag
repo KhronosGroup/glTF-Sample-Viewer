@@ -460,17 +460,18 @@ void main()
     vec3 specularEnvironmentR0 = specularColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
+    vec3 n = getNormal();                             // normal at surface point
+    vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
+    vec3 reflection = -normalize(reflect(v, n));
+
     vec3 color = vec3(0.0, 0.0, 0.0);
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         vec3 u_LightDirection = u_Lights[i].direction;
         vec3 u_LightColor = u_Lights[i].color;
 
-        vec3 n = getNormal();                             // normal at surface point
-        vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
         vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
         vec3 h = normalize(l+v);                          // Half vector between both l and v
-        vec3 reflection = -normalize(reflect(v, n));
 
         float NdotL = clamp(dot(n, l), 0.001, 1.0);
         float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
@@ -508,12 +509,9 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    vec3 n = getNormal();                             // normal at surface point
     vec3 u_LightDirection = -n;
-    vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
     vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
     vec3 h = normalize(l+v);                          // Half vector between both l and v
-    vec3 reflection = -normalize(reflect(v, n));
 
     float NdotL = clamp(dot(n, l), 0.001, 1.0);
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
