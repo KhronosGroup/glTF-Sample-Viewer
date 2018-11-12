@@ -22,8 +22,7 @@ class gltfRenderer
 
         LoadWebGLExtensions(requiredWebglExtensions);
 
-        this.lightCount = 0;
-        this.defaultLight = new gltfLight();
+        this.visibleLights = [];
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -112,7 +111,7 @@ class gltfRenderer
             this.currentCameraPosition = this.viewer.getCameraPosition();
         }
 
-        this.lightCount = gltf.lights.length > 0 ? gltf.lights.length : 1;
+        this.visibleLights = this.getVisibleLights(gltf);
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
@@ -129,6 +128,20 @@ class gltfRenderer
         {
             this.drawNode(gltf, scene, i, recursive);
         }
+    }
+
+    // returns all lights that are relevant for rendering or the default light if there are none
+    getVisibleLights(gltf)
+    {
+        let lights = [];
+        for (let light of gltf.lights)
+        {
+            if (light.node !== undefined)
+            {
+                lights.push(light);
+            }
+        }
+        return lights.length > 0 ? lights : [ new gltfLight() ];
     }
 
     // same transform, recursive
@@ -176,7 +189,7 @@ class gltfRenderer
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
 
-        fragDefines.push("LIGHT_COUNT " + this.lightCount);
+        fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
 
         if (this.viewer.parameters.useIBL)
         {
@@ -293,9 +306,8 @@ class gltfRenderer
 
     applyLights(gltf)
     {
-        let lights = gltf.lights.length > 0 ? gltf.lights : [ this.defaultLight ];
         let uniformLights = [];
-        for (let light of lights)
+        for (let light of this.visibleLights)
         {
             uniformLights.push(light.toUniform(gltf));
         }
