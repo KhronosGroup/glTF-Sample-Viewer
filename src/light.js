@@ -20,18 +20,29 @@ class gltfLight
         fromKeys(this, jsonLight);
     }
 
-    toUniform(transform)
+    toUniform(gltf)
     {
+        const defaultDirection = vec3.fromValues(0.7399, 0.6428, 0.1983);
+
         let uLight = new UniformLight();
-        let rotation = mat3.create();
-        mat4.getRotation(rotation, transform);
-        mat3.multiply(uLight.direction, uLight.direction, rotation);
+
+        if (this.node !== undefined)
+        {
+            let transform = gltf.nodes[this.node].worldTransform;
+            let rotation = mat3.create();
+            mat4.getRotation(rotation, transform);
+            mat3.multiply(uLight.direction, uLight.direction, rotation);
+            mat4.getTranslation(uLight.position, transform);
+        }
+        else
+        {
+            uLight.direction = defaultDirection;
+        }
 
         uLight.range = this.range;
         uLight.color = jsToGl(this.color);
         uLight.intensity = this.intensity;
 
-        mat4.getTranslation(uLight.position, transform);
         uLight.innerConeAngle = this.innerConeAngle;
         uLight.outerConeAngle = this.outerConeAngle;
 

@@ -297,8 +297,7 @@ class gltfRenderer
 
         function addLight(light)
         {
-            const transform = gltf.nodes[light.node].worldTransform;
-            uniformLights.push(light.toUniform(transform));
+            uniformLights.push(light.toUniform(gltf));
         }
 
         if (gltf.lights.length > 0)
