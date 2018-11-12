@@ -293,17 +293,11 @@ class gltfRenderer
 
     applyLights(gltf)
     {
-        let uniformLights = [];
-
-        function addLight(light)
-        {
-            uniformLights.push(light.toUniform(gltf));
-        }
-
         let lights = gltf.lights.length > 0 ? gltf.lights : [ this.defaultLight ];
+        let uniformLights = [];
         for (let light of lights)
         {
-            addLight(light);
+            uniformLights.push(light.toUniform(gltf));
         }
 
         this.shader.updateUniform("u_Lights", uniformLights);
