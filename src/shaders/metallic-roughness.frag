@@ -508,7 +508,35 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    // TODO: color += getIBLContribution(pbrInputs, n, reflection);
+    vec3 n = getNormal();                             // normal at surface point
+    vec3 u_LightDirection = -n;
+    vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
+    vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
+    vec3 h = normalize(l+v);                          // Half vector between both l and v
+    vec3 reflection = -normalize(reflect(v, n));
+
+    float NdotL = clamp(dot(n, l), 0.001, 1.0);
+    float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
+    float NdotH = clamp(dot(n, h), 0.0, 1.0);
+    float LdotH = clamp(dot(l, h), 0.0, 1.0);
+    float VdotH = clamp(dot(v, h), 0.0, 1.0);
+
+    PBRInfo pbrInputs = PBRInfo(
+        NdotL,
+        NdotV,
+        NdotH,
+        LdotH,
+        VdotH,
+        perceptualRoughness,
+        metallic,
+        specularEnvironmentR0,
+        specularEnvironmentR90,
+        alphaRoughness,
+        diffuseColor,
+        specularColor
+    );
+
+    color += getIBLContribution(pbrInputs, n, reflection);
 #endif
 
     // Apply optional PBR terms for additional (optional) shading
