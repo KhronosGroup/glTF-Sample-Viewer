@@ -399,6 +399,23 @@ AngularInfo getAngularInfo(vec3 lightDirection, vec3 n, vec3 v)
     );
 }
 
+vec3 getColorForLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+{
+    AngularInfo angularInfo = getAngularInfo(light.direction, n, v);
+
+    // Calculate the shading terms for the microfacet specular shading model
+    vec3 F = specularReflection(materialInfo, angularInfo);
+    float G = geometricOcclusion(materialInfo, angularInfo);
+    float D = microfacetDistribution(materialInfo, angularInfo);
+
+    // Calculation of analytical lighting contribution
+    vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
+    vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
+
+    // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
+    return angularInfo.NdotL * light.color * (diffuseContrib + specContrib);
+}
+
 void main()
 {
     // Metallic and Roughness material properties are packed together
@@ -506,28 +523,13 @@ void main()
 
     // LIGHTING
 
+    vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 n = getNormal();                             // normal at surface point
     vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
 
-    vec3 color = vec3(0.0, 0.0, 0.0);
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
-        vec3 lightDirection = u_Lights[i].direction;
-        vec3 lightColor = u_Lights[i].color;
-
-        AngularInfo angularInfo = getAngularInfo(lightDirection, n, v);
-
-        // Calculate the shading terms for the microfacet specular shading model
-        vec3 F = specularReflection(materialInfo, angularInfo);
-        float G = geometricOcclusion(materialInfo, angularInfo);
-        float D = microfacetDistribution(materialInfo, angularInfo);
-
-        // Calculation of analytical lighting contribution
-        vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
-        vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
-
-        // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-        color += angularInfo.NdotL * lightColor * (diffuseContrib + specContrib);
+        color += getColorForLight(u_Lights[i], materialInfo, n, v);
     }
 
     // Calculate lighting contribution from image based lighting source (IBL)
