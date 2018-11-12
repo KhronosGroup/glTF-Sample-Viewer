@@ -34,9 +34,6 @@ struct Light
 
 uniform Light u_Lights[LIGHT_COUNT];
 
-const vec3 u_LightDirection = vec3(0.7399, 0.6428, 0.1983);
-const vec3 u_LightColor = vec3(1, 1, 1);
-
 #ifdef USE_IBL
 uniform samplerCube u_DiffuseEnvSampler;
 uniform samplerCube u_SpecularEnvSampler;
@@ -463,77 +460,79 @@ void main()
     vec3 specularEnvironmentR0 = specularColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
-// TODO: LIGHTING LOOP START
+    vec3 color = vec3(0.0, 0.0, 0.0);
+    for (int i = 0; i < LIGHT_COUNT; ++i)
+    {
+        vec3 u_LightDirection = u_Lights[i].direction;
+        vec3 u_LightColor = u_Lights[i].color;
 
-    vec3 n = getNormal();                             // normal at surface point
-    vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
-    vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
-    vec3 h = normalize(l+v);                          // Half vector between both l and v
-    vec3 reflection = -normalize(reflect(v, n));
+        vec3 n = getNormal();                             // normal at surface point
+        vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
+        vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
+        vec3 h = normalize(l+v);                          // Half vector between both l and v
+        vec3 reflection = -normalize(reflect(v, n));
 
-    float NdotL = clamp(dot(n, l), 0.001, 1.0);
-    float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
-    float NdotH = clamp(dot(n, h), 0.0, 1.0);
-    float LdotH = clamp(dot(l, h), 0.0, 1.0);
-    float VdotH = clamp(dot(v, h), 0.0, 1.0);
+        float NdotL = clamp(dot(n, l), 0.001, 1.0);
+        float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
+        float NdotH = clamp(dot(n, h), 0.0, 1.0);
+        float LdotH = clamp(dot(l, h), 0.0, 1.0);
+        float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
-    PBRInfo pbrInputs = PBRInfo(
-        NdotL,
-        NdotV,
-        NdotH,
-        LdotH,
-        VdotH,
-        perceptualRoughness,
-        metallic,
-        specularEnvironmentR0,
-        specularEnvironmentR90,
-        alphaRoughness,
-        diffuseColor,
-        specularColor
-    );
+        PBRInfo pbrInputs = PBRInfo(
+            NdotL,
+            NdotV,
+            NdotH,
+            LdotH,
+            VdotH,
+            perceptualRoughness,
+            metallic,
+            specularEnvironmentR0,
+            specularEnvironmentR90,
+            alphaRoughness,
+            diffuseColor,
+            specularColor
+        );
 
-    // Calculate the shading terms for the microfacet specular shading model
-    vec3 F = specularReflection(pbrInputs);
-    float G = geometricOcclusion(pbrInputs);
-    float D = microfacetDistribution(pbrInputs);
+        // Calculate the shading terms for the microfacet specular shading model
+        vec3 F = specularReflection(pbrInputs);
+        float G = geometricOcclusion(pbrInputs);
+        float D = microfacetDistribution(pbrInputs);
 
-    // Calculation of analytical lighting contribution
-    vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
-    vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
-    // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
+        // Calculation of analytical lighting contribution
+        vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
+        vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
+        // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
 
-    // TODO: add colors for all the lights in the loop
-    vec3 color = NdotL * u_LightColor * (diffuseContrib + specContrib);
+        color += NdotL * u_LightColor * (diffuseContrib + specContrib);
 
-// TODO: LIGHTING LOOP END
-
-    // Calculate lighting contribution from image based lighting source (IBL)
+        // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    color += getIBLContribution(pbrInputs, n, reflection);
+        color += getIBLContribution(pbrInputs, n, reflection);
 #endif
 
-    // Apply optional PBR terms for additional (optional) shading
+        // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-    float ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
-    color = mix(color, color * ao, u_OcclusionStrength);
+        float ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
+        color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
 #ifdef HAS_EMISSIVE_MAP
-    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
-    color += emissive;
+        vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
+        color += emissive;
 #endif
 
-    // This section uses mix to override final color for reference app visualization
-    // of various parameters in the lighting equation.
-    color = mix(color, F, u_ScaleFGDSpec.x);
-    color = mix(color, vec3(G), u_ScaleFGDSpec.y);
-    color = mix(color, vec3(D), u_ScaleFGDSpec.z);
-    color = mix(color, specContrib, u_ScaleFGDSpec.w);
+        // This section uses mix to override final color for reference app visualization
+        // of various parameters in the lighting equation.
+        color = mix(color, F, u_ScaleFGDSpec.x);
+        color = mix(color, vec3(G), u_ScaleFGDSpec.y);
+        color = mix(color, vec3(D), u_ScaleFGDSpec.z);
+        color = mix(color, specContrib, u_ScaleFGDSpec.w);
 
-    color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
-    color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
-    color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
-    color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
+        color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
+        color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
+        color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
+        color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
+    }
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 }
