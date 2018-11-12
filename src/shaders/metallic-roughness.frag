@@ -548,17 +548,18 @@ void main()
     color += emissive;
 #endif
 
+    // TODO: Remove this? Doesn't work with multiple light sources.
     // This section uses mix to override final color for reference app visualization
     // of various parameters in the lighting equation.
-    // TODO: color = mix(color, F, u_ScaleFGDSpec.x);
-    // TODO: color = mix(color, vec3(G), u_ScaleFGDSpec.y);
-    // TODO: color = mix(color, vec3(D), u_ScaleFGDSpec.z);
-    // TODO: color = mix(color, specContrib, u_ScaleFGDSpec.w);
+    // color = mix(color, F, u_ScaleFGDSpec.x);
+    // color = mix(color, vec3(G), u_ScaleFGDSpec.y);
+    // color = mix(color, vec3(D), u_ScaleFGDSpec.z);
+    // color = mix(color, specContrib, u_ScaleFGDSpec.w);
 
-    // TODO: color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
-    color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
-    color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
-    color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
+    // color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
+    // color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
+    // color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
+    // color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 }

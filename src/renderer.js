@@ -316,8 +316,9 @@ class gltfRenderer
         SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, specularEnvMap, texSlotOffset + 1);
         SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, lut, texSlotOffset + 2);
 
-        this.shader.updateUniform("u_ScaleDiffBaseMR", jsToGl([0, 0, 0, 0]));
-        this.shader.updateUniform("u_ScaleFGDSpec", jsToGl([0, 0, 0, 0]));
+        // TODO: Remove this? The shader code that uses this is commented out.
+        // this.shader.updateUniform("u_ScaleDiffBaseMR", jsToGl([0, 0, 0, 0]));
+        // this.shader.updateUniform("u_ScaleFGDSpec", jsToGl([0, 0, 0, 0]));
         this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, 0, 0]));
     }
 
