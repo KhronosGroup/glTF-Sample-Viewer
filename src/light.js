@@ -1,7 +1,7 @@
 class gltfLight
 {
     constructor(type = "directional",
-                color = jsToGl([1, 1, 1]),
+                color = [1, 1, 1],
                 intensity = 1,
                 range = undefined,
                 name = undefined,
@@ -28,7 +28,7 @@ class gltfLight
         mat3.multiply(uLight.direction, uLight.direction, rotation);
 
         uLight.range = this.range;
-        uLight.color = this.color;
+        uLight.color = jsToGl(this.color);
         uLight.intensity = this.intensity;
 
         mat4.getTranslation(uLight.position, transform);
