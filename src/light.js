@@ -57,10 +57,12 @@ const Type_Directional = 0;
 const Type_Point = 1;
 const Type_Spot = 2;
 
-class UniformLight
+class UniformLight extends UniformStruct
 {
     constructor()
     {
+        super();
+
         this.direction = jsToGl([0, 0, -1]);
         this.range = -1.0;
 
