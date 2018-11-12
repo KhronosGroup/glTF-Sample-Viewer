@@ -199,7 +199,7 @@ class gltfRenderer
 
         gl.useProgram(this.shader.program);
 
-        // this.applyLights(gltf);
+        this.applyLights(gltf);
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
