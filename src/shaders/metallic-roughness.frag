@@ -504,35 +504,35 @@ void main()
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
 
         color += NdotL * u_LightColor * (diffuseContrib + specContrib);
+    }
 
-        // Calculate lighting contribution from image based lighting source (IBL)
+    // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-        color += getIBLContribution(pbrInputs, n, reflection);
+    // TODO: color += getIBLContribution(pbrInputs, n, reflection);
 #endif
 
-        // Apply optional PBR terms for additional (optional) shading
+    // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-        float ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
-        color = mix(color, color * ao, u_OcclusionStrength);
+    float ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
+    color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
 #ifdef HAS_EMISSIVE_MAP
-        vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
-        color += emissive;
+    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
+    color += emissive;
 #endif
 
-        // This section uses mix to override final color for reference app visualization
-        // of various parameters in the lighting equation.
-        color = mix(color, F, u_ScaleFGDSpec.x);
-        color = mix(color, vec3(G), u_ScaleFGDSpec.y);
-        color = mix(color, vec3(D), u_ScaleFGDSpec.z);
-        color = mix(color, specContrib, u_ScaleFGDSpec.w);
+    // This section uses mix to override final color for reference app visualization
+    // of various parameters in the lighting equation.
+    // TODO: color = mix(color, F, u_ScaleFGDSpec.x);
+    // TODO: color = mix(color, vec3(G), u_ScaleFGDSpec.y);
+    // TODO: color = mix(color, vec3(D), u_ScaleFGDSpec.z);
+    // TODO: color = mix(color, specContrib, u_ScaleFGDSpec.w);
 
-        color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
-        color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
-        color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
-        color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
-    }
+    // TODO: color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
+    color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
+    color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
+    color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 }
