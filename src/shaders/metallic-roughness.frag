@@ -435,7 +435,12 @@ float getRangeAttenuation(float range, float distance)
 
 float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeAngle, float innerConeAngle)
 {
-    return 1.0;
+    float angle = dot(normalize(spotDirection), normalize(-pointToLight));
+    if (angle > cos(outerConeAngle))
+    {
+        return 1.0;
+    }
+    return 0.0;
 }
 
 vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
