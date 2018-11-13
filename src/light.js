@@ -22,21 +22,16 @@ class gltfLight
 
     toUniform(gltf)
     {
-        const defaultDirection = vec3.fromValues(0.7399, 0.6428, 0.1983);
-
         let uLight = new UniformLight();
 
         if (this.node !== undefined)
         {
             let transform = gltf.nodes[this.node].worldTransform;
-            let rotation = mat3.create();
+            let rotation = quat.create();
+            let alongNegativeZ = vec3.fromValues(0, 0, -1);
             mat4.getRotation(rotation, transform);
-            mat3.multiply(uLight.direction, uLight.direction, rotation);
+            vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
             mat4.getTranslation(uLight.position, transform);
-        }
-        else
-        {
-            uLight.direction = defaultDirection;
         }
 
         uLight.range = this.range;
@@ -74,7 +69,8 @@ class UniformLight extends UniformStruct
     {
         super();
 
-        this.direction = jsToGl([0, 0, -1]);
+        const defaultDirection = vec3.fromValues(0.7399, 0.6428, 0.1983);
+        this.direction = defaultDirection;
         this.range = -1.0;
 
         this.color = jsToGl([1, 1, 1]);
