@@ -403,9 +403,9 @@ AngularInfo getAngularInfo(vec3 lightDirection, vec3 n, vec3 v)
     );
 }
 
-vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 applyGeneralLight(float intensity, vec3 color, vec3 direction, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    AngularInfo angularInfo = getAngularInfo(light.direction, n, v);
+    AngularInfo angularInfo = getAngularInfo(direction, n, v);
 
     // Calculate the shading terms for the microfacet specular shading model
     vec3 F = specularReflection(materialInfo, angularInfo);
@@ -417,12 +417,22 @@ vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 
     vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
 
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-    return angularInfo.NdotL * light.intensity * light.color * (diffuseContrib + specContrib);
+    return angularInfo.NdotL * intensity * color * (diffuseContrib + specContrib);
+}
+
+vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+{
+    return applyGeneralLight(light.intensity, light.color, light.direction, materialInfo, n, v);
 }
 
 vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    return vec3(0.0, 0.0, 0.0);
+    vec3 direction = light.position - v_Position;
+    float distance = length(direction);
+    direction = normalize(direction);
+    float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
+
+    return applyGeneralLight(light.intensity * attenuation, light.color, direction, materialInfo, n, v);
 }
 
 vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
