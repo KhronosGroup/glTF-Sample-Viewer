@@ -32,6 +32,10 @@ struct Light
     vec2 padding;
 };
 
+const int LightType_Directional = 0;
+const int LightType_Point = 1;
+const int LightType_Spot = 2;
+
 uniform Light u_Lights[LIGHT_COUNT];
 
 #ifdef USE_IBL
@@ -399,7 +403,7 @@ AngularInfo getAngularInfo(vec3 lightDirection, vec3 n, vec3 v)
     );
 }
 
-vec3 getColorForLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
     AngularInfo angularInfo = getAngularInfo(light.direction, n, v);
 
@@ -414,6 +418,16 @@ vec3 getColorForLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
 
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
     return angularInfo.NdotL * light.color * (diffuseContrib + specContrib);
+}
+
+vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+{
+    return vec3(0.0, 0.0, 0.0);
+}
+
+vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+{
+    return vec3(0.0, 0.0, 0.0);
 }
 
 void main()
@@ -529,7 +543,19 @@ void main()
 
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
-        color += getColorForLight(u_Lights[i], materialInfo, n, v);
+        Light light = u_Lights[i];
+        if (light.type == LightType_Directional)
+        {
+            color += applyDirectionalLight(light, materialInfo, n, v);
+        }
+        else if (light.type == LightType_Point)
+        {
+            color += applyPointLight(light, materialInfo, n, v);
+        }
+        else if (light.type == LightType_Spot)
+        {
+            color += applySpotLight(light, materialInfo, n, v);
+        }
     }
 
     // Calculate lighting contribution from image based lighting source (IBL)
