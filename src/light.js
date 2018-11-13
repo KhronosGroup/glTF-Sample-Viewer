@@ -3,6 +3,8 @@ class gltfLight
     constructor(type = "directional",
                 color = [1, 1, 1],
                 intensity = 1,
+                innerConeAngle = 0.0,
+                outerConeAngle = Math.PI / 4.0,
                 range = undefined,
                 name = undefined,
                 node = undefined)
@@ -10,6 +12,8 @@ class gltfLight
         this.type = type;
         this.color = color;
         this.intensity = intensity;
+        this.innerConeAngle = innerConeAngle;
+        this.outerConeAngle = outerConeAngle;
         this.range = range;
         this.name = name;
         this.node = node; // non-standard
