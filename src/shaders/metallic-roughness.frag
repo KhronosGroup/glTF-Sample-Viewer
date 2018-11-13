@@ -406,6 +406,16 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 pointToView)
     );
 }
 
+float getRangeAttenuation(float range, float distance)
+{
+    if (range < 0.0)
+    {
+        // negative range means unlimited
+        return 1.0;
+    }
+    return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
+}
+
 vec3 applyGeneralLight(float intensity, vec3 color, vec3 pointToLight, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, n, v);
@@ -433,8 +443,7 @@ vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
-    float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
-
+    float attenuation = getRangeAttenuation(light.range, distance);
     return applyGeneralLight(light.intensity * attenuation, light.color, pointToLight, materialInfo, n, v);
 }
 
