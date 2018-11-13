@@ -42,8 +42,8 @@ class gltfLight
         uLight.color = jsToGl(this.color);
         uLight.intensity = this.intensity;
 
-        uLight.innerConeAngle = this.innerConeAngle;
-        uLight.outerConeAngle = this.outerConeAngle;
+        uLight.innerConeCos = Math.cos(this.innerConeAngle);
+        uLight.outerConeCos = Math.cos(this.outerConeAngle);
 
         switch(this.type)
         {
@@ -81,9 +81,9 @@ class UniformLight extends UniformStruct
         this.intensity = 1.0;
 
         this.position = jsToGl([0, 0, 0]);
-        this.innerConeAngle = 0.0;
+        this.innerConeCos = 0.0;
 
-        this.outerConeAngle = Math.PI / 4.0;
+        this.outerConeCos = Math.PI / 4.0;
         this.type = Type_Directional;
         this.padding = vec2.create();
     }

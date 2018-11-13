@@ -25,9 +25,9 @@ struct Light
     float intensity;
 
     vec3 position;
-    float innerConeAngle;
+    float innerConeCos;
 
-    float outerConeAngle;
+    float outerConeCos;
     int type;
     vec2 padding;
 };
@@ -433,18 +433,14 @@ float getRangeAttenuation(float range, float distance)
     return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
-float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeAngle, float innerConeAngle)
+float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeCos, float innerConeCos)
 {
-    // TODO: provide these from javascript side
-    float outerCos = cos(outerConeAngle);
-    float innerCos = cos(innerConeAngle);
-
     float actualCos = dot(normalize(spotDirection), normalize(-pointToLight));
-    if (actualCos > outerCos)
+    if (actualCos > outerConeCos)
     {
-        if (actualCos < innerCos)
+        if (actualCos < innerConeCos)
         {
-            return smoothstep(outerCos, innerCos, actualCos);
+            return smoothstep(outerConeCos, innerConeCos, actualCos);
         }
         return 1.0;
     }
@@ -472,7 +468,7 @@ vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 po
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float rangeAttenuation = getRangeAttenuation(light.range, distance);
-    float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeAngle, light.innerConeAngle);
+    float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
     vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
     return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
