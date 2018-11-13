@@ -11,6 +11,8 @@ class gltfViewer
         this.zoom  = 0.048;
         this.scale = 180;
 
+        this.defaultModel = "BoomBox/glTF/BoomBox.gltf";
+
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
         this.wheelSpeed = 1.04;
@@ -305,9 +307,9 @@ class gltfViewer
 
         function initModelsDropdown(basePath)
         {
-            if (self.models.includes("BoomBox/glTF/BoomBox.gltf"))
+            if (self.models.includes(self.defaultModel))
             {
-                self.parameters.model = "BoomBox/glTF/BoomBox.gltf";
+                self.parameters.model = self.defaultModel;
             }
             else
             {
