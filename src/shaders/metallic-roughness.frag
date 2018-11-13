@@ -416,9 +416,9 @@ float getRangeAttenuation(float range, float distance)
     return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
-vec3 applyGeneralLight(float intensity, vec3 color, vec3 pointToLight, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
 {
-    AngularInfo angularInfo = getAngularInfo(pointToLight, n, v);
+    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, pointToView);
 
     // Calculate the shading terms for the microfacet specular shading model
     vec3 F = specularReflection(materialInfo, angularInfo);
@@ -430,24 +430,26 @@ vec3 applyGeneralLight(float intensity, vec3 color, vec3 pointToLight, MaterialI
     vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
 
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-    return angularInfo.NdotL * intensity * color * (diffuseContrib + specContrib);
+    return angularInfo.NdotL * (diffuseContrib + specContrib);
 }
 
-vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
 {
     vec3 pointToLight = -light.direction;
-    return applyGeneralLight(light.intensity, light.color, pointToLight, materialInfo, n, v);
+    vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
+    return light.intensity * light.color * shade;
 }
 
-vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float attenuation = getRangeAttenuation(light.range, distance);
-    return applyGeneralLight(light.intensity * attenuation, light.color, pointToLight, materialInfo, n, v);
+    vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
+    return attenuation * light.intensity * light.color * shade;
 }
 
-vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
 {
     return vec3(0.0, 0.0, 0.0);
 }
