@@ -406,16 +406,6 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 pointToView)
     );
 }
 
-float getRangeAttenuation(float range, float distance)
-{
-    if (range < 0.0)
-    {
-        // negative range means unlimited
-        return 1.0;
-    }
-    return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
-}
-
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, normal, pointToView);
@@ -431,6 +421,21 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
 
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
     return angularInfo.NdotL * (diffuseContrib + specContrib);
+}
+
+float getRangeAttenuation(float range, float distance)
+{
+    if (range < 0.0)
+    {
+        // negative range means unlimited
+        return 1.0;
+    }
+    return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
+}
+
+float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeAngle, float innerConeAngle)
+{
+    return 1.0;
 }
 
 vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
@@ -451,7 +456,12 @@ vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 p
 
 vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
 {
-    return vec3(0.0, 0.0, 0.0);
+    vec3 pointToLight = light.position - v_Position;
+    float distance = length(pointToLight);
+    float rangeAttenuation = getRangeAttenuation(light.range, distance);
+    float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeAngle, light.innerConeAngle);
+    vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
+    return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
 
 void main()
