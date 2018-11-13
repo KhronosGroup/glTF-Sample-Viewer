@@ -111,7 +111,7 @@ class gltfRenderer
             this.currentCameraPosition = this.viewer.getCameraPosition();
         }
 
-        this.visibleLights = this.getVisibleLights(gltf);
+        this.visibleLights = this.getVisibleLights(gltf, scene);
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
@@ -131,14 +131,17 @@ class gltfRenderer
     }
 
     // returns all lights that are relevant for rendering or the default light if there are none
-    getVisibleLights(gltf)
+    getVisibleLights(gltf, scene)
     {
         let lights = [];
         for (let light of gltf.lights)
         {
             if (light.node !== undefined)
             {
-                lights.push(light);
+                if (scene.nodes.includes(light.node))
+                {
+                    lights.push(light);
+                }
             }
         }
         return lights.length > 0 ? lights : [ new gltfLight() ];
