@@ -435,9 +435,17 @@ float getRangeAttenuation(float range, float distance)
 
 float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeAngle, float innerConeAngle)
 {
-    float angle = dot(normalize(spotDirection), normalize(-pointToLight));
-    if (angle > cos(outerConeAngle))
+    // TODO: provide these from javascript side
+    float outerCos = cos(outerConeAngle);
+    float innerCos = cos(innerConeAngle);
+
+    float actualCos = dot(normalize(spotDirection), normalize(-pointToLight));
+    if (actualCos > outerCos)
     {
+        if (actualCos < innerCos)
+        {
+            return smoothstep(outerCos, innerCos, actualCos);
+        }
         return 1.0;
     }
     return 0.0;
