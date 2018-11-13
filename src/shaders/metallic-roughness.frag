@@ -382,10 +382,13 @@ float solveMetallic(vec3 diffuse, vec3 specular, float oneMinusSpecularStrength)
     return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
 }
 
-AngularInfo getAngularInfo(vec3 lightDirection, vec3 n, vec3 v)
+AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 pointToView)
 {
-    vec3 l = normalize(lightDirection);             // Vector from surface point to light
-    vec3 h = normalize(l+v);                          // Half vector between both l and v
+    // Standard one-letter names
+    vec3 n = normalize(normal);           // Outward direction of surface point
+    vec3 v = normalize(pointToView);      // Direction from surface point to view
+    vec3 l = normalize(pointToLight);     // Direction from surface point to light
+    vec3 h = normalize(l + v);            // Direction of the vector between l and v
 
     float NdotL = clamp(dot(n, l), 0.001, 1.0);
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
@@ -403,9 +406,9 @@ AngularInfo getAngularInfo(vec3 lightDirection, vec3 n, vec3 v)
     );
 }
 
-vec3 applyGeneralLight(float intensity, vec3 color, vec3 direction, MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 applyGeneralLight(float intensity, vec3 color, vec3 pointToLight, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    AngularInfo angularInfo = getAngularInfo(direction, n, v);
+    AngularInfo angularInfo = getAngularInfo(pointToLight, n, v);
 
     // Calculate the shading terms for the microfacet specular shading model
     vec3 F = specularReflection(materialInfo, angularInfo);
@@ -422,17 +425,17 @@ vec3 applyGeneralLight(float intensity, vec3 color, vec3 direction, MaterialInfo
 
 vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    return applyGeneralLight(light.intensity, light.color, light.direction, materialInfo, n, v);
+    vec3 pointToLight = -light.direction;
+    return applyGeneralLight(light.intensity, light.color, pointToLight, materialInfo, n, v);
 }
 
 vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    vec3 direction = light.position - v_Position;
-    float distance = length(direction);
-    direction = normalize(direction);
+    vec3 pointToLight = light.position - v_Position;
+    float distance = length(pointToLight);
     float attenuation = max(min(1.0 - pow(distance / light.range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 
-    return applyGeneralLight(light.intensity * attenuation, light.color, direction, materialInfo, n, v);
+    return applyGeneralLight(light.intensity * attenuation, light.color, pointToLight, materialInfo, n, v);
 }
 
 vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
@@ -548,31 +551,31 @@ void main()
     // LIGHTING
 
     vec3 color = vec3(0.0, 0.0, 0.0);
-    vec3 n = getNormal();                             // normal at surface point
-    vec3 v = normalize(u_Camera - v_Position);        // Vector from surface point to camera
+    vec3 normal = getNormal();
+    vec3 pointToView = normalize(u_Camera - v_Position);
 
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
-            color += applyDirectionalLight(light, materialInfo, n, v);
+            color += applyDirectionalLight(light, materialInfo, normal, pointToView);
         }
         else if (light.type == LightType_Point)
         {
-            color += applyPointLight(light, materialInfo, n, v);
+            color += applyPointLight(light, materialInfo, normal, pointToView);
         }
         else if (light.type == LightType_Spot)
         {
-            color += applySpotLight(light, materialInfo, n, v);
+            color += applySpotLight(light, materialInfo, normal, pointToView);
         }
     }
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    vec3 lightDirection = -n;
-    AngularInfo angularInfo = getAngularInfo(lightDirection, n, v);
-    color += getIBLContribution(materialInfo, angularInfo, n, v);
+    vec3 pointToLight = -normal;
+    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, pointToView);
+    color += getIBLContribution(materialInfo, angularInfo, normal, pointToView);
 #endif
 
     // Apply optional PBR terms for additional (optional) shading
