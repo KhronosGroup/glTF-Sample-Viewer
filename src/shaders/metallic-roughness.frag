@@ -417,7 +417,7 @@ vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 
     vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
 
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-    return angularInfo.NdotL * light.color * (diffuseContrib + specContrib);
+    return angularInfo.NdotL * light.intensity * light.color * (diffuseContrib + specContrib);
 }
 
 vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 n, vec3 v)
