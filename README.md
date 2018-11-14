@@ -223,8 +223,8 @@ Features
 - [ ] Handles anti-aliasing via WebGL MSAA
 - [x] Straightforward rendering of the scene graph
 - [ ] Selection of tonemapping algorithms for IBL
-- [ ] Support for the KHR_materials_unlit extension
-- [ ] Support for the KHR_texture_transform extension
+- [x] Support for the KHR_materials_unlit extension
+- [x] Support for the KHR_texture_transform extension
 - [ ] Support for the KHR_lights_punctual extension
 - [ ] Educational GUI for inspecting BRDF components
 
