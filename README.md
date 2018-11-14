@@ -231,7 +231,7 @@ Features
 Setup
 -----
 **General**
-* Checkout the [`reference-viewer`](../blob/reference-viewer) branch
+* Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
 * Pull the submodule if you want the example assets
 
 **Debugging**
