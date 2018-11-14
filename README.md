@@ -21,10 +21,10 @@ Features
 - [x] Support multiple primitives per mesh
 - [x] Support multiple scenes per glTF asset
 - [x] Partial support for multiple cameras
-- [ ] Support for alpha coverage
+- [x] Support for alpha coverage
 - [x] Async loading/unloading of glTF buffers and images
 - [x] Flexible and extensible parsing of glTF structures
-- [ ] Partial support for desktop/headless rendering
+- [ ] Support for desktop/headless rendering
 - [ ] Handles anti-aliasing via WebGL MSAA
 - [x] Straightforward rendering of the scene graph
 - [ ] Selection of tonemapping algorithms for IBL
