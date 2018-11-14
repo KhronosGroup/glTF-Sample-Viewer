@@ -10,6 +10,7 @@ class gltfViewer
         this.pitch = 0.0;
         this.zoom  = 0.048;
         this.scale = 180;
+        this.origin = vec3.create();
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -98,7 +99,7 @@ class gltfViewer
                 // Finished load all of the glTF assets
                 if (!self.headless) self.hideSpinner();
 
-                self.zoomToFit();
+                self.fitViewToScene();
 
                 self.currentlyRendering = true;
             });
@@ -173,13 +174,21 @@ class gltfViewer
         window.requestAnimationFrame(renderFrame);
     }
 
-    zoomToFit()
+    fitViewToScene()
     {
         let min = vec3.create();
         let max = vec3.create();
         this.getAssetExtends(min, max);
+
         let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[0]);
         this.zoom = this.getFittingZoom(maxAxisLength);
+
+        for (let i = 0; i < 3; ++i)
+        {
+            this.origin[i] = (max[i] + min[i]) / 2.0;
+        }
+
+        // TODO: use the origin!
     }
 
     getAssetExtends(outMin, outMax)
@@ -213,6 +222,7 @@ class gltfViewer
 
     getFittingZoom(axisLength)
     {
+        // TODO: this is very naive and will probably fail in many cases
         return axisLength * 2;
     }
 
