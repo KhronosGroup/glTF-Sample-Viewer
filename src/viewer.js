@@ -98,6 +98,8 @@ class gltfViewer
                 // Finished load all of the glTF assets
                 if (!self.headless) self.hideSpinner();
 
+                self.zoomToFit();
+
                 self.currentlyRendering = true;
             });
         }).catch(function(error) {
@@ -169,6 +171,49 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
+    }
+
+    zoomToFit()
+    {
+        let min = vec3.create();
+        let max = vec3.create();
+        this.getAssetExtends(min, max);
+        let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[0]);
+        this.zoom = this.getFittingZoom(maxAxisLength);
+    }
+
+    getAssetExtends(outMin, outMax)
+    {
+        const vectorType = "VEC3";
+        let initialized = false;
+
+        for (let accessor of this.gltf.accessors)
+        {
+            if (accessor.type != vectorType || accessor.min === undefined || accessor.max === undefined)
+            {
+                continue;
+            }
+
+            if (!initialized)
+            {
+                for (let i = 0; i < 3; ++i)
+                {
+                    outMin[i] = accessor.min[i];
+                    outMax[i] = accessor.max[i];
+                }
+            }
+
+            for (let i = 0; i < 3; ++i)
+            {
+                outMin[i] = Math.min(outMin[i], accessor.min[i]);
+                outMax[i] = Math.max(outMax[i], accessor.max[i]);
+            }
+        }
+    }
+
+    getFittingZoom(axisLength)
+    {
+        return axisLength * 2;
     }
 
     getCameraPosition()
