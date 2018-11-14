@@ -60,12 +60,13 @@ class gltfViewer
 
     load(gltfFile, basePath = "")
     {
+        gltfFile = basePath + gltfFile;
+        console.log("Loading gltf file " + gltfFile);
+
         // Started loading the glTF 2.0 models.
         if (!this.headless) this.showSpinner();
 
         let self = this;
-
-        gltfFile = basePath + gltfFile;
         axios.get(gltfFile).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
             incompleteGltf.fromJson(response.data);
@@ -385,7 +386,7 @@ class gltfViewer
     {
         let models = [];
 
-        let ignoreVariants = ["glTF-Binary", "glTF-Draco", "glTF-Embedded"];
+        let ignoreVariants = ["glTF-Draco", "glTF-Embedded"];
 
         for(let entry of jsonIndex)
         {
