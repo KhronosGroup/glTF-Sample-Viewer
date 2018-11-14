@@ -5,7 +5,7 @@ class gltfLight
                 intensity = 1,
                 innerConeAngle = 0.0,
                 outerConeAngle = Math.PI / 4.0,
-                range = undefined,
+                range = -1.0, // if no range is defined in the json, this is the default the shader understands
                 name = undefined,
                 node = undefined)
     {
