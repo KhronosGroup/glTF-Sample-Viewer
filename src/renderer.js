@@ -192,7 +192,11 @@ class gltfRenderer
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
 
-        fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
+        if (this.viewer.parameters.usePunctual)
+        {
+            fragDefines.push("USE_PUNCTUAL 1");
+            fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
+        }
 
         if (this.viewer.parameters.useIBL)
         {
@@ -224,7 +228,11 @@ class gltfRenderer
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
-        this.shader.updateUniform("u_Camera", this.currentCameraPosition);
+
+        if (this.viewer.parameters.useIBL || this.viewer.parameters.usePunctual)
+        {
+            this.shader.updateUniform("u_Camera", this.currentCameraPosition);
+        }
 
         if (material.doubleSided) {
             gl.disable(gl.CULL_FACE);

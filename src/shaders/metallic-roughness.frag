@@ -36,7 +36,9 @@ const int LightType_Directional = 0;
 const int LightType_Point = 1;
 const int LightType_Spot = 2;
 
+#ifdef USE_PUNCTUAL
 uniform Light u_Lights[LIGHT_COUNT];
+#endif
 
 #ifdef USE_IBL
 uniform samplerCube u_DiffuseEnvSampler;
@@ -584,6 +586,7 @@ void main()
     vec3 normal = getNormal();
     vec3 pointToView = normalize(u_Camera - v_Position);
 
+#ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         Light light = u_Lights[i];
@@ -600,6 +603,7 @@ void main()
             color += applySpotLight(light, materialInfo, normal, pointToView);
         }
     }
+#endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
