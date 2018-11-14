@@ -1,9 +1,37 @@
-Physically-Based Rendering in glTF 2.0 using WebGL
-==================================================
+glTF 2.0 Reference Viewer
+=========================
 
 [![](assets/images/BoomBox.JPG)](http://github.khronos.org/glTF-WebGL-PBR/)
 
-This is a raw WebGL demo application for the introduction of physically-based materials to the core glTF 2.0 spec. This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of these materials within a WebGL project that isn't tied to any external graphics libraries. For a DirectX sample please head over to [this repo](https://github.com/Microsoft/glTF-DXViewer) instead.
+This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.khronos.org/webgl/). 
+
+This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of Physically Based materials within a WebGL project that isn't tied to any external graphics libraries.
+
+Features
+--------
+
+- [x] Async loading/unloading of glTF files
+- [ ] Loading of binary glTF files (GLB)
+- [x] Support for Metallic-Roughness materials
+- [x] Support for the KHR_materials_pbrSpecularGlossiness
+- [x] Basic support for Image-Based Lighting
+- [ ] Extension for HDR environment maps
+- [x] Correctly handles sampling information from glTF
+- [x] Caches shader program permutations
+- [x] Support multiple primitives per mesh
+- [x] Support multiple scenes per glTF asset
+- [x] Partial support for multiple cameras
+- [ ] Support for alpha coverage
+- [x] Async loading/unloading of glTF buffers and images
+- [x] Flexible and extensible parsing of glTF structures
+- [ ] Partial support for desktop/headless rendering
+- [ ] Handles anti-aliasing via WebGL MSAA
+- [x] Straightforward rendering of the scene graph
+- [ ] Selection of tonemapping algorithms for IBL
+- [x] Support for the KHR_materials_unlit extension
+- [x] Support for the KHR_texture_transform extension
+- [ ] Support for the KHR_lights_punctual extension
+- [ ] Educational GUI for inspecting BRDF components
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
 
@@ -14,6 +42,33 @@ If you would like to see this in action, [view the live demo](http://gltf.ux3d.i
 > `scroll` : Zoom camera
 >
 > `GUI` : Use to change models
+
+For local usage and debugging, please follow these instructions:
+
+**Setup**
+* Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
+* Pull the submodule for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models)  `git submodule update  --init --recursive`
+* Open `index.html`. As the browser accesses the local drive, security settings need to be adapted.
+
+**Debugging**
+* Requirements  
+  * [Visual Studio Code](https://code.visualstudio.com/)
+  * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
+* Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
+* Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
+* `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit.
+
+For offline rendering usage, please follow these instructions:
+
+**Offline**
+* Requirements
+  * [Electron](https://electronjs.org/)
+
+TODO  
+
+For Visual Studio integration, please follow these instructions:
+
+TODO
 
 Physically-Based Materials in glTF 2.0
 --------------------------------------
@@ -29,11 +84,11 @@ These parameters can be provided to the material in two ways. Either the paramet
 
 **Base Color of a Boombox**
 
-<img src="models/BoomBox/glTF/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-baseColor.JPG" width="300" height="300"/>
+<img src="assets/images/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-baseColor.JPG" width="300" height="300"/>
 
 **Metallic-Roughness of a Boombox**
 
-<img src="models/BoomBox/glTF/BoomBox_occlusionRoughnessMetallic.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-metallicRoughness.JPG" width="300" height="300"/>
+<img src="assets/images/BoomBox_occlusionRoughnessMetallic.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-metallicRoughness.JPG" width="300" height="300"/>
 
 Although these are the core parameters of the Metallic-Roughness material, often a user will want to provide additional maps for features such as normals, ambient occlusion, or emissiveness. Similarly to above, these are usually provided as a texture that corresponds to the parts of the mesh that have shifted normals, are occluded and/or are emissive, respectively. However, since these are not a part of the Metallic-Roughness material itself, they are provided as a separate portion to the material.
 
@@ -201,44 +256,3 @@ vec3 diffuse(PBRInfo pbrInputs)
     return (pbrInputs.diffuseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
 }
 ```
-
-Features
---------
-
-- [x] Async loading/unloading of glTF files
-- [ ] Loading of binary glTF files (GLB)
-- [x] Support for Metallic-Roughness materials
-- [x] Support for the KHR_materials_pbrSpecularGlossiness
-- [x] Basic support for Image-Based Lighting
-- [ ] Extension for HDR environment maps
-- [x] Correctly handles sampling information from glTF
-- [x] Caches shader program permutations
-- [x] Support multiple primitives per mesh
-- [x] Support multiple scenes per glTF asset
-- [x] Partial support for multiple cameras
-- [ ] Support for alpha coverage
-- [x] Async loading/unloading of glTF buffers and images
-- [x] Flexible and extensible parsing of glTF structures
-- [ ] Partial support for desktop/headless rendering
-- [ ] Handles anti-aliasing via WebGL MSAA
-- [x] Straightforward rendering of the scene graph
-- [ ] Selection of tonemapping algorithms for IBL
-- [x] Support for the KHR_materials_unlit extension
-- [x] Support for the KHR_texture_transform extension
-- [ ] Support for the KHR_lights_punctual extension
-- [ ] Educational GUI for inspecting BRDF components
-
-Setup
------
-**General**
-* Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
-* Pull the submodule if you want the example assets (`git submodule update  --init --recursive`)
-
-**Debugging**
-* Needed for this: [Visual Studio Code](https://code.visualstudio.com/) and [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/) (you can also use [Chrome](https://www.google.com/chrome/), but the setup is more complicated)
-* Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for VS Code (or [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome) if you insist)
-* Open the project folder in VS Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created
-* `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit
-
-**Electron**
-* TODO
