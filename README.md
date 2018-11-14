@@ -227,3 +227,18 @@ Features
 - [ ] Support for the KHR_texture_transform extension
 - [ ] Support for the KHR_lights_punctual extension
 - [ ] Educational GUI for inspecting BRDF components
+
+Setup
+-----
+**General**
+* Checkout the [`reference-viewer`](../blob/reference-viewer) branch
+* Pull the submodule if you want the example assets
+
+**Debugging**
+* Needed for this: [Visual Studio Code](https://code.visualstudio.com/) and [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/) (you can also use [Chrome](https://www.google.com/chrome/), but the setup is more complicated)
+* Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for VS Code (or [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome) if you insist)
+* Open the project folder in VS Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created
+* `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit
+
+**Electron**
+* TODO
