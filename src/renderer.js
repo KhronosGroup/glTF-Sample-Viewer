@@ -215,7 +215,10 @@ class gltfRenderer
 
         gl.useProgram(this.shader.program);
 
-        this.applyLights(gltf);
+        if (this.viewer.parameters.usePunctual)
+        {
+            this.applyLights(gltf);
+        }
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);

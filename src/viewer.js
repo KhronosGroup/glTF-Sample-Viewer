@@ -37,6 +37,7 @@ class gltfViewer
             model: "",
 
             useIBL: true,
+            usePunctual: false,
 
             nextScene: function() { self.sceneIndex++; },
             prevScene: function() { self.sceneIndex--; }
@@ -359,10 +360,11 @@ class gltfViewer
             });
         });
 
-        let environmentFolder = this.gui.addFolder("Environment");
+        let environmentFolder = this.gui.addFolder("Lighting");
         environmentFolder.add(this.parameters, "useIBL").name("Image-Based Lighting");
+        environmentFolder.add(this.parameters, "usePunctual").name("Punctual Lighting");
 
-        // TODO: add stuff like tonemapping algorithm and direction light.
+        // TODO: add stuff like tonemapping algorithm.
 
         let performanceFolder = this.gui.addFolder("Performance");
 
