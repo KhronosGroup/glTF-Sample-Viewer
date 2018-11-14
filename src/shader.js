@@ -67,9 +67,46 @@ class gltfShader
         }
     }
 
+
+    updateUniform(objectName, object, log = true)
+    {
+        if (Array.isArray(object))
+        {
+            this.updateUniformArray(objectName, object, log);
+        }
+        else if (object instanceof UniformStruct)
+        {
+            this.updateUniformStruct(objectName, object, log);
+        }
+        else
+        {
+            this.updateUniformValue(objectName, object, log);
+        }
+    }
+
+    updateUniformArray(arrayName, array, log)
+    {
+        for (let i = 0; i < array.length; ++i)
+        {
+            let element = array[i];
+            let uniformName = arrayName + "[" + i + "]";
+            this.updateUniform(uniformName, element, log);
+        }
+    }
+
+    updateUniformStruct(structName, object, log)
+    {
+        let memberNames = Object.keys(object);
+        for (let memberName of memberNames)
+        {
+            let uniformName = structName + "." + memberName;
+            this.updateUniform(uniformName, object[memberName], log);
+        }
+    }
+
     // upload the values of a uniform with the given name using type resolve to get correct function call
     // vec3 => gl.uniform3f(value)
-    updateUniform(uniformName, value, log = true)
+    updateUniformValue(uniformName, value, log)
     {
         const uniform = this.uniforms.get(uniformName);
 

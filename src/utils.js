@@ -50,3 +50,6 @@ function CombineHashes(hash1, hash2)
 {
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
+
+// marker interface used to for parsing the uniforms
+class UniformStruct { }

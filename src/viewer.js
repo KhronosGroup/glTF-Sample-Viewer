@@ -11,6 +11,8 @@ class gltfViewer
         this.zoom  = 0.048;
         this.scale = 180;
 
+        this.defaultModel = "BoomBox/glTF/BoomBox.gltf";
+
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
         this.wheelSpeed = 1.04;
@@ -35,6 +37,7 @@ class gltfViewer
             model: "",
 
             useIBL: true,
+            usePunctual: false,
 
             nextScene: function() { self.sceneIndex++; },
             prevScene: function() { self.sceneIndex--; }
@@ -305,9 +308,9 @@ class gltfViewer
 
         function initModelsDropdown(basePath)
         {
-            if (self.models.includes("BoomBox/glTF/BoomBox.gltf"))
+            if (self.models.includes(self.defaultModel))
             {
-                self.parameters.model = "BoomBox/glTF/BoomBox.gltf";
+                self.parameters.model = self.defaultModel;
             }
             else
             {
@@ -357,10 +360,11 @@ class gltfViewer
             });
         });
 
-        let environmentFolder = this.gui.addFolder("Environment");
+        let environmentFolder = this.gui.addFolder("Lighting");
         environmentFolder.add(this.parameters, "useIBL").name("Image-Based Lighting");
+        environmentFolder.add(this.parameters, "usePunctual").name("Punctual Lighting");
 
-        // TODO: add stuff like tonemapping algorithm and direction light.
+        // TODO: add stuff like tonemapping algorithm.
 
         let performanceFolder = this.gui.addFolder("Performance");
 

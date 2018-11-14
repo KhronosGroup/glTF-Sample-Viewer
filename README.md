@@ -30,7 +30,7 @@ Features
 - [ ] Selection of tonemapping algorithms for IBL
 - [x] Support for the KHR_materials_unlit extension
 - [x] Support for the KHR_texture_transform extension
-- [ ] Support for the KHR_lights_punctual extension
+- [x] Support for the KHR_lights_punctual extension
 - [ ] Educational GUI for inspecting BRDF components
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).

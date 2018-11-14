@@ -22,8 +22,7 @@ class gltfRenderer
 
         LoadWebGLExtensions(requiredWebglExtensions);
 
-        this.lightCount = 0;
-        this.defaultLight = new gltfLight();
+        this.visibleLights = [];
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -112,7 +111,7 @@ class gltfRenderer
             this.currentCameraPosition = this.viewer.getCameraPosition();
         }
 
-        this.lightCount = gltf.lights.length > 0 ? gltf.lights.length : 1;
+        this.visibleLights = this.getVisibleLights(gltf, scene);
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
@@ -129,6 +128,23 @@ class gltfRenderer
         {
             this.drawNode(gltf, scene, i, recursive);
         }
+    }
+
+    // returns all lights that are relevant for rendering or the default light if there are none
+    getVisibleLights(gltf, scene)
+    {
+        let lights = [];
+        for (let light of gltf.lights)
+        {
+            if (light.node !== undefined)
+            {
+                if (scene.nodes.includes(light.node))
+                {
+                    lights.push(light);
+                }
+            }
+        }
+        return lights.length > 0 ? lights : [ new gltfLight() ];
     }
 
     // same transform, recursive
@@ -176,7 +192,7 @@ class gltfRenderer
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
 
-        fragDefines.push("LIGHT_COUNT " + this.lightCount);
+        fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
 
         if (this.viewer.parameters.useIBL)
         {
@@ -199,7 +215,10 @@ class gltfRenderer
 
         gl.useProgram(this.shader.program);
 
-        // this.applyLights(gltf);
+        if (this.viewer.parameters.usePunctual)
+        {
+            this.applyLights(gltf);
+        }
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
@@ -294,23 +313,9 @@ class gltfRenderer
     applyLights(gltf)
     {
         let uniformLights = [];
-
-        function addLight(light)
+        for (let light of this.visibleLights)
         {
-            const transform = gltf.nodes[light.node].worldTransform;
-            uniformLights.push(light.toUniform(transform));
-        }
-
-        if (gltf.lights.length > 0)
-        {
-            for (let l of gltf.lights)
-            {
-                addLight(l);
-            }
-        }
-        else
-        {
-            addLight(this.defaultLight);
+            uniformLights.push(light.toUniform(gltf));
         }
 
         this.shader.updateUniform("u_Lights", uniformLights);
@@ -329,8 +334,6 @@ class gltfRenderer
         SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, specularEnvMap, texSlotOffset + 1);
         SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, lut, texSlotOffset + 2);
 
-        this.shader.updateUniform("u_ScaleDiffBaseMR", jsToGl([0, 0, 0, 0]));
-        this.shader.updateUniform("u_ScaleFGDSpec", jsToGl([0, 0, 0, 0]));
         this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, 0, 0]));
     }
 
