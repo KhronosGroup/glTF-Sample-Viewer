@@ -69,7 +69,7 @@ class gltfViewer
         let self = this;
         axios.get(gltfFile).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
-            incompleteGltf.fromJson(response.data);
+            incompleteGltf.fromJson(extractJson(response.data));
 
             self.addEnvironmentMap(incompleteGltf);
 

@@ -51,5 +51,28 @@ function CombineHashes(hash1, hash2)
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
 
+function extractJson(data)
+{
+    if (data instanceof Object)
+    {
+        return data;
+    }
+    // we are in binary land
+    const headerLength = 3;
+
+    let lengthIndex = headerLength;
+    let typeIndex = lengthIndex + 1;
+
+    // TODO get chunk length and chunk type :(
+
+    let chunkLength = undefined;
+    let chunkType = undefined;
+
+    console.log("chunk length: " + chunkLength);
+    console.log("chunk type: " + chunkType);
+
+    return undefined;
+}
+
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
