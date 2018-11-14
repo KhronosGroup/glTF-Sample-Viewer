@@ -73,7 +73,7 @@ class UniformLight extends UniformStruct
     {
         super();
 
-        const defaultDirection = vec3.fromValues(0.7399, 0.6428, 0.1983);
+        const defaultDirection = vec3.fromValues(-0.7399, -0.6428, -0.1983);
         this.direction = defaultDirection;
         this.range = -1.0;
 
