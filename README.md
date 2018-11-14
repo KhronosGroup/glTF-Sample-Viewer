@@ -232,7 +232,7 @@ Setup
 -----
 **General**
 * Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
-* Pull the submodule if you want the example assets
+* Pull the submodule if you want the example assets (`git submodule update  --init --recursive`)
 
 **Debugging**
 * Needed for this: [Visual Studio Code](https://code.visualstudio.com/) and [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/) (you can also use [Chrome](https://www.google.com/chrome/), but the setup is more complicated)
