@@ -73,7 +73,13 @@ class gltfViewer
         axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
 
-            let glb = isGlb ? extractGlbData(response.data) : undefined;
+            let glb = undefined;
+            if (isGlb)
+            {
+                const glbParser = new GlbParser(response.data);
+                glb = glbParser.extractGlbData();
+            }
+
             incompleteGltf.fromJson(isGlb ? glb.json : response.data);
 
             self.addEnvironmentMap(incompleteGltf);
