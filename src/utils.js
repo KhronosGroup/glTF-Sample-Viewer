@@ -56,7 +56,8 @@ const glbChunkHeaderInts = 2;
 
 function extractGlbData(data)
 {
-    if (getCheckedHeader(data) === undefined)
+    const glbHeader = getCheckedHeader(data);
+    if (glbHeader === undefined)
     {
         return undefined;
     }
@@ -71,7 +72,7 @@ function extractGlbData(data)
 
     let buffers = [];
     let chunkStart = jsonChunkHeader.start + jsonChunkHeader.length;
-    while (chunkStart < glbLength)
+    while (chunkStart < glbHeader.length)
     {
         const chunk = new Uint32Array(data, chunkStart, 2);
         const chunkLength = chunk[0];
@@ -80,7 +81,7 @@ function extractGlbData(data)
         // binary
         if (chunkType === 0x004E4942)
         {
-            buffers.push(data.slice(chunkStart+2, chunkStart+2+chunkLength));
+            buffers.push(data.slice(chunkStart + 2, chunkStart + 2 + chunkLength));
             console.log("binary chunk of length " + chunkLength);
         }
 
@@ -125,9 +126,9 @@ function getCheckedJsonChunkHeader(data)
     const chunkLength = chunk[0];
     const chunkType = chunk[1];
 
-    if (jsonType !== 0x4E4F534A)
+    if (chunkType !== 0x4E4F534A)
     {
-        console.error("Invalid chunk type " + jsonType + " expected JSON");
+        console.error("Invalid chunk type " + chunkType + " expected JSON");
         return undefined;
     }
 

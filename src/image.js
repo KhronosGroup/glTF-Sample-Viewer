@@ -35,14 +35,14 @@ class gltfImage
 
         promises.push(new Promise(function(resolve, reject)
         {
-            if(uri !== undefined) // load from uri
+            if (uri !== undefined) // load from uri
             {
                 image = new Image();
                 image.onload = resolve;
                 image.onerror = resolve;
                 image.src = uri;
             }
-            else if(bufferView !== undefined) // load from binary
+            else if (bufferView !== undefined) // load from binary
             {
                 image = new Image();
                 image.onload = resolve;
