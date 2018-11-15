@@ -14,11 +14,11 @@ function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
     {
-        if(ignore && ignore.find(function(elem){return elem == k}) !== undefined)
+        if (ignore && ignore.find(function(elem){return elem == k}) !== undefined)
         {
             continue; // skip
         }
-        if(jsonObj[k] !== undefined)
+        if (jsonObj[k] !== undefined)
         {
             target[k] = jsonObj[k];
         }
@@ -27,7 +27,7 @@ function fromKeys(target, jsonObj, ignore = [])
 
 function fromParams(parameters, target, jsonObj)
 {
-    for(let p of parameters)
+    for (let p of parameters)
     {
         if(jsonObj[p] !== undefined)
         {
@@ -51,62 +51,34 @@ function CombineHashes(hash1, hash2)
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
 
+const glbHeaderInts = 3;
+const glbChunkHeaderInts = 2;
 
 function extractGlbData(data)
 {
-    // we are in binary land
-    const headerElemCount = 3;
-
-    const header = new Uint32Array(data, 0, headerElemCount);
-
-    const glbMagic = header[0];
-    const glbVersion = header[1];
-    const glbLength = header[2];
-
-    if (glbMagic !== 0x46546C67)
+    if (getCheckedHeader(data) === undefined)
     {
-        console.error("Invalid glb magic " + glbMagic);
         return undefined;
     }
 
-    if(glbVersion !== 2)
+    const jsonChunkHeader = getCheckedJsonChunkHeader(data);
+    if (jsonChunkHeader === undefined)
     {
-        console.error("Unsupported glb header version " + glbVersion);
         return undefined;
     }
 
-    if(data.byteLength != glbLength)
-    {
-        console.error("Invalid glb byte length " + glbLength + " expected " + data.byteLength);
-        return undefined;
-    }
-
-    const jsonChunk = new Uint32Array(data, headerElemCount * 4, 2);
-    const jsonLength = jsonChunk[0];
-    const jsonType = jsonChunk[1];
-
-    if(jsonType !== 0x4E4F534A)
-    {
-        console.error("Invalid chunk type " + jsonType + " expected JSON");
-        return undefined;
-    }
-
-    const jsonStart = headerElemCount * 4 + 2 * 4;
-    const jsonSlice = new Uint8Array(data, jsonStart, jsonLength);
-    const json = JSON.parse(String.fromCharCode.apply(null, jsonSlice));
-
-    let chunkStart = jsonStart + jsonLength;
+    let json = JSON.parse(getJsonStringFromChunk(data, jsonChunkHeader));
 
     let buffers = [];
-
-    while(chunkStart < glbLength)
+    let chunkStart = jsonChunkHeader.start + jsonChunkHeader.length;
+    while (chunkStart < glbLength)
     {
         const chunk = new Uint32Array(data, chunkStart, 2);
         const chunkLength = chunk[0];
         const chunkType = chunk[1];
 
         // binary
-        if(chunkType === 0x004E4942)
+        if (chunkType === 0x004E4942)
         {
             buffers.push(data.slice(chunkStart+2, chunkStart+2+chunkLength));
             console.log("binary chunk of length " + chunkLength);
@@ -115,7 +87,59 @@ function extractGlbData(data)
         chunkStart += chunkLength + 2 * 4;
     }
 
-    return {json: json, buffers: buffers};
+    return { json: json, buffers: buffers };
+}
+
+function getCheckedHeader(data)
+{
+    const header = new Uint32Array(data, 0, glbHeaderInts);
+    const magic = header[0];
+    const version = header[1];
+    const length = header[2];
+
+    if (magic !== 0x46546C67)
+    {
+        console.error("Invalid glb magic " + magic);
+        return undefined;
+    }
+
+    if (version !== 2)
+    {
+        console.error("Unsupported glb header version " + version);
+        return undefined;
+    }
+
+    if (data.byteLength != length)
+    {
+        console.error("Invalid glb byte length " + length + " expected " + data.byteLength);
+        return undefined;
+    }
+
+    return { "magic": magic, "version": version, "length": length };
+}
+
+function getCheckedJsonChunkHeader(data)
+{
+    const chunkStart = glbHeaderInts * 4;
+    const chunk = new Uint32Array(data, chunkStart, glbChunkHeaderInts);
+    const chunkLength = chunk[0];
+    const chunkType = chunk[1];
+
+    if (jsonType !== 0x4E4F534A)
+    {
+        console.error("Invalid chunk type " + jsonType + " expected JSON");
+        return undefined;
+    }
+
+    return { "start": chunkStart, "length": chunkLength, "type": chunkType };
+}
+
+function getJsonStringFromChunk(data, chunkHeader)
+{
+    const chunkLength = chunkHeader.length;
+    const jsonStart = (glbHeaderInts + glbChunkHeaderInts) * 4;
+    const jsonSlice = new Uint8Array(data, jsonStart, chunkLength);
+    return String.fromCharCode.apply(null, jsonSlice);
 }
 
 // marker interface used to for parsing the uniforms
