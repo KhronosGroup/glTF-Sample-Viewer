@@ -1,17 +1,28 @@
 class gltfLoader
 {
-    static load(gltf)
+    static load(gltf, buffers = undefined)
     {
         let promises = [];
 
         for (let image of gltf.images)
         {
-            image.load(promises, gltf.bufferViews);
+            image.load(promises, gltf);
         }
 
-        for (let buffer of gltf.buffers)
+        if(buffers) // copy buffers from glb
         {
-            buffer.load(gltf.path, promises);
+            const count = Math.min(buffers.length, gltf.buffers.length);
+            for(let i = 0; i < count; ++i)
+            {
+                gltf.buffers[i].buffer = buffers[i];
+            }
+        }
+        else
+        {
+            for (let buffer of gltf.buffers)
+            {
+                buffer.load(gltf.path, promises);
+            }
         }
 
         return promises;
