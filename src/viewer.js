@@ -68,15 +68,18 @@ class gltfViewer
 
         let self = this;
 
-        const respType = gltfFile.toLowerCase().endsWith('.gltf') ? "json" : "arraybuffer";
+        const isGlb = gltfFile.toLowerCase().endsWith('.glb');
 
-        axios.get(gltfFile, { responseType: respType}).then(function(response) {
+        axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json"}).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
-            incompleteGltf.fromJson(extractJson(response.data));
+
+            let glb = isGlb ? extractGlbData(response.data) : undefined;
+
+            incompleteGltf.fromJson(isGlb ? glb.json : response.data);
 
             self.addEnvironmentMap(incompleteGltf);
 
-            let assetPromises = gltfLoader.load(incompleteGltf);
+            let assetPromises = gltfLoader.load(incompleteGltf, isGlb ? glb.buffers : undefined);
 
             Promise.all(assetPromises).then(function() {
                 self.currentlyRendering = false;

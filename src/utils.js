@@ -51,13 +51,9 @@ function CombineHashes(hash1, hash2)
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
 
-function extractJson(data)
-{
-    if (!(data instanceof ArrayBuffer))
-    {
-        return data;
-    }
 
+function extractGlbData(data)
+{
     // we are in binary land
     const headerElemCount = 3;
 
@@ -81,27 +77,45 @@ function extractJson(data)
 
     if(data.byteLength != glbLength)
     {
-
         console.error("Invalid glb byte length " + glbLength + " expected " + data.byteLength);
         return undefined;
     }
 
-    const chunk = new Uint32Array(data, headerElemCount * 4, 2);
+    const jsonChunk = new Uint32Array(data, headerElemCount * 4, 2);
+    const jsonLength = jsonChunk[0];
+    const jsonType = jsonChunk[1];
 
-    const chunkLength = chunk[0];
-    const chunkType = chunk[1];
-
-    if(chunkType !== 0x4E4F534A)
+    if(jsonType !== 0x4E4F534A)
     {
-        console.error("Invalid chunk type " + chunkType + " expected JSON");
+        console.error("Invalid chunk type " + jsonType + " expected JSON");
         return undefined;
     }
 
     const jsonStart = headerElemCount * 4 + 2 * 4;
-    const jsonSlice = new Uint8Array(data, jsonStart, chunkLength);
-    let jsonString = String.fromCharCode.apply(null, jsonSlice);
+    const jsonSlice = new Uint8Array(data, jsonStart, jsonLength);
+    const json = JSON.parse(String.fromCharCode.apply(null, jsonSlice));
 
-    return JSON.parse(jsonString);
+    let chunkStart = jsonStart + jsonLength;
+
+    let buffers = [];
+
+    while(chunkStart < glbLength)
+    {
+        const chunk = new Uint32Array(data, chunkStart, 2);
+        const chunkLength = chunk[0];
+        const chunkType = chunk[1];
+
+        // binary
+        if(chunkType === 0x004E4942)
+        {
+            buffers.push(data.slice(chunkStart+2, chunkStart+2+chunkLength));
+            console.log("binary chunk of length " + chunkLength);
+        }
+
+        chunkStart += chunkLength + 2 * 4;
+    }
+
+    return {json: json, buffers: buffers};
 }
 
 // marker interface used to for parsing the uniforms
