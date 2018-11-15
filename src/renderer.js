@@ -80,7 +80,6 @@ class gltfRenderer
         // if (spector !== undefined) {
         //     spector.setMarker("Draw scene alpha " + sortByDepth);
         // }
-        // TODO: upload lights
 
         let currentCamera = undefined;
 
@@ -106,7 +105,6 @@ class gltfRenderer
 
         if (this.viewer !== undefined)
         {
-            // TODO: eventually remove viewer from this call!
             this.viewMatrix = this.viewer.getViewTransform();
             this.currentCameraPosition = this.viewer.getCameraPosition();
         }
@@ -115,7 +113,7 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
 
-        // TODO: pass a scene transfrom to be able to translate & rotate using the mouse
+        // Optional: pass a scene transfrom to be able to translate & rotate using the mouse
 
         let transform = mat4.create();
 

@@ -105,7 +105,7 @@ uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
 
 uniform vec3 u_Camera;
-uniform float u_AlphaCutoff; // TODO: put info define?
+uniform float u_AlphaCutoff;
 
 // debugging flags used for shader output of intermediate PBR variables
 uniform vec4 u_ScaleDiffBaseMR;
@@ -292,13 +292,14 @@ vec3 getNormal()
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
 #ifdef USE_IBL
-vec3 getIBLContribution(MaterialInfo materialInfo, AngularInfo angularInfo, vec3 n, vec3 v)
+vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 {
     vec3 reflection = -normalize(reflect(v, n));
+    float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
     float mipCount = 9.0; // resolution of 512x512
     float lod = (materialInfo.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec3 brdf = SRGBtoLINEAR(texture2D(u_brdfLUT, vec2(angularInfo.NdotV, 1.0 - materialInfo.perceptualRoughness))).rgb;
+    vec3 brdf = SRGBtoLINEAR(texture2D(u_brdfLUT, vec2(NdotV, 1.0 - materialInfo.perceptualRoughness))).rgb;
     vec3 diffuseLight = SRGBtoLINEAR(textureCube(u_DiffuseEnvSampler, n)).rgb;
 
 #ifdef USE_TEX_LOD
@@ -367,6 +368,7 @@ float getPerceivedBrightness(vec3 vector)
     return sqrt(0.299 * vector.r * vector.r + 0.587 * vector.g * vector.g + 0.114 * vector.b * vector.b);
 }
 
+// https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows/js/three.pbrUtilities.js#L34
 float solveMetallic(vec3 diffuse, vec3 specular, float oneMinusSpecularStrength) {
     float specularBrightness = getPerceivedBrightness(specular);
 
@@ -425,6 +427,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
     return angularInfo.NdotL * (diffuseContrib + specContrib);
 }
 
+// https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float getRangeAttenuation(float range, float distance)
 {
     if (range < 0.0)
@@ -435,6 +438,7 @@ float getRangeAttenuation(float range, float distance)
     return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
+// https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles
 float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeCos, float innerConeCos)
 {
     float actualCos = dot(normalize(spotDirection), normalize(-pointToLight));
@@ -509,7 +513,7 @@ void main()
     float oneMinusSpecularStrength = 1.0 - max(max(f0.r, f0.g), f0.b);
     diffuseColor = baseColor.rgb * oneMinusSpecularStrength;
 
-    // TODO: do conversion between metallic M-R and S-G metallic!
+    // do conversion between metallic M-R and S-G metallic
     metallic = solveMetallic(baseColor.rgb, specularColor, oneMinusSpecularStrength);
 
 #endif // ! MATERIAL_SPECULARGLOSSINESS
@@ -607,9 +611,7 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    vec3 pointToLight = -normal;
-    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, pointToView);
-    color += getIBLContribution(materialInfo, angularInfo, normal, pointToView);
+    color += getIBLContribution(materialInfo, normal, pointToView);
 #endif
 
     // Apply optional PBR terms for additional (optional) shading
@@ -619,9 +621,9 @@ void main()
 #endif
 
 #ifdef HAS_EMISSIVE_MAP
-    vec3 emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
-    color += emissive;
+    color += SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
 #endif
 
+    // TODO: tone mapping
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 }
