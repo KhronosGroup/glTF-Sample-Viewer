@@ -19,25 +19,19 @@ class GlbParser
             return undefined;
         }
 
-        const jsonChunkInfo = this.getChunkInfo(this.glbHeaderInts * 4, this.jsonChunkType);
-        if (jsonChunkInfo === undefined)
-        {
-            return undefined;
-        }
-        let json = this.getJsonFromChunk(jsonChunkInfo);
-
+        let json = undefined;
         let buffers = [];
-        let chunkStart = jsonChunkInfo.start + jsonChunkInfo.length;
-        while (chunkStart < glbInfo.length)
+        const chunkInfos = this.getAllChunkInfos();
+        for (let chunkInfo of chunkInfos)
         {
-            const chunkInfo = this.getChunkInfo(chunkStart);
-
-            if (chunkInfo.type === this.binaryChunkType)
+            if (chunkInfo.type == this.jsonChunkType && !json)
             {
-                buffers.push(this.data.slice(chunkInfo.start, chunkInfo.start + chunkInfo.length));
+                json = this.getJsonFromChunk(chunkInfo);
             }
-
-            chunkStart += chunkInfo.length + 2 * 4;
+            else if (chunkInfo.type == this.binaryChunkType)
+            {
+                buffers.push(this.getBufferFromChunk(chunkInfo));
+            }
         }
 
         return { json: json, buffers: buffers };
@@ -50,48 +44,59 @@ class GlbParser
         const version = header[1];
         const length = header[2];
 
-        if (magic !== this.glbMagic)
+        if (!this.checkEquality(magic, this.glbMagic, "glb magic") ||
+            !this.checkEquality(version, this.glbVersion, "glb header version") ||
+            !this.checkEquality(length, this.data.byteLength, "glb byte length"))
         {
-            console.error("Invalid glb magic: " + magic + ", expected: " + this.glbMagic);
-            return undefined;
-        }
-
-        if (version !== this.glbVersion)
-        {
-            console.error("Unsupported glb header version: " + version + ", expected: " + this.glbVersion);
-            return undefined;
-        }
-
-        if (length != this.data.byteLength)
-        {
-            console.error("Invalid glb byte length: " + length + ", expected: " + this.data.byteLength);
             return undefined;
         }
 
         return { "magic": magic, "version": version, "length": length };
     }
 
-    getChunkInfo(headerStart, expectedType = undefined)
+    getAllChunkInfos()
+    {
+        let infos = [];
+        let chunkStart = this.glbHeaderInts * 4;
+        while (chunkStart < this.data.byteLength)
+        {
+            const chunkInfo = this.getChunkInfo(chunkStart);
+            infos.push(chunkInfo);
+            chunkStart += chunkInfo.length + this.glbChunkHeaderInts * 4;
+        }
+        return infos;
+    }
+
+    getChunkInfo(headerStart)
     {
         const header = new Uint32Array(this.data, headerStart, this.glbChunkHeaderInts);
         const chunkStart = headerStart + this.glbChunkHeaderInts * 4;
         const chunkLength = header[0];
         const chunkType = header[1];
-
-        if (expectedType !== undefined && chunkType !== expectedType)
-        {
-            console.error("Invalid chunk type " + chunkType + " expected " + expectedType);
-            return undefined;
-        }
-
         return { "start": chunkStart, "length": chunkLength, "type": chunkType };
     }
 
-    getJsonFromChunk(chunkHeader)
+    getJsonFromChunk(chunkInfo)
     {
-        const chunkLength = chunkHeader.length;
+        const chunkLength = chunkInfo.length;
         const jsonStart = (this.glbHeaderInts + this.glbChunkHeaderInts) * 4;
         const jsonSlice = new Uint8Array(this.data, jsonStart, chunkLength);
         return JSON.parse(String.fromCharCode.apply(null, jsonSlice));
+    }
+
+    getBufferFromChunk(chunkInfo)
+    {
+        return this.data.slice(chunkInfo.start, chunkInfo.start + chunkInfo.length);
+    }
+
+    checkEquality(actual, expected, name)
+    {
+        if (actual == expected)
+        {
+            return true;
+        }
+
+        console.error("Found invalid/unsupported " + name + ", expected: " + expected + ", but was: " + actual);
+        return false;
     }
 };

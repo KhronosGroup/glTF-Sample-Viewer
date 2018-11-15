@@ -61,7 +61,6 @@ class gltfViewer
     load(gltfFile, basePath = "")
     {
         gltfFile = basePath + gltfFile;
-        console.log("Loading gltf file " + gltfFile);
 
         // Started loading the glTF 2.0 models.
         if (!this.headless) this.showSpinner();
@@ -69,6 +68,7 @@ class gltfViewer
         let self = this;
 
         const isGlb = gltfFile.toLowerCase().endsWith('.glb');
+        console.log("Loading " + (isGlb ? "glb" : "glTF") + " file " + gltfFile);
 
         axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
