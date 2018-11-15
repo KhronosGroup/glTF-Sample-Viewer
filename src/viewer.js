@@ -60,15 +60,19 @@ class gltfViewer
 
     load(gltfFile, basePath = "")
     {
+        gltfFile = basePath + gltfFile;
+        console.log("Loading gltf file " + gltfFile);
+
         // Started loading the glTF 2.0 models.
         if (!this.headless) this.showSpinner();
 
         let self = this;
 
-        gltfFile = basePath + gltfFile;
-        axios.get(gltfFile).then(function(response) {
+        const respType = gltfFile.toLowerCase().endsWith('.gltf') ? "json" : "arraybuffer";
+
+        axios.get(gltfFile, { responseType: respType}).then(function(response) {
             let incompleteGltf = new glTF(gltfFile);
-            incompleteGltf.fromJson(response.data);
+            incompleteGltf.fromJson(extractJson(response.data));
 
             self.addEnvironmentMap(incompleteGltf);
 
