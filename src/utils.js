@@ -51,6 +51,11 @@ function CombineHashes(hash1, hash2)
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
 
+// TODO: move the json extraction to its own file/class?
+
+const glbHeaderInts = 3;
+const glbChunkHeaderInts = 2;
+
 function extractJson(data)
 {
     if (!(data instanceof ArrayBuffer))
@@ -58,36 +63,52 @@ function extractJson(data)
         return data;
     }
 
-    // we are in binary land
-    const headerElemCount = 3;
-
-    const header = new Uint32Array(data, 0, headerElemCount);
-
-    const glbMagic = header[0];
-    const glbVersion = header[1];
-    const glbLength = header[2];
-
-    if (glbMagic !== 0x46546C67)
+    if (getCheckedHeader(data) === undefined)
     {
-        console.error("Invalid glb magic " + glbMagic);
         return undefined;
     }
 
-    if(glbVersion !== 2)
+    const jsonChunkHeader = getCheckedJsonChunkHeader(data);
+    if (jsonChunkHeader === undefined)
     {
-        console.error("Unsupported glb header version " + glbVersion);
         return undefined;
     }
 
-    if(data.byteLength != glbLength)
-    {
+    return JSON.parse(getJsonStringFromChunk(data, jsonChunkHeader));
+}
 
-        console.error("Invalid glb byte length " + glbLength + " expected " + data.byteLength);
+function getCheckedHeader(data)
+{
+    const header = new Uint32Array(data, 0, glbHeaderInts);
+    const magic = header[0];
+    const version = header[1];
+    const length = header[2];
+
+    if (magic !== 0x46546C67)
+    {
+        console.error("Invalid glb magic " + magic);
         return undefined;
     }
 
-    const chunk = new Uint32Array(data, headerElemCount * 4, 2);
+    if (version !== 2)
+    {
+        console.error("Unsupported glb header version " + version);
+        return undefined;
+    }
 
+    if (data.byteLength != length)
+    {
+        console.error("Invalid glb byte length " + length + " expected " + data.byteLength);
+        return undefined;
+    }
+
+    return { "magic": magic, "version": version, "length": length };
+}
+
+function getCheckedJsonChunkHeader(data)
+{
+    const glbJsonChunkOffset = glbHeaderInts * 4;
+    const chunk = new Uint32Array(data, glbJsonChunkOffset, glbChunkHeaderInts);
     const chunkLength = chunk[0];
     const chunkType = chunk[1];
 
@@ -97,11 +118,15 @@ function extractJson(data)
         return undefined;
     }
 
-    const jsonStart = headerElemCount * 4 + 2 * 4;
-    const jsonSlice = new Uint8Array(data, jsonStart, chunkLength);
-    let jsonString = String.fromCharCode.apply(null, jsonSlice);
+    return { "length": chunkLength, "type": chunkType };
+}
 
-    return JSON.parse(jsonString);
+function getJsonStringFromChunk(data, chunkHeader)
+{
+    const chunkLength = chunkHeader.length;
+    const jsonStart = (glbHeaderInts + glbChunkHeaderInts) * 4;
+    const jsonSlice = new Uint8Array(data, jsonStart, chunkLength);
+    return String.fromCharCode.apply(null, jsonSlice);
 }
 
 // marker interface used to for parsing the uniforms
