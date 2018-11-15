@@ -54,6 +54,7 @@ function CombineHashes(hash1, hash2)
 const glbHeaderInts = 3;
 const glbChunkHeaderInts = 2;
 const glbMagic = 0x46546C67;
+const glbVersion = 2;
 const jsonChunkType = 0x4E4F534A;
 const binaryChunkType = 0x004E4942;
 
@@ -70,7 +71,7 @@ function extractGlbData(data)
     {
         return undefined;
     }
-    let json = getJsonStringFromChunk(data, jsonChunkInfo);
+    let json = getJsonFromChunk(data, jsonChunkInfo);
 
     let buffers = [];
     let chunkStart = jsonChunkInfo.start + jsonChunkInfo.length;
@@ -98,19 +99,19 @@ function getCheckedGlbInfo(data)
 
     if (magic !== glbMagic)
     {
-        console.error("Invalid glb magic " + magic);
+        console.error("Invalid glb magic: " + magic + ", expected: " + glbMagic);
         return undefined;
     }
 
-    if (version !== 2)
+    if (version !== glbVersion)
     {
-        console.error("Unsupported glb header version " + version);
+        console.error("Unsupported glb header version: " + version + ", expected: " + glbVersion);
         return undefined;
     }
 
     if (data.byteLength != length)
     {
-        console.error("Invalid glb byte length " + length + " expected " + data.byteLength);
+        console.error("Invalid glb byte length: " + length + ", expected: " + data.byteLength);
         return undefined;
     }
 
@@ -133,7 +134,7 @@ function getChunkInfo(data, headerStart, expectedType = undefined)
     return { "start": chunkStart, "length": chunkLength, "type": chunkType };
 }
 
-function getJsonStringFromChunk(data, chunkHeader)
+function getJsonFromChunk(data, chunkHeader)
 {
     const chunkLength = chunkHeader.length;
     const jsonStart = (glbHeaderInts + glbChunkHeaderInts) * 4;
