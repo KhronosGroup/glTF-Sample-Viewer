@@ -4,15 +4,10 @@ class gltfLoader
     {
         let promises = [];
 
-        for (let image of gltf.images)
-        {
-            image.load(promises, gltf);
-        }
-
-        if(buffers) // copy buffers from glb
+        if (buffers) // copy buffers from glb
         {
             const count = Math.min(buffers.length, gltf.buffers.length);
-            for(let i = 0; i < count; ++i)
+            for (let i = 0; i < count; ++i)
             {
                 gltf.buffers[i].buffer = buffers[i];
             }
@@ -23,6 +18,11 @@ class gltfLoader
             {
                 buffer.load(gltf.path, promises);
             }
+        }
+
+        for (let image of gltf.images)
+        {
+            image.load(promises, gltf);
         }
 
         return promises;
