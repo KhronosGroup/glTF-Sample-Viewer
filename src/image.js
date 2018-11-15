@@ -51,7 +51,7 @@ class gltfImage
                 let view = gltf.bufferViews[bufferView];
                 let buffer = gltf.buffers[view.buffer].buffer;
                 let array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
-                let blob = new Blob(array, { "type": mimeType });
+                let blob = new Blob([array], { "type": mimeType });
                 image.src = URL.createObjectURL(blob);
             }
         }));

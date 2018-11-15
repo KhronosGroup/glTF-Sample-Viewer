@@ -391,7 +391,7 @@ class gltfViewer
     {
         let models = [];
 
-        let ignoreVariants = ["glTF-Binary", "glTF-Draco", "glTF-Embedded"];
+        let ignoreVariants = ["glTF-Draco", "glTF-Embedded"];
 
         for(let entry of jsonIndex)
         {
