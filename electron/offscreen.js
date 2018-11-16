@@ -9,13 +9,15 @@ const fs = require('fs');
 
 let mainWindow;
 
+global.sharedObject = {argv: process.argv}
+
 function createWindow () {
     mainWindow = new BrowserWindow({ width: 1920, height: 1080,
-        show: false,
-        frame: false,
+        //show: false,
+        //frame: false,
         webPreferences: {
           offscreen: true,
-          transparent: true,
+          //transparent: true,
         }
     });
 
