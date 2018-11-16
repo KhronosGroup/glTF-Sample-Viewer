@@ -220,42 +220,77 @@ class gltfViewer
         let max = vec3.create();
         this.getAssetExtends(min, max);
 
-        let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[0]);
+        let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
         this.zoom = this.getFittingZoom(maxAxisLength);
 
         for (let i = 0; i < 3; ++i)
         {
-            this.origin[i] = (max[i] + min[i]) / 2.0;
+            this.defaultCamera.target[i] = (max[i] + min[i]) / 2.0;
         }
 
-        // TODO: use the origin!
+        console.log("new camera focus: " + this.defaultCamera.target);
+        console.log("new camera zoom: " + this.zoom);
     }
 
     getAssetExtends(outMin, outMax)
     {
-        const vectorType = "VEC3";
         let initialized = false;
 
-        for (let accessor of this.gltf.accessors)
+        for (const node of this.gltf.nodes)
         {
-            if (accessor.type != vectorType || accessor.min === undefined || accessor.max === undefined)
+            if (node.mesh === undefined)
             {
                 continue;
             }
 
-            if (!initialized)
+            const mesh = this.gltf.meshes[node.mesh];
+            if (mesh.primitives === undefined)
             {
-                for (let i = 0; i < 3; ++i)
-                {
-                    outMin[i] = accessor.min[i];
-                    outMax[i] = accessor.max[i];
-                }
+                continue;
             }
 
-            for (let i = 0; i < 3; ++i)
+            for (const primitive of mesh.primitives)
             {
-                outMin[i] = Math.min(outMin[i], accessor.min[i]);
-                outMax[i] = Math.max(outMax[i], accessor.max[i]);
+                const attribute = primitive.attributes.find((a) => a.attribute == "POSITION");
+                if (attribute === undefined)
+                {
+                    continue;
+                }
+
+                const accessor = this.gltf.accessors[attribute.accessor];
+
+                const localMin = jsToGl(accessor.min);
+                let min = vec3.create();
+                vec3.transformMat4(min, localMin, node.worldTransform);
+
+                const localMax = jsToGl(accessor.max);
+                let max = vec3.create();
+                vec3.transformMat4(max, localMax, node.worldTransform);
+
+                let center = vec3.create();
+                vec3.add(center, max, min);
+                vec3.scale(center, center, 0.5);
+
+                let centerToSurface = vec3.create();
+                vec3.sub(centerToSurface, max, center);
+
+                const radius = vec3.length(centerToSurface);
+
+                if (!initialized)
+                {
+                    for (let i = 0; i < 3; ++i)
+                    {
+                        outMin[i] = center[i] - radius;
+                        outMax[i] = center[i] + radius;
+                    }
+                    initialized = true;
+                }
+
+                for (let i = 0; i < 3; ++i)
+                {
+                    outMin[i] = Math.min(outMin[i], center[i] - radius);
+                    outMax[i] = Math.max(outMax[i], center[i] + radius);
+                }
             }
         }
     }
