@@ -33,15 +33,13 @@ class gltfViewer
 
         let self = this;
 
-        this.parameters = {
+        this.guiParameters = {
             model: "",
-
-            useIBL: true,
-            usePunctual: false,
-
             nextScene: function() { self.sceneIndex++; },
             prevScene: function() { self.sceneIndex--; }
         };
+
+        this.renderingParameters = new gltfRenderingParameters();
 
         if (this.headless == false)
         {
@@ -52,10 +50,32 @@ class gltfViewer
             this.hideSpinner();
         }
 
+        this.defaultCamera = new UserCamera();
+
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this);
+        this.renderer = new gltfRenderer(canvas, this.defaultCamera, this.renderingParameters);
 
         this.render(); // Starts a rendering loop.
+    }
+
+    setCamera(eye = [0.0, 0.0, 0.05], target = [0.0, 0.0, 0.0], up = [0.0, 1.0, 0.0],
+        type = "perspective",
+        znear = 0.01, zfar = 10000.0,
+        yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
+        xmag = 1.0, ymag = 1.0)
+    {
+        this.cameraIndex = -1; // force use default camera
+
+        this.defaultCamera.target = jsToGl(target);
+        this.defaultCamera.up = jsToGl(up);
+        this.defaultCamera.position = jsToGl(eye);
+        this.defaultCamera.type = type;
+        this.defaultCamera.znear = znear;
+        this.defaultCamera.zfar = zfar;
+        this.defaultCamera.yfov = yfov;
+        this.defaultCamera.aspectRatio = aspectRatio;
+        this.defaultCamera.xmag = xmag;
+        this.defaultCamera.ymag = ymag;
     }
 
     load(gltfFile, basePath = "")
@@ -148,6 +168,11 @@ class gltfViewer
 
                 if (self.gltf.scenes.length !== 0)
                 {
+                    if(self.headless == false)
+                    {
+                        self.updateUserCamera();
+                    }
+
                     const scene = self.gltf.scenes[self.sceneIndex];
                     scene.applyTransformHierarchy(self.gltf)
 
@@ -186,27 +211,21 @@ class gltfViewer
         window.requestAnimationFrame(renderFrame);
     }
 
-    getCameraPosition()
+    updateUserCamera()
     {
-        let cameraPos = [-this.zoom * Math.sin(this.roll) * Math.cos(-this.pitch),
-                         -this.zoom * Math.sin(-this.pitch),
-                          this.zoom * Math.cos(this.roll) * Math.cos(-this.pitch)];
-        return jsToGl(cameraPos);
-    }
+        let target = this.defaultCamera.target;
 
-    getViewTransform()
-    {
-        let xRotation = mat4.create();
-        mat4.rotateY(xRotation, xRotation, this.roll);
+        // from focus to camera (assuming camera is at positive z)
+        let camDir = vec3.create();
+        vec3.sub(camDir, jsToGl([0.0, 0.0, 1.0]), target);
+        vec3.rotateX(camDir, camDir, target, -this.pitch);
+        vec3.rotateY(camDir, camDir, target, -this.roll);
 
-        let yRotation = mat4.create();
-        mat4.rotateX(yRotation, yRotation, this.pitch);
+        let cameraPos = vec3.create();
+        vec3.scale(cameraPos, camDir, this.zoom);
+        vec3.add(cameraPos, cameraPos, target);
 
-        let viewMatrix = mat4.create();
-        mat4.multiply(viewMatrix, yRotation, xRotation);
-        viewMatrix[14] = -this.zoom;
-
-        return viewMatrix;
+        this.defaultCamera.position = cameraPos;
     }
 
     onMouseDown(event)
@@ -265,7 +284,7 @@ class gltfViewer
     {
         if (this.pitch >= Math.PI / 2.0)
         {
-            this.pitch = +Math.PI / 2.0;
+            this.pitch = Math.PI / 2.0;
         }
         else if (this.pitch <= -Math.PI / 2.0)
         {
@@ -322,22 +341,22 @@ class gltfViewer
         {
             if (self.models.includes(self.defaultModel))
             {
-                self.parameters.model = self.defaultModel;
+                self.guiParameters.model = self.defaultModel;
             }
             else
             {
-                self.parameters.model = self.models[0];
+                self.guiParameters.model = self.models[0];
             }
 
-            viewerFolder.add(self.parameters, "model", self.models).onChange(function(model) {
+            viewerFolder.add(self.guiParameters, "model", self.models).onChange(function(model) {
                 self.load(model, basePath)
             }).name("Model");
 
-            self.load(self.parameters.model, basePath);
+            self.load(self.guiParameters.model, basePath);
 
             let sceneFolder = viewerFolder.addFolder("Scene Index");
-            sceneFolder.add(self.parameters, "prevScene").name("←");
-            sceneFolder.add(self.parameters, "nextScene").name("→");
+            sceneFolder.add(self.guiParameters, "prevScene").name("←");
+            sceneFolder.add(self.guiParameters, "nextScene").name("→");
 
             viewerFolder.open();
         };
@@ -373,8 +392,8 @@ class gltfViewer
         });
 
         let environmentFolder = this.gui.addFolder("Lighting");
-        environmentFolder.add(this.parameters, "useIBL").name("Image-Based Lighting");
-        environmentFolder.add(this.parameters, "usePunctual").name("Punctual Lighting");
+        environmentFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        environmentFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
 
         // TODO: add stuff like tonemapping algorithm.
 
