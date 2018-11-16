@@ -9,15 +9,101 @@ const fs = require('fs');
 
 let mainWindow;
 
-global.sharedObject = {argv: process.argv}
+let argv = process.argv;
+let args = argv.lastIndexOf('--') !== -1 ? argv.slice(argv.lastIndexOf('--')+1) : [];
+
+let ArgumentParser = require('argparse').ArgumentParser;
+let parser = new ArgumentParser({
+    version: '0.0.1',
+    addHelp: true,
+    description: 'glTF Reference Viewer'
+});
+
+parser.addArgument(
+    [ '--eye-position' ],
+    {
+        defaultValue: [0.0,0.0,1.0],
+        nargs: 3,
+        type: 'float',
+        help: "The coordinates of the eye (camera)."
+    }
+);
+parser.addArgument(
+[ '--target-position' ],
+{
+    defaultValue: [0.0,0.0,0.0],
+    nargs: 3,
+    type: 'float',
+    help: "The coordinates of the eye focus point."
+}
+);
+parser.addArgument(
+    '--up',
+    {
+        defaultValue: [0.0,1.0,0.0],
+        nargs: 3,
+        type: 'float',
+        help: "The up direction vector."
+    }
+)
+parser.addArgument(
+    '--projection',
+    {
+        defaultValue: "perspective",
+        help: "The projection mode of the camera",
+        choices: ["perspective", "ortographic"]
+    }
+)
+parser.addArgument(
+    '--znear',
+    {
+        defaultValue: 0.01,
+        type: 'float',
+        help: "The near clip plane"
+    }
+)
+parser.addArgument(
+    '--zfar',
+    {
+        defaultValue: 10000.0,
+        type: 'float',
+        help: "The far clip plane"
+    }
+)
+parser.addArgument(
+    '--yfov',
+    {
+        defaultValue: 60.0,
+        type: 'float',
+        help: "The vertical field of view in degrees."
+    }
+)
+parser.addArgument(
+    '--xmag',
+    {
+        defaultValue: 1.0,
+        type: 'float',
+        help: "The size of the ortographic camera in x direction."
+    }
+)
+parser.addArgument(
+    '--ymag',
+    {
+        defaultValue: 1.0,
+        type: 'float',
+        help: "The size of the ortographic camera in y direction."
+    }
+)
+args = parser.parseArgs(args);
+global.sharedObject = {args: args}
 
 function createWindow () {
     mainWindow = new BrowserWindow({ width: 1920, height: 1080,
         //show: false,
         //frame: false,
         webPreferences: {
-          offscreen: true,
-          //transparent: true,
+            offscreen: true,
+            //transparent: true,
         }
     });
 
