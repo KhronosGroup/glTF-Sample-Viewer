@@ -117,6 +117,13 @@ varying vec3 v_Position;
 varying vec2 v_UVCoord1;
 varying vec2 v_UVCoord2;
 
+#ifdef HAS_VERTEX_COLOR_VEC3
+varying vec3 v_Color;
+#endif
+#ifdef HAS_VERTEX_COLOR_VEC4
+varying vec4 v_Color;
+#endif
+
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
 varying mat3 v_TBN;
@@ -248,6 +255,20 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
     // FIXME: this is the "fast" sRGB approximation.
     vec3 gammaCorrection = pow(srgbIn.xyz, vec3(2.2));
     return vec4(gammaCorrection, srgbIn.w);
+}
+
+vec4 getVertexColor()
+{
+   vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
+
+#ifdef HAS_VERTEX_COLOR_VEC3
+    color.rgb = v_Color;
+#endif
+#ifdef HAS_VERTEX_COLOR_VEC4
+    color = v_Color;
+#endif
+
+   return color;
 }
 
 // Find the normal for this fragment, pulling either from a predefined normal map
@@ -508,6 +529,8 @@ void main()
     baseColor = u_DiffuseFactor;
 #endif // !HAS_DIFFUSE_MAP
 
+    baseColor *= getVertexColor();
+
     // f0 = specular
     specularColor = f0;
     float oneMinusSpecularStrength = 1.0 - max(max(f0.r, f0.g), f0.b);
@@ -537,6 +560,8 @@ void main()
 #else
     baseColor = u_BaseColorFactor;
 #endif
+
+    baseColor *= getVertexColor();
 
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
     diffuseColor *= 1.0 - metallic;
@@ -586,7 +611,7 @@ void main()
 
     // LIGHTING
 
-    vec3 color = vec3(0.0, 0.0, 0.0);
+    vec3 color = vec3(0.0, 0.0, 0.0); // TODO: vertex colors as multiplier
     vec3 normal = getNormal();
     vec3 pointToView = normalize(u_Camera - v_Position);
 

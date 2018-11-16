@@ -16,6 +16,16 @@ attribute vec2 a_UV1;
 attribute vec2 a_UV2;
 #endif
 
+#ifdef HAS_VERTEX_COLOR_VEC3
+attribute vec3 a_Color;
+varying vec3 v_Color;
+#endif
+
+#ifdef HAS_VERTEX_COLOR_VEC4
+attribute vec4 a_Color;
+varying vec4 v_Color;
+#endif
+
 // inputs
 uniform mat4 u_MVPMatrix;
 uniform mat4 u_ModelMatrix;
@@ -38,6 +48,10 @@ void main()
 {
     vec4 pos = u_ModelMatrix * a_Position;
     v_Position = vec3(pos.xyz) / pos.w;
+
+#if defined(HAS_VERTEX_COLOR_VEC3) || defined(HAS_VERTEX_COLOR_VEC4)
+    v_Color = a_Color;
+#endif
 
     #ifdef HAS_NORMALS
     #ifdef HAS_TANGENTS
