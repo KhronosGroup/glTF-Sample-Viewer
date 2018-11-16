@@ -1,8 +1,10 @@
 class gltfRenderer
 {
-    constructor(canvas, viewer)
+    constructor(canvas, defaultCamera, parameters)
     {
         this.canvas = canvas;
+        this.defaultCamera = defaultCamera;
+        this.parameters = parameters;
         this.shader = undefined; // current shader
 
         this.currentWidth  = 0;
@@ -28,14 +30,7 @@ class gltfRenderer
         this.projMatrix = mat4.create();
         this.viewProjMatrix = mat4.create();
 
-        this.viewer = viewer;
-
-        this.defaultCamera = new gltfCamera();
-        let eye = vec3.fromValues(0.0, 0.0, -4.0);
-        let at  = vec3.fromValues(0.0, 0.0,  0.0);
-        let up  = vec3.fromValues(0.0, 1.0,  0.0);
-        mat4.lookAt(this.viewMatrix, eye, at, up);
-        this.currentCameraPosition = eye;
+        this.currentCameraPosition = vec3.create();
 
         this.init();
         this.resize(canvas.canvasWidth, canvas.canvasHeight);
@@ -95,19 +90,8 @@ class gltfRenderer
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
-
-        if(currentCamera.node !== undefined)
-        {
-            const view = gltf.nodes[currentCamera.node];
-            this.currentCameraPosition = view.translation;
-            this.viewMatrix = view.getTransform();
-        }
-
-        if (this.viewer !== undefined)
-        {
-            this.viewMatrix = this.viewer.getViewTransform();
-            this.currentCameraPosition = this.viewer.getCameraPosition();
-        }
+        this.viewMatrix = currentCamera.getViewMatrix(gltf);
+        this.currentCameraPosition = currentCamera.getPosition(gltf);
 
         this.visibleLights = this.getVisibleLights(gltf, scene);
 
@@ -190,13 +174,13 @@ class gltfRenderer
 
         let fragDefines =  material.getDefines().concat(primitive.getDefines());
 
-        if (this.viewer.parameters.usePunctual)
+        if (this.parameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");
             fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
         }
 
-        if (this.viewer.parameters.useIBL)
+        if (this.parameters.useIBL)
         {
             fragDefines.push("USE_IBL 1");
             fragDefines.push("USE_TEX_LOD 1");
@@ -217,7 +201,7 @@ class gltfRenderer
 
         gl.useProgram(this.shader.program);
 
-        if (this.viewer.parameters.usePunctual)
+        if (this.parameters.usePunctual)
         {
             this.applyLights(gltf);
         }
@@ -227,7 +211,7 @@ class gltfRenderer
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
 
-        if (this.viewer.parameters.useIBL || this.viewer.parameters.usePunctual)
+        if (this.parameters.useIBL || this.parameters.usePunctual)
         {
             this.shader.updateUniform("u_Camera", this.currentCameraPosition);
         }
@@ -290,7 +274,7 @@ class gltfRenderer
             }
         }
 
-        if (this.viewer.parameters.useIBL)
+        if (this.parameters.useIBL)
         {
             this.applyEnvironmentMap(gltf, material.textures.length);
         }

@@ -43,6 +43,23 @@ class gltfCamera
         return proj;
     }
 
+    getViewMatrix(gltf)
+    {
+        if(this.node !== undefined && gltf !== undefined)
+        {
+            const node = gltf.nodes[currentCamera.node];
+            return mat4.clone(node.worldTransform);
+        }
+
+        return mat4.create();
+    }
+
+    getPosition(gltf)
+    {
+        let pos = vec3.create();
+        mat4.getTranslation(pos, this.getViewMatrix(gltf));
+    }
+
     fromJson(jsonCamera)
     {
         this.name = name;
@@ -58,3 +75,27 @@ class gltfCamera
         }
     }
 };
+
+class UserCamera extends gltfCamera
+{
+    constructor(position = [0.0, 0.0, 0.0], target = [0.0, 0.0,0.0], up = [0.0, 1.0, 0.0])
+    {
+        super();
+
+        this.position = jsToGl(position);
+        this.target = jsToGl(target);
+        this.up = jsToGl(up);
+    }
+
+    getViewMatrix(gltf)
+    {
+        let view = mat4.create();
+        mat4.lookAt(view, this.position, this.target, this.up);
+        return view;
+    }
+
+    getPosition(gltf)
+    {
+        return this.position;
+    }
+}
