@@ -14,11 +14,11 @@ function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
     {
-        if(ignore && ignore.find(function(elem){return elem == k}) !== undefined)
+        if (ignore && ignore.find(function(elem){return elem == k}) !== undefined)
         {
             continue; // skip
         }
-        if(jsonObj[k] !== undefined)
+        if (jsonObj[k] !== undefined)
         {
             target[k] = jsonObj[k];
         }
@@ -27,7 +27,7 @@ function fromKeys(target, jsonObj, ignore = [])
 
 function fromParams(parameters, target, jsonObj)
 {
-    for(let p of parameters)
+    for (let p of parameters)
     {
         if(jsonObj[p] !== undefined)
         {
@@ -50,3 +50,6 @@ function CombineHashes(hash1, hash2)
 {
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
+
+// marker interface used to for parsing the uniforms
+class UniformStruct { }

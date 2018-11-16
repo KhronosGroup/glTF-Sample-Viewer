@@ -19,6 +19,8 @@
     <script src="libs/stats.min.js"></script>
 
     <script src="src/utils.js"></script>
+    <script src="src/rendering_parameters.js"></script>
+    <script src="src/glbParser.js"></script>
     <script src="src/loader.js"></script>
     <script src="src/image.js"></script>
     <script src="src/texture.js"></script>
@@ -28,6 +30,7 @@
     <script src="src/shader.js"></script>
     <script src="src/shader_cache.js"></script>
     <script src="src/camera.js"></script>
+    <script src="src/light.js"></script>
     <script src="src/primitive.js"></script>
     <script src="src/buffer.js"></script>
     <script src="src/buffer_view.js"></script>
@@ -46,16 +49,53 @@
     // In renderer process (web page).
     const {ipcRenderer} = require('electron');
 
+    var ArgumentParser = require('argparse').ArgumentParser;
+    var parser = new ArgumentParser({
+        version: '0.0.1',
+        addHelp:true,
+        description: 'glTF Reference Viewer'
+    });
+
+    let remote = require('electron').remote,
+      args = remote.getGlobal('sharedObject').argv;
+    args = args.lastIndexOf('--') !== -1 ? args.slice(args.lastIndexOf('--')+1) : [];
+
     function startRenderer()
     {
         let viewer = gltf_rv('canvas', 'assets/models/2.0/model-index.json', true, rendererReady);
         viewer.load('assets/models/2.0/BoomBox/glTF/BoomBox.gltf');
+
+        var eye_position = JSON.parse('[' + args.eye_position + ']');
+        var target_position = JSON.parse('[' + args.target_position + ']');
+        var yfov = parseFloat(args.yfov);
+        viewer.setCamera(eye_position, target_position);
     }
 
     function rendererReady()
     {
         ipcRenderer.send('rendererReady');
     }
+
+    parser.addArgument(
+    [ '--eye-position' ],
+    {
+        defaultValue: '0.0,0.0,1.0'
+    }
+    );
+    parser.addArgument(
+    [ '--target-position' ],
+    {
+        defaultValue: '0.0,0.0,0.0'
+    }
+    );
+    parser.addArgument(
+    '--yfov',
+    {
+        defaultValue: '60'
+    }
+    );
+
+    args = parser.parseArgs(args);
 </script>
 
 <!-- Just create a rendering canvas like below and call gltf_rv! -->

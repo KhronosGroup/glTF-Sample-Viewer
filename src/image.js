@@ -14,10 +14,14 @@ class gltfImage
     fromJson(jsonImage, path = "")
     {
         fromKeys(this, jsonImage);
-        this.uri = path + this.uri;
+
+        if(this.uri !== undefined)
+        {
+            this.uri = path + this.uri;
+        }
     }
 
-    load(promises, bufferViews) //folder,
+    load(promises, gltf)
     {
         if(this.image !== undefined) // alread loaded
         {
@@ -26,20 +30,29 @@ class gltfImage
 
         let image = new Image();
         let uri = this.uri;
-        let bufferView = undefined;
+        let bufferView = this.bufferView;
+        let mimeType = this.mimeType;
 
         promises.push(new Promise(function(resolve, reject)
         {
-            if(uri !== undefined) // load from uir
+            if (uri !== undefined) // load from uri
             {
                 image = new Image();
                 image.onload = resolve;
                 image.onerror = resolve;
                 image.src = uri;
             }
-            else if(bufferView != undefined)
+            else if (bufferView !== undefined) // load from binary
             {
-                // TODO: load from buffer view bufferViews[this.bufferView]
+                image = new Image();
+                image.onload = resolve;
+                image.onerror = resolve;
+
+                let view = gltf.bufferViews[bufferView];
+                let buffer = gltf.buffers[view.buffer].buffer;
+                let array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
+                let blob = new Blob([array], { "type": mimeType });
+                image.src = URL.createObjectURL(blob);
             }
         }));
 
