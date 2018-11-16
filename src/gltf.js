@@ -72,7 +72,7 @@ class glTF
         for (let i = 0; i < jsonMeshes.length; ++i)
         {
             let mesh = new gltfMesh();
-            mesh.fromJson(jsonMeshes[i], this.defaultMaterial);
+            mesh.fromJson(jsonMeshes[i], this.defaultMaterial, this);
             this.meshes.push(mesh);
         }
     }
@@ -188,6 +188,11 @@ class glTF
         this.materials.push(gltfMaterial.getDefaults());
         this.defaultMaterial = this.materials.length - 1;
 
+        if (json.accessors !== undefined)
+        {
+            this.fromJsonAccessors(json.accessors);
+        }
+
         if (json.meshes !== undefined)
         {
             this.fromJsonMeshes(json.meshes);
@@ -219,11 +224,6 @@ class glTF
         if(json.bufferViews !== undefined)
         {
             this.fromJsonBufferViews(json.bufferViews);
-        }
-
-        if (json.accessors !== undefined)
-        {
-            this.fromJsonAccessors(json.accessors);
         }
 
         // Load the default scene too.
