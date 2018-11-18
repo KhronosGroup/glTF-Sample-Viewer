@@ -11,7 +11,7 @@ Features
 --------
 
 - [x] Async loading/unloading of glTF files
-- [ ] Loading of binary glTF files (GLB)
+- [x] Loading of binary glTF files (GLB)
 - [x] Support for Metallic-Roughness materials
 - [x] Support for the KHR_materials_pbrSpecularGlossiness
 - [x] Basic support for Image-Based Lighting
