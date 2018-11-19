@@ -78,12 +78,17 @@ class gltfViewer
         this.defaultCamera.ymag = ymag;
     }
 
-    loadFromFileObject(file)
+    loadFromFileObject(mainFile, additionalFiles)
     {
-        const gltfFile = file.name;
-        const self = this;
+        const gltfFile = mainFile.name;
+        if (gltfFile.toLowerCase().endsWith(".gltf"))
+        {
+            console.error("Loading of gltf files not implemented yet");
+            return;
+        }
 
         const reader = new FileReader();
+        const self = this;
         reader.onloadend = function(event)
         {
             const data = event.target.result;
@@ -92,7 +97,7 @@ class gltfViewer
             self.createGltf(gltfFile, glb.json, glb.buffers);
         };
 
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(mainFile);
     }
 
     loadFromPath(gltfFile, basePath = "")
@@ -355,22 +360,29 @@ class gltfViewer
 
     dropEventHandler(event)
     {
-        const transferItem = event.dataTransfer.items[0];
-        if (transferItem.kind != "file")
-        {
-            console.warn("Dropped item is not a file");
-            return;
-        }
-
-        const file = transferItem.getAsFile();
-        if (!file.name.toLowerCase().endsWith(".glb"))
-        {
-            console.warn("'%s' is not a glb file", file.name);
-            return;
-        }
-
-        this.loadFromFileObject(file);
         event.preventDefault();
+
+        let additionalFiles = [];
+        let mainFile;
+        for (const file of event.dataTransfer.files)
+        {
+            if (file.name.toLowerCase().endsWith(".gltf") || file.name.toLowerCase().endsWith(".glb"))
+            {
+                mainFile = file;
+            }
+            else
+            {
+                additionalFiles.push(file);
+            }
+        }
+
+        if (mainFile === undefined)
+        {
+            console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
+            return;
+        }
+
+        this.loadFromFileObject(mainFile, additionalFiles);
     }
 
     initUserInterface(modelIndex)
