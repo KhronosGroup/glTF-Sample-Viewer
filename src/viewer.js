@@ -44,10 +44,10 @@ class gltfViewer
             this.hideSpinner();
         }
 
-        this.defaultCamera = new UserCamera();
+        this.userCamera = new UserCamera();
 
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.defaultCamera, this.renderingParameters);
+        this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters);
 
         this.render(); // Starts a rendering loop.
     }
@@ -60,16 +60,16 @@ class gltfViewer
     {
         this.cameraIndex = -1; // force use default camera
 
-        this.defaultCamera.target = jsToGl(target);
-        this.defaultCamera.up = jsToGl(up);
-        this.defaultCamera.position = jsToGl(eye);
-        this.defaultCamera.type = type;
-        this.defaultCamera.znear = znear;
-        this.defaultCamera.zfar = zfar;
-        this.defaultCamera.yfov = yfov;
-        this.defaultCamera.aspectRatio = aspectRatio;
-        this.defaultCamera.xmag = xmag;
-        this.defaultCamera.ymag = ymag;
+        this.userCamera.target = jsToGl(target);
+        this.userCamera.up = jsToGl(up);
+        this.userCamera.position = jsToGl(eye);
+        this.userCamera.type = type;
+        this.userCamera.znear = znear;
+        this.userCamera.zfar = zfar;
+        this.userCamera.yfov = yfov;
+        this.userCamera.aspectRatio = aspectRatio;
+        this.userCamera.xmag = xmag;
+        this.userCamera.ymag = ymag;
     }
 
     load(gltfFile, basePath = "")
@@ -129,7 +129,7 @@ class gltfViewer
 
                 const scene = self.gltf.scenes[self.sceneIndex];
                 scene.applyTransformHierarchy(self.gltf)
-                self.defaultCamera.fitViewToAsset(self.gltf);
+                self.userCamera.fitViewToAsset(self.gltf);
 
                 self.currentlyRendering = true;
             });
@@ -168,7 +168,7 @@ class gltfViewer
                 {
                     if(self.headless == false)
                     {
-                        self.defaultCamera.updatePosition();
+                        self.userCamera.updatePosition();
                     }
 
                     const scene = self.gltf.scenes[self.sceneIndex];
@@ -226,7 +226,7 @@ class gltfViewer
     onMouseWheel(event)
     {
         event.preventDefault();
-        this.defaultCamera.zoomIn(event.deltaY);
+        this.userCamera.zoomIn(event.deltaY);
         canvas.style.cursor = "none";
     }
 
@@ -247,7 +247,7 @@ class gltfViewer
         this.lastMouseX = newX;
         this.lastMouseY = newY;
 
-        this.defaultCamera.rotate(deltaX, deltaY);
+        this.userCamera.rotate(deltaX, deltaY);
     }
 
     onTouchStart(event)
@@ -278,7 +278,7 @@ class gltfViewer
         this.lastTouchX = newX;
         this.lastTouchY = newY;
 
-        this.defaultCamera.rotate(deltaX, deltaY);
+        this.userCamera.rotate(deltaX, deltaY);
     }
 
     initUserInterface(modelIndex)
