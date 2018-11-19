@@ -111,13 +111,12 @@ class UserCamera extends gltfCamera
 
     updatePosition()
     {
-        // from focus to camera (assuming camera is at positive z)
-        let direction = vec3.create();
-        vec3.sub(direction, jsToGl([0.0, 0.0, 1.0]), this.target);
-
+        // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
-        vec3.rotateX(direction, direction, this.target, -this.yRot);
-        vec3.rotateY(direction, direction, this.target, -this.xRot);
+        let direction = vec3.fromValues(0, 0, 1);
+        const zero = vec3.create();
+        vec3.rotateX(direction, direction, zero, -this.yRot);
+        vec3.rotateY(direction, direction, zero, -this.xRot);
 
         let position = vec3.create();
         vec3.scale(position, direction, this.zoom);
@@ -140,7 +139,7 @@ class UserCamera extends gltfCamera
 
     rotate(x, y)
     {
-        const yMax = Math.PI / 2;
+        const yMax = Math.PI / 2 - 0.01;
         this.xRot += (x * this.rotateSpeed);
         this.yRot += (y * this.rotateSpeed);
         this.yRot = clamp(this.yRot, -yMax, yMax);
@@ -152,7 +151,7 @@ class UserCamera extends gltfCamera
         let max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
         this.getAssetExtends(gltf, min, max);
 
-        // this.fitCameraTargetToExtends(min, max);
+        this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
 
         console.log("new camera focus: " + this.target);
@@ -182,7 +181,7 @@ class UserCamera extends gltfCamera
                 let assetMax = vec3.create();
                 this.getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
 
-                for (let i = 0; i < 3; ++i)
+                for (let i of [0, 1, 2])
                 {
                     outMin[i] = Math.min(outMin[i], assetMin[i]);
                     outMax[i] = Math.max(outMax[i], assetMax[i]);
@@ -199,7 +198,7 @@ class UserCamera extends gltfCamera
 
     fitCameraTargetToExtends(min, max)
     {
-        for (let i = 0; i < 3; ++i)
+        for (let i of [0, 1, 2])
         {
             this.target[i] = (max[i] + min[i]) / 2;
         }
