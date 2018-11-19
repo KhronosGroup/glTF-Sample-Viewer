@@ -145,4 +145,98 @@ class UserCamera extends gltfCamera
         this.yRot += (y * this.rotateSpeed);
         this.yRot = clamp(this.yRot, -yMax, yMax);
     }
+
+    fitViewToScene(gltf)
+    {
+        let min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        let max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        this.getAssetExtends(gltf, min, max);
+
+        // this.fitCameraTargetToExtends(min, max);
+        this.fitZoomToExtends(min, max);
+
+        console.log("new camera focus: " + this.target);
+        console.log("new camera zoom: " + this.zoom);
+    }
+
+    getAssetExtends(gltf, outMin, outMax)
+    {
+        for (const node of gltf.nodes.filter(n => n.mesh !== undefined))
+        {
+            const mesh = gltf.meshes[node.mesh];
+            if (mesh.primitives === undefined)
+            {
+                continue;
+            }
+
+            for (const primitive of mesh.primitives)
+            {
+                const attribute = primitive.attributes.find(a => a.attribute == "POSITION");
+                if (attribute === undefined)
+                {
+                    continue;
+                }
+
+                const accessor = gltf.accessors[attribute.accessor];
+                let assetMin = vec3.create();
+                let assetMax = vec3.create();
+                this.getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
+
+                for (let i = 0; i < 3; ++i)
+                {
+                    outMin[i] = Math.min(outMin[i], assetMin[i]);
+                    outMax[i] = Math.max(outMax[i], assetMax[i]);
+                }
+            }
+        }
+    }
+
+    fitZoomToExtends(min, max)
+    {
+        const maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
+        this.zoom = this.getFittingZoom(maxAxisLength);
+    }
+
+    fitCameraTargetToExtends(min, max)
+    {
+        for (let i = 0; i < 3; ++i)
+        {
+            this.target[i] = (max[i] + min[i]) / 2;
+        }
+    }
+
+    getFittingZoom(axisLength)
+    {
+        const yfov = this.yfov;
+        const xfov = this.yfov * this.aspectRatio;
+
+        const yZoom = axisLength / 2 / Math.tan(yfov / 2);
+        const xZoom = axisLength / 2 / Math.tan(xfov / 2);
+
+        return Math.max(xZoom, yZoom);
+    }
+
+    getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
+    {
+        let boxMin = vec3.create();
+        vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
+
+        let boxMax = vec3.create();
+        vec3.transformMat4(boxMax, jsToGl(accessor.max), worldTransform);
+
+        let center = vec3.create();
+        vec3.add(center, boxMax, boxMin);
+        vec3.scale(center, center, 0.5);
+
+        let centerToSurface = vec3.create();
+        vec3.sub(centerToSurface, boxMax, center);
+
+        const radius = vec3.length(centerToSurface);
+
+        for (let i of [1, 2, 3])
+        {
+            outMin[i] = center[i] - radius;
+            outMax[i] = center[i] + radius;
+        }
+    }
 }
