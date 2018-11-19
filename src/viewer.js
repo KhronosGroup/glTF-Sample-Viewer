@@ -78,7 +78,12 @@ class gltfViewer
         this.defaultCamera.ymag = ymag;
     }
 
-    load(gltfFile, basePath = "")
+    loadFromFileObject(file)
+    {
+        console.log("loading from file object");
+    }
+
+    loadFromPath(gltfFile, basePath = "")
     {
         gltfFile = basePath + gltfFile;
 
@@ -326,6 +331,32 @@ class gltfViewer
         this.lastTouchY = newY;
     }
 
+    // for some reason, the drop event does not work without this
+    dragOverHandler(event)
+    {
+        event.preventDefault();
+    }
+
+    dropEventHandler(event)
+    {
+        const transferItem = event.dataTransfer.items[0];
+        if (transferItem.kind != "file")
+        {
+            console.warn("Dropped item is not a file");
+            return;
+        }
+
+        const file = transferItem.getAsFile();
+        if (!file.name.toLowerCase().endsWith(".glb"))
+        {
+            console.warn("'%s' is not a glb file", file.name);
+            return;
+        }
+
+        this.loadFromFileObject(file);
+        event.preventDefault();
+    }
+
     initUserInterface(modelIndex)
     {
         this.gui = new dat.GUI({ width: 300 });
@@ -349,10 +380,10 @@ class gltfViewer
             }
 
             viewerFolder.add(self.guiParameters, "model", self.models).onChange(function(model) {
-                self.load(model, basePath)
+                self.loadFromPath(model, basePath)
             }).name("Model");
 
-            self.load(self.guiParameters.model, basePath);
+            self.loadFromPath(self.guiParameters.model, basePath);
 
             let sceneFolder = viewerFolder.addFolder("Scene Index");
             sceneFolder.add(self.guiParameters, "prevScene").name("←");

@@ -24,5 +24,8 @@ function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined)
     document.ontouchend = viewer.onTouchEnd.bind(viewer);
     document.ontouchmove = viewer.onTouchMove.bind(viewer);
 
+    canvas.ondrop = viewer.dropEventHandler.bind(viewer);
+    canvas.ondragover = viewer.dragOverHandler.bind(viewer);
+
     return viewer; // Succeeded in creating a glTF viewer!
 }
