@@ -275,8 +275,13 @@ class gltfViewer
 
     getFittingZoom(axisLength)
     {
-        // TODO: this is very naive and will probably fail in many cases
-        return axisLength * 2;
+        const yfov = this.defaultCamera.yfov;
+        const xfov = this.defaultCamera.yfov * this.defaultCamera.aspectRatio;
+
+        const yZoom = axisLength / 2 / Math.tan(yfov / 2);
+        const xZoom = axisLength / 2 / Math.tan(xfov / 2);
+
+        return Math.max(xZoom, yZoom);
     }
 
     getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
