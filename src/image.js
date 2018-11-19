@@ -21,7 +21,7 @@ class gltfImage
         }
     }
 
-    load(promises, gltf)
+    load(gltf)
     {
         if(this.image !== undefined) // alread loaded
         {
@@ -33,7 +33,7 @@ class gltfImage
         let bufferView = this.bufferView;
         let mimeType = this.mimeType;
 
-        promises.push(new Promise(function(resolve, reject)
+        let promise = new Promise(function(resolve, reject)
         {
             if (uri !== undefined) // load from uri
             {
@@ -54,8 +54,9 @@ class gltfImage
                 let blob = new Blob([array], { "type": mimeType });
                 image.src = URL.createObjectURL(blob);
             }
-        }));
+        });
 
         this.image = image;
+        return promise;
     }
 };

@@ -22,7 +22,7 @@ class gltfLoader
 
         for (let image of gltf.images)
         {
-            image.load(promises, gltf);
+            promises.push(image.load(gltf));
         }
 
         return promises;
