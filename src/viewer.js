@@ -220,8 +220,8 @@ class gltfViewer
         let max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
         this.getAssetExtends(min, max);
 
+        // this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-        this.fitCameraTargetToExtends(min, max);
 
         console.log("new camera focus: " + this.defaultCamera.target);
         console.log("new camera zoom: " + this.zoom);
