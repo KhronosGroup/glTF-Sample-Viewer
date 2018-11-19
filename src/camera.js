@@ -78,13 +78,23 @@ class gltfCamera
 
 class UserCamera extends gltfCamera
 {
-    constructor(position = [0.0, 0.0, 0.0], target = [0.0, 0.0,0.0], up = [0.0, 1.0, 0.0])
+    constructor(
+        position = [0, 0, 0],
+        target = [0, 0,0],
+        up = [0, 1, 0],
+        xRot = 0, yRot = 0,
+        zoom = 1)
     {
         super();
 
         this.position = jsToGl(position);
         this.target = jsToGl(target);
         this.up = jsToGl(up);
+        this.xRot = xRot;
+        this.yRot = yRot;
+        this.zoom = zoom;
+        this.zoomFactor = 1.04;
+        this.rotateSpeed = 1 / 180;
     }
 
     getViewMatrix(gltf)
@@ -97,5 +107,42 @@ class UserCamera extends gltfCamera
     getPosition(gltf)
     {
         return this.position;
+    }
+
+    updatePosition()
+    {
+        // from focus to camera (assuming camera is at positive z)
+        let direction = vec3.create();
+        vec3.sub(direction, jsToGl([0.0, 0.0, 1.0]), this.target);
+
+        // yRot rotates *around* x-axis, xRot rotates *around* y-axis
+        vec3.rotateX(direction, direction, this.target, -this.yRot);
+        vec3.rotateY(direction, direction, this.target, -this.xRot);
+
+        let position = vec3.create();
+        vec3.scale(position, direction, this.zoom);
+        vec3.add(position, position, this.target);
+
+        this.position = position;
+    }
+
+    zoomIn(value)
+    {
+        if (value > 0)
+        {
+            this.zoom *= this.zoomFactor;
+        }
+        else
+        {
+            this.zoom /= this.zoomFactor;
+        }
+    }
+
+    rotate(x, y)
+    {
+        const yMax = Math.PI / 2;
+        this.xRot += (x * this.rotateSpeed);
+        this.yRot += (y * this.rotateSpeed);
+        this.yRot = clamp(this.yRot, -yMax, yMax);
     }
 }

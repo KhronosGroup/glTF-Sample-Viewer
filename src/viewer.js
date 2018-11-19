@@ -6,17 +6,13 @@ class gltfViewer
         this.headless = headless;
         this.onRendererReady = onRendererReady;
 
-        this.roll  = 0.0;
-        this.pitch = 0.0;
         this.zoom  = 0.048;
-        this.scale = 180;
         this.origin = vec3.create();
 
         this.defaultModel = "BoomBox/glTF/BoomBox.gltf";
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
-        this.wheelSpeed = 1.04;
         this.mouseDown = false;
 
         this.lastTouchX = 0.00;
@@ -173,7 +169,7 @@ class gltfViewer
                 {
                     if(self.headless == false)
                     {
-                        self.updateUserCamera();
+                        self.defaultCamera.updatePosition();
                     }
 
                     const scene = self.gltf.scenes[self.sceneIndex];
@@ -224,7 +220,7 @@ class gltfViewer
         this.fitZoomToExtends(min, max);
 
         console.log("new camera focus: " + this.defaultCamera.target);
-        console.log("new camera zoom: " + this.zoom);
+        console.log("new camera zoom: " + this.defaultCamera.zoom);
     }
 
     getAssetExtends(outMin, outMax)
@@ -261,8 +257,8 @@ class gltfViewer
 
     fitZoomToExtends(min, max)
     {
-        let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
-        this.zoom = this.getFittingZoom(maxAxisLength);
+        const maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
+        this.defaultCamera.zoom = this.getFittingZoom(maxAxisLength);
     }
 
     fitCameraTargetToExtends(min, max)
@@ -308,23 +304,6 @@ class gltfViewer
         }
     }
 
-    updateUserCamera()
-    {
-        let target = this.defaultCamera.target;
-
-        // from focus to camera (assuming camera is at positive z)
-        let camDir = vec3.create();
-        vec3.sub(camDir, jsToGl([0.0, 0.0, 1.0]), target);
-        vec3.rotateX(camDir, camDir, target, -this.pitch);
-        vec3.rotateY(camDir, camDir, target, -this.roll);
-
-        let cameraPos = vec3.create();
-        vec3.scale(cameraPos, camDir, this.zoom);
-        vec3.add(cameraPos, cameraPos, target);
-
-        this.defaultCamera.position = cameraPos;
-    }
-
     onMouseDown(event)
     {
         this.mouseDown = true;
@@ -342,15 +321,7 @@ class gltfViewer
     onMouseWheel(event)
     {
         event.preventDefault();
-        if (event.deltaY > 0)
-        {
-            this.zoom *= this.wheelSpeed;
-        }
-        else
-        {
-            this.zoom /= this.wheelSpeed;
-        }
-
+        this.defaultCamera.zoomIn(event.deltaY);
         canvas.style.cursor = "none";
     }
 
@@ -362,31 +333,16 @@ class gltfViewer
             return;
         }
 
-        let newX = event.clientX;
-        let newY = event.clientY;
+        const newX = event.clientX;
+        const newY = event.clientY;
 
-        let deltaX = newX - this.lastMouseX;
-        this.roll += (deltaX / this.scale);
-
-        let deltaY = newY - this.lastMouseY;
-        this.pitch += (deltaY / this.scale);
-
-        this.clampPitch();
+        const deltaX = newX - this.lastMouseX;
+        const deltaY = newY - this.lastMouseY;
 
         this.lastMouseX = newX;
         this.lastMouseY = newY;
-    }
 
-    clampPitch()
-    {
-        if (this.pitch >= Math.PI / 2.0)
-        {
-            this.pitch = Math.PI / 2.0;
-        }
-        else if (this.pitch <= -Math.PI / 2.0)
-        {
-            this.pitch = -Math.PI / 2.0;
-        }
+        this.defaultCamera.rotate(deltaX, deltaY);
     }
 
     onTouchStart(event)
@@ -408,19 +364,16 @@ class gltfViewer
             return;
         }
 
-        let newX = event.touches[0].clientX;
-        let newY = event.touches[0].clientY;
+        const newX = event.touches[0].clientX;
+        const newY = event.touches[0].clientY;
 
-        let deltaX = newX - this.lastTouchX;
-        this.roll += (deltaX / this.scale);
-
-        let deltaY = newY - this.lastTouchY;
-        this.pitch += (deltaY / this.scale);
-
-        this.clampPitch();
+        const deltaX = newX - this.lastTouchX;
+        const deltaY = newY - this.lastTouchY;
 
         this.lastTouchX = newX;
         this.lastTouchY = newY;
+
+        this.defaultCamera.rotate(deltaX, deltaY);
     }
 
     initUserInterface(modelIndex)
@@ -467,8 +420,6 @@ class gltfViewer
                 // TODO: remove this later, fallback if no submodule :-)
                 self.models = self.parseModelIndex(jsonIndex, "models/");
                 initModelsDropdown("models/");
-                self.roll = Math.PI;
-                self.zoom = 4.0;
             } else {
                 self.models = self.parseModelIndex(jsonIndex, path);
                 initModelsDropdown(path);
@@ -481,8 +432,6 @@ class gltfViewer
                 // TODO: remove this later, fallback if no submodule :-)
                 self.models = self.parseModelIndex(jsonIndex, "models/");
                 initModelsDropdown("models/");
-                self.roll = Math.PI;
-                self.zoom = 4.0;
             }).catch(function(error) {
                 console.warn("Failed to load model-index fallback too!");
             });
