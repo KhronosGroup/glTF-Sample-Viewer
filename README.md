@@ -3,7 +3,7 @@ glTF 2.0 Reference Viewer
 
 [![](assets/images/BoomBox.JPG)](http://github.khronos.org/glTF-WebGL-PBR/)
 
-This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.khronos.org/webgl/). 
+This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.khronos.org/webgl/).
 
 This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of Physically Based materials within a WebGL project that isn't tied to any external graphics libraries.
 
@@ -26,7 +26,7 @@ Features
 - [x] Flexible and extensible parsing of glTF structures
 - [ ] Support for desktop/headless rendering
 - [ ] Support for drag&drop
-- [ ] Handles anti-aliasing via WebGL MSAA
+- [x] Handles anti-aliasing via WebGL MSAA
 - [x] Straightforward rendering of the scene graph
 - [ ] Selection of tonemapping algorithms for IBL
 - [x] Support for the KHR_materials_unlit extension
@@ -52,7 +52,7 @@ For local usage and debugging, please follow these instructions:
 * Open `index.html`. As the browser accesses the local drive, security settings need to be adapted.
 
 **Debugging**
-* Requirements  
+* Requirements
   * [Visual Studio Code](https://code.visualstudio.com/)
   * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
@@ -65,7 +65,7 @@ For offline rendering usage, please follow these instructions:
 * Requirements
   * [Electron](https://electronjs.org/)
 
-TODO  
+TODO
 
 For Visual Studio integration, please follow these instructions:
 
