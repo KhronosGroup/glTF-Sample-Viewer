@@ -216,17 +216,12 @@ class gltfViewer
 
     fitViewToScene()
     {
-        let min = vec3.create();
-        let max = vec3.create();
+        let min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        let max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
         this.getAssetExtends(min, max);
 
-        let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
-        this.zoom = this.getFittingZoom(maxAxisLength);
-
-        for (let i = 0; i < 3; ++i)
-        {
-            this.defaultCamera.target[i] = (max[i] + min[i]) / 2.0;
-        }
+        this.fitZoomToExtends(min, max);
+        this.fitCameraTargetToExtends(min, max);
 
         console.log("new camera focus: " + this.defaultCamera.target);
         console.log("new camera zoom: " + this.zoom);
@@ -234,15 +229,8 @@ class gltfViewer
 
     getAssetExtends(outMin, outMax)
     {
-        let initialized = false;
-
-        for (const node of this.gltf.nodes)
+        for (const node of this.gltf.nodes.filter(n => n.mesh !== undefined))
         {
-            if (node.mesh === undefined)
-            {
-                continue;
-            }
-
             const mesh = this.gltf.meshes[node.mesh];
             if (mesh.primitives === undefined)
             {
@@ -251,47 +239,37 @@ class gltfViewer
 
             for (const primitive of mesh.primitives)
             {
-                const attribute = primitive.attributes.find((a) => a.attribute == "POSITION");
+                const attribute = primitive.attributes.find(a => a.attribute == "POSITION");
                 if (attribute === undefined)
                 {
                     continue;
                 }
 
                 const accessor = this.gltf.accessors[attribute.accessor];
-
-                const localMin = jsToGl(accessor.min);
-                let min = vec3.create();
-                vec3.transformMat4(min, localMin, node.worldTransform);
-
-                const localMax = jsToGl(accessor.max);
-                let max = vec3.create();
-                vec3.transformMat4(max, localMax, node.worldTransform);
-
-                let center = vec3.create();
-                vec3.add(center, max, min);
-                vec3.scale(center, center, 0.5);
-
-                let centerToSurface = vec3.create();
-                vec3.sub(centerToSurface, max, center);
-
-                const radius = vec3.length(centerToSurface);
-
-                if (!initialized)
-                {
-                    for (let i = 0; i < 3; ++i)
-                    {
-                        outMin[i] = center[i] - radius;
-                        outMax[i] = center[i] + radius;
-                    }
-                    initialized = true;
-                }
+                let assetMin = vec3.create();
+                let assetMax = vec3.create();
+                this.getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
 
                 for (let i = 0; i < 3; ++i)
                 {
-                    outMin[i] = Math.min(outMin[i], center[i] - radius);
-                    outMax[i] = Math.max(outMax[i], center[i] + radius);
+                    outMin[i] = Math.min(outMin[i], assetMin[i]);
+                    outMax[i] = Math.max(outMax[i], assetMax[i]);
                 }
             }
+        }
+    }
+
+    fitZoomToExtends(min, max)
+    {
+        let maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
+        this.zoom = this.getFittingZoom(maxAxisLength);
+    }
+
+    fitCameraTargetToExtends(min, max)
+    {
+        for (let i = 0; i < 3; ++i)
+        {
+            this.defaultCamera.target[i] = (max[i] + min[i]) / 2;
         }
     }
 
@@ -299,6 +277,30 @@ class gltfViewer
     {
         // TODO: this is very naive and will probably fail in many cases
         return axisLength * 2;
+    }
+
+    getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
+    {
+        let boxMin = vec3.create();
+        vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
+
+        let boxMax = vec3.create();
+        vec3.transformMat4(boxMax, jsToGl(accessor.max), worldTransform);
+
+        let center = vec3.create();
+        vec3.add(center, boxMax, boxMin);
+        vec3.scale(center, center, 0.5);
+
+        let centerToSurface = vec3.create();
+        vec3.sub(centerToSurface, boxMax, center);
+
+        const radius = vec3.length(centerToSurface);
+
+        for (let i of [1, 2, 3])
+        {
+            outMin[i] = center[i] - radius;
+            outMax[i] = center[i] + radius;
+        }
     }
 
     updateUserCamera()
