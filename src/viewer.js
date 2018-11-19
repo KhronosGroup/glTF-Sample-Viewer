@@ -80,70 +80,86 @@ class gltfViewer
 
     loadFromFileObject(file)
     {
-        console.log("loading from file object");
+        const gltfFile = file.name;
+        const self = this;
+
+        const reader = new FileReader();
+        reader.onloadend = function(event)
+        {
+            const data = event.target.result;
+            const glbParser = new GlbParser(data);
+            const glb = glbParser.extractGlbData();
+            self.createGltf(gltfFile, glb.json, glb.buffers);
+        };
+
+        reader.readAsArrayBuffer(file);
     }
 
     loadFromPath(gltfFile, basePath = "")
     {
-        gltfFile = basePath + gltfFile;
-
-        // Started loading the glTF 2.0 models.
         if (!this.headless) this.showSpinner();
 
-        let self = this;
-
+        gltfFile = basePath + gltfFile;
         const isGlb = gltfFile.toLowerCase().endsWith('.glb');
-        console.log("Loading " + (isGlb ? "glb" : "glTF") + " file " + gltfFile);
 
-        axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response) {
-            let incompleteGltf = new glTF(gltfFile);
-
-            let glb = undefined;
+        const self = this;
+        axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response)
+        {
+            let json = response.data;
+            let buffers = undefined
             if (isGlb)
             {
                 const glbParser = new GlbParser(response.data);
-                glb = glbParser.extractGlbData();
+                const glb = glbParser.extractGlbData();
+                json = glb.json;
+                buffers = glb.buffers;
             }
-
-            incompleteGltf.fromJson(isGlb ? glb.json : response.data);
-
-            self.addEnvironmentMap(incompleteGltf);
-
-            let assetPromises = gltfLoader.load(incompleteGltf, isGlb ? glb.buffers : undefined);
-
-            Promise.all(assetPromises).then(function() {
-                self.currentlyRendering = false;
-
-                if (self.gltf !== undefined)
-                {
-                    gltfLoader.unload(self.gltf);
-                    self.gltf = undefined;
-                }
-
-                if (incompleteGltf.scene !== undefined)
-                {
-                    self.sceneIndex = incompleteGltf.scene;
-                }
-                else if (incompleteGltf.scenes.length != 0)
-                {
-                    self.sceneIndex = 0;
-                }
-                else
-                {
-                    throw "couldn't find any valid scene!";
-                }
-
-                self.gltf = incompleteGltf;
-
-                // Finished load all of the glTF assets
-                if (!self.headless) self.hideSpinner();
-
-                self.currentlyRendering = true;
-            });
-        }).catch(function(error) {
-            console.warn("glTF " + error);
+            self.createGltf(gltfFile, json, buffers);
+        }).catch(function(error)
+        {
+            console.error("glTF " + error);
             if (!self.headless) self.hideSpinner();
         });
+    }
+
+    createGltf(path, json, buffers)
+    {
+        console.log("Loading '%s'", path);
+
+        let gltf = new glTF(path);
+        gltf.fromJson(json);
+        this.addEnvironmentMap(gltf);
+        let assetPromises = gltfLoader.load(gltf, buffers);
+
+        let self = this;
+        Promise.all(assetPromises).then(function()
+        {
+            self.onGltfLoaded(gltf);
+        });
+    }
+
+    onGltfLoaded(gltf)
+    {
+        // Finished load all of the glTF assets
+        if (!this.headless) this.hideSpinner();
+
+        if (gltf.scenes.length === 0)
+        {
+            throw "No scenes in the gltf";
+        }
+
+        this.currentlyRendering = false;
+
+        // unload previous scene
+        if (this.gltf !== undefined)
+        {
+            gltfLoader.unload(this.gltf);
+            this.gltf = undefined;
+        }
+
+        this.sceneIndex = gltf.scene === undefined ? 0 : gltf.scene;
+        this.gltf = gltf;
+        this.currentlyRendering = true;
     }
 
     render()
