@@ -145,7 +145,7 @@ class UserCamera extends gltfCamera
         this.yRot = clamp(this.yRot, -yMax, yMax);
     }
 
-    fitViewToScene(gltf)
+    fitViewToAsset(gltf)
     {
         let min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         let max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
@@ -153,9 +153,6 @@ class UserCamera extends gltfCamera
 
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-
-        console.log("new camera focus: " + this.target);
-        console.log("new camera zoom: " + this.zoom);
     }
 
     getAssetExtends(gltf, outMin, outMax)

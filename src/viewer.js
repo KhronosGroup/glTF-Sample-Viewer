@@ -127,7 +127,9 @@ class gltfViewer
                 // Finished load all of the glTF assets
                 if (!self.headless) self.hideSpinner();
 
-                self.defaultCamera.fitViewToScene(self.gltf);
+                const scene = self.gltf.scenes[self.sceneIndex];
+                scene.applyTransformHierarchy(self.gltf)
+                self.defaultCamera.fitViewToAsset(self.gltf);
 
                 self.currentlyRendering = true;
             });
