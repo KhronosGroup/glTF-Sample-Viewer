@@ -56,14 +56,14 @@ function clamp(number, min, max)
     return Math.min(Math.max(number, min), max);
 }
 
-function isGlb(filename)
+function getIsGlb(filename)
 {
-    return filename.toLowerCase().endsWith(".glb");
+    return getExtension(filename) == "glb";
 }
 
-function isGltf(filename)
+function getIsGltf(filename)
 {
-    return filename.toLowerCase().endsWith(".gltf");
+    return getExtension(filename) == "gltf";
 }
 
 function getExtension(filename)
@@ -73,7 +73,6 @@ function getExtension(filename)
     {
         return undefined
     }
-
     return split[split.length - 1];
 }
 

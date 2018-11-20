@@ -75,7 +75,7 @@ class gltfViewer
     loadFromFileObject(mainFile, additionalFiles)
     {
         const gltfFile = mainFile.name;
-        if (gltfFile.toLowerCase().endsWith(".gltf"))
+        if (getIsGltf(gltfFile))
         {
             console.error("Loading of gltf files not implemented yet");
             return;
@@ -99,7 +99,7 @@ class gltfViewer
         if (!this.headless) this.showSpinner();
 
         gltfFile = basePath + gltfFile;
-        const isGlb = gltfFile.toLowerCase().endsWith('.glb');
+        const isGlb = getIsGlb(gltfFile);
 
         const self = this;
         axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response)
@@ -321,7 +321,7 @@ class gltfViewer
         let mainFile;
         for (const file of event.dataTransfer.files)
         {
-            if (file.name.toLowerCase().endsWith(".gltf") || file.name.toLowerCase().endsWith(".glb"))
+            if (getIsGltf(file.name) || getIsGlb(file.name))
             {
                 mainFile = file;
             }
@@ -346,9 +346,7 @@ class gltfViewer
 
         // Find out the root path of the models that are going to be loaded.
         let path = modelIndex.substring(0, modelIndex.lastIndexOf("/") + 1);
-
         let viewerFolder = this.gui.addFolder("GLTF Viewer");
-
         let self = this;
 
         function initModelsDropdown(basePath)
@@ -384,7 +382,9 @@ class gltfViewer
                 // TODO: remove this later, fallback if no submodule :-)
                 self.models = self.parseModelIndex(jsonIndex, "models/");
                 initModelsDropdown("models/");
-            } else {
+            }
+            else
+            {
                 self.models = self.parseModelIndex(jsonIndex, path);
                 initModelsDropdown(path);
             }
