@@ -6,10 +6,20 @@ class gltfLoader
 
         if (buffers) // copy buffers from glb
         {
-            const count = Math.min(buffers.length, gltf.buffers.length);
-            for (let i = 0; i < count; ++i)
+            if (buffers[0] instanceof ArrayBuffer)
             {
-                gltf.buffers[i].buffer = buffers[i];
+                const count = Math.min(buffers.length, gltf.buffers.length);
+                for (let i = 0; i < count; ++i)
+                {
+                    gltf.buffers[i].buffer = buffers[i];
+                }
+            }
+            else if (buffers[0] instanceof File)
+            {
+                for (const buffer of gltf.buffers)
+                {
+                    promises.push(buffer.loadFromFiles(buffers));
+                }
             }
         }
         else

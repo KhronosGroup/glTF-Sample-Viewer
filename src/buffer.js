@@ -15,12 +15,46 @@ class gltfBuffer
             return;
         }
 
-        let self = this;
+        const self = this;
         if (this.uri !== undefined)
         {
-            let promise = axios.get(folder + this.uri, { responseType: 'arraybuffer'});
-            promise.then(function (response) {
+            const promise = axios.get(folder + this.uri, { responseType: 'arraybuffer'});
+            promise.then(function (response)
+            {
                 self.buffer = response.data;
+            });
+            return promise;
+        }
+    }
+
+    loadFromFiles(files)
+    {
+        if (this.buffer !== undefined)
+        {
+            return;
+        }
+
+        if (this.uri !== undefined)
+        {
+            let bufferFile;
+            for (bufferFile of files)
+            {
+                if (bufferFile.name === this.uri)
+                {
+                    break;
+                }
+            }
+
+            const self = this;
+            const reader = new FileReader();
+            const promise = new Promise(function(resolve, reject)
+            {
+                reader.onloadend = function(event)
+                {
+                    self.buffer = event.target.result;
+                    resolve();
+                };
+                reader.readAsArrayBuffer(bufferFile);
             });
             return promise;
         }

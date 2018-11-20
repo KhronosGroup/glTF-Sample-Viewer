@@ -75,23 +75,29 @@ class gltfViewer
     loadFromFileObject(mainFile, additionalFiles)
     {
         const gltfFile = mainFile.name;
-        if (getIsGltf(gltfFile))
-        {
-            console.error("Loading of gltf files not implemented yet");
-            return;
-        }
-
         const reader = new FileReader();
         const self = this;
-        reader.onloadend = function(event)
+        if (getIsGlb(gltfFile))
         {
-            const data = event.target.result;
-            const glbParser = new GlbParser(data);
-            const glb = glbParser.extractGlbData();
-            self.createGltf(gltfFile, glb.json, glb.buffers);
-        };
-
-        reader.readAsArrayBuffer(mainFile);
+            reader.onloadend = function(event)
+            {
+                const data = event.target.result;
+                const glbParser = new GlbParser(data);
+                const glb = glbParser.extractGlbData();
+                self.createGltf(gltfFile, glb.json, glb.buffers);
+            };
+            reader.readAsArrayBuffer(mainFile);
+        }
+        else
+        {
+            reader.onloadend = function(event)
+            {
+                const data = event.target.result;
+                const json = JSON.parse(data);
+                self.createGltf(gltfFile, json, additionalFiles);
+            };
+            reader.readAsText(mainFile);
+        }
     }
 
     loadFromPath(gltfFile, basePath = "")
