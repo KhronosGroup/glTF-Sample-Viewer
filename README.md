@@ -15,7 +15,6 @@ Features
 - [x] Support for Metallic-Roughness materials
 - [x] Support for the KHR_materials_pbrSpecularGlossiness
 - [x] Basic support for Image-Based Lighting
-- [ ] Extension for HDR environment maps
 - [x] Correctly handles sampling information from glTF
 - [x] Caches shader program permutations
 - [x] Support multiple primitives per mesh
@@ -24,14 +23,17 @@ Features
 - [x] Support for alpha coverage
 - [x] Async loading/unloading of glTF buffers and images
 - [x] Flexible and extensible parsing of glTF structures
-- [ ] Support for desktop/headless rendering
 - [x] Support for drag&drop
 - [x] Handles anti-aliasing via WebGL MSAA
 - [x] Straightforward rendering of the scene graph
-- [ ] Selection of tonemapping algorithms for IBL
 - [x] Support for the KHR_materials_unlit extension
 - [x] Support for the KHR_texture_transform extension
 - [x] Support for the KHR_lights_punctual extension
+- [x] Gamma correction
+- [ ] Extension for HDR environment maps
+- [ ] Selection of tonemapping algorithms for IBL
+- [ ] Support for desktop/headless rendering
+- [ ] Support for Visual Studio Code integration
 - [ ] Educational GUI for inspecting BRDF components
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
@@ -43,6 +45,17 @@ If you would like to see this in action, [view the live demo](http://gltf.ux3d.i
 > `scroll` : Zoom camera
 >
 > `GUI` : Use to change models
+
+Following section describes the usage in short:
+
+> **Usage**
+>
+> * Choose one of the glTF models in the selction list
+>
+> or
+>
+> * Drag and drop glTF files into viewer
+
 
 For local usage and debugging, please follow these instructions:
 
@@ -66,6 +79,8 @@ For offline rendering usage, please follow these instructions:
   * [Electron](https://electronjs.org/)
 
 TODO
+
+**Visual Studio**
 
 For Visual Studio integration, please follow these instructions:
 
