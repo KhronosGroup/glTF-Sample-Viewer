@@ -23,7 +23,7 @@ class gltfImage
 
     load(gltf, additionalFiles = undefined)
     {
-        if (this.image !== undefined) // alread loaded
+        if (this.image !== undefined)
         {
             console.error("image has already been loaded");
             return;
@@ -31,7 +31,7 @@ class gltfImage
 
         this.image = new Image();
         const self = this;
-        let promise = new Promise(function(resolve, reject)
+        const promise = new Promise(function(resolve, reject)
         {
             self.image.onload = resolve;
             self.image.onerror = resolve;

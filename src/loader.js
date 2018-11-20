@@ -26,18 +26,11 @@ class gltfLoader
                 gltf.buffers[i].buffer = buffers[i];
             }
         }
-        else if (additionalFiles)
+        else
         {
             for (const buffer of gltf.buffers)
             {
-                promises.push(buffer.loadFromFiles(additionalFiles));
-            }
-        }
-        else
-        {
-            for (let buffer of gltf.buffers)
-            {
-                promises.push(buffer.load(gltf.path));
+                promises.push(buffer.load(gltf, additionalFiles));
             }
         }
 

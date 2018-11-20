@@ -283,11 +283,6 @@ class gltfRenderer
         {
             let indexAccessor = gltf.accessors[primitive.indices];
             gl.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
-            // let error = gl.getError();
-            // if (error != gl.NO_ERROR)
-            // {
-            //     console.log(error);
-            // }
         }
         else
         {
