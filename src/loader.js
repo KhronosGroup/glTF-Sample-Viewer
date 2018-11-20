@@ -4,22 +4,27 @@ class gltfLoader
     {
         let promises = [];
 
+        if (buffers && buffers[0] instanceof File)
+        {
+            for (const buffer of gltf.buffers)
+            {
+                promises.push(buffer.loadFromFiles(buffers));
+            }
+
+            for (const image of gltf.images)
+            {
+                promises.push(image.loadFromFiles(buffers));
+            }
+
+            return promises;
+        }
+
         if (buffers) // copy buffers from glb
         {
-            if (buffers[0] instanceof ArrayBuffer)
+            const count = Math.min(buffers.length, gltf.buffers.length);
+            for (let i = 0; i < count; ++i)
             {
-                const count = Math.min(buffers.length, gltf.buffers.length);
-                for (let i = 0; i < count; ++i)
-                {
-                    gltf.buffers[i].buffer = buffers[i];
-                }
-            }
-            else if (buffers[0] instanceof File)
-            {
-                for (const buffer of gltf.buffers)
-                {
-                    promises.push(buffer.loadFromFiles(buffers));
-                }
+                gltf.buffers[i].buffer = buffers[i];
             }
         }
         else

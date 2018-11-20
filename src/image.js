@@ -23,7 +23,7 @@ class gltfImage
 
     load(gltf)
     {
-        if(this.image !== undefined) // alread loaded
+        if (this.image !== undefined) // alread loaded
         {
             return;
         }
@@ -37,14 +37,12 @@ class gltfImage
         {
             if (uri !== undefined) // load from uri
             {
-                image = new Image();
                 image.onload = resolve;
                 image.onerror = resolve;
                 image.src = uri;
             }
             else if (bufferView !== undefined) // load from binary
             {
-                image = new Image();
                 image.onload = resolve;
                 image.onerror = resolve;
 
@@ -54,6 +52,39 @@ class gltfImage
                 let blob = new Blob([array], { "type": mimeType });
                 image.src = URL.createObjectURL(blob);
             }
+        });
+
+        this.image = image;
+        return promise;
+    }
+
+    loadFromFiles(files)
+    {
+        if (this.image !== undefined)
+        {
+            return;
+        }
+
+        let bufferFile;
+        for (bufferFile of files)
+        {
+            if (bufferFile.name === this.uri)
+            {
+                break;
+            }
+        }
+
+        const image = new Image();
+        const reader = new FileReader();
+        const promise = new Promise(function(resolve, reject)
+        {
+            image.onload = resolve;
+            image.onerror = resolve;
+            reader.onloadend = function(event)
+            {
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(bufferFile);
         });
 
         this.image = image;
