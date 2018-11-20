@@ -1,30 +1,36 @@
 class gltfLoader
 {
-    static load(gltf, buffers = undefined)
+    static load(gltf, appendix = undefined)
     {
-        let promises = [];
-
-        if (buffers && buffers[0] instanceof File)
+        let buffers;
+        let additionalFiles;
+        if (appendix && appendix.length > 0)
         {
-            for (const buffer of gltf.buffers)
+            if (appendix[0] instanceof ArrayBuffer)
             {
-                promises.push(buffer.loadFromFiles(buffers));
+                buffers = appendix;
             }
-
-            for (const image of gltf.images)
+            else if (appendix[0] instanceof File)
             {
-                promises.push(image.loadFromFiles(buffers));
+                additionalFiles = appendix;
             }
-
-            return promises;
         }
 
-        if (buffers) // copy buffers from glb
+        let promises = [];
+
+        if (buffers)
         {
             const count = Math.min(buffers.length, gltf.buffers.length);
             for (let i = 0; i < count; ++i)
             {
                 gltf.buffers[i].buffer = buffers[i];
+            }
+        }
+        else if (additionalFiles)
+        {
+            for (const buffer of gltf.buffers)
+            {
+                promises.push(buffer.loadFromFiles(additionalFiles));
             }
         }
         else
@@ -37,7 +43,7 @@ class gltfLoader
 
         for (let image of gltf.images)
         {
-            promises.push(image.load(gltf));
+            promises.push(image.load(gltf, additionalFiles));
         }
 
         return promises;
