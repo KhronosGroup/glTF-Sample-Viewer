@@ -103,7 +103,7 @@ class ShaderCache
 
         if(shader === undefined)
         {
-            console.log(defines);
+            // console.log(defines);
             // compile this variant
             shader = CompileShader(isVert, defines + src);
             if(shader)
@@ -122,7 +122,7 @@ class ShaderCache
 
     getShaderProgram(vertexShaderHash, fragmentShaderHash)
     {
-        const hash = CombineHashes(vertexShaderHash, fragmentShaderHash);
+        const hash = combineHashes(vertexShaderHash, fragmentShaderHash);
 
         let program = this.programs.get(hash);
 
