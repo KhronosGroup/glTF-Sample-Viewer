@@ -76,15 +76,24 @@ class gltfImage
 
         const image = new Image();
         const reader = new FileReader();
+        const uri = this.uri;
         const promise = new Promise(function(resolve, reject)
         {
             image.onload = resolve;
             image.onerror = resolve;
-            reader.onloadend = function(event)
+
+            if (bufferFile.name !== uri)
             {
-                image.src = event.target.result;
-            };
-            reader.readAsDataURL(bufferFile);
+                image.src = uri;
+            }
+            else
+            {
+                reader.onloadend = function(event)
+                {
+                    image.src = event.target.result;
+                };
+                reader.readAsDataURL(bufferFile);
+            }
         });
 
         this.image = image;
