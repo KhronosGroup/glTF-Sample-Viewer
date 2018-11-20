@@ -16,7 +16,7 @@ class gltfLoader
         {
             for (let buffer of gltf.buffers)
             {
-                buffer.load(gltf.path, promises);
+                promises.push(buffer.load(gltf.path));
             }
         }
 

@@ -8,7 +8,7 @@ class gltfBuffer
         this.buffer = undefined; // raw data blob
     }
 
-    load(folder, promises)
+    load(folder)
     {
         if (this.buffer !== undefined)
         {
@@ -22,7 +22,7 @@ class gltfBuffer
             promise.then(function (response) {
                 self.buffer = response.data;
             });
-            promises.push(promise);
+            return promise;
         }
     }
 
