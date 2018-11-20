@@ -51,5 +51,26 @@ function CombineHashes(hash1, hash2)
     return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
 }
 
+function isGlb(filename)
+{
+    return filename.toLowerCase().endsWith(".glb");
+}
+
+function isGltf(filename)
+{
+    return filename.toLowerCase().endsWith(".gltf");
+}
+
+function getExtension(filename)
+{
+    const split = filename.toLowerCase().split(".");
+    if (split.length == 1)
+    {
+        return undefined
+    }
+
+    return split[split.length - 1];
+}
+
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
