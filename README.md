@@ -25,7 +25,7 @@ Features
 - [x] Async loading/unloading of glTF buffers and images
 - [x] Flexible and extensible parsing of glTF structures
 - [ ] Support for desktop/headless rendering
-- [ ] Support for drag&drop
+- [x] Support for drag&drop
 - [x] Handles anti-aliasing via WebGL MSAA
 - [x] Straightforward rendering of the scene graph
 - [ ] Selection of tonemapping algorithms for IBL
