@@ -55,6 +55,11 @@ class gltfImage
             return false;
         }
 
+        if (this.mimeType === "image/hdr")
+        {
+            this.image = new HDRImage();
+        }
+
         this.image.src = this.uri;
         return true;
     }
