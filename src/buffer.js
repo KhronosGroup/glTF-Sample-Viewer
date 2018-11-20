@@ -8,26 +8,78 @@ class gltfBuffer
         this.buffer = undefined; // raw data blob
     }
 
-    load(folder, promises)
-    {
-        if (this.buffer !== undefined)
-        {
-            return;
-        }
-
-        let self = this;
-        if (this.uri !== undefined)
-        {
-            let promise = axios.get(folder + this.uri, { responseType: 'arraybuffer'});
-            promise.then(function (response) {
-                self.buffer = response.data;
-            });
-            promises.push(promise);
-        }
-    }
-
     fromJson(jsonBuffer)
     {
         fromKeys(this, jsonBuffer);
+    }
+
+    load(gltf, additionalFiles = undefined)
+    {
+        if (this.buffer !== undefined)
+        {
+            console.error("buffer has already been loaded");
+            return;
+        }
+
+        const self = this;
+        return new Promise(function(resolve, reject)
+        {
+            if (!self.setBufferFromFiles(additionalFiles, resolve))
+            if (!self.sefBufferFromUri(gltf, resolve))
+            {
+                console.error("Was not able to resolve buffer with uri '%s'", self.uri);
+                resolve();
+            }
+        });
+    }
+
+    sefBufferFromUri(gltf, callback)
+    {
+        if (this.uri === undefined)
+        {
+            return false;
+        }
+
+        const self = this;
+        axios.get(gltf.path + this.uri, { responseType: 'arraybuffer'})
+            .then(function(response)
+            {
+                self.buffer = response.data;
+                callback();
+            });
+        return true;
+    }
+
+    setBufferFromFiles(files, callback)
+    {
+        if (this.uri === undefined || files === undefined)
+        {
+            return false;
+        }
+
+        let bufferFile;
+        for (bufferFile of files)
+        {
+            if (bufferFile.name === this.uri)
+            {
+                break;
+            }
+        }
+
+        if (bufferFile.name !== this.uri)
+        {
+            return false;
+        }
+
+        const self = this;
+        const reader = new FileReader();
+        reader.onloadend = function(event)
+        {
+            self.buffer = event.target.result;
+            callback();
+        };
+        reader.readAsArrayBuffer(bufferFile);
+
+        return true;
     }
 };

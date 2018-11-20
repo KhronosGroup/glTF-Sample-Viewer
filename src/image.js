@@ -21,41 +21,88 @@ class gltfImage
         }
     }
 
-    load(promises, gltf)
+    load(gltf, additionalFiles = undefined)
     {
-        if(this.image !== undefined) // alread loaded
+        if (this.image !== undefined)
         {
+            console.error("image has already been loaded");
             return;
         }
 
-        let image = new Image();
-        let uri = this.uri;
-        let bufferView = this.bufferView;
-        let mimeType = this.mimeType;
-
-        promises.push(new Promise(function(resolve, reject)
+        this.image = new Image();
+        const self = this;
+        const promise = new Promise(function(resolve, reject)
         {
-            if (uri !== undefined) // load from uri
-            {
-                image = new Image();
-                image.onload = resolve;
-                image.onerror = resolve;
-                image.src = uri;
-            }
-            else if (bufferView !== undefined) // load from binary
-            {
-                image = new Image();
-                image.onload = resolve;
-                image.onerror = resolve;
+            self.image.onload = resolve;
+            self.image.onerror = resolve;
 
-                let view = gltf.bufferViews[bufferView];
-                let buffer = gltf.buffers[view.buffer].buffer;
-                let array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
-                let blob = new Blob([array], { "type": mimeType });
-                image.src = URL.createObjectURL(blob);
+            if (!self.setImageFromBufferView(gltf))
+            if (!self.setImageFromFiles(additionalFiles))
+            if (!self.setImageFromUri())
+            {
+                console.error("Was not able to resolve image with uri '%s'", self.uri);
+                resolve();
             }
-        }));
+        });
 
-        this.image = image;
+        return promise;
+    }
+
+    setImageFromUri()
+    {
+        if (this.uri === undefined)
+        {
+            return false;
+        }
+
+        this.image.src = this.uri;
+        return true;
+    }
+
+    setImageFromBufferView(gltf)
+    {
+        const view = gltf.bufferViews[this.bufferView];
+        if (view === undefined)
+        {
+            return false;
+        }
+
+        const buffer = gltf.buffers[view.buffer].buffer;
+        const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
+        const blob = new Blob([array], { "type": this.mimeType });
+        this.image.src = URL.createObjectURL(blob);
+        return true;
+    }
+
+    setImageFromFiles(files)
+    {
+        if (this.uri === undefined || files === undefined)
+        {
+            return false;
+        }
+
+        let bufferFile;
+        for (bufferFile of files)
+        {
+            if (bufferFile.name === this.uri)
+            {
+                break;
+            }
+        }
+
+        if (bufferFile.name !== this.uri)
+        {
+            return false;
+        }
+
+        const reader = new FileReader();
+        const self = this;
+        reader.onloadend = function(event)
+        {
+            self.image.src = event.target.result;
+        }
+        reader.readAsDataURL(bufferFile);
+
+        return true;
     }
 };

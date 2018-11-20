@@ -72,71 +72,103 @@ class gltfViewer
         this.userCamera.ymag = ymag;
     }
 
-    load(gltfFile, basePath = "")
+    loadFromFileObject(mainFile, additionalFiles)
     {
-        gltfFile = basePath + gltfFile;
+        const gltfFile = mainFile.name;
+        const reader = new FileReader();
+        const self = this;
+        if (getIsGlb(gltfFile))
+        {
+            reader.onloadend = function(event)
+            {
+                const data = event.target.result;
+                const glbParser = new GlbParser(data);
+                const glb = glbParser.extractGlbData();
+                self.createGltf(gltfFile, glb.json, glb.buffers);
+            };
+            reader.readAsArrayBuffer(mainFile);
+        }
+        else
+        {
+            reader.onloadend = function(event)
+            {
+                const data = event.target.result;
+                const json = JSON.parse(data);
+                self.createGltf(gltfFile, json, additionalFiles);
+            };
+            reader.readAsText(mainFile);
+        }
+    }
 
-        // Started loading the glTF 2.0 models.
+    loadFromPath(gltfFile, basePath = "")
+    {
         if (!this.headless) this.showSpinner();
 
-        let self = this;
+        gltfFile = basePath + gltfFile;
+        const isGlb = getIsGlb(gltfFile);
 
-        const isGlb = gltfFile.toLowerCase().endsWith('.glb');
-        console.log("Loading " + (isGlb ? "glb" : "glTF") + " file " + gltfFile);
-
-        axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response) {
-            let incompleteGltf = new glTF(gltfFile);
-
-            let glb = undefined;
+        const self = this;
+        axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response)
+        {
+            let json = response.data;
+            let buffers = undefined
             if (isGlb)
             {
                 const glbParser = new GlbParser(response.data);
-                glb = glbParser.extractGlbData();
+                const glb = glbParser.extractGlbData();
+                json = glb.json;
+                buffers = glb.buffers;
             }
-
-            incompleteGltf.fromJson(isGlb ? glb.json : response.data);
-
-            self.addEnvironmentMap(incompleteGltf);
-
-            let assetPromises = gltfLoader.load(incompleteGltf, isGlb ? glb.buffers : undefined);
-
-            Promise.all(assetPromises).then(function() {
-                self.currentlyRendering = false;
-
-                if (self.gltf !== undefined)
-                {
-                    gltfLoader.unload(self.gltf);
-                    self.gltf = undefined;
-                }
-
-                if (incompleteGltf.scene !== undefined)
-                {
-                    self.sceneIndex = incompleteGltf.scene;
-                }
-                else if (incompleteGltf.scenes.length != 0)
-                {
-                    self.sceneIndex = 0;
-                }
-                else
-                {
-                    throw "couldn't find any valid scene!";
-                }
-
-                self.gltf = incompleteGltf;
-
-                // Finished load all of the glTF assets
-                if (!self.headless) self.hideSpinner();
-
-                const scene = self.gltf.scenes[self.sceneIndex];
-                scene.applyTransformHierarchy(self.gltf)
-                self.userCamera.fitViewToAsset(self.gltf);
-
-                self.currentlyRendering = true;
-            });
-        }).catch(function(error) {
-            console.warn("glTF " + error);
+            self.createGltf(gltfFile, json, buffers);
+        }).catch(function(error)
+        {
+            console.error("glTF " + error);
             if (!self.headless) self.hideSpinner();
         });
+    }
+
+    createGltf(path, json, buffers)
+    {
+        console.log("Loading '%s'", path);
+
+        let gltf = new glTF(path);
+        gltf.fromJson(json);
+        this.addEnvironmentMap(gltf);
+        let assetPromises = gltfLoader.load(gltf, buffers);
+
+        let self = this;
+        Promise.all(assetPromises).then(function()
+        {
+            self.onGltfLoaded(gltf);
+        });
+    }
+
+    onGltfLoaded(gltf)
+    {
+        // Finished load all of the glTF assets
+        if (!this.headless) this.hideSpinner();
+
+        if (gltf.scenes.length === 0)
+        {
+            throw "No scenes in the gltf";
+        }
+
+        this.currentlyRendering = false;
+
+        // unload previous scene
+        if (this.gltf !== undefined)
+        {
+            gltfLoader.unload(this.gltf);
+            this.gltf = undefined;
+        }
+
+        this.sceneIndex = gltf.scene === undefined ? 0 : gltf.scene;
+        const scene = gltf.scenes[this.sceneIndex];
+        scene.applyTransformHierarchy(gltf);
+        this.userCamera.fitViewToAsset(gltf);
+
+        this.gltf = gltf;
+        this.currentlyRendering = true;
     }
 
     render()
@@ -281,15 +313,46 @@ class gltfViewer
         this.userCamera.rotate(deltaX, deltaY);
     }
 
+    // for some reason, the drop event does not work without this
+    dragOverHandler(event)
+    {
+        event.preventDefault();
+    }
+
+    dropEventHandler(event)
+    {
+        event.preventDefault();
+
+        let additionalFiles = [];
+        let mainFile;
+        for (const file of event.dataTransfer.files)
+        {
+            if (getIsGltf(file.name) || getIsGlb(file.name))
+            {
+                mainFile = file;
+            }
+            else
+            {
+                additionalFiles.push(file);
+            }
+        }
+
+        if (mainFile === undefined)
+        {
+            console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
+            return;
+        }
+
+        this.loadFromFileObject(mainFile, additionalFiles);
+    }
+
     initUserInterface(modelIndex)
     {
         this.gui = new dat.GUI({ width: 300 });
 
         // Find out the root path of the models that are going to be loaded.
         let path = modelIndex.substring(0, modelIndex.lastIndexOf("/") + 1);
-
         let viewerFolder = this.gui.addFolder("GLTF Viewer");
-
         let self = this;
 
         function initModelsDropdown(basePath)
@@ -304,10 +367,10 @@ class gltfViewer
             }
 
             viewerFolder.add(self.guiParameters, "model", self.models).onChange(function(model) {
-                self.load(model, basePath)
+                self.loadFromPath(model, basePath)
             }).name("Model");
 
-            self.load(self.guiParameters.model, basePath);
+            self.loadFromPath(self.guiParameters.model, basePath);
 
             let sceneFolder = viewerFolder.addFolder("Scene Index");
             sceneFolder.add(self.guiParameters, "prevScene").name("←");
@@ -325,7 +388,9 @@ class gltfViewer
                 // TODO: remove this later, fallback if no submodule :-)
                 self.models = self.parseModelIndex(jsonIndex, "models/");
                 initModelsDropdown("models/");
-            } else {
+            }
+            else
+            {
                 self.models = self.parseModelIndex(jsonIndex, path);
                 initModelsDropdown(path);
             }

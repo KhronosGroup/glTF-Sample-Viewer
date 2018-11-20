@@ -56,5 +56,25 @@ function clamp(number, min, max)
     return Math.min(Math.max(number, min), max);
 }
 
+function getIsGlb(filename)
+{
+    return getExtension(filename) == "glb";
+}
+
+function getIsGltf(filename)
+{
+    return getExtension(filename) == "gltf";
+}
+
+function getExtension(filename)
+{
+    const split = filename.toLowerCase().split(".");
+    if (split.length == 1)
+    {
+        return undefined
+    }
+    return split[split.length - 1];
+}
+
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
