@@ -1,5 +1,5 @@
 const ImagaType_Jpeg = "image/jpeg";
-const ImageType_Hdr = "image/hdr";
+const ImageType_Hdr = "image/vnd.radiance";
 
 class gltfImage
 {
