@@ -1,6 +1,9 @@
+const ImagaType_Jpeg = "image/jpeg";
+const ImageType_Hdr = "image/hdr";
+
 class gltfImage
 {
-    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = "image/jpeg", image = undefined)
+    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImagaType_Jpeg, image = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;
@@ -29,7 +32,7 @@ class gltfImage
             return;
         }
 
-        this.image = new Image();
+        this.image = this.mimeType === ImageType_Hdr ? new HDRImage() : new Image();
         const self = this;
         const promise = new Promise(function(resolve, reject)
         {
@@ -53,11 +56,6 @@ class gltfImage
         if (this.uri === undefined)
         {
             return false;
-        }
-
-        if (this.mimeType === "image/hdr")
-        {
-            this.image = new HDRImage();
         }
 
         this.image.src = this.uri;

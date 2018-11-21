@@ -133,7 +133,7 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf, "field", "hdr");
+        this.addEnvironmentMap(gltf);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -452,18 +452,22 @@ class gltfViewer
         return models;
     }
 
-    addEnvironmentMap(gltf, subFolder = "papermill", type = "jpeg")
+    addEnvironmentMap(gltf, subFolder = "papermill", type = ImagaType_Jpeg)
     {
         let extension;
-        if (type === "jpeg")
+        switch(type)
         {
-            extension = ".jpg";
+            case(ImagaType_Jpeg):
+                extension = ".jpg";
+                break;
+            case(ImageType_Hdr):
+                extension = ".hdr";
+                break;
+            default:
+                console.error("Unknown image type: " + type);
+                return;
         }
-        else if (type === "hdr")
-        {
-            extension = ".hdr";
-        }
-        const mimeType = "image/" + type;
+
         const imagesFolder = "assets/images/" + subFolder + "/";
         const diffusePrefix = imagesFolder + "diffuse/diffuse_";
         const diffuseSuffix = "_0" + extension;
@@ -489,12 +493,13 @@ class gltfViewer
 
         let indices = [];
 
-        function AddSide(basePath, side)
+        function addSide(basePath, side)
         {
             for(let i = 0; i < 10; ++i)
             {
-                const image = new gltfImage(basePath + i + extension, side, i);
-                image.mimeType = mimeType;
+                const imagePath = basePath + i + extension;
+                const image = new gltfImage(imagePath, side, i);
+                image.mimeType = type;
                 gltf.images.push(image);
                 indices.push(++imageIdx);
             }
@@ -503,8 +508,9 @@ class gltfViewer
         // u_DiffuseEnvSampler faces
         for (const side of sides)
         {
-            const image = new gltfImage(diffusePrefix + side[0] + diffuseSuffix, side[1]);
-            image.mimeType = mimeType;
+            const imagePath = diffusePrefix + side[0] + diffuseSuffix;
+            const image = new gltfImage(imagePath, side[1]);
+            image.mimeType = type;
             gltf.images.push(image);
         }
 
@@ -514,7 +520,7 @@ class gltfViewer
         // u_SpecularEnvSampler tex
         for (const side of sides)
         {
-            AddSide(specularPrefix + side[0] + specularSuffix, side[1]);
+            addSide(specularPrefix + side[0] + specularSuffix, side[1]);
         }
 
         gltf.textures.push(new gltfTexture(cubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
