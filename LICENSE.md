@@ -59,6 +59,8 @@ limitations under the License.
 
 https://github.com/enkimute/hdrpng.js
 
+Used to display HDR images as textures.
+
 >Copyright (c) 2017 enki
 >
 >MIT License
