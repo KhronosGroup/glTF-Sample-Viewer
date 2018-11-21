@@ -7,7 +7,7 @@ function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined)
         return null;
     }
 
-    gl = canvas.getContext("webgl", { alpha: false }) || canvas.getContext("experimental-webgl", { alpha: false });
+    gl = getWebGlContext();
     if (!gl)
     {
         console.warn("Failed to get an WebGL rendering context!");
@@ -28,4 +28,19 @@ function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined)
     canvas.ondragover = viewer.dragOverHandler.bind(viewer);
 
     return viewer; // Succeeded in creating a glTF viewer!
+}
+
+function getWebGlContext()
+{
+    const parameters = { alpha: false, antialias: false };
+    const names = [ "webgl", "experimental-webgl" ];
+    let context;
+    for (const name of names)
+    {
+        context = canvas.getContext(name, parameters);
+        if (context)
+        {
+            return context;
+        }
+    }
 }
