@@ -1,4 +1,5 @@
 .DS_Store
+.settings
 Thumbs.db
 desktop.ini
 node_modules
