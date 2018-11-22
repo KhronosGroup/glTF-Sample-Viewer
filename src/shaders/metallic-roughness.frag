@@ -16,6 +16,8 @@
 
 precision highp float;
 
+#include <tonemapping.glsl>
+
 struct Light
 {
     vec3 direction;
@@ -658,6 +660,5 @@ void main()
     color += SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
 #endif
 
-    // TODO: tone mapping
-    gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
+    gl_FragColor = vec4(toneMap(color), baseColor.a);
 }
