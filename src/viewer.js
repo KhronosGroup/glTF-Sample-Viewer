@@ -407,11 +407,11 @@ class gltfViewer
             });
         });
 
-        let environmentFolder = this.gui.addFolder("Lighting");
-        environmentFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
-        environmentFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
-
-        // TODO: add stuff like tonemapping algorithm.
+        const lightingFolder = this.gui.addFolder("Lighting");
+        lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
+        lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
+        lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
 
         let performanceFolder = this.gui.addFolder("Performance");
 

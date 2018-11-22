@@ -307,13 +307,13 @@ class gltfRenderer
 
         switch(this.parameters.toneMap)
         {
-            case("Uncharted 2"):
+            case(ToneMaps.uncharted):
                 fragDefines.push("TONEMAP_UNCHARTED");
                 break;
-            case("Hejl Richard"):
+            case(ToneMaps.hejlRichard):
                 fragDefines.push("TONEMAP_HEJLRICHARD");
                 break;
-            case("Linear"):
+            case(ToneMaps.linear):
             default:
                 break;
         }
