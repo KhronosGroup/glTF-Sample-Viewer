@@ -133,7 +133,7 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf, "papermill", this.renderingParameters.useHdr ? ImageType_Hdr : ImagaType_Jpeg);
+        this.addEnvironmentMap(gltf, "papermill", this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -452,12 +452,12 @@ class gltfViewer
         return models;
     }
 
-    addEnvironmentMap(gltf, subFolder = "papermill", type = ImagaType_Jpeg)
+    addEnvironmentMap(gltf, subFolder = "papermill", type = ImageType_Jpeg)
     {
         let extension;
         switch(type)
         {
-            case(ImagaType_Jpeg):
+            case(ImageType_Jpeg):
                 extension = ".jpg";
                 break;
             case(ImageType_Hdr):

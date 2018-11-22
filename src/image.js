@@ -1,9 +1,9 @@
-const ImagaType_Jpeg = "image/jpeg";
+const ImageType_Jpeg = "image/jpeg";
 const ImageType_Hdr = "image/vnd.radiance";
 
 class gltfImage
 {
-    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImagaType_Jpeg, image = undefined)
+    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageType_Jpeg, image = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;
