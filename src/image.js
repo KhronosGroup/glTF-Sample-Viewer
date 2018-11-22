@@ -36,9 +36,9 @@ class gltfImage
             self.image.onload = resolve;
             self.image.onerror = resolve;
 
-            if (!self.setImageFromBufferView(gltf))
-            if (!self.setImageFromFiles(additionalFiles))
-            if (!self.setImageFromUri())
+            if (!self.setImageFromBufferView(gltf) &&
+                !self.setImageFromFiles(additionalFiles) &&
+                !self.setImageFromUri())
             {
                 console.error("Was not able to resolve image with uri '%s'", self.uri);
                 resolve();

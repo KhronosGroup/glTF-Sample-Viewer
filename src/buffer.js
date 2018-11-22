@@ -24,8 +24,8 @@ class gltfBuffer
         const self = this;
         return new Promise(function(resolve, reject)
         {
-            if (!self.setBufferFromFiles(additionalFiles, resolve))
-            if (!self.sefBufferFromUri(gltf, resolve))
+            if (!self.setBufferFromFiles(additionalFiles, resolve) &&
+                !self.sefBufferFromUri(gltf, resolve))
             {
                 console.error("Was not able to resolve buffer with uri '%s'", self.uri);
                 resolve();

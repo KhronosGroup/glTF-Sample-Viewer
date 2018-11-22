@@ -204,7 +204,9 @@ class gltfViewer
                     }
 
                     const scene = self.gltf.scenes[self.sceneIndex];
-                    scene.applyTransformHierarchy(self.gltf)
+
+                    // if transformations happen at runtime, we need to apply the transform hierarchy here
+                    // scene.applyTransformHierarchy(gltf);
 
                     let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
                     if(alphaScene.nodes.length > 0)
