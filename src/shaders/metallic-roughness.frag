@@ -321,12 +321,21 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     float lod = (materialInfo.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
     vec3 brdf = SRGBtoLINEAR(texture2D(u_brdfLUT, vec2(NdotV, 1.0 - materialInfo.perceptualRoughness))).rgb;
-    vec3 diffuseLight = SRGBtoLINEAR(textureCube(u_DiffuseEnvSampler, n)).rgb;
+
+    vec4 diffuseSample = textureCube(u_DiffuseEnvSampler, n);
 
 #ifdef USE_TEX_LOD
-    vec3 specularLight = SRGBtoLINEAR(textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod)).rgb;
+    vec4 specularSample = textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod);
 #else
-    vec3 specularLight = SRGBtoLINEAR(textureCube(u_SpecularEnvSampler, reflection)).rgb;
+    vec4 specularSample = textureCube(u_SpecularEnvSampler, reflection);
+#endif
+
+#ifdef USE_HDR
+    vec3 diffuseLight = diffuseSample.rgb * pow(2.0, diffuseSample.a * 255.0 - 128.0);
+    vec3 specularLight = specularSample.rgb * pow(2.0, specularSample.a * 255.0 - 128.0);
+#else
+    vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
+    vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;
 #endif
 
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;

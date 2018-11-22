@@ -76,5 +76,11 @@ function getExtension(filename)
     return split[split.length - 1];
 }
 
+function getFileName(filePath)
+{
+    const split = filePath.toLowerCase().split("/");
+    return split[split.length - 1];
+}
+
 // marker interface used to for parsing the uniforms
 class UniformStruct { }

@@ -97,7 +97,14 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
                 return false;
             }
 
-            gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
+            if (image.image.dataRGBE !== undefined)
+            {
+                gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, image.image.width, image.image.height, 0, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image.dataRGBE);
+            }
+            else
+            {
+                gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
+            }
         }
 
         if (textureInfo.generateMips)

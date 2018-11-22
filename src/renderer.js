@@ -186,6 +186,11 @@ class gltfRenderer
             fragDefines.push("USE_TEX_LOD 1");
         }
 
+        if (this.parameters.useHdr)
+        {
+            fragDefines.push("USE_HDR 1");
+        }
+
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
 

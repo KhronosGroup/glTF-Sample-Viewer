@@ -133,7 +133,7 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf);
+        this.addEnvironmentMap(gltf, "papermill", this.renderingParameters.useHdr ? ImageType_Hdr : ImagaType_Jpeg);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
