@@ -338,11 +338,8 @@ class gltfRenderer
             case(DebugOutput.occlusion):
                 fragDefines.push("DEBUG_OCCLUSION 1");
                 break;
-            case(DebugOutput.specular):
-                fragDefines.push("DEBUG_SPECULAR 1");
-                break;
-            case(DebugOutput.diffuse):
-                fragDefines.push("DEBUG_DIFFUSE 1");
+            case(DebugOutput.emisive):
+                fragDefines.push("DEBUG_EMISSIVE 1");
                 break;
             case(DebugOutput.f0):
                 fragDefines.push("DEBUG_F0 1");

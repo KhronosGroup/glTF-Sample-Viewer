@@ -511,8 +511,10 @@ void main()
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
+    vec3 emissive = vec3(0);
 #ifdef HAS_EMISSIVE_MAP
-    color += SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
+    emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
+    color += emissive;
 #endif
 
 #ifndef DEBUG_OUTPUT // no debug
@@ -531,7 +533,11 @@ void main()
     #endif
 
     #ifdef DEBUG_NORMAL
-        gl_FragColor.rgb = normal;
+        #ifdef HAS_NORMAL_MAP
+            gl_FragColor.rgb = texture2D(u_NormalSampler, getNormalUV()).rgb;
+        #else
+            gl_FragColor.rgb = normal;
+        #endif
     #endif
 
     #ifdef DEBUG_BASECOLOR
@@ -542,12 +548,8 @@ void main()
         gl_FragColor.rgb = vec3(ao);
     #endif
 
-    #ifdef DEBUG_SPECULAR
-        gl_FragColor.rgb = specularColor;
-    #endif
-
-    #ifdef DEBUG_DIFFUSE
-        gl_FragColor.rgb = diffuseColor;
+    #ifdef DEBUG_EMISSIVE
+        gl_FragColor.rgb = emissive;
     #endif
 
     #ifdef DEBUG_F0

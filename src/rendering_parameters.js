@@ -13,9 +13,8 @@ const DebugOutput =
     normal: "Normal",
     baseColor: "BaseColor",
     occlusion: "Occlusion",
-    specular: "Specular",
-    diffuse: "Diffuse"
-    //,f0: "F0"
+    emisive: "Emissive",
+    f0: "F0"
 };
 
 class gltfRenderingParameters
