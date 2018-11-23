@@ -5,6 +5,19 @@ const ToneMaps =
     hejlRichard: "Hejl Richard"
 };
 
+const DebugOutput =
+{
+    none: "None",
+    metallic: "Metallic",
+    roughness: "Roughness",
+    normal: "Normal",
+    baseColor: "BaseColor",
+    occlusion: "Occlusion",
+    specular: "Specular",
+    diffuse: "Diffuse"
+    //,f0: "F0"
+};
+
 class gltfRenderingParameters
 {
     constructor(useIBL = true,
@@ -12,7 +25,8 @@ class gltfRenderingParameters
         useHdr = true,
         exposure = 1.0,
         gamma = 2.2,
-        toneMap = ToneMaps.linear)
+        toneMap = ToneMaps.linear,
+        debugOutput = DebugOutput.none)
     {
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
@@ -20,5 +34,6 @@ class gltfRenderingParameters
         this.exposure = exposure;
         this.gamma = gamma;
         this.toneMap = toneMap;
+        this.debugOutput = debugOutput;
     }
 };

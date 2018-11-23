@@ -16,7 +16,6 @@
 
 precision highp float;
 
-
 #include <tonemapping.glsl>
 #include <textures.glsl>
 
@@ -44,12 +43,6 @@ const int LightType_Spot = 2;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
-#ifdef USE_IBL
-uniform samplerCube u_DiffuseEnvSampler;
-uniform samplerCube u_SpecularEnvSampler;
-uniform sampler2D u_brdfLUT;
-#endif
-
 #ifdef MATERIAL_SPECULARGLOSSINESS
 uniform vec3 u_SpecularFactor;
 uniform vec4 u_DiffuseFactor;
@@ -64,7 +57,8 @@ uniform vec3 u_Camera;
 uniform float u_AlphaCutoff;
 
 // debugging flags used for shader output of intermediate PBR variables
-uniform vec4 u_ScaleDiffBaseMR;
+uniform vec4
+;
 uniform vec4 u_ScaleFGDSpec;
 uniform vec4 u_ScaleIBLAmbient;
 
@@ -510,9 +504,10 @@ void main()
     color += getIBLContribution(materialInfo, normal, pointToView);
 #endif
 
+    float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-    float ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
+    ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
@@ -520,5 +515,46 @@ void main()
     color += SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
 #endif
 
+#ifndef DEBUG_OUTPUT // no debug
+
+   // regular shading
     gl_FragColor = vec4(toneMap(color), baseColor.a);
+
+#else // debug output
+
+    #ifdef DEBUG_METALLIC
+        gl_FragColor.rgb = vec3(metallic);
+    #endif
+
+    #ifdef DEBUG_ROUGHNESS
+        gl_FragColor.rgb = vec3(perceptualRoughness); //alphaRoughness
+    #endif
+
+    #ifdef DEBUG_NORMAL
+        gl_FragColor.rgb = normal;
+    #endif
+
+    #ifdef DEBUG_BASECOLOR
+        gl_FragColor.rgb = baseColor.rgb;
+    #endif
+
+    #ifdef DEBUG_OCCLUSION
+        gl_FragColor.rgb = vec3(ao);
+    #endif
+
+    #ifdef DEBUG_SPECULAR
+        gl_FragColor.rgb = specularColor;
+    #endif
+
+    #ifdef DEBUG_DIFFUSE
+        gl_FragColor.rgb = diffuseColor;
+    #endif
+
+    #ifdef DEBUG_F0
+        gl_FragColor.rgb = vec3(f0);
+    #endif
+
+    gl_FragColor.a = 1.0;
+
+#endif // !DEBUG_OUTPUT
 }

@@ -415,6 +415,7 @@ class gltfViewer
         lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
         lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
+        lightingFolder.add(this.renderingParameters, "debugOutput", Object.values(DebugOutput)).name("Debug Output");
 
         let performanceFolder = this.gui.addFolder("Performance");
 

@@ -49,6 +49,12 @@ uniform int u_DiffuseUVSet;
 uniform mat3 u_DiffuseUVTransform;
 #endif
 
+#ifdef USE_IBL
+uniform samplerCube u_DiffuseEnvSampler;
+uniform samplerCube u_SpecularEnvSampler;
+uniform sampler2D u_brdfLUT;
+#endif
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(v_UVCoord1, 1.0);

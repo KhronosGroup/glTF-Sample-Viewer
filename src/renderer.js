@@ -201,13 +201,9 @@ class gltfRenderer
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
-        this.shader.updateUniform("u_Exposure", this.parameters.exposure);
-        this.shader.updateUniform("u_Gamma", this.parameters.gamma);
-
-        if (this.parameters.useIBL || this.parameters.usePunctual)
-        {
-            this.shader.updateUniform("u_Camera", this.currentCameraPosition);
-        }
+        this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
+        this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
+        this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
         if (material.doubleSided) {
             gl.disable(gl.CULL_FACE);
@@ -310,13 +306,46 @@ class gltfRenderer
         switch(this.parameters.toneMap)
         {
             case(ToneMaps.uncharted):
-                fragDefines.push("TONEMAP_UNCHARTED");
+                fragDefines.push("TONEMAP_UNCHARTED 1");
                 break;
             case(ToneMaps.hejlRichard):
-                fragDefines.push("TONEMAP_HEJLRICHARD");
+                fragDefines.push("TONEMAP_HEJLRICHARD 1");
                 break;
             case(ToneMaps.linear):
             default:
+                break;
+        }
+
+        if(this.parameters.debugOutput !== DebugOutput.none)
+        {
+            fragDefines.push("DEBUG_OUTPUT 1");
+        }
+
+        switch(this.parameters.debugOutput)
+        {
+            case(DebugOutput.metallic):
+                fragDefines.push("DEBUG_METALLIC 1");
+                break;
+            case(DebugOutput.roughness):
+                fragDefines.push("DEBUG_ROUGHNESS 1");
+                break;
+            case(DebugOutput.normal):
+                fragDefines.push("DEBUG_NORMAL 1");
+                break;
+            case(DebugOutput.baseColor):
+                fragDefines.push("DEBUG_BASECOLOR 1");
+                break;
+            case(DebugOutput.occlusion):
+                fragDefines.push("DEBUG_OCCLUSION 1");
+                break;
+            case(DebugOutput.specular):
+                fragDefines.push("DEBUG_SPECULAR 1");
+                break;
+            case(DebugOutput.diffuse):
+                fragDefines.push("DEBUG_DIFFUSE 1");
+                break;
+            case(DebugOutput.f0):
+                fragDefines.push("DEBUG_F0 1");
                 break;
         }
     }
