@@ -48,7 +48,6 @@ class gltfRenderer
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
-        gl.clearColor(0.2, 0.2, 0.2, 1.0);
         gl.colorMask(true, true, true, true);
         gl.clearDepth(1.0);
     }
@@ -68,6 +67,7 @@ class gltfRenderer
     // frame state
     newFrame()
     {
+        gl.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2]  / 255.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 

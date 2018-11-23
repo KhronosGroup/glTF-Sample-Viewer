@@ -25,6 +25,7 @@ class gltfRenderingParameters
         useHdr = true,
         exposure = 1.0,
         gamma = 2.2,
+        clearColor = [51, 51, 51],
         toneMap = ToneMaps.linear,
         debugOutput = DebugOutput.none)
     {
@@ -33,6 +34,7 @@ class gltfRenderingParameters
         this.useHdr = useHdr;
         this.exposure = exposure;
         this.gamma = gamma;
+        this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
     }
