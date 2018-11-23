@@ -30,11 +30,11 @@ Features
 - [x] Support for the KHR_texture_transform extension
 - [x] Support for the KHR_lights_punctual extension
 - [x] Gamma correction
-- [ ] Extension for HDR environment maps
-- [ ] Selection of tonemapping algorithms for IBL
+- [x] HDR environment maps
+- [X] Selection of tonemapping algorithms for IBL
 - [ ] Support for desktop/headless rendering
 - [ ] Support for Visual Studio Code integration
-- [ ] Educational GUI for inspecting BRDF components
+- [x] Debug GUI for inspecting BRDF inputs
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
 

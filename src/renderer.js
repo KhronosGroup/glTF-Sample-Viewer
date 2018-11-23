@@ -344,6 +344,9 @@ class gltfRenderer
             case(DebugOutput.f0):
                 fragDefines.push("DEBUG_F0 1");
                 break;
+            case(DebugOutput.alpha):
+                fragDefines.push("DEBUG_ALPHA 1");
+                break;
         }
     }
 

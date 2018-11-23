@@ -536,7 +536,7 @@ void main()
         #ifdef HAS_NORMAL_MAP
             gl_FragColor.rgb = texture2D(u_NormalSampler, getNormalUV()).rgb;
         #else
-            gl_FragColor.rgb = normal;
+            gl_FragColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif
     #endif
 
@@ -554,6 +554,10 @@ void main()
 
     #ifdef DEBUG_F0
         gl_FragColor.rgb = vec3(f0);
+    #endif
+
+    #ifdef DEBUG_ALPHA
+        gl_FragColor.rgb = vec3(baseColor.a);
     #endif
 
     gl_FragColor.a = 1.0;

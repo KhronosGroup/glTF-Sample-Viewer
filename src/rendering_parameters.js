@@ -11,9 +11,10 @@ const DebugOutput =
     metallic: "Metallic",
     roughness: "Roughness",
     normal: "Normal",
-    baseColor: "BaseColor",
+    baseColor: "Base Color",
     occlusion: "Occlusion",
     emisive: "Emissive",
+    alpha: "Alpha",
     f0: "F0"
 };
 
