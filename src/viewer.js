@@ -413,6 +413,7 @@ class gltfViewer
         lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
         lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
+        lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
 
         let performanceFolder = this.gui.addFolder("Performance");

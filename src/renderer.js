@@ -13,7 +13,8 @@ class gltfRenderer
         this.shaderCache = new ShaderCache("src/shaders/", [
             "primitive.vert",
             "metallic-roughness.frag",
-            "tonemapping.glsl"
+            "tonemapping.glsl",
+            "textures.glsl"
         ]);
 
         let requiredWebglExtensions = [
@@ -201,6 +202,7 @@ class gltfRenderer
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure);
+        this.shader.updateUniform("u_Gamma", this.parameters.gamma);
 
         if (this.parameters.useIBL || this.parameters.usePunctual)
         {

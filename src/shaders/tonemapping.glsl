@@ -1,8 +1,15 @@
 uniform float u_Exposure;
+uniform float u_Gamma;
 
 vec3 gammaCorrection(vec3 color)
 {
-    return pow(color, vec3(1.0 / 2.2));
+    return pow(color, vec3(1.0 / u_Gamma));
+}
+
+vec4 SRGBtoLINEAR(vec4 srgbIn)
+{
+    // FIXME: this is the "fast" sRGB approximation.
+    return vec4(pow(srgbIn.xyz, vec3(u_Gamma)), srgbIn.w);
 }
 
 // Uncharted 2 tone map
@@ -34,10 +41,10 @@ vec3 toneMapHejlRichard(vec3 color)
     return (color*(6.2*color+.5))/(color*(6.2*color+1.7)+0.06);
 }
 
-float luminance(vec3 color)
-{
-    return dot(color, vec3(0.2126, 0.7152, 0.0722));
-}
+// float luminance(vec3 color)
+// {
+//     return dot(color, vec3(0.2126, 0.7152, 0.0722));
+// }
 
 vec3 toneMap(vec3 color)
 {

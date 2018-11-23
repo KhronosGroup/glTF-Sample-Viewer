@@ -30,22 +30,30 @@ class ShaderCache
             // resovle / expande sources (TODO: break include cycles)
             for (let [key, src] of self.sources)
             {
+                let changed = false;
                 for (let includeName of shaderFiles)
                 {
                     //var pattern = RegExp(/#include</ + includeName + />/);
-                    let pattern = "#include <" + includeName + ">";
+                    const pattern = "#include <" + includeName + ">";
 
-                    // only replace the first occurance
-                    src = src.replace(pattern, self.sources.get(includeName));
-
-                    // remove the others
-                    while (src.search(pattern) != -1)
+                    if(src.includes(pattern))
                     {
-                        src = src.replace(pattern, "");
+                        // only replace the first occurance
+                        src = src.replace(pattern, self.sources.get(includeName));
+
+                        // remove the others
+                        while (src.includes(pattern)) {
+                            src = src.replace(pattern, "");
+                        }
+
+                        changed = true;
                     }
                 }
 
-                self.sources.set(key, src);
+                if(changed)
+                {
+                    self.sources.set(key, src);
+                }
             }
 
             self.loaded = true;
