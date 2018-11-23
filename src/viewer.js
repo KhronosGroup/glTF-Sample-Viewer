@@ -133,7 +133,7 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf);
+        this.addEnvironmentMap(gltf, "papermill", this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -409,11 +409,11 @@ class gltfViewer
             });
         });
 
-        let environmentFolder = this.gui.addFolder("Lighting");
-        environmentFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
-        environmentFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
-
-        // TODO: add stuff like tonemapping algorithm.
+        const lightingFolder = this.gui.addFolder("Lighting");
+        lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
+        lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
+        lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
 
         let performanceFolder = this.gui.addFolder("Performance");
 
@@ -454,8 +454,37 @@ class gltfViewer
         return models;
     }
 
-    addEnvironmentMap(gltf)
+    addEnvironmentMap(gltf, subFolder = "papermill", type = ImageType_Jpeg)
     {
+        let extension;
+        switch(type)
+        {
+            case(ImageType_Jpeg):
+                extension = ".jpg";
+                break;
+            case(ImageType_Hdr):
+                extension = ".hdr";
+                break;
+            default:
+                console.error("Unknown image type: " + type);
+                return;
+        }
+
+        const imagesFolder = "assets/images/" + subFolder + "/";
+        const diffusePrefix = imagesFolder + "diffuse/diffuse_";
+        const diffuseSuffix = "_0" + extension;
+        const specularPrefix = imagesFolder + "specular/specular_";
+        const specularSuffix = "_";
+        const sides =
+        [
+            [ "back", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z ],
+            [ "bottom", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y ],
+            [ "front", gl.TEXTURE_CUBE_MAP_POSITIVE_Z ],
+            [ "left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X ],
+            [ "right", gl.TEXTURE_CUBE_MAP_POSITIVE_X ],
+            [ "top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y ]
+        ];
+
         gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));
         const cubeSamplerIdx = gltf.samplers.length - 1;
 
@@ -466,33 +495,35 @@ class gltfViewer
 
         let indices = [];
 
-        function AddSide(basePath, side)
+        function addSide(basePath, side)
         {
             for(let i = 0; i < 10; ++i)
             {
-                gltf.images.push(new gltfImage(basePath + i + ".jpg", side, i));
+                const imagePath = basePath + i + extension;
+                const image = new gltfImage(imagePath, side, i);
+                image.mimeType = type;
+                gltf.images.push(image);
                 indices.push(++imageIdx);
             }
         };
 
         // u_DiffuseEnvSampler faces
-        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_back_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
-        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_bottom_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
-        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_front_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
-        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_left_0.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
-        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_right_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
-        gltf.images.push(new gltfImage("assets/images/papermill/diffuse/diffuse_top_0.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+        for (const side of sides)
+        {
+            const imagePath = diffusePrefix + side[0] + diffuseSuffix;
+            const image = new gltfImage(imagePath, side[1]);
+            image.mimeType = type;
+            gltf.images.push(image);
+        }
 
         // u_DiffuseEnvSampler tex
         gltf.textures.push(new gltfTexture(cubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
 
         // u_SpecularEnvSampler tex
-        AddSide("assets/images/papermill/specular/specular_back_",  gl.TEXTURE_CUBE_MAP_NEGATIVE_Z);
-        AddSide("assets/images/papermill/specular/specular_bottom_",  gl.TEXTURE_CUBE_MAP_NEGATIVE_Y);
-        AddSide("assets/images/papermill/specular/specular_front_",  gl.TEXTURE_CUBE_MAP_POSITIVE_Z);
-        AddSide("assets/images/papermill/specular/specular_left_",  gl.TEXTURE_CUBE_MAP_NEGATIVE_X);
-        AddSide("assets/images/papermill/specular/specular_right_",  gl.TEXTURE_CUBE_MAP_POSITIVE_X);
-        AddSide("assets/images/papermill/specular/specular_top_",  gl.TEXTURE_CUBE_MAP_POSITIVE_Y);
+        for (const side of sides)
+        {
+            addSide(specularPrefix + side[0] + specularSuffix, side[1]);
+        }
 
         gltf.textures.push(new gltfTexture(cubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
 

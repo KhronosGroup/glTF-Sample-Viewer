@@ -12,7 +12,8 @@ class gltfRenderer
 
         this.shaderCache = new ShaderCache("src/shaders/", [
             "primitive.vert",
-            "metallic-roughness.frag"
+            "metallic-roughness.frag",
+            "tonemapping.glsl"
         ]);
 
         let requiredWebglExtensions = [
@@ -172,19 +173,8 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        let fragDefines =  material.getDefines().concat(primitive.getDefines());
-
-        if (this.parameters.usePunctual)
-        {
-            fragDefines.push("USE_PUNCTUAL 1");
-            fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
-        }
-
-        if (this.parameters.useIBL)
-        {
-            fragDefines.push("USE_IBL 1");
-            fragDefines.push("USE_TEX_LOD 1");
-        }
+        let fragDefines = material.getDefines().concat(primitive.getDefines());
+        this.pushParameterDefines(fragDefines);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
@@ -210,6 +200,7 @@ class gltfRenderer
         this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
+        this.shader.updateUniform("u_Exposure", this.parameters.exposure);
 
         if (this.parameters.useIBL || this.parameters.usePunctual)
         {
@@ -292,6 +283,39 @@ class gltfRenderer
         for (let attrib of primitive.attributes)
         {
             gl.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
+        }
+    }
+
+    pushParameterDefines(fragDefines)
+    {
+        if (this.parameters.usePunctual)
+        {
+            fragDefines.push("USE_PUNCTUAL 1");
+            fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
+        }
+
+        if (this.parameters.useIBL)
+        {
+            fragDefines.push("USE_IBL 1");
+            fragDefines.push("USE_TEX_LOD 1");
+        }
+
+        if (this.parameters.useHdr)
+        {
+            fragDefines.push("USE_HDR 1");
+        }
+
+        switch(this.parameters.toneMap)
+        {
+            case(ToneMaps.uncharted):
+                fragDefines.push("TONEMAP_UNCHARTED");
+                break;
+            case(ToneMaps.hejlRichard):
+                fragDefines.push("TONEMAP_HEJLRICHARD");
+                break;
+            case(ToneMaps.linear):
+            default:
+                break;
         }
     }
 

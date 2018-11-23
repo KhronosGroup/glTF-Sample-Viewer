@@ -28,19 +28,24 @@ class ShaderCache
             // TODO: remove any // or /* style comments
 
             // resovle / expande sources (TODO: break include cycles)
-            for (let src in self.sources.entries()) {
-                for (let includeName of shaderFiles) {
+            for (let [key, src] of self.sources)
+            {
+                for (let includeName of shaderFiles)
+                {
                     //var pattern = RegExp(/#include</ + includeName + />/);
-                    let pattern = "#include<" + includeName + ">";
+                    let pattern = "#include <" + includeName + ">";
 
                     // only replace the first occurance
-                    src = src.replace(pattern, self.sources[includeName]);
+                    src = src.replace(pattern, self.sources.get(includeName));
 
                     // remove the others
-                    while (src.search(pattern) != -1) {
+                    while (src.search(pattern) != -1)
+                    {
                         src = src.replace(pattern, "");
                     }
                 }
+
+                self.sources.set(key, src);
             }
 
             self.loaded = true;
