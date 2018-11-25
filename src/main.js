@@ -32,12 +32,14 @@ function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined)
 
 function getWebGlContext()
 {
-    const parameters = { alpha: false, antialias: false };
-    const names = [ "webgl", "experimental-webgl" ];
+    const parameters = { alpha: false, antialias: true };
+    const type = [ "webgl", "experimental-webgl" ];
+
     let context;
+
     for (const name of names)
     {
-        context = canvas.getContext(name, parameters);
+        context = canvas.getContext(type, parameters);
         if (context)
         {
             return context;
