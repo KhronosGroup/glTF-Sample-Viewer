@@ -6,8 +6,7 @@ class gltfLight
                 innerConeAngle = 0.0,
                 outerConeAngle = Math.PI / 4.0,
                 range = -1.0, // if no range is defined in the json, this is the default the shader understands
-                name = undefined,
-                node = undefined)
+                name = undefined)
     {
         this.type = type;
         this.color = color;
@@ -16,7 +15,6 @@ class gltfLight
         this.outerConeAngle = outerConeAngle;
         this.range = range;
         this.name = name;
-        this.node = node; // non-standard
     }
 
     fromJson(jsonLight)
@@ -27,16 +25,6 @@ class gltfLight
     toUniform(gltf)
     {
         let uLight = new UniformLight();
-
-        if (this.node !== undefined)
-        {
-            let transform = gltf.nodes[this.node].worldTransform;
-            let rotation = quat.create();
-            let alongNegativeZ = vec3.fromValues(0, 0, -1);
-            mat4.getRotation(rotation, transform);
-            vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
-            mat4.getTranslation(uLight.position, transform);
-        }
 
         uLight.range = this.range;
         uLight.color = jsToGl(this.color);

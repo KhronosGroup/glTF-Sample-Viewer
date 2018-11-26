@@ -118,17 +118,38 @@ class gltfRenderer
     getVisibleLights(gltf, scene)
     {
         let lights = [];
-        for (let light of gltf.lights)
+        
+        for (let node of gltf.nodes)
         {
-            if (light.node !== undefined)
+            if (node.light !== undefined)
             {
-                if (scene.nodes.includes(light.node))
+            	if (node.light >= 0 && node.light < gltf.lights.length)
                 {
-                    lights.push(light);
+            		let light = gltf.lights[node.light];
+            		
+            		let uLight = light.toUniform(light);
+            		
+                    let transform = node.worldTransform;
+                    let rotation = quat.create();
+                    let alongNegativeZ = vec3.fromValues(0, 0, -1);
+                    mat4.getRotation(rotation, transform);
+                    vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
+                    mat4.getTranslation(uLight.position, transform);
+            		
+                    lights.push(uLight);
                 }
             }
         }
-        return lights.length > 0 ? lights : [ new gltfLight() ];
+        
+        if (lights.length == 0)
+        {
+        	let light = new gltfLight();
+        	let uLight = light.toUniform(light);
+        	
+        	return [ uLight ];
+        }
+        
+        return lights;
     }
 
     // same transform, recursive
@@ -352,13 +373,7 @@ class gltfRenderer
 
     applyLights(gltf)
     {
-        let uniformLights = [];
-        for (let light of this.visibleLights)
-        {
-            uniformLights.push(light.toUniform(gltf));
-        }
-
-        this.shader.updateUniform("u_Lights", uniformLights);
+        this.shader.updateUniform("u_Lights", this.visibleLights);
     }
 
     applyEnvironmentMap(gltf, texSlotOffset)
