@@ -233,9 +233,6 @@ float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
     float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + r * r * (1.0 - (NdotL * NdotL))));
     float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + r * r * (1.0 - (NdotV * NdotV))));
 
-    //float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
-    //float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
-
     return attenuationL * attenuationV;
 }
 
@@ -280,8 +277,8 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 pointToView)
     vec3 l = normalize(pointToLight);     // Direction from surface point to light
     vec3 h = normalize(l + v);            // Direction of the vector between l and v
 
-    float NdotL = clamp(dot(n, l), 0.001, 1.0);
-    float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
+    float NdotL = clamp(dot(n, l), 0.0, 1.0);
+    float NdotV = clamp(abs(dot(n, v)), 0.0, 1.0);
     float NdotH = clamp(dot(n, h), 0.0, 1.0);
     float LdotH = clamp(dot(l, h), 0.0, 1.0);
     float VdotH = clamp(dot(v, h), 0.0, 1.0);
@@ -300,17 +297,22 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, normal, pointToView);
 
-    // Calculate the shading terms for the microfacet specular shading model
-    vec3 F = specularReflection(materialInfo, angularInfo);
-    float G = geometricOcclusion(materialInfo, angularInfo);
-    float D = microfacetDistribution(materialInfo, angularInfo);
+    if (angularInfo.NdotL > 0.0 && angularInfo.NdotV > 0.0)
+    {
+        // Calculate the shading terms for the microfacet specular shading model
+        vec3 F = specularReflection(materialInfo, angularInfo);
+        float G = geometricOcclusion(materialInfo, angularInfo);
+        float D = microfacetDistribution(materialInfo, angularInfo);
 
-    // Calculation of analytical lighting contribution
-    vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
-    vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
+        // Calculation of analytical lighting contribution
+        vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
+        vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
 
-    // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-    return angularInfo.NdotL * (diffuseContrib + specContrib);
+        // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
+        return angularInfo.NdotL * (diffuseContrib + specContrib);
+    }
+
+    return vec3(0.0, 0.0, 0.0);
 }
 
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
