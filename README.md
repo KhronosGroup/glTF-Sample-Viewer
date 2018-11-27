@@ -81,13 +81,11 @@ Requirements
   * [Electron](https://electronjs.org/)
 
 Configure environment
-- ``npm install``
+- ``npm install`` (also installs electron)
 
 Run
--   ``npm run start-offscreen``
+- ``npm run start-offscreen -- -- -h`` for a list of available options
 
-
-TODO
 
 **Visual Studio**
 

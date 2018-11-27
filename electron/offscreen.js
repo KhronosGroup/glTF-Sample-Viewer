@@ -73,7 +73,7 @@ parser.addArgument(
 parser.addArgument(
     '--yfov',
     {
-        defaultValue: 60.0,
+        defaultValue: 45.0,
         type: 'float',
         help: "The vertical field of view in degrees."
     }
@@ -92,6 +92,12 @@ parser.addArgument(
         defaultValue: 1.0,
         type: 'float',
         help: "The size of the ortographic camera in y direction."
+    }
+)
+parser.addArgument(
+    'gltf_path',
+    {
+        help: "The path of the glTF file."
     }
 )
 args = parser.parseArgs(args);

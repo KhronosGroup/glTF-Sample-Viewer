@@ -51,6 +51,7 @@
 <script>
     // In renderer process (web page).
     const {ipcRenderer} = require('electron');
+    var path = require('path');
 
     let remote = require('electron').remote,
       args = remote.getGlobal('sharedObject').args;
@@ -58,7 +59,10 @@
     function startRenderer()
     {
         let viewer = gltf_rv('canvas', 'assets/models/2.0/model-index.json', true, rendererReady);
-        viewer.loadFromPath('BoomBox.gltf', 'assets/models/2.0/BoomBox/glTF/');
+
+        var gltfPath = path.parse(args.gltf_path)
+
+        viewer.loadFromPath(gltfPath.dir, gltfPath.base);
 
         let yfov_rad = args.yfov * Math.PI / 180.0
         viewer.setCamera(args.eye_position, args.target_position, args.up, args.projection, args.znear, args.zfar, yfov_rad, args.xmag, args.ymag);
