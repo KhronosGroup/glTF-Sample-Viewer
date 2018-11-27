@@ -32,7 +32,7 @@ Features
 - [x] Gamma correction
 - [x] HDR environment maps
 - [X] Selection of tonemapping algorithms for IBL
-- [ ] Support for desktop/headless rendering
+- [x] Support for headless rendering
 - [ ] Support for Visual Studio Code integration
 - [x] Debug GUI for inspecting BRDF inputs
 
@@ -74,18 +74,22 @@ For local usage and debugging, please follow these instructions:
 
 For offline rendering usage, please follow these instructions:
 
-**Offline**
+**Offline / Headless Rendering**
 
 Requirements
   * [NodeJS](https://nodejs.org)
-  * [Electron](https://electronjs.org/)
+  * [Electron](https://electronjs.org/) (Installed automatically)
 
 Configure environment
-- ``npm install`` (also installs electron)
+- ``npm install`` (also installs Electron)
 
 Run
 - ``npm run start-offscreen -- -- -h`` for a list of available options
 
+Example
+- ``npm run start-offscreen -- -- assets\models\2.0\FlightHelmet\glTF\FlightHelmet.gltf``
+
+After execution, the screenshot is stored as ``output.png`` on the file system.
 
 **Visual Studio**
 
