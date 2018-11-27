@@ -4,9 +4,7 @@
  * @desc load/save Radiance .HDR, RGBE in PNG and RGB9_E5 in PNG for HTML5, webGL, webGL2.
  */
 (function (name, context, definition) {
-  if (typeof module != 'undefined' && module.exports) module.exports = definition();
-  else if (typeof define == 'function' && define.amd) define(name, definition);
-  else context[name] = definition();
+  context[name] = definition();
 }('HDRImage', this, function () {
   /**
    * HDRImage - wrapper that exposes default Image like interface for HDR imgaes. (till extending HTMLCanvasElement actually works ..)
