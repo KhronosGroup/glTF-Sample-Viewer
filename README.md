@@ -75,8 +75,17 @@ For local usage and debugging, please follow these instructions:
 For offline rendering usage, please follow these instructions:
 
 **Offline**
-* Requirements
+
+Requirements
+  * [NodeJS](https://nodejs.org)
   * [Electron](https://electronjs.org/)
+
+Configure environment
+- ``npm install``
+
+Run
+-   ``npm run start-offscreen``
+
 
 TODO
 
