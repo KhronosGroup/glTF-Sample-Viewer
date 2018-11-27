@@ -62,7 +62,7 @@
 
         var gltfPath = path.parse(args.gltf_path)
 
-        viewer.loadFromPath(gltfPath.dir, gltfPath.base);
+        viewer.loadFromPath("/" + gltfPath.base, gltfPath.dir);
 
         let yfov_rad = args.yfov * Math.PI / 180.0
         viewer.setCamera(args.eye_position, args.target_position, args.up, args.projection, args.znear, args.zfar, yfov_rad, args.xmag, args.ymag);
