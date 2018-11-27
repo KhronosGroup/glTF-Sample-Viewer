@@ -57,7 +57,7 @@
     function startRenderer()
     {
         let viewer = gltf_rv('canvas', 'assets/models/2.0/model-index.json', true, rendererReady);
-        viewer.load('assets/models/2.0/BoomBox/glTF/BoomBox.gltf');
+        viewer.loadFromPath('BoomBox.gltf', 'assets/models/2.0/BoomBox/glTF/');
 
         let yfov_rad = args.yfov * Math.PI / 180.0
         viewer.setCamera(args.eye_position, args.target_position, args.up, args.projection, args.znear, args.zfar, yfov_rad, args.xmag, args.ymag);

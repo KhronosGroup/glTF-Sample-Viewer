@@ -27,7 +27,7 @@
     "open": "0.0.5"
   },
   "devDependencies": {
-    "electron": "^3.0.2",
+    "electron": "^3.0.10",
     "electron-packager": "^12.2.0"
   },
   "bugs": {
