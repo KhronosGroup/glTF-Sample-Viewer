@@ -33,7 +33,7 @@ Features
 - [x] HDR environment maps
 - [X] Selection of tonemapping algorithms for IBL
 - [x] Support for headless rendering
-- [ ] Support for Visual Studio Code integration
+- [x] Support for Visual Studio Code integration
 - [x] Debug GUI for inspecting BRDF inputs
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
@@ -91,11 +91,11 @@ Example
 
 After execution, the screenshot is stored as ``output.png`` on the file system.
 
-**Visual Studio**
+**VS Code **
 
-For Visual Studio integration, please follow these instructions:
+Modified VSCode gltf-vscode plugin:
 
-TODO
+[gltf-vscode](https://github.com/ux3d/gltf-vscode/tree/features/khronosRV-setup)
 
 Physically-Based Materials in glTF 2.0
 --------------------------------------
