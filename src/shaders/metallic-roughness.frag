@@ -172,7 +172,7 @@ vec3 getNormal()
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 {
     vec3 reflection = -normalize(reflect(v, n));
-    float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
+    float NdotV = clamp(abs(dot(n, v)), 0.0, 1.0);
     float mipCount = 9.0; // resolution of 512x512
     float lod = (materialInfo.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3

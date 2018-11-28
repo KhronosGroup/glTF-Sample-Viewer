@@ -1,10 +1,11 @@
 class gltfViewer
 {
-    constructor(canvas, modelIndex, headless = false, onRendererReady = undefined)
+    constructor(canvas, modelIndex, headless = false, onRendererReady = undefined, basePath = "", gltfFileName = "", gltfRootPath = "")
     {
         this.canvas = canvas;
         this.headless = headless;
         this.onRendererReady = onRendererReady;
+		this.basePath = basePath;
 
         this.defaultModel = "BoomBox/glTF/BoomBox.gltf";
 
@@ -37,7 +38,7 @@ class gltfViewer
 
         if (this.headless == false)
         {
-            this.initUserInterface(modelIndex);
+            this.initUserInterface(modelIndex, gltfFileName, gltfRootPath);
         }
         else
         {
@@ -47,7 +48,7 @@ class gltfViewer
         this.userCamera = new UserCamera();
 
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters);
+        this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
 
         this.render(); // Starts a rendering loop.
     }
@@ -135,7 +136,7 @@ class gltfViewer
         gltf.fromJson(json);
         this.addEnvironmentMap(gltf, "papermill", this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
         let assetPromises = gltfLoader.load(gltf, buffers);
-
+		
         let self = this;
         Promise.all(assetPromises).then(function()
         {
@@ -176,7 +177,7 @@ class gltfViewer
         let self = this;
         function renderFrame(elapsedTime)
         {
-            if (!self.headless)
+			if (!self.headless && self.stats != undefined)
             {
                 self.stats.begin();
             }
@@ -231,7 +232,7 @@ class gltfViewer
                 }
             }
 
-            if (!self.headless)
+            if (!self.headless && self.stats != undefined)
             {
                 self.stats.end();
             }
@@ -245,194 +246,245 @@ class gltfViewer
 
     onMouseDown(event)
     {
-        this.mouseDown = true;
-        this.lastMouseX = event.clientX;
-        this.lastMouseY = event.clientY;
-        canvas.style.cursor = "none";
+		if (this.currentlyRendering)
+		{
+			this.mouseDown = true;
+			this.lastMouseX = event.clientX;
+			this.lastMouseY = event.clientY;
+			canvas.style.cursor = "none";
+		}
     }
 
     onMouseUp(event)
     {
-        this.mouseDown = false;
-        canvas.style.cursor = "grab";
+		if (this.currentlyRendering)
+		{
+			this.mouseDown = false;
+			canvas.style.cursor = "grab";
+		}
     }
 
     onMouseWheel(event)
     {
-        event.preventDefault();
-        this.userCamera.zoomIn(event.deltaY);
-        canvas.style.cursor = "none";
+ 		if (this.currentlyRendering)
+		{
+			event.preventDefault();
+			this.userCamera.zoomIn(event.deltaY);
+			canvas.style.cursor = "none";
+		}
     }
 
     onMouseMove(event)
     {
-        if (!this.mouseDown)
-        {
-            canvas.style.cursor = "grab";
-            return;
-        }
+		if (this.currentlyRendering)
+		{
+			if (!this.mouseDown)
+			{
+				canvas.style.cursor = "grab";
+				return;
+			}
 
-        const newX = event.clientX;
-        const newY = event.clientY;
+			const newX = event.clientX;
+			const newY = event.clientY;
 
-        const deltaX = newX - this.lastMouseX;
-        const deltaY = newY - this.lastMouseY;
+			const deltaX = newX - this.lastMouseX;
+			const deltaY = newY - this.lastMouseY;
 
-        this.lastMouseX = newX;
-        this.lastMouseY = newY;
+			this.lastMouseX = newX;
+			this.lastMouseY = newY;
 
-        this.userCamera.rotate(deltaX, deltaY);
+			this.userCamera.rotate(deltaX, deltaY);
+		}
     }
 
     onTouchStart(event)
     {
-        this.touchDown = true;
-        this.lastTouchX = event.touches[0].clientX;
-        this.lastTouchY = event.touches[0].clientY;
+		if (this.currentlyRendering)
+		{
+			this.touchDown = true;
+			this.lastTouchX = event.touches[0].clientX;
+			this.lastTouchY = event.touches[0].clientY;
+		}
     }
 
     onTouchEnd(event)
     {
-        this.touchStart = false;
+		if (this.currentlyRendering)
+		{
+			this.touchStart = false;
+		}
     }
 
     onTouchMove(event)
     {
-        if (!touchDown)
-        {
-            return;
-        }
+		if (this.currentlyRendering)
+		{
+			if (!touchDown)
+			{
+				return;
+			}
 
-        const newX = event.touches[0].clientX;
-        const newY = event.touches[0].clientY;
+			const newX = event.touches[0].clientX;
+			const newY = event.touches[0].clientY;
 
-        const deltaX = newX - this.lastTouchX;
-        const deltaY = newY - this.lastTouchY;
+			const deltaX = newX - this.lastTouchX;
+			const deltaY = newY - this.lastTouchY;
 
-        this.lastTouchX = newX;
-        this.lastTouchY = newY;
+			this.lastTouchX = newX;
+			this.lastTouchY = newY;
 
-        this.userCamera.rotate(deltaX, deltaY);
+			this.userCamera.rotate(deltaX, deltaY);
+		}
     }
 
     // for some reason, the drop event does not work without this
     dragOverHandler(event)
     {
-        event.preventDefault();
+		if (this.currentlyRendering)
+		{
+			event.preventDefault();
+		}
     }
 
     dropEventHandler(event)
     {
-        event.preventDefault();
+		if (this.currentlyRendering)
+		{
+			event.preventDefault();
 
-        let additionalFiles = [];
-        let mainFile;
-        for (const file of event.dataTransfer.files)
-        {
-            if (getIsGltf(file.name) || getIsGlb(file.name))
-            {
-                mainFile = file;
-            }
-            else
-            {
-                additionalFiles.push(file);
-            }
-        }
+			let additionalFiles = [];
+			let mainFile;
+			for (const file of event.dataTransfer.files)
+			{
+				if (getIsGltf(file.name) || getIsGlb(file.name))
+				{
+					mainFile = file;
+				}
+				else
+				{
+					additionalFiles.push(file);
+				}
+			}
 
-        if (mainFile === undefined)
-        {
-            console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
-            return;
-        }
+			if (mainFile === undefined)
+			{
+				console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
+				return;
+			}
 
-        this.loadFromFileObject(mainFile, additionalFiles);
+			this.loadFromFileObject(mainFile, additionalFiles);
+		}
     }
 
-    initUserInterface(modelIndex)
+    initUserInterface(modelIndex, gltfFileName, gltfRootPath)
     {
-        this.gui = new dat.GUI({ width: 300 });
+		if (gltfFileName == "")
+		{
+			this.gui = new dat.GUI({ width: 300 });
+		}
 
-        // Find out the root path of the models that are going to be loaded.
-        let path = modelIndex.substring(0, modelIndex.lastIndexOf("/") + 1);
-        let viewerFolder = this.gui.addFolder("GLTF Viewer");
-        let self = this;
+		modelIndex = this.basePath + modelIndex;
+		
+		// Find out the root path of the models that are going to be loaded.
+		let path = modelIndex.substring(0, modelIndex.lastIndexOf("/") + 1);
 
-        function initModelsDropdown(basePath)
-        {
-            if (self.models.includes(self.defaultModel))
-            {
-                self.guiParameters.model = self.defaultModel;
-            }
-            else
-            {
-                self.guiParameters.model = self.models[0];
-            }
+		let viewerFolder = undefined;
+		if (gltfFileName == "")
+		{
+			viewerFolder = this.gui.addFolder("glTF");
+		}
 
-            viewerFolder.add(self.guiParameters, "model", self.models).onChange(function(model) {
-                self.loadFromPath(model, basePath)
-            }).name("Model");
+		let self = this;
 
-            self.loadFromPath(self.guiParameters.model, basePath);
+		function initModelsDropdown(basePath)
+		{
+			if (self.models.includes(self.defaultModel))
+			{
+				self.guiParameters.model = self.defaultModel;
+			}
+			else
+			{
+				self.guiParameters.model = self.models[0];
+			}
 
-            let sceneFolder = viewerFolder.addFolder("Scene Index");
-            sceneFolder.add(self.guiParameters, "prevScene").name("←");
-            sceneFolder.add(self.guiParameters, "nextScene").name("→");
+			if (gltfFileName == "")
+			{
+				viewerFolder.add(self.guiParameters, "model", self.models).onChange(function(model) {
+					if (gltfFileName == "")
+					{
+						self.loadFromPath(model, basePath)
+					}
+				}).name("Model");
 
-            viewerFolder.open();
-        };
+				self.loadFromPath(self.guiParameters.model, basePath);
 
-        axios.get(modelIndex).then(function(response)
-        {
-            let jsonIndex = response.data;
+				let sceneFolder = viewerFolder.addFolder("Scene Index");
+				sceneFolder.add(self.guiParameters, "prevScene").name("←");
+				sceneFolder.add(self.guiParameters, "nextScene").name("→");
 
-            if (jsonIndex === undefined)
-            {
-                // TODO: remove this later, fallback if no submodule :-)
-                self.models = self.parseModelIndex(jsonIndex, "models/");
-                initModelsDropdown("models/");
-            }
-            else
-            {
-                self.models = self.parseModelIndex(jsonIndex, path);
-                initModelsDropdown(path);
-            }
+				viewerFolder.open();
+			}
+			else
+			{
+				self.loadFromPath(gltfFileName, gltfRootPath);
+			}
+		};
 
-        }).catch(function(error) {
-            console.warn("glTF: failed to load model-index from assets!");
-            axios.get("models/model-index.json").then(function(response) {
-                let jsonIndex = response.data;
-                // TODO: remove this later, fallback if no submodule :-)
-                self.models = self.parseModelIndex(jsonIndex, "models/");
-                initModelsDropdown("models/");
-            }).catch(function(error) {
-                console.warn("Failed to load model-index fallback too!");
-            });
-        });
+		axios.get(modelIndex).then(function(response)
+		{
+			let jsonIndex = response.data;
 
-        const lightingFolder = this.gui.addFolder("Lighting");
-        lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
-        lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
-        lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
-        lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
-        lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
-        lightingFolder.addColor(this.renderingParameters, "clearColor", [51, 51, 51]).name("Background Color");
+			if (jsonIndex === undefined)
+			{
+				// TODO: remove this later, fallback if no submodule :-)
+				self.models = self.parseModelIndex(jsonIndex, "models/");
+				initModelsDropdown("models/");
+			}
+			else
+			{
+				self.models = self.parseModelIndex(jsonIndex, path);
+				initModelsDropdown(path);
+			}
 
-        const debugFolder = this.gui.addFolder("Debug");
-        debugFolder.add(this.renderingParameters, "debugOutput", Object.values(DebugOutput)).name("Debug Output");
+		}).catch(function(error) {
+			console.warn("glTF: failed to load model-index from assets!");
+			axios.get("models/model-index.json").then(function(response) {
+				let jsonIndex = response.data;
+				// TODO: remove this later, fallback if no submodule :-)
+				self.models = self.parseModelIndex(jsonIndex, "models/");
+				initModelsDropdown("models/");
+			}).catch(function(error) {
+				console.warn("Failed to load model-index fallback too!");
+			});
+		});
 
-        let performanceFolder = this.gui.addFolder("Performance");
+		if (gltfFileName == "")
+		{
+			const lightingFolder = this.gui.addFolder("Lighting");
+			lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+			lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
+			lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
+			lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
+			lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
+			lightingFolder.addColor(this.renderingParameters, "clearColor", [51, 51, 51]).name("Background Color");
 
-        this.stats = new Stats();
+			const debugFolder = this.gui.addFolder("Debug");
+			debugFolder.add(this.renderingParameters, "debugOutput", Object.values(DebugOutput)).name("Debug Output");
 
-        this.stats.domElement.height = "48px";
-        [].forEach.call(this.stats.domElement.children, (child) => (child.style.display = ''));
-        this.stats.domElement.style.position = "static";
+			let performanceFolder = this.gui.addFolder("Performance");
 
-        let statsList = document.createElement("li");
-        statsList.appendChild(this.stats.domElement);
-        statsList.classList.add("gui-stats");
+			this.stats = new Stats();
 
-        performanceFolder.__ul.appendChild(statsList);
+			this.stats.domElement.height = "48px";
+			[].forEach.call(this.stats.domElement.children, (child) => (child.style.display = ''));
+			this.stats.domElement.style.position = "static";
+
+			let statsList = document.createElement("li");
+			statsList.appendChild(this.stats.domElement);
+			statsList.classList.add("gui-stats");
+
+			performanceFolder.__ul.appendChild(statsList);
+		}
     }
 
     parseModelIndex(jsonIndex, path = "")
@@ -475,7 +527,7 @@ class gltfViewer
                 return;
         }
 
-        const imagesFolder = "assets/images/" + subFolder + "/";
+        const imagesFolder = this.basePath + "assets/images/" + subFolder + "/";
         const diffusePrefix = imagesFolder + "diffuse/diffuse_";
         const diffuseSuffix = "_0" + extension;
         const specularPrefix = imagesFolder + "specular/specular_";
@@ -532,7 +584,7 @@ class gltfViewer
 
         gltf.textures.push(new gltfTexture(cubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
 
-        gltf.images.push(new gltfImage("assets/images/brdfLUT.png", gl.TEXTURE_2D));
+        gltf.images.push(new gltfImage(this.basePath + "assets/images/brdfLUT.png", gl.TEXTURE_2D));
 
         // u_brdfLUT tex
         gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], gl.TEXTURE_2D));

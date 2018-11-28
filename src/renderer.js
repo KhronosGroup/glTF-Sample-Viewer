@@ -1,16 +1,17 @@
 class gltfRenderer
 {
-    constructor(canvas, defaultCamera, parameters)
+    constructor(canvas, defaultCamera, parameters, basePath)
     {
         this.canvas = canvas;
         this.defaultCamera = defaultCamera;
         this.parameters = parameters;
+		this.basePath = basePath;
         this.shader = undefined; // current shader
 
         this.currentWidth  = 0;
         this.currentHeight = 0;
 
-        this.shaderCache = new ShaderCache("src/shaders/", [
+        this.shaderCache = new ShaderCache(basePath + "src/shaders/", [
             "primitive.vert",
             "metallic-roughness.frag",
             "tonemapping.glsl",
