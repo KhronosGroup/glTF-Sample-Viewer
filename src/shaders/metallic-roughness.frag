@@ -111,7 +111,7 @@ struct MaterialInfo
 };
 
 const float M_PI = 3.141592653589793;
-const float c_MinRoughness = 0.04;
+const float c_MinReflectance = 0.04;
 
 vec4 getVertexColor()
 {
@@ -255,15 +255,15 @@ float getPerceivedBrightness(vec3 vector)
 float solveMetallic(vec3 diffuse, vec3 specular, float oneMinusSpecularStrength) {
     float specularBrightness = getPerceivedBrightness(specular);
 
-    if (specularBrightness < c_MinRoughness) {
+    if (specularBrightness < c_MinReflectance) {
         return 0.0;
     }
 
     float diffuseBrightness = getPerceivedBrightness(diffuse);
 
-    float a = c_MinRoughness;
-    float b = diffuseBrightness * oneMinusSpecularStrength / (1.0 - c_MinRoughness) + specularBrightness - 2.0 * c_MinRoughness;
-    float c = c_MinRoughness - specularBrightness;
+    float a = c_MinReflectance;
+    float b = diffuseBrightness * oneMinusSpecularStrength / (1.0 - c_MinReflectance) + specularBrightness - 2.0 * c_MinReflectance;
+    float c = c_MinReflectance - specularBrightness;
     float D = b * b - 4.0 * a * c;
 
     return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
@@ -449,7 +449,7 @@ void main()
     return;
 #endif
 
-    perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
+    perceptualRoughness = clamp(perceptualRoughness, 0.0, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
 
     // Roughness is authored as perceptual roughness; as is convention,
