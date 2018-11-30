@@ -91,7 +91,7 @@ Example
 
 After execution, the screenshot is stored as ``output.png`` on the file system.
 
-**VS Code **
+**VS Code**
 
 Modified VSCode gltf-vscode plugin:
 
