@@ -187,8 +187,8 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 #endif
 
 #ifdef USE_HDR
-    vec3 diffuseLight = diffuseSample.rgb * pow(2.0, diffuseSample.a * 255.0 - 128.0);
-    vec3 specularLight = specularSample.rgb * pow(2.0, specularSample.a * 255.0 - 128.0);
+    vec3 diffuseLight = diffuseSample.rgb;
+    vec3 specularLight = specularSample.rgb;
 #else
     vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
     vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;

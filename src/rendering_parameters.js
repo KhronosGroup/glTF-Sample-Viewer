@@ -37,5 +37,13 @@ class gltfRenderingParameters
         this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
+		
+		let OES_texture_float = gl.getExtension("OES_texture_float");
+		let OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
+		if ((!OES_texture_float || !OES_texture_float_linear) && this.useHdr)
+		{
+			this.useHdr = false;
+			console.warn("Forcing to LDR rendering.");
+		}
     }
 };

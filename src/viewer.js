@@ -542,9 +542,12 @@ class gltfViewer
             [ "top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y ]
         ];
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "CubeMapSampler"));
-        const cubeSamplerIdx = gltf.samplers.length - 1;
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
+        const diffuseCubeSamplerIdx = gltf.samplers.length - 1;
 
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
+        const specularCubeSamplerIdx = gltf.samplers.length - 1;
+		
         gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "LUTSampler"));
         const lutSamplerIdx = gltf.samplers.length - 1;
 
@@ -574,7 +577,7 @@ class gltfViewer
         }
 
         // u_DiffuseEnvSampler tex
-        gltf.textures.push(new gltfTexture(cubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+        gltf.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
 
         // u_SpecularEnvSampler tex
         for (const side of sides)
@@ -582,7 +585,7 @@ class gltfViewer
             addSide(specularPrefix + side[0] + specularSuffix, side[1]);
         }
 
-        gltf.textures.push(new gltfTexture(cubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
+        gltf.textures.push(new gltfTexture(specularCubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
 
         gltf.images.push(new gltfImage(this.basePath + "assets/images/brdfLUT.png", gl.TEXTURE_2D));
 

@@ -22,7 +22,9 @@ class gltfRenderer
             "EXT_shader_texture_lod",
             "OES_standard_derivatives",
             "OES_element_index_uint",
-            "EXT_texture_filter_anisotropic"
+            "EXT_texture_filter_anisotropic",
+			"OES_texture_float",
+			"OES_texture_float_linear"
         ];
 
         LoadWebGLExtensions(requiredWebglExtensions);
