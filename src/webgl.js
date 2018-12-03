@@ -101,26 +101,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
             if (image.image.dataRGBE !== undefined)
             {
-                const hdrImage = new Float32Array(image.image.height * image.image.width * 4);
-
-                for (let y = 0; y < image.image.height; y++)
-                {
-                    for (let x = 0; x < image.image.width; x++)
-                    {
-                        const factor = Math.pow(2.0, image.image.dataRGBE[y * image.image.height * 4 + x * 4 + 3] - 128.0);
-
-                        for (let i = 0; i < 3; i++)
-                        {
-                            const value = image.image.dataRGBE[y * image.image.height * 4 + x * 4 + i] / 255.0 * factor;
-
-                            hdrImage[y * image.image.height * 4 + x * 4 + i] = value;
-                        }
-
-                        hdrImage[y * image.image.height * 4 + x * 4 + 3] = 1.0;
-                    }
-                }
-                gl.texImage2D(image.type, image.miplevel, gl.RGBA, image.image.width, image.image.height, 0, gl.RGBA, gl.FLOAT, hdrImage);
-
+                gl.texImage2D(image.type, image.miplevel, gl.RGB, image.image.width, image.image.height, 0, gl.RGB, gl.FLOAT, image.image.dataFloat);
                 generateMips = false;
             }
             else
