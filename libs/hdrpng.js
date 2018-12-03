@@ -163,36 +163,55 @@
       var img=new Uint8Array(width*height*4),ipos=0;
     // Read all scanlines
       for (var j=0; j<height; j++) {
-        var rgbe=d8.slice(pos,pos+=4),scanline=[];
-        const isNewRLE = ((rgbe[0] == 2) && (rgbe[1] == 2) && !(rgbe[2] & 0x80));
-        const isOldRLE = (rgbe[0] == 1 && rgbe[1] == 1 && rgbe[2] == 1);
-        const isRaw = !isNewRLE && !isOldRLE;
+        var scanline = [];
 
-        if (isOldRLE)
+        var rgbe = d8.slice(pos, pos+=4);
+        const isNewRLE = (rgbe[0] == 2 && rgbe[1] == 2 && rgbe[2] == ((width >> 8) & 0xFF) && rgbe[3] == (width & 0xFF));
+
+        if (isNewRLE && (width >= 8) && (width < 32768))
         {
-            console.error("%s: old run-length encoding is not supported", url);
-            return this.onerror();
+          for (var i=0; i < 4; i++)
+          {
+              var ptr = i*width, ptr_end = (i+1)*width, buf, count;
+              while (ptr<ptr_end)
+              {
+                  buf = d8.slice(pos, pos+=2);
+                  if (buf[0] > 128)
+                  {
+                    count = buf[0]-128;
+                    while(count-- > 0) scanline[ptr++] = buf[1]; 
+                  }
+                  else 
+                  {
+                    count = buf[0]-1;
+                    scanline[ptr++]=buf[1];
+                    while(count-- > 0) scanline[ptr++] = d8[pos++];
+                  }
+              }
+          }
+
+          for (var i=0;i<width;i++)
+          {
+            img[ipos++] = scanline[i+0*width];
+            img[ipos++] = scanline[i+1*width];
+            img[ipos++] = scanline[i+2*width];
+            img[ipos++] = scanline[i+3*width];
+          }
         }
-
-        if (isRaw)
+        else
         {
+          pos -= 4;
+
+          for (var i = 0; i < width; i++)
+          {
+            rgbe = d8.slice(pos, pos += 4);
+
             img[ipos++] = rgbe[0];
             img[ipos++] = rgbe[1];
             img[ipos++] = rgbe[2];
             img[ipos++] = rgbe[3];
-            continue;
+          }
         }
-
-        if ((rgbe[2]<<8)+rgbe[3]!=width) return console.error('%s: HDR line mismatch', url),this.onerror();
-        for (var i=0;i<4;i++) {
-            var ptr=i*width,ptr_end=(i+1)*width,buf,count;
-            while (ptr<ptr_end){
-                buf = d8.slice(pos,pos+=2);
-                if (buf[0] > 128) { count = buf[0]-128; while(count-- > 0) scanline[ptr++] = buf[1]; }
-                             else { count = buf[0]-1; scanline[ptr++]=buf[1]; while(count-->0) scanline[ptr++]=d8[pos++]; }
-            }
-        }
-        for (var i=0;i<width;i++) { img[ipos++]=scanline[i]; img[ipos++]=scanline[i+width]; img[ipos++]=scanline[i+2*width]; img[ipos++]=scanline[i+3*width]; }
       }
       completion&&completion(img,width,height);
     }
