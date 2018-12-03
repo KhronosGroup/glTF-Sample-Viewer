@@ -191,10 +191,11 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     float NdotV = clamp(dot(n, v), 0.0, 1.0);
 
     float lod = clamp(materialInfo.perceptualRoughness * mipCount, 0.0, mipCount);
-    vec3 reflection = -normalize(reflect(v, n));
+    vec3 reflection = normalize(reflect(-v, n));
 
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec2 brdf = texture2D(u_brdfLUT, vec2(NdotV, materialInfo.perceptualRoughness)).rg;
+    vec2 brdf = texture2D(u_brdfLUT, brdfSamplePoint).rg;
 
     vec4 diffuseSample = textureCube(u_DiffuseEnvSampler, n);
 #ifdef USE_TEX_LOD
