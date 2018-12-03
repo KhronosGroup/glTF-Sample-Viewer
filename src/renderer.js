@@ -5,7 +5,7 @@ class gltfRenderer
         this.canvas = canvas;
         this.defaultCamera = defaultCamera;
         this.parameters = parameters;
-		this.basePath = basePath;
+        this.basePath = basePath;
         this.shader = undefined; // current shader
 
         this.currentWidth  = 0;
@@ -23,8 +23,8 @@ class gltfRenderer
             "OES_standard_derivatives",
             "OES_element_index_uint",
             "EXT_texture_filter_anisotropic",
-			"OES_texture_float",
-			"OES_texture_float_linear"
+            "OES_texture_float",
+            "OES_texture_float_linear"
         ];
 
         LoadWebGLExtensions(requiredWebglExtensions);

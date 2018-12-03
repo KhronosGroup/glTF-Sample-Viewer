@@ -9,10 +9,10 @@ class gltfImage
         this.bufferView = bufferView;
         this.mimeType = mimeType;
         this.image = image; // javascript image
-		if (this.image != undefined)
-		{
-			this.image.crossOrigin = "";
-		}
+        if (this.image !== undefined)
+        {
+            this.image.crossOrigin = "";
+        }
         this.name = name;
         this.type = type; // nonstandard
         this.miplevel = miplevel; // nonstandard
@@ -37,7 +37,7 @@ class gltfImage
         }
 
         this.image = this.mimeType === ImageType_Hdr ? new HDRImage() : new Image();
-		this.image.crossOrigin = "";
+        this.image.crossOrigin = "";
         const self = this;
         const promise = new Promise(function(resolve, reject)
         {
