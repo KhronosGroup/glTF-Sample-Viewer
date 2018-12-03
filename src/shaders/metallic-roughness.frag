@@ -14,6 +14,11 @@
 #extension GL_EXT_shader_texture_lod: enable
 #extension GL_OES_standard_derivatives : enable
 
+#ifdef USE_HDR
+#extension GL_OES_texture_float : enable
+#extension GL_OES_texture_float_linear : enable
+#endif
+
 precision highp float;
 
 #include <tonemapping.glsl>

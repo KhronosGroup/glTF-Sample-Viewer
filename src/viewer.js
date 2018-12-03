@@ -466,7 +466,7 @@ class gltfViewer
 			lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
 			lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
 			lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
-			lightingFolder.addColor(this.renderingParameters, "clearColor", [51, 51, 51]).name("Background Color");
+			lightingFolder.addColor(this.renderingParameters, "clearColor", [50, 50, 50]).name("Background Color");
 
 			const debugFolder = this.gui.addFolder("Debug");
 			debugFolder.add(this.renderingParameters, "debugOutput", Object.values(DebugOutput)).name("Debug Output");
@@ -534,12 +534,12 @@ class gltfViewer
         const specularSuffix = "_";
         const sides =
         [
-            [ "back", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z ],
+            [ "right", gl.TEXTURE_CUBE_MAP_POSITIVE_X ],
+            [ "left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X ],
+            [ "top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y ],
             [ "bottom", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y ],
             [ "front", gl.TEXTURE_CUBE_MAP_POSITIVE_Z ],
-            [ "left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X ],
-            [ "right", gl.TEXTURE_CUBE_MAP_POSITIVE_X ],
-            [ "top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y ]
+            [ "back", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z ]
         ];
 
         gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
