@@ -19,6 +19,6 @@
     "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
-    "javascript.format.placeOpenBraceOnNewLineForFunctions": false,
-    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": false
+    "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true
 }
