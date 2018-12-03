@@ -1,14 +1,17 @@
 uniform float u_Exposure;
 uniform float u_Gamma;
 
+// Gamma Correction in Computer Graphics
+// see https://www.teamten.com/lawrence/graphics/gamma/
 vec3 gammaCorrection(vec3 color)
 {
     return pow(color, vec3(1.0 / u_Gamma));
 }
 
+// sRGB to linear approximation
+// see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
-    // FIXME: this is the "fast" sRGB approximation.
     return vec4(pow(srgbIn.xyz, vec3(u_Gamma)), srgbIn.w);
 }
 
@@ -41,11 +44,6 @@ vec3 toneMapHejlRichard(vec3 color)
     return (color*(6.2*color+.5))/(color*(6.2*color+1.7)+0.06);
 }
 
-// float luminance(vec3 color)
-// {
-//     return dot(color, vec3(0.2126, 0.7152, 0.0722));
-// }
-
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
@@ -58,6 +56,5 @@ vec3 toneMap(vec3 color)
     return toneMapHejlRichard(color);
 #endif
 
-    // fallback: linear tone map
     return gammaCorrection(color);
 }

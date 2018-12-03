@@ -19,6 +19,9 @@ precision highp float;
 #include <tonemapping.glsl>
 #include <textures.glsl>
 
+// KHR_lights_punctual extension.
+// see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
+
 struct Light
 {
     vec3 direction;
@@ -32,6 +35,7 @@ struct Light
 
     float outerConeCos;
     int type;
+
     vec2 padding;
 };
 
@@ -43,34 +47,31 @@ const int LightType_Spot = 2;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
+//
+//
+
+uniform float u_MetallicFactor;
+uniform float u_RoughnessFactor;
+uniform vec4 u_BaseColorFactor;
+
 #ifdef MATERIAL_SPECULARGLOSSINESS
 uniform vec3 u_SpecularFactor;
 uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 #endif
 
-uniform float u_MetallicFactor;
-uniform float u_RoughnessFactor;
-uniform vec4 u_BaseColorFactor;
 
-uniform vec3 u_Camera;
 uniform float u_AlphaCutoff;
 
+uniform vec3 u_Camera;
+
 // debugging flags used for shader output of intermediate PBR variables
-uniform vec4
-;
-uniform vec4 u_ScaleFGDSpec;
 uniform vec4 u_ScaleIBLAmbient;
 
-// inputs
-varying vec3 v_Position;
+//
+//
 
-#ifdef HAS_VERTEX_COLOR_VEC3
-varying vec3 v_Color;
-#endif
-#ifdef HAS_VERTEX_COLOR_VEC4
-varying vec4 v_Color;
-#endif
+varying vec3 v_Position;
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
@@ -79,6 +80,16 @@ varying mat3 v_TBN;
 varying vec3 v_Normal;
 #endif
 #endif
+
+#ifdef HAS_VERTEX_COLOR_VEC3
+varying vec3 v_Color;
+#endif
+#ifdef HAS_VERTEX_COLOR_VEC4
+varying vec4 v_Color;
+#endif
+
+//
+//
 
 // Encapsulate the various inputs used by the various functions in the shading equation
 // We store values in this struct to simplify the integration of alternative implementations
@@ -92,6 +103,7 @@ struct AngularInfo
     float LdotH;                  // cos angle between light direction and half vector
 
     float VdotH;                  // cos angle between view direction and half vector
+
     vec3 padding;
 };
 
@@ -107,6 +119,7 @@ struct MaterialInfo
     vec3 diffuseColor;            // color contribution from diffuse lighting
 
     vec3 specularColor;           // color contribution from specular lighting
+
     float padding;
 };
 
@@ -176,7 +189,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     float mipCount = 9.0; // resolution of 512x512
     float lod = (materialInfo.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec3 brdf = SRGBtoLINEAR(texture2D(u_brdfLUT, vec2(NdotV, 1.0 - materialInfo.perceptualRoughness))).rgb;
+    vec2 brdf = texture2D(u_brdfLUT, vec2(NdotV, 1.0 - materialInfo.perceptualRoughness)).rg;
 
     vec4 diffuseSample = textureCube(u_DiffuseEnvSampler, n);
 
@@ -269,11 +282,11 @@ float solveMetallic(vec3 diffuse, vec3 specular, float oneMinusSpecularStrength)
     return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
 }
 
-AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 pointToView)
+AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
 {
     // Standard one-letter names
     vec3 n = normalize(normal);           // Outward direction of surface point
-    vec3 v = normalize(pointToView);      // Direction from surface point to view
+    vec3 v = normalize(view);      // Direction from surface point to view
     vec3 l = normalize(pointToLight);     // Direction from surface point to light
     vec3 h = normalize(l + v);            // Direction of the vector between l and v
 
@@ -293,9 +306,9 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 pointToView)
     );
 }
 
-vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
+vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 view)
 {
-    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, pointToView);
+    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, view);
 
     if (angularInfo.NdotL > 0.0 && angularInfo.NdotV > 0.0)
     {
@@ -341,29 +354,29 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
-vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
+vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
 {
     vec3 pointToLight = -light.direction;
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
+    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
     return light.intensity * light.color * shade;
 }
 
-vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
+vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float attenuation = getRangeAttenuation(light.range, distance);
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
+    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
     return attenuation * light.intensity * light.color * shade;
 }
 
-vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 pointToView)
+vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float rangeAttenuation = getRangeAttenuation(light.range, distance);
     float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, pointToView);
+    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
     return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
 
@@ -382,7 +395,7 @@ void main()
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = SRGBtoLINEAR(texture2D(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
+    vec4 sgSample = texture2D(u_SpecularGlossinessSampler, getSpecularGlossinessUV());
     perceptualRoughness = (1.0 - sgSample.a * u_GlossinessFactor); // glossiness to roughness
     f0 = sgSample.rgb * u_SpecularFactor; // specular
 #else
@@ -480,7 +493,7 @@ void main()
 
     vec3 color = vec3(0.0, 0.0, 0.0); // TODO: vertex colors as multiplier
     vec3 normal = getNormal();
-    vec3 pointToView = normalize(u_Camera - v_Position);
+    vec3 view = normalize(u_Camera - v_Position);
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
@@ -488,22 +501,22 @@ void main()
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
-            color += applyDirectionalLight(light, materialInfo, normal, pointToView);
+            color += applyDirectionalLight(light, materialInfo, normal, view);
         }
         else if (light.type == LightType_Point)
         {
-            color += applyPointLight(light, materialInfo, normal, pointToView);
+            color += applyPointLight(light, materialInfo, normal, view);
         }
         else if (light.type == LightType_Spot)
         {
-            color += applySpotLight(light, materialInfo, normal, pointToView);
+            color += applySpotLight(light, materialInfo, normal, view);
         }
     }
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    color += getIBLContribution(materialInfo, normal, pointToView);
+    color += getIBLContribution(materialInfo, normal, view);
 #endif
 
     float ao = 1.0;
