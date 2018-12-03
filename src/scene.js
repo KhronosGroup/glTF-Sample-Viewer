@@ -115,4 +115,22 @@ class gltfScene
             this.nodes.push(node.idx)
         }
     }
+
+    includesNode(gltf, nodeIndex)
+    {
+        let children = [...this.nodes];
+        while(children.length > 0)
+        {
+            const childIndex = children.pop();
+
+            if (childIndex === nodeIndex)
+            {
+                return true;
+            }
+
+            children = children.concat(gltf.nodes[childIndex].children);
+        }
+
+        return false;
+    }
 };

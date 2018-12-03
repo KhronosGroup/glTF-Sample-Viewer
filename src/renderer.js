@@ -125,7 +125,7 @@ class gltfRenderer
         {
             if (light.node !== undefined)
             {
-                if (scene.nodes.includes(light.node))
+                if (scene.includesNode(gltf, light.node))
                 {
                     lights.push(light);
                 }
