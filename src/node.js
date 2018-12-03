@@ -65,12 +65,6 @@ class gltfNode
                 this.translation = jsToGl(jsonNode.translation);
             }
         }
-        
-        if(jsonNode.extensions !== undefined)
-        {
-            this.fromJsonNodeExtensions(jsonNode.extensions);
-        }
-        
         this.changed = true;
     }
 
@@ -117,13 +111,5 @@ class gltfNode
         }
 
         return mat4.clone(this.transform);
-    }
-    
-    fromJsonNodeExtensions(jsonExtensions)
-    {
-        if(jsonExtensions.KHR_lights_punctual !== undefined)
-        {
-        	this.light = jsonExtensions.KHR_lights_punctual.light;
-        }
     }
 };
