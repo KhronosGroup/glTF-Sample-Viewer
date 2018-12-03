@@ -448,8 +448,7 @@ void main()
 
     baseColor *= getVertexColor();
 
-    diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
-    diffuseColor *= 1.0 - metallic;
+    diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
 
     specularColor = mix(f0, baseColor.rgb, metallic);
 
@@ -496,7 +495,7 @@ void main()
 
     // LIGHTING
 
-    vec3 color = vec3(0.0, 0.0, 0.0); // TODO: vertex colors as multiplier
+    vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 normal = getNormal();
     vec3 view = normalize(u_Camera - v_Position);
 
