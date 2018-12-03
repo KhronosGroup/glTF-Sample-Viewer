@@ -184,15 +184,19 @@ vec3 getNormal()
 #ifdef USE_IBL
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 {
+    const float mipCount = 9.0; // resolution of 512x512
+
+    //
+
+    float NdotV = clamp(dot(n, v), 0.0, 1.0);
+
+    float lod = clamp(materialInfo.perceptualRoughness * mipCount, 0.0, mipCount);
     vec3 reflection = -normalize(reflect(v, n));
-    float NdotV = clamp(abs(dot(n, v)), 0.0, 1.0);
-    float mipCount = 9.0; // resolution of 512x512
-    float lod = (materialInfo.perceptualRoughness * mipCount);
+
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec2 brdf = texture2D(u_brdfLUT, vec2(NdotV, 1.0 - materialInfo.perceptualRoughness)).rg;
+    vec2 brdf = texture2D(u_brdfLUT, vec2(NdotV, materialInfo.perceptualRoughness)).rg;
 
     vec4 diffuseSample = textureCube(u_DiffuseEnvSampler, n);
-
 #ifdef USE_TEX_LOD
     vec4 specularSample = textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod);
 #else
@@ -200,6 +204,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 #endif
 
 #ifdef USE_HDR
+    // Already linear.
     vec3 diffuseLight = diffuseSample.rgb;
     vec3 specularLight = specularSample.rgb;
 #else
@@ -286,12 +291,12 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
 {
     // Standard one-letter names
     vec3 n = normalize(normal);           // Outward direction of surface point
-    vec3 v = normalize(view);      // Direction from surface point to view
+    vec3 v = normalize(view);             // Direction from surface point to view
     vec3 l = normalize(pointToLight);     // Direction from surface point to light
     vec3 h = normalize(l + v);            // Direction of the vector between l and v
 
     float NdotL = clamp(dot(n, l), 0.0, 1.0);
-    float NdotV = clamp(abs(dot(n, v)), 0.0, 1.0);
+    float NdotV = clamp(dot(n, v), 0.0, 1.0);
     float NdotH = clamp(dot(n, h), 0.0, 1.0);
     float LdotH = clamp(dot(l, h), 0.0, 1.0);
     float VdotH = clamp(dot(v, h), 0.0, 1.0);
