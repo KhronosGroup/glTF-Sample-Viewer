@@ -9,7 +9,6 @@ class gltfViewer
         initialModel = "",
         environmentMap = "papermill")
     {
-        this.canvas = canvas;
         this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
@@ -127,7 +126,7 @@ class gltfViewer
 
     createGltf(path, json, buffers)
     {
-        console.log("Loading '%s'", path);
+        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
@@ -384,9 +383,9 @@ class gltfViewer
             !this.initialModel.includes("/"));
 
         const self = this;
-        gui.onLoadModel = (modelPath, basePath) => self.loadFromPath(modelPath, basePath);
-        gui.onLoadNextScene = () => self.sceneIndex++;
-        gui.onLoadPreviousScene = () => self.sceneIndex--;
+        gui.onModelSelected = (modelPath, basePath) => self.loadFromPath(modelPath, basePath);
+        gui.onNextSceneSelected = () => self.sceneIndex++;
+        gui.onPreviousSceneSelected = () => self.sceneIndex--;
 
         gui.initialize();
     }

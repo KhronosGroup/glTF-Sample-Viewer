@@ -21,9 +21,9 @@ class gltfUserInterface
         this.modelsDictionary = undefined;
         this.modelsPath = undefined;
 
-        this.onLoadModel = undefined;
-        this.onLoadNextScene = undefined;
-        this.onLoadPreviousScene = undefined;
+        this.onModelSelected = undefined;
+        this.onNextSceneSelected = undefined;
+        this.onPreviousSceneSelected = undefined;
     }
 
     initialize()
@@ -110,8 +110,8 @@ class gltfUserInterface
     initializeSceneSelection()
     {
         const scenesFolder = this.gltfFolder.addFolder("Scene Index");
-        scenesFolder.add(this, "onLoadPreviousScene").name("←");
-        scenesFolder.add(this, "onLoadNextScene").name("→");
+        scenesFolder.add(this, "onPreviousSceneSelected").name("←");
+        scenesFolder.add(this, "onNextSceneSelected").name("→");
     }
 
     initializeLightingSettings()
@@ -151,14 +151,14 @@ class gltfUserInterface
 
     loadFromPath(modelPath)
     {
-        this.onLoadModel(modelPath);
+        this.onModelSelected(modelPath);
     }
 
     loadFromKey(modelKey)
     {
         this.model = modelKey;
         const relativePath = this.modelsDictionary[this.model];
-        this.onLoadModel(relativePath, this.modelsPath);
+        this.onModelSelected(relativePath, this.modelsPath);
     }
 
     loadEnvironment(environment)
