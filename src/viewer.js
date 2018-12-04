@@ -568,7 +568,7 @@ class gltfViewer
                 return false;
             }
         
-            return http.status != 404;
+            return http.status == 200;
         }
 
         function addSide(basePath, side)
