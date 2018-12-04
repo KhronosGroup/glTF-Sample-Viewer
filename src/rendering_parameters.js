@@ -18,6 +18,13 @@ const DebugOutput =
     f0: "F0"
 };
 
+const Environments =
+[
+    "papermill",
+    "field",
+    "doge2"
+]
+
 class gltfRenderingParameters
 {
     constructor(useIBL = true,
@@ -27,7 +34,8 @@ class gltfRenderingParameters
         gamma = 2.2,
         clearColor = [51, 51, 51],
         toneMap = ToneMaps.linear,
-        debugOutput = DebugOutput.none)
+        debugOutput = DebugOutput.none,
+        environment = Environments[0])
     {
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
@@ -37,6 +45,7 @@ class gltfRenderingParameters
         this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
+        this.environment = environment;
 
         const OES_texture_float = gl.getExtension("OES_texture_float");
         const OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");

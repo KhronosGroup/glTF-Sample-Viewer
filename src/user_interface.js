@@ -103,7 +103,8 @@ class gltfUserInterface
         }
 
         const self = this;
-        this.gltfFolder.add(this, "model", modelKeys).name("Model").onChange(modelKey => self.loadFromKey(modelKey));
+        this.gltfFolder.add(this, "model", modelKeys).name("Model")
+            .onChange(modelKey => self.loadFromKey(modelKey));
     }
 
     initializeSceneSelection()
@@ -115,6 +116,7 @@ class gltfUserInterface
 
     initializeLightingSettings()
     {
+        const self = this;
         const lightingFolder = this.gui.addFolder("Lighting");
         lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
@@ -122,6 +124,8 @@ class gltfUserInterface
         lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
         lightingFolder.addColor(this.renderingParameters, "clearColor", [50, 50, 50]).name("Background Color");
+        lightingFolder.add(this.renderingParameters, "environment", Environments).name("Environment")
+            .onChange(environment => self.loadEnvironment(environment));
     }
 
     initializeDebugSettings()
@@ -152,7 +156,14 @@ class gltfUserInterface
 
     loadFromKey(modelKey)
     {
-        const modelPath = this.modelsDictionary[modelKey];
-        this.onLoadModel(modelPath, this.modelsPath);
+        this.model = modelKey;
+        const relativePath = this.modelsDictionary[this.model];
+        this.onLoadModel(relativePath, this.modelsPath);
+    }
+
+    loadEnvironment(environment)
+    {
+        this.renderingParameters.environment = environment;
+        this.loadFromKey(this.model);
     }
 }
