@@ -78,8 +78,13 @@ function getExtension(filename)
 
 function getFileName(filePath)
 {
-    const split = filePath.toLowerCase().split("/");
+    const split = filePath.split("/");
     return split[split.length - 1];
+}
+
+function getFileNameWithoutExtension(filePath)
+{
+    return getFileName(filePath).split(".")[0];
 }
 
 // marker interface used to for parsing the uniforms

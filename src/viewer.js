@@ -8,7 +8,7 @@ class gltfViewer
         this.basePath = basePath;
         this.envMap = envMap;
 
-        this.defaultModel = "BoomBox/glTF/BoomBox.gltf";
+        this.defaultModel = "BoomBox";
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -22,7 +22,7 @@ class gltfViewer
 
         this.gltf = undefined;
 
-        this.models = [];
+        this.modelDictionary = {};
 
         this.sceneIndex  =  0;
         this.cameraIndex = -1;
@@ -399,25 +399,29 @@ class gltfViewer
 
         function initModelsDropdown(basePath)
         {
-            if (self.models.includes(self.defaultModel))
+            const modelKeys = Object.keys(self.modelDictionary);
+            if (modelKeys.includes(self.defaultModel))
             {
                 self.guiParameters.model = self.defaultModel;
             }
             else
             {
-                self.guiParameters.model = self.models[0];
+                self.guiParameters.model = modelKeys[0];
             }
 
             if (gltfFileName == "")
             {
-                viewerFolder.add(self.guiParameters, "model", self.models).onChange(function(model) {
+                viewerFolder.add(self.guiParameters, "model", modelKeys).onChange(function(key)
+                {
                     if (gltfFileName == "")
                     {
-                        self.loadFromPath(model, basePath)
+                        const path = self.modelDictionary[key];
+                        self.loadFromPath(path, basePath);
                     }
                 }).name("Model");
 
-                self.loadFromPath(self.guiParameters.model, basePath);
+                const path = self.modelDictionary[self.guiParameters.model];
+                self.loadFromPath(path, basePath);
 
                 let sceneFolder = viewerFolder.addFolder("Scene Index");
                 sceneFolder.add(self.guiParameters, "prevScene").name("←");
@@ -434,25 +438,20 @@ class gltfViewer
         axios.get(modelIndex).then(function(response)
         {
             let jsonIndex = response.data;
-
             if (jsonIndex === undefined)
             {
-                // TODO: remove this later, fallback if no submodule :-)
-                self.models = self.parseModelIndex(jsonIndex, "models/");
-                initModelsDropdown("models/");
+                path = "models/";
             }
-            else
-            {
-                self.models = self.parseModelIndex(jsonIndex, path);
-                initModelsDropdown(path);
-            }
+
+            self.modelDictionary = self.parseModelIndex(jsonIndex);
+            initModelsDropdown(path);
 
         }).catch(function(error) {
             console.warn("glTF: failed to load model-index from assets!");
             axios.get("models/model-index.json").then(function(response) {
                 let jsonIndex = response.data;
                 // TODO: remove this later, fallback if no submodule :-)
-                self.models = self.parseModelIndex(jsonIndex, "models/");
+                self.modelDictionary = self.parseModelIndex(jsonIndex);
                 initModelsDropdown("models/");
             }).catch(function(error) {
                 console.warn("Failed to load model-index fallback too!");
@@ -488,9 +487,9 @@ class gltfViewer
         }
     }
 
-    parseModelIndex(jsonIndex, path = "")
+    parseModelIndex(jsonIndex)
     {
-        let models = [];
+        const modelDictionary = {};
 
         let ignoreVariants = ["glTF-Draco", "glTF-Embedded"];
 
@@ -502,14 +501,20 @@ class gltfViewer
                 {
                     if (!ignoreVariants.includes(variant))
                     {
-                        const gltf = entry.variants[variant];
-                        models.push(entry.name + '/' + variant + '/' + gltf);
+                        const path = entry.name + '/' + variant + '/' + entry.variants[variant];
+                        const fileName = getFileNameWithoutExtension(path);
+                        let identifier = fileName;
+                        if (variant !== "glTF")
+                        {
+                            identifier += " (" + variant.replace('glTF-', '') + ")";
+                        }
+                        modelDictionary[identifier] = path;
                     }
                 }
             }
         }
 
-        return models;
+        return modelDictionary;
     }
 
     addEnvironmentMap(gltf, subFolder = "papermill", type = ImageType_Jpeg)
