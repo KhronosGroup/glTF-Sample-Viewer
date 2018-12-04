@@ -6,8 +6,7 @@ class gltfViewer
         headless = false,
         onRendererReady = undefined,
         basePath = "",
-        gltfFileName = "",
-        gltfRootPath = "",
+        initialModel = "",
         envMap = "papermill")
     {
         this.canvas = canvas;
@@ -15,8 +14,7 @@ class gltfViewer
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.envMap = envMap;
-
-        this.defaultModel = "BoomBox";
+        this.initialModel = initialModel;
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -30,18 +28,8 @@ class gltfViewer
 
         this.gltf = undefined;
 
-        this.modelDictionary = {};
-
         this.sceneIndex = 0;
         this.cameraIndex = -1;
-
-        let self = this;
-
-        this.guiParameters = {
-            model: "",
-            nextScene: function() { self.sceneIndex++; },
-            prevScene: function() { self.sceneIndex--; }
-        };
 
         this.renderingParameters = new gltfRenderingParameters();
 
@@ -390,9 +378,10 @@ class gltfViewer
     {
         const gui = new gltfUserInterface(
             modelIndexerPath,
-            this.defaultModel,
+            this.initialModel,
             this.renderingParameters,
-            this.stats);
+            this.stats,
+            !this.initialModel.includes("/"));
 
         const self = this;
         gui.onLoadModel = (modelPath, basePath) => self.loadFromPath(modelPath, basePath);

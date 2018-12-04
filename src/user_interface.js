@@ -5,12 +5,14 @@ class gltfUserInterface
         model,
         renderingParameters,
         stats,
+        enableModelSelection = true,
         ignoredVariants = ["glTF-Draco", "glTF-Embedded"])
     {
         this.modelIndexerPath = modelIndexerPath;
         this.model = model;
         this.renderingParameters = renderingParameters;
         this.stats = stats;
+        this.enableModelSelection = enableModelSelection;
         this.ignoredVariants = ignoredVariants;
 
         this.modelIndexer = undefined;
@@ -42,14 +44,25 @@ class gltfUserInterface
         this.gui = new dat.GUI({ width: 300 });
         this.gltfFolder = this.gui.addFolder("glTF");
 
-        this.initializeModelsDropdown();
+        if (this.enableModelSelection)
+        {
+            this.initializeModelsDropdown();
+        }
+
         this.initializeSceneSelection();
         this.initializeLightingSettings();
         this.initializeDebugSettings();
         this.initializeMonitoringView();
         this.gltfFolder.open();
 
-        this.loadFromKey(this.model);
+        if (this.model.includes("/"))
+        {
+            this.loadFromPath(this.model);
+        }
+        else
+        {
+            this.loadFromKey(this.model);
+        }
     }
 
     parseModelIndex(modelIndexer)
@@ -130,6 +143,11 @@ class gltfUserInterface
         statsList.appendChild(this.stats.domElement);
         statsList.classList.add("gui-stats");
         monitoringFolder.__ul.appendChild(statsList);
+    }
+
+    loadFromPath(modelPath)
+    {
+        this.onLoadModel(modelPath);
     }
 
     loadFromKey(modelKey)
