@@ -189,7 +189,7 @@ vec3 getNormal()
 #ifdef USE_IBL
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    const float mipCount = 9.0; // resolution of 512x512
+    float mipCount = u_ScaleIBLAmbient.z;
 
     //
 

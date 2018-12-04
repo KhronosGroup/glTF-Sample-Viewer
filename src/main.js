@@ -1,4 +1,4 @@
-function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined, basePath = "", gltfFileName = "", gltfRootPath = "")
+function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined, basePath = "", gltfFileName = "", gltfRootPath = "", envMap = "papermill")
 {
     let canvas = document.getElementById(canvasId);
     if (!canvas)
@@ -14,7 +14,7 @@ function gltf_rv(canvasId, index, headless = false, onRendererReady = undefined,
         return null;
     }
 
-    let viewer = new gltfViewer(canvas, index, headless, onRendererReady, basePath, gltfFileName, gltfRootPath);
+    let viewer = new gltfViewer(canvas, index, headless, onRendererReady, basePath, gltfFileName, gltfRootPath, envMap);
 
     canvas.onmousedown = viewer.onMouseDown.bind(viewer);
     document.onmouseup = viewer.onMouseUp.bind(viewer);

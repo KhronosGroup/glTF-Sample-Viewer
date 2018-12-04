@@ -1,11 +1,12 @@
 class gltfViewer
 {
-    constructor(canvas, modelIndex, headless = false, onRendererReady = undefined, basePath = "", gltfFileName = "", gltfRootPath = "")
+    constructor(canvas, modelIndex, headless = false, onRendererReady = undefined, basePath = "", gltfFileName = "", gltfRootPath = "", envMap = "papermill")
     {
         this.canvas = canvas;
         this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
+        this.envMap = envMap;
 
         this.defaultModel = "BoomBox/glTF/BoomBox.gltf";
 
@@ -134,7 +135,7 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf, "papermill", this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
+        this.addEnvironmentMap(gltf, this.envMap, this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -555,15 +556,41 @@ class gltfViewer
 
         let indices = [];
 
+        function imageExists(image_url)
+        {
+            var http = new XMLHttpRequest();
+            
+            try {
+                http.open('HEAD', image_url, false);
+                http.send();
+            } catch (error)
+            {
+                return false;
+            }
+        
+            return http.status != 404;
+        }
+
         function addSide(basePath, side)
         {
-            for(let i = 0; i < 10; ++i)
+            let stop = false;
+            let i = 0;
+            while(!stop)
             {
                 const imagePath = basePath + i + extension;
-                const image = new gltfImage(imagePath, side, i);
-                image.mimeType = type;
-                gltf.images.push(image);
-                indices.push(++imageIdx);
+                if (imageExists(imagePath))
+                {
+                    const image = new gltfImage(imagePath, side, i);
+                    image.mimeType = type;
+                    gltf.images.push(image);
+                    indices.push(++imageIdx);
+
+                    i++;
+                }
+                else
+                {
+                    stop = true;
+                }
             }
         };
 
