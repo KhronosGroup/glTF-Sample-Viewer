@@ -7,13 +7,12 @@ class gltfViewer
         onRendererReady = undefined,
         basePath = "",
         initialModel = "",
-        envMap = "papermill")
+        environmentMap = "papermill")
     {
         this.canvas = canvas;
         this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
-        this.envMap = envMap;
         this.initialModel = initialModel;
 
         this.lastMouseX = 0.00;
@@ -31,7 +30,7 @@ class gltfViewer
         this.sceneIndex = 0;
         this.cameraIndex = -1;
 
-        this.renderingParameters = new gltfRenderingParameters();
+        this.renderingParameters = new gltfRenderingParameters(environmentMap);
 
         if (this.headless == false)
         {
@@ -132,7 +131,8 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf, this.envMap, this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
+        const environmentType = this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg;
+        this.addEnvironmentMap(gltf, this.renderingParameters.environment, environmentType);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;

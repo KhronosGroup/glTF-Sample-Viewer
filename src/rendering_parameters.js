@@ -27,15 +27,16 @@ const Environments =
 
 class gltfRenderingParameters
 {
-    constructor(useIBL = true,
+    constructor(
+        environment = undefined,
+        useIBL = true,
         usePunctual = false,
         useHdr = true,
         exposure = 1.0,
         gamma = 2.2,
         clearColor = [51, 51, 51],
         toneMap = ToneMaps.linear,
-        debugOutput = DebugOutput.none,
-        environment = Environments[0])
+        debugOutput = DebugOutput.none)
     {
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
@@ -45,7 +46,16 @@ class gltfRenderingParameters
         this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
-        this.environment = environment;
+
+        if (Environments.includes(environment))
+        {
+            this.environment = environment;
+        }
+        else
+        {
+            console.warn("Environment '%s' is not supported.", environment);
+            this.environment = Environments[0];
+        }
 
         const OES_texture_float = gl.getExtension("OES_texture_float");
         const OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
