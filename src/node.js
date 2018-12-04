@@ -1,12 +1,9 @@
 // contain:
 // transform
-// primitives & materials
 // child indices (reference to scene array of nodes)
 
 class gltfNode
 {
-    // TODO: children, primitives
-
     //  vec3 translation, quat rotation, vec3 scale
     constructor(translation = jsToGl([0, 0, 0]),
                 rotation = jsToGl([0, 0, 0, 1]),
