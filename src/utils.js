@@ -87,5 +87,10 @@ function getFileNameWithoutExtension(filePath)
     return getFileName(filePath).split(".")[0];
 }
 
+function getContainingFolder(filePath)
+{
+    return filePath.substring(0, filePath.lastIndexOf("/") + 1);
+}
+
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
