@@ -186,7 +186,7 @@ function EnableAttribute(gltf, attributeLocation, gltfAccessor)
     }
 
     gl.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
-                           gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+                           gltfAccessor.normalized, gltfBufferView.byteStride, gltfAccessor.byteOffset);
     gl.enableVertexAttribArray(attributeLocation);
 
     return true;
