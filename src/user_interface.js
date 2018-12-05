@@ -5,20 +5,17 @@ class gltfUserInterface
         model,
         renderingParameters,
         stats,
-        enableModelSelection = true,
-        ignoredVariants = ["glTF-Draco", "glTF-Embedded"])
+        enableModelSelection = true)
     {
         this.modelIndexerPath = modelIndexerPath;
         this.model = model;
         this.renderingParameters = renderingParameters;
         this.stats = stats;
         this.enableModelSelection = enableModelSelection;
-        this.ignoredVariants = ignoredVariants;
 
         this.modelIndexer = undefined;
         this.gui = undefined;
         this.gltfFolder = undefined;
-        this.modelsDictionary = undefined;
         this.modelsPath = undefined;
 
         this.onLoadModel = undefined;
@@ -28,19 +25,12 @@ class gltfUserInterface
 
     initialize()
     {
-        const self = this;
-        axios.get(this.modelIndexerPath).then(response =>
-        {
-            self.modelIndexer = response.data;
-            self.initializeCallback();
-        });
+        this.modelPathProvider = new gltfModelPathProvider(this.modelIndexerPath);
+        this.modelPathProvider.initialize().then(() => this.initializeCallback());
     }
 
     initializeCallback()
     {
-        this.modelsPath = this.modelIndexer !== undefined ? getContainingFolder(this.modelIndexerPath) : "models/";
-        this.parseModelIndex(this.modelIndexer);
-
         this.gui = new dat.GUI({ width: 300 });
         this.gltfFolder = this.gui.addFolder("glTF");
 
@@ -65,38 +55,9 @@ class gltfUserInterface
         }
     }
 
-    parseModelIndex(modelIndexer)
-    {
-        this.modelsDictionary = {};
-
-        for (const entry of modelIndexer)
-        {
-            if (entry.variants === undefined)
-            {
-                continue;
-            }
-
-            for (const variant of Object.keys(entry.variants))
-            {
-                if (this.ignoredVariants.includes(variant))
-                {
-                    continue;
-                }
-
-                const modelPath = entry.name + "/" + variant + "/" + entry.variants[variant];
-                let modelKey = getFileNameWithoutExtension(modelPath);
-                if (variant !== "glTF")
-                {
-                    modelKey += " (" + variant.replace("glTF-", "") + ")";
-                }
-                this.modelsDictionary[modelKey] = modelPath;
-            }
-        }
-    }
-
     initializeModelsDropdown()
     {
-        const modelKeys = Object.keys(this.modelsDictionary);
+        const modelKeys = this.modelPathProvider.getAllKeys();
         if (!modelKeys.includes(this.model))
         {
             this.model = modelKeys[0];
@@ -152,7 +113,7 @@ class gltfUserInterface
 
     loadFromKey(modelKey)
     {
-        const modelPath = this.modelsDictionary[modelKey];
+        const modelPath = this.modelPathProvider.resolve(modelKey);
         this.onLoadModel(modelPath, this.modelsPath);
     }
 }
