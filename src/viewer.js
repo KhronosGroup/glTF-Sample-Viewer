@@ -1,14 +1,20 @@
 class gltfViewer
 {
-    constructor(canvas, modelIndex, headless = false, onRendererReady = undefined, basePath = "", gltfFileName = "", gltfRootPath = "", envMap = "papermill")
+    constructor(
+        canvas,
+        modelIndex,
+        headless = false,
+        onRendererReady = undefined,
+        basePath = "",
+        initialModel = "",
+        envMap = "papermill")
     {
         this.canvas = canvas;
         this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.envMap = envMap;
-
-        this.defaultModel = "BoomBox";
+        this.initialModel = initialModel;
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -22,28 +28,30 @@ class gltfViewer
 
         this.gltf = undefined;
 
-        this.modelDictionary = {};
-
-        this.sceneIndex  =  0;
+        this.sceneIndex = 0;
         this.cameraIndex = -1;
-
-        let self = this;
-
-        this.guiParameters = {
-            model: "",
-            nextScene: function() { self.sceneIndex++; },
-            prevScene: function() { self.sceneIndex--; }
-        };
 
         this.renderingParameters = new gltfRenderingParameters();
 
-        if (this.headless == false)
+        if (this.headless === true)
         {
-            this.initUserInterface(modelIndex, gltfFileName, gltfRootPath);
+            this.hideSpinner();
+        }
+        else if (this.initialModel.includes("/"))
+        {
+            // no UI if a path is provided (e.g. in the vscode plugin)
+            this.loadFromPath(this.initialModel);
         }
         else
         {
-            this.hideSpinner();
+            const self = this;
+            this.stats = new Stats();
+            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+            this.pathProvider.initialize().then(() =>
+            {
+                self.initializeGui();
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+            });
         }
 
         this.userCamera = new UserCamera();
@@ -200,7 +208,7 @@ class gltfViewer
 
                 if (self.gltf.scenes.length !== 0)
                 {
-                    if(self.headless == false)
+                    if (self.headless == false)
                     {
                         self.userCamera.updatePosition();
                     }
@@ -211,7 +219,7 @@ class gltfViewer
                     // scene.applyTransformHierarchy(gltf);
 
                     let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
-                    if(alphaScene.nodes.length > 0)
+                    if (alphaScene.nodes.length > 0)
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
                         let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
@@ -377,114 +385,20 @@ class gltfViewer
         }
     }
 
-    initUserInterface(modelIndex, gltfFileName, gltfRootPath)
+    initializeGui()
     {
-        if (gltfFileName == "")
-        {
-            this.gui = new dat.GUI({ width: 300 });
-        }
+        const gui = new gltfUserInterface(
+            this.pathProvider,
+            this.initialModel,
+            this.renderingParameters,
+            this.stats);
 
-        modelIndex = this.basePath + modelIndex;
+        const self = this;
+        gui.onLoadModel = (model) => self.loadFromPath(this.pathProvider.resolve(model));
+        gui.onLoadNextScene = () => self.sceneIndex++;
+        gui.onLoadPreviousScene = () => self.sceneIndex--;
 
-        // Find out the root path of the models that are going to be loaded.
-        let path = modelIndex.substring(0, modelIndex.lastIndexOf("/") + 1);
-
-        let viewerFolder = undefined;
-        if (gltfFileName == "")
-        {
-            viewerFolder = this.gui.addFolder("glTF");
-        }
-
-        let self = this;
-
-        function initModelsDropdown(basePath)
-        {
-            const modelKeys = Object.keys(self.modelDictionary);
-            if (modelKeys.includes(self.defaultModel))
-            {
-                self.guiParameters.model = self.defaultModel;
-            }
-            else
-            {
-                self.guiParameters.model = modelKeys[0];
-            }
-
-            if (gltfFileName == "")
-            {
-                viewerFolder.add(self.guiParameters, "model", modelKeys).onChange(function(key)
-                {
-                    if (gltfFileName == "")
-                    {
-                        const path = self.modelDictionary[key];
-                        self.loadFromPath(path, basePath);
-                    }
-                }).name("Model");
-
-                const path = self.modelDictionary[self.guiParameters.model];
-                self.loadFromPath(path, basePath);
-
-                let sceneFolder = viewerFolder.addFolder("Scene Index");
-                sceneFolder.add(self.guiParameters, "prevScene").name("←");
-                sceneFolder.add(self.guiParameters, "nextScene").name("→");
-
-                viewerFolder.open();
-            }
-            else
-            {
-                self.loadFromPath(gltfFileName, gltfRootPath);
-            }
-        };
-
-        axios.get(modelIndex).then(function(response)
-        {
-            let jsonIndex = response.data;
-            if (jsonIndex === undefined)
-            {
-                path = "models/";
-            }
-
-            self.modelDictionary = self.parseModelIndex(jsonIndex);
-            initModelsDropdown(path);
-
-        }).catch(function(error) {
-            console.warn("glTF: failed to load model-index from assets!");
-            axios.get("models/model-index.json").then(function(response) {
-                let jsonIndex = response.data;
-                // TODO: remove this later, fallback if no submodule :-)
-                self.modelDictionary = self.parseModelIndex(jsonIndex);
-                initModelsDropdown("models/");
-            }).catch(function(error) {
-                console.warn("Failed to load model-index fallback too!");
-            });
-        });
-
-        if (gltfFileName == "")
-        {
-            const lightingFolder = this.gui.addFolder("Lighting");
-            lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
-            lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
-            lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
-            lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
-            lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
-            lightingFolder.addColor(this.renderingParameters, "clearColor", [50, 50, 50]).name("Background Color");
-
-            const debugFolder = this.gui.addFolder("Debug");
-            debugFolder.add(this.renderingParameters, "debugOutput", Object.values(DebugOutput)).name("Debug Output");
-
-            let performanceFolder = this.gui.addFolder("Performance");
-
-            this.stats = new Stats();
-
-            this.stats.domElement.height = "48px";
-            [].forEach.call(this.stats.domElement.children, (child) => (child.style.display = ''));
-            this.stats.domElement.style.position = "static";
-
-            let statsList = document.createElement("li");
-            statsList.appendChild(this.stats.domElement);
-            statsList.classList.add("gui-stats");
-
-            performanceFolder.__ul.appendChild(statsList);
-        }
+        gui.initialize();
     }
 
     parseModelIndex(jsonIndex)
@@ -493,11 +407,11 @@ class gltfViewer
 
         let ignoreVariants = ["glTF-Draco", "glTF-Embedded"];
 
-        for(let entry of jsonIndex)
+        for (let entry of jsonIndex)
         {
-            if(entry.variants !== undefined)
+            if (entry.variants !== undefined)
             {
-                for(let variant of Object.keys(entry.variants))
+                for (let variant of Object.keys(entry.variants))
                 {
                     if (!ignoreVariants.includes(variant))
                     {
@@ -520,12 +434,12 @@ class gltfViewer
     addEnvironmentMap(gltf, subFolder = "papermill", type = ImageType_Jpeg)
     {
         let extension;
-        switch(type)
+        switch (type)
         {
-            case(ImageType_Jpeg):
+            case (ImageType_Jpeg):
                 extension = ".jpg";
                 break;
-            case(ImageType_Hdr):
+            case (ImageType_Hdr):
                 extension = ".hdr";
                 break;
             default:
@@ -539,22 +453,22 @@ class gltfViewer
         const specularPrefix = imagesFolder + "specular/specular_";
         const specularSuffix = "_";
         const sides =
-        [
-            [ "right", gl.TEXTURE_CUBE_MAP_POSITIVE_X ],
-            [ "left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X ],
-            [ "top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y ],
-            [ "bottom", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y ],
-            [ "front", gl.TEXTURE_CUBE_MAP_POSITIVE_Z ],
-            [ "back", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z ]
-        ];
+            [
+                ["right", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
+                ["left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
+                ["top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
+                ["bottom", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
+                ["front", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
+                ["back", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]
+            ];
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
         const diffuseCubeSamplerIdx = gltf.samplers.length - 1;
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
         const specularCubeSamplerIdx = gltf.samplers.length - 1;
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR,  gl.CLAMP_TO_EDGE,  gl.CLAMP_TO_EDGE, "LUTSampler"));
+        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "LUTSampler"));
         const lutSamplerIdx = gltf.samplers.length - 1;
 
         let imageIdx = gltf.images.length;
@@ -564,15 +478,16 @@ class gltfViewer
         function imageExists(image_url)
         {
             var http = new XMLHttpRequest();
-            
-            try {
+
+            try
+            {
                 http.open('HEAD', image_url, false);
                 http.send();
             } catch (error)
             {
                 return false;
             }
-        
+
             return http.status == 200;
         }
 
@@ -580,7 +495,7 @@ class gltfViewer
         {
             let stop = false;
             let i = 0;
-            while(!stop)
+            while (!stop)
             {
                 const imagePath = basePath + i + extension;
                 if (imageExists(imagePath))

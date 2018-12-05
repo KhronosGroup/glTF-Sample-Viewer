@@ -41,6 +41,8 @@
     <script src="src/node.js"></script>
     <script src="src/scene.js"></script>
     <script src="src/gltf.js"></script>
+    <script src="src/user_interface.js"></script>
+    <script src="src/model_path_provider.js"></script>
 
     <script src="src/viewer.js"></script>
     <script src="src/renderer.js"></script>
@@ -48,7 +50,7 @@
 </head>
 
 <!-- Just create a rendering canvas like below and call gltf_rv! -->
-<body onload="viewer = gltf_rv('canvas', 'assets/models/2.0/model-index.json', false, undefined, '', '', '', 'papermill');">
+<body onload="viewer = gltf_rv('canvas', 'assets/models/2.0/model-index.json', false, undefined, '', 'BoomBox', 'papermill');">
     <div id="gltf-rv-model-spinner"> </div>
     <canvas id="canvas">No Canvas!</canvas>
 </body>
