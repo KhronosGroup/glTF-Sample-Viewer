@@ -1,14 +1,14 @@
 class gltfUserInterface
 {
     constructor(
-        modelIndexerPath,
-        model,
+        modelPathProvider,
+        selectedModel,
         renderingParameters,
         stats,
         enableModelSelection = true)
     {
-        this.modelIndexerPath = modelIndexerPath;
-        this.model = model;
+        this.modelPathProvider = modelPathProvider;
+        this.selectedModel = selectedModel;
         this.renderingParameters = renderingParameters;
         this.stats = stats;
         this.enableModelSelection = enableModelSelection;
@@ -25,12 +25,6 @@ class gltfUserInterface
 
     initialize()
     {
-        this.modelPathProvider = new gltfModelPathProvider(this.modelIndexerPath);
-        this.modelPathProvider.initialize().then(() => this.initializeCallback());
-    }
-
-    initializeCallback()
-    {
         this.gui = new dat.GUI({ width: 300 });
         this.gltfFolder = this.gui.addFolder("glTF");
 
@@ -44,27 +38,18 @@ class gltfUserInterface
         this.initializeDebugSettings();
         this.initializeMonitoringView();
         this.gltfFolder.open();
-
-        if (this.model.includes("/"))
-        {
-            this.loadFromPath(this.model);
-        }
-        else
-        {
-            this.loadFromKey(this.model);
-        }
     }
 
     initializeModelsDropdown()
     {
         const modelKeys = this.modelPathProvider.getAllKeys();
-        if (!modelKeys.includes(this.model))
+        if (!modelKeys.includes(this.selectedModel))
         {
-            this.model = modelKeys[0];
+            this.selectedModel = modelKeys[0];
         }
 
         const self = this;
-        this.gltfFolder.add(this, "model", modelKeys).name("Model").onChange(modelKey => self.loadFromKey(modelKey));
+        this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onLoadModel(modelKey));
     }
 
     initializeSceneSelection()
@@ -104,16 +89,5 @@ class gltfUserInterface
         statsList.appendChild(this.stats.domElement);
         statsList.classList.add("gui-stats");
         monitoringFolder.__ul.appendChild(statsList);
-    }
-
-    loadFromPath(modelPath)
-    {
-        this.onLoadModel(modelPath);
-    }
-
-    loadFromKey(modelKey)
-    {
-        const modelPath = this.modelPathProvider.resolve(modelKey);
-        this.onLoadModel(modelPath, this.modelsPath);
     }
 }

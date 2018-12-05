@@ -35,8 +35,14 @@ class gltfViewer
 
         if (this.headless == false)
         {
+            const self = this;
             this.stats = new Stats();
-            this.initializeGui(this.basePath + modelIndex);
+            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+            this.pathProvider.initialize().then(() =>
+            {
+                self.initializeGui();
+                self.loadFromPath(self.pathProvider.resolve(this.initialModel));
+            });
         }
         else
         {
@@ -374,17 +380,17 @@ class gltfViewer
         }
     }
 
-    initializeGui(modelIndexerPath)
+    initializeGui()
     {
         const gui = new gltfUserInterface(
-            modelIndexerPath,
+            this.pathProvider,
             this.initialModel,
             this.renderingParameters,
             this.stats,
             !this.initialModel.includes("/"));
 
         const self = this;
-        gui.onLoadModel = (modelPath, basePath) => self.loadFromPath(modelPath, basePath);
+        gui.onLoadModel = (model) => self.loadFromPath(this.pathProvider.resolve(model));
         gui.onLoadNextScene = () => self.sceneIndex++;
         gui.onLoadPreviousScene = () => self.sceneIndex--;
 
