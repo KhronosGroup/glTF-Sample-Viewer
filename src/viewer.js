@@ -39,6 +39,7 @@ class gltfViewer
         }
         else if (this.initialModel.includes("/"))
         {
+            // no UI if a path is provided (e.g. in the vscode plugin)
             this.loadFromPath(this.initialModel);
         }
         else

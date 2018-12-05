@@ -11,10 +11,8 @@ class gltfUserInterface
         this.renderingParameters = renderingParameters;
         this.stats = stats;
 
-        this.modelIndexer = undefined;
         this.gui = undefined;
         this.gltfFolder = undefined;
-        this.modelsPath = undefined;
 
         this.onLoadModel = undefined;
         this.onLoadNextScene = undefined;
