@@ -4,14 +4,12 @@ class gltfUserInterface
         modelPathProvider,
         selectedModel,
         renderingParameters,
-        stats,
-        enableModelSelection = true)
+        stats)
     {
         this.modelPathProvider = modelPathProvider;
         this.selectedModel = selectedModel;
         this.renderingParameters = renderingParameters;
         this.stats = stats;
-        this.enableModelSelection = enableModelSelection;
 
         this.modelIndexer = undefined;
         this.gui = undefined;
@@ -28,11 +26,7 @@ class gltfUserInterface
         this.gui = new dat.GUI({ width: 300 });
         this.gltfFolder = this.gui.addFolder("glTF");
 
-        if (this.enableModelSelection)
-        {
-            this.initializeModelsDropdown();
-        }
-
+        this.initializeModelsDropdown();
         this.initializeSceneSelection();
         this.initializeLightingSettings();
         this.initializeDebugSettings();

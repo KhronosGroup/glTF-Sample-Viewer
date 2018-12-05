@@ -33,7 +33,15 @@ class gltfViewer
 
         this.renderingParameters = new gltfRenderingParameters();
 
-        if (this.headless == false)
+        if (this.headless === true)
+        {
+            this.hideSpinner();
+        }
+        else if (this.initialModel.includes("/"))
+        {
+            this.loadFromPath(this.initialModel);
+        }
+        else
         {
             const self = this;
             this.stats = new Stats();
@@ -41,12 +49,8 @@ class gltfViewer
             this.pathProvider.initialize().then(() =>
             {
                 self.initializeGui();
-                self.loadFromPath(self.pathProvider.resolve(this.initialModel));
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
             });
-        }
-        else
-        {
-            this.hideSpinner();
         }
 
         this.userCamera = new UserCamera();
@@ -386,8 +390,7 @@ class gltfViewer
             this.pathProvider,
             this.initialModel,
             this.renderingParameters,
-            this.stats,
-            !this.initialModel.includes("/"));
+            this.stats);
 
         const self = this;
         gui.onLoadModel = (model) => self.loadFromPath(this.pathProvider.resolve(model));
