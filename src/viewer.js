@@ -7,13 +7,11 @@ class gltfViewer
         onRendererReady = undefined,
         basePath = "",
         initialModel = "",
-        envMap = "papermill")
+        environmentMap = "papermill")
     {
-        this.canvas = canvas;
         this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
-        this.envMap = envMap;
         this.initialModel = initialModel;
 
         this.lastMouseX = 0.00;
@@ -31,7 +29,7 @@ class gltfViewer
         this.sceneIndex = 0;
         this.cameraIndex = -1;
 
-        this.renderingParameters = new gltfRenderingParameters();
+        this.renderingParameters = new gltfRenderingParameters(environmentMap);
 
         if (this.headless === true)
         {
@@ -139,11 +137,12 @@ class gltfViewer
 
     createGltf(path, json, buffers)
     {
-        console.log("Loading '%s'", path);
+        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-        this.addEnvironmentMap(gltf, this.envMap, this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg);
+        const environmentType = this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg;
+        this.addEnvironmentMap(gltf, this.renderingParameters.environment, environmentType);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -394,9 +393,9 @@ class gltfViewer
             this.stats);
 
         const self = this;
-        gui.onLoadModel = (model) => self.loadFromPath(this.pathProvider.resolve(model));
-        gui.onLoadNextScene = () => self.sceneIndex++;
-        gui.onLoadPreviousScene = () => self.sceneIndex--;
+        gui.onModelSelected = (model) => self.loadFromPath(this.pathProvider.resolve(model));
+        gui.onNextSceneSelected = () => self.sceneIndex++;
+        gui.onPreviousSceneSelected = () => self.sceneIndex--;
 
         gui.initialize();
     }

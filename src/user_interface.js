@@ -14,9 +14,9 @@ class gltfUserInterface
         this.gui = undefined;
         this.gltfFolder = undefined;
 
-        this.onLoadModel = undefined;
-        this.onLoadNextScene = undefined;
-        this.onLoadPreviousScene = undefined;
+        this.onModelSelected = undefined;
+        this.onNextSceneSelected = undefined;
+        this.onPreviousSceneSelected = undefined;
     }
 
     initialize()
@@ -41,21 +41,24 @@ class gltfUserInterface
         }
 
         const self = this;
-        this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onLoadModel(modelKey));
+        this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
     }
 
     initializeSceneSelection()
     {
         const scenesFolder = this.gltfFolder.addFolder("Scene Index");
-        scenesFolder.add(this, "onLoadPreviousScene").name("←");
-        scenesFolder.add(this, "onLoadNextScene").name("→");
+        scenesFolder.add(this, "onPreviousSceneSelected").name("←");
+        scenesFolder.add(this, "onNextSceneSelected").name("→");
     }
 
     initializeLightingSettings()
     {
+        const self = this;
         const lightingFolder = this.gui.addFolder("Lighting");
         lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
+        lightingFolder.add(this.renderingParameters, "environment", Environments).name("Environment")
+            .onChange(() => self.onModelSelected(self.selectedModel));
         lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
         lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
