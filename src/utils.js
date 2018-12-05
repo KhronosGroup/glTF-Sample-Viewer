@@ -92,5 +92,11 @@ function getContainingFolder(filePath)
     return filePath.substring(0, filePath.lastIndexOf("/") + 1);
 }
 
+function combinePaths()
+{
+    parts = Array.from(arguments);
+    return parts.join("/");
+}
+
 // marker interface used to for parsing the uniforms
 class UniformStruct { }

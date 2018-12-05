@@ -31,14 +31,24 @@ class gltfViewer
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
 
-        if (this.headless == false)
+        if (this.headless === true)
         {
-            this.stats = new Stats();
-            this.initializeGui(this.basePath + modelIndex);
+            this.hideSpinner();
+        }
+        else if (this.initialModel.includes("/"))
+        {
+            this.loadFromPath(this.initialModel);
         }
         else
         {
-            this.hideSpinner();
+            const self = this;
+            this.stats = new Stats();
+            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+            this.pathProvider.initialize().then(() =>
+            {
+                self.initializeGui();
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+            });
         }
 
         this.userCamera = new UserCamera();
@@ -373,17 +383,16 @@ class gltfViewer
         }
     }
 
-    initializeGui(modelIndexerPath)
+    initializeGui()
     {
         const gui = new gltfUserInterface(
-            modelIndexerPath,
+            this.pathProvider,
             this.initialModel,
             this.renderingParameters,
-            this.stats,
-            !this.initialModel.includes("/"));
+            this.stats);
 
         const self = this;
-        gui.onModelSelected = (modelPath, basePath) => self.loadFromPath(modelPath, basePath);
+        gui.onModelSelected = (model) => self.loadFromPath(this.pathProvider.resolve(model));
         gui.onNextSceneSelected = () => self.sceneIndex++;
         gui.onPreviousSceneSelected = () => self.sceneIndex--;
 
