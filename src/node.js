@@ -1,3 +1,6 @@
+import { mat4 } from 'gl-matrix';
+import { jsToGl } from './utils.js';
+
 // contain:
 // transform
 // child indices (reference to scene array of nodes)
@@ -69,11 +72,11 @@ class gltfNode
     applyMatrix(matrixData)
     {
         this.matrix = jsToGl(matrixData);
-        
+
         mat4.getScaling(this.scale, this.matrix);
         mat4.getRotation(this.rotation, this.matrix);
         mat4.getTranslation(this.translation, this.matrix);
-        
+
         this.changed = true;
     }
 
@@ -120,3 +123,5 @@ class gltfNode
         return mat4.clone(this.transform);
     }
 };
+
+export { gltfNode };
