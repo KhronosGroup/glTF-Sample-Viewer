@@ -138,11 +138,12 @@ class gltfViewer
     createGltf(path, json, buffers)
     {
         console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
+		this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
         const environmentType = this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg;
-        this.addEnvironmentMap(gltf, this.renderingParameters.environment, environmentType);
+        this.addEnvironmentMap(gltf, this.renderingParameters.environment, this.renderingParameters.environmentMipLevel, environmentType);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -492,7 +493,7 @@ class gltfViewer
         return modelDictionary;
     }
 
-    addEnvironmentMap(gltf, subFolder = "papermill", type = ImageType_Jpeg)
+    addEnvironmentMap(gltf, subFolder = "papermill", mipLevel = 9, type = ImageType_Jpeg)
     {
         let extension;
         switch (type)
@@ -536,42 +537,17 @@ class gltfViewer
 
         let indices = [];
 
-        function imageExists(image_url)
-        {
-            var http = new XMLHttpRequest();
-
-            try
-            {
-                http.open('HEAD', image_url, false);
-                http.send();
-            } catch (error)
-            {
-                return false;
-            }
-
-            return http.status == 200;
-        }
-
-        function addSide(basePath, side)
+        function addSide(basePath, side, mipLevel)
         {
             let stop = false;
             let i = 0;
-            while (!stop)
+            for (i = 0; i <= mipLevel; i++)
             {
                 const imagePath = basePath + i + extension;
-                if (imageExists(imagePath))
-                {
-                    const image = new gltfImage(imagePath, side, i);
-                    image.mimeType = type;
-                    gltf.images.push(image);
-                    indices.push(++imageIdx);
-
-                    i++;
-                }
-                else
-                {
-                    stop = true;
-                }
+				const image = new gltfImage(imagePath, side, i);
+				image.mimeType = type;
+				gltf.images.push(image);
+				indices.push(++imageIdx);
             }
         };
 
@@ -590,7 +566,7 @@ class gltfViewer
         // u_SpecularEnvSampler tex
         for (const side of sides)
         {
-            addSide(specularPrefix + side[0] + specularSuffix, side[1]);
+            addSide(specularPrefix + side[0] + specularSuffix, side[1], mipLevel);
         }
 
         gltf.textures.push(new gltfTexture(specularCubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));

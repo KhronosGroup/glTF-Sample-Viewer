@@ -25,6 +25,13 @@ const Environments =
     "doge2"
 ]
 
+const EnvironmentsMipLevel =
+[
+    9,
+    10,
+    10
+]
+
 class gltfRenderingParameters
 {
     constructor(
@@ -47,15 +54,7 @@ class gltfRenderingParameters
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
 
-        if (Environments.includes(environment))
-        {
-            this.environment = environment;
-        }
-        else
-        {
-            console.warn("Environment '%s' is not supported.", environment);
-            this.environment = Environments[0];
-        }
+		this.updateEnvironment(environment);
 
         const OES_texture_float = gl.getExtension("OES_texture_float");
         const OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
@@ -65,4 +64,19 @@ class gltfRenderingParameters
             console.warn("Forcing to LDR rendering.");
         }
     }
+	
+	updateEnvironment(environment)
+	{
+        if (Environments.includes(environment))
+        {
+            this.environment = environment;
+			this.environmentMipLevel = EnvironmentsMipLevel[Environments.indexOf(environment)];
+        }
+        else
+        {
+            console.warn("Environment '%s' is not supported.", environment);
+            this.environment = Environments[0];
+			this.environmentMipLevel = EnvironmentsMipLevel[0];
+        }
+	}
 };
