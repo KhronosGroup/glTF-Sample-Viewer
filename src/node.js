@@ -14,7 +14,6 @@ class gltfNode
         this.translation = translation;
         this.rotation = rotation;
         this.scale = scale;
-        this.matrix = undefined;
         this.children = children;
         this.camera = undefined;
         this.name = name;
@@ -68,12 +67,12 @@ class gltfNode
 
     applyMatrix(matrixData)
     {
-        this.matrix = jsToGl(matrixData);
-        
-        mat4.getScaling(this.scale, this.matrix);
-        mat4.getRotation(this.rotation, this.matrix);
-        mat4.getTranslation(this.translation, this.matrix);
-        
+        this.transform = jsToGl(matrixData);
+
+        mat4.getScaling(this.scale, this.transform);
+        mat4.getRotation(this.rotation, this.transform);
+        mat4.getTranslation(this.translation, this.transform);
+
         this.changed = true;
     }
 
@@ -105,15 +104,8 @@ class gltfNode
     {
         if(this.transform === undefined || this.changed)
         {
-            if (this.matrix !== undefined)
-            {
-                this.transform = this.matrix;
-            }
-            else
-            {
-                this.transform = mat4.create();
-                mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
-            }
+            this.transform = mat4.create();
+            mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
             this.changed = false;
         }
 

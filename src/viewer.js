@@ -151,74 +151,68 @@ class gltfViewer
             self.onResize(gltf);
         });
     }
-	
-	isPowerOf2(n)
-	{
-		return n && (n & (n - 1)) === 0;
-	}
-	
-	onResize(gltf)
-	{
-		let resize = false;
-		
-		if (gltf.images !== undefined)
-		{
-			var i;
-			
-			let imagePromises = [];
-			
-			for (i = 0; i < gltf.images.length; i++)
-			{
-				if (gltf.images[i].image.dataRGBE == undefined)
-				{
-					if (!this.isPowerOf2(gltf.images[i].image.width) || !this.isPowerOf2(gltf.images[i].image.height))
-					{
-						resize = true;
-						
-						let currentImagePromise = new Promise(function(resolve)
-							{
-								var ctx = canvas.getContext("2d");
-								
-								var oc = document.createElement('canvas');
-								var octx = oc.getContext('2d');
-								
-								function nearestPowerOf2(n)
-								{
-									return Math.pow(2.0, Math.round(Math.log(n) / Math.log(2.0))); 
-								}
 
-								oc.width = nearestPowerOf2(gltf.images[i].image.width);
-								oc.height = nearestPowerOf2(gltf.images[i].image.height);
-								
-								octx.drawImage(gltf.images[i].image, 0, 0, oc.width, oc.height);
-								
-								gltf.images[i].image.src = oc.toDataURL("image/png");
-								
-								resolve();
-							}
-						);
-						
-						imagePromises.push(currentImagePromise);
-					}
-				}
-			} 
-			
-			if (resize)
-			{
-				let self = this;
-				Promise.all(imagePromises).then(function()
-					{
-						self.onGltfLoaded(gltf);
-					}
-				);
-			}
-		}
-		
-		if (!resize)
-		{
-			this.onGltfLoaded(gltf);
-		}
-	}
+    isPowerOf2(n)
+    {
+        return n && (n & (n - 1)) === 0;
+    }
+
+    onResize(gltf)
+    {
+        let resize = false;
+
+        if (gltf.images !== undefined)
+        {
+            let i;
+            const imagePromises = [];
+            for (i = 0; i < gltf.images.length; i++)
+            {
+                if (gltf.images[i].image.dataRGBE !== undefined ||
+                    this.isPowerOf2(gltf.images[i].image.width) && this.isPowerOf2(gltf.images[i].image.height))
+                {
+                    continue;
+                }
+
+                resize = true;
+
+                const currentImagePromise = new Promise(function(resolve)
+                {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+
+                    function nearestPowerOf2(n)
+                    {
+                        return Math.pow(2.0, Math.round(Math.log(n) / Math.log(2.0)));
+                    }
+
+                    canvas.width = nearestPowerOf2(gltf.images[i].image.width);
+                    canvas.height = nearestPowerOf2(gltf.images[i].image.height);
+
+                    context.drawImage(gltf.images[i].image, 0, 0, canvas.width, canvas.height);
+
+                    gltf.images[i].image.src = canvas.toDataURL("image/png");
+
+                    resolve();
+                });
+
+                imagePromises.push(currentImagePromise);
+            }
+
+            if (resize)
+            {
+                const self = this;
+                Promise.all(imagePromises).then(function()
+                {
+                    self.onGltfLoaded(gltf);
+                });
+            }
+        }
+
+        if (!resize)
+        {
+            this.onGltfLoaded(gltf);
+        }
+    }
 
     onGltfLoaded(gltf)
     {

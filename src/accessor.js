@@ -33,34 +33,23 @@ class gltfAccessor
     {
         return this.componentCount.get(this.type);
     }
-    
+
     getComponentSize()
     {
-        let size = 0;
-        
         switch (this.componentType)
         {
-        case gl.BYTE:
-            size = 1;
-            break;
-        case gl.UNSIGNED_BYTE:
-            size = 1;
-            break;
-        case gl.SHORT:
-            size = 2;
-            break;
-        case gl.UNSIGNED_SHORT:
-            size = 2;
-            break;
-        case gl.UNSIGNED_INT:
-            size = 4;
-            break;
-        case gl.FLOAT:
-            size = 4;
-            break;
+            case gl.BYTE:
+            case gl.UNSIGNED_BYTE:
+                return 1;
+            case gl.SHORT:
+            case gl.UNSIGNED_SHORT:
+                return 2;
+            case gl.UNSIGNED_INT:
+            case gl.FLOAT:
+                return 4;
+            default:
+                return 0;
         }
-        
-        return size;
     }
 
     getTypedView(gltf)

@@ -5,7 +5,7 @@ function gltf_rv(canvasId, index,
     initialModel = "BoomBox",
     envMap = "papermill")
 {
-    let canvas = document.getElementById(canvasId);
+    const canvas = document.getElementById(canvasId);
     if (!canvas)
     {
         console.warn("Failed to retrieve the WebGL canvas!");
@@ -19,7 +19,7 @@ function gltf_rv(canvasId, index,
         return null;
     }
 
-    let viewer = new gltfViewer(canvas, index, headless, onRendererReady, basePath, initialModel, envMap);
+    const viewer = new gltfViewer(canvas, index, headless, onRendererReady, basePath, initialModel, envMap);
 
     canvas.onmousedown = viewer.onMouseDown.bind(viewer);
     document.onmouseup = viewer.onMouseUp.bind(viewer);
