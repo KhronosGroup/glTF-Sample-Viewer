@@ -38,19 +38,20 @@ attribute vec4 a_Color;
 varying vec4 v_Color;
 #endif
 
-uniform mat4 u_MVPMatrix;
+uniform mat4 u_ViewProjectionMatrix;
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_NormalMatrix;
+uniform mat4 u_ScaleMatrix;
 
 void main()
 {
-    vec4 pos = u_ModelMatrix * a_Position;
+    vec4 pos = u_ScaleMatrix * u_ModelMatrix * a_Position;
     v_Position = vec3(pos.xyz) / pos.w;
 
     #ifdef HAS_NORMALS
     #ifdef HAS_TANGENTS
     vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(a_Normal.xyz, 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(a_Tangent.xyz, 0.0)));
+    vec3 tangentW = normalize(vec3(u_ScaleMatrix * u_ModelMatrix * vec4(a_Tangent.xyz, 0.0)));
     vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
     v_TBN = mat3(tangentW, bitangentW, normalW);
     #else // !HAS_TANGENTS
@@ -73,6 +74,6 @@ void main()
     v_Color = a_Color;
     #endif
 
-    gl_Position = u_MVPMatrix * a_Position;
+    gl_Position = u_ViewProjectionMatrix * pos;
 }
 

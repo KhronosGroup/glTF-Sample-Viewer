@@ -33,7 +33,7 @@ class gltfRenderer
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
-        this.viewProjMatrix = mat4.create();
+        this.viewProjectionMatrix = mat4.create();
 
         this.currentCameraPosition = vec3.create();
 
@@ -75,7 +75,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, cameraIndex, recursive, sortByDepth = false)
+    drawScene(gltf, scene, cameraIndex, recursive, sortByDepth = false, scaleFactor = 1.0)
     {
         // if (spector !== undefined) {
         //     spector.setMarker("Draw scene alpha " + sortByDepth);
@@ -100,7 +100,7 @@ class gltfRenderer
 
         this.visibleLights = this.getVisibleLights(gltf, scene);
 
-        mat4.multiply(this.viewProjMatrix, this.projMatrix, this.viewMatrix);
+        mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
         // Optional: pass a scene transfrom to be able to translate & rotate using the mouse
 
@@ -108,12 +108,16 @@ class gltfRenderer
 
         if(sortByDepth)
         {
-            scene.sortSceneByDepth(gltf, this.viewProjMatrix, transform);
+            scene.sortSceneByDepth(gltf, this.viewProjectionMatrix, transform);
         }
 
+		let scaleMatrix = mat4.create();
+		let scaleVector = vec3.fromValues(scaleFactor, scaleFactor, scaleFactor);
+		mat4.fromScaling(scaleMatrix, scaleVector);
+		
         for (let i of scene.nodes)
         {
-            this.drawNode(gltf, scene, i, recursive);
+            this.drawNode(gltf, scene, i, recursive, scaleMatrix);
         }
     }
 
@@ -135,7 +139,7 @@ class gltfRenderer
     }
 
     // same transform, recursive
-    drawNode(gltf, scene, nodeIndex, recursive)
+    drawNode(gltf, scene, nodeIndex, recursive, scaleMatrix = mat4.create())
     {
         let node = gltf.nodes[nodeIndex];
 
@@ -145,31 +149,25 @@ class gltfRenderer
             return;
         }
 
-        let mvpMatrix = mat4.create();
-
-        // update mvp
-        const nodeTransform = node.worldTransform;
-        mat4.multiply(mvpMatrix, this.viewProjMatrix, nodeTransform);
-
         // draw primitive:
         let mesh = gltf.meshes[node.mesh];
         if(mesh !== undefined)
         {
             for (let primitive of mesh.primitives) {
-                this.drawPrimitive(gltf, primitive, nodeTransform, mvpMatrix, node.normalMatrix);
+                this.drawPrimitive(gltf, primitive, node.worldTransform, this.viewProjectionMatrix, node.normalMatrix, scaleMatrix);
             }
         }
 
         if(recursive)
         {
             for (let i of node.children) {
-                this.drawNode(gltf, scene, i, recursive);
+                this.drawNode(gltf, scene, i, recursive, scaleMatrix);
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, modelMatrix, mvpMatrix, normalMatrix)
+    drawPrimitive(gltf, primitive, modelMatrix, viewProjectionMatrix, normalMatrix, scaleMatrix)
     {
         if (primitive.skip) return;
 
@@ -201,9 +199,10 @@ class gltfRenderer
         }
 
         // update model dependant matrices once per node
-        this.shader.updateUniform("u_MVPMatrix", mvpMatrix);
+        this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
+		this.shader.updateUniform("u_ScaleMatrix", scaleMatrix, false);
         this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);

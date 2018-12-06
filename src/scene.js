@@ -75,7 +75,7 @@ class gltfScene
         return new gltfScene(Nodes, this.name);
     }
 
-    sortSceneByDepth(gltf, viewProjMatrix, rootTransform)
+    sortSceneByDepth(gltf, viewProjectionMatrix, rootTransform)
     {
         // vector of {abs position, nodeIndex}
         let posNodes = [];
@@ -86,7 +86,7 @@ class gltfScene
 
             let transform = node.getTransform(); // local transform
             mat4.multiply(transform, parentTransform, transform);
-            mat4.multiply(transform, viewProjMatrix, transform);
+            mat4.multiply(transform, viewProjectionMatrix, transform);
 
             let pos = jsToGl([0, 0, 0]); // world pos
             mat4.getTranslation(pos, transform);

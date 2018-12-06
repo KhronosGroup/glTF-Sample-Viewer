@@ -242,7 +242,7 @@ class gltfViewer
         this.sceneIndex = gltf.scene === undefined ? 0 : gltf.scene;
         const scene = gltf.scenes[this.sceneIndex];
         scene.applyTransformHierarchy(gltf);
-        this.userCamera.fitViewToAsset(gltf);
+        this.scaleFactor = this.userCamera.fitViewToAsset(gltf);
 
         this.gltf = gltf;
         this.currentlyRendering = true;
@@ -290,15 +290,15 @@ class gltfViewer
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
                         let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
-                        self.renderer.drawScene(self.gltf, opaqueScene, self.cameraIndex, true);
+                        self.renderer.drawScene(self.gltf, opaqueScene, self.cameraIndex, true, false, self.scaleFactor);
 
                         // render transparent objects ordered by distance from camera
-                        self.renderer.drawScene(self.gltf, alphaScene, self.cameraIndex, true, true);
+                        self.renderer.drawScene(self.gltf, alphaScene, self.cameraIndex, true, true, self.scaleFactor);
                     }
                     else
                     {
                         // no alpha materials, render as is
-                        self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true);
+                        self.renderer.drawScene(self.gltf, scene, self.cameraIndex, true, false, self.scaleFactor);
                     }
                 }
 
