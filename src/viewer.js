@@ -83,9 +83,9 @@ class gltfViewer
 
     loadFromFileObject(mainFile, additionalFiles)
     {
-        if (!this.headless) this.showSpinner();
-
         const gltfFile = mainFile.name;
+        this.notifyLoadingStarted(gltfFile);
+
         const reader = new FileReader();
         const self = this;
         if (getIsGlb(gltfFile))
@@ -113,9 +113,9 @@ class gltfViewer
 
     loadFromPath(gltfFile, basePath = "")
     {
-        if (!this.headless) this.showSpinner();
-
         gltfFile = basePath + gltfFile;
+        this.notifyLoadingStarted(gltfFile);
+
         const isGlb = getIsGlb(gltfFile);
 
         const self = this;
@@ -140,8 +140,6 @@ class gltfViewer
 
     createGltf(path, json, buffers)
     {
-        this.loadingTimer.start();
-        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
         this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
 
         let gltf = new glTF(path);
@@ -221,11 +219,7 @@ class gltfViewer
 
     onGltfLoaded(gltf)
     {
-        this.loadingTimer.stop();
-        console.log("Loading took %f seconds", this.loadingTimer.seconds);
-
-        // Finished load all of the glTF assets
-        if (!this.headless) this.hideSpinner();
+        this.notifyLoadingEnded();
 
         if (gltf.scenes.length === 0)
         {
@@ -582,6 +576,28 @@ class gltfViewer
 
         // u_brdfLUT tex
         gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], gl.TEXTURE_2D));
+    }
+
+    notifyLoadingStarted(path)
+    {
+        this.loadingTimer.start();
+        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
+
+        if (!this.headless)
+        {
+            this.showSpinner();
+        }
+    }
+
+    notifyLoadingEnded()
+    {
+        this.loadingTimer.stop();
+        console.log("Loading took %f seconds", this.loadingTimer.seconds);
+
+        if (!this.headless)
+        {
+            this.hideSpinner();
+        }
     }
 
     showSpinner()
