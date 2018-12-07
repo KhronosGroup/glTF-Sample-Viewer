@@ -60,3 +60,5 @@ class gltfLoader
         }
     }
 };
+
+export { gltfLoader };

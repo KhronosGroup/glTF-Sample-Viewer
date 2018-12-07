@@ -1,3 +1,5 @@
+import { gltfViewer } from './viewer.js';
+
 function gltf_rv(canvasId, index,
     headless = false,
     onRendererReady = undefined,
@@ -5,14 +7,16 @@ function gltf_rv(canvasId, index,
     initialModel = "BoomBox",
     envMap = "papermill")
 {
-    const canvas = document.getElementById(canvasId);
+    // TODO: Avoid depending on global variables.
+    const canvas = window.canvas = document.getElementById(canvasId);
     if (!canvas)
     {
         console.warn("Failed to retrieve the WebGL canvas!");
         return null;
     }
 
-    gl = getWebGlContext();
+    // TODO: Avoid depending on global variables.
+    const gl = window.gl = getWebGlContext();
     if (!gl)
     {
         console.warn("Failed to get an WebGL rendering context!");
@@ -51,3 +55,5 @@ function getWebGlContext()
         }
     }
 }
+
+export { gltf_rv };
