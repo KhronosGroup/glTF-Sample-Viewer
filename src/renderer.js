@@ -77,10 +77,6 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(gltf, scene, cameraIndex, recursive, sortByDepth = false, scaleFactor = 1.0)
     {
-        // if (spector !== undefined) {
-        //     spector.setMarker("Draw scene alpha " + sortByDepth);
-        // }
-
         let currentCamera = undefined;
 
         if(cameraIndex !== -1)
@@ -111,10 +107,10 @@ class gltfRenderer
             scene.sortSceneByDepth(gltf, this.viewProjectionMatrix, transform);
         }
 
-		let scaleMatrix = mat4.create();
-		let scaleVector = vec3.fromValues(scaleFactor, scaleFactor, scaleFactor);
-		mat4.fromScaling(scaleMatrix, scaleVector);
-		
+        let scaleMatrix = mat4.create();
+        let scaleVector = vec3.fromValues(scaleFactor, scaleFactor, scaleFactor);
+        mat4.fromScaling(scaleMatrix, scaleVector);
+
         for (let i of scene.nodes)
         {
             this.drawNode(gltf, scene, i, recursive, scaleMatrix);
