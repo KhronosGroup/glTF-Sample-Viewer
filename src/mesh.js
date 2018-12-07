@@ -1,5 +1,3 @@
-import { gltfPrimitive } from './primitive.js';
-
 class gltfMesh
 {
     constructor(primitives = [], name = undefined)
@@ -23,5 +21,3 @@ class gltfMesh
         }
     }
 };
-
-export { gltfMesh };

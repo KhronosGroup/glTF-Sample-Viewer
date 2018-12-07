@@ -1,6 +1,3 @@
-import { mat4 } from 'gl-matrix';
-import { jsToGl } from './utils.js';
-
 class gltfScene
 {
     constructor(nodes = [], name = undefined)
@@ -137,5 +134,3 @@ class gltfScene
         return false;
     }
 };
-
-export { gltfScene };

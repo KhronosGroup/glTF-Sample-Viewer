@@ -1,5 +1,3 @@
-import { fromKeys } from './utils.js';
-
 class gltfBufferView
 {
     constructor(buffer = undefined,
@@ -19,5 +17,3 @@ class gltfBufferView
         fromKeys(this, jsonBufferView);
     }
 };
-
-export { gltfBufferView };

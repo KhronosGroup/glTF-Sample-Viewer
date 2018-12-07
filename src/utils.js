@@ -1,5 +1,3 @@
-import { glMatrix } from 'gl-matrix';
-
 function jsToGl(array)
 {
     let tensor = new glMatrix.ARRAY_TYPE(array.length);
@@ -73,7 +71,7 @@ function getExtension(filename)
     const split = filename.toLowerCase().split(".");
     if (split.length == 1)
     {
-        return undefined;
+        return undefined
     }
     return split[split.length - 1];
 }
@@ -96,26 +94,9 @@ function getContainingFolder(filePath)
 
 function combinePaths()
 {
-    const parts = Array.from(arguments);
+    parts = Array.from(arguments);
     return parts.join("/");
 }
 
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
-
-export {
-    jsToGl,
-    fromKeys,
-    fromParams,
-    stringHash,
-    combineHashes,
-    clamp,
-    getIsGlb,
-    getIsGltf,
-    getExtension,
-    getFileName,
-    getFileNameWithoutExtension,
-    getContainingFolder,
-    combinePaths,
-    UniformStruct
-};

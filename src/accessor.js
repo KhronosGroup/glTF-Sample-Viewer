@@ -1,5 +1,3 @@
-import { fromKeys } from './utils.js';
-
 class gltfAccessor
 {
     constructor(bufferView = undefined, byteOffset = 0,
@@ -122,5 +120,3 @@ class gltfAccessor
         this.glBuffer = undefined;
     }
 };
-
-export { gltfAccessor };

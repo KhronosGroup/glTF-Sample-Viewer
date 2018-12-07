@@ -1,11 +1,9 @@
-import { HDRImage } from '../libs/hdrpng.js';
-import { fromKeys } from './utils.js';
-
-const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
+const ImageType_Jpeg = "image/jpeg";
+const ImageType_Hdr = "image/vnd.radiance";
 
 class gltfImage
 {
-    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageMimeType.JPEG, image = undefined)
+    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageType_Jpeg, image = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;
@@ -38,7 +36,7 @@ class gltfImage
             return;
         }
 
-        this.image = this.mimeType === ImageMimeType.HDR ? new HDRImage() : new Image();
+        this.image = this.mimeType === ImageType_Hdr ? new HDRImage() : new Image();
         this.image.crossOrigin = "";
         const self = this;
         const promise = new Promise(function(resolve, reject)
@@ -116,5 +114,3 @@ class gltfImage
         return true;
     }
 };
-
-export { gltfImage, ImageMimeType };
