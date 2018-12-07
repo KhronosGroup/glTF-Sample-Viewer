@@ -1,5 +1,3 @@
-import { fromKeys } from './utils.js';
-
 class gltfBuffer
 {
     constructor(uri = undefined, byteLength = undefined, name = undefined)
@@ -85,5 +83,3 @@ class gltfBuffer
         return true;
     }
 };
-
-export { gltfBuffer };

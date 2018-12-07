@@ -60,5 +60,3 @@ class gltfLoader
         }
     }
 };
-
-export { gltfLoader };

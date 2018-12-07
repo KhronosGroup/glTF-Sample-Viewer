@@ -1,7 +1,3 @@
-import { mat3 } from 'gl-matrix';
-import { gltfTextureInfo } from './texture.js';
-import { fromKeys, jsToGl } from './utils.js';
-
 class gltfMaterial
 {
     constructor(emissiveFactor = jsToGl([0, 0, 0]), alphaMode = "OPAQUE", alphaCutoff = 0.5, doubleSided = false,
@@ -282,5 +278,3 @@ class gltfMaterial
         }
     }
 };
-
-export { gltfMaterial };
