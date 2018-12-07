@@ -36,6 +36,9 @@ Features
 - [x] Support for Visual Studio Code integration
 - [x] Debug GUI for inspecting BRDF inputs
 
+Usage
+-----
+
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
 
 > **Controls**
@@ -56,15 +59,28 @@ Following section describes the usage in short:
 >
 > * Drag and drop glTF files into viewer
 
+Setup
+-----
 
 For local usage and debugging, please follow these instructions:
 
-**Setup**
-* Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
-* Pull the submodule for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models)  `git submodule update  --init --recursive`
-* Open `index.html`. As the browser accesses the local drive, security settings need to be adapted.
+**(1)** Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
 
-**Debugging**
+**(2)** Install dependencies with `npm install`
+
+**(3)** Pull the submodule for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models)  `git submodule update  --init --recursive`
+
+**(4a)** Start a demo in the browser with `npm run dev`, and open http://localhost:8000.
+
+**(4b)** Start a demo in Electron with `npm run dev:electron`.
+
+When making changes, the project is automatically rebuilt and the `dist/` folder
+is updated. Files in the `dist/` folder should not be included in pull
+requests — they will be updated by project maintainers with each new release.
+
+Debugging
+---------
+
 * Requirements
   * [Visual Studio Code](https://code.visualstudio.com/)
   * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
