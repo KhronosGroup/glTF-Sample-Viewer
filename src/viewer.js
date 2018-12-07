@@ -82,6 +82,8 @@ class gltfViewer
 
     loadFromFileObject(mainFile, additionalFiles)
     {
+        if (!this.headless) this.showSpinner();
+
         const gltfFile = mainFile.name;
         const reader = new FileReader();
         const self = this;
