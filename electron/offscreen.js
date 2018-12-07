@@ -7,6 +7,9 @@ const path = require('path');
 const open = require('open');
 const fs = require('fs');
 
+const defaultModel = "assets/models/2.0/BoomBox/glTF/BoomBox.gltf";
+const outputFile = "output.png";
+
 let mainWindow;
 
 let argv = process.argv;
@@ -97,10 +100,22 @@ parser.addArgument(
 parser.addArgument(
     'gltf_path',
     {
+        nargs: "?",
         help: "The path of the glTF file."
     }
 )
 args = parser.parseArgs(args);
+
+if (args.gltf_path === null)
+{
+    console.log("%s\n", parser.description);
+    console.info("IMPORTANT NOTICE: \n\
+    Add '-- --' to get your arguments through to the tool. \n\
+    Example: 'npm run start-offscreen -- -- --help'");
+    console.error("\nNo gltf_path was given, defaulting to '%s'\n", defaultModel);
+    args.gltf_path = defaultModel;
+}
+
 global.sharedObject = {args: args}
 
 function createWindow () {
@@ -140,9 +155,9 @@ function createWindow () {
 
             lastImage = image;
 
-            fs.writeFile('output.png', lastImage.toPNG(), (err) => {
+            fs.writeFile(outputFile, lastImage.toPNG(), (err) => {
                 if (err) throw err;
-                console.log('The file has been saved!');
+                console.log("The file has been saved to '%s'", outputFile);
 
                 app.quit();
             });
