@@ -116,7 +116,7 @@ class gltfViewer
         const isGlb = getIsGlb(gltfFile);
 
         const self = this;
-        axios.get(gltfFile, { responseType: isGlb  ? "arraybuffer" : "json" }).then(function(response)
+        axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
         {
             let json = response.data;
             let buffers = undefined
@@ -138,7 +138,7 @@ class gltfViewer
     createGltf(path, json, buffers)
     {
         console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
-		this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
+        this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
@@ -544,10 +544,10 @@ class gltfViewer
             for (i = 0; i <= mipLevel; i++)
             {
                 const imagePath = basePath + i + extension;
-				const image = new gltfImage(imagePath, side, i);
-				image.mimeType = type;
-				gltf.images.push(image);
-				indices.push(++imageIdx);
+                const image = new gltfImage(imagePath, side, i);
+                image.mimeType = type;
+                gltf.images.push(image);
+                indices.push(++imageIdx);
             }
         };
 
