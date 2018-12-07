@@ -24,6 +24,7 @@ class gltfViewer
 
         canvas.style.cursor = "grab";
 
+        this.loadingTimer = new Timer();
         this.gltf = undefined;
 
         this.sceneIndex = 0;
@@ -139,6 +140,7 @@ class gltfViewer
 
     createGltf(path, json, buffers)
     {
+        this.loadingTimer.start();
         console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
         this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
 
@@ -219,6 +221,9 @@ class gltfViewer
 
     onGltfLoaded(gltf)
     {
+        this.loadingTimer.stop();
+        console.log("Loading took %f seconds", this.loadingTimer.seconds);
+
         // Finished load all of the glTF assets
         if (!this.headless) this.hideSpinner();
 

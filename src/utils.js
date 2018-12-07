@@ -100,3 +100,26 @@ function combinePaths()
 
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
+
+class Timer
+{
+    constructor()
+    {
+        this.startTime = undefined;
+        this.endTime = undefined;
+        this.seconds = undefined;
+    }
+
+    start()
+    {
+        this.startTime = new Date().getTime() / 1000;
+        this.endTime = undefined;
+        this.seconds = undefined;
+    }
+
+    stop()
+    {
+        this.endTime = new Date().getTime() / 1000;
+        this.seconds = this.endTime - this.startTime;
+    }
+}
