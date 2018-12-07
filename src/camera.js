@@ -1,3 +1,6 @@
+import { mat4, vec3 } from 'gl-matrix';
+import { fromKeys } from './utils.js';
+
 class gltfCamera
 {
     constructor(type = "perspective",
@@ -47,6 +50,7 @@ class gltfCamera
     {
         if(this.node !== undefined && gltf !== undefined)
         {
+            // TODO: Avoid depending on global variables.
             const node = gltf.nodes[currentCamera.node];
             return mat4.clone(node.worldTransform);
         }
@@ -75,3 +79,5 @@ class gltfCamera
         }
     }
 };
+
+export { gltfCamera };
