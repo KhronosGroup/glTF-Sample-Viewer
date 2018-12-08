@@ -406,7 +406,7 @@ void main()
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = texture2D(u_SpecularGlossinessSampler, getSpecularGlossinessUV());
+    vec4 sgSample = SRGBtoLINEAR(texture2D(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
     perceptualRoughness = (1.0 - sgSample.a * u_GlossinessFactor); // glossiness to roughness
     f0 = sgSample.rgb * u_SpecularFactor; // specular
 #else
