@@ -1,7 +1,7 @@
 glTF 2.0 Reference Viewer
 =========================
 
-[![](assets/images/BoomBox.JPG)](http://github.khronos.org/glTF-WebGL-PBR/)
+[![](assets/images/BoomBox.JPG)](http://gltf.ux3d.io/)
 
 This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.khronos.org/webgl/).
 
