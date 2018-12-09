@@ -1,9 +1,3 @@
-import {
-    getContainingFolder,
-    combinePaths,
-    getFileNameWithoutExtension
-} from './utils.js';
-
 class gltfModelPathProvider
 {
     constructor(modelIndexerPath, ignoredVariants = ["glTF-Draco", "glTF-Embedded"])
@@ -63,5 +57,3 @@ class gltfModelPathProvider
         }
     }
 }
-
-export { gltfModelPathProvider };

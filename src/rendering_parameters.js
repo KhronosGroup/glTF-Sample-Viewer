@@ -1,21 +1,21 @@
 const ToneMaps =
 {
-    LINEAR: "Linear" ,
-    UNCHARTED: "Uncharted 2" ,
-    HEJL_RICHARD: "Hejl Richard"
+    linear: "Linear",
+    uncharted: "Uncharted 2",
+    hejlRichard: "Hejl Richard"
 };
 
 const DebugOutput =
 {
-    NONE: "None",
-    METALLIC: "Metallic",
-    ROUGHNESS: "Roughness",
-    NORMAL: "Normal",
-    BASECOLOR: "Base Color",
-    OCCLUSION: "Occlusion",
-    EMISIVE: "Emissive",
-    ALPHA: "Alpha",
-    F0: "F0"
+    none: "None",
+    metallic: "Metallic",
+    roughness: "Roughness",
+    normal: "Normal",
+    baseColor: "Base Color",
+    occlusion: "Occlusion",
+    emisive: "Emissive",
+    alpha: "Alpha",
+    f0: "F0"
 };
 
 const Environments =
@@ -42,8 +42,8 @@ class gltfRenderingParameters
         exposure = 1.0,
         gamma = 2.2,
         clearColor = [51, 51, 51],
-        toneMap = ToneMaps.LINEAR,
-        debugOutput = DebugOutput.NONE)
+        toneMap = ToneMaps.linear,
+        debugOutput = DebugOutput.none)
     {
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
@@ -80,5 +80,3 @@ class gltfRenderingParameters
         }
     }
 };
-
-export { gltfRenderingParameters, Environments, ToneMaps, DebugOutput };

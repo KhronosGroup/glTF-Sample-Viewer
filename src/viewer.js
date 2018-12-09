@@ -1,16 +1,3 @@
-import { glTF } from './gltf.js';
-import { gltfImage, ImageMimeType } from './image.js';
-import { gltfLoader } from './loader.js';
-import { gltfModelPathProvider } from './model_path_provider.js';
-import { gltfRenderer } from './renderer.js';
-import { gltfRenderingParameters } from './rendering_parameters.js';
-import { gltfSampler } from './sampler.js';
-import { gltfTexture } from './texture.js';
-import { gltfUserInterface } from './user_interface.js';
-import { UserCamera } from './user_camera.js';
-import { jsToGl, getIsGlb, getIsGltf, getFileNameWithoutExtension, Timer } from './utils.js';
-import { GlbParser } from './glbParser';
-
 class gltfViewer
 {
     constructor(
@@ -35,8 +22,6 @@ class gltfViewer
         this.lastTouchY = 0.00;
         this.touchDown = false;
 
-        // TODO: Avoid depending on global variables.
-        window.canvas = canvas;
         canvas.style.cursor = "grab";
 
         this.loadingTimer = new Timer();
@@ -159,10 +144,8 @@ class gltfViewer
 
         let gltf = new glTF(path);
         gltf.fromJson(json);
-
-        const environmentType = this.renderingParameters.useHdr ? ImageMimeType.HDR : ImageMimeType.JPEG;
+        const environmentType = this.renderingParameters.useHdr ? ImageType_Hdr : ImageType_Jpeg;
         this.addEnvironmentMap(gltf, this.renderingParameters.environment, this.renderingParameters.environmentMipLevel, environmentType);
-
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
@@ -511,15 +494,15 @@ class gltfViewer
         return modelDictionary;
     }
 
-    addEnvironmentMap(gltf, subFolder = "papermill", mipLevel = 9, type = ImageMimeType.JPEG)
+    addEnvironmentMap(gltf, subFolder = "papermill", mipLevel = 9, type = ImageType_Jpeg)
     {
         let extension;
         switch (type)
         {
-            case (ImageMimeType.JPEG):
+            case (ImageType_Jpeg):
                 extension = ".jpg";
                 break;
-            case (ImageMimeType.HDR):
+            case (ImageType_Hdr):
                 extension = ".hdr";
                 break;
             default:
@@ -635,5 +618,3 @@ class gltfViewer
         }
     }
 }
-
-export { gltfViewer };

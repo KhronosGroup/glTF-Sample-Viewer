@@ -1,5 +1,3 @@
-import { UniformStruct } from './utils.js';
-
 class gltfShader
 {
     constructor(program, hash)
@@ -136,5 +134,3 @@ class gltfShader
         }
     }
 };
-
-export { gltfShader };
