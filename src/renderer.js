@@ -1,3 +1,11 @@
+import { mat4, vec3 } from 'gl-matrix';
+import { gltfLight } from './light.js';
+import { gltfTextureInfo } from './texture.js';
+import { ShaderCache } from './shader_cache.js';
+import { jsToGl } from './utils.js';
+import { LoadWebGLExtensions, SetIndices, SetTexture, EnableAttribute } from './webgl.js';
+import { ToneMaps, DebugOutput } from './rendering_parameters.js';
+
 class gltfRenderer
 {
     constructor(canvas, defaultCamera, parameters, basePath)
@@ -303,46 +311,46 @@ class gltfRenderer
 
         switch(this.parameters.toneMap)
         {
-            case(ToneMaps.uncharted):
+            case(ToneMaps.UNCHARTED):
                 fragDefines.push("TONEMAP_UNCHARTED 1");
                 break;
-            case(ToneMaps.hejlRichard):
+            case(ToneMaps.HEJL_RICHARD):
                 fragDefines.push("TONEMAP_HEJLRICHARD 1");
                 break;
-            case(ToneMaps.linear):
+            case(ToneMaps.LINEAR):
             default:
                 break;
         }
 
-        if(this.parameters.debugOutput !== DebugOutput.none)
+        if(this.parameters.debugOutput !== DebugOutput.NONE)
         {
             fragDefines.push("DEBUG_OUTPUT 1");
         }
 
         switch(this.parameters.debugOutput)
         {
-            case(DebugOutput.metallic):
+            case(DebugOutput.METALLIC):
                 fragDefines.push("DEBUG_METALLIC 1");
                 break;
-            case(DebugOutput.roughness):
+            case(DebugOutput.ROUGHNESS):
                 fragDefines.push("DEBUG_ROUGHNESS 1");
                 break;
-            case(DebugOutput.normal):
+            case(DebugOutput.NORMAL):
                 fragDefines.push("DEBUG_NORMAL 1");
                 break;
-            case(DebugOutput.baseColor):
+            case(DebugOutput.BASECOLOR):
                 fragDefines.push("DEBUG_BASECOLOR 1");
                 break;
-            case(DebugOutput.occlusion):
+            case(DebugOutput.OCCLUSION):
                 fragDefines.push("DEBUG_OCCLUSION 1");
                 break;
-            case(DebugOutput.emisive):
+            case(DebugOutput.EMISIVE):
                 fragDefines.push("DEBUG_EMISSIVE 1");
                 break;
-            case(DebugOutput.f0):
+            case(DebugOutput.F0):
                 fragDefines.push("DEBUG_F0 1");
                 break;
-            case(DebugOutput.alpha):
+            case(DebugOutput.ALPHA):
                 fragDefines.push("DEBUG_ALPHA 1");
                 break;
         }
@@ -380,3 +388,5 @@ class gltfRenderer
         this.shaderCache.destroy();
     }
 };
+
+export { gltfRenderer };
