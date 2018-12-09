@@ -100,5 +100,3 @@ class GlbParser
         return false;
     }
 };
-
-export { GlbParser };

@@ -1,5 +1,3 @@
-import { Environments, ToneMaps, DebugOutput } from './rendering_parameters.js';
-
 class gltfUserInterface
 {
     constructor(
@@ -88,5 +86,3 @@ class gltfUserInterface
         monitoringFolder.__ul.appendChild(statsList);
     }
 }
-
-export { gltfUserInterface };

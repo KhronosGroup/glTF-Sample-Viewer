@@ -1,5 +1,3 @@
-import { fromKeys } from './utils.js';
-
 class gltfPrimitive
 {
     constructor(attributes = [], indices = undefined, material = undefined, mode = gl.TRIANGLES)
@@ -79,5 +77,3 @@ class gltfPrimitive
         return this.defines;
     }
 };
-
-export { gltfPrimitive };

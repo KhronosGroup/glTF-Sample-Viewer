@@ -1,7 +1,3 @@
-import { mat4, vec3 } from 'gl-matrix';
-import { gltfCamera } from './camera.js';
-import { jsToGl, clamp } from './utils.js';
-
 class UserCamera extends gltfCamera
 {
     constructor(
@@ -83,7 +79,7 @@ class UserCamera extends gltfCamera
 		let maxValue = Math.max(max[0], Math.max(max[1], max[2]));
 		let deltaValue = maxValue - minValue;
 		scaleFactor = 1.0 / deltaValue;
-
+		
         for (let i of [0, 1, 2])
         {
 			min[i] *= scaleFactor;
@@ -92,7 +88,7 @@ class UserCamera extends gltfCamera
 
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-
+		
 		return scaleFactor;
     }
 
@@ -177,5 +173,3 @@ class UserCamera extends gltfCamera
         }
     }
 };
-
-export { UserCamera };

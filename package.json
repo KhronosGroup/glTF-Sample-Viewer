@@ -2,17 +2,11 @@
   "name": "gltf-rv",
   "version": "1.0.0",
   "description": "The official glTF reference viewer.",
-  "main": "dist/gltf-reference-viewer.js",
-  "module": "dist/gltf-reference-viewer.module.js",
+  "main": "electron/main.js",
   "scripts": {
-    "start": "electron electron/main.js",
+    "start": "electron .",
     "start-offscreen": "electron electron/offscreen.js --enable-logging",
-    "build": "rollup -c",
-    "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",
-    "dev:electron": "concurrently \"rollup -c -w\" \"npm start\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "version": "npm run build && git add -A dist",
-    "postversion": "git push && git push --tags",
     "package-mac": "electron-packager . gltf-reference-viewer --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
     "package-win": "electron-packager . gltf-reference-viewer --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.ProductName=\"glTF Reference Viewer\"",
     "package-linux": "electron-packager . gltf-reference-viewer --overwrite --asar=true --platform=linux --arch=x64 --prune=true --out=release-builds"
@@ -30,16 +24,11 @@
   "license": "MIT",
   "dependencies": {
     "argparse": "^1.0.10",
-    "gl-matrix": "^2.8.1",
     "open": "0.0.5"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0",
     "electron": "^3.0.10",
-    "electron-packager": "^12.2.0",
-    "rollup": "^0.67.4",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "serve": "^10.1.1"
+    "electron-packager": "^12.2.0"
   },
   "bugs": {
     "url": "https://github.com/ux3d/glTF-WebGL-PBR/issues"

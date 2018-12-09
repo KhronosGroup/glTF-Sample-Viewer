@@ -1,5 +1,3 @@
-import { fromKeys } from './utils.js';
-
 class gltfTexture
 {
     constructor(sampler = undefined, source = undefined, type = gl.TEXTURE_2D, texture = undefined)
@@ -55,5 +53,3 @@ class gltfTextureInfo
         this.samplerName = samplerName;
     }
 };
-
-export { gltfTexture, gltfTextureInfo };
