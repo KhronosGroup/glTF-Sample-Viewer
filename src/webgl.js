@@ -23,13 +23,29 @@ function LoadWebGLExtensions(webglExtensions)
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
-function SetSampler(gltfSamplerObj, type) // TEXTURE_2D
+function SetSampler(gltfSamplerObj, type, rectangleImage) // TEXTURE_2D
 {
     gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
     gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
-    gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
-    gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
 
+    // Rectangle images are not mip-mapped, so force to non-mip-mapped sampler.
+    if (rectangleImage && (gltfSamplerObj.minFilter != gl.NEAREST) && (gltfSamplerObj.minFilter != gl.LINEAR))
+    {
+        if ((gltfSamplerObj.minFilter == gl.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == gl.NEAREST_MIPMAP_LINEAR))
+    	{
+    		gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	}
+    	else
+    	{
+    		gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    	}
+    }
+    else
+    {
+    	gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
+    }
+    gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
+    
     if (gl.supports_EXT_texture_filter_anisotropic)
     {
         gl.texParameterf(type, gl.anisotropy, gl.maxAnisotropy); // => 16xAF
@@ -71,8 +87,6 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             return false;
         }
 
-        SetSampler(gltfSampler, gltfTex.type);
-
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
         let images = [];
@@ -88,6 +102,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
         }
 
         let generateMips = true;
+        let rectangleImage = false;
 
         for(const src of images)
         {
@@ -108,7 +123,15 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             {
                 gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
             }
+            
+            if (image.image.width != image.image.height)
+            {
+            	rectangleImage = true;
+            	generateMips = false;
+            }
         }
+        
+        SetSampler(gltfSampler, gltfTex.type, rectangleImage);
 
         if (textureInfo.generateMips && generateMips)
         {
