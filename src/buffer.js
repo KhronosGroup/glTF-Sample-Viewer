@@ -41,7 +41,7 @@ class gltfBuffer
         }
 
         const self = this;
-        axios.get(gltf.path + this.uri, { responseType: 'arraybuffer'})
+        axios.get(getContainingFolder(gltf.path) + this.uri, { responseType: 'arraybuffer'})
             .then(function(response)
             {
                 self.buffer = response.data;

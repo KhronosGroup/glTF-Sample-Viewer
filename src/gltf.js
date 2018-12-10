@@ -18,7 +18,7 @@ class glTF
         this.defaultMaterial = -1;
         this.defaultSampler  = -1;
         this.cubemapSampler  = -1;
-        this.path = file.substr(0, file.lastIndexOf("/") + 1);
+        this.path = file;
     }
 
     fromJsonNodes(jsonNodes)
@@ -92,7 +92,7 @@ class glTF
         for (let i = 0; i < jsonImages.length; ++i)
         {
             let image = new gltfImage();
-            image.fromJson(jsonImages[i], this.path);
+            image.fromJson(jsonImages[i], getContainingFolder(this.path));
             this.images.push(image);
         }
     }
