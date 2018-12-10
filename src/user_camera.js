@@ -72,24 +72,24 @@ class UserCamera extends gltfCamera
         let min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         let max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
 
-		this.getAssetExtends(gltf, min, max);
+        this.getAssetExtends(gltf, min, max);
 
-		let scaleFactor = 1.0;
-		let minValue = Math.min(min[0], Math.min(min[1], min[2]));
-		let maxValue = Math.max(max[0], Math.max(max[1], max[2]));
-		let deltaValue = maxValue - minValue;
-		scaleFactor = 1.0 / deltaValue;
-		
+        let scaleFactor = 1.0;
+        let minValue = Math.min(min[0], Math.min(min[1], min[2]));
+        let maxValue = Math.max(max[0], Math.max(max[1], max[2]));
+        let deltaValue = maxValue - minValue;
+        scaleFactor = 1.0 / deltaValue;
+
         for (let i of [0, 1, 2])
         {
-			min[i] *= scaleFactor;
-			max[i] *= scaleFactor;
+            min[i] *= scaleFactor;
+            max[i] *= scaleFactor;
         }
 
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-		
-		return scaleFactor;
+
+        return scaleFactor;
     }
 
     getAssetExtends(gltf, outMin, outMax)

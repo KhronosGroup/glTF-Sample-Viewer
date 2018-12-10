@@ -249,7 +249,7 @@ class gltfViewer
         let self = this;
         function renderFrame(elapsedTime)
         {
-            if (!self.headless && self.stats != undefined)
+            if (self.stats !== undefined)
             {
                 self.stats.begin();
             }
@@ -303,7 +303,7 @@ class gltfViewer
                 }
             }
 
-            if (!self.headless && self.stats != undefined)
+            if (self.stats !== undefined)
             {
                 self.stats.end();
             }
