@@ -167,12 +167,12 @@ class gltfRenderer
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
 
-        if(fragmentHash && vertexHash)
+        if (fragmentHash && vertexHash)
         {
             this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
         }
 
-        if(this.shader === undefined)
+        if (this.shader === undefined)
         {
             return;
         }
@@ -188,14 +188,17 @@ class gltfRenderer
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
-		this.shader.updateUniform("u_ScaleMatrix", scaleMatrix, false);
+        this.shader.updateUniform("u_ScaleMatrix", scaleMatrix, false);
         this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
-        if (material.doubleSided) {
+        if (material.doubleSided)
+        {
             gl.disable(gl.CULL_FACE);
-        } else {
+        }
+        else
+        {
             gl.enable(gl.CULL_FACE);
         }
 

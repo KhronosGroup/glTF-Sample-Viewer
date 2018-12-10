@@ -149,10 +149,9 @@ class gltfViewer
         let assetPromises = gltfLoader.load(gltf, buffers);
 
         let self = this;
-        Promise.all(assetPromises).then(function()
-        {
-            self.onResize(gltf);
-        });
+        Promise.all(assetPromises)
+            .then(() => self.onResize(gltf))
+            .then(() => self.onGltfLoaded(gltf));
     }
 
     isPowerOf2(n)
@@ -162,12 +161,10 @@ class gltfViewer
 
     onResize(gltf)
     {
-        let resize = false;
-
+        const imagePromises = [];
         if (gltf.images !== undefined)
         {
             let i;
-            const imagePromises = [];
             for (i = 0; i < gltf.images.length; i++)
             {
                 if (gltf.images[i].image.dataRGBE !== undefined ||
@@ -175,8 +172,6 @@ class gltfViewer
                 {
                     continue;
                 }
-
-                resize = true;
 
                 const currentImagePromise = new Promise(function(resolve)
                 {
@@ -200,21 +195,9 @@ class gltfViewer
 
                 imagePromises.push(currentImagePromise);
             }
-
-            if (resize)
-            {
-                const self = this;
-                Promise.all(imagePromises).then(function()
-                {
-                    self.onGltfLoaded(gltf);
-                });
-            }
         }
 
-        if (!resize)
-        {
-            this.onGltfLoaded(gltf);
-        }
+        return Promise.all(imagePromises);
     }
 
     onGltfLoaded(gltf)
