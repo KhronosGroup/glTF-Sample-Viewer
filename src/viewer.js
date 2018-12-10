@@ -219,7 +219,7 @@ class gltfViewer
 
     onGltfLoaded(gltf)
     {
-        this.notifyLoadingEnded();
+        this.notifyLoadingEnded(gltf.path);
 
         if (gltf.scenes.length === 0)
         {
@@ -589,10 +589,10 @@ class gltfViewer
         }
     }
 
-    notifyLoadingEnded()
+    notifyLoadingEnded(path)
     {
         this.loadingTimer.stop();
-        console.log("Loading took %f seconds", this.loadingTimer.seconds);
+        console.log("Loading '%s' took %f seconds", path, this.loadingTimer.seconds);
 
         if (!this.headless)
         {
