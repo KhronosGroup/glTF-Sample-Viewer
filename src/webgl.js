@@ -103,6 +103,9 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             {
                 gl.texImage2D(image.type, image.miplevel, gl.RGB, image.image.width, image.image.height, 0, gl.RGB, gl.FLOAT, image.image.dataFloat);
                 generateMips = false;
+                
+                // Release the complete HDR image after usage.
+                image.image = undefined;
             }
             else
             {
