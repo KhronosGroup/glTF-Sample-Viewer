@@ -48,15 +48,18 @@ class gltfLoader
         {
             image.image = undefined;
         }
+        gltf.images = [];
 
         for (let texture of gltf.textures)
         {
             texture.destroy();
         }
+        gltf.textures = [];
 
         for (let accessor of gltf.accessors)
         {
             accessor.destroy();
         }
+        gltf.accessors = [];
     }
 };

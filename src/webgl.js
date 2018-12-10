@@ -25,8 +25,16 @@ function LoadWebGLExtensions(webglExtensions)
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
 function SetSampler(gltfSamplerObj, type, rectangleImage) // TEXTURE_2D
 {
-    gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
-    gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
+	if (rectangleImage)
+	{
+		gl.texParameteri(type, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(type, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	}
+	else
+	{
+		gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
+		gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
+	}
 
     // Rectangle images are not mip-mapped, so force to non-mip-mapped sampler.
     if (rectangleImage && (gltfSamplerObj.minFilter != gl.NEAREST) && (gltfSamplerObj.minFilter != gl.LINEAR))
@@ -123,7 +131,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             {
                 gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
             }
-            
+
             if (image.image.width != image.image.height)
             {
             	rectangleImage = true;
