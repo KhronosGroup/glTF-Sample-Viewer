@@ -1,4 +1,4 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, getContainingFolder } from './utils.js';
 
 class gltfBuffer
 {

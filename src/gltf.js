@@ -10,6 +10,7 @@ import { gltfNode } from './node.js';
 import { gltfSampler } from './sampler.js';
 import { gltfScene } from './scene.js';
 import { gltfTexture } from './texture.js';
+import { getContainingFolder } from './utils';
 
 class glTF
 {
