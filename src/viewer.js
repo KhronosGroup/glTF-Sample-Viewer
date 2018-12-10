@@ -140,6 +140,15 @@ class gltfViewer
 
     createGltf(path, json, buffers)
     {
+        this.currentlyRendering = false;
+        
+        // unload previous scene
+        if (this.gltf !== undefined)
+        {
+            gltfLoader.unload(this.gltf);
+            this.gltf = undefined;
+        }
+        
         this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
 
         let gltf = new glTF(path);
@@ -213,15 +222,6 @@ class gltfViewer
         if (gltf.scenes.length === 0)
         {
             throw "No scenes in the gltf";
-        }
-
-        this.currentlyRendering = false;
-
-        // unload previous scene
-        if (this.gltf !== undefined)
-        {
-            gltfLoader.unload(this.gltf);
-            this.gltf = undefined;
         }
 
         this.sceneIndex = gltf.scene === undefined ? 0 : gltf.scene;
