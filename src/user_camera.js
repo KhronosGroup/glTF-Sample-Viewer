@@ -94,8 +94,13 @@ class UserCamera extends gltfCamera
 
     getAssetExtends(gltf, outMin, outMax)
     {
-        for (const node of gltf.nodes.filter(n => n.mesh !== undefined))
+        for (const node of gltf.nodes)
         {
+            if (node.mesh === undefined)
+            {
+                continue;
+            }
+
             const mesh = gltf.meshes[node.mesh];
             if (mesh.primitives === undefined)
             {
