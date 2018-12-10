@@ -173,6 +173,12 @@ class gltfViewer
                     continue;
                 }
 
+                if (gltf.images[i].image.width != gltf.images[i].image.height)
+                {
+                	// Rectangle, so not mip-mapped, so no resize needed.
+                    continue;
+                }
+                
                 const currentImagePromise = new Promise(function(resolve)
                 {
                     const canvas = document.createElement('canvas');
