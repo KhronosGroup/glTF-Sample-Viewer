@@ -75,7 +75,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, cameraIndex, recursive, sortByDepth = false, scaleFactor = 1.0)
+    drawScene(gltf, scene, cameraIndex, sortByDepth, scaleFactor)
     {
         let currentCamera = undefined;
 
@@ -111,9 +111,13 @@ class gltfRenderer
         let scaleVector = vec3.fromValues(scaleFactor, scaleFactor, scaleFactor);
         mat4.fromScaling(scaleMatrix, scaleVector);
 
-        for (let i of scene.nodes)
+        let nodeIndices = scene.nodes.slice();
+        while (nodeIndices.length > 0)
         {
-            this.drawNode(gltf, scene, i, recursive, scaleMatrix);
+            const nodeIndex = nodeIndices.pop();
+            const node = gltf.nodes[nodeIndex];
+            this.drawNode(gltf, node, scaleMatrix);
+            nodeIndices = nodeIndices.concat(node.children);
         }
     }
 
@@ -135,29 +139,15 @@ class gltfRenderer
     }
 
     // same transform, recursive
-    drawNode(gltf, scene, nodeIndex, recursive, scaleMatrix = mat4.create())
+    drawNode(gltf, node, scaleMatrix)
     {
-        let node = gltf.nodes[nodeIndex];
-
-        if(node === undefined)
-        {
-            console.log("Undefined node " + nodeIndex);
-            return;
-        }
-
         // draw primitive:
         let mesh = gltf.meshes[node.mesh];
-        if(mesh !== undefined)
+        if (mesh !== undefined)
         {
-            for (let primitive of mesh.primitives) {
+            for (let primitive of mesh.primitives)
+            {
                 this.drawPrimitive(gltf, primitive, node.worldTransform, this.viewProjectionMatrix, node.normalMatrix, scaleMatrix);
-            }
-        }
-
-        if(recursive)
-        {
-            for (let i of node.children) {
-                this.drawNode(gltf, scene, i, recursive, scaleMatrix);
             }
         }
     }
