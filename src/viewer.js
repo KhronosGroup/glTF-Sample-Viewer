@@ -256,9 +256,8 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
-                self.renderer.newFrame();
-
                 self.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+                self.renderer.newFrame();
 
                 if (self.sceneIndex < 0)
                 {
