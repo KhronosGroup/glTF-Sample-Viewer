@@ -155,14 +155,6 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
                     break;
             }
         }
-        
-        
-        // Release the complete image buffer after usage.
-        gl.finish();
-        for(const src of images)
-        {
-        	gltf.images[src].image = undefined;
-        }
 
         gltfTex.initialized = true;
     }
