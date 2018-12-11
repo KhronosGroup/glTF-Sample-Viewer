@@ -177,17 +177,32 @@ class gltfViewer
             for (i = 0; i < gltf.images.length; i++)
             {
                 if (gltf.images[i].image.dataRGBE !== undefined ||
-                    this.isPowerOf2(gltf.images[i].image.width) && this.isPowerOf2(gltf.images[i].image.height))
+                    this.isPowerOf2(gltf.images[i].image.width) && (gltf.images[i].image.width === gltf.images[i].image.height))
                 {
+                    // Square image and power of two, so no resize needed.
                     continue;
                 }
+                
+                let doPower = false;
 
-                if (gltf.images[i].image.width != gltf.images[i].image.height)
+                if (gltf.images[i].image.width == gltf.images[i].image.height)
                 {
-                    // Rectangle, so not mip-mapped, so no resize needed.
-                    continue;
+                    // Square image but not power of two. Resize it to power of two.
+                    doPower = true;
                 }
-
+                else 
+                {
+                    // Rectangle image, so not mip-mapped and ...
+                    
+                    if ((gltf.images[i].image.width % 2 == 0) && (gltf.images[i].image.height % 2 == 0))
+                    {
+                        // ... with even size, so no resize needed.
+                        continue;
+                    }
+                    
+                    // ... with odd size, so resize needed to make even size.
+                }
+                
                 const currentImagePromise = new Promise(function(resolve)
                 {
                     const canvas = document.createElement('canvas');
@@ -198,8 +213,25 @@ class gltfViewer
                         return Math.pow(2.0, Math.round(Math.log(n) / Math.log(2.0)));
                     }
 
-                    canvas.width = nearestPowerOf2(gltf.images[i].image.width);
-                    canvas.height = nearestPowerOf2(gltf.images[i].image.height);
+                    function makeEven(n)
+                    {
+                        if (n % 2 === 1)
+                        {
+                            return n + 1;
+                        }
+                        return n;
+                    }
+                    
+                    if (doPower)
+                    {
+                        canvas.width = nearestPowerOf2(gltf.images[i].image.width);
+                        canvas.height = nearestPowerOf2(gltf.images[i].image.height);
+                    }
+                    else
+                    {
+                        canvas.width = makeEven(gltf.images[i].image.width);
+                        canvas.height = makeEven(gltf.images[i].image.height);
+                    }
 
                     context.drawImage(gltf.images[i].image, 0, 0, canvas.width, canvas.height);
 

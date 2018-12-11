@@ -143,7 +143,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
         if (textureInfo.generateMips && generateMips)
         {
-            // Until this point, images can be assumed to be power of two.
+            // Until this point, images can be assumed to be power of two and having a square size.
             switch (gltfSampler.minFilter)
             {
                 case gl.NEAREST_MIPMAP_NEAREST:
