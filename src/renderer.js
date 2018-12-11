@@ -205,14 +205,8 @@ class gltfRenderer
         if(material.alphaMode === 'BLEND')
         {
             gl.enable(gl.BLEND);
-            //gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
             gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // non pre mult alpha
             gl.blendEquation(gl.FUNC_ADD);
-
-            // pre multiplied alpha
-            // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-            // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         }
         else
         {
