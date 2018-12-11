@@ -141,14 +141,14 @@ class gltfViewer
     createGltf(path, json, buffers)
     {
         this.currentlyRendering = false;
-        
+
         // unload previous scene
         if (this.gltf !== undefined)
         {
             gltfLoader.unload(this.gltf);
             this.gltf = undefined;
         }
-        
+
         this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
 
         let gltf = new glTF(path);
@@ -184,10 +184,10 @@ class gltfViewer
 
                 if (gltf.images[i].image.width != gltf.images[i].image.height)
                 {
-                	// Rectangle, so not mip-mapped, so no resize needed.
+                    // Rectangle, so not mip-mapped, so no resize needed.
                     continue;
                 }
-                
+
                 const currentImagePromise = new Promise(function(resolve)
                 {
                     const canvas = document.createElement('canvas');

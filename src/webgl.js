@@ -2,7 +2,7 @@ function LoadWebGLExtensions(webglExtensions)
 {
     for (let extension of webglExtensions)
     {
-        if(gl.getExtension(extension) === null)
+        if (gl.getExtension(extension) === null)
         {
             console.warn("Extension " + extension + " not supported!");
         }
@@ -25,35 +25,35 @@ function LoadWebGLExtensions(webglExtensions)
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
 function SetSampler(gltfSamplerObj, type, rectangleImage) // TEXTURE_2D
 {
-	if (rectangleImage)
-	{
-		gl.texParameteri(type, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(type, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	}
-	else
-	{
-		gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
-		gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
-	}
+    if (rectangleImage)
+    {
+        gl.texParameteri(type, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(type, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    else
+    {
+        gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
+        gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
+    }
 
     // Rectangle images are not mip-mapped, so force to non-mip-mapped sampler.
     if (rectangleImage && (gltfSamplerObj.minFilter != gl.NEAREST) && (gltfSamplerObj.minFilter != gl.LINEAR))
     {
         if ((gltfSamplerObj.minFilter == gl.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == gl.NEAREST_MIPMAP_LINEAR))
-    	{
-    		gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    	}
-    	else
-    	{
-    		gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    	}
+        {
+            gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        }
+        else
+        {
+            gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
     }
     else
     {
-    	gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
+        gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
     }
     gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
-    
+
     if (gl.supports_EXT_texture_filter_anisotropic)
     {
         gl.texParameterf(type, gl.anisotropy, gl.maxAnisotropy); // => 16xAF
@@ -62,20 +62,20 @@ function SetSampler(gltfSamplerObj, type, rectangleImage) // TEXTURE_2D
 
 function SetTexture(loc, gltf, textureInfo, texSlot)
 {
-    if(loc == -1)
+    if (loc == -1)
     {
         return false;
     }
 
     let gltfTex = gltf.textures[textureInfo.index];
 
-    if(gltfTex === undefined)
+    if (gltfTex === undefined)
     {
         console.warn("Texture is undefined: " + textureInfo.index);
         return false;
     }
 
-    if(gltfTex.glTexture === undefined)
+    if (gltfTex.glTexture === undefined)
     {
         gltfTex.glTexture = gl.createTexture();
     }
@@ -85,11 +85,11 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
     gl.uniform1i(loc, texSlot);
 
-    if(!gltfTex.initialized)
+    if (!gltfTex.initialized)
     {
         const gltfSampler = gltf.samplers[gltfTex.sampler];
 
-        if(gltfSampler === undefined)
+        if (gltfSampler === undefined)
         {
             console.warn("Sampler is undefined for texture: " + textureInfo.index);
             return false;
@@ -99,7 +99,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
         let images = [];
 
-        if(gltfTex.source.length !== undefined)
+        if (gltfTex.source.length !== undefined)
         {
             // assume we have an array of textures (this is an unofficial extension to what glTF json can represent)
             images = gltfTex.source;
@@ -112,9 +112,9 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
         let generateMips = true;
         let rectangleImage = false;
 
-        for(const src of images)
+        for (const src of images)
         {
-            const image =  gltf.images[src];
+            const image = gltf.images[src];
 
             if (image === undefined)
             {
@@ -134,17 +134,18 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
             if (image.image.width != image.image.height)
             {
-            	rectangleImage = true;
-            	generateMips = false;
+                rectangleImage = true;
+                generateMips = false;
             }
         }
-        
+
         SetSampler(gltfSampler, gltfTex.type, rectangleImage);
 
         if (textureInfo.generateMips && generateMips)
         {
             // Until this point, images can be assumed to be power of two.
-            switch (gltfSampler.minFilter) {
+            switch (gltfSampler.minFilter)
+            {
                 case gl.NEAREST_MIPMAP_NEAREST:
                 case gl.NEAREST_MIPMAP_LINEAR:
                 case gl.LINEAR_MIPMAP_NEAREST:
@@ -190,7 +191,7 @@ function SetIndices(gltf, accessorIndex)
 
 function EnableAttribute(gltf, attributeLocation, gltfAccessor)
 {
-    if(attributeLocation == -1)
+    if (attributeLocation == -1)
     {
         return false;
     }
@@ -217,7 +218,7 @@ function EnableAttribute(gltf, attributeLocation, gltfAccessor)
     }
 
     gl.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
-                           gltfAccessor.normalized, gltfBufferView.byteStride, gltfAccessor.byteOffset);
+        gltfAccessor.normalized, gltfBufferView.byteStride, gltfAccessor.byteOffset);
     gl.enableVertexAttribArray(attributeLocation);
 
     return true;
@@ -230,7 +231,8 @@ function CompileShader(isVert, shaderSource)
     gl.compileShader(shader);
     let compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 
-    if (!compiled) {
+    if (!compiled)
+    {
 
         console.warn(gl.getShaderInfoLog(shader));
         return null;
