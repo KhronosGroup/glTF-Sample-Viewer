@@ -7,4 +7,4 @@ npm-debug.log
 .vscode/*
 *.png
 /package-lock.json
-dist/*.map
+dist

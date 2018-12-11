@@ -11,7 +11,7 @@
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",
     "dev:electron": "concurrently \"rollup -c -w\" \"npm start\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "version": "npm run build && git add -A dist",
+    "version": "npm run build",
     "postversion": "git push && git push --tags",
     "package-mac": "electron-packager . gltf-reference-viewer --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
     "package-win": "electron-packager . gltf-reference-viewer --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.ProductName=\"glTF Reference Viewer\"",
