@@ -354,16 +354,19 @@ class gltfRenderer
 
     applyEnvironmentMap(gltf, texSlotOffset)
     {
-        let diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0);
-        let specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0);
-        let lut = new gltfTextureInfo(gltf.textures.length - 1);
+        if (gltf.envData === undefined)
+        {
+            gltf.envData = {};
+            gltf.envData.diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0);
+            gltf.envData.specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0);
+            gltf.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
+            gltf.envData.specularEnvMap.generateMips = false;
+            gltf.envData.lut.generateMips = false;
+        }
 
-        specularEnvMap.generateMips = false;
-        lut.generateMips = false;
-
-        SetTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, diffuseEnvMap, texSlotOffset);
-        SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, specularEnvMap, texSlotOffset + 1);
-        SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, lut, texSlotOffset + 2);
+        SetTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, gltf.envData.diffuseEnvMap, texSlotOffset);
+        SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
+        SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
 
         this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, gltf.textures.length, 0]));
     }
