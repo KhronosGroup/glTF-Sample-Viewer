@@ -1,0 +1,5 @@
+# Turn off text-based EOL adaptations for various image formats.
+*.jpg -text
+*.JPG -text
+*.png -text
+*.hdr -text
