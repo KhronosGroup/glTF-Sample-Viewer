@@ -157,10 +157,10 @@ class gltfViewer
         this.addEnvironmentMap(gltf, this.renderingParameters.environment, this.renderingParameters.environmentMipLevel, environmentType);
         let assetPromises = gltfLoader.load(gltf, buffers);
 
-        let self = this;
+        const self = this;
         Promise.all(assetPromises)
-            .then(() => self.onResize(gltf))
-            .then(() => self.onGltfLoaded(gltf));
+            .then(() => self.postProcessImages(gltf))
+            .then(() => self.startRendering(gltf));
     }
 
     isPowerOf2(n)
@@ -168,7 +168,7 @@ class gltfViewer
         return n && (n & (n - 1)) === 0;
     }
 
-    onResize(gltf)
+    postProcessImages(gltf)
     {
         const imagePromises = [];
         if (gltf.images !== undefined)
@@ -182,7 +182,7 @@ class gltfViewer
                     // Square image and power of two, so no resize needed.
                     continue;
                 }
-                
+
                 let doPower = false;
 
                 if (gltf.images[i].image.width == gltf.images[i].image.height)
@@ -190,19 +190,19 @@ class gltfViewer
                     // Square image but not power of two. Resize it to power of two.
                     doPower = true;
                 }
-                else 
+                else
                 {
                     // Rectangle image, so not mip-mapped and ...
-                    
+
                     if ((gltf.images[i].image.width % 2 == 0) && (gltf.images[i].image.height % 2 == 0))
                     {
                         // ... with even size, so no resize needed.
                         continue;
                     }
-                    
+
                     // ... with odd size, so resize needed to make even size.
                 }
-                
+
                 const currentImagePromise = new Promise(function(resolve)
                 {
                     const canvas = document.createElement('canvas');
@@ -221,7 +221,7 @@ class gltfViewer
                         }
                         return n;
                     }
-                    
+
                     if (doPower)
                     {
                         canvas.width = nearestPowerOf2(gltf.images[i].image.width);
@@ -247,7 +247,7 @@ class gltfViewer
         return Promise.all(imagePromises);
     }
 
-    onGltfLoaded(gltf)
+    startRendering(gltf)
     {
         this.notifyLoadingEnded(gltf.path);
 
