@@ -160,7 +160,7 @@ class gltfViewer
         const self = this;
         const imageProcessor = new gltfImageProcessor();
         Promise.all(assetPromises)
-            .then(() => imageProcessor.postProcessImages(gltf))
+            .then(() => imageProcessor.processImages(gltf))
             .then(() => self.startRendering(gltf));
     }
 
