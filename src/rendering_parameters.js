@@ -22,12 +22,14 @@ const Environments =
 [
     "papermill",
     "field",
-    "doge2"
+    "doge2",
+    "pisa"
 ];
 
 const EnvironmentsMipLevel =
 [
     9,
+    10,
     10,
     10
 ];
