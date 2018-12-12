@@ -17,6 +17,7 @@ class gltfViewer
     constructor(
         canvas,
         modelIndex,
+        input,
         headless = false,
         onRendererReady = undefined,
         basePath = "",
@@ -52,21 +53,29 @@ class gltfViewer
         {
             this.hideSpinner();
         }
-        else if (this.initialModel.includes("/"))
-        {
-            // no UI if a path is provided (e.g. in the vscode plugin)
-            this.loadFromPath(this.initialModel);
-        }
         else
         {
-            const self = this;
-            this.stats = new Stats();
-            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
-            this.pathProvider.initialize().then(() =>
+            input.onDrag = (deltaX, deltaY) =>
             {
-                self.initializeGui();
-                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
-            });
+                this.userCamera.rotate(deltaX, deltaY);
+            };
+
+            if (this.initialModel.includes("/"))
+            {
+                // no UI if a path is provided (e.g. in the vscode plugin)
+                this.loadFromPath(this.initialModel);
+            }
+            else
+            {
+                const self = this;
+                this.stats = new Stats();
+                this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+                this.pathProvider.initialize().then(() =>
+                {
+                    self.initializeGui();
+                    self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+                });
+            }
         }
 
         this.userCamera = new UserCamera();
@@ -271,26 +280,6 @@ class gltfViewer
         window.requestAnimationFrame(renderFrame);
     }
 
-    onMouseDown(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.mouseDown = true;
-            this.lastMouseX = event.clientX;
-            this.lastMouseY = event.clientY;
-            canvas.style.cursor = "none";
-        }
-    }
-
-    onMouseUp(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.mouseDown = false;
-            canvas.style.cursor = "grab";
-        }
-    }
-
     onMouseWheel(event)
     {
         if (this.currentlyRendering)
@@ -298,29 +287,6 @@ class gltfViewer
             event.preventDefault();
             this.userCamera.zoomIn(event.deltaY);
             canvas.style.cursor = "none";
-        }
-    }
-
-    onMouseMove(event)
-    {
-        if (this.currentlyRendering)
-        {
-            if (!this.mouseDown)
-            {
-                canvas.style.cursor = "grab";
-                return;
-            }
-
-            const newX = event.clientX;
-            const newY = event.clientY;
-
-            const deltaX = newX - this.lastMouseX;
-            const deltaY = newY - this.lastMouseY;
-
-            this.lastMouseX = newX;
-            this.lastMouseY = newY;
-
-            this.userCamera.rotate(deltaX, deltaY);
         }
     }
 

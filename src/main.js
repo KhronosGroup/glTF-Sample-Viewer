@@ -1,4 +1,5 @@
 import { gltfViewer } from './viewer.js';
+import { gltfInput } from './input.js';
 
 function gltf_rv(canvasId, index,
     headless = false,
@@ -23,11 +24,12 @@ function gltf_rv(canvasId, index,
         return null;
     }
 
-    const viewer = new gltfViewer(canvas, index, headless, onRendererReady, basePath, initialModel, envMap);
+    const input = new gltfInput(canvas);
+    const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
 
-    canvas.onmousedown = viewer.onMouseDown.bind(viewer);
-    document.onmouseup = viewer.onMouseUp.bind(viewer);
-    document.onmousemove = viewer.onMouseMove.bind(viewer);
+    canvas.onmousedown = input.mouseDownHandler.bind(input);
+    document.onmouseup = input.mouseUpHandler.bind(input);
+    document.onmousemove = input.mouseMoveHandler.bind(input);
     canvas.onwheel = viewer.onMouseWheel.bind(viewer);
     canvas.ontouchstart = viewer.onTouchStart.bind(viewer);
     document.ontouchend = viewer.onTouchEnd.bind(viewer);
