@@ -9,20 +9,18 @@ class gltfEnvironmentLoader
         this.basePath = basePath;
     }
 
-    addEnvironmentMap(gltf, environment, type)
+    addEnvironmentMap(gltf, environment)
     {
         let extension;
-        switch (type)
+        switch (environment.type)
         {
-            case (ImageMimeType.JPEG):
-                extension = ".jpg";
-                break;
             case (ImageMimeType.HDR):
                 extension = ".hdr";
                 break;
+            case (ImageMimeType.JPEG):
             default:
-                console.error("Unknown image type: " + type);
-                return;
+                extension = ".jpg";
+                break;
         }
 
         const imagesFolder = this.basePath + "assets/images/" + environment.folder + "/";
@@ -60,7 +58,7 @@ class gltfEnvironmentLoader
             {
                 const imagePath = basePath + i + extension;
                 const image = new gltfImage(imagePath, side, i);
-                image.mimeType = type;
+                image.mimeType = environment.type;
                 gltf.images.push(image);
                 indices.push(++imageIdx);
             }
@@ -71,7 +69,7 @@ class gltfEnvironmentLoader
         {
             const imagePath = diffusePrefix + side.name + diffuseSuffix;
             const image = new gltfImage(imagePath, side.type);
-            image.mimeType = type;
+            image.mimeType = environment.type;
             gltf.images.push(image);
         }
 

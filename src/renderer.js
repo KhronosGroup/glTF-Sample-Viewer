@@ -4,7 +4,8 @@ import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
 import { jsToGl } from './utils.js';
 import { LoadWebGLExtensions, SetIndices, SetTexture, EnableAttribute } from './webgl.js';
-import { ToneMaps, DebugOutput } from './rendering_parameters.js';
+import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
+import { ImageMimeType } from './image.js';
 
 class gltfRenderer
 {
@@ -291,7 +292,7 @@ class gltfRenderer
             fragDefines.push("USE_TEX_LOD 1");
         }
 
-        if (this.parameters.useHdr)
+        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR)
         {
             fragDefines.push("USE_HDR 1");
         }

@@ -1,3 +1,5 @@
+import { ImageMimeType } from "./image";
+
 const ToneMaps =
 {
     LINEAR: "Linear" ,
@@ -20,19 +22,19 @@ const DebugOutput =
 
 const Environments =
 {
-    "Papermill": { folder: "papermill", mipLevel: 9 },
-    "Field": { folder: "field", mipLevel: 10 },
-    "Doge2": { folder: "doge2", mipLevel: 10 },
-    "Pisa": { folder: "pisa", mipLevel: 10 }
+    "Papermill": { folder: "papermill", mipLevel: 9, type: ImageMimeType.HDR },
+    "Papermill (LDR)": { folder: "papermill", mipLevel: 9, type: ImageMimeType.LDR },
+    "Field": { folder: "field", mipLevel: 10, type: ImageMimeType.HDR },
+    "Doge2": { folder: "doge2", mipLevel: 10, type: ImageMimeType.HDR },
+    "Pisa": { folder: "pisa", mipLevel: 10, type: ImageMimeType.HDR }
 };
 
 class gltfRenderingParameters
 {
     constructor(
-        environmentName = undefined,
+        environmentName = Object.keys(Environments)[0],
         useIBL = true,
         usePunctual = false,
-        useHdr = true,
         exposure = 1.0,
         gamma = 2.2,
         clearColor = [51, 51, 51],
@@ -42,20 +44,11 @@ class gltfRenderingParameters
         this.environmentName = environmentName;
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
-        this.useHdr = useHdr;
         this.exposure = exposure;
         this.gamma = gamma;
         this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
-
-        const OES_texture_float = gl.getExtension("OES_texture_float");
-        const OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
-        if ((!OES_texture_float || !OES_texture_float_linear) && this.useHdr)
-        {
-            this.useHdr = false;
-            console.warn("Forcing to LDR rendering.");
-        }
     }
 };
 

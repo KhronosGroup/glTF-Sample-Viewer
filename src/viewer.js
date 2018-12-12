@@ -21,7 +21,7 @@ class gltfViewer
         onRendererReady = undefined,
         basePath = "",
         initialModel = "",
-        environmentMap = "papermill")
+        environmentMap = undefined)
     {
         this.headless = headless;
         this.onRendererReady = onRendererReady;
@@ -175,8 +175,7 @@ class gltfViewer
         gltf.fromJson(json);
 
         const environment = Environments[this.renderingParameters.environmentName];
-        const environmentType = this.renderingParameters.useHdr ? ImageMimeType.HDR : ImageMimeType.JPEG;
-        new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment, environmentType);
+        new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment);
 
         let assetPromises = gltfLoader.load(gltf, buffers);
 
