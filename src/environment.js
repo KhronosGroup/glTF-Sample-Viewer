@@ -9,7 +9,7 @@ class gltfEnvironmentLoader
         this.basePath = basePath;
     }
 
-    addEnvironmentMap(gltf, subFolder, mipLevel, type)
+    addEnvironmentMap(gltf, environment, type)
     {
         let extension;
         switch (type)
@@ -25,20 +25,21 @@ class gltfEnvironmentLoader
                 return;
         }
 
-        const imagesFolder = this.basePath + "assets/images/" + subFolder + "/";
+        const imagesFolder = this.basePath + "assets/images/" + environment.folder + "/";
         const diffusePrefix = imagesFolder + "diffuse/diffuse_";
         const diffuseSuffix = "_0" + extension;
         const specularPrefix = imagesFolder + "specular/specular_";
         const specularSuffix = "_";
-        const sides =
-            [
-                ["right", gl.TEXTURE_CUBE_MAP_POSITIVE_X],
-                ["left", gl.TEXTURE_CUBE_MAP_NEGATIVE_X],
-                ["top", gl.TEXTURE_CUBE_MAP_POSITIVE_Y],
-                ["bottom", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y],
-                ["front", gl.TEXTURE_CUBE_MAP_POSITIVE_Z],
-                ["back", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]
-            ];
+
+        const CubeMapSides =
+        [
+            { name: "right", type: gl.TEXTURE_CUBE_MAP_POSITIVE_X },
+            { name: "left", type: gl.TEXTURE_CUBE_MAP_NEGATIVE_X },
+            { name: "top", type: gl.TEXTURE_CUBE_MAP_POSITIVE_Y },
+            { name: "bottom", type: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y },
+            { name: "front", type: gl.TEXTURE_CUBE_MAP_POSITIVE_Z },
+            { name: "back", type: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z },
+        ];
 
         gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
         const diffuseCubeSamplerIdx = gltf.samplers.length - 1;
@@ -66,10 +67,10 @@ class gltfEnvironmentLoader
         };
 
         // u_DiffuseEnvSampler faces
-        for (const side of sides)
+        for (const side of CubeMapSides)
         {
-            const imagePath = diffusePrefix + side[0] + diffuseSuffix;
-            const image = new gltfImage(imagePath, side[1]);
+            const imagePath = diffusePrefix + side.name + diffuseSuffix;
+            const image = new gltfImage(imagePath, side.type);
             image.mimeType = type;
             gltf.images.push(image);
         }
@@ -78,9 +79,9 @@ class gltfEnvironmentLoader
         gltf.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
 
         // u_SpecularEnvSampler tex
-        for (const side of sides)
+        for (const side of CubeMapSides)
         {
-            addSide(specularPrefix + side[0] + specularSuffix, side[1], mipLevel);
+            addSide(specularPrefix + side.name + specularSuffix, side.type, environment.mipLevel);
         }
 
         gltf.textures.push(new gltfTexture(specularCubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));

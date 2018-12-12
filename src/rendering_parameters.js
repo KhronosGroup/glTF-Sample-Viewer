@@ -19,25 +19,17 @@ const DebugOutput =
 };
 
 const Environments =
-[
-    "papermill",
-    "field",
-    "doge2",
-    "pisa"
-];
-
-const EnvironmentsMipLevel =
-[
-    9,
-    10,
-    10,
-    10
-];
+{
+    "Papermill": { folder: "papermill", mipLevel: 9 },
+    "Field": { folder: "field", mipLevel: 10 },
+    "Doge2": { folder: "doge2", mipLevel: 10 },
+    "Pisa": { folder: "pisa", mipLevel: 10 }
+};
 
 class gltfRenderingParameters
 {
     constructor(
-        environment = undefined,
+        environmentName = undefined,
         useIBL = true,
         usePunctual = false,
         useHdr = true,
@@ -47,6 +39,7 @@ class gltfRenderingParameters
         toneMap = ToneMaps.LINEAR,
         debugOutput = DebugOutput.NONE)
     {
+        this.environmentName = environmentName;
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
         this.useHdr = useHdr;
@@ -56,29 +49,12 @@ class gltfRenderingParameters
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
 
-        this.updateEnvironment(environment);
-
         const OES_texture_float = gl.getExtension("OES_texture_float");
         const OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
         if ((!OES_texture_float || !OES_texture_float_linear) && this.useHdr)
         {
             this.useHdr = false;
             console.warn("Forcing to LDR rendering.");
-        }
-    }
-
-    updateEnvironment(environment)
-    {
-        if (Environments.includes(environment))
-        {
-            this.environment = environment;
-            this.environmentMipLevel = EnvironmentsMipLevel[Environments.indexOf(environment)];
-        }
-        else
-        {
-            console.warn("Environment '%s' is not supported.", environment);
-            this.environment = Environments[0];
-            this.environmentMipLevel = EnvironmentsMipLevel[0];
         }
     }
 };

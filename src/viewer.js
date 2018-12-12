@@ -3,7 +3,7 @@ import { ImageMimeType } from './image.js';
 import { gltfLoader } from './loader.js';
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
-import { gltfRenderingParameters } from './rendering_parameters.js';
+import { gltfRenderingParameters, Environments } from './rendering_parameters.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer } from './utils.js';
@@ -171,14 +171,12 @@ class gltfViewer
             this.gltf = undefined;
         }
 
-        this.renderingParameters.updateEnvironment(this.renderingParameters.environment);
-
         let gltf = new glTF(path);
         gltf.fromJson(json);
 
+        const environment = Environments[this.renderingParameters.environmentName];
         const environmentType = this.renderingParameters.useHdr ? ImageMimeType.HDR : ImageMimeType.JPEG;
-        new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(
-            gltf, this.renderingParameters.environment, this.renderingParameters.environmentMipLevel, environmentType);
+        new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment, environmentType);
 
         let assetPromises = gltfLoader.load(gltf, buffers);
 
@@ -297,7 +295,7 @@ class gltfViewer
     notifyLoadingStarted(path)
     {
         this.loadingTimer.start();
-        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environment);
+        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environmentName);
 
         if (!this.headless)
         {
