@@ -4,7 +4,7 @@ class gltfInput
     {
         this.canvas = canvas;
 
-        this.onMouseWheel = undefined;
+        this.onWheel = undefined;
         this.onDrag = undefined;
 
         this.mouseDown = false;
@@ -41,6 +41,13 @@ class gltfInput
         this.lastMouseY = event.clientY;
 
         this.onDrag(deltaX, deltaY);
+    }
+
+    mouseWheelHandler(event)
+    {
+        event.preventDefault();
+        this.canvas.style.cursor = "none";
+        this.onWheel(event.deltaY);
     }
 }
 

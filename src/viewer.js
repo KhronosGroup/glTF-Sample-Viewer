@@ -48,6 +48,7 @@ class gltfViewer
         this.cameraIndex = -1;
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
+        this.userCamera = new UserCamera();
 
         if (this.headless === true)
         {
@@ -55,10 +56,8 @@ class gltfViewer
         }
         else
         {
-            input.onDrag = (deltaX, deltaY) =>
-            {
-                this.userCamera.rotate(deltaX, deltaY);
-            };
+            input.onDrag = this.userCamera.rotate.bind(this.userCamera);
+            input.onWheel = this.userCamera.zoomIn.bind(this.userCamera);
 
             if (this.initialModel.includes("/"))
             {
@@ -77,8 +76,6 @@ class gltfViewer
                 });
             }
         }
-
-        this.userCamera = new UserCamera();
 
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
@@ -278,16 +275,6 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
-    }
-
-    onMouseWheel(event)
-    {
-        if (this.currentlyRendering)
-        {
-            event.preventDefault();
-            this.userCamera.zoomIn(event.deltaY);
-            canvas.style.cursor = "none";
-        }
     }
 
     onTouchStart(event)

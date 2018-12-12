@@ -30,7 +30,7 @@ function gltf_rv(canvasId, index,
     canvas.onmousedown = input.mouseDownHandler.bind(input);
     document.onmouseup = input.mouseUpHandler.bind(input);
     document.onmousemove = input.mouseMoveHandler.bind(input);
-    canvas.onwheel = viewer.onMouseWheel.bind(viewer);
+    canvas.onwheel = input.mouseWheelHandler.bind(input);
     canvas.ontouchstart = viewer.onTouchStart.bind(viewer);
     document.ontouchend = viewer.onTouchEnd.bind(viewer);
     document.ontouchmove = viewer.onTouchMove.bind(viewer);
