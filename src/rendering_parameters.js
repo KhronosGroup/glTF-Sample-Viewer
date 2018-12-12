@@ -55,6 +55,7 @@ class gltfRenderingParameters
         this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
+        this.sceneIndex = 0;
 
         this.updateEnvironment(environment);
 
