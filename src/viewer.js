@@ -419,36 +419,6 @@ class gltfViewer
         gui.initialize();
     }
 
-    parseModelIndex(jsonIndex)
-    {
-        const modelDictionary = {};
-
-        let ignoreVariants = ["glTF-Draco", "glTF-Embedded"];
-
-        for (let entry of jsonIndex)
-        {
-            if (entry.variants !== undefined)
-            {
-                for (let variant of Object.keys(entry.variants))
-                {
-                    if (!ignoreVariants.includes(variant))
-                    {
-                        const path = entry.name + '/' + variant + '/' + entry.variants[variant];
-                        const fileName = getFileNameWithoutExtension(path);
-                        let identifier = fileName;
-                        if (variant !== "glTF")
-                        {
-                            identifier += " (" + variant.replace('glTF-', '') + ")";
-                        }
-                        modelDictionary[identifier] = path;
-                    }
-                }
-            }
-        }
-
-        return modelDictionary;
-    }
-
     addEnvironmentMap(gltf, subFolder = "papermill", mipLevel = 9, type = ImageMimeType.JPEG)
     {
         let extension;
