@@ -25,15 +25,10 @@ function gltf_rv(canvasId, index,
     }
 
     const input = new gltfInput(canvas);
+    setupGlobalInputBindings(input, document);
+    setupCanvasInputBindings(input, canvas);
+
     const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
-
-    document.onmouseup = input.mouseUpHandler.bind(input);
-    document.onmousemove = input.mouseMoveHandler.bind(input);
-
-    canvas.onmousedown = input.mouseDownHandler.bind(input);
-    canvas.onwheel = input.mouseWheelHandler.bind(input);
-    canvas.ondrop = input.dropEventHandler.bind(input);
-    canvas.ondragover = input.dragOverHandler.bind(input);
 
     return viewer; // Succeeded in creating a glTF viewer!
 }
@@ -53,6 +48,20 @@ function getWebGlContext()
             return context;
         }
     }
+}
+
+function setupGlobalInputBindings(input, document)
+{
+    document.onmouseup = input.mouseUpHandler.bind(input);
+    document.onmousemove = input.mouseMoveHandler.bind(input);
+}
+
+function setupCanvasInputBindings(input, canvas)
+{
+    canvas.onmousedown = input.mouseDownHandler.bind(input);
+    canvas.onwheel = input.mouseWheelHandler.bind(input);
+    canvas.ondrop = input.dropEventHandler.bind(input);
+    canvas.ondragover = input.dragOverHandler.bind(input);
 }
 
 export { gltf_rv };
