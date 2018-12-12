@@ -277,46 +277,6 @@ class gltfViewer
         window.requestAnimationFrame(renderFrame);
     }
 
-    onTouchStart(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.touchDown = true;
-            this.lastTouchX = event.touches[0].clientX;
-            this.lastTouchY = event.touches[0].clientY;
-        }
-    }
-
-    onTouchEnd(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.touchStart = false;
-        }
-    }
-
-    onTouchMove(event)
-    {
-        if (this.currentlyRendering)
-        {
-            if (!touchDown)
-            {
-                return;
-            }
-
-            const newX = event.touches[0].clientX;
-            const newY = event.touches[0].clientY;
-
-            const deltaX = newX - this.lastTouchX;
-            const deltaY = newY - this.lastTouchY;
-
-            this.lastTouchX = newX;
-            this.lastTouchY = newY;
-
-            this.userCamera.rotate(deltaX, deltaY);
-        }
-    }
-
     // for some reason, the drop event does not work without this
     dragOverHandler(event)
     {
