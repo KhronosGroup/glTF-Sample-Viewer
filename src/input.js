@@ -1,3 +1,5 @@
+import { getIsGltf, getIsGlb } from './utils.js';
+
 class gltfInput
 {
     constructor(canvas)
@@ -6,6 +8,7 @@ class gltfInput
 
         this.onWheel = undefined;
         this.onDrag = undefined;
+        this.onDropFiles = undefined;
 
         this.mouseDown = false;
         this.lastMouseX = 0;
@@ -48,6 +51,39 @@ class gltfInput
         event.preventDefault();
         this.canvas.style.cursor = "none";
         this.onWheel(event.deltaY);
+    }
+
+    // for some reason, the drop event does not work without this
+    dragOverHandler(event)
+    {
+        event.preventDefault();
+    }
+
+    dropEventHandler(event)
+    {
+        event.preventDefault();
+
+        let additionalFiles = [];
+        let mainFile;
+        for (const file of event.dataTransfer.files)
+        {
+            if (getIsGltf(file.name) || getIsGlb(file.name))
+            {
+                mainFile = file;
+            }
+            else
+            {
+                additionalFiles.push(file);
+            }
+        }
+
+        if (mainFile === undefined)
+        {
+            console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
+            return;
+        }
+
+        this.onDropFiles(mainFile, additionalFiles);
     }
 }
 

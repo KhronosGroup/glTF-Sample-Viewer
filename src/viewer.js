@@ -8,7 +8,7 @@ import { gltfSampler } from './sampler.js';
 import { gltfTexture } from './texture.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
-import { jsToGl, getIsGlb, getIsGltf, getFileNameWithoutExtension, Timer } from './utils.js';
+import { jsToGl, getIsGlb, Timer } from './utils.js';
 import { GlbParser } from './glbParser.js';
 import { gltfImageProcessor } from './image_processor.js';
 
@@ -58,6 +58,7 @@ class gltfViewer
         {
             input.onDrag = this.userCamera.rotate.bind(this.userCamera);
             input.onWheel = this.userCamera.zoomIn.bind(this.userCamera);
+            input.onDropFiles = this.loadFromFileObject.bind(this);
 
             if (this.initialModel.includes("/"))
             {
@@ -275,45 +276,6 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
-    }
-
-    // for some reason, the drop event does not work without this
-    dragOverHandler(event)
-    {
-        if (this.currentlyRendering)
-        {
-            event.preventDefault();
-        }
-    }
-
-    dropEventHandler(event)
-    {
-        if (this.currentlyRendering)
-        {
-            event.preventDefault();
-
-            let additionalFiles = [];
-            let mainFile;
-            for (const file of event.dataTransfer.files)
-            {
-                if (getIsGltf(file.name) || getIsGlb(file.name))
-                {
-                    mainFile = file;
-                }
-                else
-                {
-                    additionalFiles.push(file);
-                }
-            }
-
-            if (mainFile === undefined)
-            {
-                console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
-                return;
-            }
-
-            this.loadFromFileObject(mainFile, additionalFiles);
-        }
     }
 
     initializeGui()

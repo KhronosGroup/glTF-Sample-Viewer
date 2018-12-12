@@ -27,13 +27,13 @@ function gltf_rv(canvasId, index,
     const input = new gltfInput(canvas);
     const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
 
-    canvas.onmousedown = input.mouseDownHandler.bind(input);
     document.onmouseup = input.mouseUpHandler.bind(input);
     document.onmousemove = input.mouseMoveHandler.bind(input);
-    canvas.onwheel = input.mouseWheelHandler.bind(input);
 
-    canvas.ondrop = viewer.dropEventHandler.bind(viewer);
-    canvas.ondragover = viewer.dragOverHandler.bind(viewer);
+    canvas.onmousedown = input.mouseDownHandler.bind(input);
+    canvas.onwheel = input.mouseWheelHandler.bind(input);
+    canvas.ondrop = input.dropEventHandler.bind(input);
+    canvas.ondragover = input.dragOverHandler.bind(input);
 
     return viewer; // Succeeded in creating a glTF viewer!
 }
