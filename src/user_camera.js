@@ -1,3 +1,7 @@
+import { mat4, vec3 } from 'gl-matrix';
+import { gltfCamera } from './camera.js';
+import { jsToGl, clamp } from './utils.js';
+
 class UserCamera extends gltfCamera
 {
     constructor(
@@ -178,3 +182,5 @@ class UserCamera extends gltfCamera
         }
     }
 };
+
+export { UserCamera };

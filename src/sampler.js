@@ -1,3 +1,5 @@
+import { fromKeys } from './utils.js';
+
 class gltfSampler
 {
     constructor(magFilter = gl.LINEAR, minFilter = gl.LINEAR_MIPMAP_LINEAR,
@@ -16,3 +18,5 @@ class gltfSampler
         fromKeys(this, jsonSampler);
     }
 };
+
+export { gltfSampler };

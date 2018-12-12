@@ -1,3 +1,17 @@
+import { gltfAccessor } from './accessor.js';
+import { gltfBuffer } from './buffer.js';
+import { gltfBufferView } from './buffer_view.js';
+import { gltfCamera } from './camera.js';
+import { gltfImage } from './image.js';
+import { gltfLight } from './light.js';
+import { gltfMaterial } from './material.js';
+import { gltfMesh } from './mesh.js';
+import { gltfNode } from './node.js';
+import { gltfSampler } from './sampler.js';
+import { gltfScene } from './scene.js';
+import { gltfTexture } from './texture.js';
+import { getContainingFolder } from './utils';
+
 class glTF
 {
     constructor(file)
@@ -245,3 +259,5 @@ class glTF
         }
     }
 };
+
+export { glTF };
