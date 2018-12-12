@@ -5,65 +5,42 @@ import { CompileShader, LinkProgram } from './webgl.js';
 // THis class generates and caches the shader source text for a given permutation
 class ShaderCache
 {
-    constructor(shaderFolder, shaderFiles)
+    constructor(sources)
     {
+        this.sources  = sources; // shader name -> source code
         this.shaders  = new Map(); // name & permutations hashed -> compiled shader
-        this.sources  = new Map();; // shader name -> source code
         this.programs = new Map(); // (vertex shader, fragment shader) -> program
-        this.loaded   = false;
 
-        let self = this;
-        let loadPromises = [];
-        for (let file of shaderFiles)
+        // TODO: remove any // or /* style comments
+
+        // resovle / expande sources (TODO: break include cycles)
+        for (let [key, src] of this.sources)
         {
-            const url = shaderFolder + file;
-            loadPromises.push(axios.get(url, { responseType: 'text' }));
-        }
-
-        Promise.all(loadPromises).then(function (responseArray) {
-            for (let fileIdx in shaderFiles)
+            let changed = false;
+            for (let [includeName, includeSource] of this.sources)
             {
-                let name = shaderFiles[fileIdx];
-                let response = responseArray[fileIdx];
-                self.sources.set(name, response.data);
-            }
+                //var pattern = RegExp(/#include</ + includeName + />/);
+                const pattern = "#include <" + includeName + ">";
 
-            // TODO: remove any // or /* style comments
-
-            // resovle / expande sources (TODO: break include cycles)
-            for (let [key, src] of self.sources)
-            {
-                let changed = false;
-                for (let includeName of shaderFiles)
+                if(src.includes(pattern))
                 {
-                    //var pattern = RegExp(/#include</ + includeName + />/);
-                    const pattern = "#include <" + includeName + ">";
+                    // only replace the first occurance
+                    src = src.replace(pattern, includeSource);
 
-                    if(src.includes(pattern))
-                    {
-                        // only replace the first occurance
-                        src = src.replace(pattern, self.sources.get(includeName));
-
-                        // remove the others
-                        while (src.includes(pattern)) {
-                            src = src.replace(pattern, "");
-                        }
-
-                        changed = true;
+                    // remove the others
+                    while (src.includes(pattern)) {
+                        src = src.replace(pattern, "");
                     }
-                }
 
-                if(changed)
-                {
-                    self.sources.set(key, src);
+                    changed = true;
                 }
             }
 
-            self.loaded = true;
-        })
-        .catch(function(err) {
-            console.log(err);
-        });
+            if(changed)
+            {
+                this.sources.set(key, src);
+            }
+        }
 
     }
 
@@ -95,10 +72,7 @@ class ShaderCache
         const src = this.sources.get(shaderIdentifier);
         if(src === undefined)
         {
-            if(this.loaded)
-            {
-                console.log("Shader source for " + shaderIdentifier + " not found");
-            }
+            console.log("Shader source for " + shaderIdentifier + " not found");
             return null;
         }
 
