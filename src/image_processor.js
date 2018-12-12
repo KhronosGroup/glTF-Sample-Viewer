@@ -1,3 +1,5 @@
+import { HDRImage } from '../libs/hdrpng.js';
+
 class gltfImageProcessor
 {
     processImages(gltf)
@@ -74,3 +76,5 @@ class gltfImageProcessor
         return n;
     }
 }
+
+export { gltfImageProcessor };

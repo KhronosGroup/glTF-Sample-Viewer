@@ -9,7 +9,8 @@ import { gltfTexture } from './texture.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, getIsGltf, getFileNameWithoutExtension, Timer } from './utils.js';
-import { GlbParser } from './glbParser';
+import { GlbParser } from './glbParser.js';
+import { gltfImageProcessor } from './image_processor.js';
 
 class gltfViewer
 {
