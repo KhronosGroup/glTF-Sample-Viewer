@@ -1,3 +1,6 @@
+import { mat4, vec2, vec3, quat } from 'gl-matrix';
+import { fromKeys, jsToGl, UniformStruct } from './utils.js';
+
 class gltfLight
 {
     constructor(type = "directional",
@@ -88,3 +91,5 @@ class UniformLight extends UniformStruct
         this.padding = vec2.create();
     }
 }
+
+export { gltfLight };

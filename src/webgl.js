@@ -250,3 +250,13 @@ function LinkProgram(vertex, fragment)
 
     return program;
 }
+
+export {
+    LoadWebGLExtensions,
+    SetSampler,
+    SetTexture,
+    SetIndices,
+    EnableAttribute,
+    CompileShader,
+    LinkProgram
+};
