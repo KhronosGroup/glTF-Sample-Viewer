@@ -8,7 +8,7 @@ import { gltfSampler } from './sampler.js';
 import { gltfTexture } from './texture.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
-import { jsToGl, getIsGlb, getIsGltf, getFileNameWithoutExtension, Timer } from './utils.js';
+import { jsToGl, getIsGlb, Timer } from './utils.js';
 import { GlbParser } from './glbParser.js';
 import { gltfImageProcessor } from './image_processor.js';
 
@@ -17,6 +17,7 @@ class gltfViewer
     constructor(
         canvas,
         modelIndex,
+        input,
         headless = false,
         onRendererReady = undefined,
         basePath = "",
@@ -47,29 +48,35 @@ class gltfViewer
         this.cameraIndex = -1;
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
+        this.userCamera = new UserCamera();
 
         if (this.headless === true)
         {
             this.hideSpinner();
         }
-        else if (this.initialModel.includes("/"))
-        {
-            // no UI if a path is provided (e.g. in the vscode plugin)
-            this.loadFromPath(this.initialModel);
-        }
         else
         {
-            const self = this;
-            this.stats = new Stats();
-            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
-            this.pathProvider.initialize().then(() =>
-            {
-                self.initializeGui();
-                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
-            });
-        }
+            input.onDrag = this.userCamera.rotate.bind(this.userCamera);
+            input.onWheel = this.userCamera.zoomIn.bind(this.userCamera);
+            input.onDropFiles = this.loadFromFileObject.bind(this);
 
-        this.userCamera = new UserCamera();
+            if (this.initialModel.includes("/"))
+            {
+                // no UI if a path is provided (e.g. in the vscode plugin)
+                this.loadFromPath(this.initialModel);
+            }
+            else
+            {
+                const self = this;
+                this.stats = new Stats();
+                this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+                this.pathProvider.initialize().then(() =>
+                {
+                    self.initializeGui();
+                    self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+                });
+            }
+        }
 
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
@@ -269,138 +276,6 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
-    }
-
-    onMouseDown(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.mouseDown = true;
-            this.lastMouseX = event.clientX;
-            this.lastMouseY = event.clientY;
-            canvas.style.cursor = "none";
-        }
-    }
-
-    onMouseUp(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.mouseDown = false;
-            canvas.style.cursor = "grab";
-        }
-    }
-
-    onMouseWheel(event)
-    {
-        if (this.currentlyRendering)
-        {
-            event.preventDefault();
-            this.userCamera.zoomIn(event.deltaY);
-            canvas.style.cursor = "none";
-        }
-    }
-
-    onMouseMove(event)
-    {
-        if (this.currentlyRendering)
-        {
-            if (!this.mouseDown)
-            {
-                canvas.style.cursor = "grab";
-                return;
-            }
-
-            const newX = event.clientX;
-            const newY = event.clientY;
-
-            const deltaX = newX - this.lastMouseX;
-            const deltaY = newY - this.lastMouseY;
-
-            this.lastMouseX = newX;
-            this.lastMouseY = newY;
-
-            this.userCamera.rotate(deltaX, deltaY);
-        }
-    }
-
-    onTouchStart(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.touchDown = true;
-            this.lastTouchX = event.touches[0].clientX;
-            this.lastTouchY = event.touches[0].clientY;
-        }
-    }
-
-    onTouchEnd(event)
-    {
-        if (this.currentlyRendering)
-        {
-            this.touchStart = false;
-        }
-    }
-
-    onTouchMove(event)
-    {
-        if (this.currentlyRendering)
-        {
-            if (!touchDown)
-            {
-                return;
-            }
-
-            const newX = event.touches[0].clientX;
-            const newY = event.touches[0].clientY;
-
-            const deltaX = newX - this.lastTouchX;
-            const deltaY = newY - this.lastTouchY;
-
-            this.lastTouchX = newX;
-            this.lastTouchY = newY;
-
-            this.userCamera.rotate(deltaX, deltaY);
-        }
-    }
-
-    // for some reason, the drop event does not work without this
-    dragOverHandler(event)
-    {
-        if (this.currentlyRendering)
-        {
-            event.preventDefault();
-        }
-    }
-
-    dropEventHandler(event)
-    {
-        if (this.currentlyRendering)
-        {
-            event.preventDefault();
-
-            let additionalFiles = [];
-            let mainFile;
-            for (const file of event.dataTransfer.files)
-            {
-                if (getIsGltf(file.name) || getIsGlb(file.name))
-                {
-                    mainFile = file;
-                }
-                else
-                {
-                    additionalFiles.push(file);
-                }
-            }
-
-            if (mainFile === undefined)
-            {
-                console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
-                return;
-            }
-
-            this.loadFromFileObject(mainFile, additionalFiles);
-        }
     }
 
     initializeGui()
