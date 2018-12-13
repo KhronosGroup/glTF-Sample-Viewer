@@ -44,7 +44,6 @@ class gltfViewer
         this.loadingTimer = new Timer();
         this.gltf = undefined;
 
-        this.sceneIndex = 0;
         this.cameraIndex = -1;
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
@@ -198,8 +197,9 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
-        this.sceneIndex = gltf.scene === undefined ? 0 : gltf.scene;
-        const scene = gltf.scenes[this.sceneIndex];
+        this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
+        this.gui.initializeSceneSelection(Object.keys(gltf.scenes));
+        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
         scene.applyTransformHierarchy(gltf);
         this.scaleFactor = this.userCamera.fitViewToAsset(gltf);
 
@@ -222,23 +222,14 @@ class gltfViewer
                 self.renderer.resize(canvas.clientWidth, canvas.clientHeight);
                 self.renderer.newFrame();
 
-                if (self.sceneIndex < 0)
-                {
-                    self.sceneIndex = 0;
-                }
-                else if (self.sceneIndex >= self.gltf.scenes.length)
-                {
-                    self.sceneIndex = self.gltf.scenes.length - 1;
-                }
-
                 if (self.gltf.scenes.length !== 0)
                 {
-                    if (self.headless == false)
+                    if (self.headless === false)
                     {
                         self.userCamera.updatePosition();
                     }
 
-                    const scene = self.gltf.scenes[self.sceneIndex];
+                    const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
 
                     // if transformations happen at runtime, we need to apply the transform hierarchy here
                     // scene.applyTransformHierarchy(gltf);
@@ -288,10 +279,8 @@ class gltfViewer
 
         const self = this;
         gui.onModelSelected = (model) => self.loadFromPath(this.pathProvider.resolve(model));
-        gui.onNextSceneSelected = () => self.sceneIndex++;
-        gui.onPreviousSceneSelected = () => self.sceneIndex--;
-
         gui.initialize();
+        this.gui = gui;
     }
 
     addEnvironmentMap(gltf, subFolder = "papermill", mipLevel = 9, type = ImageMimeType.JPEG)
