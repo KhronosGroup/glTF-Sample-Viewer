@@ -229,12 +229,11 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 }
 #endif
 
-// Basic Lambertian diffuse
-// Implementation from Lambert's Photometria https://archive.org/details/lambertsphotome00lambgoog
-// See also [1], Equation 1
+// Lambert lighting
+// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
 vec3 diffuse(MaterialInfo materialInfo)
 {
-    return materialInfo.diffuseColor / M_PI;
+    return materialInfo.diffuseColor;
 }
 
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
