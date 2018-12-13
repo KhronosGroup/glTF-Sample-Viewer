@@ -23,7 +23,9 @@ const Environments =
     "papermill",
     "field",
     "doge2",
-    "pisa"
+    "pisa",
+    "footprint_court",
+    "helipad"
 ];
 
 const EnvironmentsMipLevel =
@@ -31,7 +33,9 @@ const EnvironmentsMipLevel =
     9,
     10,
     10,
-    10
+    10,
+    9,
+    9
 ];
 
 class gltfRenderingParameters
