@@ -1,3 +1,5 @@
+import { ImageMimeType } from "./image";
+
 const ToneMaps =
 {
     LINEAR: "Linear" ,
@@ -19,72 +21,38 @@ const DebugOutput =
 };
 
 const Environments =
-[
-    "papermill",
-    "field",
-    "doge2",
-    "pisa",
-    "footprint_court",
-    "helipad"
-];
-
-const EnvironmentsMipLevel =
-[
-    9,
-    10,
-    10,
-    10,
-    9,
-    9
-];
+{
+    "Papermill Ruins E": { folder: "papermill", mipLevel: 9, type: ImageMimeType.HDR },
+    "Papermill Ruins E (LDR)": { folder: "papermill", mipLevel: 9, type: ImageMimeType.LDR },
+    "Field": { folder: "field", mipLevel: 10, type: ImageMimeType.HDR },
+    "Courtyard of the Doge's palace": { folder: "doge2", mipLevel: 10, type: ImageMimeType.HDR },
+    "Pisa courtyard nearing sunset": { folder: "pisa", mipLevel: 10, type: ImageMimeType.HDR },
+    "Footprint Court": { folder: "footprint_court", mipLevel: 9, type: ImageMimeType.HDR },
+    "Helipad GoldenHour": { folder: "helipad", mipLevel: 9, type: ImageMimeType.HDR },
+    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 10, type: ImageMimeType.HDR }
+};
 
 class gltfRenderingParameters
 {
     constructor(
-        environment = undefined,
+        environmentName = Object.keys(Environments)[0],
         useIBL = true,
         usePunctual = false,
-        useHdr = true,
         exposure = 1.0,
         gamma = 2.2,
         clearColor = [51, 51, 51],
         toneMap = ToneMaps.LINEAR,
         debugOutput = DebugOutput.NONE)
     {
+        this.environmentName = environmentName;
         this.useIBL = useIBL;
         this.usePunctual = usePunctual;
-        this.useHdr = useHdr;
         this.exposure = exposure;
         this.gamma = gamma;
         this.clearColor = clearColor;
         this.toneMap = toneMap;
         this.debugOutput = debugOutput;
         this.sceneIndex = 0;
-
-        this.updateEnvironment(environment);
-
-        const OES_texture_float = gl.getExtension("OES_texture_float");
-        const OES_texture_float_linear = gl.getExtension("OES_texture_float_linear");
-        if ((!OES_texture_float || !OES_texture_float_linear) && this.useHdr)
-        {
-            this.useHdr = false;
-            console.warn("Forcing to LDR rendering.");
-        }
-    }
-
-    updateEnvironment(environment)
-    {
-        if (Environments.includes(environment))
-        {
-            this.environment = environment;
-            this.environmentMipLevel = EnvironmentsMipLevel[Environments.indexOf(environment)];
-        }
-        else
-        {
-            console.warn("Environment '%s' is not supported.", environment);
-            this.environment = Environments[0];
-            this.environmentMipLevel = EnvironmentsMipLevel[0];
-        }
     }
 };
 
