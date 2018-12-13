@@ -6,7 +6,7 @@ function gltf_rv(canvasId, index,
     onRendererReady = undefined,
     basePath = "",
     initialModel = "BoomBox",
-    envMap = "Papermill")
+    envMap = "Papermill Ruins E")
 {
     // TODO: Avoid depending on global variables.
     const canvas = window.canvas = document.getElementById(canvasId);
