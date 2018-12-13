@@ -63,7 +63,7 @@ class gltfUserInterface
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
         lightingFolder.add(this.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
             .onChange(() => self.onModelSelected(self.selectedModel));
-        lightingFolder.add(this.renderingParameters, "exposure", 0, 2, 0.1).name("Exposure");
+        lightingFolder.add(this.renderingParameters, "exposure", 0, 10, 0.1).name("Exposure");
         lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
         lightingFolder.addColor(this.renderingParameters, "clearColor", [50, 50, 50]).name("Background Color");

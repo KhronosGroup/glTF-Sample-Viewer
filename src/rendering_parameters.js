@@ -40,7 +40,7 @@ class gltfRenderingParameters
         usePunctual = false,
         exposure = 1.0,
         gamma = 2.2,
-        clearColor = [51, 51, 51],
+        clearColor = [50, 50, 50],
         toneMap = ToneMaps.LINEAR,
         debugOutput = DebugOutput.NONE)
     {
