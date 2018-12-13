@@ -27,7 +27,7 @@ class gltfUserInterface
         this.gltfFolder = this.gui.addFolder("glTF");
 
         this.initializeModelsDropdown();
-        this.initializeSceneSelection();
+        this.initializeSceneSelection([]);
         this.initializeLightingSettings();
         this.initializeDebugSettings();
         this.initializeMonitoringView();
@@ -46,11 +46,13 @@ class gltfUserInterface
         this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
     }
 
-    initializeSceneSelection()
+    initializeSceneSelection(scenes)
     {
-        const scenesFolder = this.gltfFolder.addFolder("Scene Index");
-        scenesFolder.add(this, "onPreviousSceneSelected").name("←");
-        scenesFolder.add(this, "onNextSceneSelected").name("→");
+        if (this.sceneSelection !== undefined)
+        {
+            this.gltfFolder.remove(this.sceneSelection);
+        }
+        this.sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
     }
 
     initializeLightingSettings()

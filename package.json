@@ -11,6 +11,8 @@
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",
     "dev:electron": "concurrently \"rollup -c -w\" \"npm start\"",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "package-mac": "electron-packager . gltf-reference-viewer --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
@@ -34,10 +36,13 @@
     "open": "0.0.5"
   },
   "devDependencies": {
+    "acorn": "^6.0.4",
     "concurrently": "^4.1.0",
     "electron": "^3.0.10",
     "electron-packager": "^12.2.0",
+    "eslint": "^5.10.0",
     "rollup": "^0.67.4",
+    "rollup-plugin-glslify": "^1.0.7",
     "rollup-plugin-node-resolve": "^3.4.0",
     "serve": "^10.1.1"
   },

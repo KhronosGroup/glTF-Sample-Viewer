@@ -6,6 +6,10 @@ import { jsToGl } from './utils.js';
 import { LoadWebGLExtensions, SetIndices, SetTexture, EnableAttribute } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
+import metallicRoughnessShader from './shaders/metallic-roughness.frag';
+import primitiveShader from './shaders/primitive.vert';
+import texturesShader from './shaders/textures.glsl';
+import tonemappingShader from'./shaders/tonemapping.glsl';
 
 class gltfRenderer
 {
@@ -20,12 +24,13 @@ class gltfRenderer
         this.currentWidth  = 0;
         this.currentHeight = 0;
 
-        this.shaderCache = new ShaderCache(basePath + "src/shaders/", [
-            "primitive.vert",
-            "metallic-roughness.frag",
-            "tonemapping.glsl",
-            "textures.glsl"
-        ]);
+        const shaderSources = new Map();
+        shaderSources.set("primitive.vert", primitiveShader);
+        shaderSources.set("metallic-roughness.frag", metallicRoughnessShader);
+        shaderSources.set("tonemapping.glsl", tonemappingShader);
+        shaderSources.set("textures.glsl", texturesShader);
+
+        this.shaderCache = new ShaderCache(shaderSources);
 
         let requiredWebglExtensions = [
             "EXT_shader_texture_lod",

@@ -1,6 +1,8 @@
 #?RADIANCE
 #Saved with UX3D
+GAMMA=1
+PRIMARIES=0 0 0 0 0 0 0 0
 FORMAT=32-bit_rle_rgbe
 
 -Y 1 +X 1
-hÅ•Ä
+hÄ§Ä
