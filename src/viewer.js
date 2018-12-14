@@ -1,3 +1,4 @@
+import axios from '../libs/axios.min.js';
 import { glTF } from './gltf.js';
 import { ImageMimeType } from './image.js';
 import { gltfLoader } from './loader.js';

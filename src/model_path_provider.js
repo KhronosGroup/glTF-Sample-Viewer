@@ -1,3 +1,4 @@
+import axios from '../libs/axios.min.js';
 import {
     getContainingFolder,
     combinePaths,
