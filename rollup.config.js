@@ -1,3 +1,4 @@
+import commonjs from 'rollup-plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
 
@@ -21,6 +22,7 @@ export default {
   ],
   plugins: [
     glslify(),
-    resolve()
+    resolve(),
+    commonjs()
   ]
 };
