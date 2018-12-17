@@ -8,7 +8,7 @@ import { gltfRenderingParameters, Environments } from './rendering_parameters.js
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer } from './utils.js';
-import { GlbParser } from './glbParser.js';
+import { GlbParser } from './glb_parser.js';
 import { gltfImageProcessor } from './image_processor.js';
 import { gltfEnvironmentLoader } from './environment.js';
 
