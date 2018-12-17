@@ -10,6 +10,7 @@ import metallicRoughnessShader from './shaders/metallic-roughness.frag';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
+import shaderFunctions from './shaders/functions.glsl';
 
 class gltfRenderer
 {
@@ -29,6 +30,7 @@ class gltfRenderer
         shaderSources.set("metallic-roughness.frag", metallicRoughnessShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
+        shaderSources.set("functions.glsl", shaderFunctions);
 
         this.shaderCache = new ShaderCache(shaderSources);
 
