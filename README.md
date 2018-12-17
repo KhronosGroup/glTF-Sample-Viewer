@@ -30,7 +30,7 @@ Features
 - [x] Support for the KHR_texture_transform extension
 - [x] Support for the KHR_lights_punctual extension
 - [x] Gamma correction
-- [x] HDR environment maps
+- [x] HDR environment maps **(only RLE compressed .hdr files supported until #135 is done)**
 - [X] Selection of tonemapping algorithms for IBL
 - [x] Support for headless rendering
 - [x] Support for Visual Studio Code integration
