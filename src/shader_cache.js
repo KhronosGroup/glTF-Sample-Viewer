@@ -28,7 +28,8 @@ class ShaderCache
                     src = src.replace(pattern, includeSource);
 
                     // remove the others
-                    while (src.includes(pattern)) {
+                    while (src.includes(pattern))
+                    {
                         src = src.replace(pattern, "");
                     }
 
