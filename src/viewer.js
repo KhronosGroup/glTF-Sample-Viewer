@@ -55,8 +55,10 @@ class gltfViewer
         }
         else
         {
+            const self = this;
             input.onDrag = this.userCamera.rotate.bind(this.userCamera);
             input.onWheel = this.userCamera.zoomIn.bind(this.userCamera);
+            input.onResetCamera = () => self.userCamera.reset(self.gltf);
             input.onDropFiles = this.loadFromFileObject.bind(this);
 
             if (this.initialModel.includes("/"))

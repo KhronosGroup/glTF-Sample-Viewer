@@ -54,6 +54,7 @@ function setupGlobalInputBindings(input, document)
 {
     document.onmouseup = input.mouseUpHandler.bind(input);
     document.onmousemove = input.mouseMoveHandler.bind(input);
+    document.onkeydown = input.keyDownHandler.bind(input);
 }
 
 function setupCanvasInputBindings(input, canvas)

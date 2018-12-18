@@ -1,5 +1,7 @@
 import { getIsGltf, getIsGlb } from './utils.js';
 
+const Input_ResetCamera = "r";
+
 class gltfInput
 {
     constructor(canvas)
@@ -9,6 +11,7 @@ class gltfInput
         this.onWheel = undefined;
         this.onDrag = undefined;
         this.onDropFiles = undefined;
+        this.onResetCamera = undefined;
 
         this.mouseDown = false;
         this.lastMouseX = 0;
@@ -51,6 +54,14 @@ class gltfInput
         event.preventDefault();
         this.canvas.style.cursor = "none";
         this.onWheel(event.deltaY);
+    }
+
+    keyDownHandler(event)
+    {
+        if (event.key === Input_ResetCamera)
+        {
+            this.onResetCamera();
+        }
     }
 
     // for some reason, the drop event does not work without this

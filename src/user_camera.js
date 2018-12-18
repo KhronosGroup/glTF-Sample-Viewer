@@ -51,6 +51,13 @@ class UserCamera extends gltfCamera
         this.position = position;
     }
 
+    reset(gltf)
+    {
+        this.xRot = 0;
+        this.yRot = 0;
+        this.fitViewToAsset(gltf);
+    }
+
     zoomIn(value)
     {
         if (value > 0)
