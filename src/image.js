@@ -91,16 +91,17 @@ class gltfImage
             return false;
         }
 
-        let bufferFile;
-        for (bufferFile of files)
+        var foundFile = false;
+        for (var bufferFile of files)
         {
-            if (bufferFile.name === this.uri)
+            if (bufferFile.name === this.uri || bufferFile.fullPath === this.uri)
             {
+                foundFile = true;
                 break;
             }
         }
 
-        if (bufferFile.name !== this.uri)
+        if (!foundFile)
         {
             return false;
         }
