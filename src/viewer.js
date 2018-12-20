@@ -52,11 +52,7 @@ class gltfViewer
         }
         else
         {
-            const self = this;
-            input.onDrag = this.userCamera.rotate.bind(this.userCamera);
-            input.onWheel = this.userCamera.zoomIn.bind(this.userCamera);
-            input.onResetCamera = () => self.userCamera.reset(self.gltf);
-            input.onDropFiles = this.loadFromFileObject.bind(this);
+            this.setupInputBindings(input);
 
             if (this.initialModel.includes("/"))
             {
@@ -100,6 +96,33 @@ class gltfViewer
         this.userCamera.aspectRatio = aspectRatio;
         this.userCamera.xmag = xmag;
         this.userCamera.ymag = ymag;
+    }
+
+    setupInputBindings(input)
+    {
+        const self = this;
+        input.onDrag = (deltaX, deltaY) =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                this.userCamera.rotate(deltaX, deltaY);
+            }
+        }
+        input.onWheel = (delta) =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                this.userCamera.zoomIn(delta);
+            }
+        }
+        input.onResetCamera = () =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                self.userCamera.reset(self.gltf);
+            }
+        }
+        input.onDropFiles = this.loadFromFileObject.bind(this);
     }
 
     loadFromFileObject(mainFile, additionalFiles)
