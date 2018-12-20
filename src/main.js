@@ -8,8 +8,7 @@ function gltf_rv(canvasId, index,
     initialModel = "BoomBox",
     envMap = "Courtyard of the Doge's palace")
 {
-    // TODO: Avoid depending on global variables.
-    const canvas = window.canvas = document.getElementById(canvasId);
+    const canvas = document.getElementById(canvasId);
     if (!canvas)
     {
         console.warn("Failed to retrieve the WebGL canvas!");
@@ -17,7 +16,7 @@ function gltf_rv(canvasId, index,
     }
 
     // TODO: Avoid depending on global variables.
-    const gl = window.gl = getWebGlContext();
+    const gl = window.gl = getWebGlContext(canvas);
     if (!gl)
     {
         console.warn("Failed to get an WebGL rendering context!");
@@ -33,7 +32,7 @@ function gltf_rv(canvasId, index,
     return viewer; // Succeeded in creating a glTF viewer!
 }
 
-function getWebGlContext()
+function getWebGlContext(canvas)
 {
     const parameters = { alpha: false, antialias: true };
     const contextTypes = [ "webgl", "experimental-webgl" ];

@@ -37,9 +37,8 @@ class gltfViewer
         this.lastTouchY = 0.00;
         this.touchDown = false;
 
-        // TODO: Avoid depending on global variables.
-        window.canvas = canvas;
-        canvas.style.cursor = "grab";
+        this.canvas = canvas;
+        this.canvas.style.cursor = "grab";
 
         this.loadingTimer = new Timer();
         this.gltf = undefined;
@@ -219,7 +218,7 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
-                self.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+                self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
                 if (self.gltf.scenes.length !== 0)
