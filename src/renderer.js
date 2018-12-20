@@ -107,8 +107,8 @@ class gltfRenderer
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
-        this.viewMatrix = currentCamera.getViewMatrix();
-        this.currentCameraPosition = currentCamera.getPosition();
+        this.viewMatrix = currentCamera.getViewMatrix(gltf);
+        this.currentCameraPosition = currentCamera.getPosition(gltf);
 
         this.visibleLights = this.getVisibleLights(gltf, scene);
 

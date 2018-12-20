@@ -1,4 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec3, quat } from 'gl-matrix';
 import { fromKeys } from './utils.js';
 
 class gltfCamera
@@ -48,19 +48,36 @@ class gltfCamera
 
     getViewMatrix(gltf)
     {
+        const view = mat4.create();
+
         if(this.node !== undefined && gltf !== undefined)
         {
             const nodeParent = gltf.nodes[this.node];
-            return mat4.clone(nodeParent.worldTransform);
+            const position = vec3.create();
+            const rotation = quat.create();
+            const targetDirection = vec3.create();
+            const target = vec3.create();
+
+            mat4.getTranslation(position, nodeParent.worldTransform);
+            mat4.getRotation(rotation, nodeParent.worldTransform);
+            vec3.transformQuat(targetDirection, vec3.fromValues(0, 0, -1), rotation);
+            vec3.add(target, targetDirection, position);
+
+            mat4.lookAt(view, position, target, vec3.fromValues(0, 1, 0));
         }
 
-        return mat4.create();
+        return view;
     }
 
     getPosition(gltf)
     {
-        let pos = vec3.create();
-        mat4.getTranslation(pos, this.getViewMatrix(gltf));
+        const pos = vec3.create();
+
+        if(this.node !== undefined && gltf !== undefined)
+        {
+            const nodeParent = gltf.nodes[this.node];
+            mat4.getTranslation(pos, nodeParent.worldTransform);
+        }
         return pos;
     }
 
