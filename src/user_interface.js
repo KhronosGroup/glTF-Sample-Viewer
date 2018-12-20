@@ -17,8 +17,6 @@ class gltfUserInterface
         this.gltfFolder = undefined;
 
         this.onModelSelected = undefined;
-        this.onNextSceneSelected = undefined;
-        this.onPreviousSceneSelected = undefined;
     }
 
     initialize()
@@ -28,6 +26,7 @@ class gltfUserInterface
 
         this.initializeModelsDropdown();
         this.initializeSceneSelection([]);
+        this.initializeCameraSelection([]);
         this.initializeLightingSettings();
         this.initializeDebugSettings();
         this.initializeMonitoringView();
@@ -53,6 +52,16 @@ class gltfUserInterface
             this.gltfFolder.remove(this.sceneSelection);
         }
         this.sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
+    }
+
+    initializeCameraSelection(cameras)
+    {
+        if (this.cameraSelection !== undefined)
+        {
+            this.gltfFolder.remove(this.cameraSelection);
+        }
+        const camerasWithUserCamera = [ "default" ].concat(cameras);
+        this.cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
     }
 
     initializeLightingSettings()
