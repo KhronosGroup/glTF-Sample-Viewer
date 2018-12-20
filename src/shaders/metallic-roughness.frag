@@ -140,7 +140,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
 vec3 diffuse(MaterialInfo materialInfo)
 {
-    return materialInfo.diffuseColor;
+    return materialInfo.diffuseColor / M_PI;
 }
 
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
