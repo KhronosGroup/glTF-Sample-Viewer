@@ -43,8 +43,6 @@ class gltfViewer
         this.loadingTimer = new Timer();
         this.gltf = undefined;
 
-        this.cameraIndex = -1;
-
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
 
@@ -90,7 +88,7 @@ class gltfViewer
         yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
         xmag = 1.0, ymag = 1.0)
     {
-        this.cameraIndex = -1; // force use default camera
+        this.renderingParameters.cameraIndex = "default"; // force use default camera
 
         this.userCamera.target = jsToGl(target);
         this.userCamera.up = jsToGl(up);
@@ -198,6 +196,7 @@ class gltfViewer
 
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
         this.gui.initializeSceneSelection(Object.keys(gltf.scenes));
+        this.gui.initializeCameraSelection(Object.keys(gltf.cameras));
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
         scene.applyTransformHierarchy(gltf);
         this.scaleFactor = this.userCamera.fitViewToAsset(gltf);
@@ -238,15 +237,15 @@ class gltfViewer
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
                         let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
-                        self.renderer.drawScene(self.gltf, opaqueScene, self.cameraIndex, false, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, opaqueScene, false, self.scaleFactor);
 
                         // render transparent objects ordered by distance from camera
-                        self.renderer.drawScene(self.gltf, alphaScene, self.cameraIndex, true, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, alphaScene, true, self.scaleFactor);
                     }
                     else
                     {
                         // no alpha materials, render as is
-                        self.renderer.drawScene(self.gltf, scene, self.cameraIndex, false, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, scene, false, self.scaleFactor);
                     }
                 }
 

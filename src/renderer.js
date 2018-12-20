@@ -91,13 +91,13 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, cameraIndex, sortByDepth, scaleFactor)
+    drawScene(gltf, scene, sortByDepth, scaleFactor)
     {
         let currentCamera = undefined;
 
-        if(cameraIndex !== -1)
+        if(this.parameters.cameraIndex !== "default")
         {
-            currentCamera = gltf.cameras[cameraIndex].clone();
+            currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
         }
         else
         {

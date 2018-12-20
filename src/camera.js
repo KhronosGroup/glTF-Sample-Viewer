@@ -24,7 +24,7 @@ class gltfCamera
 
     clone()
     {
-        return gltfCamera(this.type, this.znear, this.zfar, this.yfov, this.aspectRatio, this.xmag, this.ymag, this.name, this.node);
+        return new gltfCamera(this.type, this.znear, this.zfar, this.yfov, this.aspectRatio, this.xmag, this.ymag, this.name, this.node);
     }
 
     getProjectionMatrix()
@@ -50,9 +50,8 @@ class gltfCamera
     {
         if(this.node !== undefined && gltf !== undefined)
         {
-            // TODO: Avoid depending on global variables.
-            const node = gltf.nodes[currentCamera.node];
-            return mat4.clone(node.worldTransform);
+            const nodeParent = gltf.nodes[this.node];
+            return mat4.clone(nodeParent.worldTransform);
         }
 
         return mat4.create();
@@ -62,6 +61,7 @@ class gltfCamera
     {
         let pos = vec3.create();
         mat4.getTranslation(pos, this.getViewMatrix(gltf));
+        return pos;
     }
 
     fromJson(jsonCamera)
