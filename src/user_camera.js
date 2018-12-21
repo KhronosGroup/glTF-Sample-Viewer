@@ -2,6 +2,8 @@ import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
 
+const VecZero = vec3.create();
+
 class UserCamera extends gltfCamera
 {
     constructor(
@@ -30,9 +32,7 @@ class UserCamera extends gltfCamera
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, 1);
-        const zero = vec3.create();
-        vec3.rotateX(direction, direction, zero, -this.yRot);
-        vec3.rotateY(direction, direction, zero, -this.xRot);
+        this.toLocalRotation(direction);
 
         const position = vec3.create();
         vec3.scale(position, direction, this.zoom);
@@ -71,8 +71,17 @@ class UserCamera extends gltfCamera
     pan(x, y)
     {
         const moveSpeed = 1 / (this.scaleFactor * 200);
-        this.target[0] -= x * moveSpeed;
-        this.target[1] += y * moveSpeed;
+
+        const left = vec3.fromValues(-1, 0, 0);
+        this.toLocalRotation(left);
+        vec3.scale(left, left, x * moveSpeed);
+
+        const up = vec3.fromValues(0, 1, 0);
+        this.toLocalRotation(up);
+        vec3.scale(up, up, y * moveSpeed);
+
+        vec3.add(this.target, this.target, up);
+        vec3.add(this.target, this.target, left);
     }
 
     fitViewToAsset(gltf)
@@ -86,6 +95,12 @@ class UserCamera extends gltfCamera
         this.fitZoomToExtends(min, max);
 
         return this.scaleFactor;
+    }
+
+    toLocalRotation(vector)
+    {
+        vec3.rotateX(vector, vector, VecZero, -this.yRot);
+        vec3.rotateY(vector, vector, VecZero, -this.xRot);
     }
 
     getLookAtTarget()
