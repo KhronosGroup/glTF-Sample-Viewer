@@ -3,13 +3,16 @@ import { fromKeys } from './utils.js';
 
 class gltfCamera
 {
-    constructor(type = "perspective",
-                znear = 0.01, zfar = 10000.0,
-                yfov = 45.0 * Math.PI / 180.0,
-                aspectRatio = 16.0 / 9.0,
-                xmag = 1.0, ymag = 1.0,
-                name = undefined,
-                node = undefined)
+    constructor(
+        type = "perspective",
+        znear = 0.01,
+        zfar = 10000.0,
+        yfov = 45.0 * Math.PI / 180.0,
+        aspectRatio = 16.0 / 9.0,
+        xmag = 1.0,
+        ymag = 1.0,
+        name = undefined,
+        nodeIndex = undefined)
     {
         this.type = type;
         this.znear = znear;
@@ -19,66 +22,87 @@ class gltfCamera
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
         this.name = name;
-        this.node = node;
-    }
-
-    clone()
-    {
-        return new gltfCamera(this.type, this.znear, this.zfar, this.yfov, this.aspectRatio, this.xmag, this.ymag, this.name, this.node);
+        this.node = nodeIndex;
     }
 
     getProjectionMatrix()
     {
-        let proj = mat4.create();
+        const projection = mat4.create();
 
         if (this.type == "perspective")
         {
-            mat4.perspective(proj, this.yfov, this.aspectRatio, this.znear, this.zfar);
+            mat4.perspective(projection, this.yfov, this.aspectRatio, this.znear, this.zfar);
         }
         else if (this.type == "orthographic")
         {
-            proj[0]  = 1.0 / this.xmag;
-            proj[5]  = 1.0 / this.ymag;
-            proj[10] = 2.0 / (this.znear / this.zfar)
-            proj[14] = (this.zfar + this.znear) / (this.znear - this.zfar);
+            projection[0]  = 1.0 / this.xmag;
+            projection[5]  = 1.0 / this.ymag;
+            projection[10] = 2.0 / (this.znear / this.zfar)
+            projection[14] = (this.zfar + this.znear) / (this.znear - this.zfar);
         }
 
-        return proj;
+        return projection;
     }
 
     getViewMatrix(gltf)
     {
         const view = mat4.create();
-
-        if(this.node !== undefined && gltf !== undefined)
-        {
-            const nodeParent = gltf.nodes[this.node];
-            const position = vec3.create();
-            const rotation = quat.create();
-            const targetDirection = vec3.create();
-            const target = vec3.create();
-
-            mat4.getTranslation(position, nodeParent.worldTransform);
-            mat4.getRotation(rotation, nodeParent.worldTransform);
-            vec3.transformQuat(targetDirection, vec3.fromValues(0, 0, -1), rotation);
-            vec3.add(target, targetDirection, position);
-
-            mat4.lookAt(view, position, target, vec3.fromValues(0, 1, 0));
-        }
-
+        const position = this.getPosition(gltf);
+        const target = this.getLookAtTarget(gltf);
+        mat4.lookAt(view, position, target, vec3.fromValues(0, 1, 0));
         return view;
+    }
+
+    getLookAtTarget(gltf)
+    {
+        const target = vec3.create();
+        const position = this.getPosition(gltf);
+        const lookDirection = this.getLookDirection(gltf);
+        vec3.add(target, lookDirection, position);
+        return target;
     }
 
     getPosition(gltf)
     {
-        const pos = vec3.create();
+        const position = vec3.create();
+        const node = this.getNode(gltf);
+        mat4.getTranslation(position, node.worldTransform);
+        return position;
+    }
 
-        if(this.node !== undefined && gltf !== undefined)
-        {
-            const nodeParent = gltf.nodes[this.node];
-            mat4.getTranslation(pos, nodeParent.worldTransform);
-        }
-        return pos;
+    getLookDirection(gltf)
+    {
+        const direction = vec3.create();
+        const rotation = this.getRotation(gltf);
+        vec3.transformQuat(direction, vec3.fromValues(0, 0, -1), rotation);
+        return direction;
+    }
+
+    getRotation(gltf)
+    {
+        const rotation = quat.create();
+        const node = this.getNode(gltf);
+        mat4.getRotation(rotation, node.worldTransform);
+        return rotation;
+    }
+
+    clone()
+    {
+        return new gltfCamera(
+            this.type,
+            this.znear,
+            this.zfar,
+            this.yfov,
+            this.aspectRatio,
+            this.xmag,
+            this.ymag,
+            this.name,
+            this.node);
+    }
+
+    getNode(gltf)
+    {
+        return gltf.nodes[this.node];
     }
 
     fromJson(jsonCamera)
