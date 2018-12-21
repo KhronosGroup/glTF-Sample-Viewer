@@ -3,7 +3,7 @@ import { gltfLight } from './light.js';
 import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
 import { jsToGl } from './utils.js';
-import { LoadWebGLExtensions, SetIndices, SetTexture, EnableAttribute } from './webgl.js';
+import { WebGl, LoadWebGLExtensions, SetIndices, SetTexture, EnableAttribute } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
 import metallicRoughnessShader from './shaders/metallic-roughness.frag';
@@ -65,10 +65,10 @@ class gltfRenderer
     init()
     {
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.colorMask(true, true, true, true);
-        gl.clearDepth(1.0);
+        WebGl.context.enable(WebGl.context.DEPTH_TEST);
+        WebGl.context.depthFunc(WebGl.context.LEQUAL);
+        WebGl.context.colorMask(true, true, true, true);
+        WebGl.context.clearDepth(1.0);
     }
 
     resize(width, height)
@@ -79,15 +79,15 @@ class gltfRenderer
             this.canvas.height = height;
             this.currentHeight = height;
             this.currentWidth  = width;
-            gl.viewport(0, 0, width, height);
+            WebGl.context.viewport(0, 0, width, height);
         }
     }
 
     // frame state
     newFrame()
     {
-        gl.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2]  / 255.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2]  / 255.0, 1.0);
+        WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
     }
 
     // render complete gltf scene with given camera
@@ -193,7 +193,7 @@ class gltfRenderer
             return;
         }
 
-        gl.useProgram(this.shader.program);
+        WebGl.context.useProgram(this.shader.program);
 
         if (this.parameters.usePunctual)
         {
@@ -211,22 +211,22 @@ class gltfRenderer
 
         if (material.doubleSided)
         {
-            gl.disable(gl.CULL_FACE);
+            WebGl.context.disable(WebGl.context.CULL_FACE);
         }
         else
         {
-            gl.enable(gl.CULL_FACE);
+            WebGl.context.enable(WebGl.context.CULL_FACE);
         }
 
         if(material.alphaMode === 'BLEND')
         {
-            gl.enable(gl.BLEND);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.blendEquation(gl.FUNC_ADD);
+            WebGl.context.enable(WebGl.context.BLEND);
+            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.ONE, WebGl.context.ONE_MINUS_SRC_ALPHA);
+            WebGl.context.blendEquation(WebGl.context.FUNC_ADD);
         }
         else
         {
-            gl.disable(gl.BLEND);
+            WebGl.context.disable(WebGl.context.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;
@@ -272,16 +272,16 @@ class gltfRenderer
         if (drawIndexed)
         {
             let indexAccessor = gltf.accessors[primitive.indices];
-            gl.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
+            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
         }
         else
         {
-            gl.drawArrays(primitive.mode, 0, vertexCount);
+            WebGl.context.drawArrays(primitive.mode, 0, vertexCount);
         }
 
         for (let attrib of primitive.attributes)
         {
-            gl.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
+            WebGl.context.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
         }
     }
 

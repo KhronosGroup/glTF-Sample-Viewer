@@ -1,6 +1,6 @@
 import { gltfShader } from './shader.js';
 import { stringHash, combineHashes } from './utils.js';
-import { CompileShader, LinkProgram } from './webgl.js';
+import { CompileShader, LinkProgram, WebGl } from './webgl.js';
 
 // THis class generates and caches the shader source text for a given permutation
 class ShaderCache
@@ -42,14 +42,13 @@ class ShaderCache
                 this.sources.set(key, src);
             }
         }
-
     }
 
     destroy()
     {
         for (let [identifier, shader] of this.shaders.entries())
         {
-            gl.deleteShader(shader);
+            WebGl.context.deleteShader(shader);
             shader = undefined;
         }
 

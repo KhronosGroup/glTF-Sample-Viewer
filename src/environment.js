@@ -1,6 +1,7 @@
 import { gltfImage, ImageMimeType } from './image.js';
 import { gltfTexture } from './texture.js';
 import { gltfSampler } from './sampler.js';
+import { WebGl } from './webgl.js';
 
 class gltfEnvironmentLoader
 {
@@ -31,21 +32,21 @@ class gltfEnvironmentLoader
 
         const CubeMapSides =
         [
-            { name: "right", type: gl.TEXTURE_CUBE_MAP_POSITIVE_X },
-            { name: "left", type: gl.TEXTURE_CUBE_MAP_NEGATIVE_X },
-            { name: "top", type: gl.TEXTURE_CUBE_MAP_POSITIVE_Y },
-            { name: "bottom", type: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y },
-            { name: "front", type: gl.TEXTURE_CUBE_MAP_POSITIVE_Z },
-            { name: "back", type: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z },
+            { name: "right", type: WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X },
+            { name: "left", type: WebGl.context.TEXTURE_CUBE_MAP_NEGATIVE_X },
+            { name: "top", type: WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_Y },
+            { name: "bottom", type: WebGl.context.TEXTURE_CUBE_MAP_NEGATIVE_Y },
+            { name: "front", type: WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_Z },
+            { name: "back", type: WebGl.context.TEXTURE_CUBE_MAP_NEGATIVE_Z },
         ];
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
+        gltf.samplers.push(new gltfSampler(WebGl.context.LINEAR, WebGl.context.LINEAR, WebGl.context.CLAMP_TO_EDGE, WebGl.context.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
         const diffuseCubeSamplerIdx = gltf.samplers.length - 1;
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
+        gltf.samplers.push(new gltfSampler(WebGl.context.LINEAR, WebGl.context.LINEAR_MIPMAP_LINEAR, WebGl.context.CLAMP_TO_EDGE, WebGl.context.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
         const specularCubeSamplerIdx = gltf.samplers.length - 1;
 
-        gltf.samplers.push(new gltfSampler(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, "LUTSampler"));
+        gltf.samplers.push(new gltfSampler(WebGl.context.LINEAR, WebGl.context.LINEAR, WebGl.context.CLAMP_TO_EDGE, WebGl.context.CLAMP_TO_EDGE, "LUTSampler"));
         const lutSamplerIdx = gltf.samplers.length - 1;
 
         let imageIdx = gltf.images.length;
@@ -74,7 +75,7 @@ class gltfEnvironmentLoader
         }
 
         // u_DiffuseEnvSampler tex
-        gltf.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], gl.TEXTURE_CUBE_MAP));
+        gltf.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], WebGl.context.TEXTURE_CUBE_MAP));
 
         // u_SpecularEnvSampler tex
         for (const side of CubeMapSides)
@@ -82,12 +83,12 @@ class gltfEnvironmentLoader
             addSide(specularPrefix + side.name + specularSuffix, side.type, environment.mipLevel);
         }
 
-        gltf.textures.push(new gltfTexture(specularCubeSamplerIdx, indices, gl.TEXTURE_CUBE_MAP));
+        gltf.textures.push(new gltfTexture(specularCubeSamplerIdx, indices, WebGl.context.TEXTURE_CUBE_MAP));
 
-        gltf.images.push(new gltfImage(this.basePath + "assets/images/brdfLUT.png", gl.TEXTURE_2D));
+        gltf.images.push(new gltfImage(this.basePath + "assets/images/brdfLUT.png", WebGl.context.TEXTURE_2D));
 
         // u_brdfLUT tex
-        gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], gl.TEXTURE_2D));
+        gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], WebGl.context.TEXTURE_2D));
     }
 }
 

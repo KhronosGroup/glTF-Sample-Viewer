@@ -1,12 +1,13 @@
 import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
+import { WebGl } from './webgl.js';
 
 function gltf_rv(canvasId, index,
     headless = false,
     onRendererReady = undefined,
     basePath = "",
     initialModel = "BoomBox",
-    envMap = "Courtyard of the Doge's palace")
+    envMap = "Papermill Ruins E (LDR)")
 {
     const canvas = document.getElementById(canvasId);
     if (!canvas)
@@ -15,9 +16,8 @@ function gltf_rv(canvasId, index,
         return null;
     }
 
-    // TODO: Avoid depending on global variables.
-    const gl = window.gl = getWebGlContext(canvas);
-    if (!gl)
+    WebGl.context = getWebGlContext(canvas);
+    if (!WebGl.context)
     {
         console.warn("Failed to get an WebGL rendering context!");
         return null;

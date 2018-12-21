@@ -1,11 +1,12 @@
 import { HDRImage } from '../libs/hdrpng.js';
 import { fromKeys } from './utils.js';
+import { WebGl } from './webgl.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
 
 class gltfImage
 {
-    constructor(uri = undefined, type = gl.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageMimeType.JPEG, image = undefined)
+    constructor(uri = undefined, type = WebGl.context.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageMimeType.JPEG, image = undefined)
     {
         this.uri = uri;
         this.bufferView = bufferView;

@@ -1,24 +1,34 @@
+class gltfWebGl
+{
+    constructor()
+    {
+        this.context = undefined;
+    }
+}
+
+const WebGl = new gltfWebGl();
+
 function LoadWebGLExtensions(webglExtensions)
 {
     for (let extension of webglExtensions)
     {
-        if (gl.getExtension(extension) === null)
+        if (WebGl.context.getExtension(extension) === null)
         {
             console.warn("Extension " + extension + " not supported!");
         }
     }
 
-    let EXT_texture_filter_anisotropic = gl.getExtension("EXT_texture_filter_anisotropic");
+    let EXT_texture_filter_anisotropic = WebGl.context.getExtension("EXT_texture_filter_anisotropic");
 
     if (EXT_texture_filter_anisotropic)
     {
-        gl.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
-        gl.maxAnisotropy = gl.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-        gl.supports_EXT_texture_filter_anisotropic = true;
+        WebGl.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
+        WebGl.context.maxAnisotropy = WebGl.context.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        WebGl.context.supports_EXT_texture_filter_anisotropic = true;
     }
     else
     {
-        gl.supports_EXT_texture_filter_anisotropic = false;
+        WebGl.context.supports_EXT_texture_filter_anisotropic = false;
     }
 }
 
@@ -27,36 +37,36 @@ function SetSampler(gltfSamplerObj, type, rectangleImage) // TEXTURE_2D
 {
     if (rectangleImage)
     {
-        gl.texParameteri(type, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(type, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
+        WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
     }
     else
     {
-        gl.texParameteri(type, gl.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
-        gl.texParameteri(type, gl.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
+        WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
+        WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
     }
 
     // Rectangle images are not mip-mapped, so force to non-mip-mapped sampler.
-    if (rectangleImage && (gltfSamplerObj.minFilter != gl.NEAREST) && (gltfSamplerObj.minFilter != gl.LINEAR))
+    if (rectangleImage && (gltfSamplerObj.minFilter != WebGl.context.NEAREST) && (gltfSamplerObj.minFilter != WebGl.context.LINEAR))
     {
-        if ((gltfSamplerObj.minFilter == gl.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == gl.NEAREST_MIPMAP_LINEAR))
+        if ((gltfSamplerObj.minFilter == WebGl.context.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == WebGl.context.NEAREST_MIPMAP_LINEAR))
         {
-            gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.NEAREST);
         }
         else
         {
-            gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.LINEAR);
         }
     }
     else
     {
-        gl.texParameteri(type, gl.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
+        WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
     }
-    gl.texParameteri(type, gl.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
+    WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
 
-    if (gl.supports_EXT_texture_filter_anisotropic)
+    if (WebGl.context.supports_EXT_texture_filter_anisotropic)
     {
-        gl.texParameterf(type, gl.anisotropy, gl.maxAnisotropy); // => 16xAF
+        WebGl.context.texParameterf(type, WebGl.context.anisotropy, WebGl.context.maxAnisotropy); // => 16xAF
     }
 }
 
@@ -77,13 +87,13 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
     if (gltfTex.glTexture === undefined)
     {
-        gltfTex.glTexture = gl.createTexture();
+        gltfTex.glTexture = WebGl.context.createTexture();
     }
 
-    gl.activeTexture(gl.TEXTURE0 + texSlot);
-    gl.bindTexture(gltfTex.type, gltfTex.glTexture);
+    WebGl.context.activeTexture(WebGl.context.TEXTURE0 + texSlot);
+    WebGl.context.bindTexture(gltfTex.type, gltfTex.glTexture);
 
-    gl.uniform1i(loc, texSlot);
+    WebGl.context.uniform1i(loc, texSlot);
 
     if (!gltfTex.initialized)
     {
@@ -95,7 +105,7 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             return false;
         }
 
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        WebGl.context.pixelStorei(WebGl.context.UNPACK_FLIP_Y_WEBGL, false);
 
         let images = [];
 
@@ -124,12 +134,12 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
 
             if (image.image.dataRGBE !== undefined)
             {
-                gl.texImage2D(image.type, image.miplevel, gl.RGB, image.image.width, image.image.height, 0, gl.RGB, gl.FLOAT, image.image.dataFloat);
+                WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
                 generateMips = false;
             }
             else
             {
-                gl.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, gl.UNSIGNED_BYTE, image.image);
+                WebGl.context.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, WebGl.context.UNSIGNED_BYTE, image.image);
             }
 
             if (image.image.width != image.image.height)
@@ -146,11 +156,11 @@ function SetTexture(loc, gltf, textureInfo, texSlot)
             // Until this point, images can be assumed to be power of two and having a square size.
             switch (gltfSampler.minFilter)
             {
-                case gl.NEAREST_MIPMAP_NEAREST:
-                case gl.NEAREST_MIPMAP_LINEAR:
-                case gl.LINEAR_MIPMAP_NEAREST:
-                case gl.LINEAR_MIPMAP_LINEAR:
-                    gl.generateMipmap(gltfTex.type);
+                case WebGl.context.NEAREST_MIPMAP_NEAREST:
+                case WebGl.context.NEAREST_MIPMAP_LINEAR:
+                case WebGl.context.LINEAR_MIPMAP_NEAREST:
+                case WebGl.context.LINEAR_MIPMAP_LINEAR:
+                    WebGl.context.generateMipmap(gltfTex.type);
                     break;
                 default:
                     break;
@@ -169,7 +179,7 @@ function SetIndices(gltf, accessorIndex)
 
     if (gltfAccessor.glBuffer === undefined)
     {
-        gltfAccessor.glBuffer = gl.createBuffer();
+        gltfAccessor.glBuffer = WebGl.context.createBuffer();
 
         let data = gltfAccessor.getTypedView(gltf);
 
@@ -178,12 +188,12 @@ function SetIndices(gltf, accessorIndex)
             return false;
         }
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        WebGl.context.bindBuffer(WebGl.context.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+        WebGl.context.bufferData(WebGl.context.ELEMENT_ARRAY_BUFFER, data, WebGl.context.STATIC_DRAW);
     }
     else
     {
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+        WebGl.context.bindBuffer(WebGl.context.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
     }
 
     return true;
@@ -200,7 +210,7 @@ function EnableAttribute(gltf, attributeLocation, gltfAccessor)
 
     if (gltfAccessor.glBuffer === undefined)
     {
-        gltfAccessor.glBuffer = gl.createBuffer();
+        gltfAccessor.glBuffer = WebGl.context.createBuffer();
 
         let data = gltfAccessor.getTypedView(gltf);
 
@@ -209,32 +219,32 @@ function EnableAttribute(gltf, attributeLocation, gltfAccessor)
             return false;
         }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, gltfAccessor.glBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        WebGl.context.bindBuffer(WebGl.context.ARRAY_BUFFER, gltfAccessor.glBuffer);
+        WebGl.context.bufferData(WebGl.context.ARRAY_BUFFER, data, WebGl.context.STATIC_DRAW);
     }
     else
     {
-        gl.bindBuffer(gl.ARRAY_BUFFER, gltfAccessor.glBuffer);
+        WebGl.context.bindBuffer(WebGl.context.ARRAY_BUFFER, gltfAccessor.glBuffer);
     }
 
-    gl.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
+    WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
         gltfAccessor.normalized, gltfBufferView.byteStride, gltfAccessor.byteOffset);
-    gl.enableVertexAttribArray(attributeLocation);
+    WebGl.context.enableVertexAttribArray(attributeLocation);
 
     return true;
 }
 
 function CompileShader(isVert, shaderSource)
 {
-    let shader = gl.createShader(isVert ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-    gl.shaderSource(shader, shaderSource);
-    gl.compileShader(shader);
-    let compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    let shader = WebGl.context.createShader(isVert ? WebGl.context.VERTEX_SHADER : WebGl.context.FRAGMENT_SHADER);
+    WebGl.context.shaderSource(shader, shaderSource);
+    WebGl.context.compileShader(shader);
+    let compiled = WebGl.context.getShaderParameter(shader, WebGl.context.COMPILE_STATUS);
 
     if (!compiled)
     {
 
-        console.warn(gl.getShaderInfoLog(shader));
+        console.warn(WebGl.context.getShaderInfoLog(shader));
         return null;
     }
 
@@ -243,15 +253,16 @@ function CompileShader(isVert, shaderSource)
 
 function LinkProgram(vertex, fragment)
 {
-    let program = gl.createProgram();
-    gl.attachShader(program, vertex);
-    gl.attachShader(program, fragment);
-    gl.linkProgram(program);
+    let program = WebGl.context.createProgram();
+    WebGl.context.attachShader(program, vertex);
+    WebGl.context.attachShader(program, fragment);
+    WebGl.context.linkProgram(program);
 
     return program;
 }
 
 export {
+    WebGl,
     LoadWebGLExtensions,
     SetSampler,
     SetTexture,

@@ -1,8 +1,9 @@
 import { fromKeys } from './utils.js';
+import { WebGl } from './webgl.js';
 
 class gltfPrimitive
 {
-    constructor(attributes = [], indices = undefined, material = undefined, mode = gl.TRIANGLES)
+    constructor(attributes = [], indices = undefined, material = undefined, mode = WebGl.context.TRIANGLES)
     {
         this.attributes = attributes;
         this.indices = indices;
