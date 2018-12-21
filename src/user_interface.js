@@ -29,6 +29,13 @@ class gltfUserInterface
         this.initializeMonitoringView();
     }
 
+    update(gltf)
+    {
+        this.initializeGltfVersionView(gltf.asset.version);
+        this.initializeSceneSelection(Object.keys(gltf.scenes));
+        this.initializeCameraSelection(Object.keys(gltf.cameras));
+    }
+
     initializeGltfFolder()
     {
         this.gltfFolder = this.gui.addFolder("glTF");

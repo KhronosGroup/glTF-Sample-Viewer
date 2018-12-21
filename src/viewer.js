@@ -218,9 +218,7 @@ class gltfViewer
         }
 
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
-        this.gui.initializeGltfVersionView(gltf.asset.version);
-        this.gui.initializeSceneSelection(Object.keys(gltf.scenes));
-        this.gui.initializeCameraSelection(Object.keys(gltf.cameras));
+        this.gui.update(gltf);
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
         scene.applyTransformHierarchy(gltf);
         this.scaleFactor = this.userCamera.fitViewToAsset(gltf);
