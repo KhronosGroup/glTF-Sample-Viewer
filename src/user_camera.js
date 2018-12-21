@@ -22,6 +22,7 @@ class UserCamera extends gltfCamera
         this.zoom = zoom;
         this.zoomFactor = 1.04;
         this.rotateSpeed = 1 / 180;
+        this.scaleFactor = 1;
     }
 
     updatePosition()
@@ -67,17 +68,24 @@ class UserCamera extends gltfCamera
         this.yRot = clamp(this.yRot, -yMax, yMax);
     }
 
+    pan(x, y)
+    {
+        const moveSpeed = 1 / (this.scaleFactor * 200);
+        this.target[0] -= x * moveSpeed;
+        this.target[1] += y * moveSpeed;
+    }
+
     fitViewToAsset(gltf)
     {
         const min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
 
         this.getAssetExtends(gltf, min, max);
-        const scaleFactor = this.applyScaling(min, max);
+        this.scaleFactor = this.applyScaling(min, max);
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
 
-        return scaleFactor;
+        return this.scaleFactor;
     }
 
     getLookAtTarget()
