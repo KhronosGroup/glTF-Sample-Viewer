@@ -11,11 +11,13 @@ import { gltfSampler } from './sampler.js';
 import { gltfScene } from './scene.js';
 import { gltfTexture } from './texture.js';
 import { getContainingFolder } from './utils';
+import { gltfAsset } from './asset.js';
 
 class glTF
 {
     constructor(file)
     {
+        this.asset = new gltfAsset();
         this.accessors = [];
         this.nodes = [];
         this.scene = undefined; // the default scene to show.
@@ -33,6 +35,14 @@ class glTF
         this.defaultSampler  = -1;
         this.cubemapSampler  = -1;
         this.path = file;
+    }
+
+    fromJsonAsset(jsonAsset)
+    {
+        this.asset.version = jsonAsset.version;
+        this.asset.minVersion = jsonAsset.minVersion;
+        this.asset.copyright = jsonAsset.copyright;
+        this.asset.generator = jsonAsset.generator;
     }
 
     fromJsonNodes(jsonNodes)
@@ -173,6 +183,8 @@ class glTF
 
     fromJson(json)
     {
+        this.fromJsonAsset(json.asset);
+
         if(json.cameras !== undefined)
         {
             this.fromJsonCameras(json.cameras);
