@@ -22,14 +22,22 @@ class gltfUserInterface
     initialize()
     {
         this.gui = new dat.GUI({ width: 300 });
-        this.gltfFolder = this.gui.addFolder("glTF");
 
-        this.initializeModelsDropdown();
-        this.initializeSceneSelection([]);
-        this.initializeCameraSelection([]);
+        this.initializeGltfFolder();
         this.initializeLightingSettings();
         this.initializeDebugSettings();
         this.initializeMonitoringView();
+    }
+
+    initializeGltfFolder()
+    {
+        this.gltfFolder = this.gui.addFolder("glTF");
+
+        this.initializeModelsDropdown();
+        this.initializeGltfVersionView("");
+        this.initializeSceneSelection([]);
+        this.initializeCameraSelection([]);
+
         this.gltfFolder.open();
     }
 
@@ -43,6 +51,16 @@ class gltfUserInterface
 
         const self = this;
         this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
+    }
+
+    initializeGltfVersionView(version)
+    {
+        this.version = version;
+        if (this.versionView !== undefined)
+        {
+            this.gltfFolder.remove(this.versionView);
+        }
+        this.versionView = this.gltfFolder.add(this, "version", version).name("glTF Version").onChange(() => this.version = version);
     }
 
     initializeSceneSelection(scenes)
