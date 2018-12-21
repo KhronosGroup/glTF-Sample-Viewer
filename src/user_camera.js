@@ -1,4 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
 
@@ -8,7 +8,8 @@ class UserCamera extends gltfCamera
         position = [0, 0, 0],
         target = [0, 0,0],
         up = [0, 1, 0],
-        xRot = 0, yRot = 0,
+        xRot = 0,
+        yRot = 0,
         zoom = 1)
     {
         super();
@@ -21,18 +22,6 @@ class UserCamera extends gltfCamera
         this.zoom = zoom;
         this.zoomFactor = 1.04;
         this.rotateSpeed = 1 / 180;
-    }
-
-    getViewMatrix()
-    {
-        const view = mat4.create();
-        mat4.lookAt(view, this.position, this.target, this.up);
-        return view;
-    }
-
-    getPosition()
-    {
-        return this.position;
     }
 
     updatePosition()
@@ -89,6 +78,16 @@ class UserCamera extends gltfCamera
         this.fitZoomToExtends(min, max);
 
         return scaleFactor;
+    }
+
+    getLookAtTarget()
+    {
+        return this.target;
+    }
+
+    getPosition()
+    {
+        return this.position;
     }
 
     getAssetExtends(gltf, outMin, outMax)
