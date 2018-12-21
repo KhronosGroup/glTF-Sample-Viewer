@@ -39,6 +39,8 @@ class gltfInput
 
     mouseMoveHandler(event)
     {
+        event.preventDefault();
+
         if (!this.mouseDown)
         {
             this.canvas.style.cursor = "grab";
