@@ -3,7 +3,7 @@ import { gltfLight } from './light.js';
 import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
 import { jsToGl } from './utils.js';
-import { WebGl, LoadWebGLExtensions, SetIndices, SetTexture, EnableAttribute } from './webgl.js';
+import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
 import metallicRoughnessShader from './shaders/metallic-roughness.frag';
@@ -43,7 +43,7 @@ class gltfRenderer
             "OES_texture_float_linear"
         ];
 
-        LoadWebGLExtensions(requiredWebglExtensions);
+        WebGl.loadWebGlExtensions(requiredWebglExtensions);
 
         this.visibleLights = [];
 
@@ -232,7 +232,7 @@ class gltfRenderer
         const drawIndexed = primitive.indices !== undefined;
         if (drawIndexed)
         {
-            if (!SetIndices(gltf, primitive.indices))
+            if (!WebGl.setIndices(gltf, primitive.indices))
             {
                 return;
             }
@@ -244,7 +244,7 @@ class gltfRenderer
             let gltfAccessor = gltf.accessors[attrib.accessor];
             vertexCount = gltfAccessor.count;
 
-            if (!EnableAttribute(gltf, this.shader.getAttribLocation(attrib.name), gltfAccessor))
+            if (!WebGl.enableAttribute(gltf, this.shader.getAttribLocation(attrib.name), gltfAccessor))
             {
                 return; // skip this primitive.
             }
@@ -258,7 +258,7 @@ class gltfRenderer
         for(let i = 0; i < material.textures.length; ++i)
         {
             let info = material.textures[i];
-            if (!SetTexture(this.shader.getUniformLocation(info.samplerName), gltf, info, i)) // binds texture and sampler
+            if (!WebGl.setTexture(this.shader.getUniformLocation(info.samplerName), gltf, info, i)) // binds texture and sampler
             {
                 return;
             }
@@ -374,9 +374,9 @@ class gltfRenderer
             gltf.envData.lut.generateMips = false;
         }
 
-        SetTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, gltf.envData.diffuseEnvMap, texSlotOffset);
-        SetTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
-        SetTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
+        WebGl.setTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, gltf.envData.diffuseEnvMap, texSlotOffset);
+        WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
+        WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
 
         this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, gltf.textures.length, 0]));
     }

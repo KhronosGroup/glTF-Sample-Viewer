@@ -1,6 +1,6 @@
 import { gltfShader } from './shader.js';
 import { stringHash, combineHashes } from './utils.js';
-import { CompileShader, LinkProgram, WebGl } from './webgl.js';
+import { WebGl } from './webgl.js';
 
 // THis class generates and caches the shader source text for a given permutation
 class ShaderCache
@@ -95,7 +95,7 @@ class ShaderCache
         {
             // console.log(defines);
             // compile this variant
-            shader = CompileShader(isVert, defines + src);
+            shader = WebGl.compileShader(isVert, defines + src);
             if(shader)
             {
                 this.shaders.set(hash, shader);
@@ -122,7 +122,7 @@ class ShaderCache
         }
         else // link this shader program type!
         {
-            let linkedProg = LinkProgram(this.shaders.get(vertexShaderHash), this.shaders.get(fragmentShaderHash));
+            let linkedProg = WebGl.linkProgram(this.shaders.get(vertexShaderHash), this.shaders.get(fragmentShaderHash));
             if(linkedProg)
             {
                 let program = new gltfShader(linkedProg, hash);
