@@ -1,6 +1,8 @@
 import { getIsGltf, getIsGlb } from './utils.js';
 
 const Input_ResetCamera = "r";
+const Input_RotateButton = 0;
+const Input_PanButton = 1;
 
 class gltfInput
 {
@@ -8,12 +10,14 @@ class gltfInput
     {
         this.canvas = canvas;
 
-        this.onWheel = undefined;
-        this.onDrag = undefined;
-        this.onDropFiles = undefined;
-        this.onResetCamera = undefined;
+        this.onZoom = () => { };
+        this.onRotate = () => { };
+        this.onPan = () => { };
+        this.onDropFiles = () => { };
+        this.onResetCamera = () => { };
 
         this.mouseDown = false;
+        this.pressedButton = undefined;
         this.lastMouseX = 0;
         this.lastMouseY = 0;
     }
@@ -21,6 +25,7 @@ class gltfInput
     mouseDownHandler(event)
     {
         this.mouseDown = true;
+        this.pressedButton = event.button;
         this.lastMouseX = event.clientX;
         this.lastMouseY = event.clientY;
         this.canvas.style.cursor = "none";
@@ -34,6 +39,8 @@ class gltfInput
 
     mouseMoveHandler(event)
     {
+        event.preventDefault();
+
         if (!this.mouseDown)
         {
             this.canvas.style.cursor = "grab";
@@ -46,14 +53,22 @@ class gltfInput
         this.lastMouseX = event.clientX;
         this.lastMouseY = event.clientY;
 
-        this.onDrag(deltaX, deltaY);
+        switch (this.pressedButton)
+        {
+        case Input_RotateButton:
+            this.onRotate(deltaX, deltaY);
+            break;
+        case Input_PanButton:
+            this.onPan(deltaX, deltaY);
+            break;
+        }
     }
 
     mouseWheelHandler(event)
     {
         event.preventDefault();
         this.canvas.style.cursor = "none";
-        this.onWheel(event.deltaY);
+        this.onZoom(event.deltaY);
     }
 
     keyDownHandler(event)

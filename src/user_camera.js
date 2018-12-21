@@ -2,6 +2,8 @@ import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
 
+const VecZero = vec3.create();
+
 class UserCamera extends gltfCamera
 {
     constructor(
@@ -22,6 +24,7 @@ class UserCamera extends gltfCamera
         this.zoom = zoom;
         this.zoomFactor = 1.04;
         this.rotateSpeed = 1 / 180;
+        this.scaleFactor = 1;
     }
 
     updatePosition()
@@ -29,9 +32,7 @@ class UserCamera extends gltfCamera
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, 1);
-        const zero = vec3.create();
-        vec3.rotateX(direction, direction, zero, -this.yRot);
-        vec3.rotateY(direction, direction, zero, -this.xRot);
+        this.toLocalRotation(direction);
 
         const position = vec3.create();
         vec3.scale(position, direction, this.zoom);
@@ -67,17 +68,39 @@ class UserCamera extends gltfCamera
         this.yRot = clamp(this.yRot, -yMax, yMax);
     }
 
+    pan(x, y)
+    {
+        const moveSpeed = 1 / (this.scaleFactor * 200);
+
+        const left = vec3.fromValues(-1, 0, 0);
+        this.toLocalRotation(left);
+        vec3.scale(left, left, x * moveSpeed);
+
+        const up = vec3.fromValues(0, 1, 0);
+        this.toLocalRotation(up);
+        vec3.scale(up, up, y * moveSpeed);
+
+        vec3.add(this.target, this.target, up);
+        vec3.add(this.target, this.target, left);
+    }
+
     fitViewToAsset(gltf)
     {
         const min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
 
         this.getAssetExtends(gltf, min, max);
-        const scaleFactor = this.applyScaling(min, max);
+        this.scaleFactor = this.applyScaling(min, max);
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
 
-        return scaleFactor;
+        return this.scaleFactor;
+    }
+
+    toLocalRotation(vector)
+    {
+        vec3.rotateX(vector, vector, VecZero, -this.yRot);
+        vec3.rotateY(vector, vector, VecZero, -this.xRot);
     }
 
     getLookAtTarget()

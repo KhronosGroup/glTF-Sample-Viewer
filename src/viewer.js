@@ -1,6 +1,5 @@
 import axios from '../libs/axios.min.js';
 import { glTF } from './gltf.js';
-import { ImageMimeType } from './image.js';
 import { gltfLoader } from './loader.js';
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
@@ -101,27 +100,34 @@ class gltfViewer
     setupInputBindings(input)
     {
         const self = this;
-        input.onDrag = (deltaX, deltaY) =>
+        input.onRotate = (deltaX, deltaY) =>
         {
             if (self.renderingParameters.cameraIndex === "default")
             {
                 this.userCamera.rotate(deltaX, deltaY);
             }
-        }
-        input.onWheel = (delta) =>
+        };
+        input.onPan = (deltaX, deltaY) =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                this.userCamera.pan(deltaX, deltaY);
+            }
+        };
+        input.onZoom = (delta) =>
         {
             if (self.renderingParameters.cameraIndex === "default")
             {
                 this.userCamera.zoomIn(delta);
             }
-        }
+        };
         input.onResetCamera = () =>
         {
             if (self.renderingParameters.cameraIndex === "default")
             {
                 self.userCamera.reset(self.gltf);
             }
-        }
+        };
         input.onDropFiles = this.loadFromFileObject.bind(this);
     }
 
