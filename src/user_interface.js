@@ -12,6 +12,7 @@ class gltfUserInterface
         this.selectedModel = selectedModel;
         this.renderingParameters = renderingParameters;
         this.stats = stats;
+        this.hexColor = this.toHexColor(this.renderingParameters.clearColor);
 
         this.gui = undefined;
         this.gltfFolder = undefined;
@@ -100,7 +101,8 @@ class gltfUserInterface
         lightingFolder.add(this.renderingParameters, "exposure", 0, 10, 0.1).name("Exposure");
         lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
-        lightingFolder.addColor(this.renderingParameters, "clearColor", [50, 50, 50]).name("Background Color");
+        lightingFolder.addColor(this, "hexColor", this.hexColor).name("Background Color")
+            .onChange(() => self.renderingParameters.clearColor = self.fromHexColor(self.hexColor));
     }
 
     initializeDebugSettings()
@@ -122,6 +124,29 @@ class gltfUserInterface
         statsList.appendChild(this.stats.domElement);
         statsList.classList.add("gui-stats");
         monitoringFolder.__ul.appendChild(statsList);
+    }
+
+    // string format: "#RRGGBB"
+    fromHexColor(hexColor)
+    {
+        const hexR = hexColor.substring(1, 2);
+        const hexG = hexColor.substring(3, 4);
+        const hexB = hexColor.substring(5, 6);
+        return [ this.fromHexValue(hexR) , this.fromHexValue(hexG), this.fromHexValue(hexB) ];
+    }
+
+    // array format: [ R, G, B ]
+    toHexColor(color)
+    {
+        const hexR = color[0].toString(16);
+        const hexG = color[1].toString(16);
+        const hexB = color[2].toString(16);
+        return "#" + hexR + hexG + hexB;
+    }
+
+    fromHexValue(hexValue)
+    {
+        return parseInt(hexValue, 16) * 16
     }
 }
 
