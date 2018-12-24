@@ -12,6 +12,7 @@ import { gltfScene } from './scene.js';
 import { gltfTexture } from './texture.js';
 import { getContainingFolder } from './utils';
 import { gltfAsset } from './asset.js';
+import { gltfRenderTarget } from './render_target.js'
 
 class glTF
 {
@@ -35,6 +36,8 @@ class glTF
         this.defaultSampler  = -1;
         this.cubemapSampler  = -1;
         this.path = file;
+
+        this.extensions = {rendertargets: []};
     }
 
     fromJsonAsset(jsonAsset)
@@ -181,6 +184,33 @@ class glTF
         }
     }
 
+    // UX3D extension
+    fromJsonRenderTargets(jsonRenderTargets)
+    {
+        for (let i = 0; i < jsonRenderTargets.length; ++i)
+        {
+            let rt = new gltfRenderTarget(0, 0, this.defaultSampler);
+            rt.fromJson(jsonRenderTargets[i]);
+            this.extensions.rendertargets.push(rt);
+        }
+    }
+
+    fromJsonExtensions(jsonExtensions)
+    {
+        if(jsonExtensions.UX3D_render_targets !== undefined)
+        {
+            this.fromJsonRenderTargets(jsonExtensions.UX3D_render_targets);
+        }
+
+        if(jsonExtensions.KHR_lights_punctual !== undefined)
+        {
+            if(jsonExtensions.KHR_lights_punctual.lights !== undefined)
+            {
+                this.fromJsonLights(jsonExtensions.KHR_lights_punctual.lights);
+            }
+        }
+    }
+
     fromJson(json)
     {
         this.fromJsonAsset(json.asset);
@@ -188,17 +218,6 @@ class glTF
         if(json.cameras !== undefined)
         {
             this.fromJsonCameras(json.cameras);
-        }
-
-        if(json.extensions !== undefined)
-        {
-            if(json.extensions.KHR_lights_punctual !== undefined)
-            {
-                if(json.extensions.KHR_lights_punctual.lights !== undefined)
-                {
-                    this.fromJsonLights(json.extensions.KHR_lights_punctual.lights);
-                }
-            }
         }
 
         if(json.nodes !== undefined)
@@ -268,6 +287,11 @@ class glTF
         if (json.scenes !== undefined)
         {
             this.fromJsonScenes(json.scenes);
+        }
+
+        if(json.extensions !== undefined)
+        {
+            this.fromJsonExtensions(json.extensions);
         }
     }
 };
