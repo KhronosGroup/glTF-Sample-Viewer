@@ -11,7 +11,11 @@
 //     https://github.com/KhronosGroup/glTF-WebGL-PBR/#environment-maps
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
+
+#ifdef USE_TEX_LOD
 #extension GL_EXT_shader_texture_lod: enable
+#endif
+
 #extension GL_OES_standard_derivatives : enable
 
 #ifdef USE_HDR

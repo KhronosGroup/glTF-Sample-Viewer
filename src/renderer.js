@@ -44,6 +44,8 @@ class gltfRenderer
         ];
 
         WebGl.loadWebGlExtensions(requiredWebglExtensions);
+        // use shader lod ext if requested and supported
+        this.parameters.useShaderLoD = this.parameters.useShaderLoD && WebGl.context.getExtension("EXT_shader_texture_lod") !== null;
 
         this.visibleLights = [];
 
@@ -296,6 +298,10 @@ class gltfRenderer
         if (this.parameters.useIBL)
         {
             fragDefines.push("USE_IBL 1");
+        }
+
+        if(this.parameters.useShaderLoD)
+        {
             fragDefines.push("USE_TEX_LOD 1");
         }
 
