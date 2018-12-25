@@ -34,6 +34,7 @@ class gltfMaterial
         let defaultMaterial = new gltfMaterial();
         defaultMaterial.type = "MR";
         defaultMaterial.name = "Default Material";
+        defaultMaterial.defines.push("MATERIAL_METALLICROUGHNESS 1");
         defaultMaterial.properties.set("u_BaseColorFactor", defaultMaterial.baseColorFactor);
         defaultMaterial.properties.set("u_MetallicFactor", defaultMaterial.metallicFactor);
         defaultMaterial.properties.set("u_RoughnessFactor", defaultMaterial.roughnessFactor);
