@@ -35,6 +35,7 @@ class glTF
         this.defaultMaterial = -1;
         this.defaultSampler  = -1;
         this.cubemapSampler  = -1;
+        this.defaultRenderTarget = -1;
         this.path = file;
 
         this.extensions = {rendertargets: []};
@@ -189,7 +190,7 @@ class glTF
     {
         for (let i = 0; i < jsonRenderTargets.length; ++i)
         {
-            let rt = new gltfRenderTarget(0, 0, this.defaultSampler);
+            let rt = new gltfRenderTarget(false, 0, 0, this.defaultSampler);
             rt.fromJson(jsonRenderTargets[i]);
             this.extensions.rendertargets.push(rt);
         }
@@ -230,8 +231,8 @@ class glTF
             this.fromJsonMaterials(json.materials);
         }
 
+        this.defaultMaterial = this.materials.length;
         this.materials.push(gltfMaterial.getDefaults());
-        this.defaultMaterial = this.materials.length - 1;
 
         if (json.accessors !== undefined)
         {
@@ -248,8 +249,8 @@ class glTF
             this.fromJsonSamplers(json.samplers);
         }
 
+        this.defaultSampler = this.samplers.length;
         this.samplers.push(new gltfSampler());
-        this.defaultSampler = this.samplers.length - 1;
 
         if(json.textures !== undefined)
         {
@@ -293,6 +294,9 @@ class glTF
         {
             this.fromJsonExtensions(json.extensions);
         }
+
+        this.defaultRenderTarget = this.extensions.rendertargets.length;
+        this.extensions.rendertargets.push(new gltfRenderTarget(true, 0, 0, this.defaultSampler));
     }
 };
 

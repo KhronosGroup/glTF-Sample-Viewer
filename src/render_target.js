@@ -1,9 +1,11 @@
-import { jsToGl, fromKeys } from "./utils";
+import { fromKeys } from "./utils.js";
+import { WebGl } from "./webgl.js"
 
 class gltfRenderTarget
 {
-    constructor(width = 0, height = 0, sampler = -1, attachmentPoint = gl.COLOR_ATTACHMENT0, type = gl.TEXTURE_2D, level = 0, internalFormat = gl.RGBA, format = gl.RGBA, elementType=gl.UNSIGNED_BYTE)
+    constructor(backbuffer = true, width = 0, height = 0, sampler = -1, attachmentPoint = WebGl.context.COLOR_ATTACHMENT0, type = WebGl.context.TEXTURE_2D, level = 0, internalFormat = WebGl.context.RGBA, format = WebGl.context.RGBA, elementType = WebGl.context.UNSIGNED_BYTE)
     {
+        this.useBackBuffer = backbuffer; // ignore other options by default
         this.width = width;
         this.height = height;
         this.sampler = sampler;
