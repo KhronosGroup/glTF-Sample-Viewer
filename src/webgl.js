@@ -132,6 +132,45 @@ class gltfWebGl
         return gltfTex.initialized;
     }
 
+    setRenderTarget(gltf, renderTarget)
+    {
+        if(renderTarget.initialized)
+        {
+            return true;
+        }
+
+        if(renderTarget.useCanvas === false)
+        {
+            if(renderTarget.targetTexture === undefined)
+            {
+                renderTarget.targetTexture = WebGl.context.createTexture();
+                WebGl.context.bindTexture(renderTarget.type, renderTarget.targetTexture);
+                WebGl.context.texImage2D(renderTarget.type, renderTarget.level, renderTarget.internalFormat, renderTarget.width, renderTarget.height, 0, renderTarget.format, renderTarget.elementType, null);
+            }
+
+            if(renderTarget.frameBuffer === undefined)
+            {
+                renderTarget.frameBuffer = WebGl.context.createFramebuffer();
+                WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, renderTarget.frameBuffer);
+                gl.framebufferTexture2D(WebGl.context.FRAMEBUFFER, renderTarget.attachmentPoint, renderTarget.type, renderTarget.targetTexture, renderTarget.level);
+            }
+        }
+
+        const gltfSampler = gltf.samplers[renderTarget.sampler];
+
+        if (gltfSampler === undefined)
+        {
+            console.warn("Sampler is undefined for rendertarget: " + renderTarget.attachmentPoint);
+            return false;
+        }
+
+        this.setSampler(gltfSampler, renderTarget.type, renderTarget.width !== renderTarget.height);
+
+        renderTarget.initialized = true;
+
+        return renderTarget.initialized;
+    }
+
     setIndices(gltf, accessorIndex)
     {
         let gltfAccessor = gltf.accessors[accessorIndex];
