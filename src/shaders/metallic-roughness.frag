@@ -23,6 +23,24 @@
 #extension GL_OES_texture_float_linear : enable
 #endif
 
+#ifdef USE_DRAW_BUFFERS
+#extension GL_EXT_draw_buffers : require
+#endif
+
+void exportColor(vec4 color, int rtIdx)
+{
+    #ifdef USE_DRAW_BUFFERS
+        gl_FragData[rtIdx] = color;
+    #else
+        gl_FragColor = color;
+    #endif
+}
+
+void exportColor(vec4 color)
+{
+    exportColor(color, 0);
+}
+
 precision highp float;
 
 #include <tonemapping.glsl>
@@ -265,6 +283,7 @@ void main()
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
+    vec4 outputColor = baseColor;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
@@ -331,7 +350,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    gl_FragColor = vec4(toneMap(baseColor.rgb), baseColor.a);
+    exportColor(vec4(toneMap(baseColor.rgb), baseColor.a));
     return;
 #endif
 
@@ -408,47 +427,49 @@ void main()
 #ifndef DEBUG_OUTPUT // no debug
 
    // regular shading
-    gl_FragColor = vec4(toneMap(color), baseColor.a);
+    outputColor = vec4(toneMap(color), baseColor.a);
 
 #else // debug output
 
     #ifdef DEBUG_METALLIC
-        gl_FragColor.rgb = vec3(metallic);
+        outputColor.rgb = vec3(metallic);
     #endif
 
     #ifdef DEBUG_ROUGHNESS
-        gl_FragColor.rgb = vec3(perceptualRoughness); //alphaRoughness
+        outputColor.rgb = vec3(perceptualRoughness); //alphaRoughness
     #endif
 
     #ifdef DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
-            gl_FragColor.rgb = texture2D(u_NormalSampler, getNormalUV()).rgb;
+            outputColor.rgb = texture2D(u_NormalSampler, getNormalUV()).rgb;
         #else
-            gl_FragColor.rgb = vec3(0.5, 0.5, 1.0);
+            outputColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        gl_FragColor.rgb = baseColor.rgb;
+        outputColor.rgb = baseColor.rgb;
     #endif
 
     #ifdef DEBUG_OCCLUSION
-        gl_FragColor.rgb = vec3(ao);
+        outputColor.rgb = vec3(ao);
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        gl_FragColor.rgb = emissive;
+        outputColor.rgb = emissive;
     #endif
 
     #ifdef DEBUG_F0
-        gl_FragColor.rgb = vec3(f0);
+        outputColor.rgb = vec3(f0);
     #endif
 
     #ifdef DEBUG_ALPHA
-        gl_FragColor.rgb = vec3(baseColor.a);
+        outputColor.rgb = vec3(baseColor.a);
     #endif
 
-    gl_FragColor.a = 1.0;
+    outputColor.a = 1.0;
 
 #endif // !DEBUG_OUTPUT
+
+    exportColor(outputColor);
 }

@@ -35,6 +35,7 @@ class gltfRenderer
         this.shaderCache = new ShaderCache(shaderSources);
 
         let requiredWebglExtensions = [
+            "WEBGL_draw_buffers",
             "EXT_shader_texture_lod",
             "OES_standard_derivatives",
             "OES_element_index_uint",
@@ -46,6 +47,7 @@ class gltfRenderer
         WebGl.loadWebGlExtensions(requiredWebglExtensions);
         // use shader lod ext if requested and supported
         this.parameters.useShaderLoD = this.parameters.useShaderLoD && WebGl.context.getExtension("EXT_shader_texture_lod") !== null;
+        this.parameters.useDrawBuffersExt &= WebGl.context.getExtension("WEBGL_draw_buffers") !== null;
 
         this.visibleLights = [];
 
@@ -73,12 +75,15 @@ class gltfRenderer
         WebGl.context.clearDepth(1.0);
     }
 
-    resize(width, height)
+    resize(width, height, updateCanvas = true)
     {
         if (this.currentWidth !== width || this.currentHeight !== height)
         {
-            this.canvas.width  = width;
-            this.canvas.height = height;
+            if(updateCanvas)
+            {
+                this.canvas.width  = width;
+                this.canvas.height = height;
+            }
             this.currentHeight = height;
             this.currentWidth  = width;
             WebGl.context.viewport(0, 0, width, height);
@@ -106,6 +111,12 @@ class gltfRenderer
             currentCamera = this.defaultCamera;
         }
 
+        // NOTE: RenderTarget glTF extension does not make sense without a proper RenderPass extension to encode when the result target texture should be used.
+        //       RenderPass extension could reference a set of RenderTargets, associated scene and dependencies (previous Passes, following passes) forming a rendering graph.
+        //       Viewer / Renderer iterates over the set of Passes and Scenes and activates the RenderTargets (and viewport) for the given scene to render.
+
+        // TODO: bind framebuffer WebGl.context.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        // TODO: aspect ratio should depend on rendertargt resolution
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
@@ -180,7 +191,7 @@ class gltfRenderer
         //select shader permutation, compile and link program.
 
         let fragDefines = material.getDefines().concat(primitive.getDefines());
-        this.pushParameterDefines(fragDefines);
+        this.pushParameterDefines(gltf, fragDefines);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
@@ -287,8 +298,15 @@ class gltfRenderer
         }
     }
 
-    pushParameterDefines(fragDefines)
+    pushParameterDefines(gltf, fragDefines)
     {
+        this.parameters.useDrawBuffersExt &= gltf.extensions.rendertargets.length > 2;
+        fragDefines.push("RENDER_TARGET_COUNT " + gltf.extensions.rendertargets.length);
+        if(this.parameters.useDrawBuffersExt)
+        {
+            fragDefines.push("USE_DRAW_BUFFERS 1");
+        }
+
         if (this.parameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");

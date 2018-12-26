@@ -23,6 +23,7 @@ class gltfRenderTarget
         this.frameBuffer = undefined;
 
         // TODO: viewport overrides
+        // TODO: https://www.khronos.org/registry/webgl/extensions/WEBGL_draw_buffers/
     }
 
     fromJson(jsonRenderTarget)
