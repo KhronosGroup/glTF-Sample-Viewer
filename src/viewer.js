@@ -1,3 +1,4 @@
+import { mat4, vec3 } from 'gl-matrix';
 import axios from '../libs/axios.min.js';
 import { glTF } from './gltf.js';
 import { gltfLoader } from './loader.js';
@@ -10,6 +11,7 @@ import { jsToGl, getIsGlb, Timer } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfImageProcessor } from './image_processor.js';
 import { gltfEnvironmentLoader } from './environment.js';
+import { getScaleFactor } from './gltf_utils.js';
 
 class gltfViewer
 {
@@ -226,7 +228,12 @@ class gltfViewer
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
         this.gui.update(gltf);
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-        scene.applyTransformHierarchy(gltf);
+
+        const transform = mat4.create();
+        const scaleFactor = getScaleFactor(gltf);
+        mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+
+        scene.applyTransformHierarchy(gltf, transform);
         this.userCamera.fitViewToAsset(gltf);
 
         this.gltf = gltf;
