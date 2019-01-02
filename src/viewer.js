@@ -228,14 +228,6 @@ class gltfViewer
         this.renderingParameters.cameraIndex = "default";
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
         this.gui.update(gltf);
-        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-
-        const transform = mat4.create();
-        const scaleFactor = getScaleFactor(gltf);
-        mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
-
-        scene.applyTransformHierarchy(gltf, transform);
-        this.userCamera.fitViewToAsset(gltf);
 
         this.gltf = gltf;
         this.currentlyRendering = true;
@@ -253,6 +245,8 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
+                self.prepareSceneForRendering(self.gltf);
+
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
@@ -301,6 +295,21 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
+    }
+
+    prepareSceneForRendering(gltf)
+    {
+        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
+        const transform = mat4.create();
+
+        if (this.renderingParameters.cameraIndex === "default")
+        {
+            const scaleFactor = getScaleFactor(gltf);
+            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+        }
+
+        scene.applyTransformHierarchy(gltf, transform);
+        this.userCamera.fitViewToAsset(gltf);
     }
 
     initializeGui()
