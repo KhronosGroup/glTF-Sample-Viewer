@@ -90,11 +90,8 @@ class UserCamera extends gltfCamera
         const max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
 
         this.getAssetExtends(gltf, min, max);
-        this.scaleFactor = this.applyScaling(min, max);
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-
-        return this.scaleFactor;
     }
 
     toLocalRotation(vector)
@@ -148,22 +145,6 @@ class UserCamera extends gltfCamera
                 }
             }
         }
-    }
-
-    applyScaling(min, max)
-    {
-        const minValue = Math.min(min[0], Math.min(min[1], min[2]));
-        const maxValue = Math.max(max[0], Math.max(max[1], max[2]));
-        const deltaValue = maxValue - minValue;
-        const scaleFactor = 1.0 / deltaValue;
-
-        for (const i of [0, 1, 2])
-        {
-            min[i] *= scaleFactor;
-            max[i] *= scaleFactor;
-        }
-
-        return scaleFactor;
     }
 
     fitZoomToExtends(min, max)

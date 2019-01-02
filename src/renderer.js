@@ -93,7 +93,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, sortByDepth, scaleFactor)
+    drawScene(gltf, scene, sortByDepth)
     {
         let currentCamera = undefined;
 
@@ -125,16 +125,12 @@ class gltfRenderer
             scene.sortSceneByDepth(gltf, this.viewProjectionMatrix, transform);
         }
 
-        let scaleMatrix = mat4.create();
-        let scaleVector = vec3.fromValues(scaleFactor, scaleFactor, scaleFactor);
-        mat4.fromScaling(scaleMatrix, scaleVector);
-
         let nodeIndices = scene.nodes.slice();
         while (nodeIndices.length > 0)
         {
             const nodeIndex = nodeIndices.pop();
             const node = gltf.nodes[nodeIndex];
-            this.drawNode(gltf, node, scaleMatrix);
+            this.drawNode(gltf, node);
             nodeIndices = nodeIndices.concat(node.children);
         }
     }
@@ -157,7 +153,7 @@ class gltfRenderer
     }
 
     // same transform, recursive
-    drawNode(gltf, node, scaleMatrix)
+    drawNode(gltf, node)
     {
         // draw primitive:
         let mesh = gltf.meshes[node.mesh];
@@ -165,13 +161,13 @@ class gltfRenderer
         {
             for (let primitive of mesh.primitives)
             {
-                this.drawPrimitive(gltf, primitive, node.worldTransform, this.viewProjectionMatrix, node.normalMatrix, scaleMatrix);
+                this.drawPrimitive(gltf, primitive, node.worldTransform, this.viewProjectionMatrix, node.normalMatrix);
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, modelMatrix, viewProjectionMatrix, normalMatrix, scaleMatrix)
+    drawPrimitive(gltf, primitive, modelMatrix, viewProjectionMatrix, normalMatrix)
     {
         if (primitive.skip) return;
 
@@ -206,7 +202,6 @@ class gltfRenderer
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         this.shader.updateUniform("u_ModelMatrix", modelMatrix);
         this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
-        this.shader.updateUniform("u_ScaleMatrix", scaleMatrix, false);
         this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
