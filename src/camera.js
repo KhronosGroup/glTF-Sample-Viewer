@@ -29,15 +29,15 @@ class gltfCamera
     {
         const projection = mat4.create();
 
-        if (this.type == "perspective")
+        if (this.type === "perspective")
         {
             mat4.perspective(projection, this.yfov, this.aspectRatio, this.znear, this.zfar);
         }
-        else if (this.type == "orthographic")
+        else if (this.type === "orthographic")
         {
             projection[0]  = 1.0 / this.xmag;
             projection[5]  = 1.0 / this.ymag;
-            projection[10] = 2.0 / (this.znear / this.zfar)
+            projection[10] = 2.0 / (this.znear - this.zfar)
             projection[14] = (this.zfar + this.znear) / (this.znear - this.zfar);
         }
 
