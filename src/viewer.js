@@ -225,6 +225,7 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
+        this.renderingParameters.cameraIndex = "default";
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
         this.gui.update(gltf);
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
