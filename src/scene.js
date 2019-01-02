@@ -109,7 +109,7 @@ class gltfScene
         }
 
         // high z far from camera first
-        posNodes.sort((a, b) => { return a.depth - b.depth });
+        posNodes.sort((a, b) => b.depth - a.depth);
 
         this.nodes = [];
         for(const node of posNodes)
