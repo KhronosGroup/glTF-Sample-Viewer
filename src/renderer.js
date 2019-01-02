@@ -116,13 +116,9 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        // Optional: pass a scene transfrom to be able to translate & rotate using the mouse
-
-        let transform = mat4.create();
-
         if(sortByDepth)
         {
-            scene.sortSceneByDepth(gltf, this.viewProjectionMatrix, transform);
+            scene.sortSceneByDepth(gltf, this.viewProjectionMatrix);
         }
 
         let nodeIndices = scene.nodes.slice();
