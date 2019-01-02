@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
-import { getAssetExtends } from './gltf_utils.js';
+import { getSceneExtends } from './gltf_utils.js';
 
 const VecZero = vec3.create();
 
@@ -42,11 +42,11 @@ class UserCamera extends gltfCamera
         this.position = position;
     }
 
-    reset(gltf)
+    reset(gltf, sceneIndex)
     {
         this.xRot = 0;
         this.yRot = 0;
-        this.fitViewToAsset(gltf);
+        this.fitViewToScene(gltf);
     }
 
     zoomIn(value)
@@ -85,12 +85,11 @@ class UserCamera extends gltfCamera
         vec3.add(this.target, this.target, left);
     }
 
-    fitViewToAsset(gltf)
+    fitViewToScene(gltf, sceneIndex)
     {
-        const min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        const max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
-
-        getAssetExtends(gltf, min, max);
+        const min = vec3.create();
+        const max = vec3.create();
+        getSceneExtends(gltf, sceneIndex, min, max);
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
     }

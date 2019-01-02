@@ -127,7 +127,7 @@ class gltfViewer
         {
             if (self.renderingParameters.cameraIndex === "default")
             {
-                self.userCamera.reset(self.gltf);
+                self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
             }
         };
         input.onDropFiles = this.loadFromFileObject.bind(this);
@@ -300,16 +300,17 @@ class gltfViewer
     prepareSceneForRendering(gltf)
     {
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-        const transform = mat4.create();
+        scene.applyTransformHierarchy(gltf);
 
+        const transform = mat4.create();
         if (this.renderingParameters.cameraIndex === "default")
         {
-            const scaleFactor = getScaleFactor(gltf);
+            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
             mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
         }
 
         scene.applyTransformHierarchy(gltf, transform);
-        this.userCamera.fitViewToAsset(gltf);
+        this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
     }
 
     initializeGui()

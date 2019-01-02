@@ -1,10 +1,20 @@
 import { vec3 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 
-function getAssetExtends(gltf, outMin, outMax)
+function getSceneExtends(gltf, sceneIndex, outMin, outMax)
 {
-    for (const node of gltf.nodes)
+    for (const i of [0, 1, 2])
     {
+        outMin[i] = Number.POSITIVE_INFINITY;
+        outMax[i] = Number.NEGATIVE_INFINITY;
+    }
+
+    const scene = gltf.scenes[sceneIndex];
+
+    for (const nodeIndex of scene.nodes)
+    {
+        const node = gltf.nodes[nodeIndex];
+
         if (node.mesh === undefined)
         {
             continue;
@@ -62,15 +72,15 @@ function getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
     }
 }
 
-function getScaleFactor(gltf)
+function getScaleFactor(gltf, sceneIndex)
 {
     const min = vec3.create();
     const max = vec3.create();
-    getAssetExtends(gltf, min, max);
+    getSceneExtends(gltf, sceneIndex, min, max);
     const minValue = Math.min(min[0], Math.min(min[1], min[2]));
     const maxValue = Math.max(max[0], Math.max(max[1], max[2]));
     const deltaValue = maxValue - minValue;
     return 1.0 / deltaValue;
 }
 
-export { getAssetExtends, getScaleFactor };
+export { getSceneExtends, getScaleFactor };
