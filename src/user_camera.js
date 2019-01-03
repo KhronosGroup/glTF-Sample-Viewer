@@ -46,7 +46,7 @@ class UserCamera extends gltfCamera
     {
         this.xRot = 0;
         this.yRot = 0;
-        this.fitViewToScene(gltf);
+        this.fitViewToScene(gltf, sceneIndex);
     }
 
     zoomIn(value)

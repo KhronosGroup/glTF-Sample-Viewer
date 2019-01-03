@@ -1,16 +1,15 @@
 import { getIsGltf, getIsGlb } from './utils.js';
-import { Input_ResetCamera } from './constants.js';
 import { gltfMouseInput } from './mouse_input.js';
 import { gltfTouchInput } from './touch_input.js';
+import { gltfKeyboardInput } from './keyboard_input.js';
 
 class gltfInput
 {
     constructor(canvas)
     {
-        this.canvas = canvas;
-
         this.mouseInput = new gltfMouseInput(canvas);
         this.touchInput = new gltfTouchInput();
+        this.keyboardInput = new gltfKeyboardInput();
 
         this.onZoom = () => { };
         this.onRotate = () => { };
@@ -22,31 +21,24 @@ class gltfInput
         this.mouseInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
         this.mouseInput.onPan = ((x, y) => this.onPan(x, y)).bind(this);
         this.touchInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
+        this.keyboardInput.onResetCamera = (() => this.onResetCamera()).bind(this);
     }
 
     setupGlobalInputBindings(document)
     {
         this.mouseInput.setupGlobalInputBindings(document);
         this.touchInput.setupGlobalInputBindings(document);
-
-        document.onkeydown = this.keyDownHandler.bind(this);
+        this.keyboardInput.setupGlobalInputBindings(document);
     }
 
     setupCanvasInputBindings(canvas)
     {
         this.mouseInput.setupCanvasInputBindings(canvas);
         this.touchInput.setupCanvasInputBindings(canvas);
+        this.keyboardInput.setupCanvasInputBindings(canvas);
 
         canvas.ondrop = this.dropEventHandler.bind(this);
         canvas.ondragover = this.dragOverHandler.bind(this);
-    }
-
-    keyDownHandler(event)
-    {
-        if (event.key === Input_ResetCamera)
-        {
-            this.onResetCamera();
-        }
     }
 
     // for some reason, the drop event does not work without this
