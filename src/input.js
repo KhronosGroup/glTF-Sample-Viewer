@@ -1,8 +1,5 @@
 import { getIsGltf, getIsGlb } from './utils.js';
-
-const Input_ResetCamera = "r";
-const Input_RotateButton = 0;
-const Input_PanButton = 1;
+import { Input_RotateButton, Input_ResetCamera, Input_PanButton } from './constants.js';
 
 class gltfInput
 {
