@@ -3,14 +3,13 @@ class gltfTouchInput
     constructor()
     {
         this.onRotate = () => { };
-        this.touching = false;
+        this.touchCount = 0;
         this.lastX = undefined;
         this.lastY = undefined;
     }
 
     setupGlobalInputBindings(document)
     {
-        document.ontouchend = this.touchUpHandler.bind(this);
         document.ontouchmove = this.touchMoveHandler.bind(this);
     }
 
@@ -25,27 +24,29 @@ class gltfTouchInput
         const touchObject = event.changedTouches[0];
         this.lastX = touchObject.clientX;
         this.lastY = touchObject.clientY;
-        this.touching = true;
-    }
-
-    touchUpHandler()
-    {
-        this.touching = false;
+        this.touchCount = event.touches.length;
     }
 
     touchMoveHandler(event)
     {
-        if (!this.touching)
+        if (this.touchCount !== event.touches.length)
         {
+            this.touchCount = 0;
             return;
         }
 
-        if (event.touches.length !== 1)
+        if (event.touches.length === 1)
         {
-            this.touching = false;
-            return;
+            this.singleTouchMoveHandler(event);
         }
+        else
+        {
+            this.multiTouchMoveHandler(event);
+        }
+    }
 
+    singleTouchMoveHandler(event)
+    {
         const touchObject = event.changedTouches[0];
 
         const deltaX = touchObject.clientX - this.lastX;
@@ -55,6 +56,11 @@ class gltfTouchInput
         this.lastY = touchObject.clientY;
 
         this.onRotate(deltaX, deltaY);
+    }
+
+    multiTouchMoveHandler(event)
+    {
+
     }
 }
 
