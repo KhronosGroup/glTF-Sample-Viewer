@@ -1,14 +1,16 @@
-import { getIsGltf, getIsGlb } from './utils.js';
-
-const Input_ResetCamera = "r";
-const Input_RotateButton = 0;
-const Input_PanButton = 1;
+import { gltfMouseInput } from './mouse_input.js';
+import { gltfTouchInput } from './touch_input.js';
+import { gltfKeyboardInput } from './keyboard_input.js';
+import { gltfDragInput } from './drag_input.js';
 
 class gltfInput
 {
     constructor(canvas)
     {
-        this.canvas = canvas;
+        this.mouseInput = new gltfMouseInput(canvas);
+        this.touchInput = new gltfTouchInput();
+        this.keyboardInput = new gltfKeyboardInput();
+        this.dragInput = new gltfDragInput();
 
         this.onZoom = () => { };
         this.onRotate = () => { };
@@ -16,100 +18,29 @@ class gltfInput
         this.onDropFiles = () => { };
         this.onResetCamera = () => { };
 
-        this.mouseDown = false;
-        this.pressedButton = undefined;
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
+        this.mouseInput.onZoom = (delta => this.onZoom(delta)).bind(this);
+        this.mouseInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
+        this.mouseInput.onPan = ((x, y) => this.onPan(x, y)).bind(this);
+        this.touchInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
+        this.touchInput.onZoom = (delta => this.onZoom(delta)).bind(this);
+        this.keyboardInput.onResetCamera = (() => this.onResetCamera()).bind(this);
+        this.dragInput.onDropFiles = ((file, additionalFiles) => this.onDropFiles(file, additionalFiles)).bind(this);
     }
 
-    mouseDownHandler(event)
+    setupGlobalInputBindings(document)
     {
-        this.mouseDown = true;
-        this.pressedButton = event.button;
-        this.lastMouseX = event.clientX;
-        this.lastMouseY = event.clientY;
-        this.canvas.style.cursor = "none";
+        this.mouseInput.setupGlobalInputBindings(document);
+        this.touchInput.setupGlobalInputBindings(document);
+        this.keyboardInput.setupGlobalInputBindings(document);
+        this.dragInput.setupGlobalInputBindings(document);
     }
 
-    mouseUpHandler(event)
+    setupCanvasInputBindings(canvas)
     {
-        this.mouseDown = false;
-        this.canvas.style.cursor = "grab";
-    }
-
-    mouseMoveHandler(event)
-    {
-        event.preventDefault();
-
-        if (!this.mouseDown)
-        {
-            this.canvas.style.cursor = "grab";
-            return;
-        }
-
-        const deltaX = event.clientX - this.lastMouseX;
-        const deltaY = event.clientY - this.lastMouseY;
-
-        this.lastMouseX = event.clientX;
-        this.lastMouseY = event.clientY;
-
-        switch (this.pressedButton)
-        {
-        case Input_RotateButton:
-            this.onRotate(deltaX, deltaY);
-            break;
-        case Input_PanButton:
-            this.onPan(deltaX, deltaY);
-            break;
-        }
-    }
-
-    mouseWheelHandler(event)
-    {
-        event.preventDefault();
-        this.canvas.style.cursor = "none";
-        this.onZoom(event.deltaY);
-    }
-
-    keyDownHandler(event)
-    {
-        if (event.key === Input_ResetCamera)
-        {
-            this.onResetCamera();
-        }
-    }
-
-    // for some reason, the drop event does not work without this
-    dragOverHandler(event)
-    {
-        event.preventDefault();
-    }
-
-    dropEventHandler(event)
-    {
-        event.preventDefault();
-
-        let additionalFiles = [];
-        let mainFile;
-        for (const file of event.dataTransfer.files)
-        {
-            if (getIsGltf(file.name) || getIsGlb(file.name))
-            {
-                mainFile = file;
-            }
-            else
-            {
-                additionalFiles.push(file);
-            }
-        }
-
-        if (mainFile === undefined)
-        {
-            console.warn("No gltf/glb file found. Provided files: " + additionalFiles.map(f => f.name).join(", "));
-            return;
-        }
-
-        this.onDropFiles(mainFile, additionalFiles);
+        this.mouseInput.setupCanvasInputBindings(canvas);
+        this.touchInput.setupCanvasInputBindings(canvas);
+        this.keyboardInput.setupCanvasInputBindings(canvas);
+        this.dragInput.setupCanvasInputBindings(canvas);
     }
 }
 
