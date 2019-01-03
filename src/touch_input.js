@@ -40,6 +40,12 @@ class gltfTouchInput
             return;
         }
 
+        if (event.touches.length !== 1)
+        {
+            this.touching = false;
+            return;
+        }
+
         const touchObject = event.changedTouches[0];
 
         const deltaX = touchObject.clientX - this.lastX;
