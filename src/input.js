@@ -22,6 +22,21 @@ class gltfInput
         this.lastMouseY = 0;
     }
 
+    setupGlobalInputBindings(document)
+    {
+        document.onmouseup = this.mouseUpHandler.bind(this);
+        document.onmousemove = this.mouseMoveHandler.bind(this);
+        document.onkeydown = this.keyDownHandler.bind(this);
+    }
+
+    setupCanvasInputBindings(canvas)
+    {
+        canvas.onmousedown = this.mouseDownHandler.bind(this);
+        canvas.onwheel = this.mouseWheelHandler.bind(this);
+        canvas.ondrop = this.dropEventHandler.bind(this);
+        canvas.ondragover = this.dragOverHandler.bind(this);
+    }
+
     mouseDownHandler(event)
     {
         this.mouseDown = true;
