@@ -22,6 +22,7 @@ class gltfInput
         this.mouseInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
         this.mouseInput.onPan = ((x, y) => this.onPan(x, y)).bind(this);
         this.touchInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
+        this.touchInput.onZoom = (delta => this.onZoom(delta)).bind(this);
         this.keyboardInput.onResetCamera = (() => this.onResetCamera()).bind(this);
         this.dragInput.onDropFiles = ((file, additionalFiles) => this.onDropFiles(file, additionalFiles)).bind(this);
     }

@@ -1,11 +1,18 @@
+import { vec2 } from "gl-matrix";
+
+const ZoomThreshold = 1;
+
 class gltfTouchInput
 {
     constructor()
     {
+        this.onZoom = () => { };
         this.onRotate = () => { };
         this.touchCount = 0;
-        this.lastX = undefined;
-        this.lastY = undefined;
+
+        this.lastSingleX = undefined;
+        this.lastSingleY = undefined;
+        this.lastMultiDistance = undefined;
     }
 
     setupGlobalInputBindings(document)
@@ -21,10 +28,21 @@ class gltfTouchInput
     touchStartHandler(event)
     {
         event.preventDefault();
-        const touchObject = event.changedTouches[0];
-        this.lastX = touchObject.clientX;
-        this.lastY = touchObject.clientY;
         this.touchCount = event.touches.length;
+        const firstFinger = event.touches[0];
+
+        if (this.touchCount === 1)
+        {
+            this.lastSingleX = firstFinger.clientX;
+            this.lastSingleY = firstFinger.clientY;
+        }
+        else
+        {
+            const secondFinger = event.touches[1];
+            const firstPosition = vec2.fromValues(firstFinger.clientX, firstFinger.clientY);
+            const secondPosition = vec2.fromValues(secondFinger.clientX, secondFinger.clientY);
+            this.lastMultiDistance = vec2.dist(firstPosition, secondPosition);
+        }
     }
 
     touchMoveHandler(event)
@@ -47,20 +65,33 @@ class gltfTouchInput
 
     singleTouchMoveHandler(event)
     {
-        const touchObject = event.changedTouches[0];
+        const touchObject = event.touches[0];
 
-        const deltaX = touchObject.clientX - this.lastX;
-        const deltaY = touchObject.clientY - this.lastY;
+        const deltaX = touchObject.clientX - this.lastSingleX;
+        const deltaY = touchObject.clientY - this.lastSingleY;
 
-        this.lastX = touchObject.clientX;
-        this.lastY = touchObject.clientY;
+        this.lastSingleX = touchObject.clientX;
+        this.lastSingleY = touchObject.clientY;
 
         this.onRotate(deltaX, deltaY);
     }
 
     multiTouchMoveHandler(event)
     {
+        const firstFinger = event.touches[0];
+        const secondFinger = event.touches[1];
 
+        const firstPosition = vec2.fromValues(firstFinger.clientX, firstFinger.clientY);
+        const secondPosition = vec2.fromValues(secondFinger.clientX, secondFinger.clientY);
+        const distance = vec2.dist(firstPosition, secondPosition);
+        const deltaDistance = distance - this.lastMultiDistance;
+
+        this.lastMultiDistance = distance;
+
+        if (Math.abs(deltaDistance) > ZoomThreshold)
+        {
+            this.onZoom(-deltaDistance);
+        }
     }
 }
 
