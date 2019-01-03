@@ -25,13 +25,16 @@ class gltfInput
     setupGlobalInputBindings(document)
     {
         document.onmouseup = this.mouseUpHandler.bind(this);
+        document.ontouchend = this.touchUpHandler.bind(this);
         document.onmousemove = this.mouseMoveHandler.bind(this);
+        document.ontouchmove = this.touchMoveHandler.bind(this);
         document.onkeydown = this.keyDownHandler.bind(this);
     }
 
     setupCanvasInputBindings(canvas)
     {
         canvas.onmousedown = this.mouseDownHandler.bind(this);
+        canvas.ontouchstart = this.touchDownHandler.bind(this);
         canvas.onwheel = this.mouseWheelHandler.bind(this);
         canvas.ondrop = this.dropEventHandler.bind(this);
         canvas.ondragover = this.dragOverHandler.bind(this);
@@ -46,10 +49,25 @@ class gltfInput
         this.canvas.style.cursor = "none";
     }
 
-    mouseUpHandler(event)
+    touchDownHandler(event)
+    {
+        event.preventDefault();
+
+        this.mouseDown = true;
+        this.pressedButton = Input_RotateButton;
+        this.lastMouseX = event.changedTouches[0].clientX;
+        this.lastMouseY = event.changedTouches[0].clientY;
+    }
+
+    mouseUpHandler()
     {
         this.mouseDown = false;
         this.canvas.style.cursor = "grab";
+    }
+
+    touchUpHandler()
+    {
+        this.mouseDown = false;
     }
 
     mouseMoveHandler(event)
@@ -67,6 +85,30 @@ class gltfInput
 
         this.lastMouseX = event.clientX;
         this.lastMouseY = event.clientY;
+
+        switch (this.pressedButton)
+        {
+        case Input_RotateButton:
+            this.onRotate(deltaX, deltaY);
+            break;
+        case Input_PanButton:
+            this.onPan(deltaX, deltaY);
+            break;
+        }
+    }
+
+    touchMoveHandler(event)
+    {
+        if (!this.mouseDown)
+        {
+            return;
+        }
+
+        const deltaX = event.changedTouches[0].clientX - this.lastMouseX;
+        const deltaY = event.changedTouches[0].clientY - this.lastMouseY;
+
+        this.lastMouseX = event.changedTouches[0].clientX;
+        this.lastMouseY = event.changedTouches[0].clientY;
 
         switch (this.pressedButton)
         {
