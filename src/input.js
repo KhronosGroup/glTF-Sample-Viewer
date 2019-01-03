@@ -1,11 +1,14 @@
 import { getIsGltf, getIsGlb } from './utils.js';
 import { Input_RotateButton, Input_ResetCamera, Input_PanButton } from './constants.js';
+import { gltfMouseInput } from './mouse_input.js';
 
 class gltfInput
 {
     constructor(canvas)
     {
         this.canvas = canvas;
+
+        this.mouseInput = new gltfMouseInput(canvas);
 
         this.onZoom = () => { };
         this.onRotate = () => { };
@@ -21,29 +24,23 @@ class gltfInput
 
     setupGlobalInputBindings(document)
     {
-        document.onmouseup = this.mouseUpHandler.bind(this);
+        this.mouseInput.setupGlobalInputBindings(document);
+        this.mouseInput.onZoom = (delta => this.onZoom(delta)).bind(this);
+        this.mouseInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
+        this.mouseInput.onPan = ((x, y) => this.onPan(x, y)).bind(this);
+
         document.ontouchend = this.touchUpHandler.bind(this);
-        document.onmousemove = this.mouseMoveHandler.bind(this);
         document.ontouchmove = this.touchMoveHandler.bind(this);
         document.onkeydown = this.keyDownHandler.bind(this);
     }
 
     setupCanvasInputBindings(canvas)
     {
-        canvas.onmousedown = this.mouseDownHandler.bind(this);
+        this.mouseInput.setupCanvasInputBindings(canvas);
+
         canvas.ontouchstart = this.touchDownHandler.bind(this);
-        canvas.onwheel = this.mouseWheelHandler.bind(this);
         canvas.ondrop = this.dropEventHandler.bind(this);
         canvas.ondragover = this.dragOverHandler.bind(this);
-    }
-
-    mouseDownHandler(event)
-    {
-        this.mouseDown = true;
-        this.pressedButton = event.button;
-        this.lastMouseX = event.clientX;
-        this.lastMouseY = event.clientY;
-        this.canvas.style.cursor = "none";
     }
 
     touchDownHandler(event)
@@ -56,42 +53,9 @@ class gltfInput
         this.lastMouseY = event.changedTouches[0].clientY;
     }
 
-    mouseUpHandler()
-    {
-        this.mouseDown = false;
-        this.canvas.style.cursor = "grab";
-    }
-
     touchUpHandler()
     {
         this.mouseDown = false;
-    }
-
-    mouseMoveHandler(event)
-    {
-        event.preventDefault();
-
-        if (!this.mouseDown)
-        {
-            this.canvas.style.cursor = "grab";
-            return;
-        }
-
-        const deltaX = event.clientX - this.lastMouseX;
-        const deltaY = event.clientY - this.lastMouseY;
-
-        this.lastMouseX = event.clientX;
-        this.lastMouseY = event.clientY;
-
-        switch (this.pressedButton)
-        {
-        case Input_RotateButton:
-            this.onRotate(deltaX, deltaY);
-            break;
-        case Input_PanButton:
-            this.onPan(deltaX, deltaY);
-            break;
-        }
     }
 
     touchMoveHandler(event)
@@ -116,13 +80,6 @@ class gltfInput
             this.onPan(deltaX, deltaY);
             break;
         }
-    }
-
-    mouseWheelHandler(event)
-    {
-        event.preventDefault();
-        this.canvas.style.cursor = "none";
-        this.onZoom(event.deltaY);
     }
 
     keyDownHandler(event)
