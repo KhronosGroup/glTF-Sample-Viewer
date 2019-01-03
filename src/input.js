@@ -1,6 +1,7 @@
 import { getIsGltf, getIsGlb } from './utils.js';
-import { Input_RotateButton, Input_ResetCamera, Input_PanButton } from './constants.js';
+import { Input_ResetCamera } from './constants.js';
 import { gltfMouseInput } from './mouse_input.js';
+import { gltfTouchInput } from './touch_input.js';
 
 class gltfInput
 {
@@ -9,6 +10,7 @@ class gltfInput
         this.canvas = canvas;
 
         this.mouseInput = new gltfMouseInput(canvas);
+        this.touchInput = new gltfTouchInput();
 
         this.onZoom = () => { };
         this.onRotate = () => { };
@@ -16,70 +18,27 @@ class gltfInput
         this.onDropFiles = () => { };
         this.onResetCamera = () => { };
 
-        this.mouseDown = false;
-        this.pressedButton = undefined;
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
+        this.mouseInput.onZoom = (delta => this.onZoom(delta)).bind(this);
+        this.mouseInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
+        this.mouseInput.onPan = ((x, y) => this.onPan(x, y)).bind(this);
+        this.touchInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
     }
 
     setupGlobalInputBindings(document)
     {
         this.mouseInput.setupGlobalInputBindings(document);
-        this.mouseInput.onZoom = (delta => this.onZoom(delta)).bind(this);
-        this.mouseInput.onRotate = ((x, y) => this.onRotate(x, y)).bind(this);
-        this.mouseInput.onPan = ((x, y) => this.onPan(x, y)).bind(this);
+        this.touchInput.setupGlobalInputBindings(document);
 
-        document.ontouchend = this.touchUpHandler.bind(this);
-        document.ontouchmove = this.touchMoveHandler.bind(this);
         document.onkeydown = this.keyDownHandler.bind(this);
     }
 
     setupCanvasInputBindings(canvas)
     {
         this.mouseInput.setupCanvasInputBindings(canvas);
+        this.touchInput.setupCanvasInputBindings(canvas);
 
-        canvas.ontouchstart = this.touchDownHandler.bind(this);
         canvas.ondrop = this.dropEventHandler.bind(this);
         canvas.ondragover = this.dragOverHandler.bind(this);
-    }
-
-    touchDownHandler(event)
-    {
-        event.preventDefault();
-
-        this.mouseDown = true;
-        this.pressedButton = Input_RotateButton;
-        this.lastMouseX = event.changedTouches[0].clientX;
-        this.lastMouseY = event.changedTouches[0].clientY;
-    }
-
-    touchUpHandler()
-    {
-        this.mouseDown = false;
-    }
-
-    touchMoveHandler(event)
-    {
-        if (!this.mouseDown)
-        {
-            return;
-        }
-
-        const deltaX = event.changedTouches[0].clientX - this.lastMouseX;
-        const deltaY = event.changedTouches[0].clientY - this.lastMouseY;
-
-        this.lastMouseX = event.changedTouches[0].clientX;
-        this.lastMouseY = event.changedTouches[0].clientY;
-
-        switch (this.pressedButton)
-        {
-        case Input_RotateButton:
-            this.onRotate(deltaX, deltaY);
-            break;
-        case Input_PanButton:
-            this.onPan(deltaX, deltaY);
-            break;
-        }
     }
 
     keyDownHandler(event)
