@@ -231,6 +231,9 @@ class gltfViewer
 
         this.gltf = gltf;
         this.currentlyRendering = true;
+
+        this.prepareSceneForRendering(gltf);
+        this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
     }
 
     render()
@@ -310,7 +313,6 @@ class gltfViewer
         }
 
         scene.applyTransformHierarchy(gltf, transform);
-        this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
     }
 
     initializeGui()
