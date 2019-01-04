@@ -60,16 +60,15 @@ class gltfBuffer
             return false;
         }
 
-        let bufferFile;
-        for (bufferFile of files)
+        let foundFile = files.find(function(file)
         {
-            if (bufferFile.name === this.uri)
+            if (file.name === this.uri || file.fullPath === this.uri)
             {
-                break;
+                return true;
             }
-        }
+        }, this)
 
-        if (bufferFile.name !== this.uri)
+        if (foundFile === undefined)
         {
             return false;
         }
@@ -81,7 +80,7 @@ class gltfBuffer
             self.buffer = event.target.result;
             callback();
         };
-        reader.readAsArrayBuffer(bufferFile);
+        reader.readAsArrayBuffer(foundFile);
 
         return true;
     }
