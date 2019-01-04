@@ -103,8 +103,7 @@ class gltfNode
 
     // TODO: WEIGHTS
 
-    // local transform
-    getTransform()
+    getLocalTransform()
     {
         if(this.transform === undefined || this.changed)
         {
