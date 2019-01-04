@@ -32,6 +32,8 @@ class gltfUserInterface
 
     update(gltf)
     {
+        const isModelInDropdown = this.modelPathProvider.pathExists(gltf.path);
+        this.initializeModelsDropdown(isModelInDropdown ? undefined : gltf.path);
         this.initializeGltfVersionView(gltf.asset.version);
         this.initializeSceneSelection(Object.keys(gltf.scenes));
         this.initializeCameraSelection(Object.keys(gltf.cameras));
@@ -49,16 +51,29 @@ class gltfUserInterface
         this.gltfFolder.open();
     }
 
-    initializeModelsDropdown()
+    initializeModelsDropdown(droppedModel)
     {
-        const modelKeys = this.modelPathProvider.getAllKeys();
+        if (this.modelsDropdown !== undefined)
+        {
+            this.gltfFolder.remove(this.modelsDropdown);
+        }
+
+        let modelKeys = [];
+
+        if (droppedModel !== undefined)
+        {
+            modelKeys.push(droppedModel);
+            this.selectedModel = droppedModel;
+        }
+
+        modelKeys = modelKeys.concat(this.modelPathProvider.getAllKeys());
         if (!modelKeys.includes(this.selectedModel))
         {
             this.selectedModel = modelKeys[0];
         }
 
         const self = this;
-        this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
+        this.modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
     }
 
     initializeGltfVersionView(version)
