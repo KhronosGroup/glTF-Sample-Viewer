@@ -166,6 +166,10 @@ class gltfMaterial
             this.defines.push("ALPHAMODE_MASK 1");
             this.properties.set("u_AlphaCutoff", this.alphaCutoff);
         }
+        else if (this.alphaMode === 'OPAQUE')
+        {
+            this.defines.push("ALPHAMODE_OPAQUE 1");
+        }
 
         if(jsonMaterial.extensions !== undefined)
         {

@@ -328,6 +328,11 @@ void main()
     {
         discard;
     }
+    baseColor.a = 1.0;
+#endif
+
+#ifdef ALPHAMODE_OPAQUE
+    baseColor.a = 1.0;
 #endif
 
 #ifdef MATERIAL_UNLIT

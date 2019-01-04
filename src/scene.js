@@ -1,5 +1,4 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { jsToGl } from './utils.js';
 
 class gltfScene
 {
@@ -23,7 +22,7 @@ class gltfScene
     {
         function applyTransform(gltf, node, parentTransform)
         {
-            mat4.multiply(node.worldTransform, parentTransform, node.getTransform());
+            mat4.multiply(node.worldTransform, parentTransform, node.getLocalTransform());
             mat4.invert(node.inverseWorldTransform, node.worldTransform);
             mat4.transpose(node.normalMatrix, node.inverseWorldTransform);
 
