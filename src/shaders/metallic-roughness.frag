@@ -75,12 +75,11 @@ const int LightType_Spot = 2;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
-//
-//
-
+#if defined(MATERIAL_SPECULARGLOSSINESS) || defined(MATERIAL_METALLICROUGHNESS)
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
+#endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
 uniform vec3 u_SpecularFactor;
@@ -88,8 +87,9 @@ uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 #endif
 
-
+#ifdef ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
+#endif
 
 uniform vec3 u_Camera;
 

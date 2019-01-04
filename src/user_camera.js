@@ -1,6 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
+import { getSceneExtends } from './gltf_utils.js';
 
 const VecZero = vec3.create();
 
@@ -41,11 +42,11 @@ class UserCamera extends gltfCamera
         this.position = position;
     }
 
-    reset(gltf)
+    reset(gltf, sceneIndex)
     {
         this.xRot = 0;
         this.yRot = 0;
-        this.fitViewToAsset(gltf);
+        this.fitViewToScene(gltf, sceneIndex);
     }
 
     zoomIn(value)
@@ -84,17 +85,13 @@ class UserCamera extends gltfCamera
         vec3.add(this.target, this.target, left);
     }
 
-    fitViewToAsset(gltf)
+    fitViewToScene(gltf, sceneIndex)
     {
-        const min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        const max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
-
-        this.getAssetExtends(gltf, min, max);
-        this.scaleFactor = this.applyScaling(min, max);
+        const min = vec3.create();
+        const max = vec3.create();
+        getSceneExtends(gltf, sceneIndex, min, max);
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-
-        return this.scaleFactor;
     }
 
     toLocalRotation(vector)
@@ -111,59 +108,6 @@ class UserCamera extends gltfCamera
     getPosition()
     {
         return this.position;
-    }
-
-    getAssetExtends(gltf, outMin, outMax)
-    {
-        for (const node of gltf.nodes)
-        {
-            if (node.mesh === undefined)
-            {
-                continue;
-            }
-
-            const mesh = gltf.meshes[node.mesh];
-            if (mesh.primitives === undefined)
-            {
-                continue;
-            }
-
-            for (const primitive of mesh.primitives)
-            {
-                const attribute = primitive.attributes.find(a => a.attribute == "POSITION");
-                if (attribute === undefined)
-                {
-                    continue;
-                }
-
-                const accessor = gltf.accessors[attribute.accessor];
-                const assetMin = vec3.create();
-                const assetMax = vec3.create();
-                this.getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
-
-                for (const i of [0, 1, 2])
-                {
-                    outMin[i] = Math.min(outMin[i], assetMin[i]);
-                    outMax[i] = Math.max(outMax[i], assetMax[i]);
-                }
-            }
-        }
-    }
-
-    applyScaling(min, max)
-    {
-        const minValue = Math.min(min[0], Math.min(min[1], min[2]));
-        const maxValue = Math.max(max[0], Math.max(max[1], max[2]));
-        const deltaValue = maxValue - minValue;
-        const scaleFactor = 1.0 / deltaValue;
-
-        for (const i of [0, 1, 2])
-        {
-            min[i] *= scaleFactor;
-            max[i] *= scaleFactor;
-        }
-
-        return scaleFactor;
     }
 
     fitZoomToExtends(min, max)
@@ -189,30 +133,6 @@ class UserCamera extends gltfCamera
         const xZoom = axisLength / 2 / Math.tan(xfov / 2);
 
         return Math.max(xZoom, yZoom);
-    }
-
-    getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
-    {
-        const boxMin = vec3.create();
-        vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
-
-        const boxMax = vec3.create();
-        vec3.transformMat4(boxMax, jsToGl(accessor.max), worldTransform);
-
-        const center = vec3.create();
-        vec3.add(center, boxMax, boxMin);
-        vec3.scale(center, center, 0.5);
-
-        const centerToSurface = vec3.create();
-        vec3.sub(centerToSurface, boxMax, center);
-
-        const radius = vec3.length(centerToSurface);
-
-        for (const i of [1, 2, 3])
-        {
-            outMin[i] = center[i] - radius;
-            outMax[i] = center[i] + radius;
-        }
     }
 };
 

@@ -1,3 +1,4 @@
+import { mat4, vec3 } from 'gl-matrix';
 import axios from '../libs/axios.min.js';
 import { glTF } from './gltf.js';
 import { gltfLoader } from './loader.js';
@@ -10,6 +11,7 @@ import { jsToGl, getIsGlb, Timer } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfImageProcessor } from './image_processor.js';
 import { gltfEnvironmentLoader } from './environment.js';
+import { getScaleFactor } from './gltf_utils.js';
 
 class gltfViewer
 {
@@ -125,7 +127,7 @@ class gltfViewer
         {
             if (self.renderingParameters.cameraIndex === "default")
             {
-                self.userCamera.reset(self.gltf);
+                self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
             }
         };
         input.onDropFiles = this.loadFromFileObject.bind(this);
@@ -223,14 +225,15 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
+        this.renderingParameters.cameraIndex = "default";
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
         this.gui.update(gltf);
-        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-        scene.applyTransformHierarchy(gltf);
-        this.scaleFactor = this.userCamera.fitViewToAsset(gltf);
 
         this.gltf = gltf;
         this.currentlyRendering = true;
+
+        this.prepareSceneForRendering(gltf);
+        this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
     }
 
     render()
@@ -245,6 +248,8 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
+                self.prepareSceneForRendering(self.gltf);
+
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
@@ -265,15 +270,15 @@ class gltfViewer
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
                         let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
-                        self.renderer.drawScene(self.gltf, opaqueScene, false, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, opaqueScene, false);
 
                         // render transparent objects ordered by distance from camera
-                        self.renderer.drawScene(self.gltf, alphaScene, true, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, alphaScene, true);
                     }
                     else
                     {
                         // no alpha materials, render as is
-                        self.renderer.drawScene(self.gltf, scene, false, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, scene, false);
                     }
                 }
 
@@ -293,6 +298,21 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
+    }
+
+    prepareSceneForRendering(gltf)
+    {
+        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
+        scene.applyTransformHierarchy(gltf);
+
+        const transform = mat4.create();
+        if (this.renderingParameters.cameraIndex === "default")
+        {
+            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
+            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+        }
+
+        scene.applyTransformHierarchy(gltf, transform);
     }
 
     initializeGui()

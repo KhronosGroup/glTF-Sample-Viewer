@@ -24,8 +24,8 @@ function gltf_rv(canvasId, index,
     }
 
     const input = new gltfInput(canvas);
-    setupGlobalInputBindings(input, document);
-    setupCanvasInputBindings(input, canvas);
+    input.setupGlobalInputBindings(document);
+    input.setupCanvasInputBindings(canvas);
 
     const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
 
@@ -47,21 +47,6 @@ function getWebGlContext(canvas)
             return context;
         }
     }
-}
-
-function setupGlobalInputBindings(input, document)
-{
-    document.onmouseup = input.mouseUpHandler.bind(input);
-    document.onmousemove = input.mouseMoveHandler.bind(input);
-    document.onkeydown = input.keyDownHandler.bind(input);
-}
-
-function setupCanvasInputBindings(input, canvas)
-{
-    canvas.onmousedown = input.mouseDownHandler.bind(input);
-    canvas.onwheel = input.mouseWheelHandler.bind(input);
-    canvas.ondrop = input.dropEventHandler.bind(input);
-    canvas.ondragover = input.dragOverHandler.bind(input);
 }
 
 export { gltf_rv };
