@@ -16,6 +16,10 @@ class gltfUserInterface
 
         this.gui = undefined;
         this.gltfFolder = undefined;
+        this.modelsDropdown = undefined;
+        this.versionView = undefined;
+        this.sceneSelection = undefined;
+        this.cameraSelection = undefined;
 
         this.onModelSelected = undefined;
     }
@@ -32,6 +36,8 @@ class gltfUserInterface
 
     update(gltf)
     {
+        this.clearGltfFolder();
+
         const isModelInDropdown = this.modelPathProvider.pathExists(gltf.path);
         this.initializeModelsDropdown(isModelInDropdown ? undefined : gltf.path);
         this.initializeGltfVersionView(gltf.asset.version);
@@ -53,11 +59,6 @@ class gltfUserInterface
 
     initializeModelsDropdown(droppedModel)
     {
-        if (this.modelsDropdown !== undefined)
-        {
-            this.gltfFolder.remove(this.modelsDropdown);
-        }
-
         let modelKeys = [];
 
         if (droppedModel !== undefined)
@@ -79,28 +80,16 @@ class gltfUserInterface
     initializeGltfVersionView(version)
     {
         this.version = version;
-        if (this.versionView !== undefined)
-        {
-            this.gltfFolder.remove(this.versionView);
-        }
         this.versionView = this.gltfFolder.add(this, "version", version).name("glTF Version").onChange(() => this.version = version);
     }
 
     initializeSceneSelection(scenes)
     {
-        if (this.sceneSelection !== undefined)
-        {
-            this.gltfFolder.remove(this.sceneSelection);
-        }
         this.sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
     }
 
     initializeCameraSelection(cameras)
     {
-        if (this.cameraSelection !== undefined)
-        {
-            this.gltfFolder.remove(this.cameraSelection);
-        }
         const camerasWithUserCamera = [ "default" ].concat(cameras);
         this.cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
     }
@@ -139,6 +128,14 @@ class gltfUserInterface
         statsList.appendChild(this.stats.domElement);
         statsList.classList.add("gui-stats");
         monitoringFolder.__ul.appendChild(statsList);
+    }
+
+    clearGltfFolder()
+    {
+        this.gltfFolder.remove(this.modelsDropdown);
+        this.gltfFolder.remove(this.versionView);
+        this.gltfFolder.remove(this.sceneSelection);
+        this.gltfFolder.remove(this.cameraSelection);
     }
 
     // string format: "#RRGGBB"
