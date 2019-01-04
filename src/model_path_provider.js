@@ -34,6 +34,11 @@ class gltfModelPathProvider
         return Object.keys(this.modelsDictionary);
     }
 
+    pathExists(path)
+    {
+        return Object.values(this.modelsDictionary).find(p => p === path);
+    }
+
     populateDictionary(modelIndexer)
     {
         const modelsFolder = getContainingFolder(this.modelIndexerPath);
