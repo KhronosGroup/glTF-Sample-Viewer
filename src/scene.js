@@ -77,44 +77,28 @@ class gltfScene
         return new gltfScene(Nodes, this.name);
     }
 
-    sortSceneByDepth(gltf, viewProjectionMatrix)
+    gatherNodes(gltf)
     {
-        // vector of {abs position, nodeIndex}
-        const posNodes = [];
+        const nodes = [];
 
-        function addPosNode(nodeIndex)
+        function gatherNode(nodeIndex)
         {
             const node = gltf.nodes[nodeIndex];
-
-            const modelView = mat4.create();
-            mat4.multiply(modelView, viewProjectionMatrix, node.worldTransform);
-
-            const pos = vec3.create();
-            mat4.getTranslation(pos, modelView);
-
-            // TODO: we could clip objects behind the camera
-            posNodes.push({ depth: pos[2], idx: nodeIndex });
+            nodes.push(node);
 
             // recurse into children
-            for(const c of node.children)
+            for(const child of node.children)
             {
-                addPosNode(gltf.nodes[c]);
+                gatherNode(child);
             }
         }
 
-        for (const n of this.nodes)
+        for (const node of this.nodes)
         {
-            addPosNode(n);
+            gatherNode(node);
         }
 
-        // high z far from camera first
-        posNodes.sort((a, b) => b.depth - a.depth);
-
-        this.nodes = [];
-        for(const node of posNodes)
-        {
-            this.nodes.push(node.idx)
-        }
+        return nodes;
     }
 
     includesNode(gltf, nodeIndex)

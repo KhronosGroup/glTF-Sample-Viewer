@@ -116,18 +116,15 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
+        let nodes = scene.gatherNodes(gltf);
         if(sortByDepth)
         {
-            scene.sortSceneByDepth(gltf, this.viewProjectionMatrix);
+            nodes = currentCamera.sortNodesByDepth(nodes);
         }
 
-        let nodeIndices = scene.nodes.slice();
-        while (nodeIndices.length > 0)
+        for (const node of nodes)
         {
-            const nodeIndex = nodeIndices.pop();
-            const node = gltf.nodes[nodeIndex];
             this.drawNode(gltf, node);
-            nodeIndices = nodeIndices.concat(node.children);
         }
     }
 
