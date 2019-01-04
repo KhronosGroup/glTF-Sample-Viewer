@@ -12,36 +12,19 @@
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 
-#ifdef USE_TEX_LOD
-#extension GL_EXT_shader_texture_lod: enable
-#endif
+precision highp float;
 
-#extension GL_OES_standard_derivatives : enable
-
-#ifdef USE_HDR
-#extension GL_OES_texture_float : enable
-#extension GL_OES_texture_float_linear : enable
-#endif
-
-#ifdef USE_DRAW_BUFFERS
-#extension GL_EXT_draw_buffers : require
-#endif
+out vec4 g_finalColor;
 
 void exportColor(vec4 color, int rtIdx)
 {
-    #ifdef USE_DRAW_BUFFERS
-        gl_FragData[rtIdx] = color;
-    #else
-        gl_FragColor = color;
-    #endif
+    g_finalColor = color;
 }
 
 void exportColor(vec4 color)
 {
     exportColor(color, 0);
 }
-
-precision highp float;
 
 #include <tonemapping.glsl>
 #include <textures.glsl>
@@ -129,14 +112,11 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec2 brdf = texture2D(u_brdfLUT, brdfSamplePoint).rg;
+    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
 
-    vec4 diffuseSample = textureCube(u_DiffuseEnvSampler, n);
-#ifdef USE_TEX_LOD
-    vec4 specularSample = textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod);
-#else
-    vec4 specularSample = textureCube(u_SpecularEnvSampler, reflection);
-#endif
+    vec4 diffuseSample = texture(u_DiffuseEnvSampler, n);
+
+    vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
 
 #ifdef USE_HDR
     // Already linear.
@@ -288,7 +268,7 @@ void main()
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = SRGBtoLINEAR(texture2D(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
+    vec4 sgSample = SRGBtoLINEAR(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
     perceptualRoughness = (1.0 - sgSample.a * u_GlossinessFactor); // glossiness to roughness
     f0 = sgSample.rgb * u_SpecularFactor; // specular
 #else
@@ -297,7 +277,7 @@ void main()
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
 
 #ifdef HAS_DIFFUSE_MAP
-    baseColor = SRGBtoLINEAR(texture2D(u_DiffuseSampler, getDiffuseUV())) * u_DiffuseFactor;
+    baseColor = SRGBtoLINEAR(texture(u_DiffuseSampler, getDiffuseUV())) * u_DiffuseFactor;
 #else
     baseColor = u_DiffuseFactor;
 #endif // !HAS_DIFFUSE_MAP
@@ -319,7 +299,7 @@ void main()
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture2D(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
+    vec4 mrSample = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
     perceptualRoughness = mrSample.g * u_RoughnessFactor;
     metallic = mrSample.b * u_MetallicFactor;
 #else
@@ -329,7 +309,7 @@ void main()
 
     // The albedo may be defined from a base texture or a flat color
 #ifdef HAS_BASE_COLOR_MAP
-    baseColor = SRGBtoLINEAR(texture2D(u_BaseColorSampler, getBaseColorUV())) * u_BaseColorFactor;
+    baseColor = SRGBtoLINEAR(texture(u_BaseColorSampler, getBaseColorUV())) * u_BaseColorFactor;
 #else
     baseColor = u_BaseColorFactor;
 #endif
@@ -414,13 +394,13 @@ void main()
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-    ao = texture2D(u_OcclusionSampler,  getOcclusionUV()).r;
+    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
     vec3 emissive = vec3(0);
 #ifdef HAS_EMISSIVE_MAP
-    emissive = SRGBtoLINEAR(texture2D(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
+    emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
     color += emissive;
 #endif
 
@@ -441,7 +421,7 @@ void main()
 
     #ifdef DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
-            outputColor.rgb = texture2D(u_NormalSampler, getNormalUV()).rgb;
+            outputColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
         #else
             outputColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif

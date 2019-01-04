@@ -3,21 +3,21 @@
 const float M_PI = 3.141592653589793;
 const float c_MinReflectance = 0.04;
 
-varying vec3 v_Position;
+in vec3 v_Position;
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
-varying mat3 v_TBN;
+in mat3 v_TBN;
 #else
-varying vec3 v_Normal;
+in vec3 v_Normal;
 #endif
 #endif
 
 #ifdef HAS_VERTEX_COLOR_VEC3
-varying vec3 v_Color;
+in vec3 v_Color;
 #endif
 #ifdef HAS_VERTEX_COLOR_VEC4
-varying vec4 v_Color;
+in vec4 v_Color;
 #endif
 
 struct AngularInfo
@@ -74,7 +74,7 @@ vec3 getNormal()
 #endif
 
 #ifdef HAS_NORMAL_MAP
-    vec3 n = texture2D(u_NormalSampler, UV).rgb;
+    vec3 n = texture(u_NormalSampler, UV).rgb;
     n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
 #else
     // The tbn matrix is linearly interpolated, so we need to re-normalize

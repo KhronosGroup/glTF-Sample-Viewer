@@ -35,7 +35,7 @@ function gltf_rv(canvasId, index,
 function getWebGlContext(canvas)
 {
     const parameters = { alpha: false, antialias: true };
-    const contextTypes = [ "webgl", "experimental-webgl" ];
+    const contextTypes = [ "webgl2" ];
 
     let context;
 
@@ -47,6 +47,8 @@ function getWebGlContext(canvas)
             return context;
         }
     }
+
+    return context;
 }
 
 export { gltf_rv };

@@ -1,41 +1,41 @@
-attribute vec4 a_Position;
-varying vec3 v_Position;
+in vec4 a_Position;
+out vec3 v_Position;
 
 #ifdef HAS_NORMALS
-attribute vec4 a_Normal;
+in vec4 a_Normal;
 #endif
 
 #ifdef HAS_TANGENTS
-attribute vec4 a_Tangent;
+in vec4 a_Tangent;
 #endif
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
-varying mat3 v_TBN;
+out mat3 v_TBN;
 #else
-varying vec3 v_Normal;
+out vec3 v_Normal;
 #endif
 #endif
 
 #ifdef HAS_UV_SET1
-attribute vec2 a_UV1;
+in vec2 a_UV1;
 #endif
 
 #ifdef HAS_UV_SET2
-attribute vec2 a_UV2;
+in vec2 a_UV2;
 #endif
 
-varying vec2 v_UVCoord1;
-varying vec2 v_UVCoord2;
+out vec2 v_UVCoord1;
+out vec2 v_UVCoord2;
 
 #ifdef HAS_VERTEX_COLOR_VEC3
-attribute vec3 a_Color;
-varying vec3 v_Color;
+in vec3 a_Color;
+out vec3 v_Color;
 #endif
 
 #ifdef HAS_VERTEX_COLOR_VEC4
-attribute vec4 a_Color;
-varying vec4 v_Color;
+in vec4 a_Color;
+out vec4 v_Color;
 #endif
 
 uniform mat4 u_ViewProjectionMatrix;

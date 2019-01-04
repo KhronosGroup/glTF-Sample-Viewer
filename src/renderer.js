@@ -35,19 +35,19 @@ class gltfRenderer
         this.shaderCache = new ShaderCache(shaderSources);
 
         let requiredWebglExtensions = [
-            "WEBGL_draw_buffers",
-            "EXT_shader_texture_lod",
-            "OES_standard_derivatives",
-            "OES_element_index_uint",
+            //"WEBGL_draw_buffers",
+            //"EXT_shader_texture_lod",
+            //"OES_standard_derivatives",
+            //"OES_element_index_uint",
             "EXT_texture_filter_anisotropic",
-            "OES_texture_float",
+            //"OES_texture_float",
             "OES_texture_float_linear"
         ];
 
         WebGl.loadWebGlExtensions(requiredWebglExtensions);
         // use shader lod ext if requested and supported
-        this.parameters.useShaderLoD = this.parameters.useShaderLoD && WebGl.context.getExtension("EXT_shader_texture_lod") !== null;
-        this.parameters.useDrawBuffersExt &= WebGl.context.getExtension("WEBGL_draw_buffers") !== null;
+        //this.parameters.useShaderLoD = this.parameters.useShaderLoD && WebGl.context.getExtension("EXT_shader_texture_lod") !== null;
+        //this.parameters.useDrawBuffersExt &= WebGl.context.getExtension("WEBGL_draw_buffers") !== null;
 
         this.visibleLights = [];
 
