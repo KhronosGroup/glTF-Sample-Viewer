@@ -91,17 +91,15 @@ class gltfImage
             return false;
         }
 
-        var foundFile = false;
-        for (var bufferFile of files)
+        let foundFile = files.find(function(file)
         {
-            if (bufferFile.name === this.uri || bufferFile.fullPath === this.uri)
+            if (file.name === this.uri || file.fullPath === this.uri)
             {
-                foundFile = true;
-                break;
+                return true;
             }
-        }
+        }, this)
 
-        if (!foundFile)
+        if (foundFile === undefined)
         {
             return false;
         }
@@ -112,7 +110,7 @@ class gltfImage
         {
             self.image.src = event.target.result;
         }
-        reader.readAsDataURL(bufferFile);
+        reader.readAsDataURL(foundFile);
 
         return true;
     }
