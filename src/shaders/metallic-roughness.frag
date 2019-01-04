@@ -11,7 +11,11 @@
 //     https://github.com/KhronosGroup/glTF-WebGL-PBR/#environment-maps
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
+
+#ifdef USE_TEX_LOD
 #extension GL_EXT_shader_texture_lod: enable
+#endif
+
 #extension GL_OES_standard_derivatives : enable
 
 #ifdef USE_HDR
@@ -53,12 +57,11 @@ const int LightType_Spot = 2;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
-//
-//
-
+#if defined(MATERIAL_SPECULARGLOSSINESS) || defined(MATERIAL_METALLICROUGHNESS)
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
+#endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
 uniform vec3 u_SpecularFactor;
@@ -66,8 +69,9 @@ uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 #endif
 
-
+#ifdef ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
+#endif
 
 uniform vec3 u_Camera;
 
@@ -140,7 +144,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
 vec3 diffuse(MaterialInfo materialInfo)
 {
-    return materialInfo.diffuseColor;
+    return materialInfo.diffuseColor / M_PI;
 }
 
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())

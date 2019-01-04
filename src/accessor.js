@@ -1,12 +1,13 @@
 import { fromKeys } from './utils.js';
+import { WebGl } from './webgl.js';
 
 class gltfAccessor
 {
     constructor(bufferView = undefined, byteOffset = 0,
-                componentType = undefined, normalized = false,
-                count = undefined, type = undefined,
-                max = undefined, min = undefined,
-                sparse = undefined, name = undefined)
+        componentType = undefined, normalized = false,
+        count = undefined, type = undefined,
+        max = undefined, min = undefined,
+        sparse = undefined, name = undefined)
     {
         this.bufferView = bufferView;
         this.byteOffset = byteOffset;
@@ -40,14 +41,14 @@ class gltfAccessor
     {
         switch (this.componentType)
         {
-            case gl.BYTE:
-            case gl.UNSIGNED_BYTE:
+            case WebGl.context.BYTE:
+            case WebGl.context.UNSIGNED_BYTE:
                 return 1;
-            case gl.SHORT:
-            case gl.UNSIGNED_SHORT:
+            case WebGl.context.SHORT:
+            case WebGl.context.UNSIGNED_SHORT:
                 return 2;
-            case gl.UNSIGNED_INT:
-            case gl.FLOAT:
+            case WebGl.context.UNSIGNED_INT:
+            case WebGl.context.FLOAT:
                 return 4;
             default:
                 return 0;
@@ -78,22 +79,22 @@ class gltfAccessor
 
             switch (this.componentType)
             {
-            case gl.BYTE:
+            case WebGl.context.BYTE:
                 this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case gl.UNSIGNED_BYTE:
+            case WebGl.context.UNSIGNED_BYTE:
                 this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case gl.SHORT:
+            case WebGl.context.SHORT:
                 this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case gl.UNSIGNED_SHORT:
+            case WebGl.context.UNSIGNED_SHORT:
                 this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case gl.UNSIGNED_INT:
+            case WebGl.context.UNSIGNED_INT:
                 this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case gl.FLOAT:
+            case WebGl.context.FLOAT:
                 this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
                 break;
             }
@@ -116,7 +117,7 @@ class gltfAccessor
     {
         if (this.glBuffer !== undefined)
         {
-            gl.deleteBuffer(this.glBuffer);
+            WebGl.context.deleteBuffer(this.glBuffer);
         }
 
         this.glBuffer = undefined;

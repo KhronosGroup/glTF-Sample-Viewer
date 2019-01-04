@@ -1,39 +1,38 @@
 import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
+import { WebGl } from './webgl.js';
 
 function gltf_rv(canvasId, index,
     headless = false,
     onRendererReady = undefined,
     basePath = "",
     initialModel = "BoomBox",
-    envMap = "Courtyard of the Doge's palace")
+    envMap = "Papermill Ruins E (LDR)")
 {
-    // TODO: Avoid depending on global variables.
-    const canvas = window.canvas = document.getElementById(canvasId);
+    const canvas = document.getElementById(canvasId);
     if (!canvas)
     {
         console.warn("Failed to retrieve the WebGL canvas!");
         return null;
     }
 
-    // TODO: Avoid depending on global variables.
-    const gl = window.gl = getWebGlContext();
-    if (!gl)
+    WebGl.context = getWebGlContext(canvas);
+    if (!WebGl.context)
     {
         console.warn("Failed to get an WebGL rendering context!");
         return null;
     }
 
     const input = new gltfInput(canvas);
-    setupGlobalInputBindings(input, document);
-    setupCanvasInputBindings(input, canvas);
+    input.setupGlobalInputBindings(document);
+    input.setupCanvasInputBindings(canvas);
 
     const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
 
     return viewer; // Succeeded in creating a glTF viewer!
 }
 
-function getWebGlContext()
+function getWebGlContext(canvas)
 {
     const parameters = { alpha: false, antialias: true };
     const contextTypes = [ "webgl", "experimental-webgl" ];
@@ -48,20 +47,6 @@ function getWebGlContext()
             return context;
         }
     }
-}
-
-function setupGlobalInputBindings(input, document)
-{
-    document.onmouseup = input.mouseUpHandler.bind(input);
-    document.onmousemove = input.mouseMoveHandler.bind(input);
-}
-
-function setupCanvasInputBindings(input, canvas)
-{
-    canvas.onmousedown = input.mouseDownHandler.bind(input);
-    canvas.onwheel = input.mouseWheelHandler.bind(input);
-    canvas.ondrop = input.dropEventHandler.bind(input);
-    canvas.ondragover = input.dragOverHandler.bind(input);
 }
 
 export { gltf_rv };

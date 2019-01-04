@@ -1,15 +1,18 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec3, quat } from 'gl-matrix';
 import { fromKeys } from './utils.js';
 
 class gltfCamera
 {
-    constructor(type = "perspective",
-                znear = 0.01, zfar = 10000.0,
-                yfov = 45.0 * Math.PI / 180.0,
-                aspectRatio = 16.0 / 9.0,
-                xmag = 1.0, ymag = 1.0,
-                name = undefined,
-                node = undefined)
+    constructor(
+        type = "perspective",
+        znear = 0.01,
+        zfar = 10000.0,
+        yfov = 45.0 * Math.PI / 180.0,
+        aspectRatio = 16.0 / 9.0,
+        xmag = 1.0,
+        ymag = 1.0,
+        name = undefined,
+        nodeIndex = undefined)
     {
         this.type = type;
         this.znear = znear;
@@ -19,49 +22,87 @@ class gltfCamera
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
         this.name = name;
-        this.node = node;
-    }
-
-    clone()
-    {
-        return gltfCamera(this.type, this.znear, this.zfar, this.yfov, this.aspectRatio, this.xmag, this.ymag, this.name, this.node);
+        this.node = nodeIndex;
     }
 
     getProjectionMatrix()
     {
-        let proj = mat4.create();
+        const projection = mat4.create();
 
-        if (this.type == "perspective")
+        if (this.type === "perspective")
         {
-            mat4.perspective(proj, this.yfov, this.aspectRatio, this.znear, this.zfar);
+            mat4.perspective(projection, this.yfov, this.aspectRatio, this.znear, this.zfar);
         }
-        else if (this.type == "orthographic")
+        else if (this.type === "orthographic")
         {
-            proj[0]  = 1.0 / this.xmag;
-            proj[5]  = 1.0 / this.ymag;
-            proj[10] = 2.0 / (this.znear / this.zfar)
-            proj[14] = (this.zfar + this.znear) / (this.znear - this.zfar);
+            projection[0]  = 1.0 / this.xmag;
+            projection[5]  = 1.0 / this.ymag;
+            projection[10] = 2.0 / (this.znear - this.zfar)
+            projection[14] = (this.zfar + this.znear) / (this.znear - this.zfar);
         }
 
-        return proj;
+        return projection;
     }
 
     getViewMatrix(gltf)
     {
-        if(this.node !== undefined && gltf !== undefined)
-        {
-            // TODO: Avoid depending on global variables.
-            const node = gltf.nodes[currentCamera.node];
-            return mat4.clone(node.worldTransform);
-        }
+        const view = mat4.create();
+        const position = this.getPosition(gltf);
+        const target = this.getLookAtTarget(gltf);
+        mat4.lookAt(view, position, target, vec3.fromValues(0, 1, 0));
+        return view;
+    }
 
-        return mat4.create();
+    getLookAtTarget(gltf)
+    {
+        const target = vec3.create();
+        const position = this.getPosition(gltf);
+        const lookDirection = this.getLookDirection(gltf);
+        vec3.add(target, lookDirection, position);
+        return target;
     }
 
     getPosition(gltf)
     {
-        let pos = vec3.create();
-        mat4.getTranslation(pos, this.getViewMatrix(gltf));
+        const position = vec3.create();
+        const node = this.getNode(gltf);
+        mat4.getTranslation(position, node.worldTransform);
+        return position;
+    }
+
+    getLookDirection(gltf)
+    {
+        const direction = vec3.create();
+        const rotation = this.getRotation(gltf);
+        vec3.transformQuat(direction, vec3.fromValues(0, 0, -1), rotation);
+        return direction;
+    }
+
+    getRotation(gltf)
+    {
+        const rotation = quat.create();
+        const node = this.getNode(gltf);
+        mat4.getRotation(rotation, node.worldTransform);
+        return rotation;
+    }
+
+    clone()
+    {
+        return new gltfCamera(
+            this.type,
+            this.znear,
+            this.zfar,
+            this.yfov,
+            this.aspectRatio,
+            this.xmag,
+            this.ymag,
+            this.name,
+            this.node);
+    }
+
+    getNode(gltf)
+    {
+        return gltf.nodes[this.node];
     }
 
     fromJson(jsonCamera)

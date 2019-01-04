@@ -1,6 +1,6 @@
+import { mat4, vec3 } from 'gl-matrix';
 import axios from '../libs/axios.min.js';
 import { glTF } from './gltf.js';
-import { ImageMimeType } from './image.js';
 import { gltfLoader } from './loader.js';
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
@@ -11,6 +11,7 @@ import { jsToGl, getIsGlb, Timer } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfImageProcessor } from './image_processor.js';
 import { gltfEnvironmentLoader } from './environment.js';
+import { getScaleFactor } from './gltf_utils.js';
 
 class gltfViewer
 {
@@ -37,14 +38,11 @@ class gltfViewer
         this.lastTouchY = 0.00;
         this.touchDown = false;
 
-        // TODO: Avoid depending on global variables.
-        window.canvas = canvas;
-        canvas.style.cursor = "grab";
+        this.canvas = canvas;
+        this.canvas.style.cursor = "grab";
 
         this.loadingTimer = new Timer();
         this.gltf = undefined;
-
-        this.cameraIndex = -1;
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
@@ -55,9 +53,7 @@ class gltfViewer
         }
         else
         {
-            input.onDrag = this.userCamera.rotate.bind(this.userCamera);
-            input.onWheel = this.userCamera.zoomIn.bind(this.userCamera);
-            input.onDropFiles = this.loadFromFileObject.bind(this);
+            this.setupInputBindings(input);
 
             if (this.initialModel.includes("/"))
             {
@@ -89,7 +85,7 @@ class gltfViewer
         yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
         xmag = 1.0, ymag = 1.0)
     {
-        this.cameraIndex = -1; // force use default camera
+        this.renderingParameters.cameraIndex = "default"; // force use default camera
 
         this.userCamera.target = jsToGl(target);
         this.userCamera.up = jsToGl(up);
@@ -101,6 +97,40 @@ class gltfViewer
         this.userCamera.aspectRatio = aspectRatio;
         this.userCamera.xmag = xmag;
         this.userCamera.ymag = ymag;
+    }
+
+    setupInputBindings(input)
+    {
+        const self = this;
+        input.onRotate = (deltaX, deltaY) =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                this.userCamera.rotate(deltaX, deltaY);
+            }
+        };
+        input.onPan = (deltaX, deltaY) =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                this.userCamera.pan(deltaX, deltaY);
+            }
+        };
+        input.onZoom = (delta) =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                this.userCamera.zoomIn(delta);
+            }
+        };
+        input.onResetCamera = () =>
+        {
+            if (self.renderingParameters.cameraIndex === "default")
+            {
+                self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
+            }
+        };
+        input.onDropFiles = this.loadFromFileObject.bind(this);
     }
 
     loadFromFileObject(mainFile, additionalFiles)
@@ -195,14 +225,15 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
+        this.renderingParameters.cameraIndex = "default";
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
-        this.gui.initializeSceneSelection(Object.keys(gltf.scenes));
-        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-        scene.applyTransformHierarchy(gltf);
-        this.scaleFactor = this.userCamera.fitViewToAsset(gltf);
+        this.gui.update(gltf);
 
         this.gltf = gltf;
         this.currentlyRendering = true;
+
+        this.prepareSceneForRendering(gltf);
+        this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
     }
 
     render()
@@ -217,7 +248,9 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
-                self.renderer.resize(canvas.clientWidth, canvas.clientHeight);
+                self.prepareSceneForRendering(self.gltf);
+
+                self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
                 if (self.gltf.scenes.length !== 0)
@@ -237,15 +270,15 @@ class gltfViewer
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
                         let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
-                        self.renderer.drawScene(self.gltf, opaqueScene, self.cameraIndex, false, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, opaqueScene, false);
 
                         // render transparent objects ordered by distance from camera
-                        self.renderer.drawScene(self.gltf, alphaScene, self.cameraIndex, true, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, alphaScene, true);
                     }
                     else
                     {
                         // no alpha materials, render as is
-                        self.renderer.drawScene(self.gltf, scene, self.cameraIndex, false, self.scaleFactor);
+                        self.renderer.drawScene(self.gltf, scene, false);
                     }
                 }
 
@@ -265,6 +298,21 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
+    }
+
+    prepareSceneForRendering(gltf)
+    {
+        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
+        scene.applyTransformHierarchy(gltf);
+
+        const transform = mat4.create();
+        if (this.renderingParameters.cameraIndex === "default")
+        {
+            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
+            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+        }
+
+        scene.applyTransformHierarchy(gltf, transform);
     }
 
     initializeGui()

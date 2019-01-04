@@ -1,6 +1,9 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
+import { getSceneExtends } from './gltf_utils.js';
+
+const VecZero = vec3.create();
 
 class UserCamera extends gltfCamera
 {
@@ -8,7 +11,8 @@ class UserCamera extends gltfCamera
         position = [0, 0, 0],
         target = [0, 0,0],
         up = [0, 1, 0],
-        xRot = 0, yRot = 0,
+        xRot = 0,
+        yRot = 0,
         zoom = 1)
     {
         super();
@@ -21,18 +25,7 @@ class UserCamera extends gltfCamera
         this.zoom = zoom;
         this.zoomFactor = 1.04;
         this.rotateSpeed = 1 / 180;
-    }
-
-    getViewMatrix()
-    {
-        const view = mat4.create();
-        mat4.lookAt(view, this.position, this.target, this.up);
-        return view;
-    }
-
-    getPosition()
-    {
-        return this.position;
+        this.scaleFactor = 1;
     }
 
     updatePosition()
@@ -40,15 +33,20 @@ class UserCamera extends gltfCamera
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, 1);
-        const zero = vec3.create();
-        vec3.rotateX(direction, direction, zero, -this.yRot);
-        vec3.rotateY(direction, direction, zero, -this.xRot);
+        this.toLocalRotation(direction);
 
         const position = vec3.create();
         vec3.scale(position, direction, this.zoom);
         vec3.add(position, position, this.target);
 
         this.position = position;
+    }
+
+    reset(gltf, sceneIndex)
+    {
+        this.xRot = 0;
+        this.yRot = 0;
+        this.fitViewToScene(gltf, sceneIndex);
     }
 
     zoomIn(value)
@@ -71,70 +69,45 @@ class UserCamera extends gltfCamera
         this.yRot = clamp(this.yRot, -yMax, yMax);
     }
 
-    fitViewToAsset(gltf)
+    pan(x, y)
     {
-        const min = vec3.fromValues(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        const max = vec3.fromValues(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        const moveSpeed = 1 / (this.scaleFactor * 200);
 
-        this.getAssetExtends(gltf, min, max);
-        const scaleFactor = this.applyScaling(min, max);
+        const left = vec3.fromValues(-1, 0, 0);
+        this.toLocalRotation(left);
+        vec3.scale(left, left, x * moveSpeed);
+
+        const up = vec3.fromValues(0, 1, 0);
+        this.toLocalRotation(up);
+        vec3.scale(up, up, y * moveSpeed);
+
+        vec3.add(this.target, this.target, up);
+        vec3.add(this.target, this.target, left);
+    }
+
+    fitViewToScene(gltf, sceneIndex)
+    {
+        const min = vec3.create();
+        const max = vec3.create();
+        getSceneExtends(gltf, sceneIndex, min, max);
         this.fitCameraTargetToExtends(min, max);
         this.fitZoomToExtends(min, max);
-
-        return scaleFactor;
     }
 
-    getAssetExtends(gltf, outMin, outMax)
+    toLocalRotation(vector)
     {
-        for (const node of gltf.nodes)
-        {
-            if (node.mesh === undefined)
-            {
-                continue;
-            }
-
-            const mesh = gltf.meshes[node.mesh];
-            if (mesh.primitives === undefined)
-            {
-                continue;
-            }
-
-            for (const primitive of mesh.primitives)
-            {
-                const attribute = primitive.attributes.find(a => a.attribute == "POSITION");
-                if (attribute === undefined)
-                {
-                    continue;
-                }
-
-                const accessor = gltf.accessors[attribute.accessor];
-                const assetMin = vec3.create();
-                const assetMax = vec3.create();
-                this.getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
-
-                for (const i of [0, 1, 2])
-                {
-                    outMin[i] = Math.min(outMin[i], assetMin[i]);
-                    outMax[i] = Math.max(outMax[i], assetMax[i]);
-                }
-            }
-        }
+        vec3.rotateX(vector, vector, VecZero, -this.yRot);
+        vec3.rotateY(vector, vector, VecZero, -this.xRot);
     }
 
-    applyScaling(min, max)
+    getLookAtTarget()
     {
-        const minValue = Math.min(min[0], Math.min(min[1], min[2]));
-        const maxValue = Math.max(max[0], Math.max(max[1], max[2]));
-        const deltaValue = maxValue - minValue;
-        const scaleFactor = 1.0 / deltaValue;
+        return this.target;
+    }
 
-        for (const i of [0, 1, 2])
-        {
-            min[i] *= scaleFactor;
-            max[i] *= scaleFactor;
-        }
-
-        return scaleFactor;
+    getPosition()
+    {
+        return this.position;
     }
 
     fitZoomToExtends(min, max)
@@ -160,30 +133,6 @@ class UserCamera extends gltfCamera
         const xZoom = axisLength / 2 / Math.tan(xfov / 2);
 
         return Math.max(xZoom, yZoom);
-    }
-
-    getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
-    {
-        const boxMin = vec3.create();
-        vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
-
-        const boxMax = vec3.create();
-        vec3.transformMat4(boxMax, jsToGl(accessor.max), worldTransform);
-
-        const center = vec3.create();
-        vec3.add(center, boxMax, boxMin);
-        vec3.scale(center, center, 0.5);
-
-        const centerToSurface = vec3.create();
-        vec3.sub(centerToSurface, boxMax, center);
-
-        const radius = vec3.length(centerToSurface);
-
-        for (const i of [1, 2, 3])
-        {
-            outMin[i] = center[i] - radius;
-            outMax[i] = center[i] + radius;
-        }
     }
 };
 

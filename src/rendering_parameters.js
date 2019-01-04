@@ -1,5 +1,32 @@
 import { ImageMimeType } from "./image";
 
+class gltfRenderingParameters
+{
+    constructor(
+        environmentName = Object.keys(Environments)[0],
+        useIBL = true,
+        usePunctual = false,
+        exposure = 1.0,
+        gamma = 2.2,
+        clearColor = [50, 50, 50],
+        toneMap = ToneMaps.LINEAR,
+        debugOutput = DebugOutput.NONE,
+        useShaderLoD = true)
+    {
+        this.environmentName = environmentName;
+        this.useIBL = useIBL;
+        this.usePunctual = usePunctual;
+        this.exposure = exposure;
+        this.gamma = gamma;
+        this.clearColor = clearColor;
+        this.toneMap = toneMap;
+        this.useShaderLoD = useShaderLoD;
+        this.debugOutput = debugOutput;
+        this.sceneIndex = 0;
+        this.cameraIndex = "default";
+    }
+};
+
 const ToneMaps =
 {
     LINEAR: "Linear" ,
@@ -30,30 +57,6 @@ const Environments =
     "Footprint Court": { folder: "footprint_court", mipLevel: 9, type: ImageMimeType.HDR },
     "Helipad GoldenHour": { folder: "helipad", mipLevel: 9, type: ImageMimeType.HDR },
     "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 10, type: ImageMimeType.HDR }
-};
-
-class gltfRenderingParameters
-{
-    constructor(
-        environmentName = Object.keys(Environments)[0],
-        useIBL = true,
-        usePunctual = false,
-        exposure = 1.0,
-        gamma = 2.2,
-        clearColor = [50, 50, 50],
-        toneMap = ToneMaps.LINEAR,
-        debugOutput = DebugOutput.NONE)
-    {
-        this.environmentName = environmentName;
-        this.useIBL = useIBL;
-        this.usePunctual = usePunctual;
-        this.exposure = exposure;
-        this.gamma = gamma;
-        this.clearColor = clearColor;
-        this.toneMap = toneMap;
-        this.debugOutput = debugOutput;
-        this.sceneIndex = 0;
-    }
 };
 
 export { gltfRenderingParameters, Environments, ToneMaps, DebugOutput };

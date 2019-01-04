@@ -1,8 +1,9 @@
 import { fromKeys } from './utils.js';
+import { WebGl } from './webgl.js';
 
 class gltfTexture
 {
-    constructor(sampler = undefined, source = undefined, type = gl.TEXTURE_2D, texture = undefined)
+    constructor(sampler = undefined, source = undefined, type = WebGl.context.TEXTURE_2D, texture = undefined)
     {
         this.sampler = sampler; // index to gltfSampler, default sampler ?
         this.source = source; // index to gltfImage
@@ -25,7 +26,7 @@ class gltfTexture
     {
         if (this.glTexture !== undefined)
         {
-            gl.deleteTexture(this.glTexture);
+            WebGl.context.deleteTexture(this.glTexture);
         }
 
         this.glTexture = undefined;
@@ -34,7 +35,7 @@ class gltfTexture
 
 class gltfTextureInfo
 {
-    constructor(index = undefined, texCoord = 0, colorSpace = gl.RGBA, samplerName = "", generateMips = true) // linear by default
+    constructor(index = undefined, texCoord = 0, colorSpace = WebGl.context.RGBA, samplerName = "", generateMips = true) // linear by default
     {
         this.index = index; // reference to gltfTexture
         this.texCoord = texCoord; // which UV set to use
@@ -47,7 +48,7 @@ class gltfTextureInfo
         this.extensions = undefined;
     }
 
-    fromJson(jsonTextureInfo, samplerName, colorSpace = gl.RGBA)
+    fromJson(jsonTextureInfo, samplerName, colorSpace = WebGl.context.RGBA)
     {
         fromKeys(this, jsonTextureInfo);
 

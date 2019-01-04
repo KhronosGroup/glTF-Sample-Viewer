@@ -1,4 +1,5 @@
 import { UniformStruct } from './utils.js';
+import { WebGl } from './webgl.js';
 
 class gltfShader
 {
@@ -11,19 +12,19 @@ class gltfShader
 
         if(this.program !== undefined)
         {
-            const uniformCount = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
+            const uniformCount = WebGl.context.getProgramParameter(this.program, WebGl.context.ACTIVE_UNIFORMS);
             for(let i = 0; i < uniformCount; ++i)
             {
-                const info = gl.getActiveUniform(this.program, i);
-                const loc = gl.getUniformLocation(this.program, info.name);
+                const info = WebGl.context.getActiveUniform(this.program, i);
+                const loc = WebGl.context.getUniformLocation(this.program, info.name);
                 this.uniforms.set(info.name, {type: info.type, loc: loc});
             }
 
-            const attribCount = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+            const attribCount = WebGl.context.getProgramParameter(this.program, WebGl.context.ACTIVE_ATTRIBUTES);
             for(let i = 0; i < attribCount; ++i)
             {
-                const info = gl.getActiveAttrib(this.program, i);
-                const loc = gl.getAttribLocation(this.program, info.name);
+                const info = WebGl.context.getActiveAttrib(this.program, i);
+                const loc = WebGl.context.getAttribLocation(this.program, info.name);
                 this.attributes.set(info.name, loc);
             }
         }
@@ -107,7 +108,7 @@ class gltfShader
     }
 
     // upload the values of a uniform with the given name using type resolve to get correct function call
-    // vec3 => gl.uniform3f(value)
+    // vec3 => WebGl.context.uniform3f(value)
     updateUniformValue(uniformName, value, log)
     {
         const uniform = this.uniforms.get(uniformName);
@@ -115,19 +116,19 @@ class gltfShader
         if(uniform !== undefined)
         {
             switch (uniform.type) {
-                case gl.FLOAT: gl.uniform1f(uniform.loc, value); break;
-                case gl.FLOAT_VEC2: gl.uniform2fv(uniform.loc, value); break;
-                case gl.FLOAT_VEC3: gl.uniform3fv(uniform.loc, value); break;
-                case gl.FLOAT_VEC4: gl.uniform4fv(uniform.loc, value); break;
+                case WebGl.context.FLOAT: WebGl.context.uniform1f(uniform.loc, value); break;
+                case WebGl.context.FLOAT_VEC2: WebGl.context.uniform2fv(uniform.loc, value); break;
+                case WebGl.context.FLOAT_VEC3: WebGl.context.uniform3fv(uniform.loc, value); break;
+                case WebGl.context.FLOAT_VEC4: WebGl.context.uniform4fv(uniform.loc, value); break;
 
-                case gl.INT: gl.uniform1i(uniform.loc, value); break;
-                case gl.INT_VEC2: gl.uniform2iv(uniform.loc, value); break;
-                case gl.INT_VEC3: gl.uniform3iv(uniform.loc, value); break;
-                case gl.INT_VEC4: gl.uniform4iv(uniform.loc, value); break;
+                case WebGl.context.INT: WebGl.context.uniform1i(uniform.loc, value); break;
+                case WebGl.context.INT_VEC2: WebGl.context.uniform2iv(uniform.loc, value); break;
+                case WebGl.context.INT_VEC3: WebGl.context.uniform3iv(uniform.loc, value); break;
+                case WebGl.context.INT_VEC4: WebGl.context.uniform4iv(uniform.loc, value); break;
 
-                case gl.FLOAT_MAT2: gl.uniformMatrix2fv(uniform.loc, false, value); break;
-                case gl.FLOAT_MAT3: gl.uniformMatrix3fv(uniform.loc, false, value); break;
-                case gl.FLOAT_MAT4: gl.uniformMatrix4fv(uniform.loc, false, value); break;
+                case WebGl.context.FLOAT_MAT2: WebGl.context.uniformMatrix2fv(uniform.loc, false, value); break;
+                case WebGl.context.FLOAT_MAT3: WebGl.context.uniformMatrix3fv(uniform.loc, false, value); break;
+                case WebGl.context.FLOAT_MAT4: WebGl.context.uniformMatrix4fv(uniform.loc, false, value); break;
             }
         }
         else if(log)
