@@ -98,7 +98,16 @@ class gltfUserInterface
     {
         const self = this;
         const lightingFolder = this.gui.addFolder("Lighting");
-        lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        if (this.renderingParameters.useShaderLoD)
+        {
+            lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        }
+        else
+        {
+            const message = "not available";
+            const messageObject = { message: message };
+            lightingFolder.add(messageObject, "message").name("Image-Based Lighting").onChange(() => messageObject.message = message);
+        }
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
         lightingFolder.add(this.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
             .onChange(() => self.onModelSelected(self.selectedModel));
