@@ -66,6 +66,12 @@ class gltfRenderer
     // app state
     init()
     {
+        if (!this.parameters.useShaderLoD)
+        {
+            this.parameters.useIBL = false;
+            this.parameters.usePunctual = true;
+        }
+
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         WebGl.context.enable(WebGl.context.DEPTH_TEST);
         WebGl.context.depthFunc(WebGl.context.LEQUAL);
