@@ -57,7 +57,7 @@ class gltfRenderer
 
         this.frameBuffer = undefined;
         this.renderTargetTextures = [];
-        this.numViews = 8;
+        this.numViews = 2;
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -153,7 +153,21 @@ class gltfRenderer
         WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
     }
 
-    drawTransparentScene(gltf, scene, camera)
+    drawSceneMultiView(gltf, scene, camera)
+    {
+        // TODO: replicate cameras around target point
+        for(let i = 0; i < this.numViews; ++i)
+        {
+            this.newFrame(i); // render target
+            this.drawScene(gltf, scene, camera);
+        }
+
+        this.newFrame(); // backbuffer
+
+        this.mergeViews();
+    }
+
+    drawScene(gltf, scene, camera)
     {
         let alphaScene = scene.getSceneWithAlphaMode(gltf, 'BLEND'); // get non opaque
         if (alphaScene.nodes.length > 0)
@@ -206,11 +220,8 @@ class gltfRenderer
 
     mergeViews()
     {
-        this.newFrame();// backbuffer
-
-        // TODO: select shader (fullscreen tri & merge ps)
-
-        let shaderDefines = "NUM_VIEWS " + this.numViews;
+        // select shader
+        let shaderDefines = ["NUM_VIEWS " + this.numViews];
 
         const fragmentHash = this.shaderCache.selectShader("merge.frag", shaderDefines);
         const vertexHash  = this.shaderCache.selectShader("fullscreen.vert", shaderDefines);
@@ -227,13 +238,34 @@ class gltfRenderer
 
         WebGl.context.useProgram(this.shader.program);
 
-        // bind textures
-        for (let i = 0; i < this.renderTargetTextures.length; i++) {
-            WebGl.context.activeTexture(WebGl.context.TEXTURE0 + i);
-            let loc = this.shader.getUniformLocation("u_Views[" + i + "]"); // TODO resovle texture array uniform name
-            WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.renderTargetTextures[i]);
-            WebGl.context.uniform1i(loc, i);
+        let loc = this.shader.getUniformLocation("u_Views[0]");
+        if(loc)
+        {
+            let slots = [];
+            for (let i = 0; i < this.renderTargetTextures.length; i++)
+            {
+                WebGl.context.activeTexture(WebGl.context.TEXTURE0 + i);
+                WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.renderTargetTextures[i]);
+                slots.push(i);
+            }
+
+            WebGl.context.uniform1iv(loc, slots);
         }
+
+        // bind textures
+        // for (let i = 0; i < this.renderTargetTextures.length; i++) {
+        //     WebGl.context.activeTexture(WebGl.context.TEXTURE0 + i);
+        //     let loc = this.shader.getUniformLocation("u_Views[" + i + "]"); // TODO resovle texture array uniform name
+        //     if(loc)
+        //     {
+        //         WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.renderTargetTextures[i]);
+        //         WebGl.context.uniform1i(loc, i);
+        //     }
+        // }
+
+        //WebGl.context.disable(WebGl.context.DEPTH_TEST);
+        WebGl.context.enable(WebGl.context.CULL_FACE);
+        WebGl.context.disable(WebGl.context.BLEND);
 
         // render fullscreen triangle
         WebGl.context.drawArrays(WebGl.context.TRIANGLES, 0, 3);

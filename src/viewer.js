@@ -264,7 +264,8 @@ class gltfViewer
                     // if transformations happen at runtime, we need to apply the transform hierarchy here
                     // scene.applyTransformHierarchy(gltf);
 
-                    self.renderer.drawTransparentScene(self.gltf, scene, self.userCamera);
+                    self.renderer.drawSceneMultiView(self.gltf, scene, self.userCamera);
+                    //self.renderer.drawScene(self.gltf, scene, self.userCamera);
                 }
 
                 if (self.onRendererReady)

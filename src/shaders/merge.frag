@@ -28,5 +28,6 @@ vec4 sampleView(int Index, vec2 uv)
 
 void main()
 {
+    //g_finalColor = mix(sampleView(0, v_UV), sampleView(1, v_UV), 0.0);
     g_finalColor = sampleView(0, v_UV);
 }
