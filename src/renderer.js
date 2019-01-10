@@ -51,6 +51,10 @@ class gltfRenderer
 
         this.visibleLights = [];
 
+        this.frameBuffer = undefined;
+        this.renderTargetTextures = [];
+        this.numViews = 8;
+
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
         this.viewProjectionMatrix = mat4.create();
@@ -58,7 +62,7 @@ class gltfRenderer
         this.currentCameraPosition = vec3.create();
 
         this.init();
-        this.resize(canvas.canvasWidth, canvas.canvasHeight);
+        this.resize(canvas.clientWidth, canvas.clientHeight);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -74,6 +78,11 @@ class gltfRenderer
             this.parameters.usePunctual = true;
         }
 
+        if(this.frameBuffer === undefined)
+        {
+            this.frameBuffer = WebGl.context.createFramebuffer();
+        }
+
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         WebGl.context.enable(WebGl.context.DEPTH_TEST);
         WebGl.context.depthFunc(WebGl.context.LEQUAL);
@@ -81,10 +90,37 @@ class gltfRenderer
         WebGl.context.clearDepth(1.0);
     }
 
+    initRenderTargets(width, height)
+    {
+        // destroy old textures
+        for (let i = 0; i < this.renderTargetTextures.length; i++) {
+            WebGl.context.deleteTexture(this.renderTargetTextures[i]);
+        }
+
+        this.renderTargetTextures = [];
+
+        for (let i = 0; i < this.numViews; i++) {
+            let tex = WebGl.context.createTexture();
+
+            WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, tex);
+            WebGl.context.texImage2D(WebGl.context.TEXTURE_2D, 0, WebGl.context.RGBA,
+                width, height, 0,
+                WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, null);
+
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.LINEAR);
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
+
+            this.renderTargetTextures.push(tex);
+        }
+    }
+
     resize(width, height, updateCanvas = true)
     {
         if (this.currentWidth !== width || this.currentHeight !== height)
         {
+            this.initRenderTargets(width, height);
+
             if(updateCanvas)
             {
                 this.canvas.width  = width;
@@ -97,8 +133,18 @@ class gltfRenderer
     }
 
     // frame state
-    newFrame()
+    newFrame(renderTargetIndex = "default")
     {
+        if(renderTargetIndex !== "default" && renderTargetIndex < this.renderTargetTextures.length)
+        {
+            WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer);
+            WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.renderTargetTextures[renderTargetIndex], 0);
+        }
+        else
+        {
+            WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, null);
+        }
+
         WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2]  / 255.0, 1.0);
         WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
     }
@@ -117,12 +163,6 @@ class gltfRenderer
             currentCamera = this.defaultCamera;
         }
 
-        // NOTE: RenderTarget glTF extension does not make sense without a proper RenderPass extension to encode when the result target texture should be used.
-        //       RenderPass extension could reference a set of RenderTargets, associated scene and dependencies (previous Passes, following passes) forming a rendering graph.
-        //       Viewer / Renderer iterates over the set of Passes and Scenes and activates the RenderTargets (and viewport) for the given scene to render.
-
-        // TODO: bind framebuffer WebGl.context.bindFramebuffer(gl.FRAMEBUFFER, fb);
-        // TODO: aspect ratio should depend on rendertargt resolution
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
