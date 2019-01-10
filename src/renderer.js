@@ -56,6 +56,7 @@ class gltfRenderer
         this.visibleLights = [];
 
         this.frameBuffer = undefined;
+        this.depthBuffer = undefined;
         this.renderTargetTextures = [];
         this.numViews = 2;
 
@@ -87,6 +88,11 @@ class gltfRenderer
             this.frameBuffer = WebGl.context.createFramebuffer();
         }
 
+        if(this.depthBuffer === undefined)
+        {
+            this.depthBuffer = WebGl.context.createRenderbuffer();
+        }
+
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         WebGl.context.enable(WebGl.context.DEPTH_TEST);
         WebGl.context.depthFunc(WebGl.context.LEQUAL);
@@ -96,6 +102,8 @@ class gltfRenderer
 
     initRenderTargets(width, height)
     {
+        // TODO: destroy old framebuffer
+
         // destroy old textures
         for (let i = 0; i < this.renderTargetTextures.length; i++) {
             WebGl.context.deleteTexture(this.renderTargetTextures[i]);
@@ -117,6 +125,9 @@ class gltfRenderer
 
             this.renderTargetTextures.push(tex);
         }
+
+        WebGl.context.bindRenderbuffer(WebGl.context.RENDERBUFFER, this.depthBuffer);
+        WebGl.context.renderbufferStorage(WebGl.context.RENDERBUFFER, WebGl.context.DEPTH_COMPONENT16, width, height);
     }
 
     resize(width, height, updateCanvas = true)
@@ -143,6 +154,7 @@ class gltfRenderer
         {
             WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer);
             WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.renderTargetTextures[renderTargetIndex], 0);
+            WebGl.context.framebufferRenderbuffer(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.RENDERBUFFER, this.depthBuffer);
         }
         else
         {
