@@ -9,10 +9,10 @@ class gltfNode
 {
     //  vec3 translation, quat rotation, vec3 scale
     constructor(translation = jsToGl([0, 0, 0]),
-                rotation = jsToGl([0, 0, 0, 1]),
-                scale = jsToGl([1, 1, 1]),
-                children = [],
-                name = undefined)
+        rotation = jsToGl([0, 0, 0, 1]),
+        scale = jsToGl([1, 1, 1]),
+        children = [],
+        name = undefined)
     {
         this.translation = translation;
         this.rotation = rotation;
@@ -121,6 +121,6 @@ class gltfNode
 
         return mat4.clone(this.transform);
     }
-};
+}
 
 export { gltfNode };

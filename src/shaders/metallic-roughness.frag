@@ -84,15 +84,11 @@ struct MaterialInfo
     float perceptualRoughness;    // roughness value, as authored by the model creator (input to shader)
     vec3 reflectance0;            // full reflectance color (normal incidence angle)
 
-    float metalness;              // metallic value at the surface
-    vec3 reflectance90;           // reflectance color at grazing angle
-
     float alphaRoughness;         // roughness mapped to a more linear change in the roughness (proposed by [2])
     vec3 diffuseColor;            // color contribution from diffuse lighting
 
+    vec3 reflectance90;           // reflectance color at grazing angle
     vec3 specularColor;           // color contribution from specular lighting
-
-    float padding;
 };
 
 // Calculation of the lighting contribution from an optional Image Based Light source.
@@ -358,12 +354,10 @@ void main()
     MaterialInfo materialInfo = MaterialInfo(
         perceptualRoughness,
         specularEnvironmentR0,
-        metallic,
-        specularEnvironmentR90,
         alphaRoughness,
         diffuseColor,
-        specularColor,
-        0.0
+        specularEnvironmentR90,
+        specularColor
     );
 
     // LIGHTING

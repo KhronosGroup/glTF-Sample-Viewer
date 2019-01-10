@@ -133,6 +133,6 @@ class ShaderCache
 
         return undefined;
     }
-};
+}
 
 export { ShaderCache };

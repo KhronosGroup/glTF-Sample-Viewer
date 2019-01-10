@@ -66,7 +66,7 @@ class gltfBuffer
             {
                 return true;
             }
-        }, this)
+        }, this);
 
         if (foundFile === undefined)
         {
@@ -84,6 +84,6 @@ class gltfBuffer
 
         return true;
     }
-};
+}
 
 export { gltfBuffer };

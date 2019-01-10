@@ -173,7 +173,7 @@ class gltfViewer
         axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
         {
             let json = response.data;
-            let buffers = undefined
+            let buffers = undefined;
             if (isGlb)
             {
                 const glbParser = new GlbParser(response.data);

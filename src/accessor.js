@@ -41,17 +41,17 @@ class gltfAccessor
     {
         switch (this.componentType)
         {
-            case WebGl.context.BYTE:
-            case WebGl.context.UNSIGNED_BYTE:
-                return 1;
-            case WebGl.context.SHORT:
-            case WebGl.context.UNSIGNED_SHORT:
-                return 2;
-            case WebGl.context.UNSIGNED_INT:
-            case WebGl.context.FLOAT:
-                return 4;
-            default:
-                return 0;
+        case WebGl.context.BYTE:
+        case WebGl.context.UNSIGNED_BYTE:
+            return 1;
+        case WebGl.context.SHORT:
+        case WebGl.context.UNSIGNED_SHORT:
+            return 2;
+        case WebGl.context.UNSIGNED_INT:
+        case WebGl.context.FLOAT:
+            return 4;
+        default:
+            return 0;
         }
     }
 
@@ -122,6 +122,6 @@ class gltfAccessor
 
         this.glBuffer = undefined;
     }
-};
+}
 
 export { gltfAccessor };

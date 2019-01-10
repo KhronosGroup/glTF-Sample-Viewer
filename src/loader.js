@@ -62,6 +62,6 @@ class gltfLoader
         }
         gltf.accessors = [];
     }
-};
+}
 
 export { gltfLoader };

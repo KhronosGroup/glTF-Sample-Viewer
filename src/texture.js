@@ -31,7 +31,7 @@ class gltfTexture
 
         this.glTexture = undefined;
     }
-};
+}
 
 class gltfTextureInfo
 {
@@ -55,6 +55,6 @@ class gltfTextureInfo
         this.colorSpace = colorSpace;
         this.samplerName = samplerName;
     }
-};
+}
 
 export { gltfTexture, gltfTextureInfo };

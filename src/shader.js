@@ -116,19 +116,19 @@ class gltfShader
         if(uniform !== undefined)
         {
             switch (uniform.type) {
-                case WebGl.context.FLOAT: WebGl.context.uniform1f(uniform.loc, value); break;
-                case WebGl.context.FLOAT_VEC2: WebGl.context.uniform2fv(uniform.loc, value); break;
-                case WebGl.context.FLOAT_VEC3: WebGl.context.uniform3fv(uniform.loc, value); break;
-                case WebGl.context.FLOAT_VEC4: WebGl.context.uniform4fv(uniform.loc, value); break;
+            case WebGl.context.FLOAT: WebGl.context.uniform1f(uniform.loc, value); break;
+            case WebGl.context.FLOAT_VEC2: WebGl.context.uniform2fv(uniform.loc, value); break;
+            case WebGl.context.FLOAT_VEC3: WebGl.context.uniform3fv(uniform.loc, value); break;
+            case WebGl.context.FLOAT_VEC4: WebGl.context.uniform4fv(uniform.loc, value); break;
 
-                case WebGl.context.INT: WebGl.context.uniform1i(uniform.loc, value); break;
-                case WebGl.context.INT_VEC2: WebGl.context.uniform2iv(uniform.loc, value); break;
-                case WebGl.context.INT_VEC3: WebGl.context.uniform3iv(uniform.loc, value); break;
-                case WebGl.context.INT_VEC4: WebGl.context.uniform4iv(uniform.loc, value); break;
+            case WebGl.context.INT: WebGl.context.uniform1i(uniform.loc, value); break;
+            case WebGl.context.INT_VEC2: WebGl.context.uniform2iv(uniform.loc, value); break;
+            case WebGl.context.INT_VEC3: WebGl.context.uniform3iv(uniform.loc, value); break;
+            case WebGl.context.INT_VEC4: WebGl.context.uniform4iv(uniform.loc, value); break;
 
-                case WebGl.context.FLOAT_MAT2: WebGl.context.uniformMatrix2fv(uniform.loc, false, value); break;
-                case WebGl.context.FLOAT_MAT3: WebGl.context.uniformMatrix3fv(uniform.loc, false, value); break;
-                case WebGl.context.FLOAT_MAT4: WebGl.context.uniformMatrix4fv(uniform.loc, false, value); break;
+            case WebGl.context.FLOAT_MAT2: WebGl.context.uniformMatrix2fv(uniform.loc, false, value); break;
+            case WebGl.context.FLOAT_MAT3: WebGl.context.uniformMatrix3fv(uniform.loc, false, value); break;
+            case WebGl.context.FLOAT_MAT4: WebGl.context.uniformMatrix4fv(uniform.loc, false, value); break;
             }
         }
         else if(log)
@@ -136,6 +136,6 @@ class gltfShader
             console.warn("Unkown uniform: " + uniformName);
         }
     }
-};
+}
 
 export { gltfShader };

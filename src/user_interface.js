@@ -167,7 +167,7 @@ class gltfUserInterface
 
     fromHexValue(hexValue)
     {
-        return parseInt(hexValue, 16) * 16
+        return parseInt(hexValue, 16) * 16;
     }
 }
 

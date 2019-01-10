@@ -71,7 +71,7 @@ class gltfScene
 
         for (let n of this.nodes)
         {
-            AddNode(n)
+            AddNode(n);
         }
 
         return new gltfScene(Nodes, this.name);
@@ -118,6 +118,6 @@ class gltfScene
 
         return false;
     }
-};
+}
 
 export { gltfScene };

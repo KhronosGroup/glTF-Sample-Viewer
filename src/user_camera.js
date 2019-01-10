@@ -134,6 +134,6 @@ class UserCamera extends gltfCamera
 
         return Math.max(xZoom, yZoom);
     }
-};
+}
 
 export { UserCamera };

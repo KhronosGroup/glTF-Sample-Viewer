@@ -37,7 +37,7 @@ class gltfCamera
             const pos = vec3.create();
             mat4.getTranslation(pos, modelView);
 
-            sortedNodes.push({depth: pos[2], node: node})
+            sortedNodes.push({depth: pos[2], node: node});
         }
 
         // remove nodes that are behind the camera
@@ -61,7 +61,7 @@ class gltfCamera
         {
             projection[0]  = 1.0 / this.xmag;
             projection[5]  = 1.0 / this.ymag;
-            projection[10] = 2.0 / (this.znear - this.zfar)
+            projection[10] = 2.0 / (this.znear - this.zfar);
             projection[14] = (this.zfar + this.znear) / (this.znear - this.zfar);
         }
 
@@ -143,6 +143,6 @@ class gltfCamera
             fromKeys(this, jsonCamera.orthographic);
         }
     }
-};
+}
 
 export { gltfCamera };

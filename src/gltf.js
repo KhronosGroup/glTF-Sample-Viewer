@@ -298,6 +298,6 @@ class glTF
         this.defaultRenderTarget = this.extensions.rendertargets.length;
         this.extensions.rendertargets.push(new gltfRenderTarget(true, 0, 0, this.defaultSampler));
     }
-};
+}
 
 export { glTF };
