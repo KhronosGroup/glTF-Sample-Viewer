@@ -25,6 +25,30 @@ class gltfCamera
         this.node = nodeIndex;
     }
 
+    sortNodesByDepth(nodes)
+    {
+        // precompute the distances to avoid their computation during sorting
+        const sortedNodes = [];
+        for (const node of nodes)
+        {
+            const modelView = mat4.create();
+            mat4.multiply(modelView, this.getViewMatrix(), node.worldTransform);
+
+            const pos = vec3.create();
+            mat4.getTranslation(pos, modelView);
+
+            sortedNodes.push({depth: pos[2], node: node})
+        }
+
+        // remove nodes that are behind the camera
+        // --> will never be visible and it is cheap to discard them here
+        sortedNodes.filter((a) => a.depth >= 0);
+
+        sortedNodes.sort((a, b) => b.depth - a.depth);
+
+        return sortedNodes.map((a) => a.node);
+    }
+
     getProjectionMatrix()
     {
         const projection = mat4.create();

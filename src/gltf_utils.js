@@ -11,9 +11,11 @@ function getSceneExtends(gltf, sceneIndex, outMin, outMax)
 
     const scene = gltf.scenes[sceneIndex];
 
-    for (const nodeIndex of scene.nodes)
+    let nodeIndices = scene.nodes.slice();
+    while(nodeIndices.length > 0)
     {
-        const node = gltf.nodes[nodeIndex];
+        const node = gltf.nodes[nodeIndices.pop()];
+        nodeIndices = nodeIndices.concat(node.children);
 
         if (node.mesh === undefined)
         {

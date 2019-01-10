@@ -46,6 +46,8 @@ class gltfViewer
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
+        this.currentlyRendering = false;
+        this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
 
         if (this.headless === true)
         {
@@ -72,9 +74,6 @@ class gltfViewer
                 });
             }
         }
-
-        this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
 
         this.render(); // Starts a rendering loop.
     }

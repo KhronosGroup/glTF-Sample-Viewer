@@ -16,6 +16,10 @@ class gltfUserInterface
 
         this.gui = undefined;
         this.gltfFolder = undefined;
+        this.modelsDropdown = undefined;
+        this.versionView = undefined;
+        this.sceneSelection = undefined;
+        this.cameraSelection = undefined;
 
         this.onModelSelected = undefined;
     }
@@ -32,6 +36,10 @@ class gltfUserInterface
 
     update(gltf)
     {
+        this.clearGltfFolder();
+
+        const isModelInDropdown = this.modelPathProvider.pathExists(gltf.path);
+        this.initializeModelsDropdown(isModelInDropdown ? undefined : gltf.path);
         this.initializeGltfVersionView(gltf.asset.version);
         this.initializeSceneSelection(Object.keys(gltf.scenes));
         this.initializeCameraSelection(Object.keys(gltf.cameras));
@@ -49,43 +57,39 @@ class gltfUserInterface
         this.gltfFolder.open();
     }
 
-    initializeModelsDropdown()
+    initializeModelsDropdown(droppedModel)
     {
-        const modelKeys = this.modelPathProvider.getAllKeys();
+        let modelKeys = [];
+
+        if (droppedModel !== undefined)
+        {
+            modelKeys.push(droppedModel);
+            this.selectedModel = droppedModel;
+        }
+
+        modelKeys = modelKeys.concat(this.modelPathProvider.getAllKeys());
         if (!modelKeys.includes(this.selectedModel))
         {
             this.selectedModel = modelKeys[0];
         }
 
         const self = this;
-        this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
+        this.modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
     }
 
     initializeGltfVersionView(version)
     {
         this.version = version;
-        if (this.versionView !== undefined)
-        {
-            this.gltfFolder.remove(this.versionView);
-        }
         this.versionView = this.gltfFolder.add(this, "version", version).name("glTF Version").onChange(() => this.version = version);
     }
 
     initializeSceneSelection(scenes)
     {
-        if (this.sceneSelection !== undefined)
-        {
-            this.gltfFolder.remove(this.sceneSelection);
-        }
         this.sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
     }
 
     initializeCameraSelection(cameras)
     {
-        if (this.cameraSelection !== undefined)
-        {
-            this.gltfFolder.remove(this.cameraSelection);
-        }
         const camerasWithUserCamera = [ "default" ].concat(cameras);
         this.cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
     }
@@ -94,7 +98,16 @@ class gltfUserInterface
     {
         const self = this;
         const lightingFolder = this.gui.addFolder("Lighting");
-        lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        if (this.renderingParameters.useShaderLoD)
+        {
+            lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        }
+        else
+        {
+            const message = "not available";
+            const messageObject = { message: message };
+            lightingFolder.add(messageObject, "message").name("Image-Based Lighting").onChange(() => messageObject.message = message);
+        }
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
         lightingFolder.add(this.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
             .onChange(() => self.onModelSelected(self.selectedModel));
@@ -124,6 +137,14 @@ class gltfUserInterface
         statsList.appendChild(this.stats.domElement);
         statsList.classList.add("gui-stats");
         monitoringFolder.__ul.appendChild(statsList);
+    }
+
+    clearGltfFolder()
+    {
+        this.gltfFolder.remove(this.modelsDropdown);
+        this.gltfFolder.remove(this.versionView);
+        this.gltfFolder.remove(this.sceneSelection);
+        this.gltfFolder.remove(this.cameraSelection);
     }
 
     // string format: "#RRGGBB"

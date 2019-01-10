@@ -7,7 +7,7 @@ function gltf_rv(canvasId, index,
     onRendererReady = undefined,
     basePath = "",
     initialModel = "BoomBox",
-    envMap = "Papermill Ruins E (LDR)")
+    envMap = "Courtyard of the Doge's palace")
 {
     const canvas = document.getElementById(canvasId);
     if (!canvas)
