@@ -56,7 +56,7 @@ class gltfRenderer
         this.currentCameraPosition = vec3.create();
 
         this.init();
-        this.resize(canvas.canvasWidth, canvas.canvasHeight);
+        this.resize(canvas.clientWidth, canvas.clientHeight);
     }
 
     /////////////////////////////////////////////////////////////////////
