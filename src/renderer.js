@@ -11,6 +11,8 @@ import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
+import fullscreenShader from'./shaders/fullscreen.vert';
+import mergeShader from './shaders/merge.frag';
 
 class gltfRenderer
 {
@@ -28,6 +30,8 @@ class gltfRenderer
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
         shaderSources.set("metallic-roughness.frag", metallicRoughnessShader);
+        shaderSources.set("fullscreen.vert", fullscreenShader);
+        shaderSources.set("merge.frag", mergeShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
@@ -133,9 +137,9 @@ class gltfRenderer
     }
 
     // frame state
-    newFrame(renderTargetIndex = "default")
+    newFrame(renderTargetIndex = "backbuffer")
     {
-        if(renderTargetIndex !== "default" && renderTargetIndex < this.renderTargetTextures.length)
+        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.renderTargetTextures.length)
         {
             WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer);
             WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.renderTargetTextures[renderTargetIndex], 0);
@@ -183,6 +187,41 @@ class gltfRenderer
         {
             this.drawNode(gltf, node);
         }
+    }
+
+    mergeViews()
+    {
+        this.newFrame();// backbuffer
+
+        // TODO: select shader (fullscreen tri & merge ps)
+
+        let shaderDefines = "NUM_VIEWS " + this.numViews;
+
+        const fragmentHash = this.shaderCache.selectShader("merge.frag", shaderDefines);
+        const vertexHash  = this.shaderCache.selectShader("fullscreen.vert", shaderDefines);
+
+        if (fragmentHash && vertexHash)
+        {
+            this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
+        }
+
+        if (this.shader === undefined)
+        {
+            return;
+        }
+
+        WebGl.context.useProgram(this.shader.program);
+
+        // bind textures
+        for (let i = 0; i < this.renderTargetTextures.length; i++) {
+            WebGl.context.activeTexture(WebGl.context.TEXTURE0 + i);
+            let loc = this.shader.getUniformLocation("u_Views[" + i + "]"); // TODO resovle texture array uniform name
+            WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.renderTargetTextures[i]);
+            WebGl.context.uniform1i(loc, i);
+        }
+
+        // render fullscreen triangle
+        WebGl.context.drawArrays(WebGl.context.TRIANGLES, 0, 3);
     }
 
     // returns all lights that are relevant for rendering or the default light if there are none
