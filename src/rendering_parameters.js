@@ -25,7 +25,7 @@ class gltfRenderingParameters
         this.sceneIndex = 0;
         this.cameraIndex = "default";
     }
-};
+}
 
 const ToneMaps =
 {

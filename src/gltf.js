@@ -270,6 +270,6 @@ class glTF
             this.fromJsonScenes(json.scenes);
         }
     }
-};
+}
 
 export { glTF };

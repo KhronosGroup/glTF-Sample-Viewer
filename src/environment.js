@@ -15,13 +15,13 @@ class gltfEnvironmentLoader
         let extension;
         switch (environment.type)
         {
-            case (ImageMimeType.HDR):
-                extension = ".hdr";
-                break;
-            case (ImageMimeType.JPEG):
-            default:
-                extension = ".jpg";
-                break;
+        case (ImageMimeType.HDR):
+            extension = ".hdr";
+            break;
+        case (ImageMimeType.JPEG):
+        default:
+            extension = ".jpg";
+            break;
         }
 
         const imagesFolder = this.basePath + "assets/images/" + environment.folder + "/";
@@ -63,7 +63,7 @@ class gltfEnvironmentLoader
                 gltf.images.push(image);
                 indices.push(++imageIdx);
             }
-        };
+        }
 
         // u_DiffuseEnvSampler faces
         for (const side of CubeMapSides)

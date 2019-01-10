@@ -98,7 +98,7 @@ class gltfImage
             {
                 return true;
             }
-        }, this)
+        }, this);
 
         if (foundFile === undefined)
         {
@@ -110,11 +110,11 @@ class gltfImage
         reader.onloadend = function(event)
         {
             self.image.src = event.target.result;
-        }
+        };
         reader.readAsDataURL(foundFile);
 
         return true;
     }
-};
+}
 
 export { gltfImage, ImageMimeType };

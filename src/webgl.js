@@ -115,14 +115,14 @@ class gltfWebGl
                 // Until this point, images can be assumed to be power of two and having a square size.
                 switch (gltfSampler.minFilter)
                 {
-                    case WebGl.context.NEAREST_MIPMAP_NEAREST:
-                    case WebGl.context.NEAREST_MIPMAP_LINEAR:
-                    case WebGl.context.LINEAR_MIPMAP_NEAREST:
-                    case WebGl.context.LINEAR_MIPMAP_LINEAR:
-                        WebGl.context.generateMipmap(gltfTex.type);
-                        break;
-                    default:
-                        break;
+                case WebGl.context.NEAREST_MIPMAP_NEAREST:
+                case WebGl.context.NEAREST_MIPMAP_LINEAR:
+                case WebGl.context.LINEAR_MIPMAP_NEAREST:
+                case WebGl.context.LINEAR_MIPMAP_LINEAR:
+                    WebGl.context.generateMipmap(gltfTex.type);
+                    break;
+                default:
+                    break;
                 }
             }
 

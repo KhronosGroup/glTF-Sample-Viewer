@@ -22,6 +22,6 @@ class gltfMesh
             this.primitives.push(primitive);
         }
     }
-};
+}
 
 export { gltfMesh };

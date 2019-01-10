@@ -99,6 +99,6 @@ class GlbParser
         console.error("Found invalid/unsupported " + name + ", expected: " + expected + ", but was: " + actual);
         return false;
     }
-};
+}
 
 export { GlbParser };

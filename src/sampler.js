@@ -18,6 +18,6 @@ class gltfSampler
     {
         fromKeys(this, jsonSampler);
     }
-};
+}
 
 export { gltfSampler };

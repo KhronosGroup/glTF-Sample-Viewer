@@ -16,7 +16,7 @@ function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
     {
-        if (ignore && ignore.find(function(elem){return elem == k}) !== undefined)
+        if (ignore && ignore.find(function(elem){return elem == k;}) !== undefined)
         {
             continue; // skip
         }

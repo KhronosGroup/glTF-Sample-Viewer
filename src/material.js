@@ -5,9 +5,9 @@ import { fromKeys, jsToGl } from './utils.js';
 class gltfMaterial
 {
     constructor(emissiveFactor = jsToGl([0, 0, 0]), alphaMode = "OPAQUE", alphaCutoff = 0.5, doubleSided = false,
-                baseColorFactor = jsToGl([1, 1, 1, 1]), metallicFactor = 1.0, roughnessFactor = 1.0, // Metallic-Roughness
-                diffuseFactor = jsToGl([1, 1, 1, 1]), specularFactor = jsToGl([1, 1, 1]), glossinessFactor = 1.0, // Specular Glossiness
-                name = undefined)
+        baseColorFactor = jsToGl([1, 1, 1, 1]), metallicFactor = 1.0, roughnessFactor = 1.0, // Metallic-Roughness
+        diffuseFactor = jsToGl([1, 1, 1, 1]), specularFactor = jsToGl([1, 1, 1]), glossinessFactor = 1.0, // Specular Glossiness
+        name = undefined)
     {
         this.textures = []; // array of gltfTextureInfos
         this.emissiveFactor = emissiveFactor;
@@ -45,9 +45,9 @@ class gltfMaterial
     {
         switch (this.type)
         {
-            default:
-            case "SG": // fall through till we sparate shaders
-            case "MR": return "metallic-roughness.frag";
+        default:
+        case "SG": // fall through till we sparate shaders
+        case "MR": return "metallic-roughness.frag";
             //case "SG": return "specular-glossiness.frag" ;
         }
     }
@@ -286,6 +286,6 @@ class gltfMaterial
             this.properties.set("u_SpecularGlossinessUVSet", specularGlossinessTexture.texCoord);
         }
     }
-};
+}
 
 export { gltfMaterial };

@@ -48,7 +48,7 @@ class gltfDragInput
             {
                 if (entry.isDirectory)
                 {
-                    folders.push(entry)
+                    folders.push(entry);
                 }
                 else
                 {
@@ -59,7 +59,7 @@ class gltfDragInput
 
         if (folders.length === 0)
         {
-            this._processFiles(files)
+            this._processFiles(files);
         }
         else
         {
@@ -68,8 +68,8 @@ class gltfDragInput
             {
                 this._traverseFolder(folders[i], files, remaining, function(object)
                 {
-                    object._processFiles(files)
-                })
+                    object._processFiles(files);
+                });
             }
         }
     }
@@ -88,7 +88,7 @@ class gltfDragInput
                 {
                     entry.file(function(file)
                     {
-                        file.fullPath = relativePath + file.name
+                        file.fullPath = relativePath + file.name;
                         files.push(file);
                         if (--remaining === 0)
                         {
@@ -105,7 +105,7 @@ class gltfDragInput
             {
                 callback(self);
             }
-        })
+        });
     }
 
     _processFiles(files)

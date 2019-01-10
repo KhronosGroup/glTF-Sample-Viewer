@@ -4,13 +4,13 @@ import { fromKeys, jsToGl, UniformStruct } from './utils.js';
 class gltfLight
 {
     constructor(type = "directional",
-                color = [1, 1, 1],
-                intensity = 2,
-                innerConeAngle = 0,
-                outerConeAngle = Math.PI / 4,
-                range = -1, // if no range is defined in the json, this is the default the shader understands
-                name = undefined,
-                node = undefined)
+        color = [1, 1, 1],
+        intensity = 2,
+        innerConeAngle = 0,
+        outerConeAngle = Math.PI / 4,
+        range = -1, // if no range is defined in the json, this is the default the shader understands
+        name = undefined,
+        node = undefined)
     {
         this.type = type;
         this.color = color;
@@ -50,16 +50,16 @@ class gltfLight
 
         switch(this.type)
         {
-            case "spot":
-                uLight.type = Type_Spot;
-                break;
-            case "point":
-                uLight.type = Type_Point;
-                break;
-            case "directional":
-            default:
-                uLight.type = Type_Directional;
-                break;
+        case "spot":
+            uLight.type = Type_Spot;
+            break;
+        case "point":
+            uLight.type = Type_Point;
+            break;
+        case "directional":
+        default:
+            uLight.type = Type_Directional;
+            break;
         }
 
         return uLight;
