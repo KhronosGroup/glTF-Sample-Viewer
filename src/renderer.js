@@ -153,16 +153,31 @@ class gltfRenderer
         WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
     }
 
-    // render complete gltf scene with given camera
-    drawScene(gltf, scene, sortByDepth)
+    drawTransparentScene(gltf, scene, camera)
     {
-        let currentCamera = undefined;
-
-        if(this.parameters.cameraIndex !== "default")
+        let alphaScene = scene.getSceneWithAlphaMode(gltf, 'BLEND'); // get non opaque
+        if (alphaScene.nodes.length > 0)
         {
-            currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
+            // first render opaque objects, oder is not important but could improve performance 'early z rejection'
+            let opaqueScene = scene.getSceneWithAlphaMode(gltf, 'BLEND', true);
+            this.drawSceneWithCamera(gltf, opaqueScene, camera, false);
+
+            // render transparent objects ordered by distance from camera
+            this.drawSceneWithCamera(gltf, alphaScene, camera, true);
         }
         else
+        {
+            // no alpha materials, render as is
+            this.drawSceneWithCamera(gltf, scene, camera, false);
+        }
+    }
+
+    // render complete gltf scene with given camera
+    drawSceneWithCamera(gltf, scene, camera, sortByDepth)
+    {
+        let currentCamera = camera;
+
+        if(currentCamera === undefined)
         {
             currentCamera = this.defaultCamera;
         }

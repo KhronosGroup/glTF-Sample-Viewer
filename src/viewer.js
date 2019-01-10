@@ -264,21 +264,7 @@ class gltfViewer
                     // if transformations happen at runtime, we need to apply the transform hierarchy here
                     // scene.applyTransformHierarchy(gltf);
 
-                    let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
-                    if (alphaScene.nodes.length > 0)
-                    {
-                        // first render opaque objects, oder is not important but could improve performance 'early z rejection'
-                        let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
-                        self.renderer.drawScene(self.gltf, opaqueScene, false);
-
-                        // render transparent objects ordered by distance from camera
-                        self.renderer.drawScene(self.gltf, alphaScene, true);
-                    }
-                    else
-                    {
-                        // no alpha materials, render as is
-                        self.renderer.drawScene(self.gltf, scene, false);
-                    }
+                    self.renderer.drawTransparentScene(self.gltf, scene, self.userCamera);
                 }
 
                 if (self.onRendererReady)
