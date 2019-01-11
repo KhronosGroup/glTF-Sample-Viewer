@@ -57,7 +57,9 @@ class gltfRenderer
 
         this.frameBuffer = undefined;
         this.depthBuffer = undefined;
-        this.renderTargetTextures = [];
+        this.colorTargetTextures = [];
+        this.depthTargetTextures = [];
+
         this.numViews = 8;
         this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
 
@@ -89,11 +91,6 @@ class gltfRenderer
             this.frameBuffer = WebGl.context.createFramebuffer();
         }
 
-        if(this.depthBuffer === undefined)
-        {
-            this.depthBuffer = WebGl.context.createRenderbuffer();
-        }
-
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         WebGl.context.enable(WebGl.context.DEPTH_TEST);
         WebGl.context.depthFunc(WebGl.context.LEQUAL);
@@ -106,11 +103,16 @@ class gltfRenderer
         // TODO: destroy old framebuffer
 
         // destroy old textures
-        for (let i = 0; i < this.renderTargetTextures.length; i++) {
-            WebGl.context.deleteTexture(this.renderTargetTextures[i]);
+        for (let i = 0; i < this.colorTargetTextures.length; i++) {
+            WebGl.context.deleteTexture(this.colorTargetTextures[i]);
+        }
+
+        for (let i = 0; i < this.depthTargetTextures.length; i++) {
+            WebGl.context.deleteRenderbuffer(this.depthTargetTextures[i]);
         }
 
         this.renderTargetTextures = [];
+        this.depthTargetTextures = [];
 
         for (let i = 0; i < this.numViews; i++) {
             let tex = WebGl.context.createTexture();
@@ -124,11 +126,24 @@ class gltfRenderer
             WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
             WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
 
-            this.renderTargetTextures.push(tex);
-        }
+            this.colorTargetTextures.push(tex);
 
-        WebGl.context.bindRenderbuffer(WebGl.context.RENDERBUFFER, this.depthBuffer);
-        WebGl.context.renderbufferStorage(WebGl.context.RENDERBUFFER, WebGl.context.DEPTH_COMPONENT16, width, height);
+            let depth = WebGl.context.createRenderbuffer();
+            WebGl.context.bindRenderbuffer(WebGl.context.RENDERBUFFER, depth);
+            WebGl.context.renderbufferStorage(WebGl.context.RENDERBUFFER, WebGl.context.DEPTH_COMPONENT16, width, height);
+
+            //let depth = WebGl.context.createTexture();
+            //WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, depth);
+            // WebGl.context.texImage2D(WebGl.context.TEXTURE_2D, 0, WebGl.context.DEPTH_COMPONENT16,
+            //     width, height, 0,
+            //     WebGl.context.DEPTH_COMPONENT, WebGl.context.UNSIGNED_SHORT, null);
+
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.LINEAR);
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
+
+            this.depthTargetTextures.push(depth);
+        }
     }
 
     resize(width, height, updateCanvas = true)
@@ -151,11 +166,12 @@ class gltfRenderer
     // frame state
     newFrame(renderTargetIndex = "backbuffer")
     {
-        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.renderTargetTextures.length)
+        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.numViews)
         {
-            WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer);
-            WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.renderTargetTextures[renderTargetIndex], 0);
-            WebGl.context.framebufferRenderbuffer(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.RENDERBUFFER, this.depthBuffer);
+            WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer); // DRAW_FRAMEBUFFER ?
+            WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.colorTargetTextures[renderTargetIndex], 0);
+            //WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.TEXTURE_2D, this.depthTargetTextures[renderTargetIndex], 0);
+            WebGl.context.framebufferRenderbuffer(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.RENDERBUFFER, this.depthTargetTextures[renderTargetIndex]);
         }
         else
         {
@@ -268,30 +284,39 @@ class gltfRenderer
 
         WebGl.context.useProgram(this.shader.program);
 
-        let loc = this.shader.getUniformLocation("u_Views[0]");
-        if(loc)
+        // bind textures
+        let colorLoc = this.shader.getUniformLocation("u_colorViews[0]");
+        let depthLoc = this.shader.getUniformLocation("u_depthViews[0]");
+
+        let slots = [];
+        let s = 0;
+
+        if(colorLoc !== -1)
         {
-            let slots = [];
-            for (let i = 0; i < this.renderTargetTextures.length; i++)
+            for (; s < this.colorTargetTextures.length; s++)
             {
-                WebGl.context.activeTexture(WebGl.context.TEXTURE0 + i);
-                WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.renderTargetTextures[i]);
-                slots.push(i);
+                WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
+                WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.colorTargetTextures[s]);
+                slots.push(s);
             }
 
-            WebGl.context.uniform1iv(loc, slots);
+            WebGl.context.uniform1iv(colorLoc, slots);
         }
 
-        // bind textures
-        // for (let i = 0; i < this.renderTargetTextures.length; i++) {
-        //     WebGl.context.activeTexture(WebGl.context.TEXTURE0 + i);
-        //     let loc = this.shader.getUniformLocation("u_Views[" + i + "]"); // TODO resovle texture array uniform name
-        //     if(loc)
-        //     {
-        //         WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.renderTargetTextures[i]);
-        //         WebGl.context.uniform1i(loc, i);
-        //     }
-        // }
+        slots = [];
+
+        if(depthLoc !== -1)
+        {
+            for (let i = 0; i < this.depthTargetTextures.length; i++, s++)
+            {
+                WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
+                //WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
+                WebGl.context.bindRenderbuffer(WebGl.context.RENDERBUFFER, this.depthTargetTextures[i]);
+                slots.push(s);
+            }
+
+            WebGl.context.uniform1iv(depthLoc, slots);
+        }
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);
