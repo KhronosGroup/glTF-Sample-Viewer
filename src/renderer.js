@@ -58,7 +58,8 @@ class gltfRenderer
         this.frameBuffer = undefined;
         this.depthBuffer = undefined;
         this.renderTargetTextures = [];
-        this.numViews = 2;
+        this.numViews = 8;
+        this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -167,7 +168,7 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        const stepAngleRad = Math.sin(10 * Math.PI / 180); // 10 deg steps for testing
+        const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180); // 10 deg steps for testing
 
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
         let centerRot = userCamera.xRot; // dont want to change original camera
@@ -176,7 +177,6 @@ class gltfRenderer
 
         for(let i = 0; i < this.numViews; ++i)
         {
-
             if(i === (this.numViews / 2))
             {
                 userCamera.xRot += stepAngleRad; // skip center
