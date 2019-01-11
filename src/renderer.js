@@ -165,14 +165,32 @@ class gltfRenderer
         WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
     }
 
-    drawSceneMultiView(gltf, scene, camera)
+    drawSceneMultiView(gltf, scene, userCamera)
     {
-        // TODO: replicate cameras around target point
+        const stepAngleRad = Math.sin(10 * Math.PI / 180); // 10 deg steps for testing
+
+        // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
+        let centerRot = userCamera.xRot; // dont want to change original camera
+        // start position 'left' of the original view
+        userCamera.xRot -= (this.numViews / 2) * stepAngleRad;
+
         for(let i = 0; i < this.numViews; ++i)
         {
+
+            if(i === (this.numViews / 2))
+            {
+                userCamera.xRot += stepAngleRad; // skip center
+            }
+
+            userCamera.updatePosition();
             this.newFrame(i); // render target
-            this.drawScene(gltf, scene, camera);
+            this.drawScene(gltf, scene, userCamera);
+            userCamera.xRot += stepAngleRad;
         }
+
+        // reset
+        userCamera.xRot = centerRot;
+        userCamera.updatePosition();
 
         this.newFrame(); // backbuffer
 
