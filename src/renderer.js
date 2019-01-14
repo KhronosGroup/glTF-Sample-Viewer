@@ -103,18 +103,21 @@ class gltfRenderer
         // TODO: destroy old framebuffer
 
         // destroy old textures
-        for (let i = 0; i < this.colorTargetTextures.length; i++) {
+        for (let i = 0; i < this.colorTargetTextures.length; i++)
+        {
             WebGl.context.deleteTexture(this.colorTargetTextures[i]);
         }
 
-        for (let i = 0; i < this.depthTargetTextures.length; i++) {
+        for (let i = 0; i < this.depthTargetTextures.length; i++)
+        {
             WebGl.context.deleteRenderbuffer(this.depthTargetTextures[i]);
         }
 
         this.renderTargetTextures = [];
         this.depthTargetTextures = [];
 
-        for (let i = 0; i < this.numViews; i++) {
+        for (let i = 0; i < this.numViews; i++)
+        {
             let tex = WebGl.context.createTexture();
 
             WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, tex);
@@ -184,7 +187,7 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180); // 10 deg steps for testing
+        const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180);
 
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
         let centerRot = userCamera.xRot; // dont want to change original camera
