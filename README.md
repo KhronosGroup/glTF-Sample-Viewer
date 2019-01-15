@@ -7,6 +7,28 @@ This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.
 
 This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of Physically Based materials within a WebGL project that isn't tied to any external graphics libraries.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Features](#features)
+- [Usage](#usage)
+- [Setup](#setup)
+- [Debugging](#debugging)
+- [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
+- [Using Metallic-Roughness to Shade](#using-metallic-roughness-to-shade)
+  - [Environment Maps](#environment-maps)
+  - [BRDF](#brdf)
+  - [Diffuse and Specular Color](#diffuse-and-specular-color)
+  - [Final Color](#final-color)
+- [Appendix](#appendix)
+  - [Surface Reflection Ratio (F)](#surface-reflection-ratio-f)
+  - [Geometric Occlusion (G)](#geometric-occlusion-g)
+  - [Microfaced Distribution (D)](#microfaced-distribution-d)
+  - [Diffuse Term](#diffuse-term)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 Features
 --------
 
