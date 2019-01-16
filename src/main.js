@@ -2,12 +2,14 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 
-function gltf_rv(canvasId, index,
+function gltf_rv(
+    canvasId,
+    index,
+    envMap = "Courtyard of the Doge's palace",
     headless = false,
     onRendererReady = undefined,
     basePath = "",
-    initialModel = "BoomBox",
-    envMap = "Courtyard of the Doge's palace")
+    initialModel = "BoomBox")
 {
     const canvas = document.getElementById(canvasId);
     if (!canvas)
