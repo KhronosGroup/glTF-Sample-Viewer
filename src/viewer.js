@@ -346,7 +346,7 @@ class gltfViewer
     notifyLoadingEnded(path)
     {
         this.loadingTimer.stop();
-        console.log("Loading '" + path + "' took " + this.loadingTimer.seconds + " seconds", path, this.loadingTimer.seconds);
+        console.log("Loading '" + path + "' took " + this.loadingTimer.seconds + " seconds");
 
         if (!this.headless)
         {
