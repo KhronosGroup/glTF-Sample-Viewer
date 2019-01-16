@@ -1,3 +1,17 @@
+// needs to be in sync with the dictionary in rendering_parameters.js
+// TODO: better solution?
+const Environments =
+[
+    "Papermill Ruins E",
+    "Papermill Ruins E (LDR)",
+    "Field",
+    "Courtyard of the Doge's palace",
+    "Pisa courtyard nearing sunset",
+    "Footprint Court",
+    "Helipad GoldenHour",
+    "Dining room of the Ennis-Brown House"
+];
+
 const { app, BrowserWindow } = require('electron');
 
 // Electron app based on Don McCurdy's glTF viewer.
@@ -94,6 +108,15 @@ parser.addArgument(
         defaultValue: 1.0,
         type: 'float',
         help: "The size of the ortographic camera in y direction."
+    }
+);
+parser.addArgument(
+    '--environment',
+    {
+        defaultValue: "Courtyard of the Doge's palace",
+        type: 'string',
+        help: 'The environment map to use for image based lighting.',
+        choices: Environments
     }
 );
 parser.addArgument(
