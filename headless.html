@@ -29,7 +29,12 @@
 
     function startRenderer()
     {
-        let viewer = gltf_rv.gltf_rv('canvas', 'assets/models/2.0/model-index.json', true, rendererReady);
+        let viewer = gltf_rv.gltf_rv(
+            'canvas',
+            'assets/models/2.0/model-index.json',
+            "Courtyard of the Doge's palace",
+            true,
+            rendererReady);
 
         var gltfPath = path.parse(args.gltf_path)
 
