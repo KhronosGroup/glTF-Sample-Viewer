@@ -226,7 +226,11 @@ class gltfViewer
 
         this.renderingParameters.cameraIndex = "default";
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
-        this.gui.update(gltf);
+
+        if (this.gui !== undefined)
+        {
+            this.gui.update(gltf);
+        }
 
         this.gltf = gltf;
         this.currentlyRendering = true;
