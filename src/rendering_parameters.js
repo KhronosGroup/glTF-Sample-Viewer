@@ -1,5 +1,7 @@
 import { ImageMimeType } from "./image";
 
+const UserCameraIndex = "orbit camera";
+
 class gltfRenderingParameters
 {
     constructor(
@@ -23,7 +25,12 @@ class gltfRenderingParameters
         this.useShaderLoD = useShaderLoD;
         this.debugOutput = debugOutput;
         this.sceneIndex = 0;
-        this.cameraIndex = "default";
+        this.cameraIndex = UserCameraIndex;
+    }
+
+    userCameraActive()
+    {
+        return this.cameraIndex === UserCameraIndex;
     }
 }
 
@@ -59,4 +66,4 @@ const Environments =
     "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 10, type: ImageMimeType.HDR }
 };
 
-export { gltfRenderingParameters, Environments, ToneMaps, DebugOutput };
+export { UserCameraIndex, gltfRenderingParameters, Environments, ToneMaps, DebugOutput };

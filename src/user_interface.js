@@ -1,4 +1,4 @@
-import { Environments, ToneMaps, DebugOutput } from './rendering_parameters.js';
+import { UserCameraIndex, Environments, ToneMaps, DebugOutput } from './rendering_parameters.js';
 
 class gltfUserInterface
 {
@@ -90,7 +90,7 @@ class gltfUserInterface
 
     initializeCameraSelection(cameras)
     {
-        const camerasWithUserCamera = [ "default" ].concat(cameras);
+        const camerasWithUserCamera = [ UserCameraIndex ].concat(cameras);
         this.cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
     }
 
