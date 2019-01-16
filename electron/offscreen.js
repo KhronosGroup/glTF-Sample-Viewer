@@ -43,8 +43,7 @@ function parseArguments(args)
     parser.addArgument(
         ['--camera-index'],
         {
-            defaultValue: ["orbit camera"],
-            type: 'int',
+            defaultValue: "orbit camera",
             help: "Index of the glTF camera to use (instead of the orbit camera)."
         }
     );
