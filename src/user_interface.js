@@ -90,7 +90,7 @@ class gltfUserInterface
 
     initializeCameraSelection(cameras)
     {
-        const camerasWithUserCamera = [ "default" ].concat(cameras);
+        const camerasWithUserCamera = [ "orbit camera" ].concat(cameras);
         this.cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
     }
 

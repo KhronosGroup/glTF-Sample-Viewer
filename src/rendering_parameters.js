@@ -23,7 +23,7 @@ class gltfRenderingParameters
         this.useShaderLoD = useShaderLoD;
         this.debugOutput = debugOutput;
         this.sceneIndex = 0;
-        this.cameraIndex = "default";
+        this.cameraIndex = "orbit camera";
     }
 }
 
