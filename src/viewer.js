@@ -241,7 +241,7 @@ class gltfViewer
 
     render()
     {
-        let self = this;
+        const self = this;
         function renderFrame()
         {
             if (self.stats !== undefined)
