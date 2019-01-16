@@ -39,27 +39,30 @@ parser.addArgument(
     ['--eye-position'],
     {
         defaultValue: [0.0, 0.0, 1.0],
+        metavar: ['X', 'Y', 'Z'],
         nargs: 3,
         type: 'float',
-        help: "The coordinates of the eye (camera)."
+        help: "The coordinates of the eye (camera)"
     }
 );
 parser.addArgument(
     ['--target-position'],
     {
         defaultValue: [0.0, 0.0, 0.0],
+        metavar: ['X', 'Y', 'Z'],
         nargs: 3,
         type: 'float',
-        help: "The coordinates of the eye focus point."
+        help: "The coordinates of the eye focus point"
     }
 );
 parser.addArgument(
     '--up',
     {
         defaultValue: [0.0, 1.0, 0.0],
+        metavar: ['X', 'Y', 'Z'],
         nargs: 3,
         type: 'float',
-        help: "The up direction vector."
+        help: "The up direction vector"
     }
 );
 parser.addArgument(
@@ -91,7 +94,7 @@ parser.addArgument(
     {
         defaultValue: 45.0,
         type: 'float',
-        help: "The vertical field of view in degrees."
+        help: "The vertical field of view in degrees"
     }
 );
 parser.addArgument(
@@ -99,7 +102,7 @@ parser.addArgument(
     {
         defaultValue: 1.0,
         type: 'float',
-        help: "The size of the ortographic camera in x direction."
+        help: "The size of the orthographic camera in x direction"
     }
 );
 parser.addArgument(
@@ -107,7 +110,7 @@ parser.addArgument(
     {
         defaultValue: 1.0,
         type: 'float',
-        help: "The size of the ortographic camera in y direction."
+        help: "The size of the orthographic camera in y direction"
     }
 );
 parser.addArgument(
@@ -115,7 +118,7 @@ parser.addArgument(
     {
         defaultValue: "Courtyard of the Doge's palace",
         type: 'string',
-        help: 'The environment map to use for image based lighting.',
+        help: 'The environment map to use for image based lighting',
         choices: Environments
     }
 );
@@ -123,7 +126,7 @@ parser.addArgument(
     'gltf_path',
     {
         nargs: "?",
-        help: "The path of the glTF file."
+        help: "The path of the glTF file"
     }
 );
 args = parser.parseArgs(args);
