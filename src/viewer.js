@@ -170,7 +170,7 @@ class gltfViewer
         const isGlb = getIsGlb(gltfFile);
 
         const self = this;
-        axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
+        return axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
         {
             let json = response.data;
             let buffers = undefined;
@@ -181,7 +181,7 @@ class gltfViewer
                 json = glb.json;
                 buffers = glb.buffers;
             }
-            self.createGltf(gltfFile, json, buffers);
+            return self.createGltf(gltfFile, json, buffers);
         }).catch(function(error)
         {
             console.error("glTF " + error);
@@ -210,7 +210,7 @@ class gltfViewer
 
         const self = this;
         const imageProcessor = new gltfImageProcessor();
-        Promise.all(assetPromises)
+        return Promise.all(assetPromises)
             .then(() => imageProcessor.processImages(gltf))
             .then(() => self.startRendering(gltf));
     }
