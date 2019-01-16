@@ -42,7 +42,7 @@ class gltfImage
         this.image = this.mimeType === ImageMimeType.HDR ? new HDRImage() : new Image();
         this.image.crossOrigin = "";
         const self = this;
-        const promise = new Promise(function(resolve, reject)
+        const promise = new Promise(function(resolve)
         {
             self.image.onload = resolve;
             self.image.onerror = resolve;

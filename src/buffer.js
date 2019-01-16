@@ -25,7 +25,7 @@ class gltfBuffer
         }
 
         const self = this;
-        return new Promise(function(resolve, reject)
+        return new Promise(function(resolve)
         {
             if (!self.setBufferFromFiles(additionalFiles, resolve) &&
                 !self.sefBufferFromUri(gltf, resolve))

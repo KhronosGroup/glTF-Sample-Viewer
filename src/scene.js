@@ -1,4 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 class gltfScene
 {
@@ -42,7 +42,7 @@ class gltfScene
     getSceneWithAlphaMode(gltf, mode = 'OPAQUE', not = false)
     {
         let Nodes = [];
-        function AddNode(nodeIndex)
+        function addNode(nodeIndex)
         {
             let node = gltf.nodes[nodeIndex];
             let mesh = gltf.meshes[node.mesh];
@@ -65,13 +65,13 @@ class gltfScene
             // recurse into children
             for(let c of node.children)
             {
-                AddNode(c);
+                addNode(c);
             }
         }
 
         for (let n of this.nodes)
         {
-            AddNode(n);
+            addNode(n);
         }
 
         return new gltfScene(Nodes, this.name);
