@@ -41,6 +41,14 @@ function parseArguments(args)
     });
 
     parser.addArgument(
+        ['--camera-index'],
+        {
+            defaultValue: ["orbit camera"],
+            type: 'int',
+            help: "Index of the glTF camera to use (instead of the orbit camera)."
+        }
+    );
+    parser.addArgument(
         ['--eye-position'],
         {
             defaultValue: [0.0, 0.0, 1.0],
