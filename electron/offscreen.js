@@ -2,9 +2,8 @@ const { app, BrowserWindow } = require('electron');
 
 // Electron app based on Don McCurdy's glTF viewer.
 
-const url  = require('url');
+const url = require('url');
 const path = require('path');
-const open = require('open');
 const fs = require('fs');
 
 const defaultModel = "assets/models/2.0/BoomBox/glTF/BoomBox.gltf";
@@ -13,7 +12,7 @@ const outputFile = "output.png";
 let mainWindow;
 
 let argv = process.argv;
-let args = argv.lastIndexOf('--') !== -1 ? argv.slice(argv.lastIndexOf('--')+1) : [];
+let args = argv.lastIndexOf('--') !== -1 ? argv.slice(argv.lastIndexOf('--') + 1) : [];
 
 let ArgumentParser = require('argparse').ArgumentParser;
 let parser = new ArgumentParser({
@@ -23,32 +22,32 @@ let parser = new ArgumentParser({
 });
 
 parser.addArgument(
-    [ '--eye-position' ],
+    ['--eye-position'],
     {
-        defaultValue: [0.0,0.0,1.0],
+        defaultValue: [0.0, 0.0, 1.0],
         nargs: 3,
         type: 'float',
         help: "The coordinates of the eye (camera)."
     }
 );
 parser.addArgument(
-[ '--target-position' ],
-{
-    defaultValue: [0.0,0.0,0.0],
-    nargs: 3,
-    type: 'float',
-    help: "The coordinates of the eye focus point."
-}
+    ['--target-position'],
+    {
+        defaultValue: [0.0, 0.0, 0.0],
+        nargs: 3,
+        type: 'float',
+        help: "The coordinates of the eye focus point."
+    }
 );
 parser.addArgument(
     '--up',
     {
-        defaultValue: [0.0,1.0,0.0],
+        defaultValue: [0.0, 1.0, 0.0],
         nargs: 3,
         type: 'float',
         help: "The up direction vector."
     }
-)
+);
 parser.addArgument(
     '--projection',
     {
@@ -56,7 +55,7 @@ parser.addArgument(
         help: "The projection mode of the camera",
         choices: ["perspective", "ortographic"]
     }
-)
+);
 parser.addArgument(
     '--znear',
     {
@@ -64,7 +63,7 @@ parser.addArgument(
         type: 'float',
         help: "The near clip plane"
     }
-)
+);
 parser.addArgument(
     '--zfar',
     {
@@ -72,7 +71,7 @@ parser.addArgument(
         type: 'float',
         help: "The far clip plane"
     }
-)
+);
 parser.addArgument(
     '--yfov',
     {
@@ -80,7 +79,7 @@ parser.addArgument(
         type: 'float',
         help: "The vertical field of view in degrees."
     }
-)
+);
 parser.addArgument(
     '--xmag',
     {
@@ -88,7 +87,7 @@ parser.addArgument(
         type: 'float',
         help: "The size of the ortographic camera in x direction."
     }
-)
+);
 parser.addArgument(
     '--ymag',
     {
@@ -96,14 +95,14 @@ parser.addArgument(
         type: 'float',
         help: "The size of the ortographic camera in y direction."
     }
-)
+);
 parser.addArgument(
     'gltf_path',
     {
         nargs: "?",
         help: "The path of the glTF file."
     }
-)
+);
 args = parser.parseArgs(args);
 
 if (args.gltf_path === null)
@@ -116,10 +115,12 @@ if (args.gltf_path === null)
     args.gltf_path = defaultModel;
 }
 
-global.sharedObject = {args: args}
+global.sharedObject = { args: args };
 
-function createWindow () {
-    mainWindow = new BrowserWindow({ width: 1920, height: 1080,
+function createWindow()
+{
+    mainWindow = new BrowserWindow({
+        width: 1920, height: 1080,
         //show: false,
         //frame: false,
         webPreferences: {
@@ -140,22 +141,25 @@ function createWindow () {
     let writeLock = false;
 
     // In main process.
-    const {ipcMain} = require('electron')
-    ipcMain.on('rendererReady', (event) => {
+    const { ipcMain } = require('electron');
+    ipcMain.on('rendererReady', () =>
+    {
         if (rendererReady)
             return;
 
         rendererReady = true;
 
-        mainWindow.webContents.on('paint', (event, dirty, image) => {
+        mainWindow.webContents.on('paint', (event, dirty, image) =>
+        {
             if (writeLock)
                 return;
 
             writeLock = true;
 
-            lastImage = image;
+            const lastImage = image;
 
-            fs.writeFile(outputFile, lastImage.toPNG(), (err) => {
+            fs.writeFile(outputFile, lastImage.toPNG(), (err) =>
+            {
                 if (err) throw err;
                 console.log("The file has been saved to '%s'", outputFile);
 
