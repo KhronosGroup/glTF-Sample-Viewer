@@ -103,7 +103,7 @@ class gltfRenderer
     {
         let currentCamera = undefined;
 
-        if(this.parameters.cameraIndex !== "orbit camera")
+        if(!this.parameters.userCameraActive())
         {
             currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
         }

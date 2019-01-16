@@ -4,7 +4,7 @@ import { glTF } from './gltf.js';
 import { gltfLoader } from './loader.js';
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
-import { gltfRenderingParameters, Environments } from './rendering_parameters.js';
+import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer } from './utils.js';
@@ -84,7 +84,7 @@ class gltfViewer
         yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
         xmag = 1.0, ymag = 1.0)
     {
-        this.renderingParameters.cameraIndex = "orbit camera"; // force use default camera
+        this.renderingParameters.cameraIndex = UserCameraIndex; // force use default camera
 
         this.userCamera.target = jsToGl(target);
         this.userCamera.up = jsToGl(up);
@@ -103,28 +103,28 @@ class gltfViewer
         const self = this;
         input.onRotate = (deltaX, deltaY) =>
         {
-            if (self.renderingParameters.cameraIndex === "orbit camera")
+            if (this.renderingParameters.userCameraActive())
             {
                 this.userCamera.rotate(deltaX, deltaY);
             }
         };
         input.onPan = (deltaX, deltaY) =>
         {
-            if (self.renderingParameters.cameraIndex === "orbit camera")
+            if (this.renderingParameters.userCameraActive())
             {
                 this.userCamera.pan(deltaX, deltaY);
             }
         };
         input.onZoom = (delta) =>
         {
-            if (self.renderingParameters.cameraIndex === "orbit camera")
+            if (this.renderingParameters.userCameraActive())
             {
                 this.userCamera.zoomIn(delta);
             }
         };
         input.onResetCamera = () =>
         {
-            if (self.renderingParameters.cameraIndex === "orbit camera")
+            if (this.renderingParameters.userCameraActive())
             {
                 self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
             }
@@ -224,7 +224,7 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
-        this.renderingParameters.cameraIndex = "orbit camera";
+        this.renderingParameters.cameraIndex = UserCameraIndex;
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
 
         if (this.gui !== undefined)
@@ -309,7 +309,7 @@ class gltfViewer
         scene.applyTransformHierarchy(gltf);
 
         const transform = mat4.create();
-        if (this.renderingParameters.cameraIndex === "orbit camera")
+        if (this.renderingParameters.userCameraActive())
         {
             const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
             mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
