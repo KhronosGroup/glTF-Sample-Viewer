@@ -40,13 +40,10 @@ float sampleDepth(int Index, vec2 uv)
 
 void main()
 {
-    //g_finalColor = mix(sampleView(0, v_UV * 0.25), sampleView(1, v_UV), 0.5);
-    //g_finalColor = sampleView(0, v_UV);
-
-    //g_finalColor = vec4(sampleDepth(0, v_UV), 0, 0 ,0);
 
     for(int i = 0; i < NUM_VIEWS; ++i)
     {
+        //g_finalColor += vec4(texture(u_depthViews[i], v_UV).x);
         g_finalColor += texture(u_colorViews[i], v_UV) / (float(NUM_VIEWS));
         //g_finalColor += texture(u_colorViews[i], v_UV) / (float(NUM_VIEWS) * 1000.f);
     }

@@ -60,7 +60,7 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
-        this.numViews = 8;
+        this.numViews = 1;
         this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
 
         this.viewMatrix = mat4.create();
@@ -100,8 +100,6 @@ class gltfRenderer
 
     initRenderTargets(width, height)
     {
-        // TODO: destroy old framebuffer
-
         // destroy old textures
         for (let i = 0; i < this.colorTargetTextures.length; i++)
         {
@@ -110,12 +108,13 @@ class gltfRenderer
 
         for (let i = 0; i < this.depthTargetTextures.length; i++)
         {
-            WebGl.context.deleteRenderbuffer(this.depthTargetTextures[i]);
+            WebGl.context.deleteTexture(this.depthTargetTextures[i]);
         }
 
-        this.renderTargetTextures = [];
+        this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
+        // create color and depth targets with resolution
         for (let i = 0; i < this.numViews; i++)
         {
             let tex = WebGl.context.createTexture();
@@ -131,17 +130,14 @@ class gltfRenderer
 
             this.colorTargetTextures.push(tex);
 
-            let depth = WebGl.context.createRenderbuffer();
-            WebGl.context.bindRenderbuffer(WebGl.context.RENDERBUFFER, depth);
-            WebGl.context.renderbufferStorage(WebGl.context.RENDERBUFFER, WebGl.context.DEPTH_COMPONENT16, width, height);
+            let depth = WebGl.context.createTexture();
+            WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, depth);
+            WebGl.context.texImage2D(WebGl.context.TEXTURE_2D, 0, WebGl.context.DEPTH_COMPONENT24,
+                width, height, 0,
+                WebGl.context.DEPTH_COMPONENT, WebGl.context.UNSIGNED_INT, null);
 
-            //let depth = WebGl.context.createTexture();
-            //WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, depth);
-            // WebGl.context.texImage2D(WebGl.context.TEXTURE_2D, 0, WebGl.context.DEPTH_COMPONENT16,
-            //     width, height, 0,
-            //     WebGl.context.DEPTH_COMPONENT, WebGl.context.UNSIGNED_SHORT, null);
-
-            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.LINEAR);
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.NEAREST);
+            WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_MAG_FILTER, WebGl.context.NEAREST);
             WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
             WebGl.context.texParameteri(WebGl.context.TEXTURE_2D, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
 
@@ -173,8 +169,7 @@ class gltfRenderer
         {
             WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer); // DRAW_FRAMEBUFFER ?
             WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.colorTargetTextures[renderTargetIndex], 0);
-            //WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.TEXTURE_2D, this.depthTargetTextures[renderTargetIndex], 0);
-            WebGl.context.framebufferRenderbuffer(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.RENDERBUFFER, this.depthTargetTextures[renderTargetIndex]);
+            WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.DEPTH_ATTACHMENT, WebGl.context.TEXTURE_2D, this.depthTargetTextures[renderTargetIndex], 0);
         }
         else
         {
@@ -196,7 +191,7 @@ class gltfRenderer
 
         for(let i = 0; i < this.numViews; ++i)
         {
-            if(i === (this.numViews / 2))
+            if(i === (this.numViews / 2) && this.numViews !== 1)
             {
                 userCamera.xRot += stepAngleRad; // skip center
             }
@@ -206,6 +201,8 @@ class gltfRenderer
             this.drawScene(gltf, scene, userCamera);
             userCamera.xRot += stepAngleRad;
         }
+
+        // TODO: also create more rows / vertical views
 
         // reset
         userCamera.xRot = centerRot;
@@ -313,8 +310,7 @@ class gltfRenderer
             for (let i = 0; i < this.depthTargetTextures.length; i++, s++)
             {
                 WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
-                //WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
-                WebGl.context.bindRenderbuffer(WebGl.context.RENDERBUFFER, this.depthTargetTextures[i]);
+                WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
                 slots.push(s);
             }
 
