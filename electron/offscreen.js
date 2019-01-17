@@ -30,12 +30,22 @@ const ArgumentParser = require('argparse').ArgumentParser;
 const parsedArgs = parseArguments(args);
 global.sharedObject = { args: parsedArgs };
 
-app.on('ready', () => createWindow(1024, 1024));
+app.on('ready', () => createWindow(parsedArgs.dimensions[0], parsedArgs.dimensions[1]));
 
 function parseArguments(args)
 {
     const parser = new ArgumentParser();
 
+    parser.addArgument(
+        ["--dimensions"],
+        {
+            defaultValue: [1920, 1080],
+            metavar: ["WIDTH", "HEIGHT"],
+            nargs: 2,
+            type: "int",
+            help: "Dimensions of the output image"
+        }
+    );
     parser.addArgument(
         ['--camera-index'],
         {
