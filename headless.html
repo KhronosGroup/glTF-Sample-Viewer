@@ -41,7 +41,16 @@
         viewer.loadFromPath("/" + gltfPath.base, gltfPath.dir).then(() =>
         {
             const yfov_rad = args.yfov * Math.PI / 180.0;
-            viewer.setCamera(args.eye_position, args.target_position, args.up, args.projection, args.znear, args.zfar, yfov_rad, args.xmag, args.ymag);
+            viewer.setCamera(
+                args.eye_position,
+                args.target_position,
+                args.up,
+                args.projection,
+                args.znear,
+                args.zfar,
+                yfov_rad,
+                args.size[0],
+                args.size[1]);
             viewer.renderingParameters.cameraIndex = args.camera_index;
         });
     }

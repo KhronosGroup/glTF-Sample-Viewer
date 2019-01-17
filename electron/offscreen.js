@@ -30,16 +30,29 @@ const ArgumentParser = require('argparse').ArgumentParser;
 const parsedArgs = parseArguments(args);
 global.sharedObject = { args: parsedArgs };
 
-app.on('ready', createWindow);
+app.on('ready', () => createWindow(parsedArgs.dimensions[0], parsedArgs.dimensions[1]));
 
 function parseArguments(args)
 {
-    const parser = new ArgumentParser({
-        version: '0.0.1',
-        addHelp: true,
-        description: 'glTF Reference Viewer'
-    });
+    const parser = new ArgumentParser();
 
+    parser.addArgument(
+        'gltf_path',
+        {
+            nargs: "?",
+            help: "The path of the glTF file"
+        }
+    );
+    parser.addArgument(
+        ["--dimensions"],
+        {
+            defaultValue: [1920, 1080],
+            metavar: ["WIDTH", "HEIGHT"],
+            nargs: 2,
+            type: "int",
+            help: "Dimensions of the output image"
+        }
+    );
     parser.addArgument(
         ['--camera-index'],
         {
@@ -110,19 +123,13 @@ function parseArguments(args)
         }
     );
     parser.addArgument(
-        '--xmag',
+        '--size',
         {
-            defaultValue: 1.0,
+            defaultValue: [1, 1],
+            metavar: ['X', 'Y'],
+            nargs: 2,
             type: 'float',
-            help: "The size of the orthographic camera in x direction"
-        }
-    );
-    parser.addArgument(
-        '--ymag',
-        {
-            defaultValue: 1.0,
-            type: 'float',
-            help: "The size of the orthographic camera in y direction"
+            help: "The size of the orthographic camera"
         }
     );
     parser.addArgument(
@@ -132,13 +139,6 @@ function parseArguments(args)
             type: 'string',
             help: 'The environment map to use for image based lighting',
             choices: Environments
-        }
-    );
-    parser.addArgument(
-        'gltf_path',
-        {
-            nargs: "?",
-            help: "The path of the glTF file"
         }
     );
 
@@ -157,10 +157,10 @@ function parseArguments(args)
     return parsedArgs;
 }
 
-function createWindow()
+function createWindow(width, height)
 {
     const mainWindow = new BrowserWindow({
-        width: 1920, height: 1080,
+        width: width, height: height,
         show: false,
         frame: false,
         webPreferences: {

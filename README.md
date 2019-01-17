@@ -63,23 +63,41 @@ Usage
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
 
-> **Controls**
->
-> `click + drag` : Rotate model
->
-> `scroll` : Zoom camera
->
-> `GUI` : Use to change models
+**Controls**
 
-Following section describes the usage in short:
+`click + drag` : Rotate model
 
-> **Usage**
->
-> * Choose one of the glTF models in the selction list
->
-> or
->
-> * Drag and drop glTF files into viewer
+`scroll` : Zoom camera
+
+`GUI` : Use to change models
+
+**Usage**
+
+* Choose one of the glTF models in the selction list
+
+or
+
+* Drag and drop glTF files into viewer
+
+**Offline / Headless Rendering**
+
+**NOTE:** The dimensions of the rendered image are limited by the (virtual) desktop size.
+
+Requirements
+  * [NodeJS](https://nodejs.org)
+  * [Electron](https://electronjs.org/) (Installed automatically)
+
+Configure environment
+- ``npm install`` (also installs Electron)
+- ``npm run build`` (“compile” the code)
+
+Run
+- ``npm run start-offscreen -- -- -h`` for a list of available options
+
+Example
+- ``npm run start-offscreen -- -- assets\models\2.0\FlightHelmet\glTF\FlightHelmet.gltf``
+
+After execution, the screenshot is stored as ``output.png`` on the file system.
 
 Setup
 -----
@@ -109,25 +127,6 @@ Debugging
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
 * Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
 * `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit.
-
-For offline rendering usage, please follow these instructions:
-
-**Offline / Headless Rendering**
-
-Requirements
-  * [NodeJS](https://nodejs.org)
-  * [Electron](https://electronjs.org/) (Installed automatically)
-
-Configure environment
-- ``npm install`` (also installs Electron)
-
-Run
-- ``npm run start-offscreen -- -- -h`` for a list of available options
-
-Example
-- ``npm run start-offscreen -- -- assets\models\2.0\FlightHelmet\glTF\FlightHelmet.gltf``
-
-After execution, the screenshot is stored as ``output.png`` on the file system.
 
 **VS Code**
 
