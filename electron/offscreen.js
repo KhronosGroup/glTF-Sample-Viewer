@@ -30,7 +30,7 @@ const ArgumentParser = require('argparse').ArgumentParser;
 const parsedArgs = parseArguments(args);
 global.sharedObject = { args: parsedArgs };
 
-app.on('ready', createWindow);
+app.on('ready', () => createWindow(1024, 1024));
 
 function parseArguments(args)
 {
@@ -153,10 +153,10 @@ function parseArguments(args)
     return parsedArgs;
 }
 
-function createWindow()
+function createWindow(width, height)
 {
     const mainWindow = new BrowserWindow({
-        width: 1920, height: 1080,
+        width: width, height: height,
         show: false,
         frame: false,
         webPreferences: {
