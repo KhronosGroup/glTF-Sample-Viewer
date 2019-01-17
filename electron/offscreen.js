@@ -34,11 +34,7 @@ app.on('ready', createWindow);
 
 function parseArguments(args)
 {
-    const parser = new ArgumentParser({
-        version: '0.0.1',
-        addHelp: true,
-        description: 'glTF Reference Viewer'
-    });
+    const parser = new ArgumentParser();
 
     parser.addArgument(
         ['--camera-index'],
