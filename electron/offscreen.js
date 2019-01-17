@@ -37,6 +37,13 @@ function parseArguments(args)
     const parser = new ArgumentParser();
 
     parser.addArgument(
+        'gltf_path',
+        {
+            nargs: "?",
+            help: "The path of the glTF file"
+        }
+    );
+    parser.addArgument(
         ["--dimensions"],
         {
             defaultValue: [1920, 1080],
@@ -116,19 +123,13 @@ function parseArguments(args)
         }
     );
     parser.addArgument(
-        '--xmag',
+        '--size',
         {
-            defaultValue: 1.0,
+            defaultValue: [1, 1],
+            metavar: ['X', 'Y'],
+            nargs: 2,
             type: 'float',
-            help: "The size of the orthographic camera in x direction"
-        }
-    );
-    parser.addArgument(
-        '--ymag',
-        {
-            defaultValue: 1.0,
-            type: 'float',
-            help: "The size of the orthographic camera in y direction"
+            help: "The size of the orthographic camera"
         }
     );
     parser.addArgument(
@@ -138,13 +139,6 @@ function parseArguments(args)
             type: 'string',
             help: 'The environment map to use for image based lighting',
             choices: Environments
-        }
-    );
-    parser.addArgument(
-        'gltf_path',
-        {
-            nargs: "?",
-            help: "The path of the glTF file"
         }
     );
 
