@@ -39,6 +39,23 @@ function initGlForMembers(gltfObj, gltf)
     }
 }
 
+function objectsFromJsons(jsonObjects, GltfType)
+{
+    if (jsonObjects === undefined)
+    {
+        return [];
+    }
+
+    const objects = [];
+    for (const jsonObject of jsonObjects)
+    {
+        const object = new GltfType();
+        object.fromJson(jsonObject);
+        objects.push(object);
+    }
+    return objects;
+}
+
 function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
@@ -155,6 +172,7 @@ class Timer
 
 export {
     jsToGl,
+    objectsFromJsons,
     fromKeys,
     fromParams,
     stringHash,
