@@ -1,9 +1,11 @@
-import { fromKeys, initGlForMembers } from './utils.js';
+import { initGlForMembers } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfBufferView
+class gltfBufferView extends GltfObject
 {
     constructor()
     {
+        super();
         this.buffer = undefined;
         this.byteOffset = 0;
         this.byteLength = undefined;
@@ -15,11 +17,6 @@ class gltfBufferView
     initGl(gltf)
     {
         initGlForMembers(this, gltf);
-    }
-
-    fromJson(jsonBufferView)
-    {
-        fromKeys(this, jsonBufferView);
     }
 }
 

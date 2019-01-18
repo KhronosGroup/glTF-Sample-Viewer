@@ -1,19 +1,15 @@
-import { fromKeys } from "./utils";
+import { GltfObject } from "./gltf_object";
 
-class gltfAsset
+class gltfAsset extends GltfObject
 {
     constructor()
     {
+        super();
         this.copyright = undefined;
         this.generator = undefined;
         this.version = undefined;
         this.minVersion = undefined;
     }
-
-    fromJson(jsonAsset)
-    {
-        fromKeys(this, jsonAsset);
-    }
 }
 
-export { gltfAsset };
+export { gltfAsset as gltfAsset };

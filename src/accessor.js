@@ -1,10 +1,12 @@
-import { fromKeys, initGlForMembers } from './utils.js';
+import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfAccessor
+class gltfAccessor extends GltfObject
 {
     constructor()
     {
+        super();
         this.bufferView = undefined;
         this.byteOffset = 0;
         this.componentType = undefined;
@@ -24,11 +26,6 @@ class gltfAccessor
     initGl(gltf)
     {
         initGlForMembers(this, gltf);
-    }
-
-    fromJson(jsonAccessor)
-    {
-        fromKeys(this, jsonAccessor);
     }
 
     getTypedView(gltf)

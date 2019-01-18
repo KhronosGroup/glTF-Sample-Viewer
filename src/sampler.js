@@ -1,7 +1,8 @@
-import { fromKeys, initGlForMembers } from './utils.js';
+import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfSampler
+class gltfSampler extends GltfObject
 {
     constructor(
         magFilter = WebGl.context.LINEAR,
@@ -9,6 +10,7 @@ class gltfSampler
         wrapS = WebGl.context.REPEAT,
         wrapT = WebGl.context.REPEAT)
     {
+        super();
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         this.wrapS = wrapS;
@@ -19,11 +21,6 @@ class gltfSampler
     initGl(gltf)
     {
         initGlForMembers(this, gltf);
-    }
-
-    fromJson(jsonSampler)
-    {
-        fromKeys(this, jsonSampler);
     }
 }
 
