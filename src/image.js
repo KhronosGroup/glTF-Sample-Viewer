@@ -1,5 +1,5 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
@@ -19,6 +19,11 @@ class gltfImage
         this.name = name;
         this.type = type; // nonstandard
         this.miplevel = miplevel; // nonstandard
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonImage, path = "")
@@ -118,3 +123,4 @@ class gltfImage
 }
 
 export { gltfImage, ImageMimeType };
+

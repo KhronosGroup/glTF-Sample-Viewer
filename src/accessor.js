@@ -1,4 +1,4 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 
 class gltfAccessor
@@ -106,6 +106,11 @@ class gltfAccessor
         }
 
         return this.typedView;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonAccessor)

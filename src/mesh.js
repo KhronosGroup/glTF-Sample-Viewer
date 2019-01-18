@@ -1,4 +1,5 @@
 import { gltfPrimitive } from './primitive.js';
+import { initGlForMembers } from './utils.js';
 
 class gltfMesh
 {
@@ -6,6 +7,11 @@ class gltfMesh
     {
         this.primitives = primitives;
         this.name = name;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonMesh, defaultMaterial, gltf)

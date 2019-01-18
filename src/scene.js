@@ -1,4 +1,5 @@
 import { mat4 } from 'gl-matrix';
+import { initGlForMembers } from './utils';
 
 class gltfScene
 {
@@ -6,6 +7,11 @@ class gltfScene
     {
         this.nodes = nodes;
         this.name = name;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonScene)

@@ -1,4 +1,4 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 
 class gltfBufferView
 {
@@ -12,6 +12,11 @@ class gltfBufferView
         this.byteStride = byteStride;
         this.target = target;
         this.name = name;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonBufferView)

@@ -12,6 +12,33 @@ function jsToGl(array)
     return tensor;
 }
 
+function initGlForMembers(gltfObj)
+{
+    for (const name of Object.keys(gltfObj))
+    {
+        const member = gltfObj[name];
+
+        if (member === undefined)
+        {
+            continue;
+        }
+        if (member.initGl !== undefined)
+        {
+            member.initGl();
+        }
+        if (Array.isArray(member))
+        {
+            for (const element of member)
+            {
+                if (element.initGl !== undefined)
+                {
+                    element.initGl();
+                }
+            }
+        }
+    }
+}
+
 function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
@@ -141,5 +168,6 @@ export {
     getContainingFolder,
     combinePaths,
     UniformStruct,
-    Timer
+    Timer,
+    initGlForMembers
 };

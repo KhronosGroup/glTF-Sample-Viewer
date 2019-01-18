@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { jsToGl } from './utils.js';
+import { jsToGl, initGlForMembers } from './utils.js';
 
 // contain:
 // transform
@@ -28,6 +28,11 @@ class gltfNode
         this.normalMatrix = mat4.create();
         this.light = undefined;
         this.changed = true;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonNode)

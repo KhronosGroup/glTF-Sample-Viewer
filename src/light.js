@@ -1,5 +1,5 @@
 import { mat4, vec2, vec3, quat } from 'gl-matrix';
-import { fromKeys, jsToGl, UniformStruct } from './utils.js';
+import { fromKeys, jsToGl, UniformStruct, initGlForMembers } from './utils.js';
 
 class gltfLight
 {
@@ -20,6 +20,11 @@ class gltfLight
         this.range = range;
         this.name = name;
         this.node = node; // non-standard
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonLight)

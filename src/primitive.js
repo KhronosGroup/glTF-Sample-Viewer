@@ -1,4 +1,4 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 
 class gltfPrimitive
@@ -11,6 +11,11 @@ class gltfPrimitive
         this.mode = mode;
         this.defines = [];
         this.skip = true;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonPrimitive, defaultMaterial, gltf)

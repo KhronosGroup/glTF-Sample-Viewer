@@ -1,5 +1,5 @@
 import axios from '../libs/axios.min.js';
-import { fromKeys, getContainingFolder } from './utils.js';
+import { fromKeys, getContainingFolder, initGlForMembers } from './utils.js';
 
 class gltfBuffer
 {
@@ -9,6 +9,11 @@ class gltfBuffer
         this.byteLength = byteLength;
         this.name = name;
         this.buffer = undefined; // raw data blob
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonBuffer)

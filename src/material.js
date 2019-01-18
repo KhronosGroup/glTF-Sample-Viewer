@@ -1,6 +1,6 @@
 import { mat3 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
-import { fromKeys, jsToGl } from './utils.js';
+import { fromKeys, jsToGl, initGlForMembers } from './utils.js';
 
 class gltfMaterial
 {
@@ -116,6 +116,11 @@ class gltfMaterial
             this.defines.push("HAS_" + textureKey.toUpperCase() + "_UV_TRANSFORM 1");
             this.properties.set("u_" + textureKey + "UVTransform", uvMatrix);
         }
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonMaterial)

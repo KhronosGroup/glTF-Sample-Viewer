@@ -1,4 +1,4 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 
 class gltfTexture
@@ -10,6 +10,11 @@ class gltfTexture
         this.glTexture = texture; // gl texture
         this.initialized = false;
         this.type = type;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonTexture, defaultSampler)
@@ -46,6 +51,11 @@ class gltfTextureInfo
         this.generateMips = generateMips;
 
         this.extensions = undefined;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonTextureInfo, samplerName, colorSpace = WebGl.context.RGBA)

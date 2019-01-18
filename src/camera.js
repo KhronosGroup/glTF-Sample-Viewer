@@ -1,5 +1,5 @@
 import { mat4, vec3, quat } from 'gl-matrix';
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 
 class gltfCamera
 {
@@ -127,6 +127,11 @@ class gltfCamera
     getNode(gltf)
     {
         return gltf.nodes[this.node];
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonCamera)

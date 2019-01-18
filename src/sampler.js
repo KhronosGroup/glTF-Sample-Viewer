@@ -1,4 +1,4 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 
 class gltfSampler
@@ -12,6 +12,11 @@ class gltfSampler
         this.wrapS = wrapS;
         this.wrapT = wrapT;
         this.name = name;
+    }
+
+    initGl()
+    {
+        initGlForMembers(this);
     }
 
     fromJson(jsonSampler)

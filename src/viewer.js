@@ -212,6 +212,7 @@ class gltfViewer
         const imageProcessor = new gltfImageProcessor();
         return Promise.all(assetPromises)
             .then(() => imageProcessor.processImages(gltf))
+            .then(() => gltf.initGl())
             .then(() => self.startRendering(gltf));
     }
 
