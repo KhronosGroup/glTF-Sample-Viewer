@@ -13,9 +13,9 @@ class gltfPrimitive
         this.skip = true;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonPrimitive, defaultMaterial, gltf)

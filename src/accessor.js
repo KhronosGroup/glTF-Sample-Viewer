@@ -108,9 +108,9 @@ class gltfAccessor
         return this.typedView;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonAccessor)

@@ -12,7 +12,7 @@ function jsToGl(array)
     return tensor;
 }
 
-function initGlForMembers(gltfObj)
+function initGlForMembers(gltfObj, gltf)
 {
     for (const name of Object.keys(gltfObj))
     {
@@ -24,7 +24,7 @@ function initGlForMembers(gltfObj)
         }
         if (member.initGl !== undefined)
         {
-            member.initGl();
+            member.initGl(gltf);
         }
         if (Array.isArray(member))
         {
@@ -32,7 +32,7 @@ function initGlForMembers(gltfObj)
             {
                 if (element.initGl !== undefined)
                 {
-                    element.initGl();
+                    element.initGl(gltf);
                 }
             }
         }

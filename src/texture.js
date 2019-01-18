@@ -12,9 +12,9 @@ class gltfTexture
         this.type = type;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonTexture, defaultSampler)
@@ -53,9 +53,9 @@ class gltfTextureInfo
         this.extensions = undefined;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonTextureInfo)

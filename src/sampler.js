@@ -14,9 +14,9 @@ class gltfSampler
         this.name = name;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonSampler)

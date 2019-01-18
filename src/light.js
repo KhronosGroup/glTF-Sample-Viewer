@@ -22,9 +22,9 @@ class gltfLight
         this.node = node; // non-standard
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonLight)

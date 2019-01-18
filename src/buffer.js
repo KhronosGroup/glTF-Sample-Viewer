@@ -11,9 +11,9 @@ class gltfBuffer
         this.buffer = undefined; // raw data blob
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonBuffer)

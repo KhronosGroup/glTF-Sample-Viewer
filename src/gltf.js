@@ -37,9 +37,9 @@ class glTF
         this.path = file;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJsonAsset(jsonAsset)

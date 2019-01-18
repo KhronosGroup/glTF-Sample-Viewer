@@ -21,9 +21,9 @@ class gltfImage
         this.miplevel = miplevel; // nonstandard
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonImage, path = "")

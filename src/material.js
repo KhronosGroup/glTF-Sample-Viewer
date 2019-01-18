@@ -117,7 +117,7 @@ class gltfMaterial
         }
     }
 
-    initGl()
+    initGl(gltf)
     {
         if (this.normalTexture !== undefined)
         {
@@ -259,7 +259,7 @@ class gltfMaterial
             }
         }
 
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonMaterial)

@@ -129,9 +129,9 @@ class gltfCamera
         return gltf.nodes[this.node];
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonCamera)

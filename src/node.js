@@ -30,9 +30,9 @@ class gltfNode
         this.changed = true;
     }
 
-    initGl()
+    initGl(gltf)
     {
-        initGlForMembers(this);
+        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonNode)
