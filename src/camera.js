@@ -90,6 +90,14 @@ class gltfCamera
 
     getInvViewProjectionMatrix(gltf)
     {
+        // let projMatrix = this.getProjectionMatrix();
+        // let viewMatrix = this.getViewMatrix(gltf);
+        // mat4.invert(projMatrix, projMatrix);
+        // mat4.invert(viewMatrix, viewMatrix);
+
+        // let viewProj = mat4.create();
+        // mat4.multiply(viewProj, projMatrix, viewMatrix);
+
         let invViewProj = this.getViewProjectionMatrix(gltf);
         mat4.invert(invViewProj, invViewProj)
         return invViewProj;

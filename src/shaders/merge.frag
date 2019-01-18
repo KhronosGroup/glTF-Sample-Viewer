@@ -21,18 +21,18 @@ uniform CamInfo u_CamInfo[NUM_VIEWS+1]; // first index contains original view
 
 // https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
 // samplers have to be indexed with a constant value
-// vec4 sampleColor(int Index, vec2 uv)
-// {
-//     for(int i = 0; i < NUM_VIEWS; ++i)
-//     {
-//         if(i == Index)
-//         {
-//             return texture(u_colorViews[i], uv);
-//         }
-//     }
+vec4 sampleColor(int Index, vec2 uv)
+{
+    for(int i = 0; i < NUM_VIEWS; ++i)
+    {
+        if(i == Index)
+        {
+            return texture(u_colorViews[i], uv);
+        }
+    }
 
-//     return vec4(0);
-// }
+    return vec4(0);
+}
 
 float sampleDepth(int Index, vec2 uv)
 {
@@ -89,8 +89,14 @@ void main()
     ivec2 res = textureSize(u_colorViews[0], 0);
 
     //float z = texture(u_depthViews[0], v_UV).x;
+    // int view = 0;
 
-    float view = mod(v_UV.x * float(res.x), float(NUM_VIEWS));
+    int view = int(mod(v_UV.x * float(res.x), float(NUM_VIEWS)));
+
+    g_finalColor = sampleColor(view, v_UV);
+
+    return;
+
     CamInfo c = u_CamInfo[1 + int(view)];
 
     vec4 fragPos = c.invViewProj * vec4(v_UV.x, v_UV.y, c.near, 0.f); // c.near

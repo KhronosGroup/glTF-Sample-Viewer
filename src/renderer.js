@@ -73,7 +73,7 @@ class gltfRenderer
         this.depthTargetTextures = [];
 
         this.numViews = 8;
-        this.viewStepAngleDeg = 0.5; // 5 degrees (10 between center lr)
+        this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -194,8 +194,8 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        this.newFrame(0); // render target
-        this.drawScene(gltf, scene, userCamera);
+        //this.newFrame(0); // render target
+        //this.drawScene(gltf, scene, userCamera);
 
         let camInfos = [];
 
@@ -217,8 +217,8 @@ class gltfRenderer
             }
 
             userCamera.updatePosition();
-            //this.newFrame(i); // render target
-            //this.drawScene(gltf, scene, userCamera);
+            this.newFrame(i); // render target
+            this.drawScene(gltf, scene, userCamera);
 
             let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
             camInfos.push(camInfo);
