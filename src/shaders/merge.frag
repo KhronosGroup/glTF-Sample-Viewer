@@ -93,7 +93,7 @@ void main()
     float view = mod(v_UV.x * float(res.x), float(NUM_VIEWS));
     CamInfo c = u_CamInfo[1 + int(view)];
 
-    vec4 fragPos = c.invViewProj * vec4(v_UV.x, v_UV.y, c.near, 1.f);
+    vec4 fragPos = c.invViewProj * vec4(v_UV.x, v_UV.y, c.near, 0.f); // c.near
     vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
 
     //vec2 dS = vec2(1.f / float(res.x), 1.f / float(res.y));
@@ -106,17 +106,5 @@ void main()
     vec2 uv = dp + ds * d;
 
     g_finalColor = texture(u_colorViews[0], uv);
-    //g_finalColor = vec4(d);
-
-    // for(int i = 0; i < NUM_VIEWS; ++i)
-    // {
-    //     //g_finalColor += vec4(texture(u_depthViews[i], v_UV).x);
-    //     g_finalColor += texture(u_colorViews[i], v_UV) / (float(NUM_VIEWS));
-    //     //g_finalColor += texture(u_colorViews[i], v_UV) / (float(NUM_VIEWS) * 1000.f);
-    // }
-
-    // for(int i = 0; i < NUM_VIEWS; ++i)
-    // {
-    //     g_finalColor.x += texture(u_depthViews[i], v_UV).x / float(NUM_VIEWS);
-    // }
+    //g_finalColor.a = 1.0;
 }

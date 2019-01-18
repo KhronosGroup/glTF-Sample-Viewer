@@ -73,7 +73,7 @@ class gltfRenderer
         this.depthTargetTextures = [];
 
         this.numViews = 8;
-        this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
+        this.viewStepAngleDeg = 0.5; // 5 degrees (10 between center lr)
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
