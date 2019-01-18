@@ -77,6 +77,24 @@ class gltfCamera
         return view;
     }
 
+    getViewProjectionMatrix(gltf)
+    {
+        let projMatrix = this.getProjectionMatrix();
+        let viewMatrix = this.getViewMatrix(gltf);
+
+        let viewProj = mat4.create();
+        mat4.multiply(viewProj, projMatrix, viewMatrix);
+
+        return viewProj;
+    }
+
+    getInvViewProjectionMatrix(gltf)
+    {
+        let invViewProj = this.getViewProjectionMatrix(gltf);
+        mat4.invert(invViewProj, invViewProj)
+        return invViewProj;
+    }
+
     getLookAtTarget(gltf)
     {
         const target = vec3.create();

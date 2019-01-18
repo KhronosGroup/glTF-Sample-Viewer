@@ -2,7 +2,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import { gltfLight } from './light.js';
 import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
-import { jsToGl } from './utils.js';
+import { jsToGl, UniformStruct } from './utils.js';
 import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
@@ -13,6 +13,18 @@ import tonemappingShader from'./shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import fullscreenShader from'./shaders/fullscreen.vert';
 import mergeShader from './shaders/merge.frag';
+
+class CamInfo extends UniformStruct
+{
+    constructor(invViewProj, pos, near, far)
+    {
+        super();
+        this.invViewProj = invViewProj;
+        this.pos = pos;
+        this.near = near;
+        this.far = far;
+    }
+};
 
 class gltfRenderer
 {
@@ -60,7 +72,7 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
-        this.numViews = 1;
+        this.numViews = 8;
         this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
 
         this.viewMatrix = mat4.create();
@@ -182,6 +194,14 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
+        this.newFrame(0); // render target
+        this.drawScene(gltf, scene, userCamera);
+
+        let camInfos = [];
+
+        let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
+        camInfos.push(camInfo);
+
         const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180);
 
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
@@ -197,8 +217,12 @@ class gltfRenderer
             }
 
             userCamera.updatePosition();
-            this.newFrame(i); // render target
-            this.drawScene(gltf, scene, userCamera);
+            //this.newFrame(i); // render target
+            //this.drawScene(gltf, scene, userCamera);
+
+            let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
+            camInfos.push(camInfo);
+
             userCamera.xRot += stepAngleRad;
         }
 
@@ -210,7 +234,7 @@ class gltfRenderer
 
         this.newFrame(); // backbuffer
 
-        this.mergeViews();
+        this.mergeViews(camInfos);
     }
 
     drawScene(gltf, scene, camera)
@@ -264,7 +288,7 @@ class gltfRenderer
         }
     }
 
-    mergeViews()
+    mergeViews(camInfos)
     {
         // select shader
         let shaderDefines = ["NUM_VIEWS " + this.numViews];
@@ -316,6 +340,8 @@ class gltfRenderer
 
             WebGl.context.uniform1iv(depthLoc, slots);
         }
+
+        this.shader.updateUniform("u_CamInfo", camInfos);
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);
