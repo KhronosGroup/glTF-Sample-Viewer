@@ -4,18 +4,23 @@ import { fromKeys, jsToGl, initGlForMembers } from './utils.js';
 
 class gltfMaterial
 {
-    constructor(emissiveFactor = jsToGl([0, 0, 0]), alphaMode = "OPAQUE", alphaCutoff = 0.5, doubleSided = false,
-        name = undefined)
+    constructor()
     {
-        this.textures = []; // array of gltfTextureInfos
-        this.emissiveFactor = emissiveFactor;
-        this.alphaMode = alphaMode;
-        this.alphaCutoff = alphaCutoff;
-        this.doubleSided = doubleSided;
-        this.name = name;
-        this.type = "unlit";
+        this.name = undefined;
+        this.extensions = undefined;
+        this.extras = undefined;
         this.pbrMetallicRoughness = undefined;
+        this.normalTexture = undefined;
+        this.occlusionTexture = undefined;
+        this.emissiveTexture = undefined;
+        this.emissiveFactor = vec3.fromValues(0, 0, 0);
+        this.alphaMode = "OPAQUE";
+        this.alphaCutoff = 0.5;
+        this.doubleSided = false;
 
+        // non gltf properties
+        this.type = "unlit";
+        this.textures = [];
         this.properties = new Map();
         this.defines = [];
     }
@@ -26,9 +31,12 @@ class gltfMaterial
         defaultMaterial.type = "MR";
         defaultMaterial.name = "Default Material";
         defaultMaterial.defines.push("MATERIAL_METALLICROUGHNESS 1");
-        defaultMaterial.properties.set("u_BaseColorFactor", defaultMaterial.baseColorFactor);
-        defaultMaterial.properties.set("u_MetallicFactor", defaultMaterial.metallicFactor);
-        defaultMaterial.properties.set("u_RoughnessFactor", defaultMaterial.roughnessFactor);
+        let baseColorFactor = vec4.fromValues(1, 1, 1, 1);
+        let metallicFactor = 1;
+        let roughnessFactor = 1;
+        defaultMaterial.properties.set("u_BaseColorFactor", baseColorFactor);
+        defaultMaterial.properties.set("u_MetallicFactor", metallicFactor);
+        defaultMaterial.properties.set("u_RoughnessFactor", roughnessFactor);
         return defaultMaterial;
     }
 
@@ -170,6 +178,7 @@ class gltfMaterial
 
         if (this.specularGlossinessTexture !== undefined)
         {
+            this.specularGlossinessTexture.samplerName = "u_SpecularGlossinessSampler";
             this.parseTextureInfoExtensions(this.specularGlossinessTexture, "SpecularGlossiness");
             this.textures.push(this.specularGlossinessTexture);
             this.defines.push("HAS_SPECULAR_GLOSSINESS_MAP 1");
