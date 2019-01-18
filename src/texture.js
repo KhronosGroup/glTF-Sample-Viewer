@@ -58,12 +58,9 @@ class gltfTextureInfo
         initGlForMembers(this);
     }
 
-    fromJson(jsonTextureInfo, samplerName, colorSpace = WebGl.context.RGBA)
+    fromJson(jsonTextureInfo)
     {
         fromKeys(this, jsonTextureInfo);
-
-        this.colorSpace = colorSpace;
-        this.samplerName = samplerName;
     }
 }
 
