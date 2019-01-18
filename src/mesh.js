@@ -3,10 +3,10 @@ import { initGlForMembers } from './utils.js';
 
 class gltfMesh
 {
-    constructor(primitives = [], name = undefined)
+    constructor()
     {
-        this.primitives = primitives;
-        this.name = name;
+        this.primitives = [];
+        this.name = undefined;
     }
 
     initGl(gltf)
@@ -21,10 +21,10 @@ class gltfMesh
             this.name = jsonMesh.name;
         }
 
-        for (let i = 0; i < jsonMesh.primitives.length; ++i)
+        for (const jsonPrimitive of jsonMesh.primitives)
         {
-            let primitive = new gltfPrimitive();
-            primitive.fromJson(jsonMesh.primitives[i], defaultMaterial, gltf);
+            const primitive = new gltfPrimitive();
+            primitive.fromJson(jsonPrimitive, defaultMaterial, gltf);
             this.primitives.push(primitive);
         }
     }

@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 import { jsToGl, initGlForMembers } from './utils.js';
 
 // contain:
@@ -7,22 +7,17 @@ import { jsToGl, initGlForMembers } from './utils.js';
 
 class gltfNode
 {
-    //  vec3 translation, quat rotation, vec3 scale
-    constructor(translation = jsToGl([0, 0, 0]),
-        rotation = jsToGl([0, 0, 0, 1]),
-        scale = jsToGl([1, 1, 1]),
-        children = [],
-        name = undefined)
+    constructor()
     {
-        this.translation = translation;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.matrix = undefined;
-        this.children = children;
         this.camera = undefined;
-        this.name = name;
+        this.children = [];
+        this.matrix = undefined;
+        this.rotation = vec4.fromValues(0, 0, 0, 1);
+        this.scale = vec3.fromValues(1, 1, 1);
+        this.translation = vec3.fromValues(0, 0, 0);
+        this.name = undefined;
 
-        // non-standard:
+        // non gltf
         this.worldTransform = mat4.create();
         this.inverseWorldTransform = mat4.create();
         this.normalMatrix = mat4.create();

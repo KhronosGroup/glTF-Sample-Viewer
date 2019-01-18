@@ -3,11 +3,13 @@ import { fromKeys, getContainingFolder, initGlForMembers } from './utils.js';
 
 class gltfBuffer
 {
-    constructor(uri = undefined, byteLength = undefined, name = undefined)
+    constructor()
     {
-        this.uri = uri;
-        this.byteLength = byteLength;
-        this.name = name;
+        this.uri = undefined;
+        this.byteLength = undefined;
+        this.name = undefined;
+
+        // non gltf
         this.buffer = undefined; // raw data blob
     }
 
@@ -65,7 +67,7 @@ class gltfBuffer
             return false;
         }
 
-        let foundFile = files.find(function(file)
+        const foundFile = files.find(function(file)
         {
             if (file.name === this.uri || file.fullPath === this.uri)
             {

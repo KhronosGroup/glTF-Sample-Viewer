@@ -44,10 +44,7 @@ class glTF
 
     fromJsonAsset(jsonAsset)
     {
-        this.asset.version = jsonAsset.version;
-        this.asset.minVersion = jsonAsset.minVersion;
-        this.asset.copyright = jsonAsset.copyright;
-        this.asset.generator = jsonAsset.generator;
+        this.asset.fromJson(jsonAsset);
     }
 
     fromJsonNodes(jsonNodes)

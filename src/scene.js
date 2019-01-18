@@ -32,55 +32,55 @@ class gltfScene
             mat4.invert(node.inverseWorldTransform, node.worldTransform);
             mat4.transpose(node.normalMatrix, node.inverseWorldTransform);
 
-            for (let c of node.children)
+            for (const child of node.children)
             {
-                applyTransform(gltf, gltf.nodes[c], node.worldTransform);
+                applyTransform(gltf, gltf.nodes[child], node.worldTransform);
             }
         }
 
-        for (let n of this.nodes)
+        for (const node of this.nodes)
         {
-            applyTransform(gltf, gltf.nodes[n], rootTransform);
+            applyTransform(gltf, gltf.nodes[node], rootTransform);
         }
     }
 
     // can only be called after gltf as been fully parsed and constructed
     getSceneWithAlphaMode(gltf, mode = 'OPAQUE', not = false)
     {
-        let Nodes = [];
+        const nodes = [];
         function addNode(nodeIndex)
         {
-            let node = gltf.nodes[nodeIndex];
-            let mesh = gltf.meshes[node.mesh];
+            const node = gltf.nodes[nodeIndex];
+            const mesh = gltf.meshes[node.mesh];
 
             if (mesh !== undefined)
             {
-                for (let primitive of mesh.primitives)
+                for (const primitive of mesh.primitives)
                 {
                     if (primitive.skip === false)
                     {
                         const material = gltf.materials[primitive.material];
                         if (material !== undefined && (not ? material.alphaMode !== mode : material.alphaMode === mode))
                         {
-                            Nodes.push(nodeIndex);
+                            nodes.push(nodeIndex);
                         }
                     }
                 }
             }
 
             // recurse into children
-            for(let c of node.children)
+            for(const child of node.children)
             {
-                addNode(c);
+                addNode(child);
             }
         }
 
-        for (let n of this.nodes)
+        for (const node of this.nodes)
         {
-            addNode(n);
+            addNode(node);
         }
 
-        return new gltfScene(Nodes, this.name);
+        return new gltfScene(nodes, this.name);
     }
 
     gatherNodes(gltf)

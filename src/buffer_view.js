@@ -2,16 +2,14 @@ import { fromKeys, initGlForMembers } from './utils.js';
 
 class gltfBufferView
 {
-    constructor(buffer = undefined,
-        byteOffset = 0, byteLength = undefined, byteStride = 0,
-        target = undefined, name = undefined)
+    constructor()
     {
-        this.buffer = buffer;
-        this.byteOffset = byteOffset;
-        this.byteLength = byteLength;
-        this.byteStride = byteStride;
-        this.target = target;
-        this.name = name;
+        this.buffer = undefined;
+        this.byteOffset = 0;
+        this.byteLength = undefined;
+        this.byteStride = 0;
+        this.target = undefined;
+        this.name = undefined;
     }
 
     initGl(gltf)
