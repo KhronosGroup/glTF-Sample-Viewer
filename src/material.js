@@ -27,13 +27,13 @@ class gltfMaterial
 
     static getDefaults()
     {
-        let defaultMaterial = new gltfMaterial();
+        const defaultMaterial = new gltfMaterial();
         defaultMaterial.type = "MR";
         defaultMaterial.name = "Default Material";
         defaultMaterial.defines.push("MATERIAL_METALLICROUGHNESS 1");
-        let baseColorFactor = vec4.fromValues(1, 1, 1, 1);
-        let metallicFactor = 1;
-        let roughnessFactor = 1;
+        const baseColorFactor = vec4.fromValues(1, 1, 1, 1);
+        const metallicFactor = 1;
+        const roughnessFactor = 1;
         defaultMaterial.properties.set("u_BaseColorFactor", baseColorFactor);
         defaultMaterial.properties.set("u_MetallicFactor", metallicFactor);
         defaultMaterial.properties.set("u_RoughnessFactor", roughnessFactor);
@@ -355,4 +355,6 @@ class gltfMaterial
     }
 }
 
-export { gltfMaterial };
+const DefaultMaterial = gltfMaterial.getDefaults();
+
+export { gltfMaterial, DefaultMaterial };
