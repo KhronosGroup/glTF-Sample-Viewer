@@ -1,3 +1,5 @@
+import { gltfImageProcessor } from "./image_processor";
+
 class gltfLoader
 {
     static load(gltf, appendix = undefined)
@@ -5,11 +7,14 @@ class gltfLoader
         const buffers = gltfLoader.getBuffers(appendix);
         const additionalFiles = gltfLoader.getAdditionalFiles(appendix);
 
-        const promises = [];
-        promises.push(gltfLoader.loadBuffers(gltf, buffers, additionalFiles));
-        promises.push(gltfLoader.loadImages(gltf, additionalFiles));
+        const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
+        const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles)
+            .then(gltfLoader.processImages(gltf));
 
-        return promises;
+        const initGlPromise = Promise.all([buffersPromise, imagesPromise])
+            .then(() => gltf.initGl());
+
+        return initGlPromise;
     }
 
     static unload(gltf)
@@ -77,12 +82,18 @@ class gltfLoader
 
     static loadImages(gltf, additionalFiles)
     {
-        const promises = [];
+        const imagePromises = [];
         for (let image of gltf.images)
         {
-            promises.push(image.load(gltf, additionalFiles));
+            imagePromises.push(image.load(gltf, additionalFiles));
         }
-        return Promise.all(promises);
+        return Promise.all(imagePromises);
+    }
+
+    static processImages(gltf)
+    {
+        const imageProcessor = new gltfImageProcessor();
+        imageProcessor.processImages(gltf);
     }
 }
 

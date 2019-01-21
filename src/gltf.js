@@ -10,7 +10,7 @@ import { gltfNode } from './node.js';
 import { gltfSampler } from './sampler.js';
 import { gltfScene } from './scene.js';
 import { gltfTexture } from './texture.js';
-import { getContainingFolder, initGlForMembers, objectsFromJsons, objectFromJson } from './utils';
+import { initGlForMembers, objectsFromJsons, objectFromJson } from './utils';
 import { gltfAsset } from './asset.js';
 
 class glTF
@@ -34,9 +34,9 @@ class glTF
         this.path = file;
     }
 
-    initGl(gltf)
+    initGl()
     {
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, this);
     }
 
     fromJson(json)
