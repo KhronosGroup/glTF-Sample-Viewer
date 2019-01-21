@@ -31,7 +31,6 @@ class glTF
         this.buffers = [];
         this.bufferViews = [];
         this.materials = [];
-        this.defaultMaterial = -1;
         this.defaultSampler  = -1;
         this.cubemapSampler  = -1;
         this.path = file;
@@ -114,7 +113,6 @@ class glTF
         this.materials = objectsFromJsons(json.materials, gltfMaterial);
 
         this.materials.push(DefaultMaterial);
-        this.defaultMaterial = this.materials.length - 1;
 
         this.accessors = objectsFromJsons(json.accessors, gltfAccessor);
         this.meshes = objectsFromJsons(json.meshes, gltfMesh);

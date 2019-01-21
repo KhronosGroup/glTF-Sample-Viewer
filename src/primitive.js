@@ -1,6 +1,5 @@
 import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
-import { DefaultMaterial } from './material.js';
 
 class gltfPrimitive
 {
@@ -19,6 +18,12 @@ class gltfPrimitive
 
     initGl(gltf)
     {
+        // Use the default glTF material.
+        if (this.material === undefined)
+        {
+            this.material = gltf.materials.length - 1;
+        }
+
         initGlForMembers(this, gltf);
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
@@ -72,12 +77,6 @@ class gltfPrimitive
     fromJson(jsonPrimitive)
     {
         fromKeys(this, jsonPrimitive);
-
-        // Use the default glTF material.
-        if (this.material === undefined)
-        {
-            this.material = DefaultMaterial;
-        }
     }
 
     getShaderIdentifier()
