@@ -10,7 +10,7 @@ import { gltfNode } from './node.js';
 import { gltfSampler } from './sampler.js';
 import { gltfScene } from './scene.js';
 import { gltfTexture } from './texture.js';
-import { getContainingFolder, initGlForMembers, objectsFromJsons } from './utils';
+import { getContainingFolder, initGlForMembers, objectsFromJsons, objectFromJson } from './utils';
 import { gltfAsset } from './asset.js';
 
 class glTF
@@ -37,11 +37,6 @@ class glTF
     initGl(gltf)
     {
         initGlForMembers(this, gltf);
-    }
-
-    fromJsonAsset(jsonAsset)
-    {
-        this.asset.fromJson(jsonAsset);
     }
 
     fromJsonNodes(jsonNodes)
@@ -91,8 +86,7 @@ class glTF
 
     fromJson(json)
     {
-        this.fromJsonAsset(json.asset);
-
+        this.asset = objectFromJson(json.asset, gltfAsset);
         this.cameras = objectsFromJsons(json.cameras, gltfCamera);
         this.accessors = objectsFromJsons(json.accessors, gltfAccessor);
         this.meshes = objectsFromJsons(json.meshes, gltfMesh);

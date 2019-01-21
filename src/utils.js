@@ -49,11 +49,16 @@ function objectsFromJsons(jsonObjects, GltfType)
     const objects = [];
     for (const jsonObject of jsonObjects)
     {
-        const object = new GltfType();
-        object.fromJson(jsonObject);
-        objects.push(object);
+        objects.push(objectFromJson(jsonObject, GltfType));
     }
     return objects;
+}
+
+function objectFromJson(jsonObject, GltfType)
+{
+    const object = new GltfType();
+    object.fromJson(jsonObject);
+    return object;
 }
 
 function fromKeys(target, jsonObj, ignore = [])
@@ -173,6 +178,7 @@ class Timer
 export {
     jsToGl,
     objectsFromJsons,
+    objectFromJson,
     fromKeys,
     fromParams,
     stringHash,
