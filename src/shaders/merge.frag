@@ -84,15 +84,13 @@ float ray_intersect(vec2 dp, vec2 ds)
     return best_depth;
 }
 
-ivec3 getSubPixelViewIndices(vec2 uv)
+ivec3 getSubPixelViewIndices()
 {
     // we are not really sure about the meanings of these constants
     const int yViews = 24;
     const int viewShift = 4;
     const float angle = 2.0 / 3.0;
 
-    //ivec2 resolution = textureSize(u_colorViews[0], 0);
-    //ivec2 screenPos = ivec2(int(uv.x * float(resolution.x)), int(uv.y * float(resolution.y)));
     ivec2 screenPos = ivec2(gl_FragCoord.xy);
 
     int angleOffset = int(mod(float(screenPos.y), float(yViews)));
@@ -117,12 +115,7 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-    ivec3 subPixelIndices = getSubPixelViewIndices(vec2(v_UV.x, v_UV.y)); // 1.f - v_UV.y
-
-    // g_finalColor.r = float(subPixelIndices.r) / float(NUM_VIEWS);
-    // g_finalColor.g = float(subPixelIndices.g) / float(NUM_VIEWS);
-    // g_finalColor.b = float(subPixelIndices.b) / float(NUM_VIEWS);
-    // g_finalColor.a = 1.0;
+    ivec3 subPixelIndices = getSubPixelViewIndices();
     g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
     return;
