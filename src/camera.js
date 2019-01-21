@@ -27,6 +27,26 @@ class gltfCamera extends GltfObject
         this.node = nodeIndex;
     }
 
+    initGl(gltf)
+    {
+        super.initGl(gltf);
+
+        for (let i = 0; i < gltf.nodes.length; i++)
+        {
+            const cameraIndex = gltf.nodes[i].camera;
+            if (cameraIndex === undefined)
+            {
+                continue;
+            }
+
+            if (gltf.cameras[cameraIndex] === this)
+            {
+                this.node = i;
+                break;
+            }
+        }
+    }
+
     fromJson(jsonCamera)
     {
         this.name = name;

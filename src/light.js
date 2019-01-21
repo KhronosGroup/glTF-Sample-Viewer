@@ -19,6 +19,33 @@ class gltfLight extends GltfObject
         this.node = undefined;
     }
 
+    initGl(gltf)
+    {
+        super.initGl(gltf);
+
+        for (let i = 0; i < gltf.nodes.length; i++)
+        {
+            const nodeExtensions = gltf.nodes[i].extensions;
+            if (nodeExtensions === undefined)
+            {
+                continue;
+            }
+
+            const lightsExtension = nodeExtensions.KHR_lights_punctual;
+            if (lightsExtension === undefined)
+            {
+                continue;
+            }
+
+            const lightIndex = lightsExtension.light;
+            if (gltf.lights[lightIndex] === this)
+            {
+                this.node = i;
+                break;
+            }
+        }
+    }
+
     toUniform(gltf)
     {
         const uLight = new UniformLight();

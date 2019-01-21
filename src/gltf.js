@@ -36,7 +36,6 @@ class glTF
 
     initGl()
     {
-        this.addNodeReferences();
         initGlForMembers(this, this);
     }
 
@@ -68,26 +67,6 @@ class glTF
             else
             {
                 this.scene = json.scene;
-            }
-        }
-    }
-
-    addNodeReferences()
-    {
-        for (let i = 0; i < this.nodes.length; ++i)
-        {
-            const node = this.nodes[i];
-            if(node.camera !== undefined)
-            {
-                this.cameras[node.camera].node = i;
-            }
-
-            if(node.extensions !== undefined)
-            {
-                if (node.extensions.KHR_lights_punctual !== undefined)
-                {
-                    this.lights[node.extensions.KHR_lights_punctual.light].node = i;
-                }
             }
         }
     }
