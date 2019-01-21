@@ -1,4 +1,4 @@
-import { initGlForMembers, fromKeys } from "../utils";
+import { initGlForMembers, fromKeys } from "./utils";
 
 // base class for all gltf objects
 class GltfObject
