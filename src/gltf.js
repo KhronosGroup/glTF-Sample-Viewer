@@ -4,7 +4,7 @@ import { gltfBufferView } from './buffer_view.js';
 import { gltfCamera } from './camera.js';
 import { gltfImage } from './image.js';
 import { gltfLight } from './light.js';
-import { gltfMaterial, DefaultMaterial } from './material.js';
+import { gltfMaterial } from './material.js';
 import { gltfMesh } from './mesh.js';
 import { gltfNode } from './node.js';
 import { gltfSampler } from './sampler.js';
@@ -104,7 +104,7 @@ class glTF
         this.bufferViews = objectsFromJsons(json.bufferViews, gltfBufferView);
         this.scenes = objectsFromJsons(json.scenes, gltfScene);
 
-        this.materials.push(DefaultMaterial);
+        this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(new gltfSampler());
         this.defaultSampler = this.samplers.length - 1;
 

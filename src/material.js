@@ -25,7 +25,7 @@ class gltfMaterial
         this.defines = [];
     }
 
-    static getDefaults()
+    static createDefault()
     {
         const defaultMaterial = new gltfMaterial();
         defaultMaterial.type = "MR";
@@ -355,6 +355,4 @@ class gltfMaterial
     }
 }
 
-const DefaultMaterial = gltfMaterial.getDefaults();
-
-export { gltfMaterial, DefaultMaterial };
+export { gltfMaterial };
