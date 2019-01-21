@@ -73,7 +73,7 @@ class gltfRenderer
         this.depthTargetTextures = [];
 
         this.numViews = 8;
-        this.viewStepAngleDeg = 5.0; // 5 degrees (10 between center lr)
+        this.viewStepAngleDeg = 0.5;
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -207,15 +207,10 @@ class gltfRenderer
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
         let centerRot = userCamera.xRot; // dont want to change original camera
         // start position 'left' of the original view
-        userCamera.xRot -= (this.numViews / 2) * stepAngleRad;
+        userCamera.xRot += ((this.numViews-1) / 2) * stepAngleRad;
 
         for(let i = 0; i < this.numViews; ++i)
         {
-            if(i === (this.numViews / 2) && this.numViews !== 1)
-            {
-                userCamera.xRot += stepAngleRad; // skip center
-            }
-
             userCamera.updatePosition();
             this.newFrame(i); // render target
             this.drawScene(gltf, scene, userCamera);
@@ -223,7 +218,7 @@ class gltfRenderer
             let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
             camInfos.push(camInfo);
 
-            userCamera.xRot += stepAngleRad;
+            userCamera.xRot -= stepAngleRad;
         }
 
         // TODO: also create more rows / vertical views
@@ -290,6 +285,10 @@ class gltfRenderer
 
     mergeViews(camInfos)
     {
+        // set both false to test 8 camera renderings and true for interpolation
+        const updateDepth = false;
+        const updateCamInfo = false;
+
         // select shader
         let shaderDefines = ["NUM_VIEWS " + this.numViews];
 
@@ -310,7 +309,6 @@ class gltfRenderer
 
         // bind textures
         let colorLoc = this.shader.getUniformLocation("u_colorViews[0]");
-        let depthLoc = this.shader.getUniformLocation("u_depthViews[0]");
 
         let slots = [];
         let s = 0;
@@ -327,21 +325,28 @@ class gltfRenderer
             WebGl.context.uniform1iv(colorLoc, slots);
         }
 
-        slots = [];
-
-        if(depthLoc !== -1)
+        if (updateDepth)
         {
-            for (let i = 0; i < this.depthTargetTextures.length; i++, s++)
-            {
-                WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
-                WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
-                slots.push(s);
-            }
+            let depthLoc = this.shader.getUniformLocation("u_depthViews[0]");
+            slots = [];
 
-            WebGl.context.uniform1iv(depthLoc, slots);
+            if(depthLoc !== -1)
+            {
+                for (let i = 0; i < this.depthTargetTextures.length; i++, s++)
+                {
+                    WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
+                    WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
+                    slots.push(s);
+                }
+
+                WebGl.context.uniform1iv(depthLoc, slots);
+            }
         }
 
-        this.shader.updateUniform("u_CamInfo", camInfos);
+        if (updateCamInfo)
+        {
+            this.shader.updateUniform("u_CamInfo", camInfos);
+        }
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);
