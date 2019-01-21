@@ -1,14 +1,14 @@
 import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { fromKeys, jsToGl, initGlForMembers } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfMaterial
+class gltfMaterial extends GltfObject
 {
     constructor()
     {
+        super();
         this.name = undefined;
-        this.extensions = undefined;
-        this.extras = undefined;
         this.pbrMetallicRoughness = undefined;
         this.normalTexture = undefined;
         this.occlusionTexture = undefined;
@@ -264,8 +264,7 @@ class gltfMaterial
 
     fromJson(jsonMaterial)
     {
-        fromKeys(this, jsonMaterial);
-        // i.e. alphaMode + alphaCutoff, doubleSided.
+        super.fromJson(jsonMaterial);
 
         if (jsonMaterial.emissiveFactor !== undefined)
         {
