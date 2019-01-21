@@ -72,16 +72,6 @@ class glTF
         }
     }
 
-    fromJsonMeshes(jsonMeshes)
-    {
-        for (const jsonMesh of jsonMeshes)
-        {
-            const mesh = new gltfMesh();
-            mesh.fromJson(jsonMesh);
-            this.meshes.push(mesh);
-        }
-    }
-
     fromJsonImages(jsonImages)
     {
         for (const jsonImage of jsonImages)
@@ -127,11 +117,7 @@ class glTF
         this.defaultMaterial = this.materials.length - 1;
 
         this.accessors = objectsFromJsons(json.accessors, gltfAccessor);
-
-        if (json.meshes !== undefined)
-        {
-            this.fromJsonMeshes(json.meshes);
-        }
+        this.meshes = objectsFromJsons(json.meshes, gltfMesh);
 
         this.samplers = objectsFromJsons(json.samplers, gltfSampler);
         this.samplers.push(new gltfSampler());
