@@ -14,9 +14,9 @@ class gltfNode extends GltfObject
         this.camera = undefined;
         this.children = [];
         this.matrix = undefined;
-        this.rotation = vec4.fromValues(0, 0, 0, 1);
-        this.scale = vec3.fromValues(1, 1, 1);
-        this.translation = vec3.fromValues(0, 0, 0);
+        this.rotation = [0, 0, 0, 1];
+        this.scale = [1, 1, 1];
+        this.translation = [0, 0, 0];
         this.name = undefined;
 
         // non gltf
@@ -27,43 +27,36 @@ class gltfNode extends GltfObject
         this.changed = true;
     }
 
-    fromJson(jsonNode)
+    initGl()
     {
-        if (jsonNode.name !== undefined)
+        if (this.matrix !== undefined)
         {
-            this.name = jsonNode.name;
-        }
-
-        if (jsonNode.children !== undefined)
-        {
-            this.children = jsonNode.children;
-        }
-
-        this.mesh = jsonNode.mesh;
-        this.camera = jsonNode.camera;
-
-        if (jsonNode.matrix !== undefined)
-        {
-            this.applyMatrix(jsonNode.matrix);
+            this.applyMatrix(this.matrix);
         }
         else
         {
-            if (jsonNode.scale !== undefined)
+            if (this.scale !== undefined)
             {
-                this.scale = jsToGl(jsonNode.scale);
+                this.scale = jsToGl(this.scale);
             }
 
-            if (jsonNode.rotation !== undefined)
+            if (this.rotation !== undefined)
             {
-                this.rotation = jsToGl(jsonNode.rotation);
+                this.rotation = jsToGl(this.rotation);
             }
 
-            if (jsonNode.translation !== undefined)
+            if (this.translation !== undefined)
             {
-                this.translation = jsToGl(jsonNode.translation);
+                this.translation = jsToGl(this.translation);
             }
         }
         this.changed = true;
+    }
+
+    fromJson(jsonNode)
+    {
+        super.fromJson(jsonNode);
+        this.mesh = jsonNode.mesh;
     }
 
     applyMatrix(matrixData)
