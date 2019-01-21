@@ -53,8 +53,7 @@ class glTF
         this.textures = objectsFromJsons(json.textures, gltfTexture);
         this.nodes = objectsFromJsons(json.nodes, gltfNode);
         this.lights = objectsFromJsons(getJsonLightsFromExtensions(json.extensions), gltfLight);
-
-        this.fromJsonImages(json.images);
+        this.images = objectsFromJsons(json.images, gltfImage);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -71,21 +70,6 @@ class glTF
             {
                 this.scene = json.scene;
             }
-        }
-    }
-
-    fromJsonImages(jsonImages)
-    {
-        if (jsonImages === undefined)
-        {
-            return;
-        }
-
-        for (const jsonImage of jsonImages)
-        {
-            const image = new gltfImage();
-            image.fromJson(jsonImage, getContainingFolder(this.path));
-            this.images.push(image);
         }
     }
 
