@@ -1,26 +1,24 @@
 import { gltfPrimitive } from './primitive.js';
+import { objectsFromJsons } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfMesh
+class gltfMesh extends GltfObject
 {
-    constructor(primitives = [], name = undefined)
+    constructor()
     {
-        this.primitives = primitives;
-        this.name = name;
+        super();
+        this.primitives = [];
+        this.name = undefined;
     }
 
-    fromJson(jsonMesh, defaultMaterial, gltf)
+    fromJson(jsonMesh)
     {
         if (jsonMesh.name !== undefined)
         {
             this.name = jsonMesh.name;
         }
 
-        for (let i = 0; i < jsonMesh.primitives.length; ++i)
-        {
-            let primitive = new gltfPrimitive();
-            primitive.fromJson(jsonMesh.primitives[i], defaultMaterial, gltf);
-            this.primitives.push(primitive);
-        }
+        this.primitives = objectsFromJsons(jsonMesh.primitives, gltfPrimitive);
     }
 }
 

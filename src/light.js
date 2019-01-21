@@ -1,41 +1,60 @@
 import { mat4, vec2, vec3, quat } from 'gl-matrix';
-import { fromKeys, jsToGl, UniformStruct } from './utils.js';
+import { jsToGl, UniformStruct } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfLight
+class gltfLight extends GltfObject
 {
-    constructor(type = "directional",
-        color = [1, 1, 1],
-        intensity = 2,
-        innerConeAngle = 0,
-        outerConeAngle = Math.PI / 4,
-        range = -1, // if no range is defined in the json, this is the default the shader understands
-        name = undefined,
-        node = undefined)
+    constructor()
     {
-        this.type = type;
-        this.color = color;
-        this.intensity = intensity;
-        this.innerConeAngle = innerConeAngle;
-        this.outerConeAngle = outerConeAngle;
-        this.range = range;
-        this.name = name;
-        this.node = node; // non-standard
+        super();
+        this.type = "directional";
+        this.color = [1, 1, 1];
+        this.intensity = 2;
+        this.innerConeAngle = 0;
+        this.outerConeAngle = Math.PI / 4;
+        this.range = -1;
+        this.name = undefined;
+
+        // non gltf
+        this.node = undefined;
     }
 
-    fromJson(jsonLight)
+    initGl(gltf)
     {
-        fromKeys(this, jsonLight);
+        super.initGl(gltf);
+
+        for (let i = 0; i < gltf.nodes.length; i++)
+        {
+            const nodeExtensions = gltf.nodes[i].extensions;
+            if (nodeExtensions === undefined)
+            {
+                continue;
+            }
+
+            const lightsExtension = nodeExtensions.KHR_lights_punctual;
+            if (lightsExtension === undefined)
+            {
+                continue;
+            }
+
+            const lightIndex = lightsExtension.light;
+            if (gltf.lights[lightIndex] === this)
+            {
+                this.node = i;
+                break;
+            }
+        }
     }
 
     toUniform(gltf)
     {
-        let uLight = new UniformLight();
+        const uLight = new UniformLight();
 
         if (this.node !== undefined)
         {
-            let transform = gltf.nodes[this.node].worldTransform;
-            let rotation = quat.create();
-            let alongNegativeZ = vec3.fromValues(0, 0, -1);
+            const transform = gltf.nodes[this.node].worldTransform;
+            const rotation = quat.create();
+            const alongNegativeZ = vec3.fromValues(0, 0, -1);
             mat4.getRotation(rotation, transform);
             vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
             mat4.getTranslation(uLight.position, transform);

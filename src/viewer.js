@@ -7,9 +7,8 @@ import { gltfRenderer } from './renderer.js';
 import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
-import { jsToGl, getIsGlb, Timer } from './utils.js';
+import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
-import { gltfImageProcessor } from './image_processor.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { getScaleFactor } from './gltf_utils.js';
 
@@ -200,19 +199,29 @@ class gltfViewer
             this.gltf = undefined;
         }
 
-        let gltf = new glTF(path);
+        const gltf = new glTF(path);
         gltf.fromJson(json);
+
+        this.injectEnvironment(gltf);
+
+        const self = this;
+        return gltfLoader.load(gltf, buffers)
+            .then(() => self.startRendering(gltf));
+    }
+
+    injectEnvironment(gltf)
+    {
+        // this is hacky, because we inject stuff into the gltf
+
+        // because the environment loader adds images with paths that are not relative
+        // to the gltf, we have to resolve all image paths before that
+        for (const image of gltf.images)
+        {
+            image.resolveRelativePath(getContainingFolder(gltf.path));
+        }
 
         const environment = Environments[this.renderingParameters.environmentName];
         new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment);
-
-        let assetPromises = gltfLoader.load(gltf, buffers);
-
-        const self = this;
-        const imageProcessor = new gltfImageProcessor();
-        return Promise.all(assetPromises)
-            .then(() => imageProcessor.processImages(gltf))
-            .then(() => self.startRendering(gltf));
     }
 
     startRendering(gltf)

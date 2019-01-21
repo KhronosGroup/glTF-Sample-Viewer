@@ -1,22 +1,25 @@
-import { fromKeys } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfSampler
+class gltfSampler extends GltfObject
 {
-    constructor(magFilter = WebGl.context.LINEAR, minFilter = WebGl.context.LINEAR_MIPMAP_LINEAR,
-        wrapS = WebGl.context.REPEAT, wrapT = WebGl.context.REPEAT,
-        name = undefined)
+    constructor(
+        magFilter = WebGl.context.LINEAR,
+        minFilter = WebGl.context.LINEAR_MIPMAP_LINEAR,
+        wrapS = WebGl.context.REPEAT,
+        wrapT = WebGl.context.REPEAT)
     {
+        super();
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         this.wrapS = wrapS;
         this.wrapT = wrapT;
-        this.name = name;
+        this.name = undefined;
     }
 
-    fromJson(jsonSampler)
+    static createDefault()
     {
-        fromKeys(this, jsonSampler);
+        return new gltfSampler();
     }
 }
 

@@ -1,12 +1,15 @@
-class gltfAsset
+import { GltfObject } from "./gltf_object";
+
+class gltfAsset extends GltfObject
 {
     constructor()
     {
-        this.version = undefined;
-        this.minVersion = undefined;
+        super();
         this.copyright = undefined;
         this.generator = undefined;
+        this.version = undefined;
+        this.minVersion = undefined;
     }
 }
 
-export { gltfAsset };
+export { gltfAsset as gltfAsset };

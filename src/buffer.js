@@ -1,19 +1,18 @@
 import axios from '../libs/axios.min.js';
-import { fromKeys, getContainingFolder } from './utils.js';
+import { getContainingFolder } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfBuffer
+class gltfBuffer extends GltfObject
 {
-    constructor(uri = undefined, byteLength = undefined, name = undefined)
+    constructor()
     {
-        this.uri = uri;
-        this.byteLength = byteLength;
-        this.name = name;
-        this.buffer = undefined; // raw data blob
-    }
+        super();
+        this.uri = undefined;
+        this.byteLength = undefined;
+        this.name = undefined;
 
-    fromJson(jsonBuffer)
-    {
-        fromKeys(this, jsonBuffer);
+        // non gltf
+        this.buffer = undefined; // raw data blob
     }
 
     load(gltf, additionalFiles = undefined)
@@ -60,7 +59,7 @@ class gltfBuffer
             return false;
         }
 
-        let foundFile = files.find(function(file)
+        const foundFile = files.find(function(file)
         {
             if (file.name === this.uri || file.fullPath === this.uri)
             {
