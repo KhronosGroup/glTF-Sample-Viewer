@@ -1,30 +1,29 @@
 import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfTexture
+class gltfTexture extends GltfObject
 {
     constructor(sampler = undefined, source = undefined, type = WebGl.context.TEXTURE_2D, texture = undefined)
     {
+        super();
         this.sampler = sampler; // index to gltfSampler, default sampler ?
         this.source = source; // index to gltfImage
-        this.glTexture = texture; // gl texture
-        this.initialized = false;
+
+        // non gltf
+        this.glTexture = texture;
         this.type = type;
+        this.initialized = false;
     }
 
     initGl(gltf)
     {
-        initGlForMembers(this, gltf);
-    }
-
-    fromJson(jsonTexture, defaultSampler)
-    {
-        fromKeys(this, jsonTexture);
-
         if (this.sampler === undefined)
         {
-            this.sampler = defaultSampler;
+            this.sampler = gltf.samplers.length - 1;
         }
+
+        initGlForMembers(this, gltf);
     }
 
     destroy()

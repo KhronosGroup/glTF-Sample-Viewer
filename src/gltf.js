@@ -86,7 +86,7 @@ class glTF
         for (const jsonTexture of jsonTextures)
         {
             const texture = new gltfTexture();
-            texture.fromJson(jsonTexture, this.defaultSampler);
+            texture.fromJson(jsonTexture);
             this.textures.push(texture);
         }
     }
