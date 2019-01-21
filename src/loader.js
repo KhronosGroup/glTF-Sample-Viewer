@@ -9,7 +9,7 @@ class gltfLoader
 
         const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
         const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles)
-            .then(gltfLoader.processImages(gltf));
+            .then(() => gltfLoader.processImages(gltf));
 
         const initGlPromise = Promise.all([buffersPromise, imagesPromise])
             .then(() => gltf.initGl());
