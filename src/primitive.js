@@ -1,10 +1,12 @@
-import { fromKeys, initGlForMembers } from './utils.js';
+import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfPrimitive
+class gltfPrimitive extends GltfObject
 {
     constructor()
     {
+        super();
         this.attributes = [];
         this.indices = undefined;
         this.material = undefined;
@@ -72,11 +74,6 @@ class gltfPrimitive
                 console.log("Unknown attribute: " + attribute);
             }
         }
-    }
-
-    fromJson(jsonPrimitive)
-    {
-        fromKeys(this, jsonPrimitive);
     }
 
     getShaderIdentifier()

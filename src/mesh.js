@@ -1,5 +1,5 @@
 import { gltfPrimitive } from './primitive.js';
-import { initGlForMembers } from './utils.js';
+import { initGlForMembers, objectsFromJsons } from './utils.js';
 
 class gltfMesh
 {
@@ -21,12 +21,7 @@ class gltfMesh
             this.name = jsonMesh.name;
         }
 
-        for (const jsonPrimitive of jsonMesh.primitives)
-        {
-            const primitive = new gltfPrimitive();
-            primitive.fromJson(jsonPrimitive);
-            this.primitives.push(primitive);
-        }
+        this.primitives = objectsFromJsons(jsonMesh.primitives, gltfPrimitive);
     }
 }
 
