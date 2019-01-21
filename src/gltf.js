@@ -96,6 +96,17 @@ class glTF
         this.fromJsonAsset(json.asset);
 
         this.cameras = objectsFromJsons(json.cameras, gltfCamera);
+        this.accessors = objectsFromJsons(json.accessors, gltfAccessor);
+        this.meshes = objectsFromJsons(json.meshes, gltfMesh);
+        this.samplers = objectsFromJsons(json.samplers, gltfSampler);
+        this.materials = objectsFromJsons(json.materials, gltfMaterial);
+        this.buffers = objectsFromJsons(json.buffers, gltfBuffer);
+        this.bufferViews = objectsFromJsons(json.bufferViews, gltfBufferView);
+        this.scenes = objectsFromJsons(json.scenes, gltfScene);
+
+        this.materials.push(DefaultMaterial);
+        this.samplers.push(new gltfSampler());
+        this.defaultSampler = this.samplers.length - 1;
 
         if(json.extensions !== undefined)
         {
@@ -110,17 +121,6 @@ class glTF
             this.fromJsonNodes(json.nodes);
         }
 
-        this.materials = objectsFromJsons(json.materials, gltfMaterial);
-
-        this.materials.push(DefaultMaterial);
-
-        this.accessors = objectsFromJsons(json.accessors, gltfAccessor);
-        this.meshes = objectsFromJsons(json.meshes, gltfMesh);
-
-        this.samplers = objectsFromJsons(json.samplers, gltfSampler);
-        this.samplers.push(new gltfSampler());
-        this.defaultSampler = this.samplers.length - 1;
-
         if(json.textures !== undefined)
         {
             this.fromJsonTextures(json.textures);
@@ -130,9 +130,6 @@ class glTF
         {
             this.fromJsonImages(json.images);
         }
-
-        this.buffers = objectsFromJsons(json.buffers, gltfBuffer);
-        this.bufferViews = objectsFromJsons(json.bufferViews, gltfBufferView);
 
         // Load the default scene too.
         if (json.scenes !== undefined)
@@ -146,8 +143,6 @@ class glTF
                 this.scene = json.scene;
             }
         }
-
-        this.scenes = objectsFromJsons(json.scenes, gltfScene);
     }
 }
 
