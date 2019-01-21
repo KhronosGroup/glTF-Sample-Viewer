@@ -31,8 +31,6 @@ class glTF
         this.buffers = [];
         this.bufferViews = [];
         this.materials = [];
-        this.defaultSampler  = -1;
-        this.cubemapSampler  = -1;
         this.path = file;
     }
 
@@ -105,8 +103,7 @@ class glTF
         this.scenes = objectsFromJsons(json.scenes, gltfScene);
 
         this.materials.push(gltfMaterial.createDefault());
-        this.samplers.push(new gltfSampler());
-        this.defaultSampler = this.samplers.length - 1;
+        this.samplers.push(gltfSampler.createDefault());
 
         if(json.extensions !== undefined)
         {

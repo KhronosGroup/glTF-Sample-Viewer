@@ -18,6 +18,11 @@ class gltfSampler extends GltfObject
         this.name = undefined;
     }
 
+    static createDefault()
+    {
+        return new gltfSampler();
+    }
+
     initGl(gltf)
     {
         initGlForMembers(this, gltf);
