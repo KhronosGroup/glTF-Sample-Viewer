@@ -1,14 +1,16 @@
 import { mat4, vec3, vec4 } from 'gl-matrix';
-import { jsToGl, initGlForMembers } from './utils.js';
+import { jsToGl } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
 // contain:
 // transform
 // child indices (reference to scene array of nodes)
 
-class gltfNode
+class gltfNode extends GltfObject
 {
     constructor()
     {
+        super();
         this.camera = undefined;
         this.children = [];
         this.matrix = undefined;
@@ -23,11 +25,6 @@ class gltfNode
         this.normalMatrix = mat4.create();
         this.light = undefined;
         this.changed = true;
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonNode)

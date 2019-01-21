@@ -1,7 +1,8 @@
 import { mat4, vec3, quat } from 'gl-matrix';
-import { fromKeys, initGlForMembers } from './utils.js';
+import { fromKeys } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfCamera
+class gltfCamera extends GltfObject
 {
     constructor(
         type = "perspective",
@@ -14,6 +15,7 @@ class gltfCamera
         name = undefined,
         nodeIndex = undefined)
     {
+        super();
         this.type = type;
         this.znear = znear;
         this.zfar = zfar;
@@ -23,6 +25,21 @@ class gltfCamera
         this.aspectRatio = aspectRatio;
         this.name = name;
         this.node = nodeIndex;
+    }
+
+    fromJson(jsonCamera)
+    {
+        this.name = name;
+        if(jsonCamera.perspective !== undefined)
+        {
+            this.type = "perspective";
+            fromKeys(this, jsonCamera.perspective);
+        }
+        else if(jsonCamera.orthographic !== undefined)
+        {
+            this.type = "orthographic";
+            fromKeys(this, jsonCamera.orthographic);
+        }
     }
 
     sortNodesByDepth(nodes)
@@ -127,26 +144,6 @@ class gltfCamera
     getNode(gltf)
     {
         return gltf.nodes[this.node];
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
-    }
-
-    fromJson(jsonCamera)
-    {
-        this.name = name;
-        if(jsonCamera.perspective !== undefined)
-        {
-            this.type = "perspective";
-            fromKeys(this, jsonCamera.perspective);
-        }
-        else if(jsonCamera.orthographic !== undefined)
-        {
-            this.type = "orthographic";
-            fromKeys(this, jsonCamera.orthographic);
-        }
     }
 }
 

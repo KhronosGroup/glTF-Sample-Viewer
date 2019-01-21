@@ -1,5 +1,5 @@
 import { mat4, vec2, vec3, quat } from 'gl-matrix';
-import { jsToGl, UniformStruct, initGlForMembers } from './utils.js';
+import { jsToGl, UniformStruct } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfLight extends GltfObject
@@ -17,11 +17,6 @@ class gltfLight extends GltfObject
 
         // non gltf
         this.node = undefined;
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 
     toUniform(gltf)

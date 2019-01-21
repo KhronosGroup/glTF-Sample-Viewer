@@ -1,4 +1,3 @@
-import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfBufferView extends GltfObject
@@ -12,11 +11,6 @@ class gltfBufferView extends GltfObject
         this.byteStride = 0;
         this.target = undefined;
         this.name = undefined;
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 }
 

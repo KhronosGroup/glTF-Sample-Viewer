@@ -1,17 +1,13 @@
 import { mat4 } from 'gl-matrix';
-import { initGlForMembers } from './utils';
+import { GltfObject } from './gltf_object';
 
-class gltfScene
+class gltfScene extends GltfObject
 {
     constructor(nodes = [], name = undefined)
     {
+        super();
         this.nodes = nodes;
         this.name = name;
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonScene)

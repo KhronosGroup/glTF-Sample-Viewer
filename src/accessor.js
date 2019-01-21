@@ -1,4 +1,3 @@
-import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -21,11 +20,6 @@ class gltfAccessor extends GltfObject
         // non gltf
         this.glBuffer = undefined;
         this.typedView = undefined;
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 
     getTypedView(gltf)

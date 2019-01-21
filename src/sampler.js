@@ -1,4 +1,3 @@
-import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -21,11 +20,6 @@ class gltfSampler extends GltfObject
     static createDefault()
     {
         return new gltfSampler();
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 }
 

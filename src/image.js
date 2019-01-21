@@ -1,5 +1,4 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -7,7 +6,13 @@ const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
 
 class gltfImage extends GltfObject
 {
-    constructor(uri = undefined, type = WebGl.context.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageMimeType.JPEG, image = undefined)
+    constructor(
+        uri = undefined,
+        type = WebGl.context.TEXTURE_2D, miplevel = 0,
+        bufferView = undefined,
+        name = undefined,
+        mimeType = ImageMimeType.JPEG,
+        image = undefined)
     {
         super();
         this.uri = uri;
@@ -21,11 +26,6 @@ class gltfImage extends GltfObject
         this.name = name;
         this.type = type; // nonstandard
         this.miplevel = miplevel; // nonstandard
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 
     resolveRelativePath(basePath)

@@ -1,17 +1,14 @@
 import { gltfPrimitive } from './primitive.js';
-import { initGlForMembers, objectsFromJsons } from './utils.js';
+import { objectsFromJsons } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfMesh
+class gltfMesh extends GltfObject
 {
     constructor()
     {
+        super();
         this.primitives = [];
         this.name = undefined;
-    }
-
-    initGl(gltf)
-    {
-        initGlForMembers(this, gltf);
     }
 
     fromJson(jsonMesh)

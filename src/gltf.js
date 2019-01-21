@@ -36,6 +36,7 @@ class glTF
 
     initGl()
     {
+        this.addNodeReferences();
         initGlForMembers(this, this);
     }
 
@@ -57,8 +58,6 @@ class glTF
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
-
-        this.addNodeReferences();
 
         if (json.scenes !== undefined)
         {
