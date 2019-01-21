@@ -74,16 +74,6 @@ class glTF
         }
     }
 
-    fromJsonTextures(jsonTextures)
-    {
-        for (const jsonTexture of jsonTextures)
-        {
-            const texture = new gltfTexture();
-            texture.fromJson(jsonTexture);
-            this.textures.push(texture);
-        }
-    }
-
     fromJson(json)
     {
         this.asset = objectFromJson(json.asset, gltfAsset);
@@ -95,6 +85,7 @@ class glTF
         this.buffers = objectsFromJsons(json.buffers, gltfBuffer);
         this.bufferViews = objectsFromJsons(json.bufferViews, gltfBufferView);
         this.scenes = objectsFromJsons(json.scenes, gltfScene);
+        this.textures = objectsFromJsons(json.textures, gltfTexture);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -110,11 +101,6 @@ class glTF
         if(json.nodes !== undefined)
         {
             this.fromJsonNodes(json.nodes);
-        }
-
-        if(json.textures !== undefined)
-        {
-            this.fromJsonTextures(json.textures);
         }
 
         if(json.images !== undefined)
