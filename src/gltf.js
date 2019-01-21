@@ -39,41 +39,6 @@ class glTF
         initGlForMembers(this, gltf);
     }
 
-    fromJsonNodes(jsonNodes)
-    {
-        for (let i = 0; i < jsonNodes.length; ++i)
-        {
-            const jsonNode = jsonNodes[i];
-            let node = new gltfNode();
-            node.fromJson(jsonNode);
-            this.nodes.push(node);
-
-            // assign the corresponding camera node
-            if(node.camera !== undefined)
-            {
-                this.cameras[node.camera].node = i;
-            }
-
-            if(jsonNode.extensions !== undefined)
-            {
-                if (jsonNode.extensions.KHR_lights_punctual !== undefined)
-                {
-                    this.lights[jsonNode.extensions.KHR_lights_punctual.light].node = i;
-                }
-            }
-        }
-    }
-
-    fromJsonImages(jsonImages)
-    {
-        for (const jsonImage of jsonImages)
-        {
-            const image = new gltfImage();
-            image.fromJson(jsonImage, getContainingFolder(this.path));
-            this.images.push(image);
-        }
-    }
-
     fromJson(json)
     {
         this.asset = objectFromJson(json.asset, gltfAsset);
@@ -86,29 +51,16 @@ class glTF
         this.bufferViews = objectsFromJsons(json.bufferViews, gltfBufferView);
         this.scenes = objectsFromJsons(json.scenes, gltfScene);
         this.textures = objectsFromJsons(json.textures, gltfTexture);
+        this.nodes = objectsFromJsons(json.nodes, gltfNode);
+        this.lights = objectsFromJsons(getJsonLightsFromExtensions(json.extensions), gltfLight);
+
+        this.fromJsonImages(json.images);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
 
-        if(json.extensions !== undefined)
-        {
-            if(json.extensions.KHR_lights_punctual !== undefined)
-            {
-                this.lights = objectsFromJsons(json.extensions.KHR_lights_punctual.lights, gltfLight);
-            }
-        }
+        this.addNodeReferences();
 
-        if(json.nodes !== undefined)
-        {
-            this.fromJsonNodes(json.nodes);
-        }
-
-        if(json.images !== undefined)
-        {
-            this.fromJsonImages(json.images);
-        }
-
-        // Load the default scene too.
         if (json.scenes !== undefined)
         {
             if (json.scene === undefined && json.scenes.length > 0)
@@ -121,6 +73,54 @@ class glTF
             }
         }
     }
+
+    fromJsonImages(jsonImages)
+    {
+        if (jsonImages === undefined)
+        {
+            return;
+        }
+
+        for (const jsonImage of jsonImages)
+        {
+            const image = new gltfImage();
+            image.fromJson(jsonImage, getContainingFolder(this.path));
+            this.images.push(image);
+        }
+    }
+
+    addNodeReferences()
+    {
+        for (let i = 0; i < this.nodes.length; ++i)
+        {
+            const node = this.nodes[i];
+            if(node.camera !== undefined)
+            {
+                this.cameras[node.camera].node = i;
+            }
+
+            if(node.extensions !== undefined)
+            {
+                if (node.extensions.KHR_lights_punctual !== undefined)
+                {
+                    this.lights[node.extensions.KHR_lights_punctual.light].node = i;
+                }
+            }
+        }
+    }
+}
+
+function getJsonLightsFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_lights_punctual === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_lights_punctual.lights;
 }
 
 export { glTF };
