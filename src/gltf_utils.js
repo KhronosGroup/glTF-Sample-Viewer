@@ -30,7 +30,7 @@ function getSceneExtends(gltf, sceneIndex, outMin, outMax)
 
         for (const primitive of mesh.primitives)
         {
-            const attribute = primitive.attributes.find(a => a.attribute == "POSITION");
+            const attribute = primitive.glAttributes.find(a => a.attribute == "POSITION");
             if (attribute === undefined)
             {
                 continue;

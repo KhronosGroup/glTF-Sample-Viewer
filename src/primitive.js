@@ -12,6 +12,7 @@ class gltfPrimitive
         this.mode = WebGl.context.TRIANGLES;
 
         // non gltf
+        this.glAttributes = [];
         this.defines = [];
         this.skip = true;
     }
@@ -19,48 +20,38 @@ class gltfPrimitive
     initGl(gltf)
     {
         initGlForMembers(this, gltf);
-    }
-
-    fromJson(jsonPrimitive, gltf)
-    {
-        fromKeys(this, jsonPrimitive, ["attributes"]);
-
-        // Use the default glTF material.
-        if (this.material === undefined)
-        {
-            this.material = DefaultMaterial;
-        }
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
-        for(const attribute of Object.keys(jsonPrimitive.attributes))
+        for (const attribute of Object.keys(this.attributes))
         {
-            const idx = jsonPrimitive.attributes[attribute];
-            switch (attribute) {
+            const idx = this.attributes[attribute];
+            switch (attribute)
+            {
             case "POSITION":
                 this.skip = false;
-                this.attributes.push({attribute: attribute, name:"a_Position", accessor: idx});
+                this.glAttributes.push({ attribute: attribute, name: "a_Position", accessor: idx });
                 break;
             case "NORMAL":
                 this.defines.push("HAS_NORMALS 1");
-                this.attributes.push({attribute: attribute, name:"a_Normal", accessor: idx});
+                this.glAttributes.push({ attribute: attribute, name: "a_Normal", accessor: idx });
                 break;
             case "TANGENT":
                 this.defines.push("HAS_TANGENTS 1");
-                this.attributes.push({attribute: attribute, name:"a_Tangent", accessor: idx});
+                this.glAttributes.push({ attribute: attribute, name: "a_Tangent", accessor: idx });
                 break;
             case "TEXCOORD_0":
                 this.defines.push("HAS_UV_SET1 1");
-                this.attributes.push({attribute: attribute, name:"a_UV1", accessor: idx});
+                this.glAttributes.push({ attribute: attribute, name: "a_UV1", accessor: idx });
                 break;
             case "TEXCOORD_1":
                 this.defines.push("HAS_UV_SET2 1");
-                this.attributes.push({attribute: attribute, name:"a_UV2", accessor: idx});
+                this.glAttributes.push({ attribute: attribute, name: "a_UV2", accessor: idx });
                 break;
             case "COLOR_0":
                 {
                     const accessor = gltf.accessors[idx];
                     this.defines.push("HAS_VERTEX_COLOR_" + accessor.type + " 1");
-                    this.attributes.push({attribute: attribute, name:"a_Color", accessor: idx});
+                    this.glAttributes.push({ attribute: attribute, name: "a_Color", accessor: idx });
                 }
                 break;
             case "JOINTS_0":
@@ -75,6 +66,17 @@ class gltfPrimitive
             default:
                 console.log("Unknown attribute: " + attribute);
             }
+        }
+    }
+
+    fromJson(jsonPrimitive)
+    {
+        fromKeys(this, jsonPrimitive);
+
+        // Use the default glTF material.
+        if (this.material === undefined)
+        {
+            this.material = DefaultMaterial;
         }
     }
 

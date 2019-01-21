@@ -235,7 +235,7 @@ class gltfRenderer
         }
 
         let vertexCount = 0;
-        for (let attrib of primitive.attributes)
+        for (let attrib of primitive.glAttributes)
         {
             let gltfAccessor = gltf.accessors[attrib.accessor];
             vertexCount = gltfAccessor.count;
@@ -275,7 +275,7 @@ class gltfRenderer
             WebGl.context.drawArrays(primitive.mode, 0, vertexCount);
         }
 
-        for (let attrib of primitive.attributes)
+        for (let attrib of primitive.glAttributes)
         {
             WebGl.context.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
         }

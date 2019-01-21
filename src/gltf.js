@@ -77,7 +77,7 @@ class glTF
         for (const jsonMesh of jsonMeshes)
         {
             const mesh = new gltfMesh();
-            mesh.fromJson(jsonMesh, this);
+            mesh.fromJson(jsonMesh);
             this.meshes.push(mesh);
         }
     }

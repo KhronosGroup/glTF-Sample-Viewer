@@ -14,7 +14,7 @@ class gltfMesh
         initGlForMembers(this, gltf);
     }
 
-    fromJson(jsonMesh, gltf)
+    fromJson(jsonMesh)
     {
         if (jsonMesh.name !== undefined)
         {
@@ -24,7 +24,7 @@ class gltfMesh
         for (const jsonPrimitive of jsonMesh.primitives)
         {
             const primitive = new gltfPrimitive();
-            primitive.fromJson(jsonPrimitive, gltf);
+            primitive.fromJson(jsonPrimitive);
             this.primitives.push(primitive);
         }
     }
