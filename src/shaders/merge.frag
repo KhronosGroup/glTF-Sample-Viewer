@@ -15,6 +15,11 @@ struct CamInfo
     float far;
 };
 
+// we are not really sure about the meanings of these constants
+const int g_yViews = 24;
+const int g_viewShift = 4;
+const float g_LenticularSlope = 2.f / 3.f;
+
 uniform sampler2D u_colorViews[NUM_VIEWS];
 uniform sampler2D u_depthViews[NUM_VIEWS];
 uniform CamInfo u_CamInfo[NUM_VIEWS+1]; // first index contains original view
@@ -86,22 +91,23 @@ float ray_intersect(vec2 dp, vec2 ds)
 
 ivec3 getSubPixelViewIndices()
 {
-    // we are not really sure about the meanings of these constants
-    const int yViews = 24;
-    const int viewShift = 4;
-    const float angle = 2.0 / 3.0;
-
     ivec2 screenPos = ivec2(gl_FragCoord.xy);
 
-    int angleOffset = int(mod(float(screenPos.y), float(yViews)));
+    int angleOffset = int(mod(float(screenPos.y), float(g_yViews)));
     int startIndex = screenPos.x * 3;
-    int startIndexOffset = int(float(angleOffset) * angle);
+    int startIndexOffset = int(float(angleOffset) * g_LenticularSlope);
 
-    int posR = startIndex + startIndexOffset + viewShift;
-    int posG = 1 + startIndex + startIndexOffset + viewShift;
-    int posB = 2 + startIndex + startIndexOffset + viewShift;
+    int posR = startIndex + startIndexOffset + g_viewShift;
+    int posG = 1 + startIndex + startIndexOffset + g_viewShift;
+    int posB = 2 + startIndex + startIndexOffset + g_viewShift;
 
     return ivec3(int(mod(float(posR), float(NUM_VIEWS))), int(mod(float(posG), float(NUM_VIEWS))), int(mod(float(posB), float(NUM_VIEWS))));
+}
+
+ivec3 getSubPixelViewIndicesSimple()
+{
+    float view = gl_FragCoord.x * 3.f + gl_FragCoord.y * g_LenticularSlope + float(g_viewShift);
+    return ivec3(mod(view, float(NUM_VIEWS)), mod(view + 1.f, float(NUM_VIEWS)), mod(view + 2.f, float(NUM_VIEWS)));
 }
 
 vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
@@ -115,7 +121,9 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-    ivec3 subPixelIndices = getSubPixelViewIndices();
+    ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
+    //ivec3 subPixelIndices = getSubPixelViewIndices();
+
     g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
     return;
