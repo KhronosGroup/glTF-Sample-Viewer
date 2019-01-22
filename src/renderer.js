@@ -285,10 +285,6 @@ class gltfRenderer
 
     mergeViews(camInfos)
     {
-        // set both false to test 8 camera renderings and true for interpolation
-        const updateDepth = false;
-        const updateCamInfo = false;
-
         // select shader
         let shaderDefines = ["NUM_VIEWS " + this.numViews];
 
@@ -325,28 +321,24 @@ class gltfRenderer
             WebGl.context.uniform1iv(colorLoc, slots);
         }
 
-        if (updateDepth)
-        {
-            let depthLoc = this.shader.getUniformLocation("u_depthViews[0]");
-            slots = [];
+        let depthLoc = this.shader.getUniformLocation("u_depthViews[0]");
+        slots = [];
 
-            if(depthLoc !== -1)
+        if(depthLoc !== -1)
+        {
+            for (let i = 0; i < this.depthTargetTextures.length; i++, s++)
             {
-                for (let i = 0; i < this.depthTargetTextures.length; i++, s++)
-                {
-                    WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
-                    WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
-                    slots.push(s);
-                }
-
-                WebGl.context.uniform1iv(depthLoc, slots);
+                WebGl.context.activeTexture(WebGl.context.TEXTURE0 + s);
+                WebGl.context.bindTexture(WebGl.context.TEXTURE_2D, this.depthTargetTextures[i]);
+                slots.push(s);
             }
+
+            WebGl.context.uniform1iv(depthLoc, slots);
         }
 
-        if (updateCamInfo)
-        {
-            this.shader.updateUniform("u_CamInfo", camInfos);
-        }
+
+        this.shader.updateUniform("u_CamInfo", camInfos);
+
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);

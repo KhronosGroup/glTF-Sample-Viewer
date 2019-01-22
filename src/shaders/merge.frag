@@ -7,6 +7,8 @@ out vec4 g_finalColor;
 #define NUM_VIEWS 1
 #endif
 
+#define VIRTUAL
+
 struct CamInfo
 {
     mat4 invViewProj;
@@ -28,6 +30,13 @@ uniform CamInfo u_CamInfo[NUM_VIEWS+1]; // first index contains original view
 // samplers have to be indexed with a constant value
 vec4 sampleColor(int Index, vec2 uv)
 {
+
+#ifdef VIRTUAL
+
+
+
+#else
+
     for(int i = 0; i < NUM_VIEWS; ++i)
     {
         if(i == Index)
@@ -35,6 +44,8 @@ vec4 sampleColor(int Index, vec2 uv)
             return texture(u_colorViews[i], uv);
         }
     }
+
+#endif
 
     return vec4(0);
 }
@@ -119,29 +130,34 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
     return vec4(pixelR.x, pixelG.y, pixelB.z, 1.0);
 }
 
+vec2 reconstructUV(int viewIndex, vec2 screen_uv)
+{
+    CamInfo c = u_CamInfo[1 + viewIndex];
+
+    vec4 fragPos = c.invViewProj * vec4(screen_uv.x, screen_uv.y, c.near, 0.f); // c.near
+    vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
+
+    //vec2 dS = vec2(1.f / float(res.x), 1.f / float(res.y));
+    //vec2 dP = v_UV;
+
+    vec2 ds = viewRay.xy; // direction
+    vec2 dp = fragPos.xy; // start point
+
+    float d = ray_intersect(dp, ds);
+    vec2 uv = dp + ds * d;
+
+    return uv;
+}
+
 void main()
 {
-    ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
-    //ivec3 subPixelIndices = getSubPixelViewIndices();
-
-    g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
+    g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV));
 
     return;
 
-    // CamInfo c = u_CamInfo[1 + int(NUM_VIEWS)];
+    //ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
 
-    // vec4 fragPos = c.invViewProj * vec4(v_UV.x, v_UV.y, c.near, 0.f); // c.near
-    // vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
+    //g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
-    // //vec2 dS = vec2(1.f / float(res.x), 1.f / float(res.y));
-    // //vec2 dP = v_UV;
-
-    // vec2 ds = viewRay.xy; // direction
-    // vec2 dp = fragPos.xy; // start point
-
-    // float d = ray_intersect(dp, ds);
-    // vec2 uv = dp + ds * d;
-
-    // g_finalColor = texture(u_colorViews[0], uv);
-    // //g_finalColor.a = 1.0;
+    //return;
 }
