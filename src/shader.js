@@ -40,34 +40,16 @@ class gltfShader
         this.program = undefined;
     }
 
-    getAttribLocation(name)
+    getAttributeLocation(name)
     {
         const loc = this.attributes.get(name);
-
-        if(loc !== undefined)
-        {
-            return loc;
-        }
-        else
-        {
-            console.log("Attribute name '" + name + "' doesn't exist!");
-            return -1;
-        }
+        return loc !== undefined ? loc : -1;
     }
 
     getUniformLocation(name)
     {
         const uniform = this.uniforms.get(name);
-
-        if(uniform !== undefined)
-        {
-            return uniform.loc;
-        }
-        else
-        {
-            console.log("Uniform name '" + name + "' doesn't exist!");
-            return -1;
-        }
+        return uniform !== undefined ? uniform.loc : -1;
     }
 
 

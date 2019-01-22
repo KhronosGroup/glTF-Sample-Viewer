@@ -31,8 +31,9 @@ class gltfWebGl
 
     setTexture(loc, gltf, textureInfo, texSlot)
     {
-        if (loc == -1)
+        if (loc === -1)
         {
+            console.warn("Uniform '{}' doesn't exist", textureInfo.samplerName);
             return false;
         }
 
@@ -160,8 +161,9 @@ class gltfWebGl
 
     enableAttribute(gltf, attributeLocation, gltfAccessor)
     {
-        if (attributeLocation == -1)
+        if (attributeLocation === -1)
         {
+            console.warn("Tried to enable non existing attribute");
             return false;
         }
 

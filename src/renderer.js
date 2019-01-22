@@ -235,14 +235,19 @@ class gltfRenderer
         }
 
         let vertexCount = 0;
-        for (let attrib of primitive.glAttributes)
+        for (const attribute of primitive.glAttributes)
         {
-            let gltfAccessor = gltf.accessors[attrib.accessor];
+            const gltfAccessor = gltf.accessors[attribute.accessor];
             vertexCount = gltfAccessor.count;
 
-            if (!WebGl.enableAttribute(gltf, this.shader.getAttribLocation(attrib.name), gltfAccessor))
+            const location = this.shader.getAttributeLocation(attribute.name);
+            if (location < 0)
             {
-                return; // skip this primitive.
+                continue; // only skip this attribute
+            }
+            if (!WebGl.enableAttribute(gltf, location, gltfAccessor))
+            {
+                return; // skip this primitive
             }
         }
 
@@ -254,9 +259,14 @@ class gltfRenderer
         for(let i = 0; i < material.textures.length; ++i)
         {
             let info = material.textures[i];
-            if (!WebGl.setTexture(this.shader.getUniformLocation(info.samplerName), gltf, info, i)) // binds texture and sampler
+            const location = this.shader.getUniformLocation(info.samplerName);
+            if (location < 0)
             {
-                return;
+                continue; // only skip this texture
+            }
+            if (!WebGl.setTexture(location, gltf, info, i)) // binds texture and sampler
+            {
+                return; // skip this material
             }
         }
 
@@ -267,7 +277,7 @@ class gltfRenderer
 
         if (drawIndexed)
         {
-            let indexAccessor = gltf.accessors[primitive.indices];
+            const indexAccessor = gltf.accessors[primitive.indices];
             WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
         }
         else
@@ -275,9 +285,14 @@ class gltfRenderer
             WebGl.context.drawArrays(primitive.mode, 0, vertexCount);
         }
 
-        for (let attrib of primitive.glAttributes)
+        for (const attribute of primitive.glAttributes)
         {
-            WebGl.context.disableVertexAttribArray(this.shader.getAttribLocation(attrib.name));
+            const location = this.shader.getAttributeLocation(attribute.name);
+            if (location < 0)
+            {
+                continue; // skip this attribute
+            }
+            WebGl.context.disableVertexAttribArray(location);
         }
     }
 
