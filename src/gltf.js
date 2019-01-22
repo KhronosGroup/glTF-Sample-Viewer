@@ -12,12 +12,14 @@ import { gltfScene } from './scene.js';
 import { gltfTexture } from './texture.js';
 import { initGlForMembers, objectsFromJsons, objectFromJson } from './utils';
 import { gltfAsset } from './asset.js';
+import { GltfObject } from './gltf_object.js';
 
-class glTF
+class glTF extends GltfObject
 {
     constructor(file)
     {
-        this.asset = new gltfAsset();
+        super();
+        this.asset = undefined;
         this.accessors = [];
         this.nodes = [];
         this.scene = undefined; // the default scene to show.
@@ -41,6 +43,8 @@ class glTF
 
     fromJson(json)
     {
+        super.fromJson(json);
+
         this.asset = objectFromJson(json.asset, gltfAsset);
         this.cameras = objectsFromJsons(json.cameras, gltfCamera);
         this.accessors = objectsFromJsons(json.accessors, gltfAccessor);
