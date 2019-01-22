@@ -33,7 +33,7 @@ class gltfWebGl
     {
         if (loc === -1)
         {
-            console.warn("Uniform '{}' doesn't exist", textureInfo.samplerName);
+            console.warn("Tried to access unknown uniform");
             return false;
         }
 
@@ -163,7 +163,7 @@ class gltfWebGl
     {
         if (attributeLocation === -1)
         {
-            console.warn("Tried to enable non existing attribute");
+            console.warn("Tried to access unknown attribute");
             return false;
         }
 
