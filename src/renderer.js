@@ -16,10 +16,11 @@ import mergeShader from './shaders/merge.frag';
 
 class CamInfo extends UniformStruct
 {
-    constructor(invViewProj, pos, near, far)
+    constructor(invViewProj, viewProj, pos, near, far)
     {
         super();
         this.invViewProj = invViewProj;
+        this.viewProj = viewProj;
         this.pos = pos;
         this.near = near;
         this.far = far;
@@ -199,7 +200,7 @@ class gltfRenderer
 
         let camInfos = [];
 
-        let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
+        let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
         camInfos.push(camInfo);
 
         const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180);
@@ -215,7 +216,7 @@ class gltfRenderer
             this.newFrame(i); // render target
             this.drawScene(gltf, scene, userCamera);
 
-            let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
+            let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
             camInfos.push(camInfo);
 
             userCamera.xRot -= stepAngleRad;

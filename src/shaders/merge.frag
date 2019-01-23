@@ -12,6 +12,7 @@ out vec4 g_finalColor;
 struct CamInfo
 {
     mat4 invViewProj;
+    mat4 viewProj;
     vec3 pos;
     float near;
     float far;
@@ -132,6 +133,7 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 vec2 reconstructUV(int viewIndex, vec2 screen_uv)
 {
+    CamInfo cOriginal = u_CamInfo[0];
     CamInfo c = u_CamInfo[1 + viewIndex];
 
     vec4 fragPos = c.invViewProj * vec4(screen_uv.x, screen_uv.y, c.near, 0.f); // c.near
@@ -140,8 +142,13 @@ vec2 reconstructUV(int viewIndex, vec2 screen_uv)
     //vec2 dS = vec2(1.f / float(res.x), 1.f / float(res.y));
     //vec2 dP = v_UV;
 
-    vec2 ds = viewRay.xy; // direction
-    vec2 dp = fragPos.xy; // start point
+    vec4 viewRayProj = cOriginal.viewProj * vec4(viewRay, 1.f);
+    vec2 ds = viewRayProj.xy; // direction
+    vec4 startPointProj = cOriginal.viewProj * fragPos;
+    vec2 dp = startPointProj.xy; // start point
+
+    //vec2 ds = viewRay.xy; // direction
+    //vec2 dp = fragPos.xy; // start point
 
     float d = ray_intersect(dp, ds);
     vec2 uv = dp + ds * d;
