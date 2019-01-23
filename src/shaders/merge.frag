@@ -25,7 +25,7 @@ const float g_LenticularSlope = 2.f / 3.f;
 
 uniform sampler2D u_colorViews[NUM_VIEWS];
 uniform sampler2D u_depthViews[NUM_VIEWS];
-uniform CamInfo u_CamInfo[NUM_VIEWS+1]; // first index contains original view
+uniform CamInfo u_CamInfo[NUM_VIEWS + 1]; // first index contains original view
 
 // https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
 // samplers have to be indexed with a constant value
@@ -34,7 +34,9 @@ vec4 sampleColor(int Index, vec2 uv)
 
 #ifdef VIRTUAL
 
+    for(int i = 0; i < NUM_VIEWS; ++i){
 
+    }
 
 #else
 
@@ -142,13 +144,13 @@ vec2 reconstructUV(int viewIndex, vec2 screen_uv)
     //vec2 dS = vec2(1.f / float(res.x), 1.f / float(res.y));
     //vec2 dP = v_UV;
 
+    //vec2 ds = viewRay.xy; // direction
+    //vec2 dp = fragPos.xy; // start point
+
     vec4 viewRayProj = cOriginal.viewProj * vec4(viewRay, 1.f);
     vec2 ds = viewRayProj.xy; // direction
     vec4 startPointProj = cOriginal.viewProj * fragPos;
     vec2 dp = startPointProj.xy; // start point
-
-    //vec2 ds = viewRay.xy; // direction
-    //vec2 dp = fragPos.xy; // start point
 
     float d = ray_intersect(dp, ds);
     vec2 uv = dp + ds * d;
@@ -158,7 +160,19 @@ vec2 reconstructUV(int viewIndex, vec2 screen_uv)
 
 void main()
 {
-    g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV));
+
+    g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV)) * 0.5;
+    g_finalColor += texture(u_colorViews[0], reconstructUV(7, v_UV)) * 0.5;
+
+    if(v_UV.x < 0.5)
+    {
+        //g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV) * 0.635);
+    }
+    else
+    {
+        //g_finalColor = texture(u_colorViews[0], reconstructUV(7, v_UV) * 0.635);
+    }
+    //g_finalColor = vec4(reconstructUV(0, v_UV), 0 , 1.0);
 
     return;
 

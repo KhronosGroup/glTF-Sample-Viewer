@@ -73,6 +73,7 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
+        this.renderMultiView = false;
         this.numViews = 8;
         this.viewStepAngleDeg = 0.5;
 
@@ -195,8 +196,11 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        //this.newFrame(0); // render target
-        //this.drawScene(gltf, scene, userCamera);
+        if(!this.renderMultiView)
+        {
+            this.newFrame(0); // render target
+            this.drawScene(gltf, scene, userCamera);
+        }
 
         let camInfos = [];
 
@@ -213,8 +217,11 @@ class gltfRenderer
         for(let i = 0; i < this.numViews; ++i)
         {
             userCamera.updatePosition();
-            this.newFrame(i); // render target
-            this.drawScene(gltf, scene, userCamera);
+            if(this.renderMultiView)
+            {
+                this.newFrame(i); // render target
+                this.drawScene(gltf, scene, userCamera);
+            }
 
             let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
             camInfos.push(camInfo);
