@@ -51,20 +51,6 @@ class gltfEnvironmentLoader
 
         let imageIdx = gltf.images.length;
 
-        let indices = [];
-
-        function addSide(basePath, side, mipLevel)
-        {
-            for (let i = 0; i <= mipLevel; i++)
-            {
-                const imagePath = basePath + i + extension;
-                const image = new gltfImage(imagePath, side, i);
-                image.mimeType = environment.type;
-                gltf.images.push(image);
-                indices.push(++imageIdx);
-            }
-        }
-
         // u_DiffuseEnvSampler faces
         for (const side of CubeMapSides)
         {
@@ -76,6 +62,19 @@ class gltfEnvironmentLoader
 
         // u_DiffuseEnvSampler tex
         gltf.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx, ++imageIdx], WebGl.context.TEXTURE_CUBE_MAP));
+
+        const indices = [];
+        function addSide(basePath, side, mipLevel)
+        {
+            for (let i = 0; i <= mipLevel; i++)
+            {
+                const imagePath = basePath + i + extension;
+                const image = new gltfImage(imagePath, side, i);
+                image.mimeType = environment.type;
+                gltf.images.push(image);
+                indices.push(++imageIdx);
+            }
+        }
 
         // u_SpecularEnvSampler tex
         for (const side of CubeMapSides)
