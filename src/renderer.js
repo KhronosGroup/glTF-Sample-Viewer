@@ -75,7 +75,7 @@ class gltfRenderer
 
         this.renderMultiView = false;
         this.numViews = 8;
-        this.viewStepAngleDeg = 0.5;
+        this.viewStepAngleDeg = 0.25;
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();

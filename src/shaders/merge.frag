@@ -7,7 +7,8 @@ out vec4 g_finalColor;
 #define NUM_VIEWS 1
 #endif
 
-//#define VIRTUAL
+//#define BGR_DISPLAY
+#define VIRTUAL
 
 struct CamInfo
 {
@@ -18,10 +19,8 @@ struct CamInfo
     float far;
 };
 
-// we are not really sure about the meanings of these constants
-const int g_yViews = 24;
-const int g_viewShift = 4;
-const float g_LenticularSlope = 2.f / 3.f;
+const int g_viewShift = 4; // view start offset
+const float g_LenticularSlope = 2.f / 3.f; // 4 / 5 or 40 / 51
 
 uniform sampler2D u_colorViews[NUM_VIEWS];
 uniform sampler2D u_depthViews[NUM_VIEWS];
@@ -103,23 +102,19 @@ float reconstructDepth(int viewIndex, vec2 inUV, vec2 stepScale)
 
 ivec3 getSubPixelViewIndices()
 {
-    ivec2 screenPos = ivec2(gl_FragCoord.xy);
+    float yCoord = gl_FragCoord.y;
 
-    int angleOffset = int(mod(float(screenPos.y), float(g_yViews)));
-    int startIndex = screenPos.x * 3;
-    int startIndexOffset = int(float(angleOffset) * g_LenticularSlope);
+    #ifdef VIEWPORT_INVERT
+        yCoord = textureSize(u_colorViews[0], 0).y - yCoord;
+    #endif
 
-    int posR = startIndex + startIndexOffset + g_viewShift;
-    int posG = 1 + startIndex + startIndexOffset + g_viewShift;
-    int posB = 2 + startIndex + startIndexOffset + g_viewShift;
+    float view = gl_FragCoord.x * 3.f + yCoord * g_LenticularSlope + float(g_viewShift);
 
-    return ivec3(int(mod(float(posR), float(NUM_VIEWS))), int(mod(float(posG), float(NUM_VIEWS))), int(mod(float(posB), float(NUM_VIEWS))));
-}
-
-ivec3 getSubPixelViewIndicesSimple()
-{
-    float view = gl_FragCoord.x * 3.f + gl_FragCoord.y * g_LenticularSlope + float(g_viewShift);
-    return ivec3(mod(view, float(NUM_VIEWS)), mod(view + 1.f, float(NUM_VIEWS)), mod(view + 2.f, float(NUM_VIEWS)));
+    #ifdef BGR_DISPLAY
+        return ivec3(mod(view + 2.f, float(NUM_VIEWS)), mod(view + 1.f, float(NUM_VIEWS)), mod(view, float(NUM_VIEWS)));
+    #else // RGB
+        return ivec3(mod(view, float(NUM_VIEWS)), mod(view + 1.f, float(NUM_VIEWS)), mod(view + 2.f, float(NUM_VIEWS)));
+    #endif
 }
 
 // https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
@@ -129,7 +124,9 @@ vec4 sampleColor(int viewIndex, vec2 inUV)
 
 #ifdef VIRTUAL
 
-    vec2 stepScale = vec2(0.0005, 0.0005) * 16.f / 9.f;
+    //vec2 stepScale = vec2(0.0005, 0.0005) * 16.f / 9.f;
+    vec2 stepScale = vec2(1.f);
+
     return texture(u_colorViews[0], reconstructUV(viewIndex, inUV, stepScale));
 
 #else
@@ -169,18 +166,20 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
     return vec4(pixelR.x, pixelG.y, pixelB.z, 1.0);
 }
 
-
 void main()
 {
     vec2 scale = vec2(0.0005f);
+
+    ivec3 subPixelIndices = getSubPixelViewIndices();
+    g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
+
+    return;
+
     float dR = reconstructDepth(0, v_UV, scale);
     float dO = texture(u_depthViews[0], v_UV).x;
 
     float dDelta = abs(dR - dO) * 10.f;
     g_finalColor = vec4(dDelta, dDelta, dDelta, 1.0);
-
-    //ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
-    //g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
     // g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV, stepScale)) * 0.5;
     // g_finalColor += texture(u_colorViews[0], reconstructUV(1, v_UV, stepScale)) * 0.5;
