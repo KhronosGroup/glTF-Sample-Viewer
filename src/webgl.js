@@ -195,7 +195,7 @@ class gltfWebGl
         return true;
     }
 
-    compileShader(isVert, shaderSource)
+    compileShader(shaderIdentifier, isVert, shaderSource)
     {
         let shader = WebGl.context.createShader(isVert ? WebGl.context.VERTEX_SHADER : WebGl.context.FRAGMENT_SHADER);
         WebGl.context.shaderSource(shader, shaderSource);
@@ -204,9 +204,8 @@ class gltfWebGl
 
         if (!compiled)
         {
-
-            console.warn(WebGl.context.getShaderInfoLog(shader));
-            return null;
+            var info = WebGl.context.getShaderInfoLog(shader);
+            throw new Error("Could not compile WebGL program '" + shaderIdentifier + "'. \n\n" + info);
         }
 
         return shader;
@@ -218,6 +217,12 @@ class gltfWebGl
         WebGl.context.attachShader(program, vertex);
         WebGl.context.attachShader(program, fragment);
         WebGl.context.linkProgram(program);
+
+        if (!WebGl.context.getProgramParameter(program, WebGl.context.LINK_STATUS))
+        {
+            var info = WebGl.context.getProgramInfoLog(program);
+            throw new Error('Could not link WebGL program. \n\n' + info);
+        }
 
         return program;
     }

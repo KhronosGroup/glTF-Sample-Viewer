@@ -95,7 +95,7 @@ class ShaderCache
         {
             // console.log(defines);
             // compile this variant
-            shader = WebGl.compileShader(isVert, defines + src);
+            shader = WebGl.compileShader(shaderIdentifier, isVert, defines + src);
             if(shader)
             {
                 this.shaders.set(hash, shader);
