@@ -7,7 +7,7 @@ out vec4 g_finalColor;
 #define NUM_VIEWS 1
 #endif
 
-#define VIRTUAL
+//#define VIRTUAL
 
 struct CamInfo
 {
@@ -26,45 +26,6 @@ const float g_LenticularSlope = 2.f / 3.f;
 uniform sampler2D u_colorViews[NUM_VIEWS];
 uniform sampler2D u_depthViews[NUM_VIEWS];
 uniform CamInfo u_CamInfo[NUM_VIEWS + 1]; // first index contains original view
-
-// https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
-// samplers have to be indexed with a constant value
-vec4 sampleColor(int Index, vec2 uv)
-{
-
-#ifdef VIRTUAL
-
-    for(int i = 0; i < NUM_VIEWS; ++i){
-
-    }
-
-#else
-
-    for(int i = 0; i < NUM_VIEWS; ++i)
-    {
-        if(i == Index)
-        {
-            return texture(u_colorViews[i], uv);
-        }
-    }
-
-#endif
-
-    return vec4(0);
-}
-
-float sampleDepth(int Index, vec2 uv)
-{
-    for(int i = 0; i < NUM_VIEWS; ++i)
-    {
-        if(i == Index)
-        {
-            return texture(u_depthViews[i], uv).x;
-        }
-    }
-
-    return 0.f;
-}
 
 float ray_intersect(vec2 dp, vec2 ds)
 {
@@ -103,6 +64,26 @@ float ray_intersect(vec2 dp, vec2 ds)
     return best_depth;
 }
 
+vec2 reconstructUV(int viewIndex, vec2 inUV, vec2 stepScale)
+{
+    CamInfo cOriginal = u_CamInfo[0];
+    CamInfo c = u_CamInfo[1 + viewIndex];
+
+    vec4 fragPos = c.invViewProj * vec4(inUV.x, inUV.y, c.near, 0.f); // c.near
+    vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
+
+    vec4 viewRayProj = cOriginal.viewProj * vec4(viewRay, 1.f);
+    vec4 startPointProj = cOriginal.viewProj * fragPos;
+
+    vec2 delta = abs(inUV - startPointProj.xy) * stepScale;
+    vec2 ds = normalize(viewRayProj.xy) * delta; // direction
+
+    float d = ray_intersect(startPointProj.xy, ds);
+    vec2 uv = startPointProj.xy + ds * d;
+
+    return clamp(uv, 0.f, 1.f);
+}
+
 ivec3 getSubPixelViewIndices()
 {
     ivec2 screenPos = ivec2(gl_FragCoord.xy);
@@ -124,6 +105,44 @@ ivec3 getSubPixelViewIndicesSimple()
     return ivec3(mod(view, float(NUM_VIEWS)), mod(view + 1.f, float(NUM_VIEWS)), mod(view + 2.f, float(NUM_VIEWS)));
 }
 
+// https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
+// samplers have to be indexed with a constant value
+vec4 sampleColor(int viewIndex, vec2 inUV)
+{
+
+#ifdef VIRTUAL
+
+    vec2 stepScale = vec2(0.0005, 0.0005) * 16.f / 9.f;
+    return texture(u_colorViews[0], reconstructUV(viewIndex, inUV, stepScale));
+
+#else
+
+    for(int i = 0; i < NUM_VIEWS; ++i)
+    {
+        if(i == viewIndex)
+        {
+            return texture(u_colorViews[i], inUV);
+        }
+    }
+
+#endif
+
+    return vec4(0);
+}
+
+float sampleDepth(int Index, vec2 uv)
+{
+    for(int i = 0; i < NUM_VIEWS; ++i)
+    {
+        if(i == Index)
+        {
+            return texture(u_depthViews[i], uv).x;
+        }
+    }
+
+    return 0.f;
+}
+
 vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 {
     vec4 pixelR = sampleColor(subPixelIndices.x, uv);
@@ -133,52 +152,12 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
     return vec4(pixelR.x, pixelG.y, pixelB.z, 1.0);
 }
 
-vec2 reconstructUV(int viewIndex, vec2 screen_uv)
-{
-    CamInfo cOriginal = u_CamInfo[0];
-    CamInfo c = u_CamInfo[1 + viewIndex];
-
-    vec4 fragPos = c.invViewProj * vec4(screen_uv.x, screen_uv.y, c.near, 0.f); // c.near
-    vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
-
-    //vec2 dS = vec2(1.f / float(res.x), 1.f / float(res.y));
-    //vec2 dP = v_UV;
-
-    //vec2 ds = viewRay.xy; // direction
-    //vec2 dp = fragPos.xy; // start point
-
-    vec4 viewRayProj = cOriginal.viewProj * vec4(viewRay, 1.f);
-    vec2 ds = viewRayProj.xy; // direction
-    vec4 startPointProj = cOriginal.viewProj * fragPos;
-    vec2 dp = startPointProj.xy; // start point
-
-    float d = ray_intersect(dp, ds);
-    vec2 uv = dp + ds * d;
-
-    return uv;
-}
 
 void main()
 {
+    ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
+    g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
-    g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV)) * 0.5;
-    g_finalColor += texture(u_colorViews[0], reconstructUV(7, v_UV)) * 0.5;
-
-    if(v_UV.x < 0.5)
-    {
-        //g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV) * 0.635);
-    }
-    else
-    {
-        //g_finalColor = texture(u_colorViews[0], reconstructUV(7, v_UV) * 0.635);
-    }
-    //g_finalColor = vec4(reconstructUV(0, v_UV), 0 , 1.0);
-
-    return;
-
-    //ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
-
-    //g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
-
-    //return;
+    // g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV, stepScale)) * 0.5;
+    // g_finalColor += texture(u_colorViews[0], reconstructUV(1, v_UV, stepScale)) * 0.5;
 }
