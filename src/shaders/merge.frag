@@ -84,6 +84,23 @@ vec2 reconstructUV(int viewIndex, vec2 inUV, vec2 stepScale)
     return clamp(uv, 0.f, 1.f);
 }
 
+float reconstructDepth(int viewIndex, vec2 inUV, vec2 stepScale)
+{
+    CamInfo cOriginal = u_CamInfo[0];
+    CamInfo c = u_CamInfo[1 + viewIndex];
+
+    vec4 fragPos = c.invViewProj * vec4(inUV.x, inUV.y, c.near, 0.f); // c.near
+    vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
+
+    vec4 viewRayProj = cOriginal.viewProj * vec4(viewRay, 1.f);
+    vec4 startPointProj = cOriginal.viewProj * fragPos;
+
+    vec2 delta = abs(inUV - startPointProj.xy) * stepScale;
+    vec2 ds = normalize(viewRayProj.xy) * delta; // direction
+
+    return ray_intersect(startPointProj.xy, ds);
+}
+
 ivec3 getSubPixelViewIndices()
 {
     ivec2 screenPos = ivec2(gl_FragCoord.xy);
@@ -155,8 +172,15 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-    ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
-    g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
+    vec2 scale = vec2(0.0005f);
+    float dR = reconstructDepth(0, v_UV, scale);
+    float dO = texture(u_depthViews[0], v_UV).x;
+
+    float dDelta = abs(dR - dO) * 10.f;
+    g_finalColor = vec4(dDelta, dDelta, dDelta, 1.0);
+
+    //ivec3 subPixelIndices = getSubPixelViewIndicesSimple();
+    //g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
     // g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV, stepScale)) * 0.5;
     // g_finalColor += texture(u_colorViews[0], reconstructUV(1, v_UV, stepScale)) * 0.5;

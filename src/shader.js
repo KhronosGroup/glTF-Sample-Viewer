@@ -40,7 +40,7 @@ class gltfShader
         this.program = undefined;
     }
 
-    getAttribLocation(name)
+    getAttribLocation(name, warn = true)
     {
         const loc = this.attributes.get(name);
 
@@ -48,14 +48,14 @@ class gltfShader
         {
             return loc;
         }
-        else
+        else if(warn)
         {
             console.log("Attribute name '" + name + "' doesn't exist!");
-            return -1;
         }
+        return -1;
     }
 
-    getUniformLocation(name)
+    getUniformLocation(name, warn = true)
     {
         const uniform = this.uniforms.get(name);
 
@@ -63,11 +63,11 @@ class gltfShader
         {
             return uniform.loc;
         }
-        else
+        else if(warn)
         {
             console.log("Uniform name '" + name + "' doesn't exist!");
-            return -1;
         }
+        return -1;
     }
 
 

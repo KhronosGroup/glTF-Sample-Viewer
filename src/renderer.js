@@ -312,7 +312,7 @@ class gltfRenderer
         WebGl.context.useProgram(this.shader.program);
 
         // bind textures
-        let colorLoc = this.shader.getUniformLocation("u_colorViews[0]");
+        let colorLoc = this.shader.getUniformLocation("u_colorViews[0]", false);
 
         let slots = [];
         let s = 0;
@@ -329,7 +329,7 @@ class gltfRenderer
             WebGl.context.uniform1iv(colorLoc, slots);
         }
 
-        let depthLoc = this.shader.getUniformLocation("u_depthViews[0]");
+        let depthLoc = this.shader.getUniformLocation("u_depthViews[0]", false);
         slots = [];
 
         if(depthLoc !== -1)
@@ -345,7 +345,7 @@ class gltfRenderer
         }
 
 
-        this.shader.updateUniform("u_CamInfo", camInfos);
+        this.shader.updateUniform("u_CamInfo", camInfos, false);
 
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
