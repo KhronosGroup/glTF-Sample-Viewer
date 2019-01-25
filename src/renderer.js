@@ -73,9 +73,10 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
-        this.renderMultiView = false;
-        this.numViews = 8;
-        this.viewStepAngleDeg = 0.25;
+        this.reconstructViews = false;
+        this.numRenderViews = 8;
+        this.numVirtualViews = 8;
+        this.viewStepAngleDeg = 0.5;
 
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
@@ -129,7 +130,7 @@ class gltfRenderer
         this.depthTargetTextures = [];
 
         // create color and depth targets with resolution
-        for (let i = 0; i < this.numViews; i++)
+        for (let i = 0; i < this.numRenderViews; i++)
         {
             let tex = WebGl.context.createTexture();
 
@@ -179,7 +180,7 @@ class gltfRenderer
     // frame state
     newFrame(renderTargetIndex = "backbuffer")
     {
-        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.numViews)
+        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.numRenderViews)
         {
             WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer); // DRAW_FRAMEBUFFER ?
             WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.colorTargetTextures[renderTargetIndex], 0);
@@ -196,40 +197,41 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        if(!this.renderMultiView)
-        {
-            this.newFrame(0); // render target
-            this.drawScene(gltf, scene, userCamera);
-        }
-
-        let camInfos = [];
-
-        let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
-        camInfos.push(camInfo);
+        let numViews = this.reconstructViews ? this.numVirtualViews : this.numRenderViews;
 
         const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180);
+        const virtualToRenderRatio = numViews / this.numRenderViews;
+        const stepAngleRadRender = stepAngleRad * virtualToRenderRatio;
+
+        let virtualCamInfos = [];
+        let renderCamInfos = [];
 
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
         let centerRot = userCamera.xRot; // dont want to change original camera
-        // start position 'left' of the original view
-        userCamera.xRot += ((this.numViews-1) / 2) * stepAngleRad;
 
-        for(let i = 0; i < this.numViews; ++i)
+        // start position 'right' of the original view
+        userCamera.xRot += ((this.numRenderViews-1) / 2) * stepAngleRadRender;
+
+        for(let i = 0; i < this.numRenderViews; ++i)
         {
             userCamera.updatePosition();
-            if(this.renderMultiView)
-            {
-                this.newFrame(i); // render target
-                this.drawScene(gltf, scene, userCamera);
-            }
+            renderCamInfos.push(new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar));
 
-            let camInfo = new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar);
-            camInfos.push(camInfo);
+            this.newFrame(i); // render target
+            this.drawScene(gltf, scene, userCamera);
 
-            userCamera.xRot -= stepAngleRad;
+            userCamera.xRot -= stepAngleRadRender;
         }
 
-        // TODO: also create more rows / vertical views
+        // reset for virtual views
+        userCamera.xRot = centerRot + ((numViews - 1) / 2) * stepAngleRad;
+
+        for(let i = 0; i < numViews; ++i)
+        {
+            userCamera.updatePosition();
+            virtualCamInfos.push(new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar));
+            userCamera.xRot -= stepAngleRad;
+        }
 
         // reset
         userCamera.xRot = centerRot;
@@ -237,7 +239,7 @@ class gltfRenderer
 
         this.newFrame(); // backbuffer
 
-        this.mergeViews(camInfos);
+        this.mergeViews(renderCamInfos, virtualCamInfos);
     }
 
     drawScene(gltf, scene, camera)
@@ -291,10 +293,23 @@ class gltfRenderer
         }
     }
 
-    mergeViews(camInfos)
+    mergeViews(renderCamInfos, virtualCamInfos)
     {
         // select shader
-        let shaderDefines = ["NUM_VIEWS " + this.numViews];
+        let shaderDefines = ["NUM_RENDER_VIEWS " + this.numRenderViews];
+
+        if(this.reconstructViews)
+        {
+            shaderDefines.push("RECONSTRUCT_VIEWS 1");
+            shaderDefines.push("NUM_VIRTUAL_VIEWS " + this.numVirtualViews);
+        } else {
+            shaderDefines.push("NUM_VIRTUAL_VIEWS " + this.numRenderViews);
+        }
+
+        if(this.BGRDisplay)
+        {
+            shaderDefines.push("BGR_DISPLAY 1");
+        }
 
         const fragmentHash = this.shaderCache.selectShader("merge.frag", shaderDefines);
         const vertexHash  = this.shaderCache.selectShader("fullscreen.vert", shaderDefines);
@@ -345,8 +360,8 @@ class gltfRenderer
         }
 
 
-        this.shader.updateUniform("u_CamInfo", camInfos, false);
-
+        this.shader.updateUniform("u_RenderCams", renderCamInfos, false);
+        this.shader.updateUniform("u_VirtualCams", virtualCamInfos, false);
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);
