@@ -180,19 +180,34 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-
     ivec3 subPixelIndices = getSubPixelViewIndices();
     g_finalColor = sampleColorFromSubPixels(subPixelIndices, v_UV);
 
-    // return;
+    return;
 
-    // vec2 scale = vec2(0.0005f);
-    // float dR = reconstructDepth(0, v_UV, scale);
-    // float dO = texture(u_depthViews[0], v_UV).x;
+    vec2 inUV = v_UV;
 
-    // float dDelta = abs(dR - dO) * 10.f;
-    // g_finalColor = vec4(dDelta, dDelta, dDelta, 1.0);
+    int virtView = 7 % NUM_RENDER_VIEWS;
+    CamInfo virtualCam = u_VirtualCams[virtView];
+    int renderViewIndex = virtualToRenderView(virtView);
+    CamInfo renderCam = u_RenderCams[renderViewIndex];
 
-    // g_finalColor = texture(u_colorViews[0], reconstructUV(0, v_UV, stepScale)) * 0.5;
-    // g_finalColor += texture(u_colorViews[0], reconstructUV(1, v_UV, stepScale)) * 0.5;
+    vec4 fragNearPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.near, 0.f);
+    vec4 fragFarPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.far, 0.f);
+
+    vec3 viewRay = fragFarPos.xyz - fragNearPos.xyz; // in world space
+
+    vec4 viewRayProj = renderCam.viewProj * vec4(viewRay, 1.f); // render camera space [0..1]
+    vec4 startPointProj = renderCam.viewProj * fragNearPos; // frag pos in render camera space
+
+    vec2 ds = viewRayProj.xy; // direction
+
+    g_finalColor = vec4(viewRayProj.xy, 0, 1);
+
+    return;
+
+    float d = intersectRay(startPointProj.xy, ds, renderViewIndex);
+
+    g_finalColor = vec4(d,d,d, 1.f);
+    //vec2 uv = startPointProj.xy + ds * d; // inUV + ds * d ?
 }

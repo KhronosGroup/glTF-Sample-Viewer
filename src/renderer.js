@@ -375,8 +375,8 @@ class gltfRenderer
 
         this.shader.updateUniform("u_RenderCams", renderCamInfos, false);
         this.shader.updateUniform("u_VirtualCams", virtualCamInfos, false);
-        this.shader.updateUniform("u_viewShift", this.parameters.viewShift);
-        this.shader.updateUniform("u_LenticularSlope", this.parameters.lenticularSlopeY / this.parameters.lenticularSlopeX);
+        this.shader.updateUniform("u_viewShift", this.parameters.viewShift, false);
+        this.shader.updateUniform("u_LenticularSlope", this.parameters.lenticularSlopeY / this.parameters.lenticularSlopeX, false);
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);
