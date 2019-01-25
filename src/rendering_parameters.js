@@ -35,6 +35,7 @@ class gltfRenderingParameters
         this.viewShift = 4;
         this.lenticularSlopeY = 2.0;
         this.lenticularSlopeX = 3.0;
+        this.invertViewport = false;
 
     }
 }

@@ -145,9 +145,10 @@ class gltfUserInterface
         const stereoFolder = this.gui.addFolder("Autostereo");
         stereoFolder.add(this.renderingParameters, "reconstructViews").name("Reconstruct Views");
         stereoFolder.add(this.renderingParameters, "displayBGR").name("BGR Display");
+        stereoFolder.add(this.renderingParameters, "invertViewport").name("Invert Viewport");
         stereoFolder.add(this.renderingParameters, "numVirtualViews", 1, 16, 1).name("Virtual Views");
         stereoFolder.add(this.renderingParameters, "numRenderViews", 1, 16, 1).name("Render Views");
-        stereoFolder.add(this.renderingParameters, "viewStepAngle", 0, 10.0, 0.01).name("View Angle");
+        stereoFolder.add(this.renderingParameters, "viewStepAngle", 0.01, 10.0, 0.01).name("View Angle");
         stereoFolder.add(this.renderingParameters, "viewShift", 0, this.renderingParameters.numVirtualViews - 1, 1).name("View Shift (Offset)");
         stereoFolder.add(this.renderingParameters, "lenticularSlopeY", 1, 100, 1).name("Lenticular Slope Y");
         stereoFolder.add(this.renderingParameters, "lenticularSlopeX", 1, 100, 1).name("Lenticular Slope X");

@@ -73,6 +73,8 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
+        this.prevRenderViewNum = this.parameters.numRenderViews;
+
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
         this.viewProjectionMatrix = mat4.create();
@@ -192,6 +194,12 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
+        if(this.prevRenderViewNum != this.parameters.numRenderViews)
+        {
+            this.prevRenderViewNum = this.parameters.numRenderViews;
+            this.initRenderTargets(this.currentWidth, this.currentHeight);
+        }
+
         let numViews = this.parameters.reconstructViews ? this.parameters.numVirtualViews : this.parameters.numRenderViews;
 
         const stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
@@ -304,6 +312,11 @@ class gltfRenderer
         if(this.parameters.BGRDisplay)
         {
             shaderDefines.push("BGR_DISPLAY 1");
+        }
+
+        if(this.parameters.invertViewport)
+        {
+            shaderDefines.push("VIEWPORT_INVERT 1");
         }
 
         const fragmentHash = this.shaderCache.selectShader("merge.frag", shaderDefines);

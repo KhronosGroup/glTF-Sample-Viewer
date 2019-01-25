@@ -35,8 +35,8 @@ uniform CamInfo u_VirtualCams[NUM_VIRTUAL_VIEWS];
 
 int virtualToRenderView(int virtualViewIndex)
 {
-    float interpolatedView = float(virtualViewIndex) / float(NUM_VIRTUAL_VIEWS);
-    return int(interpolatedView * float(NUM_RENDER_VIEWS));
+    float interpolatedView = float(virtualViewIndex) / float(NUM_VIRTUAL_VIEWS-1);
+    return int(interpolatedView * float(NUM_RENDER_VIEWS-1));
 }
 
 // https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
@@ -133,7 +133,7 @@ ivec3 getSubPixelViewIndices()
     float yCoord = gl_FragCoord.y;
 
     #ifdef VIEWPORT_INVERT
-        yCoord = textureSize(u_colorViews[0], 0).y - yCoord;
+        yCoord = float(textureSize(u_colorViews[0], 0).y) - yCoord;
     #endif
 
     float view = gl_FragCoord.x * 3.f + yCoord * u_LenticularSlope + float(u_viewShift);
