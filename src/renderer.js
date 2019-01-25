@@ -123,6 +123,9 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
+        const maxViews = WebGl.context.getParameter(WebGl.context.MAX_TEXTURE_IMAGE_UNITS) / 2;
+        this.parameters.numRenderViews = Math.min(maxViews, this.parameters.numRenderViews);
+
         // create color and depth targets with resolution
         for (let i = 0; i < this.parameters.numRenderViews; i++)
         {
@@ -191,10 +194,10 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        if(this.prevRenderViewNum != this.parameters.numRenderViews)
+        if(this.prevRenderViewNum !== this.parameters.numRenderViews)
         {
-            this.prevRenderViewNum = this.parameters.numRenderViews;
             this.initRenderTargets(this.currentWidth, this.currentHeight);
+            this.prevRenderViewNum = this.parameters.numRenderViews;
         }
 
         let numViews = this.parameters.reconstructViews ? this.parameters.numVirtualViews : this.parameters.numRenderViews;
