@@ -73,11 +73,6 @@ class gltfRenderer
         this.colorTargetTextures = [];
         this.depthTargetTextures = [];
 
-        this.reconstructViews = false;
-        this.numRenderViews = 8;
-        this.numVirtualViews = 8;
-        this.viewStepAngleDeg = 0.5;
-
         this.viewMatrix = mat4.create();
         this.projMatrix = mat4.create();
         this.viewProjectionMatrix = mat4.create();
@@ -130,7 +125,7 @@ class gltfRenderer
         this.depthTargetTextures = [];
 
         // create color and depth targets with resolution
-        for (let i = 0; i < this.numRenderViews; i++)
+        for (let i = 0; i < this.parameters.numRenderViews; i++)
         {
             let tex = WebGl.context.createTexture();
 
@@ -180,7 +175,7 @@ class gltfRenderer
     // frame state
     newFrame(renderTargetIndex = "backbuffer")
     {
-        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.numRenderViews)
+        if(renderTargetIndex !== "backbuffer" && renderTargetIndex < this.parameters.numRenderViews)
         {
             WebGl.context.bindFramebuffer(WebGl.context.FRAMEBUFFER, this.frameBuffer); // DRAW_FRAMEBUFFER ?
             WebGl.context.framebufferTexture2D(WebGl.context.FRAMEBUFFER, WebGl.context.COLOR_ATTACHMENT0, WebGl.context.TEXTURE_2D, this.colorTargetTextures[renderTargetIndex], 0);
@@ -197,10 +192,10 @@ class gltfRenderer
 
     drawSceneMultiView(gltf, scene, userCamera)
     {
-        let numViews = this.reconstructViews ? this.numVirtualViews : this.numRenderViews;
+        let numViews = this.parameters.reconstructViews ? this.parameters.numVirtualViews : this.parameters.numRenderViews;
 
-        const stepAngleRad = Math.sin(this.viewStepAngleDeg * Math.PI / 180);
-        const virtualToRenderRatio = numViews / this.numRenderViews;
+        const stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
+        const virtualToRenderRatio = numViews / this.parameters.numRenderViews;
         const stepAngleRadRender = stepAngleRad * virtualToRenderRatio;
 
         let virtualCamInfos = [];
@@ -210,9 +205,9 @@ class gltfRenderer
         let centerRot = userCamera.xRot; // dont want to change original camera
 
         // start position 'right' of the original view
-        userCamera.xRot += ((this.numRenderViews-1) / 2) * stepAngleRadRender;
+        userCamera.xRot += ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender;
 
-        for(let i = 0; i < this.numRenderViews; ++i)
+        for(let i = 0; i < this.parameters.numRenderViews; ++i)
         {
             userCamera.updatePosition();
             renderCamInfos.push(new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar));
@@ -296,17 +291,17 @@ class gltfRenderer
     mergeViews(renderCamInfos, virtualCamInfos)
     {
         // select shader
-        let shaderDefines = ["NUM_RENDER_VIEWS " + this.numRenderViews];
+        let shaderDefines = ["NUM_RENDER_VIEWS " + this.parameters.numRenderViews];
 
-        if(this.reconstructViews)
+        if(this.parameters.reconstructViews)
         {
             shaderDefines.push("RECONSTRUCT_VIEWS 1");
-            shaderDefines.push("NUM_VIRTUAL_VIEWS " + this.numVirtualViews);
+            shaderDefines.push("NUM_VIRTUAL_VIEWS " + this.parameters.numVirtualViews);
         } else {
-            shaderDefines.push("NUM_VIRTUAL_VIEWS " + this.numRenderViews);
+            shaderDefines.push("NUM_VIRTUAL_VIEWS " + this.parameters.numRenderViews);
         }
 
-        if(this.BGRDisplay)
+        if(this.parameters.BGRDisplay)
         {
             shaderDefines.push("BGR_DISPLAY 1");
         }
@@ -359,9 +354,10 @@ class gltfRenderer
             WebGl.context.uniform1iv(depthLoc, slots);
         }
 
-
         this.shader.updateUniform("u_RenderCams", renderCamInfos, false);
         this.shader.updateUniform("u_VirtualCams", virtualCamInfos, false);
+        this.shader.updateUniform("u_viewShift", this.parameters.viewShift);
+        this.shader.updateUniform("u_LenticularSlope", this.parameters.lenticularSlopeY / this.parameters.lenticularSlopeX);
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);

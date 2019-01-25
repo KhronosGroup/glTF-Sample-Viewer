@@ -24,8 +24,8 @@ struct CamInfo
     float far;
 };
 
-const int g_viewShift = 4; // view start offset
-const float g_LenticularSlope = 2.f / 3.f; // 4 / 5 or 40 / 51
+uniform int u_viewShift; // view start offset
+uniform float u_LenticularSlope; // 2 / 3 or 4 / 5 or 40 / 51
 
 uniform sampler2D u_colorViews[NUM_RENDER_VIEWS];
 uniform sampler2D u_depthViews[NUM_RENDER_VIEWS];
@@ -136,7 +136,7 @@ ivec3 getSubPixelViewIndices()
         yCoord = textureSize(u_colorViews[0], 0).y - yCoord;
     #endif
 
-    float view = gl_FragCoord.x * 3.f + yCoord * g_LenticularSlope + float(g_viewShift);
+    float view = gl_FragCoord.x * 3.f + yCoord * u_LenticularSlope + float(u_viewShift);
 
     #ifdef BGR_DISPLAY
         return ivec3(mod(view + 2.f, float(NUM_VIRTUAL_VIEWS)), mod(view + 1.f, float(NUM_VIRTUAL_VIEWS)), mod(view, float(NUM_VIRTUAL_VIEWS)));
