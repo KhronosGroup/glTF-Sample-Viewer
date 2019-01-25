@@ -4,12 +4,11 @@ import { glTF } from './gltf.js';
 import { gltfLoader } from './loader.js';
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
-import { gltfRenderingParameters, Environments } from './rendering_parameters.js';
+import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
 import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
-import { jsToGl, getIsGlb, Timer } from './utils.js';
+import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
-import { gltfImageProcessor } from './image_processor.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { getScaleFactor } from './gltf_utils.js';
 
@@ -84,7 +83,7 @@ class gltfViewer
         yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
         xmag = 1.0, ymag = 1.0)
     {
-        this.renderingParameters.cameraIndex = "default"; // force use default camera
+        this.renderingParameters.cameraIndex = UserCameraIndex; // force use default camera
 
         this.userCamera.target = jsToGl(target);
         this.userCamera.up = jsToGl(up);
@@ -103,28 +102,28 @@ class gltfViewer
         const self = this;
         input.onRotate = (deltaX, deltaY) =>
         {
-            if (self.renderingParameters.cameraIndex === "default")
+            if (this.renderingParameters.userCameraActive())
             {
                 this.userCamera.rotate(deltaX, deltaY);
             }
         };
         input.onPan = (deltaX, deltaY) =>
         {
-            if (self.renderingParameters.cameraIndex === "default")
+            if (this.renderingParameters.userCameraActive())
             {
                 this.userCamera.pan(deltaX, deltaY);
             }
         };
         input.onZoom = (delta) =>
         {
-            if (self.renderingParameters.cameraIndex === "default")
+            if (this.renderingParameters.userCameraActive())
             {
                 this.userCamera.zoomIn(delta);
             }
         };
         input.onResetCamera = () =>
         {
-            if (self.renderingParameters.cameraIndex === "default")
+            if (this.renderingParameters.userCameraActive())
             {
                 self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
             }
@@ -170,7 +169,7 @@ class gltfViewer
         const isGlb = getIsGlb(gltfFile);
 
         const self = this;
-        axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
+        return axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
         {
             let json = response.data;
             let buffers = undefined;
@@ -181,7 +180,7 @@ class gltfViewer
                 json = glb.json;
                 buffers = glb.buffers;
             }
-            self.createGltf(gltfFile, json, buffers);
+            return self.createGltf(gltfFile, json, buffers);
         }).catch(function(error)
         {
             console.error("glTF " + error);
@@ -200,19 +199,29 @@ class gltfViewer
             this.gltf = undefined;
         }
 
-        let gltf = new glTF(path);
+        const gltf = new glTF(path);
         gltf.fromJson(json);
+
+        this.injectEnvironment(gltf);
+
+        const self = this;
+        return gltfLoader.load(gltf, buffers)
+            .then(() => self.startRendering(gltf));
+    }
+
+    injectEnvironment(gltf)
+    {
+        // this is hacky, because we inject stuff into the gltf
+
+        // because the environment loader adds images with paths that are not relative
+        // to the gltf, we have to resolve all image paths before that
+        for (const image of gltf.images)
+        {
+            image.resolveRelativePath(getContainingFolder(gltf.path));
+        }
 
         const environment = Environments[this.renderingParameters.environmentName];
         new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment);
-
-        let assetPromises = gltfLoader.load(gltf, buffers);
-
-        const self = this;
-        const imageProcessor = new gltfImageProcessor();
-        Promise.all(assetPromises)
-            .then(() => imageProcessor.processImages(gltf))
-            .then(() => self.startRendering(gltf));
     }
 
     startRendering(gltf)
@@ -224,7 +233,7 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
-        this.renderingParameters.cameraIndex = "default";
+        this.renderingParameters.cameraIndex = UserCameraIndex;
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
 
         if (this.gui !== undefined)
@@ -241,8 +250,8 @@ class gltfViewer
 
     render()
     {
-        let self = this;
-        function renderFrame(elapsedTime)
+        const self = this;
+        function renderFrame()
         {
             if (self.stats !== undefined)
             {
@@ -269,7 +278,6 @@ class gltfViewer
                     // scene.applyTransformHierarchy(gltf);
 
                     self.renderer.drawSceneMultiView(self.gltf, scene, self.userCamera);
-                    //self.renderer.drawScene(self.gltf, scene, self.userCamera);
                 }
 
                 if (self.onRendererReady)
@@ -296,7 +304,7 @@ class gltfViewer
         scene.applyTransformHierarchy(gltf);
 
         const transform = mat4.create();
-        if (this.renderingParameters.cameraIndex === "default")
+        if (this.renderingParameters.userCameraActive())
         {
             const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
             mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
@@ -322,7 +330,7 @@ class gltfViewer
     notifyLoadingStarted(path)
     {
         this.loadingTimer.start();
-        console.log("Loading '%s' with environment '%s'", path, this.renderingParameters.environmentName);
+        console.log("Loading '" + path + "' with environment '" + this.renderingParameters.environmentName + "'");
 
         if (!this.headless)
         {
@@ -333,7 +341,7 @@ class gltfViewer
     notifyLoadingEnded(path)
     {
         this.loadingTimer.stop();
-        console.log("Loading '%s' took %f seconds", path, this.loadingTimer.seconds);
+        console.log("Loading '" + path + "' took " + this.loadingTimer.seconds + " seconds");
 
         if (!this.headless)
         {

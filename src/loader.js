@@ -1,45 +1,20 @@
+import { gltfImageProcessor } from "./image_processor";
+
 class gltfLoader
 {
     static load(gltf, appendix = undefined)
     {
-        let buffers;
-        let additionalFiles;
-        if (appendix && appendix.length > 0)
-        {
-            if (appendix[0] instanceof ArrayBuffer)
-            {
-                buffers = appendix;
-            }
-            else if (appendix[0] instanceof File)
-            {
-                additionalFiles = appendix;
-            }
-        }
+        const buffers = gltfLoader.getBuffers(appendix);
+        const additionalFiles = gltfLoader.getAdditionalFiles(appendix);
 
-        let promises = [];
+        const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
+        const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles)
+            .then(() => gltfLoader.processImages(gltf));
 
-        if (buffers)
-        {
-            const count = Math.min(buffers.length, gltf.buffers.length);
-            for (let i = 0; i < count; ++i)
-            {
-                gltf.buffers[i].buffer = buffers[i];
-            }
-        }
-        else
-        {
-            for (const buffer of gltf.buffers)
-            {
-                promises.push(buffer.load(gltf, additionalFiles));
-            }
-        }
+        const initGlPromise = Promise.all([buffersPromise, imagesPromise])
+            .then(() => gltf.initGl());
 
-        for (let image of gltf.images)
-        {
-            promises.push(image.load(gltf, additionalFiles));
-        }
-
-        return promises;
+        return initGlPromise;
     }
 
     static unload(gltf)
@@ -61,6 +36,64 @@ class gltfLoader
             accessor.destroy();
         }
         gltf.accessors = [];
+    }
+
+    static getBuffers(appendix)
+    {
+        return gltfLoader.getTypedAppendix(appendix, ArrayBuffer);
+    }
+
+    static getAdditionalFiles(appendix)
+    {
+        return gltfLoader.getTypedAppendix(appendix, File);
+    }
+
+    static getTypedAppendix(appendix, Type)
+    {
+        if (appendix && appendix.length > 0)
+        {
+            if (appendix[0] instanceof Type)
+            {
+                return appendix;
+            }
+        }
+    }
+
+    static loadBuffers(gltf, buffers, additionalFiles)
+    {
+        const promises = [];
+        if (buffers)
+        {
+            const count = Math.min(buffers.length, gltf.buffers.length);
+            for (let i = 0; i < count; ++i)
+            {
+                gltf.buffers[i].buffer = buffers[i];
+            }
+        }
+        else
+        {
+            for (const buffer of gltf.buffers)
+            {
+                promises.push(buffer.load(gltf, additionalFiles));
+            }
+        }
+        return Promise.all(promises);
+    }
+
+    static loadImages(gltf, additionalFiles)
+    {
+        const imagePromises = [];
+        for (let image of gltf.images)
+        {
+            imagePromises.push(image.load(gltf, additionalFiles));
+        }
+        return Promise.all(imagePromises);
+    }
+
+    static processImages(gltf)
+    {
+        const imageProcessor = new gltfImageProcessor();
+        imageProcessor.processImages(gltf);
     }
 }
 

@@ -1,13 +1,20 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { fromKeys } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
 
-class gltfImage
+class gltfImage extends GltfObject
 {
-    constructor(uri = undefined, type = WebGl.context.TEXTURE_2D, miplevel = 0, bufferView = undefined, name = undefined, mimeType = ImageMimeType.JPEG, image = undefined)
+    constructor(
+        uri = undefined,
+        type = WebGl.context.TEXTURE_2D, miplevel = 0,
+        bufferView = undefined,
+        name = undefined,
+        mimeType = ImageMimeType.JPEG,
+        image = undefined)
     {
+        super();
         this.uri = uri;
         this.bufferView = bufferView;
         this.mimeType = mimeType;
@@ -21,13 +28,11 @@ class gltfImage
         this.miplevel = miplevel; // nonstandard
     }
 
-    fromJson(jsonImage, path = "")
+    resolveRelativePath(basePath)
     {
-        fromKeys(this, jsonImage);
-
-        if(this.uri !== undefined)
+        if (this.uri !== undefined)
         {
-            this.uri = path + this.uri;
+            this.uri = basePath + this.uri;
         }
     }
 
@@ -42,7 +47,7 @@ class gltfImage
         this.image = this.mimeType === ImageMimeType.HDR ? new HDRImage() : new Image();
         this.image.crossOrigin = "";
         const self = this;
-        const promise = new Promise(function(resolve, reject)
+        const promise = new Promise(function(resolve)
         {
             self.image.onload = resolve;
             self.image.onerror = resolve;
@@ -118,3 +123,4 @@ class gltfImage
 }
 
 export { gltfImage, ImageMimeType };
+

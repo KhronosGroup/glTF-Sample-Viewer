@@ -1,58 +1,25 @@
-import { fromKeys } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfAccessor
+class gltfAccessor extends GltfObject
 {
-    constructor(bufferView = undefined, byteOffset = 0,
-        componentType = undefined, normalized = false,
-        count = undefined, type = undefined,
-        max = undefined, min = undefined,
-        sparse = undefined, name = undefined)
+    constructor()
     {
-        this.bufferView = bufferView;
-        this.byteOffset = byteOffset;
-        this.componentType = componentType;
-        this.normalized = normalized;
-        this.count = count;
-        this.type = type;
-        this.max = max;
-        this.min = min;
-        this.sparse = sparse;
-        this.name = name;
-        this.typedView = undefined;
+        super();
+        this.bufferView = undefined;
+        this.byteOffset = 0;
+        this.componentType = undefined;
+        this.normalized = false;
+        this.count = undefined;
+        this.type = undefined;
+        this.max = undefined;
+        this.min = undefined;
+        this.sparse = undefined;
+        this.name = undefined;
+
+        // non gltf
         this.glBuffer = undefined;
-
-        this.componentCount = new Map();
-        this.componentCount.set("SCALAR", 1);
-        this.componentCount.set("VEC2", 2);
-        this.componentCount.set("VEC3", 3);
-        this.componentCount.set("VEC4", 4);
-        this.componentCount.set("MAT2", 4);
-        this.componentCount.set("MAT3", 9);
-        this.componentCount.set("MAT4", 16);
-    }
-
-    getComponentCount()
-    {
-        return this.componentCount.get(this.type);
-    }
-
-    getComponentSize()
-    {
-        switch (this.componentType)
-        {
-        case WebGl.context.BYTE:
-        case WebGl.context.UNSIGNED_BYTE:
-            return 1;
-        case WebGl.context.SHORT:
-        case WebGl.context.UNSIGNED_SHORT:
-            return 2;
-        case WebGl.context.UNSIGNED_INT:
-        case WebGl.context.FLOAT:
-            return 4;
-        default:
-            return 0;
-        }
+        this.typedView = undefined;
     }
 
     getTypedView(gltf)
@@ -64,18 +31,18 @@ class gltfAccessor
 
         if (this.bufferView !== undefined)
         {
-            let bufferView = gltf.bufferViews[this.bufferView];
-            let buffer = gltf.buffers[bufferView.buffer];
-            let byteOffset = bufferView.byteOffset;
+            const bufferView = gltf.bufferViews[this.bufferView];
+            const buffer = gltf.buffers[bufferView.buffer];
+            const byteOffset = bufferView.byteOffset;
 
             let componentCount = this.getComponentCount();
-            if (bufferView.byteStride != 0)
+            if (bufferView.byteStride !== 0)
             {
                 componentCount = bufferView.byteStride / this.getComponentSize();
             }
 
-            let arrayOffsetLength = this.byteOffset / this.getComponentSize();
-            let arrayLength = arrayOffsetLength + this.count * componentCount;
+            const arrayOffsetLength = this.byteOffset / this.getComponentSize();
+            const arrayLength = arrayOffsetLength + this.count * componentCount;
 
             switch (this.componentType)
             {
@@ -108,9 +75,27 @@ class gltfAccessor
         return this.typedView;
     }
 
-    fromJson(jsonAccessor)
+    getComponentCount()
     {
-        fromKeys(this, jsonAccessor);
+        return CompononentCount.get(this.type);
+    }
+
+    getComponentSize()
+    {
+        switch (this.componentType)
+        {
+        case WebGl.context.BYTE:
+        case WebGl.context.UNSIGNED_BYTE:
+            return 1;
+        case WebGl.context.SHORT:
+        case WebGl.context.UNSIGNED_SHORT:
+            return 2;
+        case WebGl.context.UNSIGNED_INT:
+        case WebGl.context.FLOAT:
+            return 4;
+        default:
+            return 0;
+        }
     }
 
     destroy()
@@ -123,5 +108,17 @@ class gltfAccessor
         this.glBuffer = undefined;
     }
 }
+
+const CompononentCount = new Map(
+    [
+        ["SCALAR", 1],
+        ["VEC2", 2],
+        ["VEC3", 3],
+        ["VEC4", 4],
+        ["MAT2", 4],
+        ["MAT3", 9],
+        ["MAT4", 16]
+    ]
+);
 
 export { gltfAccessor };

@@ -7,6 +7,28 @@ This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.
 
 This project is meant to be a barebones reference for developers looking to explore the widespread and robust capabilities of Physically Based materials within a WebGL project that isn't tied to any external graphics libraries.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Features](#features)
+- [Usage](#usage)
+- [Setup](#setup)
+- [Debugging](#debugging)
+- [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
+- [Using Metallic-Roughness to Shade](#using-metallic-roughness-to-shade)
+  - [Environment Maps](#environment-maps)
+  - [BRDF](#brdf)
+  - [Diffuse and Specular Color](#diffuse-and-specular-color)
+  - [Final Color](#final-color)
+- [Appendix](#appendix)
+  - [Surface Reflection Ratio (F)](#surface-reflection-ratio-f)
+  - [Geometric Occlusion (G)](#geometric-occlusion-g)
+  - [Microfaced Distribution (D)](#microfaced-distribution-d)
+  - [Diffuse Term](#diffuse-term)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 Features
 --------
 
@@ -41,23 +63,41 @@ Usage
 
 If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
 
-> **Controls**
->
-> `click + drag` : Rotate model
->
-> `scroll` : Zoom camera
->
-> `GUI` : Use to change models
+**Controls**
 
-Following section describes the usage in short:
+`click + drag` : Rotate model
 
-> **Usage**
->
-> * Choose one of the glTF models in the selction list
->
-> or
->
-> * Drag and drop glTF files into viewer
+`scroll` : Zoom camera
+
+`GUI` : Use to change models
+
+**Usage**
+
+* Choose one of the glTF models in the selction list
+
+or
+
+* Drag and drop glTF files into viewer
+
+**Offline / Headless Rendering**
+
+**NOTE:** The dimensions of the rendered image are limited by the (virtual) desktop size.
+
+Requirements
+  * [NodeJS](https://nodejs.org)
+  * [Electron](https://electronjs.org/) (Installed automatically)
+
+Configure environment
+- ``npm install`` (also installs Electron)
+- ``npm run build`` (“compile” the code)
+
+Run
+- ``npm run start-offscreen -- -- -h`` for a list of available options
+
+Example
+- ``npm run start-offscreen -- -- assets\models\2.0\FlightHelmet\glTF\FlightHelmet.gltf``
+
+After execution, the screenshot is stored as ``output.png`` on the file system.
 
 Setup
 -----
@@ -87,25 +127,6 @@ Debugging
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
 * Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
 * `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit.
-
-For offline rendering usage, please follow these instructions:
-
-**Offline / Headless Rendering**
-
-Requirements
-  * [NodeJS](https://nodejs.org)
-  * [Electron](https://electronjs.org/) (Installed automatically)
-
-Configure environment
-- ``npm install`` (also installs Electron)
-
-Run
-- ``npm run start-offscreen -- -- -h`` for a list of available options
-
-Example
-- ``npm run start-offscreen -- -- assets\models\2.0\FlightHelmet\glTF\FlightHelmet.gltf``
-
-After execution, the screenshot is stored as ``output.png`` on the file system.
 
 **VS Code**
 

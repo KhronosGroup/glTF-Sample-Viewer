@@ -12,6 +12,55 @@ function jsToGl(array)
     return tensor;
 }
 
+function initGlForMembers(gltfObj, gltf)
+{
+    for (const name of Object.keys(gltfObj))
+    {
+        const member = gltfObj[name];
+
+        if (member === undefined)
+        {
+            continue;
+        }
+        if (member.initGl !== undefined)
+        {
+            member.initGl(gltf);
+        }
+        if (Array.isArray(member))
+        {
+            for (const element of member)
+            {
+                if (element.initGl !== undefined)
+                {
+                    element.initGl(gltf);
+                }
+            }
+        }
+    }
+}
+
+function objectsFromJsons(jsonObjects, GltfType)
+{
+    if (jsonObjects === undefined)
+    {
+        return [];
+    }
+
+    const objects = [];
+    for (const jsonObject of jsonObjects)
+    {
+        objects.push(objectFromJson(jsonObject, GltfType));
+    }
+    return objects;
+}
+
+function objectFromJson(jsonObject, GltfType)
+{
+    const object = new GltfType();
+    object.fromJson(jsonObject);
+    return object;
+}
+
 function fromKeys(target, jsonObj, ignore = [])
 {
     for(let k of Object.keys(target))
@@ -128,6 +177,8 @@ class Timer
 
 export {
     jsToGl,
+    objectsFromJsons,
+    objectFromJson,
     fromKeys,
     fromParams,
     stringHash,
@@ -141,5 +192,6 @@ export {
     getContainingFolder,
     combinePaths,
     UniformStruct,
-    Timer
+    Timer,
+    initGlForMembers
 };

@@ -46,7 +46,7 @@ class ShaderCache
 
     destroy()
     {
-        for (let [identifier, shader] of this.shaders.entries())
+        for (let [, shader] of this.shaders.entries())
         {
             WebGl.context.deleteShader(shader);
             shader = undefined;
@@ -54,7 +54,7 @@ class ShaderCache
 
         this.shaders.clear();
 
-        for (let [shader_hash, program] of this.programs)
+        for (let [, program] of this.programs)
         {
             program.destroy();
         }
@@ -95,7 +95,7 @@ class ShaderCache
         {
             // console.log(defines);
             // compile this variant
-            shader = WebGl.compileShader(isVert, defines + src);
+            shader = WebGl.compileShader(shaderIdentifier, isVert, defines + src);
             if(shader)
             {
                 this.shaders.set(hash, shader);

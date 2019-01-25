@@ -9,6 +9,8 @@ class gltfShader
         this.hash = hash;
         this.uniforms = new Map();
         this.attributes = new Map();
+        this.unknownAttributes = [];
+        this.unknownUniforms = [];
 
         if(this.program !== undefined)
         {
@@ -40,36 +42,35 @@ class gltfShader
         this.program = undefined;
     }
 
-    getAttribLocation(name, warn = true)
+    getAttributeLocation(name)
     {
         const loc = this.attributes.get(name);
-
-        if(loc !== undefined)
+        if (loc === undefined)
         {
-            return loc;
+            if (this.unknownAttributes.find(n => n === name) === undefined)
+            {
+                console.log("Attribute '%s' does not exist", name);
+                this.unknownAttributes.push(name);
+            }
+            return -1;
         }
-        else if(warn)
-        {
-            console.log("Attribute name '" + name + "' doesn't exist!");
-        }
-        return -1;
+        return loc;
     }
 
-    getUniformLocation(name, warn = true)
+    getUniformLocation(name)
     {
         const uniform = this.uniforms.get(name);
-
-        if(uniform !== undefined)
+        if (uniform === undefined)
         {
-            return uniform.loc;
+            if (this.unknownUniforms.find(n => n === name) === undefined)
+            {
+                console.log("Uniform '%s' does not exist", name);
+                this.unknownUniforms.push(name);
+            }
+            return -1;
         }
-        else if(warn)
-        {
-            console.log("Uniform name '" + name + "' doesn't exist!");
-        }
-        return -1;
+        return uniform.loc;
     }
-
 
     updateUniform(objectName, object, log = true)
     {

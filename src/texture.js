@@ -1,25 +1,29 @@
-import { fromKeys } from './utils.js';
+import { fromKeys, initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfTexture
+class gltfTexture extends GltfObject
 {
     constructor(sampler = undefined, source = undefined, type = WebGl.context.TEXTURE_2D, texture = undefined)
     {
+        super();
         this.sampler = sampler; // index to gltfSampler, default sampler ?
         this.source = source; // index to gltfImage
-        this.glTexture = texture; // gl texture
-        this.initialized = false;
+
+        // non gltf
+        this.glTexture = texture;
         this.type = type;
+        this.initialized = false;
     }
 
-    fromJson(jsonTexture, defaultSampler)
+    initGl(gltf)
     {
-        fromKeys(this, jsonTexture);
-
         if (this.sampler === undefined)
         {
-            this.sampler = defaultSampler;
+            this.sampler = gltf.samplers.length - 1;
         }
+
+        initGlForMembers(this, gltf);
     }
 
     destroy()
@@ -48,12 +52,14 @@ class gltfTextureInfo
         this.extensions = undefined;
     }
 
-    fromJson(jsonTextureInfo, samplerName, colorSpace = WebGl.context.RGBA)
+    initGl(gltf)
+    {
+        initGlForMembers(this, gltf);
+    }
+
+    fromJson(jsonTextureInfo)
     {
         fromKeys(this, jsonTextureInfo);
-
-        this.colorSpace = colorSpace;
-        this.samplerName = samplerName;
     }
 }
 

@@ -1,22 +1,16 @@
-import { fromKeys } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
-class gltfBufferView
+class gltfBufferView extends GltfObject
 {
-    constructor(buffer = undefined,
-        byteOffset = 0, byteLength = undefined, byteStride = 0,
-        target = undefined, name = undefined)
+    constructor()
     {
-        this.buffer = buffer;
-        this.byteOffset = byteOffset;
-        this.byteLength = byteLength;
-        this.byteStride = byteStride;
-        this.target = target;
-        this.name = name;
-    }
-
-    fromJson(jsonBufferView)
-    {
-        fromKeys(this, jsonBufferView);
+        super();
+        this.buffer = undefined;
+        this.byteOffset = 0;
+        this.byteLength = undefined;
+        this.byteStride = 0;
+        this.target = undefined;
+        this.name = undefined;
     }
 }
 

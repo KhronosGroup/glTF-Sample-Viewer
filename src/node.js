@@ -1,28 +1,25 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
+import { GltfObject } from './gltf_object.js';
 
 // contain:
 // transform
 // child indices (reference to scene array of nodes)
 
-class gltfNode
+class gltfNode extends GltfObject
 {
-    //  vec3 translation, quat rotation, vec3 scale
-    constructor(translation = jsToGl([0, 0, 0]),
-        rotation = jsToGl([0, 0, 0, 1]),
-        scale = jsToGl([1, 1, 1]),
-        children = [],
-        name = undefined)
+    constructor()
     {
-        this.translation = translation;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.matrix = undefined;
-        this.children = children;
+        super();
         this.camera = undefined;
-        this.name = name;
+        this.children = [];
+        this.matrix = undefined;
+        this.rotation = [0, 0, 0, 1];
+        this.scale = [1, 1, 1];
+        this.translation = [0, 0, 0];
+        this.name = undefined;
 
-        // non-standard:
+        // non gltf
         this.worldTransform = mat4.create();
         this.inverseWorldTransform = mat4.create();
         this.normalMatrix = mat4.create();
@@ -30,43 +27,36 @@ class gltfNode
         this.changed = true;
     }
 
-    fromJson(jsonNode)
+    initGl()
     {
-        if (jsonNode.name !== undefined)
+        if (this.matrix !== undefined)
         {
-            this.name = jsonNode.name;
-        }
-
-        if (jsonNode.children !== undefined)
-        {
-            this.children = jsonNode.children;
-        }
-
-        this.mesh = jsonNode.mesh;
-        this.camera = jsonNode.camera;
-
-        if (jsonNode.matrix !== undefined)
-        {
-            this.applyMatrix(jsonNode.matrix);
+            this.applyMatrix(this.matrix);
         }
         else
         {
-            if (jsonNode.scale !== undefined)
+            if (this.scale !== undefined)
             {
-                this.scale = jsToGl(jsonNode.scale);
+                this.scale = jsToGl(this.scale);
             }
 
-            if (jsonNode.rotation !== undefined)
+            if (this.rotation !== undefined)
             {
-                this.rotation = jsToGl(jsonNode.rotation);
+                this.rotation = jsToGl(this.rotation);
             }
 
-            if (jsonNode.translation !== undefined)
+            if (this.translation !== undefined)
             {
-                this.translation = jsToGl(jsonNode.translation);
+                this.translation = jsToGl(this.translation);
             }
         }
         this.changed = true;
+    }
+
+    fromJson(jsonNode)
+    {
+        super.fromJson(jsonNode);
+        this.mesh = jsonNode.mesh;
     }
 
     applyMatrix(matrixData)
