@@ -29,6 +29,7 @@ class gltfRenderingParameters
 
         this.reconstructViews = true;
         this.displayBGR = false;
+        this.leftToRight = true;
         this.numVirtualViews = 8;
         this.numRenderViews = 2;
         this.viewStepAngle = 0.25;

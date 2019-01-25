@@ -202,7 +202,13 @@ class gltfRenderer
 
         let numViews = this.parameters.reconstructViews ? this.parameters.numVirtualViews : this.parameters.numRenderViews;
 
-        const stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
+        let stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
+
+        if(this.parameters.leftToRight)
+        {
+            stepAngleRad = -stepAngleRad;
+        }
+
         const virtualToRenderRatio = numViews / this.parameters.numRenderViews;
         const stepAngleRadRender = stepAngleRad * virtualToRenderRatio;
 
