@@ -135,7 +135,9 @@ function getFileName(filePath)
 
 function getFileNameWithoutExtension(filePath)
 {
-    return getFileName(filePath).split(".")[0];
+    const filename = getFileName(filePath);
+    const index = filename.lastIndexOf(".");
+    return filename.slice(0, index);
 }
 
 function getContainingFolder(filePath)
