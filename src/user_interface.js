@@ -150,9 +150,9 @@ class gltfUserInterface
     // string format: "#RRGGBB"
     fromHexColor(hexColor)
     {
-        const hexR = hexColor.substring(1, 2);
-        const hexG = hexColor.substring(3, 4);
-        const hexB = hexColor.substring(5, 6);
+        const hexR = hexColor.substring(1, 3);
+        const hexG = hexColor.substring(3, 5);
+        const hexB = hexColor.substring(5, 7);
         return [ this.fromHexValue(hexR) , this.fromHexValue(hexG), this.fromHexValue(hexB) ];
     }
 
@@ -167,7 +167,7 @@ class gltfUserInterface
 
     fromHexValue(hexValue)
     {
-        return parseInt(hexValue, 16) * 16;
+        return parseInt(hexValue, 16);
     }
 }
 
