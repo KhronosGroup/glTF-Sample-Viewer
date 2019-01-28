@@ -36,7 +36,7 @@ uniform CamInfo u_VirtualCams[NUM_VIRTUAL_VIEWS];
 int virtualToRenderView(int virtualViewIndex)
 {
     float interpolatedView = float(virtualViewIndex) / float(NUM_VIRTUAL_VIEWS-1);
-    return int(interpolatedView * float(NUM_RENDER_VIEWS-1));
+    return int(round(interpolatedView * float(NUM_RENDER_VIEWS-1)));
 }
 
 // https://stackoverflow.com/questions/19592850/how-to-bind-an-array-of-textures-to-a-webgl-shader-uniform
