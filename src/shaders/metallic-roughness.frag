@@ -334,7 +334,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    gl_FragColor = vec4(toneMap(baseColor.rgb), baseColor.a);
+    gl_FragColor = vec4(gammaCorrection(baseColor.rgb), baseColor.a);
     return;
 #endif
 
