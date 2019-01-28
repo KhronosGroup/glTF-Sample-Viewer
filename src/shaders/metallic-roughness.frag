@@ -430,7 +430,7 @@ void main()
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        gl_FragColor.rgb = baseColor.rgb;
+        gl_FragColor.rgb = gammaCorrection(baseColor.rgb);
     #endif
 
     #ifdef DEBUG_OCCLUSION
@@ -438,7 +438,7 @@ void main()
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        gl_FragColor.rgb = emissive;
+        gl_FragColor.rgb = gammaCorrection(emissive);
     #endif
 
     #ifdef DEBUG_F0
