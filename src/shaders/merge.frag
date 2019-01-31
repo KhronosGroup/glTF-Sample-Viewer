@@ -15,6 +15,8 @@ out vec4 g_finalColor;
 // switch between rendering all views and 'virtual' reconstruction
 //#define RECONSTRUCT_VIEWS
 
+#define LINEAR_DEPTH
+
 struct CamInfo
 {
     mat4 invViewProj;
@@ -43,15 +45,24 @@ int virtualToRenderView(int virtualViewIndex)
 // samplers have to be indexed with a constant value
 float sampleDepth(int Index, vec2 uv)
 {
+    float z = 0.f;
+
     for(int i = 0; i < NUM_RENDER_VIEWS; ++i)
     {
         if(i == Index)
         {
-            return texture(u_depthViews[i], uv).x;
+            z = texture(u_depthViews[i], uv).x;
+            break;
         }
     }
 
-    return 0.f;
+#ifdef LINEAR_DEPTH
+    CamInfo renderCam = u_RenderCams[Index];
+    z = 2.f * z - 1.f;
+    z = 2.0 * renderCam.near * renderCam.far / (renderCam.far + renderCam.near - z * (renderCam.far - renderCam.near));
+#endif
+
+    return z;
 }
 
 float intersectRay(vec2 dp, vec2 ds, int viewIndex)
@@ -111,22 +122,6 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV, vec2 stepScale)
 
     return clamp(uv, 0.f, 1.f); // mod ?
 }
-
-// float reconstructDepth(int virtualViewIndex, vec2 inUV, vec2 stepScale)
-// {
-//     CamInfo c = u_CamInfo[virtualViewIndex];
-
-//     vec4 fragPos = c.invViewProj * vec4(inUV.x, inUV.y, c.near, 0.f); // c.near
-//     vec3 viewRay = normalize(fragPos.xyz - c.pos); // in world space
-
-//     vec4 viewRayProj = u_MainView.viewProj * vec4(viewRay, 1.f);
-//     vec4 startPointProj = u_MainView.viewProj * fragPos;
-
-//     vec2 delta = abs(inUV - startPointProj.xy) * stepScale;
-//     vec2 ds = normalize(viewRayProj.xy) * delta; // direction
-
-//     return intersectRay(startPointProj.xy, ds, virtualToRenderView(virtualViewIndex));
-// }
 
 ivec3 getSubPixelViewIndices()
 {
