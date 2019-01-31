@@ -161,11 +161,8 @@ function createWindow(width, height)
 {
     const mainWindow = new BrowserWindow({
         width: width, height: height,
-        show: false,
-        frame: false,
         webPreferences: {
             offscreen: true,
-            //transparent: true,
         }
     });
 

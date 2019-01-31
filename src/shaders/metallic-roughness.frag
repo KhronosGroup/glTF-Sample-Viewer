@@ -16,16 +16,6 @@ precision highp float;
 
 out vec4 g_finalColor;
 
-void exportColor(vec4 color, int rtIdx)
-{
-    g_finalColor = color;
-}
-
-void exportColor(vec4 color)
-{
-    exportColor(color, 0);
-}
-
 #include <tonemapping.glsl>
 #include <textures.glsl>
 #include <functions.glsl>
@@ -76,8 +66,7 @@ uniform float u_AlphaCutoff;
 
 uniform vec3 u_Camera;
 
-// debugging flags used for shader output of intermediate PBR variables
-uniform vec4 u_ScaleIBLAmbient;
+uniform int u_MipCount;
 
 struct MaterialInfo
 {
@@ -97,13 +86,9 @@ struct MaterialInfo
 #ifdef USE_IBL
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    float mipCount = u_ScaleIBLAmbient.z;
-
-    //
-
     float NdotV = clamp(dot(n, v), 0.0, 1.0);
 
-    float lod = clamp(materialInfo.perceptualRoughness * mipCount, 0.0, mipCount);
+    float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
@@ -125,10 +110,6 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
-
-    // For presentation, this allows us to disable IBL terms
-    diffuse *= u_ScaleIBLAmbient.x;
-    specular *= u_ScaleIBLAmbient.y;
 
     return diffuse + specular;
 }
@@ -259,7 +240,6 @@ void main()
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
-    vec4 outputColor = baseColor;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
@@ -333,7 +313,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    exportColor(vec4(toneMap(baseColor.rgb), baseColor.a));
+    gl_FragColor = vec4(gammaCorrection(baseColor.rgb), baseColor.a);
     return;
 #endif
 
@@ -408,49 +388,47 @@ void main()
 #ifndef DEBUG_OUTPUT // no debug
 
    // regular shading
-    outputColor = vec4(toneMap(color), baseColor.a);
+    g_finalColor = vec4(toneMap(color), baseColor.a);
 
 #else // debug output
 
     #ifdef DEBUG_METALLIC
-        outputColor.rgb = vec3(metallic);
+        g_finalColor.rgb = vec3(metallic);
     #endif
 
     #ifdef DEBUG_ROUGHNESS
-        outputColor.rgb = vec3(perceptualRoughness); //alphaRoughness
+        g_finalColor.rgb = vec3(perceptualRoughness); //alphaRoughness
     #endif
 
     #ifdef DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
-            outputColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
+            g_finalColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
         #else
-            outputColor.rgb = vec3(0.5, 0.5, 1.0);
+            g_finalColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        outputColor.rgb = baseColor.rgb;
+        g_finalColor.rgb = gammaCorrection(baseColor.rgb);
     #endif
 
     #ifdef DEBUG_OCCLUSION
-        outputColor.rgb = vec3(ao);
+        g_finalColor.rgb = vec3(ao);
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        outputColor.rgb = emissive;
+        g_finalColor.rgb = gammaCorrection(emissive);
     #endif
 
     #ifdef DEBUG_F0
-        outputColor.rgb = vec3(f0);
+        g_finalColor.rgb = vec3(f0);
     #endif
 
     #ifdef DEBUG_ALPHA
-        outputColor.rgb = vec3(baseColor.a);
+        g_finalColor.rgb = vec3(baseColor.a);
     #endif
 
-    outputColor.a = 1.0;
+    g_finalColor.a = 1.0;
 
 #endif // !DEBUG_OUTPUT
-
-    exportColor(outputColor);
 }

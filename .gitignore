@@ -8,3 +8,4 @@ npm-debug.log
 *.png
 /package-lock.json
 dist
+.idea
