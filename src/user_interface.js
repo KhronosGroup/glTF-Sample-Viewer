@@ -151,8 +151,8 @@ class gltfUserInterface
         stereoFolder.add(this.renderingParameters, "numRenderViews", 1, 16, 1).name("Render Views");
         stereoFolder.add(this.renderingParameters, "viewStepAngle", 0.01, 10.0, 0.01).name("View Angle");
         stereoFolder.add(this.renderingParameters, "viewShift", 0, this.renderingParameters.numVirtualViews - 1, 1).name("View Shift (Offset)");
-        stereoFolder.add(this.renderingParameters, "lenticularSlopeY", 1, 100, 1).name("Lenticular Slope Y");
-        stereoFolder.add(this.renderingParameters, "lenticularSlopeX", 1, 100, 1).name("Lenticular Slope X");
+        stereoFolder.add(this.renderingParameters, "lenticularSlopeY", -100, 100, 1).name("Lenticular Slope Y");
+        stereoFolder.add(this.renderingParameters, "lenticularSlopeX", -100, 100, 1).name("Lenticular Slope X");
     }
 
     clearGltfFolder()

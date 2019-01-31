@@ -133,7 +133,7 @@ ivec3 getSubPixelViewIndices()
     float yCoord = gl_FragCoord.y;
 
     #ifdef VIEWPORT_INVERT
-        yCoord = float(textureSize(u_colorViews[0], 0).y) - yCoord;
+        yCoord = float(textureSize(u_colorViews[0], 0).x) - yCoord;
     #endif
 
     float view = gl_FragCoord.x * 3.f + yCoord * u_LenticularSlope + float(u_viewShift);

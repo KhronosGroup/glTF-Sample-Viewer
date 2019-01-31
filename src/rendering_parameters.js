@@ -27,7 +27,7 @@ class gltfRenderingParameters
         this.sceneIndex = 0;
         this.cameraIndex = "default";
 
-        this.reconstructViews = true;
+        this.reconstructViews = false;
         this.displayBGR = false;
         this.leftToRight = true;
         this.numVirtualViews = 8;
