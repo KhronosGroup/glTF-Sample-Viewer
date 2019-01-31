@@ -393,7 +393,8 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
 
-        this.shader.updateUniform("u_ScaleIBLAmbient", jsToGl([1, 1, gltf.textures.length, 0]));
+        const mipCount = Environments[this.parameters.environmentName].mipLevel;
+        this.shader.updateUniform("u_MipCount", mipCount);
     }
 
     destroy()

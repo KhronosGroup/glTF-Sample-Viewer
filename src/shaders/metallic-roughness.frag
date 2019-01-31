@@ -75,8 +75,7 @@ uniform float u_AlphaCutoff;
 
 uniform vec3 u_Camera;
 
-// debugging flags used for shader output of intermediate PBR variables
-uniform vec4 u_ScaleIBLAmbient;
+uniform int u_MipCount;
 
 struct MaterialInfo
 {
@@ -96,13 +95,9 @@ struct MaterialInfo
 #ifdef USE_IBL
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 {
-    float mipCount = u_ScaleIBLAmbient.z;
-
-    //
-
     float NdotV = clamp(dot(n, v), 0.0, 1.0);
 
-    float lod = clamp(materialInfo.perceptualRoughness * mipCount, 0.0, mipCount);
+    float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
@@ -110,6 +105,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     vec2 brdf = texture2D(u_brdfLUT, brdfSamplePoint).rg;
 
     vec4 diffuseSample = textureCube(u_DiffuseEnvSampler, n);
+
 #ifdef USE_TEX_LOD
     vec4 specularSample = textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod);
 #else
@@ -127,10 +123,6 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
-
-    // For presentation, this allows us to disable IBL terms
-    diffuse *= u_ScaleIBLAmbient.x;
-    specular *= u_ScaleIBLAmbient.y;
 
     return diffuse + specular;
 }
