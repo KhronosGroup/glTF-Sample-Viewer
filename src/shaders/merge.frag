@@ -1,6 +1,8 @@
 precision highp float;
 
 in vec2 v_UV;
+in vec4 v_Position;
+
 out vec4 g_finalColor;
 
 #ifndef NUM_RENDER_VIEWS
@@ -108,6 +110,7 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV, vec2 stepScale)
     int renderViewIndex = virtualToRenderView(virtualViewIndex);
     CamInfo renderCam = u_RenderCams[renderViewIndex];
 
+#if 0
     vec4 fragPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.near, 0.f); // c.near
     vec3 viewRay = normalize(fragPos.xyz - virtualCam.pos); // in world space
 
@@ -116,7 +119,18 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV, vec2 stepScale)
 
     vec2 delta = abs(inUV - startPointProj.xy) * stepScale;
     vec2 ds = normalize(viewRayProj.xy) * delta; // direction
+#else
+    vec4 fragNearPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.near, 0.f);
+    vec4 fragFarPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.far, 0.f);
 
+    vec4 viewRay = fragFarPos - fragNearPos; // in world space
+    viewRay.xyz /= viewRay.w;
+
+    vec4 viewRayProj = renderCam.viewProj * viewRay; // render camera space [0..1]
+    vec4 startPointProj = renderCam.viewProj * fragNearPos; // frag pos in render camera space
+#endif
+
+    vec2 ds = viewRayProj.xy; // / viewRayProj.w;
     float d = intersectRay(startPointProj.xy, ds, renderViewIndex);
     vec2 uv = startPointProj.xy + ds * d; // inUV + ds * d ?
 
