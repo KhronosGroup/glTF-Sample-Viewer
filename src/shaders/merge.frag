@@ -30,6 +30,7 @@ struct CamInfo
 
 uniform int u_viewShift; // view start offset
 uniform float u_LenticularSlope; // 2 / 3 or 4 / 5 or 40 / 51
+uniform float u_HeightMapScale;
 
 uniform sampler2D u_colorViews[NUM_RENDER_VIEWS];
 uniform sampler2D u_depthViews[NUM_RENDER_VIEWS];
@@ -54,6 +55,28 @@ float sampleDepth(int Index, vec2 uv)
         if(i == Index)
         {
             z = texture(u_depthViews[i], uv).x;
+            break;
+        }
+    }
+
+#ifdef LINEAR_DEPTH
+    CamInfo renderCam = u_RenderCams[Index];
+    z = 2.f * z - 1.f;
+    z = 2.0 * renderCam.near * renderCam.far / (renderCam.far + renderCam.near - z * (renderCam.far - renderCam.near));
+#endif
+
+    return z;
+}
+
+float sampleDepthGrad(int Index, vec2 uv, vec2 dx, vec2 dy)
+{
+    float z = 0.f;
+
+    for(int i = 0; i < NUM_RENDER_VIEWS; ++i)
+    {
+        if(i == Index)
+        {
+            z = textureGrad(u_depthViews[i], uv, dx, dy).x;
             break;
         }
     }
@@ -110,15 +133,76 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV, vec2 stepScale)
     int renderViewIndex = virtualToRenderView(virtualViewIndex);
     CamInfo renderCam = u_RenderCams[renderViewIndex];
 
+    vec2 uv = inUV;
+
 #if 0
-    vec4 fragPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.near, 0.f); // c.near
-    vec3 viewRay = normalize(fragPos.xyz - virtualCam.pos); // in world space
 
-    vec4 viewRayProj = renderCam.viewProj * vec4(viewRay, 1.f);
-    vec4 startPointProj = renderCam.viewProj * fragPos;
+    // vec4 fragNearPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.near, 0.f);
+    // vec4 fragFarPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.far, 0.f);
+    // vec4 viewRay = fragFarPos - fragNearPos;
+    // viewRay.xyz /= viewRay.w;
 
-    vec2 delta = abs(inUV - startPointProj.xy) * stepScale;
-    vec2 ds = normalize(viewRayProj.xy) * delta; // direction
+    float approxDepth = sampleDepth(renderViewIndex, inUV);
+    vec4 fragPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, approxDepth, 0.f);
+    vec3 viewRay = fragPos.xyz - virtualCam.pos; // in world space
+    //viewRay.xyz /= viewRay.w;
+
+    vec4 viewRayProj = renderCam.viewProj * vec4(viewRay, 1.0); // render camera space [0..1]
+    vec4 startPointProj = renderCam.viewProj * fragPos; // frag pos in render camera space
+
+    uv = startPointProj.xy;
+
+    float fParallaxLimit = -length( viewRay.xy ) / viewRay.z;
+    fParallaxLimit *= u_HeightMapScale;
+
+    vec2 vOffsetDir = normalize(viewRay.xy);
+    vec2 vMaxOffset = vOffsetDir * fParallaxLimit;
+
+    int NumSamples = 20;
+    float fStepSize = 1.0 / float(NumSamples);
+
+    vec2 dx = dFdx(uv);
+    vec2 dy = dFdy(uv);
+
+    float fCurrRayHeight = 1.0;
+    vec2 vCurrOffset = vec2( 0, 0 );
+    vec2 vLastOffset = vec2( 0, 0 );
+
+    float fLastSampledHeight = 1.f;
+    float fCurrSampledHeight = 1.f;
+
+    int nCurrSample = 0;
+
+    while ( nCurrSample < NumSamples )
+    {
+        fCurrSampledHeight = sampleDepthGrad(renderViewIndex, uv + vCurrOffset, dx, dy);
+
+        if ( fCurrSampledHeight > fCurrRayHeight )
+        {
+            float delta1 = fCurrSampledHeight - fCurrRayHeight;
+            float delta2 = ( fCurrRayHeight + fStepSize ) - fLastSampledHeight;
+
+            float ratio = delta1/(delta1+delta2);
+
+            vCurrOffset = (ratio) * vLastOffset + (1.0-ratio) * vCurrOffset;
+
+            nCurrSample = NumSamples + 1;
+        }
+        else
+        {
+            nCurrSample++;
+
+            fCurrRayHeight -= fStepSize;
+
+            vLastOffset = vCurrOffset;
+            vCurrOffset += fStepSize * vMaxOffset;
+
+            fLastSampledHeight = fCurrSampledHeight;
+        }
+    }
+
+    uv = uv + vCurrOffset;
+
 #else
     vec4 fragNearPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.near, 0.f);
     vec4 fragFarPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.far, 0.f);
@@ -128,11 +212,12 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV, vec2 stepScale)
 
     vec4 viewRayProj = renderCam.viewProj * viewRay; // render camera space [0..1]
     vec4 startPointProj = renderCam.viewProj * fragNearPos; // frag pos in render camera space
-#endif
 
     vec2 ds = viewRayProj.xy; // / viewRayProj.w;
     float d = intersectRay(startPointProj.xy, ds, renderViewIndex);
-    vec2 uv = startPointProj.xy + ds * d; // inUV + ds * d ?
+    uv = startPointProj.xy + ds * d; // inUV + ds * d ?
+
+#endif
 
     return clamp(uv, 0.f, 1.f); // mod ?
 }
