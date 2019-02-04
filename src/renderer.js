@@ -16,14 +16,22 @@ import mergeShader from './shaders/merge.frag';
 
 class CamInfo extends UniformStruct
 {
-    constructor(invViewProj, viewProj, pos, near, far)
+    constructor(userCamera, gltf, dimX, dimY)
     {
         super();
-        this.invViewProj = invViewProj;
-        this.viewProj = viewProj;
-        this.pos = pos;
-        this.near = near;
-        this.far = far;
+
+        //this.target = userCamera.getLookAtTarget();
+        this.view = userCamera.getViewMatrix(gltf); // extrinsic
+        this.intrinsic = userCamera.getIntrinsicMatrix(dimX, dimY);
+
+        this.viewProj = userCamera.getViewProjectionMatrix(gltf);
+        this.invViewProj = userCamera.getInvViewProjectionMatrix(gltf);
+
+        this.pos = userCamera.getPosition(gltf);
+        this.target = userCamera.getLookAtTarget(gltf);
+
+        this.near = userCamera.znear;
+        this.far = userCamera.zfar;
     }
 };
 
@@ -224,7 +232,7 @@ class gltfRenderer
         for(let i = 0; i < this.parameters.numRenderViews; ++i)
         {
             userCamera.updatePosition();
-            renderCamInfos.push(new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar));
+            renderCamInfos.push(new CamInfo(userCamera, gltf, this.currentWidth, this.currentHeight));
 
             this.newFrame(i); // render target
             this.drawScene(gltf, scene, userCamera);
@@ -238,7 +246,7 @@ class gltfRenderer
         for(let i = 0; i < numViews; ++i)
         {
             userCamera.updatePosition();
-            virtualCamInfos.push(new CamInfo(userCamera.getInvViewProjectionMatrix(gltf), userCamera.getViewProjectionMatrix(gltf), userCamera.getPosition(gltf), userCamera.znear, userCamera.zfar));
+            virtualCamInfos.push(new CamInfo(userCamera, gltf, this.currentWidth, this.currentHeight));
             userCamera.xRot -= stepAngleRad;
         }
 

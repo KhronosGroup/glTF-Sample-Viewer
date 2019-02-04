@@ -1,4 +1,4 @@
-import { mat4, vec3, quat } from 'gl-matrix';
+import { mat4, mat3, vec3, quat } from 'gl-matrix';
 import { fromKeys } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -7,7 +7,7 @@ class gltfCamera extends GltfObject
     constructor(
         type = "perspective",
         znear = 0.01,
-        zfar = 10000.0,
+        zfar = 1000.0,
         yfov = 45.0 * Math.PI / 180.0,
         aspectRatio = 16.0 / 9.0,
         xmag = 1.0,
@@ -123,6 +123,23 @@ class gltfCamera extends GltfObject
         mat4.multiply(viewProj, projMatrix, viewMatrix);
 
         return viewProj;
+    }
+
+    getIntrinsicMatrix(dimX, dimY)
+    {
+        let f = dimX / (2 * Math.tan(this.yfov * 0.5));
+        let intrinsic = mat3.create();
+        intrinsic[0] = f;
+        intrinsic[4] = f;
+        intrinsic[8] = 1.0;
+
+        //intrinsic[6] = dimX / 2;
+        //intrinsic[7] = dimY / 2;
+
+        intrinsic[2] = dimX / 2;
+        intrinsic[5] = dimY / 2;
+
+        return intrinsic;
     }
 
     getInvViewProjectionMatrix(gltf)
