@@ -223,15 +223,15 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
 #else
     inUV = 2.0 * inUV - 1.0;
 
-    vec4 fragNearPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.near, 1.f);
-    //fragNearPos.xyz /= fragNearPos.w;
+    vec4 fragNearPos = inverse(virtualCam.view) *  vec4(inUV.x, inUV.y, virtualCam.near, 1.f);
+    fragNearPos.xyz /= fragNearPos.w;
 
     vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
 
-    vec4 renderViewRay = (renderCam.viewProj * vec4(viewRay, 0.0));
+    vec4 renderViewRay = (renderCam.view * vec4(viewRay, 0.0));
 
     //start point
-    vec4 renderNearPos =  renderCam.viewProj * fragNearPos;
+    vec4 renderNearPos =  renderCam.view * fragNearPos;
 
     vec2 start = (renderNearPos.xy + 1.0) * 0.5;
 

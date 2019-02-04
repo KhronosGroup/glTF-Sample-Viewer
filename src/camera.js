@@ -152,8 +152,8 @@ class gltfCamera extends GltfObject
         // let viewProj = mat4.create();
         // mat4.multiply(viewProj, projMatrix, viewMatrix);
 
-        let invViewProj = this.getViewProjectionMatrix(gltf);
-        mat4.invert(invViewProj, invViewProj)
+        let invViewProj = mat4.create();
+        mat4.invert(invViewProj, this.getViewProjectionMatrix(gltf))
         return invViewProj;
     }
 

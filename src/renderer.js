@@ -210,7 +210,10 @@ class gltfRenderer
 
         let numViews = this.parameters.reconstructViews ? this.parameters.numVirtualViews : this.parameters.numRenderViews;
 
-        let stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
+        //let stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
+        let stepAngleRad = this.parameters.viewStepAngle;
+
+        let origCamPos = vec3.fromValues(userCamera.position[0], userCamera.position[1], userCamera.position[2]);
 
         if(this.parameters.leftToRight)
         {
@@ -224,35 +227,64 @@ class gltfRenderer
         let renderCamInfos = [];
 
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
-        let centerRot = userCamera.xRot; // dont want to change original camera
+        //let centerRot = userCamera.xRot; // dont want to change original camera
 
         // start position 'right' of the original view
-        userCamera.xRot += ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender;
+        //userCamera.xRot += ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender;
 
+        const position = userCamera.getPosition(gltf);
+        const target = userCamera.getLookAtTarget(gltf);
+
+        let viewDir = vec3.create();
+        vec3.sub(viewDir, target, position); // getLookDirection(gltf)
+        vec3.normalize(viewDir, viewDir);
+
+        let tangent = vec3.create();
+        vec3.cross(tangent, viewDir, vec3.fromValues(0, 1, 0));
+
+        let curTangent = vec3.create();
+        vec3.scale(curTangent, tangent, ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender);
+        vec3.add(userCamera.position, curTangent, origCamPos);
+
+        vec3.scale(curTangent, tangent, stepAngleRadRender);
         for(let i = 0; i < this.parameters.numRenderViews; ++i)
         {
-            userCamera.updatePosition();
+            //userCamera.updatePosition();
             renderCamInfos.push(new CamInfo(userCamera, gltf, this.currentWidth, this.currentHeight));
 
             this.newFrame(i); // render target
             this.drawScene(gltf, scene, userCamera);
 
-            userCamera.xRot -= stepAngleRadRender;
+            let rotTangent = vec3.clone(curTangent);
+            userCamera.toLocalRotation(rotTangent);
+
+            //userCamera.xRot -= stepAngleRadRender;
+            vec3.sub(userCamera.position, userCamera.position, rotTangent);
         }
 
         // reset for virtual views
-        userCamera.xRot = centerRot + ((numViews - 1) / 2) * stepAngleRad;
+        //userCamera.xRot = centerRot + ((numViews - 1) / 2) * stepAngleRad;
 
+        vec3.scale(curTangent, tangent, ((numViews-1) / 2) * stepAngleRad);
+        vec3.add(userCamera.position, curTangent, origCamPos);
+
+        vec3.scale(curTangent, tangent, stepAngleRad);
         for(let i = 0; i < numViews; ++i)
         {
-            userCamera.updatePosition();
+            //userCamera.updatePosition();
             virtualCamInfos.push(new CamInfo(userCamera, gltf, this.currentWidth, this.currentHeight));
-            userCamera.xRot -= stepAngleRad;
+            //userCamera.xRot -= stepAngleRad;
+
+            let rotTangent = vec3.clone(curTangent);
+            userCamera.toLocalRotation(rotTangent);
+
+            vec3.sub(userCamera.position, userCamera.position, rotTangent);
         }
 
         // reset
-        userCamera.xRot = centerRot;
-        userCamera.updatePosition();
+        //userCamera.xRot = centerRot;
+        //userCamera.updatePosition();
+        userCamera.position = origCamPos;
 
         this.newFrame(); // backbuffer
 
