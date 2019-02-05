@@ -39,7 +39,7 @@ uniform CamInfo u_VirtualCams[NUM_VIRTUAL_VIEWS];
 
 int virtualToRenderView(int virtualViewIndex)
 {
-    float interpolatedView = float(virtualViewIndex) / float(NUM_VIRTUAL_VIEWS-1);
+    float interpolatedView = float(virtualViewIndex) / max(float(NUM_VIRTUAL_VIEWS-1), 1.f);
     return int(round(interpolatedView * float(NUM_RENDER_VIEWS-1)));
 }
 
@@ -135,7 +135,8 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
 
     inUV = 2.0 * inUV - 1.0;
 
-    vec4 fragNearPos = virtualCam.invViewProj *  vec4(inUV.x, inUV.y, virtualCam.near, 1.0);
+    vec4 fragNearPos = virtualCam.invViewProj *  vec4(inUV.x, inUV.y, virtualCam.near, 1);
+    //fragNearPos.xyz /= fragNearPos.w;
     //fragNearPos.xyz /= fragNearPos.z;
 
     vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
@@ -143,8 +144,7 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
     vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
 
     //start point
-    vec4 renderNearPos =  renderCam.viewProj * fragNearPos;
-    //renderNearPos.xyz /= renderNearPos.w;
+    vec4 renderNearPos = renderCam.viewProj * fragNearPos;
 
     vec2 start = (renderNearPos.xy + 1.0) * 0.5;
 
@@ -174,14 +174,6 @@ ivec3 getSubPixelViewIndices()
 
 vec4 sampleColor(int viewIndex, vec2 inUV)
 {
-#ifdef RECONSTRUCT_VIEWS
-
-    int view = virtualToRenderView(viewIndex);
-    inUV = reconstructUV(viewIndex, inUV);
-    viewIndex = view;
-
-#endif
-
     for(int i = 0; i < NUM_RENDER_VIEWS; ++i)
     {
         if(i == viewIndex)
@@ -193,21 +185,40 @@ vec4 sampleColor(int viewIndex, vec2 inUV)
     return vec4(0);
 }
 
+vec4 reconstructColor(int viewIndex, vec2 inUV)
+{
+#ifdef RECONSTRUCT_VIEWS
+
+    int view = virtualToRenderView(viewIndex);
+    inUV = reconstructUV(viewIndex, inUV);
+    viewIndex = view;
+
+#endif
+
+    return sampleColor(viewIndex, inUV);
+}
+
 vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 {
-    vec4 pixelR = sampleColor(subPixelIndices.x, uv);
-    vec4 pixelG = sampleColor(subPixelIndices.y, uv);
-    vec4 pixelB = sampleColor(subPixelIndices.z, uv);
+    vec4 pixelR = reconstructColor(subPixelIndices.x, uv);
+    vec4 pixelG = reconstructColor(subPixelIndices.y, uv);
+    vec4 pixelB = reconstructColor(subPixelIndices.z, uv);
 
     return vec4(pixelR.x, pixelG.y, pixelB.z, 1.0);
 }
 
 void main()
 {
-#if 0
-    int view = int(v_UV.x * float(NUM_VIRTUAL_VIEWS));
-    vec2 uv = vec2(v_UV * float(NUM_VIRTUAL_VIEWS) - float(view));
-    g_finalColor = sampleColor(view, uv);
+#if 1
+    // int view = int(v_UV.x * float(NUM_VIRTUAL_VIEWS));
+    // vec2 uv = vec2(v_UV * float(NUM_VIRTUAL_VIEWS) - float(view));
+    // g_finalColor = sampleColor(view, uv);
+
+    vec4 color = sampleColor(0, v_UV);
+    vec2 uv = reconstructUV(0, v_UV);
+
+    color += sampleColor(0, uv);
+    g_finalColor = color;
 
     return;
 #else
