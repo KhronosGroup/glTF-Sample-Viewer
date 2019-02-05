@@ -277,8 +277,8 @@ class gltfRenderer
             userCamera.updatePosition(offset);
             virtualCamInfos.push(new CamInfo(userCamera, gltf));
 
-            //this.newFrame(i); // render target
-            //this.drawScene(gltf, scene, userCamera);
+            // this.newFrame(i); // render target
+            // this.drawScene(gltf, scene, userCamera);
 
             //userCamera.xRot -= stepAngleRad;
             offset -= offsetWidth;

@@ -27,7 +27,7 @@ class gltfRenderingParameters
         this.sceneIndex = 0;
         this.cameraIndex = "default";
 
-        this.reconstructViews = false;
+        this.reconstructViews = true;
         this.displayBGR = false;
         this.leftToRight = true;
         this.numVirtualViews = 8;
@@ -37,7 +37,7 @@ class gltfRenderingParameters
         this.lenticularSlopeY = 2.0;
         this.lenticularSlopeX = 3.0;
         this.invertViewport = false;
-        this.depthScale = 1.0;
+        this.depthScale = 0.0;
 
         this.cameraIndex = UserCameraIndex;
     }

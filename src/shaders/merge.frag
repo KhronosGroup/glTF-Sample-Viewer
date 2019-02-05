@@ -13,10 +13,6 @@ out vec4 g_finalColor;
     #define NUM_VIRTUAL_VIEWS 1
 #endif
 
-//#define BGR_DISPLAY
-// switch between rendering all views and 'virtual' reconstruction
-//#define RECONSTRUCT_VIEWS
-
 #define LINEAR_DEPTH
 
 struct CamInfo
@@ -131,102 +127,23 @@ float intersectRay(vec2 dp, vec2 ds, int viewIndex)
     return best_depth;
 }
 
-vec3 intersectPlane(vec3 rayDirection, vec3 rayOrigin, vec3 planeNormal, vec3 planeOrigin)
-{
-    float d = -dot(planeOrigin, planeNormal);
-    float v = dot(rayDirection, planeNormal);
-    float t = -(dot(rayOrigin, planeNormal) + d) / v;
-    if(t > 0.0f)
-    {
-        return rayOrigin + t * rayDirection;
-    }
-    return vec3(1, 0, 0);
-}
-
-float intersectPlaneDist(vec3 rayDirection, vec3 rayOrigin, vec3 planeNormal, vec3 planeOrigin)
-{
-    float d = -dot(planeOrigin, planeNormal);
-    float v = dot(rayDirection, planeNormal);
-    return -(dot(rayOrigin, planeNormal) + d) / v;
-}
-
-// vec3 intersect(int virtualViewIndex, vec2 inUV)
-// {
-//     CamInfo virtualCam = u_VirtualCams[virtualViewIndex];
-//     int renderViewIndex = virtualToRenderView(virtualViewIndex);
-//     CamInfo renderCam = u_RenderCams[renderViewIndex];
-
-//     vec4 fragNearPos = vec4(inUV.x, inUV.y, 0, 1.f) * virtualCam.invViewProj;
-//     //vec4 fragFarPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, -virtualCam.far, 1.f);
-//     vec3 viewRay = virtualCam.target - virtualCam.pos; // in world space
-
-//     vec3 planeNormal = normalize(renderCam.target - renderCam.pos);
-//     vec3 planeOrigin = renderCam.pos + planeNormal * renderCam.near;
-
-//     return intersectPlane(viewRay.xyz, virtualCam.pos - (viewRay.xyz), planeNormal, planeOrigin);
-// }
-
-// float intersectDepth(int virtualViewIndex, vec2 inUV)
-// {
-//     CamInfo virtualCam = u_VirtualCams[virtualViewIndex];
-//     int renderViewIndex = virtualToRenderView(virtualViewIndex);
-//     CamInfo renderCam = u_RenderCams[renderViewIndex];
-
-//     vec2 clipSpaceCoords = vec2((inUV.x - 0.5) * 2.0, (inUV.y - 0.5) * 2.0);
-
-//     vec4 fragNearPos = virtualCam.invViewProj * vec4(clipSpaceCoords.x, clipSpaceCoords.y, virtualCam.near, 1.f);
-//     vec4 fragFarPos = virtualCam.invViewProj * vec4(clipSpaceCoords.x, clipSpaceCoords.y, virtualCam.far, 1.f);
-//     vec4 viewRay = fragFarPos - fragNearPos; // in world space
-
-//     vec3 planeNormal = normalize(renderCam.target - renderCam.pos);
-//     vec3 planeOrigin = renderCam.pos + planeNormal * renderCam.near;
-
-//     return intersectPlaneDist(viewRay.xyz, virtualCam.pos - (viewRay.xyz), planeNormal, planeOrigin);
-// }
-
 vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
 {
     CamInfo virtualCam = u_VirtualCams[virtualViewIndex];
     int renderViewIndex = virtualToRenderView(virtualViewIndex);
     CamInfo renderCam = u_RenderCams[renderViewIndex];
 
-#if 0
-    mat3 K2R2 = virtualCam.intrinsic * mat3(virtualCam.view);
-    mat3 K1R1 = renderCam.intrinsic * mat3(renderCam.view);
-    //mat3 K2R2 = mat3(virtualCam.view) * virtualCam.intrinsic;
-
-    mat3 invK1R1 = inverse(K1R1);
-
-    float z = sampleDepth(renderViewIndex, inUV);
-
-    //vec2 res = vec2(textureSize(u_colorViews[0], 0).xy);
-
-    vec3 p1 = vec3(inUV * z, z);
-
-    vec3 repRenderPos = (K2R2 * invK1R1) * (p1 + K1R1 * renderCam.pos) - K2R2 * virtualCam.pos;
-
-    //repRenderPos.xy /= repRenderPos.z;
-    repRenderPos /= u_HeightMapScale;
-
-    // floor(repRenderPos.xy + 0.5)
-
-    // vec2 ds = viewRayProj.xy; // direction
-    // float d = intersectRay(startPointProj.xy, ds, renderViewIndex);
-    // uv = startPointProj.xy + ds * d;
-    return clamp(repRenderPos.xy, 0.f, 1.f);
-
-#else
     inUV = 2.0 * inUV - 1.0;
 
-    vec3 fragNearPos = transpose(mat3(virtualCam.view)) *  vec3(inUV.x, inUV.y, 1);
-    //fragNearPos.xyz /= fragNearPos.w;
+    vec4 fragNearPos = virtualCam.invViewProj *  vec4(inUV.x, inUV.y, virtualCam.near, 1.0);
+    //fragNearPos.xyz /= fragNearPos.z;
 
     vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
 
-    vec3 renderViewRay = mat3(renderCam.view) * viewRay;
+    vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
 
     //start point
-    vec3 renderNearPos =  mat3(renderCam.view) * fragNearPos;
+    vec4 renderNearPos =  renderCam.viewProj * fragNearPos;
     //renderNearPos.xyz /= renderNearPos.w;
 
     vec2 start = (renderNearPos.xy + 1.0) * 0.5;
@@ -236,7 +153,6 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
     float d = intersectRay(start, ds, renderViewIndex);
 
     return start + ds*d;
-#endif
 }
 
 ivec3 getSubPixelViewIndices()
@@ -288,12 +204,6 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-    // float d = intersectDepth(3, v_UV) * 0.75;
-    // //d -= float(int(d));
-    // g_finalColor = vec4(d, d, d, 1);
-
-    // return;
-
 #if 0
     int view = int(v_UV.x * float(NUM_VIRTUAL_VIEWS));
     vec2 uv = vec2(v_UV * float(NUM_VIRTUAL_VIEWS) - float(view));
@@ -306,27 +216,4 @@ void main()
 
     return;
 #endif
-    // int virtView = 7 % NUM_RENDER_VIEWS;
-    // CamInfo virtualCam = u_VirtualCams[virtView];
-    // int renderViewIndex = virtualToRenderView(virtView);
-    // CamInfo renderCam = u_RenderCams[renderViewIndex];
-
-    // vec4 fragNearPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.near, 0.f);
-    // vec4 fragFarPos = virtualCam.invViewProj * vec4(inUV.x, inUV.y, virtualCam.far, 0.f);
-
-    // vec3 viewRay = fragFarPos.xyz - fragNearPos.xyz; // in world space
-
-    // vec4 viewRayProj = renderCam.viewProj * vec4(viewRay, 1.f); // render camera space [0..1]
-    // vec4 startPointProj = renderCam.viewProj * fragNearPos; // frag pos in render camera space
-
-    // vec2 ds = viewRayProj.xy; // direction
-
-    // g_finalColor = vec4(viewRayProj.xy, 0, 1);
-
-    // return;
-
-    // float d = intersectRay(startPointProj.xy, ds, renderViewIndex);
-
-    // g_finalColor = vec4(d,d,d, 1.f);
-    //vec2 uv = startPointProj.xy + ds * d; // inUV + ds * d ?
 }
