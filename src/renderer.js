@@ -245,15 +245,21 @@ class gltfRenderer
         // start position 'right' of the original view
         userCamera.xRot += ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender;
 
+        let offsetWidth = virtualToRenderRatio * this.parameters.viewStepWidth * (this.parameters.leftToRight ? -1.0 : 1.0);
+        let offset = ((this.parameters.numRenderViews - 1) / 2)  * offsetWidth;
+
         for(let i = 0; i < this.parameters.numRenderViews; ++i)
         {
+            userCamera.updatePosition(offset);
             renderCamInfos.push(new CamInfo(userCamera, gltf));
+            userCamera.updatePosition(0);
 
             this.newFrame(i); // render target
             this.prepareSceneForRendering(gltf, userCamera.getModelMatrix());
             this.drawScene(gltf, scene, userCamera);
 
             userCamera.xRot -= stepAngleRadRender;
+            offset -= offsetWidth;
         }
 
         // reset for virtual views
@@ -261,9 +267,8 @@ class gltfRenderer
 
         // reset
         userCamera.xRot = centerRot;
-
-        let offsetWidth = this.parameters.viewStepWidth * (this.parameters.leftToRight ? -1.0 : 1.0);
-        let offset = ((numViews - 1) / 2)  * offsetWidth;
+        offsetWidth = this.parameters.viewStepWidth * (this.parameters.leftToRight ? -1.0 : 1.0);
+        offset = ((numViews - 1) / 2)  * offsetWidth;
 
         //this.prepareSceneForRendering(gltf);
 
