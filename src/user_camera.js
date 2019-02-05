@@ -1,4 +1,4 @@
-import { vec3 } from 'gl-matrix';
+import { vec3, mat4, mat3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
 import { getSceneExtends } from './gltf_utils.js';
@@ -28,18 +28,27 @@ class UserCamera extends gltfCamera
         this.scaleFactor = 1;
     }
 
-    updatePosition()
+    updatePosition(offsetX = 0)
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, 1);
-        this.toLocalRotation(direction);
 
         const position = vec3.create();
         vec3.scale(position, direction, this.zoom);
         vec3.add(position, position, this.target);
+        position[0] += offsetX;
 
         this.position = position;
+    }
+
+    getModelMatrix()
+    {
+        let model = mat4.create();
+        mat4.rotate(model, model, this.xRot, vec3.fromValues(0, 1 ,0));
+        mat4.rotate(model, model, this.yRot, vec3.fromValues(1, 0, 0));
+
+        return model;
     }
 
     reset(gltf, sceneIndex)

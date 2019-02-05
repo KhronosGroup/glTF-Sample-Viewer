@@ -6,6 +6,7 @@ import { jsToGl, UniformStruct } from './utils.js';
 import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
+import { getScaleFactor } from './gltf_utils.js';
 import metallicRoughnessShader from './shaders/metallic-roughness.frag';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
@@ -16,19 +17,17 @@ import mergeShader from './shaders/merge.frag';
 
 class CamInfo extends UniformStruct
 {
-    constructor(userCamera, gltf, dimX, dimY)
+    constructor(userCamera, gltf)
     {
         super();
 
         //this.target = userCamera.getLookAtTarget();
         this.view = userCamera.getViewMatrix(gltf); // extrinsic
-        this.intrinsic = userCamera.getIntrinsicMatrix(dimX, dimY);
 
         this.viewProj = userCamera.getViewProjectionMatrix(gltf);
         this.invViewProj = userCamera.getInvViewProjectionMatrix(gltf);
 
         this.pos = userCamera.getPosition(gltf);
-        this.target = userCamera.getLookAtTarget(gltf);
 
         this.near = userCamera.znear;
         this.far = userCamera.zfar;
@@ -113,6 +112,21 @@ class gltfRenderer
         WebGl.context.depthFunc(WebGl.context.LEQUAL);
         WebGl.context.colorMask(true, true, true, true);
         WebGl.context.clearDepth(1.0);
+    }
+
+    prepareSceneForRendering(gltf, rootTransform = mat4.create())
+    {
+        const scene = gltf.scenes[this.parameters.sceneIndex];
+        scene.applyTransformHierarchy(gltf, rootTransform);
+
+        const transform = rootTransform;
+        if (this.parameters.userCameraActive())
+        {
+            const scaleFactor = getScaleFactor(gltf, this.parameters.sceneIndex);
+            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+        }
+
+        scene.applyTransformHierarchy(gltf, transform);
     }
 
     initRenderTargets(width, height)
@@ -211,9 +225,8 @@ class gltfRenderer
         let numViews = this.parameters.reconstructViews ? this.parameters.numVirtualViews : this.parameters.numRenderViews;
 
         //let stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
-        let stepAngleRad = this.parameters.viewStepAngle;
-
-        let origCamPos = vec3.fromValues(userCamera.position[0], userCamera.position[1], userCamera.position[2]);
+        //let stepAngleRad = this.parameters.viewStepWidth;
+        let stepAngleRad = Math.atan(this.parameters.viewStepWidth) * userCamera.zoom;
 
         if(this.parameters.leftToRight)
         {
@@ -227,64 +240,44 @@ class gltfRenderer
         let renderCamInfos = [];
 
         // Assuming 'views' are on a equator around the focus object with stepAngleRad between each view.
-        //let centerRot = userCamera.xRot; // dont want to change original camera
+        let centerRot = userCamera.xRot; // dont want to change original camera
 
         // start position 'right' of the original view
-        //userCamera.xRot += ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender;
+        userCamera.xRot += ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender;
 
-        const position = userCamera.getPosition(gltf);
-        const target = userCamera.getLookAtTarget(gltf);
-
-        let viewDir = vec3.create();
-        vec3.sub(viewDir, target, position); // getLookDirection(gltf)
-        vec3.normalize(viewDir, viewDir);
-
-        let tangent = vec3.create();
-        vec3.cross(tangent, viewDir, vec3.fromValues(0, 1, 0));
-
-        let curTangent = vec3.create();
-        vec3.scale(curTangent, tangent, ((this.parameters.numRenderViews-1) / 2) * stepAngleRadRender);
-        vec3.add(userCamera.position, curTangent, origCamPos);
-
-        vec3.scale(curTangent, tangent, stepAngleRadRender);
         for(let i = 0; i < this.parameters.numRenderViews; ++i)
         {
-            //userCamera.updatePosition();
-            renderCamInfos.push(new CamInfo(userCamera, gltf, this.currentWidth, this.currentHeight));
+            renderCamInfos.push(new CamInfo(userCamera, gltf));
 
             this.newFrame(i); // render target
+            this.prepareSceneForRendering(gltf, userCamera.getModelMatrix());
             this.drawScene(gltf, scene, userCamera);
 
-            let rotTangent = vec3.clone(curTangent);
-            userCamera.toLocalRotation(rotTangent);
-
-            //userCamera.xRot -= stepAngleRadRender;
-            vec3.sub(userCamera.position, userCamera.position, rotTangent);
+            userCamera.xRot -= stepAngleRadRender;
         }
 
         // reset for virtual views
         //userCamera.xRot = centerRot + ((numViews - 1) / 2) * stepAngleRad;
 
-        vec3.scale(curTangent, tangent, ((numViews-1) / 2) * stepAngleRad);
-        vec3.add(userCamera.position, curTangent, origCamPos);
+        // reset
+        userCamera.xRot = centerRot;
 
-        vec3.scale(curTangent, tangent, stepAngleRad);
+        let offsetWidth = this.parameters.viewStepWidth * (this.parameters.leftToRight ? -1.0 : 1.0);
+        let offset = ((numViews - 1) / 2)  * offsetWidth;
+
+        //this.prepareSceneForRendering(gltf);
+
         for(let i = 0; i < numViews; ++i)
         {
-            //userCamera.updatePosition();
-            virtualCamInfos.push(new CamInfo(userCamera, gltf, this.currentWidth, this.currentHeight));
+            userCamera.updatePosition(offset);
+            virtualCamInfos.push(new CamInfo(userCamera, gltf));
+
+            //this.newFrame(i); // render target
+            //this.drawScene(gltf, scene, userCamera);
+
             //userCamera.xRot -= stepAngleRad;
-
-            let rotTangent = vec3.clone(curTangent);
-            userCamera.toLocalRotation(rotTangent);
-
-            vec3.sub(userCamera.position, userCamera.position, rotTangent);
+            offset -= offsetWidth;
         }
-
-        // reset
-        //userCamera.xRot = centerRot;
-        //userCamera.updatePosition();
-        userCamera.position = origCamPos;
 
         this.newFrame(); // backbuffer
 

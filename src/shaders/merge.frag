@@ -21,12 +21,7 @@ out vec4 g_finalColor;
 
 struct CamInfo
 {
-    //mat4 invViewProj;
-    //mat4 viewProj;
-    //vec3 target;
-
     mat4 view;
-    mat3 intrinsic;
 
     mat4 viewProj;
     mat4 invViewProj;
@@ -223,15 +218,16 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
 #else
     inUV = 2.0 * inUV - 1.0;
 
-    vec4 fragNearPos = inverse(virtualCam.view) *  vec4(inUV.x, inUV.y, virtualCam.near, 1.f);
-    fragNearPos.xyz /= fragNearPos.w;
+    vec3 fragNearPos = transpose(mat3(virtualCam.view)) *  vec3(inUV.x, inUV.y, 1);
+    //fragNearPos.xyz /= fragNearPos.w;
 
     vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
 
-    vec4 renderViewRay = (renderCam.view * vec4(viewRay, 0.0));
+    vec3 renderViewRay = mat3(renderCam.view) * viewRay;
 
     //start point
-    vec4 renderNearPos =  renderCam.view * fragNearPos;
+    vec3 renderNearPos =  mat3(renderCam.view) * fragNearPos;
+    //renderNearPos.xyz /= renderNearPos.w;
 
     vec2 start = (renderNearPos.xy + 1.0) * 0.5;
 

@@ -27,12 +27,12 @@ class gltfRenderingParameters
         this.sceneIndex = 0;
         this.cameraIndex = "default";
 
-        this.reconstructViews = true;
+        this.reconstructViews = false;
         this.displayBGR = false;
         this.leftToRight = true;
         this.numVirtualViews = 8;
         this.numRenderViews = 1;
-        this.viewStepAngle = 0.1;
+        this.viewStepWidth = 0.1;
         this.viewShift = 4;
         this.lenticularSlopeY = 2.0;
         this.lenticularSlopeX = 3.0;

@@ -10,7 +10,6 @@ import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
-import { getScaleFactor } from './gltf_utils.js';
 
 class gltfViewer
 {
@@ -244,7 +243,7 @@ class gltfViewer
         this.gltf = gltf;
         this.currentlyRendering = true;
 
-        this.prepareSceneForRendering(gltf);
+        this.renderer.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
     }
 
@@ -260,7 +259,7 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
-                self.prepareSceneForRendering(self.gltf);
+                //self.prepareSceneForRendering(self.gltf);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
@@ -296,21 +295,6 @@ class gltfViewer
 
         // After this start executing render loop.
         window.requestAnimationFrame(renderFrame);
-    }
-
-    prepareSceneForRendering(gltf)
-    {
-        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-        scene.applyTransformHierarchy(gltf);
-
-        const transform = mat4.create();
-        if (this.renderingParameters.userCameraActive())
-        {
-            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
-            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
-        }
-
-        scene.applyTransformHierarchy(gltf, transform);
     }
 
     initializeGui()

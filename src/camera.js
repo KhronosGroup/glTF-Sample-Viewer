@@ -125,33 +125,8 @@ class gltfCamera extends GltfObject
         return viewProj;
     }
 
-    getIntrinsicMatrix(dimX, dimY)
-    {
-        let f = dimX / (2 * Math.tan(this.yfov * 0.5));
-        let intrinsic = mat3.create();
-        intrinsic[0] = f;
-        intrinsic[4] = f;
-        intrinsic[8] = 1.0;
-
-        //intrinsic[6] = dimX / 2;
-        //intrinsic[7] = dimY / 2;
-
-        intrinsic[2] = dimX / 2;
-        intrinsic[5] = dimY / 2;
-
-        return intrinsic;
-    }
-
     getInvViewProjectionMatrix(gltf)
     {
-        // let projMatrix = this.getProjectionMatrix();
-        // let viewMatrix = this.getViewMatrix(gltf);
-        // mat4.invert(projMatrix, projMatrix);
-        // mat4.invert(viewMatrix, viewMatrix);
-
-        // let viewProj = mat4.create();
-        // mat4.multiply(viewProj, projMatrix, viewMatrix);
-
         let invViewProj = mat4.create();
         mat4.invert(invViewProj, this.getViewProjectionMatrix(gltf))
         return invViewProj;
