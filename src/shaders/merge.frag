@@ -18,6 +18,7 @@ out vec4 g_finalColor;
 struct CamInfo
 {
     mat4 view;
+    mat4 proj;
 
     mat4 viewProj;
     mat4 invViewProj;
@@ -101,13 +102,13 @@ float intersectRay(vec2 dp, vec2 ds, int viewIndex)
     float best_depth = 1.0;
     for(int i = 0; i < linear_search_steps; ++i)
     {
-        depth += size;
         float z = sampleDepth(viewIndex, dp + ds*depth);
-        if(best_depth > 0.996 && depth >= z)
+        if(depth >= z)
         {
             best_depth = depth;
             break;
         }
+        depth += size;
     }
 
     depth = best_depth;
@@ -133,26 +134,54 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
     int renderViewIndex = virtualToRenderView(virtualViewIndex);
     CamInfo renderCam = u_RenderCams[renderViewIndex];
 
-    inUV = 2.0 * inUV - 1.0;
+    vec2 targetUV = 2.0 * inUV - 1.0;
 
-    vec4 fragNearPos = virtualCam.invViewProj *  vec4(inUV.x, inUV.y, virtualCam.near, 1);
-    //fragNearPos.xyz /= fragNearPos.w;
-    //fragNearPos.xyz /= fragNearPos.z;
+    vec4 fragNearPos = virtualCam.invViewProj *  vec4(targetUV.x, targetUV.y, virtualCam.near, 1);
 
     vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
 
     vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
+    //renderViewRay = (renderViewRay + 1.0) * 0.5;
 
-    //start point
     vec4 renderNearPos = renderCam.viewProj * fragNearPos;
 
     vec2 start = (renderNearPos.xy + 1.0) * 0.5;
 
     vec2 ds = renderViewRay.xy * u_HeightMapScale;
 
-    float d = intersectRay(start, ds, renderViewIndex);
+    float z = intersectRay(start, ds, renderViewIndex);
 
-    return start + ds*d;
+    float lambda = -virtualCam.proj[0][0] * (virtualCam.pos.x - renderCam.pos.x);
+
+    targetUV.x += lambda / z;
+
+    targetUV = (targetUV + 1.0) * 0.5;
+
+    return targetUV;
+}
+
+float reconstructDepth(int virtualViewIndex, vec2 inUV)
+{
+    CamInfo virtualCam = u_VirtualCams[virtualViewIndex];
+    int renderViewIndex = virtualToRenderView(virtualViewIndex);
+    CamInfo renderCam = u_RenderCams[renderViewIndex];
+
+    inUV = 2.0 * inUV - 1.0;
+
+    vec4 fragNearPos = virtualCam.invViewProj *  vec4(inUV.x, inUV.y, virtualCam.near, 1);
+
+    vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
+
+    vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
+    //renderViewRay = (renderViewRay + 1.0) * 0.5;
+
+    vec4 renderNearPos = renderCam.viewProj * fragNearPos;
+
+    vec2 start = (renderNearPos.xy + 1.0) * 0.5;
+
+    vec2 ds = renderViewRay.xy * u_HeightMapScale;
+
+    return intersectRay(start, ds, renderViewIndex);
 }
 
 ivec3 getSubPixelViewIndices()
@@ -209,16 +238,15 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-#if 1
-    // int view = int(v_UV.x * float(NUM_VIRTUAL_VIEWS));
-    // vec2 uv = vec2(v_UV * float(NUM_VIRTUAL_VIEWS) - float(view));
-    // g_finalColor = sampleColor(view, uv);
+#if 0
 
     vec4 color = sampleColor(0, v_UV);
-    vec2 uv = reconstructUV(0, v_UV);
 
-    color += sampleColor(0, uv);
-    g_finalColor = color;
+    //vec2 disp = reconstructUV(1, v_UV) - v_UV;
+    //g_finalColor = vec4(disp.x,disp.x,disp.x, 1.0);
+
+    color = reconstructColor(1, v_UV);
+    g_finalColor += color;
 
     return;
 #else

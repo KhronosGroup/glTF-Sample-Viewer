@@ -30,9 +30,9 @@ class gltfRenderingParameters
         this.reconstructViews = true;
         this.displayBGR = false;
         this.leftToRight = true;
-        this.numVirtualViews = 8;
+        this.numVirtualViews = 2;
         this.numRenderViews = 1;
-        this.viewStepWidth = 0.1;
+        this.viewStepWidth = 0.001;
         this.viewShift = 4;
         this.lenticularSlopeY = 2.0;
         this.lenticularSlopeX = 3.0;

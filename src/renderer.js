@@ -23,6 +23,7 @@ class CamInfo extends UniformStruct
 
         //this.target = userCamera.getLookAtTarget();
         this.view = userCamera.getViewMatrix(gltf); // extrinsic
+        this.proj = userCamera.getProjectionMatrix();
 
         this.viewProj = userCamera.getViewProjectionMatrix(gltf);
         this.invViewProj = userCamera.getInvViewProjectionMatrix(gltf);
