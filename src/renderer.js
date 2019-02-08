@@ -364,6 +364,8 @@ class gltfRenderer
             shaderDefines.push("VIEWPORT_INVERT 1");
         }
 
+        shaderDefines.push("NUM_ITERATIONS " + this.parameters.iterations);
+
         const fragmentHash = this.shaderCache.selectShader("merge.frag", shaderDefines);
         const vertexHash  = this.shaderCache.selectShader("fullscreen.vert", shaderDefines);
 
@@ -416,7 +418,8 @@ class gltfRenderer
         this.shader.updateUniform("u_VirtualCams", virtualCamInfos, false);
         this.shader.updateUniform("u_viewShift", this.parameters.viewShift, false);
         this.shader.updateUniform("u_LenticularSlope", this.parameters.lenticularSlopeY / this.parameters.lenticularSlopeX, false);
-        this.shader.updateUniform("u_HeightMapScale", this.parameters.depthScale, false);
+        this.shader.updateUniform("u_PixelOffset", this.parameters.pixelOffset);
+        this.shader.updateUniform("u_HorizontalScale", this.parameters.horizontalScale);
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);

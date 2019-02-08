@@ -37,7 +37,9 @@ class gltfRenderingParameters
         this.lenticularSlopeY = 2.0;
         this.lenticularSlopeX = 3.0;
         this.invertViewport = false;
-        this.depthScale = 0.0;
+        this.pixelOffset = 0.0;
+        this.horizontalScale = 1.0;
+        this.iterations = 10;
 
         this.cameraIndex = UserCameraIndex;
     }

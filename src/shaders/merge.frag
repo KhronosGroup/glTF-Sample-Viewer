@@ -30,7 +30,8 @@ struct CamInfo
 
 uniform int u_viewShift; // view start offset
 uniform float u_LenticularSlope; // 2 / 3 or 4 / 5 or 40 / 51
-uniform float u_HeightMapScale;
+uniform float u_PixelOffset;
+uniform float u_HorizontalScale;
 
 uniform sampler2D u_colorViews[NUM_RENDER_VIEWS];
 uniform sampler2D u_depthViews[NUM_RENDER_VIEWS];
@@ -147,41 +148,26 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
 
     vec2 start = (renderNearPos.xy + 1.0) * 0.5;
 
-    vec2 ds = renderViewRay.xy * u_HeightMapScale;
+    //vec2 ds = renderViewRay.xy * u_HeightMapScale;
 
-    float z = intersectRay(start, ds, renderViewIndex);
+    //float z = intersectRay(start, ds, renderViewIndex);
 
-    float lambda = -virtualCam.proj[0][0] * (virtualCam.pos.x - renderCam.pos.x);
+    //float lambda = virtualCam.proj[0][0] * renderViewRay.x / renderViewRay.w;
+    float lambda = -virtualCam.proj[0][0] * u_HorizontalScale * (virtualCam.pos.x - renderCam.pos.x);
 
-    targetUV.x += lambda / z;
+    float offset = u_PixelOffset / float(textureSize(u_depthViews[0], 0).x);
 
-    targetUV = (targetUV + 1.0) * 0.5;
+    for(int i = 0; i < NUM_ITERATIONS; ++i)
+    {
+        float z = sampleDepth(renderViewIndex, vec2(start.x + offset, start.y));
+        offset = lambda / z;
+    }
 
-    return targetUV;
-}
+    start.x += offset;
 
-float reconstructDepth(int virtualViewIndex, vec2 inUV)
-{
-    CamInfo virtualCam = u_VirtualCams[virtualViewIndex];
-    int renderViewIndex = virtualToRenderView(virtualViewIndex);
-    CamInfo renderCam = u_RenderCams[renderViewIndex];
+    //targetUV = (targetUV + 1.0) * 0.5;
 
-    inUV = 2.0 * inUV - 1.0;
-
-    vec4 fragNearPos = virtualCam.invViewProj *  vec4(inUV.x, inUV.y, virtualCam.near, 1);
-
-    vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
-
-    vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
-    //renderViewRay = (renderViewRay + 1.0) * 0.5;
-
-    vec4 renderNearPos = renderCam.viewProj * fragNearPos;
-
-    vec2 start = (renderNearPos.xy + 1.0) * 0.5;
-
-    vec2 ds = renderViewRay.xy * u_HeightMapScale;
-
-    return intersectRay(start, ds, renderViewIndex);
+    return start;
 }
 
 ivec3 getSubPixelViewIndices()
@@ -238,14 +224,14 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-#if 0
+#if 1
 
     vec4 color = sampleColor(0, v_UV);
 
     //vec2 disp = reconstructUV(1, v_UV) - v_UV;
     //g_finalColor = vec4(disp.x,disp.x,disp.x, 1.0);
 
-    color = reconstructColor(1, v_UV);
+    color += reconstructColor(1, v_UV);
     g_finalColor += color;
 
     return;
