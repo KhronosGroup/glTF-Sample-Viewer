@@ -28,16 +28,16 @@ class UserCamera extends gltfCamera
         this.scaleFactor = 1;
     }
 
-    updatePosition(offsetX = 0)
+    updatePosition()
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, 1);
+        this.toLocalRotation(direction);
 
         const position = vec3.create();
         vec3.scale(position, direction, this.zoom);
         vec3.add(position, position, this.target);
-        position[0] += offsetX;
 
         this.position = position;
     }
