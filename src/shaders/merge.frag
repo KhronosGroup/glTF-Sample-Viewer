@@ -137,25 +137,28 @@ vec2 reconstructUV(int virtualViewIndex, vec2 inUV)
 
     vec2 targetUV = 2.0 * inUV - 1.0;
 
-    vec4 fragNearPos = virtualCam.invViewProj *  vec4(targetUV.x, targetUV.y, virtualCam.near, 1);
+    //vec4 fragNearPos = virtualCam.invViewProj *  vec4(targetUV.x, targetUV.y, virtualCam.near, 1);
+    vec4 fragNearPos = renderCam.invViewProj * vec4(virtualCam.pos, 1.0);
+    //fragNearPos.xyz /= fragNearPos.w;
 
-    vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
+    //vec3 viewRay = fragNearPos.xyz - virtualCam.pos;
 
-    vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
+    //vec4 renderViewRay = renderCam.viewProj * vec4(viewRay, 0);
     //renderViewRay = (renderViewRay + 1.0) * 0.5;
 
-    vec4 renderNearPos = renderCam.viewProj * fragNearPos;
-
-    vec2 start = (renderNearPos.xy + 1.0) * 0.5;
+    //vec4 renderNearPos = renderCam.viewProj * fragNearPos;
 
     //vec2 ds = renderViewRay.xy * u_HeightMapScale;
 
     //float z = intersectRay(start, ds, renderViewIndex);
 
     //float lambda = virtualCam.proj[0][0] * renderViewRay.x / renderViewRay.w;
-    float lambda = -virtualCam.proj[0][0] * u_HorizontalScale * (virtualCam.pos.x - renderCam.pos.x);
+    //float lambda = -virtualCam.proj[0][0] * u_HorizontalScale * float(textureSize(u_depthViews[0], 0).x) * 0.5  * (fragNearPos.x);
+    float lambda = -virtualCam.proj[0][0] * u_HorizontalScale * (fragNearPos.x);
 
     float offset = u_PixelOffset / float(textureSize(u_depthViews[0], 0).x);
+
+    vec2 start = inUV;
 
     for(int i = 0; i < NUM_ITERATIONS; ++i)
     {
@@ -224,7 +227,7 @@ vec4 sampleColorFromSubPixels(ivec3 subPixelIndices, vec2 uv)
 
 void main()
 {
-#if 1
+#if 0
 
     vec4 color = sampleColor(0, v_UV);
 

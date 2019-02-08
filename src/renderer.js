@@ -227,7 +227,7 @@ class gltfRenderer
 
         //let stepAngleRad = Math.sin(this.parameters.viewStepAngle * Math.PI / 180);
         //let stepAngleRad = this.parameters.viewStepWidth;
-        let stepAngleRad = Math.atan(this.parameters.viewStepWidth) * userCamera.zoom;
+        let stepAngleRad = Math.atan(this.parameters.viewStepWidth / userCamera.zoom);
 
         if(this.parameters.leftToRight)
         {
@@ -415,11 +415,15 @@ class gltfRenderer
         }
 
         this.shader.updateUniform("u_RenderCams", renderCamInfos, false);
-        this.shader.updateUniform("u_VirtualCams", virtualCamInfos, false);
         this.shader.updateUniform("u_viewShift", this.parameters.viewShift, false);
         this.shader.updateUniform("u_LenticularSlope", this.parameters.lenticularSlopeY / this.parameters.lenticularSlopeX, false);
-        this.shader.updateUniform("u_PixelOffset", this.parameters.pixelOffset);
-        this.shader.updateUniform("u_HorizontalScale", this.parameters.horizontalScale);
+
+        if(this.parameters.reconstructViews)
+        {
+            this.shader.updateUniform("u_VirtualCams", virtualCamInfos, false);
+            this.shader.updateUniform("u_PixelOffset", this.parameters.pixelOffset, false);
+            this.shader.updateUniform("u_HorizontalScale", this.parameters.horizontalScale, false);
+        }
 
         //WebGl.context.disable(WebGl.context.DEPTH_TEST);
         WebGl.context.enable(WebGl.context.CULL_FACE);
