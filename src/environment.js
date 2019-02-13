@@ -66,7 +66,7 @@ class gltfEnvironmentLoader
         const indices = [];
         function addSide(basePath, side, mipLevel)
         {
-            for (let i = 0; i <= mipLevel; i++)
+            for (let i = 0; i < mipLevel; i++)
             {
                 const imagePath = basePath + i + extension;
                 const image = new gltfImage(imagePath, side, i);

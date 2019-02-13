@@ -56,14 +56,14 @@ const DebugOutput =
 
 const Environments =
 {
-    "Papermill Ruins E": { folder: "papermill", mipLevel: 9, type: ImageMimeType.HDR },
-    "Papermill Ruins E (LDR)": { folder: "papermill", mipLevel: 9, type: ImageMimeType.LDR },
-    "Field": { folder: "field", mipLevel: 10, type: ImageMimeType.HDR },
-    "Courtyard of the Doge's palace": { folder: "doge2", mipLevel: 10, type: ImageMimeType.HDR },
-    "Pisa courtyard nearing sunset": { folder: "pisa", mipLevel: 10, type: ImageMimeType.HDR },
-    "Footprint Court": { folder: "footprint_court", mipLevel: 9, type: ImageMimeType.HDR },
-    "Helipad GoldenHour": { folder: "helipad", mipLevel: 9, type: ImageMimeType.HDR },
-    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 10, type: ImageMimeType.HDR }
+    "Papermill Ruins E": { folder: "papermill", mipLevel: 10, type: ImageMimeType.HDR },
+    "Papermill Ruins E (LDR)": { folder: "papermill", mipLevel: 10, type: ImageMimeType.LDR },
+    "Field": { folder: "field", mipLevel: 11, type: ImageMimeType.HDR },
+    "Courtyard of the Doge's palace": { folder: "doge2", mipLevel: 11, type: ImageMimeType.HDR },
+    "Pisa courtyard nearing sunset": { folder: "pisa", mipLevel: 11, type: ImageMimeType.HDR },
+    "Footprint Court": { folder: "footprint_court", mipLevel: 10, type: ImageMimeType.HDR },
+    "Helipad GoldenHour": { folder: "helipad", mipLevel: 10, type: ImageMimeType.HDR },
+    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 11, type: ImageMimeType.HDR }
 };
 
 export { UserCameraIndex, gltfRenderingParameters, Environments, ToneMaps, DebugOutput };
