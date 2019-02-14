@@ -108,7 +108,7 @@ For local usage and debugging, please follow these instructions:
 
 **(2)** Install dependencies with `npm install`
 
-**(3)** Pull the submodule for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models)  `git submodule update  --init --recursive`
+**(3)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/ux3d/Sample-Environments) `git submodule update  --init --recursive`
 
 **(4a)** Start a demo in the browser with `npm run dev`, and open http://localhost:8000.
 
