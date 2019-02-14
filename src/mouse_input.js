@@ -1,5 +1,7 @@
 import { Input_PanButton, Input_RotateButton } from './constants.js';
 
+const ZoomThreshold = 1.0;
+
 class gltfMouseInput
 {
     constructor(canvas)
@@ -73,6 +75,12 @@ class gltfMouseInput
     mouseWheelHandler(event)
     {
         event.preventDefault();
+
+        if (Math.abs(event.deltaY) < ZoomThreshold)
+        {
+            return;
+        }
+
         this.canvas.style.cursor = "none";
         this.onZoom(event.deltaY);
     }
