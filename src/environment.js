@@ -24,7 +24,7 @@ class gltfEnvironmentLoader
             break;
         }
 
-        const imagesFolder = this.basePath + "assets/images/" + environment.folder + "/";
+        const imagesFolder = this.basePath + "assets/environments/" + environment.folder + "/";
         const diffusePrefix = imagesFolder + "diffuse/diffuse_";
         const diffuseSuffix = "_0" + extension;
         const specularPrefix = imagesFolder + "specular/specular_";

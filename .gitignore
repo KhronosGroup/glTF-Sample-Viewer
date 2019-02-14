@@ -4,8 +4,7 @@ Thumbs.db
 desktop.ini
 node_modules
 npm-debug.log
-.vscode/*
-*.png
-/package-lock.json
+.vscode
+package-lock.json
 dist
 .idea
