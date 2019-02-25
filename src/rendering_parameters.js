@@ -26,6 +26,7 @@ class gltfRenderingParameters
         this.debugOutput = debugOutput;
         this.sceneIndex = 0;
         this.cameraIndex = UserCameraIndex;
+        this.playAnimation = false;
     }
 
     userCameraActive()

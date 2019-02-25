@@ -174,11 +174,13 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        let fragDefines = material.getDefines().concat(primitive.getDefines());
-        this.pushParameterDefines(fragDefines);
+        let vertDefines = primitive.getDefines();
+        this.pushVertParameterDefines(vertDefines);
+        let fragDefines = material.getDefines().concat(vertDefines);
+        this.pushFragParameterDefines(fragDefines);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
+        const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -296,7 +298,18 @@ class gltfRenderer
         }
     }
 
-    pushParameterDefines(fragDefines)
+    pushVertParameterDefines(vertDefines)
+    {
+        if (this.parameters.playAnimation)
+        {
+            // TODO: check for skinning & animations
+
+            // vertDefines.push("USE_SKINNING 1");
+            // vertDefines.push("JOINT_COUNT " + node.joints);
+        }
+    }
+
+    pushFragParameterDefines(fragDefines)
     {
         if (this.parameters.usePunctual)
         {

@@ -17,12 +17,20 @@ varying vec3 v_Normal;
 #endif
 #endif
 
-#ifdef HAS_JOINTS
-varying vec4 a_Joints;
+#ifdef HAS_JOINT_SET1
+varying vec4 a_Joint1;
 #endif
 
-#ifdef HAS_WEIGHTS
-varying vec4 a_Weights;
+#ifdef HAS_JOINT_SET2
+varying vec4 a_Joint2;
+#endif
+
+#ifdef HAS_WEIGHT_SET1
+varying vec4 a_Weight1;
+#endif
+
+#ifdef HAS_WEIGHT_SET2
+varying vec4 a_Weight2;
 #endif
 
 #ifdef HAS_UV_SET1
@@ -55,29 +63,67 @@ uniform mat4 u_jointMatrix[JOINT_COUNT];
 uniform mat4 u_jointNormalMatrix[JOINT_COUNT];
 #endif
 
-#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
-mat4 GetSkinningMatrix()
+#ifdef USE_SKINNING
+int getJoint(int index)
 {
-    mat4 skin =
-        a_Weights.x * u_jointMatrix[int(a_Joints.x)] +
-        a_Weights.y * u_jointMatrix[int(a_Joints.y)] +
-        a_Weights.z * u_jointMatrix[int(a_Joints.z)] +
-        a_Weights.w * u_jointMatrix[int(a_Joints.w)];
+    int set = index / 4;
+    int idx = index % 4;
 
-    return skin;
-}
-
-mat4 GetSkinningNormalMatrix()
-{
-    mat4 skin =
-        a_Weights.x * u_jointNormalMatrix[int(a_Joints.x)] +
-        a_Weights.y * u_jointNormalMatrix[int(a_Joints.y)] +
-        a_Weights.z * u_jointNormalMatrix[int(a_Joints.z)] +
-        a_Weights.w * u_jointNormalMatrix[int(a_Joints.w)];
-
-    return skin;
-}
+    if(set == 0){
+#ifdef HAS_JOINT_SET1
+        return int(a_Joint1[idx]);
 #endif
+    }else if(set == 1){
+#ifdef HAS_JOINT_SET2
+        return int(a_Joint2[idx]);
+#endif
+    }
+
+    return 0;
+}
+
+float getWeight(int index)
+{
+    int set = index / 4;
+    int idx = index % 4;
+
+    if(set == 0){
+#ifdef HAS_WEIGHT_SET1
+        return a_Weight1[idx];
+#endif
+    }else if(set == 1){
+#ifdef HAS_WEIGHT_SET2
+        return a_Weight2[idx];
+#endif
+    }
+
+    return 0.f;
+}
+
+mat4 getSkinningMatrix()
+{
+    mat4 skin = mat4(0);
+
+    for(int i = 0; i < JOINT_COUNT; ++i)
+    {
+        skin += getWeight(i) * u_jointMatrix[getJoint(i)];
+    }
+
+    return skin;
+}
+
+mat4 getSkinningNormalMatrix()
+{
+    mat4 skin = mat4(0);
+
+    for(int i = 0; i < JOINT_COUNT; ++i)
+    {
+        skin += getWeight(i) * u_jointNormalMatrix[getJoint(i)];
+    }
+
+    return skin;
+}
+#endif // !USE_SKINNING
 
 vec4 getPosition()
 {
@@ -85,8 +131,8 @@ vec4 getPosition()
 
     // TODO: morph before skinning
 
-#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
-    pos = GetSkinningMatrix() * pos;
+#ifdef USE_SKINNING
+    pos = getSkinningMatrix() * pos;
 #endif
 
     return pos;
@@ -96,8 +142,8 @@ vec4 getNormal()
 {
     vec4 normal = a_Normal;
 
-#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
-    normal = GetSkinningNormalMatrix() * normal;
+#ifdef USE_SKINNING
+    normal = getSkinningNormalMatrix() * normal;
 #endif
 
     return normal;
@@ -107,8 +153,8 @@ vec4 getTangent()
 {
     vec4 tangent = a_Tangent;
 
-#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
-    tangent = GetSkinningNormalMatrix() * tangent;
+#ifdef USE_SKINNING
+    tangent = getSkinningMatrix() * tangent;
 #endif
 
     return tangent;

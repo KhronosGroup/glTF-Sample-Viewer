@@ -62,12 +62,20 @@ class gltfPrimitive extends GltfObject
                 }
                 break;
             case "JOINTS_0":
-                this.defines.push("HAS_JOINTS 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Joints", accessor: idx });
+                this.defines.push("HAS_JOINT_SET1 1");
+                this.glAttributes.push({ attribute: attribute, name: "a_Joint1", accessor: idx });
                 break;
             case "WEIGHTS_0":
-                this.defines.push("HAS_WEIGHTS 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Weights", accessor: idx });
+                this.defines.push("HAS_WEIGHT_SET1 1");
+                this.glAttributes.push({ attribute: attribute, name: "a_Weight1", accessor: idx });
+                break;
+            case "JOINTS_1":
+                this.defines.push("HAS_JOINT_SET2 1");
+                this.glAttributes.push({ attribute: attribute, name: "a_Joint2", accessor: idx });
+                break;
+            case "WEIGHTS_1":
+                this.defines.push("HAS_WEIGHT_SET2 1");
+                this.glAttributes.push({ attribute: attribute, name: "a_Weight2", accessor: idx });
                 break;
             default:
                 console.log("Unknown attribute: " + attribute);
