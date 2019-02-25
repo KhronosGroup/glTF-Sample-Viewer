@@ -17,6 +17,14 @@ varying vec3 v_Normal;
 #endif
 #endif
 
+#ifdef HAS_JOINTS
+varying vec4 a_Joints;
+#endif
+
+#ifdef HAS_WEIGHTS
+varying vec4 a_Weights;
+#endif
+
 #ifdef HAS_UV_SET1
 attribute vec2 a_UV1;
 #endif
@@ -42,19 +50,84 @@ uniform mat4 u_ViewProjectionMatrix;
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_NormalMatrix;
 
+#ifdef USE_SKINNING
+uniform mat4 u_jointMatrix[JOINT_COUNT];
+uniform mat4 u_jointNormalMatrix[JOINT_COUNT];
+#endif
+
+#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
+mat4 GetSkinningMatrix()
+{
+    mat4 skin =
+        a_Weights.x * u_jointMatrix[int(a_Joints.x)] +
+        a_Weights.y * u_jointMatrix[int(a_Joints.y)] +
+        a_Weights.z * u_jointMatrix[int(a_Joints.z)] +
+        a_Weights.w * u_jointMatrix[int(a_Joints.w)];
+
+    return skin;
+}
+
+mat4 GetSkinningNormalMatrix()
+{
+    mat4 skin =
+        a_Weights.x * u_jointNormalMatrix[int(a_Joints.x)] +
+        a_Weights.y * u_jointNormalMatrix[int(a_Joints.y)] +
+        a_Weights.z * u_jointNormalMatrix[int(a_Joints.z)] +
+        a_Weights.w * u_jointNormalMatrix[int(a_Joints.w)];
+
+    return skin;
+}
+#endif
+
+vec4 getPosition()
+{
+    vec4 pos = a_Position;
+
+    // TODO: morph before skinning
+
+#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
+    pos = GetSkinningMatrix() * pos;
+#endif
+
+    return pos;
+}
+
+vec4 getNormal()
+{
+    vec4 normal = a_Normal;
+
+#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
+    normal = GetSkinningNormalMatrix() * normal;
+#endif
+
+    return normal;
+}
+
+vec4 getTangent()
+{
+    vec4 tangent = a_Tangent;
+
+#if defined(USE_SKINNING) && defined(HAS_JOINTS) && defined(HAS_WEIGHTS)
+    tangent = GetSkinningNormalMatrix() * tangent;
+#endif
+
+    return tangent;
+}
+
 void main()
 {
-    vec4 pos = u_ModelMatrix * a_Position;
+    vec4 pos = u_ModelMatrix * getPosition();
     v_Position = vec3(pos.xyz) / pos.w;
 
     #ifdef HAS_NORMALS
     #ifdef HAS_TANGENTS
-    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(a_Normal.xyz, 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(a_Tangent.xyz, 0.0)));
-    vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
+    vec4 tangent = getTangent();
+    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal().xyz, 0.0)));
+    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent.xyz, 0.0)));
+    vec3 bitangentW = cross(normalW, tangentW) * tangent.w;
     v_TBN = mat3(tangentW, bitangentW, normalW);
     #else // !HAS_TANGENTS
-    v_Normal = normalize(vec3(u_NormalMatrix * vec4(a_Normal.xyz, 0.0)));
+    v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal().xyz, 0.0)));
     #endif
     #endif // !HAS_NORMALS
 

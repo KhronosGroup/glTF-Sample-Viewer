@@ -63,12 +63,11 @@ class gltfPrimitive extends GltfObject
                 break;
             case "JOINTS_0":
                 this.defines.push("HAS_JOINTS 1");
-                // TODO: implement when we do animations later
+                this.glAttributes.push({ attribute: attribute, name: "a_Joints", accessor: idx });
                 break;
             case "WEIGHTS_0":
                 this.defines.push("HAS_WEIGHTS 1");
-                // TODO: implement when we do animations later
-
+                this.glAttributes.push({ attribute: attribute, name: "a_Weights", accessor: idx });
                 break;
             default:
                 console.log("Unknown attribute: " + attribute);
