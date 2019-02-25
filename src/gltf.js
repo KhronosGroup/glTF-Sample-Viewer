@@ -33,6 +33,7 @@ class glTF extends GltfObject
         this.buffers = [];
         this.bufferViews = [];
         this.materials = [];
+        this.skins = [];
         this.path = file;
     }
 
