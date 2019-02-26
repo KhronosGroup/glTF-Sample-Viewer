@@ -1,5 +1,4 @@
 import { GltfObject } from './gltf_object.js';
-import { timingSafeEqual } from 'crypto';
 
 class gltfAnimationSampler extends GltfObject
 {

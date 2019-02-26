@@ -53,6 +53,7 @@ class gltfUserInterface
         this.initializeGltfVersionView("");
         this.initializeSceneSelection([]);
         this.initializeCameraSelection([]);
+        this.initializeAnimationSettings();
 
         this.gltfFolder.open();
     }
@@ -116,6 +117,12 @@ class gltfUserInterface
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
         lightingFolder.addColor(this, "hexColor", this.hexColor).name("Background Color")
             .onChange(() => self.renderingParameters.clearColor = self.fromHexColor(self.hexColor));
+    }
+
+    initializeAnimationSettings()
+    {
+        const animationFolder = this.gui.addFolder("Animation");
+        animationFolder.add(this.renderingParameters, "playAnimation").name("Play");
     }
 
     initializeDebugSettings()

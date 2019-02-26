@@ -12,6 +12,18 @@ function jsToGl(array)
     return tensor;
 }
 
+function jsToGlSlice(array, offset, stride)
+{
+    let tensor = new glMatrix.ARRAY_TYPE(stride);
+
+    for (let i = 0; i < stride; ++i)
+    {
+        tensor[i] = array[offset + i];
+    }
+
+    return tensor;
+}
+
 function initGlForMembers(gltfObj, gltf)
 {
     for (const name of Object.keys(gltfObj))
@@ -30,7 +42,7 @@ function initGlForMembers(gltfObj, gltf)
         {
             for (const element of member)
             {
-                if (element.initGl !== undefined)
+                if (element !== undefined && element.initGl !== undefined)
                 {
                     element.initGl(gltf);
                 }
@@ -179,6 +191,7 @@ class Timer
 
 export {
     jsToGl,
+    jsToGlSlice,
     objectsFromJsons,
     objectFromJson,
     fromKeys,

@@ -11,6 +11,7 @@ import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { getScaleFactor } from './gltf_utils.js';
+import { gltfAnimation } from './animation.js';
 
 class gltfViewer
 {
@@ -315,6 +316,11 @@ class gltfViewer
     prepareSceneForRendering(gltf)
     {
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
+        if(this.renderingParameters.playAnimation)
+        {
+            this.animate(gltf);
+        }
+
         scene.applyTransformHierarchy(gltf);
 
         const transform = mat4.create();
@@ -325,6 +331,14 @@ class gltfViewer
         }
 
         scene.applyTransformHierarchy(gltf, transform);
+    }
+
+    animate(gltf)
+    {
+        for(const anim of gltf.animations)
+        {
+            anim.advance(gltf, new Date().getTime() / 1000);
+        }
     }
 
     initializeGui()
