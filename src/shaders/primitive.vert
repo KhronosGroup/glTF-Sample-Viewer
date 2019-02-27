@@ -138,6 +138,7 @@ vec4 getPosition()
     return pos;
 }
 
+#ifdef HAS_NORMALS
 vec4 getNormal()
 {
     vec4 normal = a_Normal;
@@ -148,7 +149,9 @@ vec4 getNormal()
 
     return normal;
 }
+#endif
 
+#ifdef HAS_TANGENTS
 vec4 getTangent()
 {
     vec4 tangent = a_Tangent;
@@ -159,6 +162,7 @@ vec4 getTangent()
 
     return tangent;
 }
+#endif
 
 void main()
 {

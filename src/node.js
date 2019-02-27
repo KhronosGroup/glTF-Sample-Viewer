@@ -18,6 +18,7 @@ class gltfNode extends GltfObject
         this.scale = [1, 1, 1];
         this.translation = [0, 0, 0];
         this.name = undefined;
+        this.mesh = undefined;
 
         // non gltf
         this.worldTransform = mat4.create();
@@ -51,12 +52,6 @@ class gltfNode extends GltfObject
             }
         }
         this.changed = true;
-    }
-
-    fromJson(jsonNode)
-    {
-        super.fromJson(jsonNode);
-        this.mesh = jsonNode.mesh;
     }
 
     applyMatrix(matrixData)
