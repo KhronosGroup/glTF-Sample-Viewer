@@ -1,6 +1,6 @@
-//import { initGlForMembers } from './utils.js';
-//import { WebGl } from './webgl.js';
+import { jsToGlSlice } from './utils.js';
 import { GltfObject } from './gltf_object.js';
+import { mat4 } from 'gl-matrix';
 
 class gltfSkin extends GltfObject
 {
@@ -9,8 +9,37 @@ class gltfSkin extends GltfObject
         super();
 
         this.name = "";
-        this.inverseBindMatrices = [];
+        this.inverseBindMatrices = undefined;
         this.joints = [];
         this.skeleton = undefined;
+
+        // not gltf
+        this.jointMatrices = [];
+        this.jointNormalMatrices = [];
+    }
+
+    computeJoints(gltf)
+    {
+        const skeleton = gltf.nodes[this.skeleton];
+        const ibmAccessor = gltf.accessors[this.inverseBindMatrices].getTypedView(gltf);
+        this.jointMatrices = [];
+        this.jointNormalMatrices = [];
+
+        for(const joint of this.joints)
+        {
+            const node = gltf.nodes[joint];
+            let jointMatrix = mat4.create();
+            let ibm = jsToGlSlice(ibmAccessor, joint * 16, 16);
+            mat4.mul(jointMatrix, node.worldTransform, ibm);
+            mat4.mul(jointMatrix, skeleton.inverseWorldTransform, jointMatrix);
+            this.jointMatrices.push(jointMatrix);
+
+            let normalMatrix = mat4.create();
+            mat4.invert(normalMatrix, jointMatrix);
+            mat4.transpose(normalMatrix, normalMatrix);
+            this.jointNormalMatrices.push(normalMatrix);
+        }
     }
 }
+
+export { gltfSkin };

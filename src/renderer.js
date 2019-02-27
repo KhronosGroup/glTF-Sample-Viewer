@@ -160,13 +160,13 @@ class gltfRenderer
         {
             for (let primitive of mesh.primitives)
             {
-                this.drawPrimitive(gltf, primitive, node.worldTransform, this.viewProjectionMatrix, node.normalMatrix);
+                this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, modelMatrix, viewProjectionMatrix, normalMatrix)
+    drawPrimitive(gltf, primitive, node, viewProjectionMatrix)
     {
         if (primitive.skip) return;
 
@@ -175,7 +175,7 @@ class gltfRenderer
         //select shader permutation, compile and link program.
 
         let vertDefines = primitive.getDefines();
-        this.pushVertParameterDefines(vertDefines);
+        this.pushVertParameterDefines(vertDefines, gltf, node, primitive);
         let fragDefines = material.getDefines().concat(vertDefines);
         this.pushFragParameterDefines(fragDefines);
 
@@ -201,11 +201,13 @@ class gltfRenderer
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
-        this.shader.updateUniform("u_ModelMatrix", modelMatrix);
-        this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
+        this.shader.updateUniform("u_ModelMatrix", node.worldTransform);
+        this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
         this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
+
+        this.uploadSkin(gltf, node, primitive);
 
         if (material.doubleSided)
         {
@@ -298,14 +300,31 @@ class gltfRenderer
         }
     }
 
-    pushVertParameterDefines(vertDefines)
+    pushVertParameterDefines(vertDefines, gltf, node, primitive)
     {
         if (this.parameters.playAnimation)
         {
-            // TODO: check for skinning & animations
+            if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+            {
+                const skin = gltf.skins[node.skin];
 
-            // vertDefines.push("USE_SKINNING 1");
-            // vertDefines.push("JOINT_COUNT " + node.joints);
+                vertDefines.push("USE_SKINNING 1");
+                vertDefines.push("JOINT_COUNT " + skin.joints.length);
+            }
+        }
+    }
+
+    uploadSkin(gltf, node, primitive)
+    {
+        if (this.parameters.playAnimation)
+        {
+            if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+            {
+                const skin = gltf.skins[node.skin];
+
+                this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
+                this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
+            }
         }
     }
 

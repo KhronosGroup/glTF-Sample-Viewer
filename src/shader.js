@@ -90,11 +90,18 @@ class gltfShader
 
     updateUniformArray(arrayName, array, log)
     {
-        for (let i = 0; i < array.length; ++i)
+        // TODO: check for sturcts tag
+        if(array[0] instanceof UniformStruct)
         {
-            let element = array[i];
-            let uniformName = arrayName + "[" + i + "]";
-            this.updateUniform(uniformName, element, log);
+            for (let i = 0; i < array.length; ++i)
+            {
+                let element = array[i];
+                let uniformName = arrayName + "[" + i + "]";
+                this.updateUniform(uniformName, element, log);
+            }
+        }else{
+            let uniformName = arrayName + "[0]";
+            this.updateUniformValue(uniformName, array, log);
         }
     }
 

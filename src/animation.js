@@ -40,13 +40,13 @@ class gltfAnimation extends GltfObject
             switch(channel.target.path)
             {
                 case InterpolationPath.TRANSLATION:
-                    node.translate(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
+                    node.applyTranslation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
                     break;
                 case InterpolationPath.ROTATION:
-                    node.rotate(interpolator.interpolate(gltf, channel, sampler, totalTime, 4));
+                    node.applyRotation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4));
                     break;
                 case InterpolationPath.SCALE:
-                    node.scale(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
+                    node.applyScale(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
                     break;
                 case InterpolationPath.WEIGHTS:
                     let mesh = gltf.meshes[node.mesh];

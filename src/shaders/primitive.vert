@@ -64,50 +64,25 @@ uniform mat4 u_jointNormalMatrix[JOINT_COUNT];
 #endif
 
 #ifdef USE_SKINNING
-int getJoint(int index)
-{
-    int set = index / 4;
-    int idx = index % 4;
-
-    if(set == 0){
-#ifdef HAS_JOINT_SET1
-        return int(a_Joint1[idx]);
-#endif
-    }else if(set == 1){
-#ifdef HAS_JOINT_SET2
-        return int(a_Joint2[idx]);
-#endif
-    }
-
-    return 0;
-}
-
-float getWeight(int index)
-{
-    int set = index / 4;
-    int idx = index % 4;
-
-    if(set == 0){
-#ifdef HAS_WEIGHT_SET1
-        return a_Weight1[idx];
-#endif
-    }else if(set == 1){
-#ifdef HAS_WEIGHT_SET2
-        return a_Weight2[idx];
-#endif
-    }
-
-    return 0.f;
-}
-
 mat4 getSkinningMatrix()
 {
     mat4 skin = mat4(0);
 
-    for(int i = 0; i < JOINT_COUNT; ++i)
-    {
-        skin += getWeight(i) * u_jointMatrix[getJoint(i)];
-    }
+    #if defined(HAS_WEIGHT_SET1) && defined(HAS_JOINT_SET1)
+    skin +=
+        a_Weight1.x * u_jointMatrix[int(a_Joint1.x)] +
+        a_Weight1.y * u_jointMatrix[int(a_Joint1.y)] +
+        a_Weight1.z * u_jointMatrix[int(a_Joint1.z)] +
+        a_Weight1.w * u_jointMatrix[int(a_Joint1.w)];
+    #endif
+
+    #if defined(HAS_WEIGHT_SET2) && defined(HAS_JOINT_SET2)
+    skin +=
+        a_Weight2.x * u_jointMatrix[int(a_Joint2.x)] +
+        a_Weight2.y * u_jointMatrix[int(a_Joint2.y)] +
+        a_Weight2.z * u_jointMatrix[int(a_Joint2.z)] +
+        a_Weight2.w * u_jointMatrix[int(a_Joint2.w)];
+    #endif
 
     return skin;
 }
@@ -116,10 +91,21 @@ mat4 getSkinningNormalMatrix()
 {
     mat4 skin = mat4(0);
 
-    for(int i = 0; i < JOINT_COUNT; ++i)
-    {
-        skin += getWeight(i) * u_jointNormalMatrix[getJoint(i)];
-    }
+    #if defined(HAS_WEIGHT_SET1) && defined(HAS_JOINT_SET1)
+    skin +=
+        a_Weight1.x * u_jointNormalMatrix[int(a_Joint1.x)] +
+        a_Weight1.y * u_jointNormalMatrix[int(a_Joint1.y)] +
+        a_Weight1.z * u_jointNormalMatrix[int(a_Joint1.z)] +
+        a_Weight1.w * u_jointNormalMatrix[int(a_Joint1.w)];
+    #endif
+
+    #if defined(HAS_WEIGHT_SET2) && defined(HAS_JOINT_SET2)
+    skin +=
+        a_Weight2.x * u_jointNormalMatrix[int(a_Joint2.x)] +
+        a_Weight2.y * u_jointNormalMatrix[int(a_Joint2.y)] +
+        a_Weight2.z * u_jointNormalMatrix[int(a_Joint2.z)] +
+        a_Weight2.w * u_jointNormalMatrix[int(a_Joint2.w)];
+    #endif
 
     return skin;
 }

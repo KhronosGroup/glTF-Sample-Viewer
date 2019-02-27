@@ -16,6 +16,8 @@ class gltfPrimitive extends GltfObject
         this.glAttributes = [];
         this.defines = [];
         this.skip = true;
+        this.hasWeights = false;
+        this.hasJoints = false;
     }
 
     initGl(gltf)
@@ -62,18 +64,22 @@ class gltfPrimitive extends GltfObject
                 }
                 break;
             case "JOINTS_0":
+                this.hasJoints = true;
                 this.defines.push("HAS_JOINT_SET1 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_Joint1", accessor: idx });
                 break;
             case "WEIGHTS_0":
+                this.hasWeights = true;
                 this.defines.push("HAS_WEIGHT_SET1 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_Weight1", accessor: idx });
                 break;
             case "JOINTS_1":
+                this.hasJoints = true;
                 this.defines.push("HAS_JOINT_SET2 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_Joint2", accessor: idx });
                 break;
             case "WEIGHTS_1":
+                this.hasWeights = true;
                 this.defines.push("HAS_WEIGHT_SET2 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_Weight2", accessor: idx });
                 break;

@@ -19,6 +19,7 @@ class gltfNode extends GltfObject
         this.translation = [0, 0, 0];
         this.name = undefined;
         this.mesh = undefined;
+        this.skin = undefined;
 
         // non gltf
         this.worldTransform = mat4.create();
@@ -66,21 +67,21 @@ class gltfNode extends GltfObject
     }
 
     // vec3
-    translate(translation)
+    applyTranslation(translation)
     {
         this.translation = translation;
         this.changed = true;
     }
 
     // quat
-    rotate(rotation)
+    applyRotation(rotation)
     {
         this.rotation = rotation;
         this.changed = true;
     }
 
     // vec3
-    scale(scale)
+    applyScale(scale)
     {
         this.scale = scale;
         this.changed = true;

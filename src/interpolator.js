@@ -2,7 +2,7 @@ import { gltfAnimationSampler, InterpolationModes } from './animation_sampler.js
 import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAccessor } from './accessor.js';
 import { clamp, jsToGlSlice } from './utils.js';
-import { quat, vec3 } from 'gl-matrix';
+import { quat, vec3, glMatrix } from 'gl-matrix';
 
 class gltfInterpolator
 {

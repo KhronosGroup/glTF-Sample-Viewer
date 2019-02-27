@@ -11,7 +11,7 @@ import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { getScaleFactor } from './gltf_utils.js';
-import { gltfAnimation } from './animation.js';
+import { gltfSkin } from './skin.js';
 
 class gltfViewer
 {
@@ -318,7 +318,7 @@ class gltfViewer
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
         if(this.renderingParameters.playAnimation)
         {
-            this.animate(gltf);
+            this.animateNode(gltf);
         }
 
         scene.applyTransformHierarchy(gltf);
@@ -331,13 +331,32 @@ class gltfViewer
         }
 
         scene.applyTransformHierarchy(gltf, transform);
+
+        if(this.renderingParameters.playAnimation)
+        {
+            this.animateSkin(gltf);
+        }
     }
 
-    animate(gltf)
+    animateNode(gltf)
     {
-        for(const anim of gltf.animations)
+        if(gltf.animations !== undefined)
         {
-            anim.advance(gltf, new Date().getTime() / 1000);
+            for(const anim of gltf.animations)
+            {
+                anim.advance(gltf, new Date().getTime() / 1000);
+            }
+        }
+    }
+
+    animateSkin(gltf)
+    {
+        if(gltf.skins !== undefined)
+        {
+            for(const skin of gltf.skins)
+            {
+                skin.computeJoints(gltf);
+            }
         }
     }
 
