@@ -189,6 +189,57 @@ class Timer
     }
 }
 
+class AnimationTimer
+{
+    constructor()
+    {
+        this.startTime = 0;
+        this.paused = true;
+        this.pausedTime = 0;
+    }
+
+    elapsed()
+    {
+        if(this.paused)
+        {
+            return this.pausedTime / 1000;
+        }
+        else
+        {
+            return (new Date().getTime() - this.startTime) / 1000;
+        }
+    }
+
+    toggle()
+    {
+        if(this.paused)
+        {
+            this.unpause();
+        }
+        else
+        {
+            this.pause();
+        }
+    }
+
+    start()
+    {
+        this.startTime = new Date().getTime();
+    }
+
+    pause()
+    {
+        this.pausedTime = new Date().getTime() - this.startTime;
+        this.paused = true;
+    }
+
+    unpause()
+    {
+        this.startTime += new Date().getTime() - this.startTime - this.pausedTime;
+        this.paused = false;
+    }
+}
+
 export {
     jsToGl,
     jsToGlSlice,
@@ -208,5 +259,6 @@ export {
     combinePaths,
     UniformStruct,
     Timer,
+    AnimationTimer,
     initGlForMembers
 };

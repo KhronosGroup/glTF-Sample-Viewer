@@ -13,6 +13,8 @@ class gltfInterpolator
 
     slerpQuat(q1, q2, t)
     {
+        quat.normalize(q1, q1);
+        quat.normalize(q2, q2);
         let quatResult = quat.create();
         quat.slerp(quatResult, q1, q2, t);
         quat.normalize(quatResult, quatResult);
@@ -65,8 +67,8 @@ class gltfInterpolator
 
     interpolate(gltf, channel, sampler, t, stride)
     {
-        const input = gltf.accessors[sampler.input].getTypedView(gltf);
-        const output = gltf.accessors[sampler.output].getTypedView(gltf);
+        const input = gltf.accessors[sampler.input].getFilteredView(gltf);
+        const output = gltf.accessors[sampler.output].getFilteredView(gltf);
 
         if(output.length === 1) // no interpolation for single keyFrame animations
         {

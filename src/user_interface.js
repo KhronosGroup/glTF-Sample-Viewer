@@ -22,6 +22,8 @@ class gltfUserInterface
         this.cameraSelection = undefined;
 
         this.onModelSelected = undefined;
+
+        this.playAnimation = false;
     }
 
     initialize()
@@ -121,8 +123,9 @@ class gltfUserInterface
 
     initializeAnimationSettings()
     {
+        const self = this;
         const animationFolder = this.gui.addFolder("Animation");
-        animationFolder.add(this.renderingParameters, "playAnimation").name("Play");
+        animationFolder.add(self, "playAnimation").name("Play").onChange(() => self.renderingParameters.animationTimer.toggle());
     }
 
     initializeDebugSettings()

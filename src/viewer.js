@@ -316,42 +316,38 @@ class gltfViewer
     prepareSceneForRendering(gltf)
     {
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
-        if(this.renderingParameters.playAnimation)
-        {
-            this.animateNode(gltf);
-        }
+
+        this.animateNode(gltf);
 
         scene.applyTransformHierarchy(gltf);
 
-        const transform = mat4.create();
-        if (this.renderingParameters.userCameraActive())
-        {
-            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
-            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
-        }
+        // const transform = mat4.create();
+        // if (this.renderingParameters.userCameraActive())
+        // {
+        //     const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
+        //     mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+        // }
 
-        scene.applyTransformHierarchy(gltf, transform);
+        // scene.applyTransformHierarchy(gltf, transform);
 
-        if(this.renderingParameters.playAnimation)
-        {
-            this.animateSkin(gltf);
-        }
+        this.animateSkin(gltf);
     }
 
     animateNode(gltf)
     {
-        if(gltf.animations !== undefined)
+        if(gltf.animations !== undefined && !this.renderingParameters.animationTimer.paused)
         {
+            const t = this.renderingParameters.animationTimer.elapsed();
             for(const anim of gltf.animations)
             {
-                anim.advance(gltf, new Date().getTime() / 1000);
+                anim.advance(gltf, t);
             }
         }
     }
 
     animateSkin(gltf)
     {
-        if(gltf.skins !== undefined)
+        if(gltf.skins !== undefined && !this.renderingParameters.animationTimer.paused)
         {
             for(const skin of gltf.skins)
             {

@@ -21,17 +21,18 @@ class gltfSkin extends GltfObject
     computeJoints(gltf)
     {
         const skeleton = gltf.nodes[this.skeleton];
-        const ibmAccessor = gltf.accessors[this.inverseBindMatrices].getTypedView(gltf);
+        const ibmAccessor = gltf.accessors[this.inverseBindMatrices].getFilteredView(gltf);
         this.jointMatrices = [];
         this.jointNormalMatrices = [];
 
+        let i = 0;
         for(const joint of this.joints)
         {
             const node = gltf.nodes[joint];
             let jointMatrix = mat4.create();
-            let ibm = jsToGlSlice(ibmAccessor, joint * 16, 16);
+            let ibm = jsToGlSlice(ibmAccessor, i++ * 16, 16);
             mat4.mul(jointMatrix, node.worldTransform, ibm);
-            mat4.mul(jointMatrix, skeleton.inverseWorldTransform, jointMatrix);
+        //  mat4.mul(jointMatrix, skeleton.inverseWorldTransform, jointMatrix);
             this.jointMatrices.push(jointMatrix);
 
             let normalMatrix = mat4.create();

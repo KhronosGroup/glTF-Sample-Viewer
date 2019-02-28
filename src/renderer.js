@@ -282,7 +282,7 @@ class gltfRenderer
         if (drawIndexed)
         {
             const indexAccessor = gltf.accessors[primitive.indices];
-            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
+            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
         }
         else
         {
@@ -302,7 +302,7 @@ class gltfRenderer
 
     pushVertParameterDefines(vertDefines, gltf, node, primitive)
     {
-        if (this.parameters.playAnimation)
+        if (!this.parameters.animationTimer.paused)
         {
             if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
             {
@@ -316,7 +316,7 @@ class gltfRenderer
 
     uploadSkin(gltf, node, primitive)
     {
-        if (this.parameters.playAnimation)
+        if (!this.parameters.animationTimer.paused)
         {
             if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
             {

@@ -90,7 +90,6 @@ class gltfShader
 
     updateUniformArray(arrayName, array, log)
     {
-        // TODO: check for sturcts tag
         if(array[0] instanceof UniformStruct)
         {
             for (let i = 0; i < array.length; ++i)
