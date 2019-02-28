@@ -125,7 +125,7 @@ class gltfRenderer
         let nodes = scene.gatherNodes(gltf);
         if(sortByDepth)
         {
-            nodes = currentCamera.sortNodesByDepth(nodes);
+            nodes = currentCamera.sortNodesByDepth(nodes, gltf);
         }
 
         for (const node of nodes)
