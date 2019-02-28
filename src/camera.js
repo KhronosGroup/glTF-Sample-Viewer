@@ -62,14 +62,14 @@ class gltfCamera extends GltfObject
         }
     }
 
-    sortNodesByDepth(nodes)
+    sortNodesByDepth(nodes, gltf)
     {
         // precompute the distances to avoid their computation during sorting
         const sortedNodes = [];
         for (const node of nodes)
         {
             const modelView = mat4.create();
-            mat4.multiply(modelView, this.getViewMatrix(), node.worldTransform);
+            mat4.multiply(modelView, this.getViewMatrix(gltf), node.worldTransform);
 
             const pos = vec3.create();
             mat4.getTranslation(pos, modelView);
