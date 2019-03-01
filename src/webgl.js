@@ -1,3 +1,5 @@
+import { isPowerOf2 } from './math_utils.js'
+
 class gltfWebGl
 {
     constructor()
@@ -80,7 +82,6 @@ class gltfWebGl
             }
 
             let generateMips = true;
-            let rectangleImage = false;
 
             for (const src of images)
             {
@@ -102,14 +103,13 @@ class gltfWebGl
                     WebGl.context.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, WebGl.context.UNSIGNED_BYTE, image.image);
                 }
 
-                if (image.image.width != image.image.height)
+                if (!isPowerOf2(image.image.width) || !isPowerOf2(image.image.height))
                 {
-                    rectangleImage = true;
                     generateMips = false;
                 }
             }
 
-            this.setSampler(gltfSampler, gltfTex.type, rectangleImage);
+            this.setSampler(gltfSampler, gltfTex.type, !generateMips);
 
             if (textureInfo.generateMips && generateMips)
             {
