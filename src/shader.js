@@ -101,22 +101,14 @@ class gltfShader
         }else{
             let uniformName = arrayName + "[0]";
 
-            if(array[0] instanceof Array || array[0] instanceof TypedArray)
+            let flat = [];
+
+            for(let i = 0; i < array.length; ++i)
             {
-                let val = new Array();
-                for(let i = 0; i < array.length; ++i)
-                {
-                    const inner = array[i];
-                    for(let j = 0; j < array.length; ++j)
-                    {
-                        val.push(inner[j]);
-                    }
-                }
-                this.updateUniformValue(uniformName, val, log);
-            }else{
-                this.updateUniformValue(uniformName, array, log);
+                flat.push.apply(flat, Array.from(array[i]));
             }
 
+            this.updateUniformValue(uniformName, flat, log);
         }
     }
 
