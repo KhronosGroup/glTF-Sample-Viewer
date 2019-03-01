@@ -309,7 +309,7 @@ class gltfRenderer
                 const skin = gltf.skins[node.skin];
 
                 vertDefines.push("USE_SKINNING 1");
-                vertDefines.push("JOINT_COUNT " + skin.joints.length);
+                vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
             }
         }
     }

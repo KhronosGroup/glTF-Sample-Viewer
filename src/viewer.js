@@ -324,14 +324,14 @@ class gltfViewer
 
         scene.applyTransformHierarchy(gltf);
 
-        // const transform = mat4.create();
-        // if (this.renderingParameters.userCameraActive())
-        // {
-        //     const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
-        //     mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
-        // }
+        const transform = mat4.create();
+        if (this.renderingParameters.userCameraActive())
+        {
+            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
+            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+        }
 
-        // scene.applyTransformHierarchy(gltf, transform);
+        scene.applyTransformHierarchy(gltf, transform);
 
         this.animateSkin(gltf);
     }

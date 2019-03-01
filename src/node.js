@@ -87,7 +87,12 @@ class gltfNode extends GltfObject
         this.changed = true;
     }
 
-    // TODO: WEIGHTS
+    resetTransform()
+    {
+        this.rotation = [0, 0, 0, 1];
+        this.translation = [0, 0, 0];
+        this.changed = true;
+    }
 
     getLocalTransform()
     {

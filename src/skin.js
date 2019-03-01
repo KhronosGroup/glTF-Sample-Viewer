@@ -29,6 +29,7 @@ class gltfSkin extends GltfObject
         for(const joint of this.joints)
         {
             const node = gltf.nodes[joint];
+
             let jointMatrix = mat4.create();
             let ibm = jsToGlSlice(ibmAccessor, i++ * 16, 16);
             mat4.mul(jointMatrix, node.worldTransform, ibm);

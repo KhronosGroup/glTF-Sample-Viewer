@@ -1,20 +1,18 @@
-import { gltfAnimationSampler, InterpolationModes } from './animation_sampler.js';
-import { gltfAnimationChannel, InterpolationPath } from './channel.js';
-import { gltfAccessor } from './accessor.js';
+import { InterpolationModes } from './animation_sampler.js';
+import { InterpolationPath } from './channel.js';
 import { clamp, jsToGlSlice } from './utils.js';
-import { quat, vec3, glMatrix } from 'gl-matrix';
+import { quat, glMatrix } from 'gl-matrix';
 
 class gltfInterpolator
 {
     constructor()
     {
         this.prevKey = 0;
+        this.prevT = 0.0;
     }
 
     slerpQuat(q1, q2, t)
     {
-        quat.normalize(q1, q1);
-        quat.normalize(q2, q2);
         let quatResult = quat.create();
         quat.slerp(quatResult, q1, q2, t);
         quat.normalize(quatResult, quatResult);
@@ -43,7 +41,7 @@ class gltfInterpolator
 
         let result = new glMatrix.ARRAY_TYPE(stride);
         const tSq = t * t;
-        const tCub = t * t * t;
+        const tCub = tSq * t;
 
         // we assume that the components are layed out like this: in-tangent, point, out-tangent in output
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#appendix-c-spline-interpolation
@@ -72,27 +70,30 @@ class gltfInterpolator
 
         if(output.length === 1) // no interpolation for single keyFrame animations
         {
-            return output[0];
+            return jsToGlSlice(output, 0, stride);
         }
 
         let nextKey = undefined;
         const maxKeyTime = input[input.length - 1];
         t = t % maxKeyTime; // loop animation
 
-        for(let i = this.prevKey; i < input.length; ++i) // find current keyframe interval
+        if(this.prevT > t)
         {
-            if(t <= input[i])
+            this.prevKey = 0;
+        }
+
+        this.prevT = t;
+
+        for (let i = this.prevKey; i < input.length; ++i) // find current keyframe interval
+        {
+            if (t <= input[i])
             {
                 nextKey = i;
                 break;
             }
         }
 
-        if(nextKey === undefined)
-        {
-            nextKey = 1;
-        }
-
+        nextKey = clamp(nextKey, 1, input.length - 1);
         this.prevKey = clamp(nextKey - 1, 0, nextKey);
 
         const keyDelta = input[nextKey] - input[this.prevKey];
@@ -115,11 +116,6 @@ class gltfInterpolator
     {
         return quat.fromValues(output[4 * index], output[4 * index + 1], output[4 * index + 2], output[4 * index + 3]);
     }
-
-    // getVec3(output, index)
-    // {
-    //     return vec3.fromValues(output[3 * index], output[3 * index + 1], output[3 * index + 2]);
-    // }
 }
 
 export { gltfInterpolator };
