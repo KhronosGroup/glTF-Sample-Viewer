@@ -67,8 +67,8 @@ class gltfInterpolator
 
     interpolate(gltf, channel, sampler, t, stride)
     {
-        const input = gltf.accessors[sampler.input].getFilteredView(gltf);
-        const output = gltf.accessors[sampler.output].getFilteredView(gltf);
+        const input = gltf.accessors[sampler.input].getDeinterlacedView(gltf);
+        const output = gltf.accessors[sampler.output].getDeinterlacedView(gltf);
 
         if(output.length === 1) // no interpolation for single keyFrame animations
         {

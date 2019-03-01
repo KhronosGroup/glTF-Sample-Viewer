@@ -189,7 +189,7 @@ class gltfWebGl
         }
 
         WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
-            gltfAccessor.normalized, gltfBufferView.byteStride, gltfAccessor.byteOffset);
+            gltfAccessor.normalized, gltfBufferView.byteStride, 0);
         WebGl.context.enableVertexAttribArray(attributeLocation);
 
         return true;

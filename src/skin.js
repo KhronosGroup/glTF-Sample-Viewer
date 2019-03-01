@@ -21,7 +21,7 @@ class gltfSkin extends GltfObject
     computeJoints(gltf)
     {
         const skeleton = gltf.nodes[this.skeleton];
-        const ibmAccessor = gltf.accessors[this.inverseBindMatrices].getFilteredView(gltf);
+        const ibmAccessor = gltf.accessors[this.inverseBindMatrices].getDeinterlacedView(gltf);
         this.jointMatrices = [];
         this.jointNormalMatrices = [];
 

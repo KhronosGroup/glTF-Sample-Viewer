@@ -23,8 +23,6 @@ class gltfAccessor extends GltfObject
         this.typedView = undefined;
     }
 
-
-
     getTypedView(gltf)
     {
         if (this.typedView !== undefined)
@@ -79,7 +77,7 @@ class gltfAccessor extends GltfObject
         return this.typedView;
     }
 
-    getFilteredView(gltf)
+    getDeinterlacedView(gltf)
     {
         if (this.filteredView !== undefined)
         {
@@ -90,7 +88,7 @@ class gltfAccessor extends GltfObject
         {
             const bufferView = gltf.bufferViews[this.bufferView];
             const buffer = gltf.buffers[bufferView.buffer];
-            const byteOffset = bufferView.byteOffset;
+            const byteOffset = this.byteOffset + bufferView.byteOffset;
 
             const componentSize = this.getComponentSize();
             const componentCount = this.getComponentCount();
@@ -104,34 +102,34 @@ class gltfAccessor extends GltfObject
             {
                 case WebGl.context.BYTE:
                     this.filteredView = new Int8Array(arrayLength);
-                    this.func = 'getInt8';
+                    func = 'getInt8';
                     break;
                 case WebGl.context.UNSIGNED_BYTE:
                     this.filteredView = new Uint8Array(arrayLength);
-                    this.func = 'getUint8';
+                    func = 'getUint8';
                     break;
                 case WebGl.context.SHORT:
                     this.filteredView = new Int16Array(arrayLength);
-                    this.func = 'getInt16';
+                    func = 'getInt16';
                     break;
                 case WebGl.context.UNSIGNED_SHORT:
                     this.filteredView = new Uint16Array(arrayLength);
-                    this.func = 'getUint16';
+                    func = 'getUint16';
                     break;
                 case WebGl.context.UNSIGNED_INT:
                     this.filteredView = new Uint32Array(arrayLength);
-                    this.func = 'getUint32';
+                    func = 'getUint32';
                     break;
                 case WebGl.context.FLOAT:
                     this.filteredView = new Float32Array(arrayLength);
-                    this.func = 'getFloat32';
+                    func = 'getFloat32';
                     break;
             }
 
             for(let i = 0; i < arrayLength; ++i)
             {
                 let offset = Math.floor(i/componentCount) * stride +  (i % componentCount) * componentSize;
-                this.filteredView[i] = dv.getFloat32(offset);
+                this.filteredView[i] = dv[func](offset, true);
             }
         }
 
