@@ -18,19 +18,19 @@ varying vec3 v_Normal;
 #endif
 
 #ifdef HAS_JOINT_SET1
-varying vec4 a_Joint1;
+attribute vec4 a_Joint1;
 #endif
 
 #ifdef HAS_JOINT_SET2
-varying vec4 a_Joint2;
+attribute vec4 a_Joint2;
 #endif
 
 #ifdef HAS_WEIGHT_SET1
-varying vec4 a_Weight1;
+attribute vec4 a_Weight1;
 #endif
 
 #ifdef HAS_WEIGHT_SET2
-varying vec4 a_Weight2;
+attribute vec4 a_Weight2;
 #endif
 
 #ifdef HAS_UV_SET1

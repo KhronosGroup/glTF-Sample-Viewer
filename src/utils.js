@@ -225,6 +225,7 @@ class AnimationTimer
     start()
     {
         this.startTime = new Date().getTime();
+        this.paused = false;
     }
 
     pause()

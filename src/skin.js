@@ -32,7 +32,7 @@ class gltfSkin extends GltfObject
             let jointMatrix = mat4.create();
             let ibm = jsToGlSlice(ibmAccessor, i++ * 16, 16);
             mat4.mul(jointMatrix, node.worldTransform, ibm);
-        //  mat4.mul(jointMatrix, skeleton.inverseWorldTransform, jointMatrix);
+            mat4.mul(jointMatrix, skeleton.inverseWorldTransform, jointMatrix);
             this.jointMatrices.push(jointMatrix);
 
             let normalMatrix = mat4.create();

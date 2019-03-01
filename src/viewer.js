@@ -247,6 +247,9 @@ class gltfViewer
 
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
+
+        // FOR DEBUGGING
+        this.renderingParameters.animationTimer.start();
     }
 
     render()
