@@ -109,7 +109,7 @@ class gltfWebGl
                 }
             }
 
-            this.setSampler(gltfSampler, gltfTex.type, !generateMips);
+            this.setSampler(gltfSampler, gltfTex.type, generateMips);
 
             if (textureInfo.generateMips && generateMips)
             {
@@ -228,21 +228,21 @@ class gltfWebGl
     }
 
     //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
-    setSampler(gltfSamplerObj, type, rectangleImage) // TEXTURE_2D
+    setSampler(gltfSamplerObj, type, generateMipmaps) // TEXTURE_2D
     {
-        if (rectangleImage)
-        {
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
-        }
-        else
+        if (generateMipmaps)
         {
             WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
             WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
         }
+        else
+        {
+            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
+            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
+        }
 
-        // Rectangle images are not mip-mapped, so force to non-mip-mapped sampler.
-        if (rectangleImage && (gltfSamplerObj.minFilter != WebGl.context.NEAREST) && (gltfSamplerObj.minFilter != WebGl.context.LINEAR))
+        // If not mip-mapped, force to non-mip-mapped sampler.
+        if (!generateMipmaps && (gltfSamplerObj.minFilter != WebGl.context.NEAREST) && (gltfSamplerObj.minFilter != WebGl.context.LINEAR))
         {
             if ((gltfSamplerObj.minFilter == WebGl.context.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == WebGl.context.NEAREST_MIPMAP_LINEAR))
             {
