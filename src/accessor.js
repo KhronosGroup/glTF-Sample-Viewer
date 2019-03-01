@@ -128,7 +128,7 @@ class gltfAccessor extends GltfObject
 
             for(let i = 0; i < arrayLength; ++i)
             {
-                let offset = Math.floor(i/componentCount) * stride +  (i % componentCount) * componentSize;
+                let offset = Math.floor(i/componentCount) * stride + (i % componentCount) * componentSize;
                 this.filteredView[i] = dv[func](offset, true);
             }
         }
