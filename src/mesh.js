@@ -9,6 +9,7 @@ class gltfMesh extends GltfObject
         super();
         this.primitives = [];
         this.name = undefined;
+        this.weights = [];
     }
 
     fromJson(jsonMesh)
@@ -19,6 +20,11 @@ class gltfMesh extends GltfObject
         }
 
         this.primitives = objectsFromJsons(jsonMesh.primitives, gltfPrimitive);
+
+        if(jsonMesh.weights !== undefined)
+        {
+            this.weights = jsonMesh.weights;
+        }
     }
 }
 

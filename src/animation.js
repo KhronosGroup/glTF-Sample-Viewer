@@ -21,6 +21,12 @@ class gltfAnimation extends GltfObject
         this.channels = objectsFromJsons(jsonAnimation.channels, gltfAnimationChannel);
         this.samplers = objectsFromJsons(jsonAnimation.samplers, gltfAnimationSampler);
 
+        if(this.channels === undefined)
+        {
+            console.error("No channel data found for skin");
+            return;
+        }
+
         for(let i = 0; i < this.channels.length; ++i)
         {
             this.interpolators.push(new gltfInterpolator());
@@ -29,6 +35,11 @@ class gltfAnimation extends GltfObject
 
     advance(gltf, totalTime)
     {
+        if(this.channels === undefined)
+        {
+            return;
+        }
+
         for(let i = 0; i < this.interpolators.length; ++i)
         {
             const channel = this.channels[i];
