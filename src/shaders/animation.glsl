@@ -14,6 +14,10 @@ attribute vec3 a_Target_Position2;
 attribute vec3 a_Target_Position3;
 #endif
 
+#ifdef HAS_TARGET_POSITION4
+attribute vec3 a_Target_Position4;
+#endif
+
 #ifdef HAS_TARGET_NORMAL0
 attribute vec3 a_Target_Normal0;
 #endif
@@ -30,6 +34,10 @@ attribute vec3 a_Target_Normal2;
 attribute vec3 a_Target_Normal3;
 #endif
 
+#ifdef HAS_TARGET_NORMAL4
+attribute vec3 a_Target_Normal4;
+#endif
+
 #ifdef HAS_TARGET_TANGENT0
 attribute vec3 a_Target_Tangent0;
 #endif
@@ -44,6 +52,10 @@ attribute vec3 a_Target_Tangent2;
 
 #ifdef HAS_TARGET_TANGENT3
 attribute vec3 a_Target_Tangent3;
+#endif
+
+#ifdef HAS_TARGET_TANGENT4
+attribute vec3 a_Target_Tangent4;
 #endif
 
 #ifdef USE_MORPHING
@@ -140,6 +152,10 @@ vec4 getTargetPosition()
     pos.xyz += u_morphWeights[3] * a_Target_Position3;
 #endif
 
+#ifdef HAS_TARGET_POSITION4
+    pos.xyz += u_morphWeights[4] * a_Target_Position4;
+#endif
+
     return pos;
 }
 
@@ -163,6 +179,10 @@ vec4 getTargetNormal()
     normal.xyz += u_morphWeights[3] * a_Target_Normal3;
 #endif
 
+#ifdef HAS_TARGET_NORMAL4
+    normal.xyz += u_morphWeights[4] * a_Target_Normal4;
+#endif
+
     return normal;
 }
 
@@ -184,6 +204,10 @@ vec4 getTargetTangent()
 
 #ifdef HAS_TARGET_TANGENT3
     tangent.xyz += u_morphWeights[3] * a_Target_Tangent3;
+#endif
+
+#ifdef HAS_TARGET_TANGENT4
+    tangent.xyz += u_morphWeights[4] * a_Target_Tangent4;
 #endif
 
     return tangent;

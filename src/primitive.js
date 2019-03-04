@@ -31,11 +31,19 @@ class gltfPrimitive extends GltfObject
 
         initGlForMembers(this, gltf);
 
+        const maxAttributes = WebGl.context.getParameter(WebGl.context.MAX_VERTEX_ATTRIBS);
+
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
 
         // VERTEX ATTRIBUTES
         for (const attribute of Object.keys(this.attributes))
         {
+            if(this.glAttributes.length >= maxAttributes)
+            {
+                console.error("To many vertex attributes for this primitive, skipping " + attribute);
+                break;
+            }
+
             const idx = this.attributes[attribute];
             switch (attribute)
             {
@@ -97,6 +105,12 @@ class gltfPrimitive extends GltfObject
             let i = 0;
             for (const target of this.targets)
             {
+                if(this.glAttributes.length + 3 > maxAttributes)
+                {
+                    console.error("To many vertex attributes for this primitive, skipping target " + i);
+                    break;
+                }
+
                 for (const attribute of Object.keys(target))
                 {
                     const idx = target[attribute];
