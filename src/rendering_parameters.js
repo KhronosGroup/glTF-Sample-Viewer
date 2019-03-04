@@ -28,6 +28,8 @@ class gltfRenderingParameters
         this.sceneIndex = 0;
         this.cameraIndex = UserCameraIndex;
         this.animationTimer = new AnimationTimer();
+        this.skinning = true;
+        this.morphing = true;
     }
 
     userCameraActive()

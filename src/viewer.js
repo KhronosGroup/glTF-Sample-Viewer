@@ -332,8 +332,6 @@ class gltfViewer
         }
 
         scene.applyTransformHierarchy(gltf, transform);
-
-        this.animateSkin(gltf);
     }
 
     animateNode(gltf)
@@ -344,17 +342,6 @@ class gltfViewer
             for(const anim of gltf.animations)
             {
                 anim.advance(gltf, t);
-            }
-        }
-    }
-
-    animateSkin(gltf)
-    {
-        if(gltf.skins !== undefined && !this.renderingParameters.animationTimer.paused)
-        {
-            for(const skin of gltf.skins)
-            {
-                skin.computeJoints(gltf);
             }
         }
     }

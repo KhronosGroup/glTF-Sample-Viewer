@@ -126,6 +126,8 @@ class gltfUserInterface
         const self = this;
         const animationFolder = this.gui.addFolder("Animation");
         animationFolder.add(self, "playAnimation").name("Play").onChange(() => self.renderingParameters.animationTimer.toggle());
+        animationFolder.add(self.renderingParameters, "skinning").name("Skinning");
+        animationFolder.add(self.renderingParameters, "morphing").name("Morphing");
     }
 
     initializeDebugSettings()

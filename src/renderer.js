@@ -159,10 +159,24 @@ class gltfRenderer
         let mesh = gltf.meshes[node.mesh];
         if (mesh !== undefined)
         {
+            if(node.skin !== undefined)
+            {
+                this.updateSkin(gltf, node);
+            }
+
             for (let primitive of mesh.primitives)
             {
                 this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
             }
+        }
+    }
+
+    updateSkin(gltf, node)
+    {
+        if(this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
+        {
+            const skin = gltf.skins[node.skin];
+            skin.computeJoints(gltf, node);
         }
     }
 
@@ -306,7 +320,7 @@ class gltfRenderer
         if (!this.parameters.animationTimer.paused)
         {
             // skinning
-            if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+            if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
             {
                 const skin = gltf.skins[node.skin];
 
@@ -315,7 +329,7 @@ class gltfRenderer
             }
 
             // morphing
-            if(node.mesh !== undefined && primitive.targets.length > 0)
+            if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
             {
                 const mesh = gltf.meshes[node.mesh];
                 if(mesh.weights !== undefined && mesh.weights.length > 0)
@@ -331,7 +345,7 @@ class gltfRenderer
     {
         if (!this.parameters.animationTimer.paused)
         {
-            if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+            if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
             {
                 const skin = gltf.skins[node.skin];
 
@@ -339,7 +353,7 @@ class gltfRenderer
                 this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
             }
 
-            if(node.mesh !== undefined && primitive.targets.length > 0)
+            if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
             {
                 const mesh = gltf.meshes[node.mesh];
                 if(mesh.weights !== undefined && mesh.weights.length > 0)
