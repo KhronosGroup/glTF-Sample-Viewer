@@ -189,8 +189,10 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        let vertDefines = primitive.getDefines();
+        let vertDefines = [];
         this.pushVertParameterDefines(vertDefines, gltf, node, primitive);
+        vertDefines = primitive.getDefines().concat(vertDefines);
+
         let fragDefines = material.getDefines().concat(vertDefines);
         this.pushFragParameterDefines(fragDefines);
 
