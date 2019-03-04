@@ -31,9 +31,10 @@ class gltfCamera extends GltfObject
     {
         super.initGl(gltf);
 
+        let cameraIndex = undefined;
         for (let i = 0; i < gltf.nodes.length; i++)
         {
-            const cameraIndex = gltf.nodes[i].camera;
+            cameraIndex = gltf.nodes[i].camera;
             if (cameraIndex === undefined)
             {
                 continue;
@@ -44,6 +45,11 @@ class gltfCamera extends GltfObject
                 this.node = i;
                 break;
             }
+        }
+
+        if(this.node === undefined)
+        {
+            console.error("Invalid node for camera " + cameraIndex);
         }
     }
 
@@ -62,14 +68,14 @@ class gltfCamera extends GltfObject
         }
     }
 
-    sortNodesByDepth(nodes)
+    sortNodesByDepth(gltf, nodes)
     {
         // precompute the distances to avoid their computation during sorting
         const sortedNodes = [];
         for (const node of nodes)
         {
             const modelView = mat4.create();
-            mat4.multiply(modelView, this.getViewMatrix(), node.worldTransform);
+            mat4.multiply(modelView, this.getViewMatrix(gltf), node.worldTransform);
 
             const pos = vec3.create();
             mat4.getTranslation(pos, modelView);
