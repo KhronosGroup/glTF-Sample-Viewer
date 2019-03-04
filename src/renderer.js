@@ -2,7 +2,6 @@ import { mat4, vec3 } from 'gl-matrix';
 import { gltfLight } from './light.js';
 import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
-import { jsToGl } from './utils.js';
 import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
@@ -11,6 +10,7 @@ import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
+import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
@@ -31,6 +31,7 @@ class gltfRenderer
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
+        shaderSources.set("animation.glsl", animationShader);
 
         this.shaderCache = new ShaderCache(shaderSources);
 
