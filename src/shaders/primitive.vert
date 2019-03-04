@@ -72,7 +72,7 @@ vec4 getNormal()
     normal = getSkinningNormalMatrix() * normal;
 #endif
 
-    return normal;
+    return normalize(normal);
 }
 #endif
 
@@ -89,7 +89,7 @@ vec4 getTangent()
     tangent = getSkinningMatrix() * tangent;
 #endif
 
-    return tangent;
+    return normalize(tangent);
 }
 #endif
 
