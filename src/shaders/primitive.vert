@@ -48,7 +48,9 @@ vec4 getPosition()
 {
     vec4 pos = a_Position;
 
-    // TODO: morph before skinning
+#ifdef USE_MORPHING
+    pos += getTargetPosition();
+#endif
 
 #ifdef USE_SKINNING
     pos = getSkinningMatrix() * pos;
@@ -62,6 +64,10 @@ vec4 getNormal()
 {
     vec4 normal = a_Normal;
 
+#ifdef USE_MORPHING
+    normal += getTargetNormal();
+#endif
+
 #ifdef USE_SKINNING
     normal = getSkinningNormalMatrix() * normal;
 #endif
@@ -74,6 +80,10 @@ vec4 getNormal()
 vec4 getTangent()
 {
     vec4 tangent = a_Tangent;
+
+#ifdef USE_MORPHING
+    tangent += getTargetTangent();
+#endif
 
 #ifdef USE_SKINNING
     tangent = getSkinningMatrix() * tangent;

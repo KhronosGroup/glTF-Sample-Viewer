@@ -208,7 +208,7 @@ class gltfRenderer
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
-        this.uploadSkin(gltf, node, primitive);
+        this.updateAnimationUniforms(gltf, node, primitive);
 
         if (material.doubleSided)
         {
@@ -305,6 +305,7 @@ class gltfRenderer
     {
         if (!this.parameters.animationTimer.paused)
         {
+            // skinning
             if(node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
             {
                 const skin = gltf.skins[node.skin];
@@ -312,10 +313,21 @@ class gltfRenderer
                 vertDefines.push("USE_SKINNING 1");
                 vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
             }
+
+            // morphing
+            if(node.mesh !== undefined && primitive.targets.length > 0)
+            {
+                const mesh = gltf.meshes[node.mesh];
+                if(mesh.weights !== undefined && mesh.weights.length > 0)
+                {
+                    vertDefines.push("USE_MORPHING 1");
+                    vertDefines.push("WEIGHT_COUNT " + mesh.weights.length);
+                }
+            }
         }
     }
 
-    uploadSkin(gltf, node, primitive)
+    updateAnimationUniforms(gltf, node, primitive)
     {
         if (!this.parameters.animationTimer.paused)
         {
@@ -325,6 +337,15 @@ class gltfRenderer
 
                 this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
                 this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
+            }
+
+            if(node.mesh !== undefined && primitive.targets.length > 0)
+            {
+                const mesh = gltf.meshes[node.mesh];
+                if(mesh.weights !== undefined && mesh.weights.length > 0)
+                {
+                    this.shader.updateUniformArray("u_morphWeights", mesh.weights);
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ class gltfPrimitive extends GltfObject
     {
         super();
         this.attributes = [];
+        this.targets = [];
         this.indices = undefined;
         this.material = undefined;
         this.mode = WebGl.context.TRIANGLES;
@@ -31,6 +32,8 @@ class gltfPrimitive extends GltfObject
         initGlForMembers(this, gltf);
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
+
+        // VERTEX ATTRIBUTES
         for (const attribute of Object.keys(this.attributes))
         {
             const idx = this.attributes[attribute];
@@ -85,6 +88,37 @@ class gltfPrimitive extends GltfObject
                 break;
             default:
                 console.log("Unknown attribute: " + attribute);
+            }
+        }
+
+        // MORPH TARGETS
+        if (this.targets !== undefined)
+        {
+            let i = 0;
+            for (const target of this.targets)
+            {
+                for (const attribute of Object.keys(target))
+                {
+                    const idx = target[attribute];
+
+                    switch (attribute)
+                    {
+                        case "POSITION":
+                            this.defines.push("HAS_TARGET_POSITION" + i + " 1");
+                            this.glAttributes.push({ attribute: attribute, name: "a_Target_Position" + i, accessor: idx });
+                            break;
+                        case "NORMAL":
+                            this.defines.push("HAS_TARGET_NORMAL" + i + " 1");
+                            this.glAttributes.push({ attribute: attribute, name: "a_Target_Normal" + i, accessor: idx });
+                            break;
+                        case "TANGENT":
+                            this.defines.push("HAS_TARGET_TANGENT" + i + " 1");
+                            this.glAttributes.push({ attribute: attribute, name: "a_Target_Tangent" + i, accessor: idx });
+                            break;
+                    }
+                }
+
+                ++i;
             }
         }
     }
