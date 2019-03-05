@@ -68,45 +68,37 @@ class gltfInterpolator
         const input = gltf.accessors[sampler.input].getDeinterlacedView(gltf);
         const output = gltf.accessors[sampler.output].getDeinterlacedView(gltf);
 
-        if(output.length === 1) // no interpolation for single keyFrame animations
+        if(output.length === stride) // no interpolation for single keyFrame animations
         {
             return jsToGlSlice(output, 0, stride);
         }
 
         let nextKey = undefined;
 
-        if(input.length !== 1)
+        const maxKeyTime = input[input.length - 1];
+        t = t % maxKeyTime; // loop animation
+
+        if (this.prevT > t)
         {
-            const maxKeyTime = input[input.length - 1];
-            t = t % maxKeyTime; // loop animation
-
-            if(this.prevT > t)
-            {
-                this.prevKey = 0;
-            }
-
-            this.prevT = t;
-
-            for (let i = this.prevKey; i < input.length; ++i) // find current keyframe interval
-            {
-                if (t <= input[i])
-                {
-                    nextKey = i;
-                    break;
-                }
-            }
-
-            nextKey = clamp(nextKey, 1, input.length - 1);
-            this.prevKey = clamp(nextKey - 1, 0, nextKey);
-
-            const keyDelta = input[nextKey] - input[this.prevKey];
-            t = (t - input[this.prevKey]) / keyDelta; // normalize t to 0..1
-
-        }else{
-            t = 0;
-            nextKey = 0;
             this.prevKey = 0;
         }
+
+        this.prevT = t;
+
+        for (let i = this.prevKey; i < input.length; ++i) // find current keyframe interval
+        {
+            if (t <= input[i])
+            {
+                nextKey = i;
+                break;
+            }
+        }
+
+        nextKey = clamp(nextKey, 1, input.length - 1);
+        this.prevKey = clamp(nextKey - 1, 0, nextKey);
+
+        const keyDelta = input[nextKey] - input[this.prevKey];
+        t = (t - input[this.prevKey]) / keyDelta; // normalize t to 0..1
 
         if(channel.target.path === InterpolationPath.ROTATION)
         {
