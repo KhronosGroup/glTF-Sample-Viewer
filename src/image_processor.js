@@ -1,4 +1,5 @@
 import { HDRImage } from '../libs/hdrpng.js';
+import { nearestPowerOf2, makeEven } from './math_utils.js'
 
 class gltfImageProcessor
 {
@@ -34,13 +35,13 @@ class gltfImageProcessor
 
     processSquareImage(image)
     {
-        const power = this.nearestPowerOf2(image.height);
+        const power = nearestPowerOf2(image.height);
         return { width: power, height: power };
     }
 
     processNonSquareImage(image)
     {
-        return { width: this.makeEven(image.width), height: this.makeEven(image.height) };
+        return { width: makeEven(image.width), height: makeEven(image.height) };
     }
 
     resizeImage(image, newDimensions)
@@ -51,29 +52,6 @@ class gltfImageProcessor
         canvas.height = newDimensions.height;
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
         image.src = canvas.toDataURL("image/png");
-    }
-
-    nearestPowerOf2(n)
-    {
-        if (this.isPowerOf2(n))
-        {
-            return n;
-        }
-        return Math.pow(2.0, Math.round(Math.log(n) / Math.log(2.0)));
-    }
-
-    isPowerOf2(n)
-    {
-        return n && (n & (n - 1)) === 0;
-    }
-
-    makeEven(n)
-    {
-        if (n % 2 === 1)
-        {
-            return n + 1;
-        }
-        return n;
     }
 }
 

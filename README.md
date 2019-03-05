@@ -1,7 +1,7 @@
 glTF 2.0 Reference Viewer
 =========================
 
-[![](assets/images/BoomBox.JPG)](http://gltf.ux3d.io/)
+[![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
 
 This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.khronos.org/webgl/).
 
@@ -148,11 +148,11 @@ These parameters can be provided to the material in two ways. Either the paramet
 
 **Base Color of a Boombox**
 
-<img src="assets/images/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-baseColor.JPG" width="300" height="300"/>
+<img src="assets/images/BoomBox_baseColor.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-baseColor.jpg" width="300" height="300"/>
 
 **Metallic-Roughness of a Boombox**
 
-<img src="assets/images/BoomBox_occlusionRoughnessMetallic.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-metallicRoughness.JPG" width="300" height="300"/>
+<img src="assets/images/BoomBox_occlusionRoughnessMetallic.png" width="300" height="300"/> -> <img src="assets/images/BoomBox-metallicRoughness.jpg" width="300" height="300"/>
 
 Although these are the core parameters of the Metallic-Roughness material, often a user will want to provide additional maps for features such as normals, ambient occlusion, or emissiveness. Similarly to above, these are usually provided as a texture that corresponds to the parts of the mesh that have shifted normals, are occluded and/or are emissive, respectively. However, since these are not a part of the Metallic-Roughness material itself, they are provided as a separate portion to the material.
 
