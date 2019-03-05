@@ -333,7 +333,6 @@ class gltfViewer
             scaled = true;
             this.scaledGltfChanged = false;
             this.scaledSceneIndex = this.renderingParameters.sceneIndex;
-            console.log("Rescaled scene " + this.scaledSceneIndex + " by " + this.sceneScaleFactor);
         }
 
         mat4.scale(transform, transform, vec3.fromValues(this.sceneScaleFactor,  this.sceneScaleFactor,  this.sceneScaleFactor));
