@@ -1,3 +1,5 @@
+#include <animation.glsl>
+
 attribute vec4 a_Position;
 varying vec3 v_Position;
 
@@ -42,19 +44,69 @@ uniform mat4 u_ViewProjectionMatrix;
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_NormalMatrix;
 
+vec4 getPosition()
+{
+    vec4 pos = a_Position;
+
+#ifdef USE_MORPHING
+    pos += getTargetPosition();
+#endif
+
+#ifdef USE_SKINNING
+    pos = getSkinningMatrix() * pos;
+#endif
+
+    return pos;
+}
+
+#ifdef HAS_NORMALS
+vec4 getNormal()
+{
+    vec4 normal = a_Normal;
+
+#ifdef USE_MORPHING
+    normal += getTargetNormal();
+#endif
+
+#ifdef USE_SKINNING
+    normal = getSkinningNormalMatrix() * normal;
+#endif
+
+    return normalize(normal);
+}
+#endif
+
+#ifdef HAS_TANGENTS
+vec4 getTangent()
+{
+    vec4 tangent = a_Tangent;
+
+#ifdef USE_MORPHING
+    tangent += getTargetTangent();
+#endif
+
+#ifdef USE_SKINNING
+    tangent = getSkinningMatrix() * tangent;
+#endif
+
+    return normalize(tangent);
+}
+#endif
+
 void main()
 {
-    vec4 pos = u_ModelMatrix * a_Position;
+    vec4 pos = u_ModelMatrix * getPosition();
     v_Position = vec3(pos.xyz) / pos.w;
 
     #ifdef HAS_NORMALS
     #ifdef HAS_TANGENTS
-    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(a_Normal.xyz, 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(a_Tangent.xyz, 0.0)));
-    vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
+    vec4 tangent = getTangent();
+    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal().xyz, 0.0)));
+    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent.xyz, 0.0)));
+    vec3 bitangentW = cross(normalW, tangentW) * tangent.w;
     v_TBN = mat3(tangentW, bitangentW, normalW);
     #else // !HAS_TANGENTS
-    v_Normal = normalize(vec3(u_NormalMatrix * vec4(a_Normal.xyz, 0.0)));
+    v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal().xyz, 0.0)));
     #endif
     #endif // !HAS_NORMALS
 

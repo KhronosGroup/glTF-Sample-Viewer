@@ -12,6 +12,18 @@ function jsToGl(array)
     return tensor;
 }
 
+function jsToGlSlice(array, offset, stride)
+{
+    let tensor = new glMatrix.ARRAY_TYPE(stride);
+
+    for (let i = 0; i < stride; ++i)
+    {
+        tensor[i] = array[offset + i];
+    }
+
+    return tensor;
+}
+
 function initGlForMembers(gltfObj, gltf)
 {
     for (const name of Object.keys(gltfObj))
@@ -30,7 +42,7 @@ function initGlForMembers(gltfObj, gltf)
         {
             for (const element of member)
             {
-                if (element.initGl !== undefined)
+                if (element !== undefined && element.initGl !== undefined)
                 {
                     element.initGl(gltf);
                 }
@@ -177,8 +189,61 @@ class Timer
     }
 }
 
+class AnimationTimer
+{
+    constructor()
+    {
+        this.startTime = 0;
+        this.paused = true;
+        this.pausedTime = 0;
+    }
+
+    elapsed()
+    {
+        if(this.paused)
+        {
+            return this.pausedTime / 1000;
+        }
+        else
+        {
+            return (new Date().getTime() - this.startTime) / 1000;
+        }
+    }
+
+    toggle()
+    {
+        if(this.paused)
+        {
+            this.unpause();
+        }
+        else
+        {
+            this.pause();
+        }
+    }
+
+    start()
+    {
+        this.startTime = new Date().getTime();
+        this.paused = false;
+    }
+
+    pause()
+    {
+        this.pausedTime = new Date().getTime() - this.startTime;
+        this.paused = true;
+    }
+
+    unpause()
+    {
+        this.startTime += new Date().getTime() - this.startTime - this.pausedTime;
+        this.paused = false;
+    }
+}
+
 export {
     jsToGl,
+    jsToGlSlice,
     objectsFromJsons,
     objectFromJson,
     fromKeys,
@@ -195,5 +260,6 @@ export {
     combinePaths,
     UniformStruct,
     Timer,
+    AnimationTimer,
     initGlForMembers
 };

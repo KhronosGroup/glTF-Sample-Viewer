@@ -2,7 +2,6 @@ import { mat4, vec3 } from 'gl-matrix';
 import { gltfLight } from './light.js';
 import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
-import { jsToGl } from './utils.js';
 import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
@@ -11,6 +10,7 @@ import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
+import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
@@ -31,6 +31,7 @@ class gltfRenderer
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
+        shaderSources.set("animation.glsl", animationShader);
 
         this.shaderCache = new ShaderCache(shaderSources);
 
@@ -125,7 +126,7 @@ class gltfRenderer
         let nodes = scene.gatherNodes(gltf);
         if(sortByDepth)
         {
-            nodes = currentCamera.sortNodesByDepth(nodes, gltf);
+            nodes = currentCamera.sortNodesByDepth(gltf, nodes);
         }
 
         for (const node of nodes)
@@ -158,15 +159,29 @@ class gltfRenderer
         let mesh = gltf.meshes[node.mesh];
         if (mesh !== undefined)
         {
+            if(node.skin !== undefined)
+            {
+                this.updateSkin(gltf, node);
+            }
+
             for (let primitive of mesh.primitives)
             {
-                this.drawPrimitive(gltf, primitive, node.worldTransform, this.viewProjectionMatrix, node.normalMatrix);
+                this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
             }
         }
     }
 
+    updateSkin(gltf, node)
+    {
+        if(this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
+        {
+            const skin = gltf.skins[node.skin];
+            skin.computeJoints(gltf, node);
+        }
+    }
+
     // vertices with given material
-    drawPrimitive(gltf, primitive, modelMatrix, viewProjectionMatrix, normalMatrix)
+    drawPrimitive(gltf, primitive, node, viewProjectionMatrix)
     {
         if (primitive.skip) return;
 
@@ -174,11 +189,15 @@ class gltfRenderer
 
         //select shader permutation, compile and link program.
 
-        let fragDefines = material.getDefines().concat(primitive.getDefines());
-        this.pushParameterDefines(fragDefines);
+        let vertDefines = [];
+        this.pushVertParameterDefines(vertDefines, gltf, node, primitive);
+        vertDefines = primitive.getDefines().concat(vertDefines);
+
+        let fragDefines = material.getDefines().concat(vertDefines);
+        this.pushFragParameterDefines(fragDefines);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), primitive.getDefines());
+        const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -199,11 +218,13 @@ class gltfRenderer
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
-        this.shader.updateUniform("u_ModelMatrix", modelMatrix);
-        this.shader.updateUniform("u_NormalMatrix", normalMatrix, false);
+        this.shader.updateUniform("u_ModelMatrix", node.worldTransform);
+        this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
         this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
+
+        this.updateAnimationUniforms(gltf, node, primitive);
 
         if (material.doubleSided)
         {
@@ -278,7 +299,7 @@ class gltfRenderer
         if (drawIndexed)
         {
             const indexAccessor = gltf.accessors[primitive.indices];
-            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, indexAccessor.byteOffset);
+            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
         }
         else
         {
@@ -296,7 +317,56 @@ class gltfRenderer
         }
     }
 
-    pushParameterDefines(fragDefines)
+    pushVertParameterDefines(vertDefines, gltf, node, primitive)
+    {
+        if (!this.parameters.animationTimer.paused)
+        {
+            // skinning
+            if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+            {
+                const skin = gltf.skins[node.skin];
+
+                vertDefines.push("USE_SKINNING 1");
+                vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
+            }
+
+            // morphing
+            if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+            {
+                const mesh = gltf.meshes[node.mesh];
+                if(mesh.weights !== undefined && mesh.weights.length > 0)
+                {
+                    vertDefines.push("USE_MORPHING 1");
+                    vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
+                }
+            }
+        }
+    }
+
+    updateAnimationUniforms(gltf, node, primitive)
+    {
+        if (!this.parameters.animationTimer.paused)
+        {
+            if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+            {
+                const skin = gltf.skins[node.skin];
+
+                this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
+                this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
+            }
+
+            if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+            {
+                const mesh = gltf.meshes[node.mesh];
+                if(mesh.weights !== undefined && mesh.weights.length > 0)
+                {
+                    this.shader.updateUniformArray("u_morphWeights", mesh.weights);
+                }
+            }
+        }
+    }
+
+    pushFragParameterDefines(fragDefines)
     {
         if (this.parameters.usePunctual)
         {

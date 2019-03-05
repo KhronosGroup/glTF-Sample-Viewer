@@ -74,13 +74,13 @@ class gltfShader
 
     updateUniform(objectName, object, log = true)
     {
-        if (Array.isArray(object))
+        if (object instanceof UniformStruct)
+        {
+           this.updateUniformStruct(objectName, object, log);
+        }
+        else if (Array.isArray(object))
         {
             this.updateUniformArray(objectName, object, log);
-        }
-        else if (object instanceof UniformStruct)
-        {
-            this.updateUniformStruct(objectName, object, log);
         }
         else
         {
@@ -90,11 +90,38 @@ class gltfShader
 
     updateUniformArray(arrayName, array, log)
     {
-        for (let i = 0; i < array.length; ++i)
+        if(array[0] instanceof UniformStruct)
         {
-            let element = array[i];
-            let uniformName = arrayName + "[" + i + "]";
-            this.updateUniform(uniformName, element, log);
+            for (let i = 0; i < array.length; ++i)
+            {
+                let element = array[i];
+                let uniformName = arrayName + "[" + i + "]";
+                this.updateUniform(uniformName, element, log);
+            }
+        }else{
+            let uniformName = arrayName + "[0]";
+
+            let flat = [];
+
+            if(Array.isArray(array[0]) || array[0].length !== undefined)
+            {
+                for (let i = 0; i < array.length; ++i)
+                {
+                    flat.push.apply(flat, Array.from(array[i]));
+                }
+            }
+            else
+            {
+                flat = array;
+            }
+
+            if(flat.length === 0)
+            {
+                console.error("Failed to flatten uniform array " + uniformName);
+                return;
+            }
+
+            this.updateUniformValue(uniformName, flat, log);
         }
     }
 
@@ -109,7 +136,6 @@ class gltfShader
     }
 
     // upload the values of a uniform with the given name using type resolve to get correct function call
-    // vec3 => WebGl.context.uniform3f(value)
     updateUniformValue(uniformName, value, log)
     {
         const uniform = this.uniforms.get(uniformName);
@@ -117,12 +143,30 @@ class gltfShader
         if(uniform !== undefined)
         {
             switch (uniform.type) {
-            case WebGl.context.FLOAT: WebGl.context.uniform1f(uniform.loc, value); break;
+            case WebGl.context.FLOAT:
+            {
+                if(Array.isArray(value) || value instanceof Float32Array)
+                {
+                    WebGl.context.uniform1fv(uniform.loc, value);
+                }else{
+                    WebGl.context.uniform1f(uniform.loc, value);
+                }
+                break;
+            }
             case WebGl.context.FLOAT_VEC2: WebGl.context.uniform2fv(uniform.loc, value); break;
             case WebGl.context.FLOAT_VEC3: WebGl.context.uniform3fv(uniform.loc, value); break;
             case WebGl.context.FLOAT_VEC4: WebGl.context.uniform4fv(uniform.loc, value); break;
 
-            case WebGl.context.INT: WebGl.context.uniform1i(uniform.loc, value); break;
+            case WebGl.context.INT:
+            {
+                if(Array.isArray(value) || value instanceof Uint32Array || value instanceof Int32Array)
+                {
+                    WebGl.context.uniform1iv(uniform.loc, value);
+                }else{
+                    WebGl.context.uniform1i(uniform.loc, value);
+                }
+                break;
+            }
             case WebGl.context.INT_VEC2: WebGl.context.uniform2iv(uniform.loc, value); break;
             case WebGl.context.INT_VEC3: WebGl.context.uniform3iv(uniform.loc, value); break;
             case WebGl.context.INT_VEC4: WebGl.context.uniform4iv(uniform.loc, value); break;

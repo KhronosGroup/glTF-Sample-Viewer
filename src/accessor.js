@@ -1,5 +1,6 @@
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
+import { jsToGlSlice} from './utils.js';
 
 class gltfAccessor extends GltfObject
 {
@@ -14,7 +15,7 @@ class gltfAccessor extends GltfObject
         this.type = undefined;
         this.max = undefined;
         this.min = undefined;
-        this.sparse = undefined;
+        this.sparse = undefined; // CURRENTLY UNSUPPORTED
         this.name = undefined;
 
         // non gltf
@@ -33,37 +34,38 @@ class gltfAccessor extends GltfObject
         {
             const bufferView = gltf.bufferViews[this.bufferView];
             const buffer = gltf.buffers[bufferView.buffer];
-            const byteOffset = bufferView.byteOffset;
+            const byteOffset = this.byteOffset + bufferView.byteOffset;
 
+            const componentSize = this.getComponentSize();
             let componentCount = this.getComponentCount();
-            if (bufferView.byteStride !== 0)
+
+            if(bufferView.byteStride !== 0)
             {
-                componentCount = bufferView.byteStride / this.getComponentSize();
+                componentCount = bufferView.byteStride / componentSize;
             }
 
-            const arrayOffsetLength = this.byteOffset / this.getComponentSize();
-            const arrayLength = arrayOffsetLength + this.count * componentCount;
+            const arrayLength = this.count * componentCount;
 
             switch (this.componentType)
             {
-            case WebGl.context.BYTE:
-                this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
-                break;
-            case WebGl.context.UNSIGNED_BYTE:
-                this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
-                break;
-            case WebGl.context.SHORT:
-                this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
-                break;
-            case WebGl.context.UNSIGNED_SHORT:
-                this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
-                break;
-            case WebGl.context.UNSIGNED_INT:
-                this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
-                break;
-            case WebGl.context.FLOAT:
-                this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
-                break;
+                case WebGl.context.BYTE:
+                    this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
+                    break;
+                case WebGl.context.UNSIGNED_BYTE:
+                    this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
+                    break;
+                case WebGl.context.SHORT:
+                    this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
+                    break;
+                case WebGl.context.UNSIGNED_SHORT:
+                    this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
+                    break;
+                case WebGl.context.UNSIGNED_INT:
+                    this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
+                    break;
+                case WebGl.context.FLOAT:
+                    this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
+                    break;
             }
         }
 
@@ -73,6 +75,65 @@ class gltfAccessor extends GltfObject
         }
 
         return this.typedView;
+    }
+
+    getDeinterlacedView(gltf)
+    {
+        if (this.filteredView !== undefined)
+        {
+            return this.filteredView;
+        }
+
+        if (this.bufferView !== undefined)
+        {
+            const bufferView = gltf.bufferViews[this.bufferView];
+            const buffer = gltf.buffers[bufferView.buffer];
+            const byteOffset = this.byteOffset + bufferView.byteOffset;
+
+            const componentSize = this.getComponentSize();
+            const componentCount = this.getComponentCount();
+            const arrayLength = this.count * componentCount;
+
+            let stride = bufferView.byteStride !== 0 ? bufferView.byteStride : componentCount * componentSize;
+            let dv = new DataView(buffer.buffer, byteOffset, this.count * stride);
+
+            let func = 'getFloat32';
+            switch (this.componentType)
+            {
+                case WebGl.context.BYTE:
+                    this.filteredView = new Int8Array(arrayLength);
+                    func = 'getInt8';
+                    break;
+                case WebGl.context.UNSIGNED_BYTE:
+                    this.filteredView = new Uint8Array(arrayLength);
+                    func = 'getUint8';
+                    break;
+                case WebGl.context.SHORT:
+                    this.filteredView = new Int16Array(arrayLength);
+                    func = 'getInt16';
+                    break;
+                case WebGl.context.UNSIGNED_SHORT:
+                    this.filteredView = new Uint16Array(arrayLength);
+                    func = 'getUint16';
+                    break;
+                case WebGl.context.UNSIGNED_INT:
+                    this.filteredView = new Uint32Array(arrayLength);
+                    func = 'getUint32';
+                    break;
+                case WebGl.context.FLOAT:
+                    this.filteredView = new Float32Array(arrayLength);
+                    func = 'getFloat32';
+                    break;
+            }
+
+            for(let i = 0; i < arrayLength; ++i)
+            {
+                let offset = Math.floor(i/componentCount) * stride + (i % componentCount) * componentSize;
+                this.filteredView[i] = dv[func](offset, true);
+            }
+        }
+
+        return this.filteredView;
     }
 
     getComponentCount()

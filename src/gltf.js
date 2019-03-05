@@ -13,6 +13,8 @@ import { gltfTexture } from './texture.js';
 import { initGlForMembers, objectsFromJsons, objectFromJson } from './utils';
 import { gltfAsset } from './asset.js';
 import { GltfObject } from './gltf_object.js';
+import { gltfAnimation } from './animation.js';
+import { gltfSkin } from './skin.js';
 
 class glTF extends GltfObject
 {
@@ -33,6 +35,8 @@ class glTF extends GltfObject
         this.buffers = [];
         this.bufferViews = [];
         this.materials = [];
+        this.animations = [];
+        this.skins = [];
         this.path = file;
     }
 
@@ -58,6 +62,8 @@ class glTF extends GltfObject
         this.nodes = objectsFromJsons(json.nodes, gltfNode);
         this.lights = objectsFromJsons(getJsonLightsFromExtensions(json.extensions), gltfLight);
         this.images = objectsFromJsons(json.images, gltfImage);
+        this.animations = objectsFromJsons(json.animations, gltfAnimation);
+        this.skins = objectsFromJsons(json.skins, gltfSkin);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());

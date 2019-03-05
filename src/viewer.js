@@ -11,6 +11,7 @@ import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { getScaleFactor } from './gltf_utils.js';
+import { gltfSkin } from './skin.js';
 
 class gltfViewer
 {
@@ -42,6 +43,10 @@ class gltfViewer
 
         this.loadingTimer = new Timer();
         this.gltf = undefined;
+
+        this.scaledSceneIndex = 0;
+        this.scaledGltfChanged = true;
+        this.sceneScaleFactor = 1;
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
@@ -243,6 +248,7 @@ class gltfViewer
 
         this.gltf = gltf;
         this.currentlyRendering = true;
+        this.scaledGltfChanged = true;
 
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
@@ -273,9 +279,6 @@ class gltfViewer
                     }
 
                     const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
-
-                    // if transformations happen at runtime, we need to apply the transform hierarchy here
-                    // scene.applyTransformHierarchy(gltf);
 
                     let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
                     if (alphaScene.nodes.length > 0)
@@ -315,16 +318,42 @@ class gltfViewer
     prepareSceneForRendering(gltf)
     {
         const scene = gltf.scenes[this.renderingParameters.sceneIndex];
+
+        this.animateNode(gltf);
+
         scene.applyTransformHierarchy(gltf);
 
         const transform = mat4.create();
-        if (this.renderingParameters.userCameraActive())
+
+        let scaled = false;
+        if (this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex != this.renderingParameters.sceneIndex))
         {
-            const scaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
-            mat4.scale(transform, transform, vec3.fromValues(scaleFactor, scaleFactor, scaleFactor));
+            this.sceneScaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
+
+            scaled = true;
+            this.scaledGltfChanged = false;
+            this.scaledSceneIndex = this.renderingParameters.sceneIndex;
         }
 
+        mat4.scale(transform, transform, vec3.fromValues(this.sceneScaleFactor,  this.sceneScaleFactor,  this.sceneScaleFactor));
         scene.applyTransformHierarchy(gltf, transform);
+
+        if(scaled)
+        {
+            this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
+        }
+    }
+
+    animateNode(gltf)
+    {
+        if(gltf.animations !== undefined && !this.renderingParameters.animationTimer.paused)
+        {
+            const t = this.renderingParameters.animationTimer.elapsed();
+            for(const anim of gltf.animations)
+            {
+                anim.advance(gltf, t);
+            }
+        }
     }
 
     initializeGui()
