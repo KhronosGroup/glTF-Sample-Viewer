@@ -43,6 +43,7 @@ class gltfViewer
 
         this.loadingTimer = new Timer();
         this.gltf = undefined;
+        this.lastDropped = undefined;
 
         this.scaledSceneIndex = 0;
         this.scaledGltfChanged = true;
@@ -138,6 +139,8 @@ class gltfViewer
 
     loadFromFileObject(mainFile, additionalFiles)
     {
+        this.lastDropped = { mainFile: mainFile, additionalFiles: additionalFiles };
+
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
@@ -168,6 +171,8 @@ class gltfViewer
 
     loadFromPath(gltfFile, basePath = "")
     {
+        this.lastDropped = undefined;
+
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
@@ -365,7 +370,18 @@ class gltfViewer
             this.stats);
 
         const self = this;
-        gui.onModelSelected = (model) => self.loadFromPath(this.pathProvider.resolve(model));
+        gui.onModelChanged = () => self.loadFromPath(this.pathProvider.resolve(gui.selectedModel));
+        gui.onEnvironmentChanged = () =>
+        {
+            if (this.lastDropped === undefined)
+            {
+                self.loadFromPath(this.pathProvider.resolve(gui.selectedModel));
+            }
+            else
+            {
+                self.loadFromFileObject(this.lastDropped.mainFile, this.lastDropped.additionalFiles);
+            }
+        }
         gui.initialize();
         this.gui = gui;
     }

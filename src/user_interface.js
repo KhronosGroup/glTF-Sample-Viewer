@@ -21,7 +21,8 @@ class gltfUserInterface
         this.sceneSelection = undefined;
         this.cameraSelection = undefined;
 
-        this.onModelSelected = undefined;
+        this.onModelChanged = undefined;
+        this.onEnvironmentChanged = undefined;
 
         this.playAnimation = false;
     }
@@ -77,7 +78,7 @@ class gltfUserInterface
         }
 
         const self = this;
-        this.modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(modelKey => self.onModelSelected(modelKey));
+        this.modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(() => self.onModelChanged());
     }
 
     initializeGltfVersionView(version)
@@ -113,7 +114,7 @@ class gltfUserInterface
         }
         lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
         lightingFolder.add(this.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
-            .onChange(() => self.onModelSelected(self.selectedModel));
+            .onChange(() => self.onEnvironmentChanged());
         lightingFolder.add(this.renderingParameters, "exposure", 0, 10, 0.1).name("Exposure");
         lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
