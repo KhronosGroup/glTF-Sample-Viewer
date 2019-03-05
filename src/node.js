@@ -14,9 +14,9 @@ class gltfNode extends GltfObject
         this.camera = undefined;
         this.children = [];
         this.matrix = undefined;
-        this.rotation = [0, 0, 0, 1];
-        this.scale = [1, 1, 1];
-        this.translation = [0, 0, 0];
+        this.rotation = jsToGl([0, 0, 0, 1]);
+        this.scale = jsToGl([1, 1, 1]);
+        this.translation = jsToGl([0, 0, 0]);
         this.name = undefined;
         this.mesh = undefined;
         this.skin = undefined;
@@ -89,8 +89,9 @@ class gltfNode extends GltfObject
 
     resetTransform()
     {
-        this.rotation = [0, 0, 0, 1];
-        this.translation = [0, 0, 0];
+        this.rotation = jsToGl([0, 0, 0, 1]);
+        this.scale = jsToGl([1, 1, 1]);
+        this.translation = jsToGl([0, 0, 0]);
         this.changed = true;
     }
 
@@ -98,15 +99,8 @@ class gltfNode extends GltfObject
     {
         if(this.transform === undefined || this.changed)
         {
-            if (this.matrix !== undefined)
-            {
-                this.transform = this.matrix;
-            }
-            else
-            {
-                this.transform = mat4.create();
-                mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
-            }
+            this.transform = mat4.create();
+            mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
             this.changed = false;
         }
 
