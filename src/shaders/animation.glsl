@@ -18,6 +18,18 @@ attribute vec3 a_Target_Position3;
 attribute vec3 a_Target_Position4;
 #endif
 
+#ifdef HAS_TARGET_POSITION5
+attribute vec3 a_Target_Position5;
+#endif
+
+#ifdef HAS_TARGET_POSITION6
+attribute vec3 a_Target_Position6;
+#endif
+
+#ifdef HAS_TARGET_POSITION7
+attribute vec3 a_Target_Position7;
+#endif
+
 #ifdef HAS_TARGET_NORMAL0
 attribute vec3 a_Target_Normal0;
 #endif
@@ -34,10 +46,6 @@ attribute vec3 a_Target_Normal2;
 attribute vec3 a_Target_Normal3;
 #endif
 
-#ifdef HAS_TARGET_NORMAL4
-attribute vec3 a_Target_Normal4;
-#endif
-
 #ifdef HAS_TARGET_TANGENT0
 attribute vec3 a_Target_Tangent0;
 #endif
@@ -52,10 +60,6 @@ attribute vec3 a_Target_Tangent2;
 
 #ifdef HAS_TARGET_TANGENT3
 attribute vec3 a_Target_Tangent3;
-#endif
-
-#ifdef HAS_TARGET_TANGENT4
-attribute vec3 a_Target_Tangent4;
 #endif
 
 #ifdef USE_MORPHING

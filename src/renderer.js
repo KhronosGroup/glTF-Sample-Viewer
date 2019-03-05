@@ -337,7 +337,7 @@ class gltfRenderer
                 if(mesh.weights !== undefined && mesh.weights.length > 0)
                 {
                     vertDefines.push("USE_MORPHING 1");
-                    vertDefines.push("WEIGHT_COUNT " + mesh.weights.length);
+                    vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
                 }
             }
         }
