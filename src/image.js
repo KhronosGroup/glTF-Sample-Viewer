@@ -1,6 +1,7 @@
 import { HDRImage } from '../libs/hdrpng.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
+import { isPowerOf2 } from './math_utils.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
 
@@ -119,6 +120,12 @@ class gltfImage extends GltfObject
         reader.readAsDataURL(foundFile);
 
         return true;
+    }
+
+    shouldGenerateMips()
+    {
+        return (this.image.width == this.image.height)
+            || (isPowerOf2(this.image.width) && isPowerOf2(this.image.height));
     }
 }
 
