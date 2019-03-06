@@ -54,6 +54,9 @@ class gltfViewer
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
 
+        // Holds the last camera index, used for scene scaling when changing to user camera.
+        this.prevCameraIndex = null;
+
         if (this.headless === true)
         {
             this.hideSpinner();
@@ -342,8 +345,10 @@ class gltfViewer
         const transform = mat4.create();
 
         let scaled = false;
-        if (this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex != this.renderingParameters.sceneIndex))
+        if ((this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex != this.renderingParameters.sceneIndex)) || this.prevCameraIndex !== this.renderingParameters.cameraIndex)
         {
+            this.prevCameraIndex = this.renderingParameters.cameraIndex;
+
             this.sceneScaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
 
             scaled = true;
