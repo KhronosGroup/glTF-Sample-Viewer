@@ -43,6 +43,8 @@ function parseArguments(args)
             help: "The path of the glTF file"
         }
     );
+
+    // Camera arguments:
     parser.addArgument(
         ["--dimensions"],
         {
@@ -139,6 +141,24 @@ function parseArguments(args)
             type: 'string',
             help: 'The environment map to use for image based lighting',
             choices: Environments
+        }
+    );
+
+    // Animation arguments:
+    parser.addArgument(
+        '--animationIndex',
+        {
+            defaultValue: -1,
+            type: 'int',
+            help: "Index of animation to play, -1 plays all."
+        }
+    );
+    parser.addArgument(
+        '--animationTimeSec',
+        {
+            defaultValue: 1.0,
+            type: 'float',
+            help: "Time point within animation."
         }
     );
 

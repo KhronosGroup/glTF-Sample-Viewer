@@ -195,10 +195,11 @@ class AnimationTimer
     {
         this.startTime = 0;
         this.paused = true;
+        this.fixedTime = null;
         this.pausedTime = 0;
     }
 
-    elapsed()
+    elapsedSec()
     {
         if(this.paused)
         {
@@ -206,7 +207,7 @@ class AnimationTimer
         }
         else
         {
-            return (new Date().getTime() - this.startTime) / 1000;
+            return this.fixedTime || (new Date().getTime() - this.startTime) / 1000;
         }
     }
 
@@ -250,6 +251,12 @@ class AnimationTimer
             this.startTime = 0;
         }
         this.pausedTime = 0;
+    }
+
+    setFixedTime(timeInSec)
+    {
+        this.paused = false;
+        this.fixedTime = timeInSec;
     }
 }
 

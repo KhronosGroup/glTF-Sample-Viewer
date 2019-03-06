@@ -103,6 +103,15 @@ class gltfViewer
         this.userCamera.ymag = ymag;
     }
 
+    setAnimation(animationIndex = -1, timeInSec = undefined)
+    {
+        this.renderingParameters.animationIndex = animationIndex;
+        if(timeInSec !== undefined)
+        {
+            this.renderingParameters.animationTimer.setFixedTime(timeInSec);
+        }
+    }
+
     setupInputBindings(input)
     {
         const self = this;
@@ -359,7 +368,7 @@ class gltfViewer
     {
         if(gltf.animations !== undefined && !this.renderingParameters.animationTimer.paused)
         {
-            const t = this.renderingParameters.animationTimer.elapsed();
+            const t = this.renderingParameters.animationTimer.elapsedSec();
 
             if(this.renderingParameters.animationIndex === "all")
             {
