@@ -239,6 +239,18 @@ class AnimationTimer
         this.startTime += new Date().getTime() - this.startTime - this.pausedTime;
         this.paused = false;
     }
+
+    reset()
+    {
+        if(!this.paused) {
+            // Animation is running.
+            this.startTime = new Date().getTime();
+        }
+        else {
+            this.startTime = 0;
+        }
+        this.pausedTime = 0;
+    }
 }
 
 export {

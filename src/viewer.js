@@ -358,8 +358,17 @@ class gltfViewer
         if(gltf.animations !== undefined && !this.renderingParameters.animationTimer.paused)
         {
             const t = this.renderingParameters.animationTimer.elapsed();
-            for(const anim of gltf.animations)
-            {
+
+            if(this.renderingParameters.animationIndex == -1) {
+                // Special index, step all animations.
+                for(const anim of gltf.animations)
+                {
+                    anim.advance(gltf, t);
+                }
+            }
+            else {
+                // Step selected animation.
+                const anim = gltf.animations[this.renderingParameters.animationIndex];
                 anim.advance(gltf, t);
             }
         }

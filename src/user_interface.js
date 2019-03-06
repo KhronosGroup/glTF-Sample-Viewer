@@ -44,6 +44,7 @@ class gltfUserInterface
         const isModelInDropdown = this.modelPathProvider.pathExists(gltf.path);
         this.initializeModelsDropdown(isModelInDropdown ? undefined : gltf.path);
         this.initializeGltfVersionView(gltf.asset.version);
+        this.initializeAnimationSelection(Object.keys(gltf.animations));
         this.initializeSceneSelection(Object.keys(gltf.scenes));
         this.initializeCameraSelection(Object.keys(gltf.cameras));
     }
@@ -92,6 +93,29 @@ class gltfUserInterface
         this.sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
     }
 
+    initializeAnimationSelection(animations)
+    {
+        this.renderingParameters.animationIndex = -1;
+
+        if(animations === undefined) {
+            return;
+        }
+
+        this.renderingParameters.animationTimer.reset();
+
+        // Prepend -1, special index for playing all animations, if there is more than one animation.
+        const anims = animations.slice();
+        if(anims.length > 1) {
+            anims.shift(-1);
+        }
+
+        if(this.animationSelection !== undefined) {
+            this.animationFolder.remove(this.animationSelection);
+        }
+
+        this.animationSelection = this.animationFolder.add(this.renderingParameters, "animationIndex", anims).name("Animation");
+    }
+
     initializeCameraSelection(cameras)
     {
         const camerasWithUserCamera = [ UserCameraIndex ].concat(cameras);
@@ -125,10 +149,10 @@ class gltfUserInterface
     initializeAnimationSettings()
     {
         const self = this;
-        const animationFolder = this.gui.addFolder("Animation");
-        animationFolder.add(self, "playAnimation").name("Play").onChange(() => self.renderingParameters.animationTimer.toggle());
-        animationFolder.add(self.renderingParameters, "skinning").name("Skinning");
-        animationFolder.add(self.renderingParameters, "morphing").name("Morphing");
+        this.animationFolder = this.gui.addFolder("Animation");
+        this.playAnimationCheckbox = this.animationFolder.add(self, "playAnimation").name("Play").onChange(() => self.renderingParameters.animationTimer.toggle());
+        this.animationFolder.add(self.renderingParameters, "skinning").name("Skinning");
+        this.animationFolder.add(self.renderingParameters, "morphing").name("Morphing");
     }
 
     initializeDebugSettings()
