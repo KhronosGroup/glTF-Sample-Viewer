@@ -16,10 +16,7 @@ class gltfUserInterface
 
         this.gui = undefined;
         this.gltfFolder = undefined;
-        this.modelsDropdown = undefined;
-        this.versionView = undefined;
-        this.sceneSelection = undefined;
-        this.cameraSelection = undefined;
+        this.gltfDependants = [];
 
         this.onModelChanged = undefined;
         this.onEnvironmentChanged = undefined;
@@ -79,18 +76,21 @@ class gltfUserInterface
         }
 
         const self = this;
-        this.modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(() => self.onModelChanged());
+        const modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(() => self.onModelChanged());
+        this.gltfDependants.push(modelsDropdown);
     }
 
     initializeGltfVersionView(version)
     {
         this.version = version;
-        this.versionView = this.gltfFolder.add(this, "version", version).name("glTF Version").onChange(() => this.version = version);
+        const versionView = this.gltfFolder.add(this, "version", version).name("glTF Version").onChange(() => this.version = version);
+        this.gltfDependants.push(versionView);
     }
 
     initializeSceneSelection(scenes)
     {
-        this.sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
+        const sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
+        this.gltfDependants.push(sceneSelection);
     }
 
     initializeAnimationSelection(animations)
@@ -119,7 +119,8 @@ class gltfUserInterface
     initializeCameraSelection(cameras)
     {
         const camerasWithUserCamera = [ UserCameraIndex ].concat(cameras);
-        this.cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
+        const cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
+        this.gltfDependants.push(cameraSelection);
     }
 
     initializeLightingSettings()
@@ -178,10 +179,14 @@ class gltfUserInterface
 
     clearGltfFolder()
     {
-        this.gltfFolder.remove(this.modelsDropdown);
-        this.gltfFolder.remove(this.versionView);
-        this.gltfFolder.remove(this.sceneSelection);
-        this.gltfFolder.remove(this.cameraSelection);
+        for (const element of this.gltfDependants)
+        {
+            if (element !== undefined)
+            {
+                this.gltfFolder.remove(element);
+            }
+        }
+        this.gltfDependants = [];
     }
 
     // string format: "#RRGGBB"
