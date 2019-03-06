@@ -153,10 +153,11 @@ class gltfUserInterface
         function createElement(gltf)
         {
             self.renderingParameters.animationTimer.reset();
-            self.renderingParameters.animationIndex = -1;
 
             const animations = gltf !== undefined ? gltf.animations : [];
             let indices = Object.keys(animations);
+
+            self.renderingParameters.animationIndex = indices.length > 0 ? indices[0] : -1;
 
             // Prepend -1, special index for playing all animations, if there is more than one animation.
             if(indices.length > 1)
