@@ -13,10 +13,12 @@ class gltfUserInterface
         this.renderingParameters = renderingParameters;
         this.stats = stats;
         this.hexColor = this.toHexColor(this.renderingParameters.clearColor);
+        this.version = "";
 
         this.gui = undefined;
         this.gltfFolder = undefined;
-        this.gltfDependants = [];
+        this.animationFolder = undefined;
+        this.updatables = [];
 
         this.onModelChanged = undefined;
         this.onEnvironmentChanged = undefined;
@@ -36,14 +38,10 @@ class gltfUserInterface
 
     update(gltf)
     {
-        this.clearGltfFolder();
-
-        const isModelInDropdown = this.modelPathProvider.pathExists(gltf.path);
-        this.initializeModelsDropdown(isModelInDropdown ? undefined : gltf.path);
-        this.initializeGltfVersionView(gltf.asset.version);
-        this.initializeAnimationSelection(Object.keys(gltf.animations));
-        this.initializeSceneSelection(Object.keys(gltf.scenes));
-        this.initializeCameraSelection(Object.keys(gltf.cameras));
+        for (const updatable of this.updatables)
+        {
+            updatable.update(gltf);
+        }
     }
 
     initializeGltfFolder()
@@ -51,76 +49,67 @@ class gltfUserInterface
         this.gltfFolder = this.gui.addFolder("glTF");
 
         this.initializeModelsDropdown();
-        this.initializeGltfVersionView("");
-        this.initializeSceneSelection([]);
-        this.initializeCameraSelection([]);
+        this.initializeGltfVersionView();
+        this.initializeSceneSelection();
+        this.initializeCameraSelection();
         this.initializeAnimationSettings();
 
         this.gltfFolder.open();
     }
 
-    initializeModelsDropdown(droppedModel)
+    initializeModelsDropdown()
     {
-        let modelKeys = [];
-
-        if (droppedModel !== undefined)
-        {
-            modelKeys.push(droppedModel);
-            this.selectedModel = droppedModel;
-        }
-
-        modelKeys = modelKeys.concat(this.modelPathProvider.getAllKeys());
-        if (!modelKeys.includes(this.selectedModel))
-        {
-            this.selectedModel = modelKeys[0];
-        }
-
         const self = this;
-        const modelsDropdown = this.gltfFolder.add(this, "selectedModel", modelKeys).name("Model").onChange(() => self.onModelChanged());
-        this.gltfDependants.push(modelsDropdown);
-    }
+        function createElement(gltf)
+        {
+            let modelKeys = self.modelPathProvider.getAllKeys();
 
-    initializeGltfVersionView(version)
-    {
-        this.version = version;
-        const versionView = this.gltfFolder.add(this, "version", version).name("glTF Version").onChange(() => this.version = version);
-        this.gltfDependants.push(versionView);
-    }
+            if (gltf !== undefined && !self.modelPathProvider.pathExists(gltf.path))
+            {
+                modelKeys = [gltf.path].concat(modelKeys);
+                self.selectedModel = gltf.path;
+            }
 
-    initializeSceneSelection(scenes)
-    {
-        const sceneSelection = this.gltfFolder.add(this.renderingParameters, "sceneIndex", scenes).name("Scene Index");
-        this.gltfDependants.push(sceneSelection);
-    }
-
-    initializeAnimationSelection(animations)
-    {
-        this.renderingParameters.animationIndex = -1;
-
-        if(animations === undefined) {
-            return;
+            return self.gltfFolder.add(self, "selectedModel", modelKeys).name("Model")
+                .onChange(() => self.onModelChanged());
         }
-
-        this.renderingParameters.animationTimer.reset();
-
-        // Prepend -1, special index for playing all animations, if there is more than one animation.
-        const anims = animations.slice();
-        if(anims.length > 1) {
-            anims.shift(-1);
-        }
-
-        if(this.animationSelection !== undefined) {
-            this.animationFolder.remove(this.animationSelection);
-        }
-
-        this.animationSelection = this.animationFolder.add(this.renderingParameters, "animationIndex", anims).name("Animation");
+        this.initializeUpdatable(this.gltfFolder, createElement);
     }
 
-    initializeCameraSelection(cameras)
+    initializeGltfVersionView()
     {
-        const camerasWithUserCamera = [ UserCameraIndex ].concat(cameras);
-        const cameraSelection = this.gltfFolder.add(this.renderingParameters, "cameraIndex", camerasWithUserCamera).name("Camera Index");
-        this.gltfDependants.push(cameraSelection);
+        const self = this;
+        function createElement(gltf)
+        {
+            const version = gltf !== undefined ? gltf.asset.version : "";
+            self.version = version;
+            return self.gltfFolder.add(self, "version", version).name("glTF Version")
+                .onChange(() => self.version = version);
+        }
+        this.initializeUpdatable(this.gltfFolder, createElement);
+    }
+
+    initializeSceneSelection()
+    {
+        const self = this;
+        function createElement(gltf)
+        {
+            const scenes = gltf !== undefined ? gltf.scenes : [];
+            return self.gltfFolder.add(self.renderingParameters, "sceneIndex", Object.keys(scenes)).name("Scene Index");
+        }
+        this.initializeUpdatable(this.gltfFolder, createElement);
+    }
+
+    initializeCameraSelection()
+    {
+        const self = this;
+        function createElement(gltf)
+        {
+            let cameras = gltf !== undefined ? gltf.cameras : [];
+            cameras = [UserCameraIndex].concat(Object.keys(cameras));
+            return self.gltfFolder.add(self.renderingParameters, "cameraIndex", cameras).name("Camera Index");
+        }
+        this.initializeUpdatable(this.gltfFolder, createElement);
     }
 
     initializeLightingSettings()
@@ -154,6 +143,30 @@ class gltfUserInterface
         this.playAnimationCheckbox = this.animationFolder.add(self, "playAnimation").name("Play").onChange(() => self.renderingParameters.animationTimer.toggle());
         this.animationFolder.add(self.renderingParameters, "skinning").name("Skinning");
         this.animationFolder.add(self.renderingParameters, "morphing").name("Morphing");
+
+        this.initializeAnimationSelection();
+    }
+
+    initializeAnimationSelection()
+    {
+        const self = this;
+        function createElement(gltf)
+        {
+            self.renderingParameters.animationTimer.reset();
+            self.renderingParameters.animationIndex = -1;
+
+            const animations = gltf !== undefined ? gltf.animations : [];
+            let indices = Object.keys(animations);
+
+            // Prepend -1, special index for playing all animations, if there is more than one animation.
+            if(indices.length > 1)
+            {
+                indices = [-1].concat(indices);
+            }
+
+            return self.animationFolder.add(self.renderingParameters, "animationIndex", indices).name("Animation");
+        }
+        this.initializeUpdatable(this.animationFolder, createElement);
     }
 
     initializeDebugSettings()
@@ -177,16 +190,15 @@ class gltfUserInterface
         monitoringFolder.__ul.appendChild(statsList);
     }
 
-    clearGltfFolder()
+    initializeUpdatable(folder, createElement)
     {
-        for (const element of this.gltfDependants)
+        const updatable = { uiElement: createElement() };
+        updatable.update = (gltf) =>
         {
-            if (element !== undefined)
-            {
-                this.gltfFolder.remove(element);
-            }
-        }
-        this.gltfDependants = [];
+            folder.remove(updatable.uiElement);
+            updatable.uiElement = createElement(gltf);
+        };
+        this.updatables.push(updatable);
     }
 
     // string format: "#RRGGBB"
