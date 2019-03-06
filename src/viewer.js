@@ -193,7 +193,7 @@ class gltfViewer
             return self.createGltf(gltfFile, json, buffers);
         }).catch(function(error)
         {
-            console.error("glTF " + error);
+            console.error(error.stack);
             if (!self.headless) self.hideSpinner();
         });
     }
