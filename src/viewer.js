@@ -245,6 +245,8 @@ class gltfViewer
 
         this.renderingParameters.cameraIndex = UserCameraIndex;
         this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
+        this.renderingParameters.animationTimer.reset();
+        this.renderingParameters.animationIndex = "all";
 
         if (this.gui !== undefined)
         {
@@ -359,14 +361,16 @@ class gltfViewer
         {
             const t = this.renderingParameters.animationTimer.elapsed();
 
-            if(this.renderingParameters.animationIndex == -1) {
+            if(this.renderingParameters.animationIndex === "all")
+            {
                 // Special index, step all animations.
                 for(const anim of gltf.animations)
                 {
                     anim.advance(gltf, t);
                 }
             }
-            else {
+            else
+            {
                 // Step selected animation.
                 const anim = gltf.animations[this.renderingParameters.animationIndex];
                 anim.advance(gltf, t);

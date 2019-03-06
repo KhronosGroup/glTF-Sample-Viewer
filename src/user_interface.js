@@ -152,17 +152,11 @@ class gltfUserInterface
         const self = this;
         function createElement(gltf)
         {
-            self.renderingParameters.animationTimer.reset();
-
             const indices = gltf !== undefined ? Object.keys(gltf.animations) : [];
-            self.renderingParameters.animationIndex = indices.length > 0 ? indices[0] : -1;
-
-            // Prepend -1, special index for playing all animations, if there is more than one animation.
-            if(indices.length > 1)
+            if (indices.length > 0)
             {
-                indices.unshift(-1);
+                indices.unshift("all");
             }
-
             return self.animationFolder.add(self.renderingParameters, "animationIndex", indices).name("Animation");
         }
         this.initializeUpdatable(this.animationFolder, createElement);

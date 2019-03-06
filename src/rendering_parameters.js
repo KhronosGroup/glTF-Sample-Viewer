@@ -28,7 +28,7 @@ class gltfRenderingParameters
         this.sceneIndex = 0;
         this.cameraIndex = UserCameraIndex;
         this.animationTimer = new AnimationTimer();
-        this.animationIndex = -1; // -1: Play all animations.
+        this.animationIndex = "all";
         this.skinning = true;
         this.morphing = true;
     }

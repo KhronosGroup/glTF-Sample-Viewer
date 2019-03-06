@@ -76,7 +76,7 @@ class gltfShader
     {
         if (object instanceof UniformStruct)
         {
-           this.updateUniformStruct(objectName, object, log);
+            this.updateUniformStruct(objectName, object, log);
         }
         else if (Array.isArray(object))
         {
