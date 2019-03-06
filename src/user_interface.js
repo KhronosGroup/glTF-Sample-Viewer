@@ -62,11 +62,11 @@ class gltfUserInterface
         const self = this;
         function createElement(gltf)
         {
-            let modelKeys = self.modelPathProvider.getAllKeys();
+            const modelKeys = self.modelPathProvider.getAllKeys();
 
             if (gltf !== undefined && !self.modelPathProvider.pathExists(gltf.path))
             {
-                modelKeys = [gltf.path].concat(modelKeys);
+                modelKeys.unshift(gltf.path);
                 self.selectedModel = gltf.path;
             }
 
@@ -105,9 +105,9 @@ class gltfUserInterface
         const self = this;
         function createElement(gltf)
         {
-            let cameras = gltf !== undefined ? gltf.cameras : [];
-            cameras = [UserCameraIndex].concat(Object.keys(cameras));
-            return self.gltfFolder.add(self.renderingParameters, "cameraIndex", cameras).name("Camera Index");
+            const indices = gltf !== undefined ? Object.keys(gltf.cameras) : [];
+            indices.unshift(UserCameraIndex);
+            return self.gltfFolder.add(self.renderingParameters, "cameraIndex", indices).name("Camera Index");
         }
         this.initializeUpdatable(this.gltfFolder, createElement);
     }
@@ -154,15 +154,13 @@ class gltfUserInterface
         {
             self.renderingParameters.animationTimer.reset();
 
-            const animations = gltf !== undefined ? gltf.animations : [];
-            let indices = Object.keys(animations);
-
+            const indices = gltf !== undefined ? Object.keys(gltf.animations) : [];
             self.renderingParameters.animationIndex = indices.length > 0 ? indices[0] : -1;
 
             // Prepend -1, special index for playing all animations, if there is more than one animation.
             if(indices.length > 1)
             {
-                indices = [-1].concat(indices);
+                indices.unshift(-1);
             }
 
             return self.animationFolder.add(self.renderingParameters, "animationIndex", indices).name("Animation");
