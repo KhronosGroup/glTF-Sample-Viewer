@@ -339,6 +339,10 @@ class gltfViewer
             this.scaledGltfChanged = false;
             this.scaledSceneIndex = this.renderingParameters.sceneIndex;
         }
+        else if(!this.renderingParameters.userCameraActive())
+        {
+            this.sceneScaleFactor = 1.0;
+        }
 
         mat4.scale(transform, transform, vec3.fromValues(this.sceneScaleFactor,  this.sceneScaleFactor,  this.sceneScaleFactor));
         scene.applyTransformHierarchy(gltf, transform);
