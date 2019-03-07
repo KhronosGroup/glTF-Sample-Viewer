@@ -29,34 +29,6 @@ This project is meant to be a barebones reference for developers looking to expl
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-Features
---------
-
-- [x] Async loading/unloading of glTF files
-- [x] Loading of binary glTF files (GLB)
-- [x] Support for Metallic-Roughness materials
-- [x] Support for the KHR_materials_pbrSpecularGlossiness
-- [x] Basic support for Image-Based Lighting
-- [x] Correctly handles sampling information from glTF
-- [x] Caches shader program permutations
-- [x] Support multiple primitives per mesh
-- [x] Support multiple scenes per glTF asset
-- [x] Partial support for multiple cameras
-- [x] Support for alpha coverage
-- [x] Async loading/unloading of glTF buffers and images
-- [x] Flexible and extensible parsing of glTF structures
-- [x] Support for drag&drop
-- [x] Handles anti-aliasing via WebGL MSAA
-- [x] Straightforward rendering of the scene graph
-- [x] Support for the KHR_materials_unlit extension
-- [x] Support for the KHR_texture_transform extension
-- [x] Support for the KHR_lights_punctual extension
-- [x] Gamma correction
-- [x] HDR environment maps **(only RLE compressed .hdr files supported until #135 is done)**
-- [X] Selection of tonemapping algorithms for IBL
-- [x] Support for headless rendering
-- [x] Support for Visual Studio Code integration
-- [x] Debug GUI for inspecting BRDF inputs
 
 Usage
 -----
@@ -218,12 +190,7 @@ vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
 vec3 diffuseContrib = (1.0 - F) * diffuse;
 ```
 
-If you're familiar with implementing the phong model, you may think that the diffuse and specular contributions simply need to be summed up to obtain the final lighting. However, in the context of a BRDF, the diffuse and specular components are not accounting for the *energy* of the incident light, which can cause some confusion.
-Using a BRDF, the diffuse and specular parts describe the *bidirectional reflectance*, which we have to scale by the *energy* received from the light in order to obtain the final intensity that reaches the eye of the viewer (as outlined in the respective [paper by Cook and Torrance](http://graphics.pixar.com/library/ReflectanceModel/).
-According to the basic cosine law (as described by [Lambert](https://archive.org/details/lambertsphotome00lambgoog)), the energy is computed using the dot product between the light's direction and the surface normal. Therefore, the final intensity that will be used for shading is computed as follows:
-```
-vec3 color = NdotL * u_LightColor * (diffuseContrib + specContrib);
-```
+
 
 Below here you'll find common implementations for the various terms found in the lighting equation.
 These functions may be swapped into pbr-frag.glsl to tune your desired rendering performance and presentation.
@@ -234,51 +201,28 @@ These functions may be swapped into pbr-frag.glsl to tune your desired rendering
 Simplified implementation of fresnel from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
 
 ```
-vec3 specularReflection(PBRInfo pbrInputs)
+vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
-    return pbrInputs.metalness + (vec3(1.0) - pbrInputs.metalness) * pow(1.0 - pbrInputs.VdotH, 5.0);
+    return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
 }
 ```
 
 ### Geometric Occlusion (G)
 
-**Cook Torrance**
-Implementation from [A Reflectance Model for Computer Graphics](http://graphics.pixar.com/library/ReflectanceModel/) by Robert Cook and Kenneth Torrance,
-
-```
-float geometricOcclusion(PBRInfo pbrInputs)
-{
-    return min(min(2.0 * pbrInputs.NdotV * pbrInputs.NdotH / pbrInputs.VdotH, 2.0 * pbrInputs.NdotL * pbrInputs.NdotH / pbrInputs.VdotH), 1.0);
-}
-```
-
-**Schlick**
-Implementation of microfacet occlusion from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
-
-```
-float geometricOcclusion(PBRInfo pbrInputs)
-{
-    float k = pbrInputs.perceptualRoughness * 0.79788; // 0.79788 = sqrt(2.0/3.1415); perceptualRoughness = sqrt(alphaRoughness);
-    // alternately, k can be defined with
-    // float k = (pbrInputs.perceptualRoughness + 1) * (pbrInputs.perceptualRoughness + 1) / 8;
-
-    float l = pbrInputs.LdotH / (pbrInputs.LdotH * (1.0 - k) + k);
-    float n = pbrInputs.NdotH / (pbrInputs.NdotH * (1.0 - k) + k);
-    return l * n;
-}
-```
-
 **Smith**
 The following implementation is from "Geometrical Shadowing of a Random Rough Surface" by Bruce G. Smith
 
 ```
-float geometricOcclusion(PBRInfo pbrInputs)
+float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
-  float NdotL2 = pbrInputs.NdotL * pbrInputs.NdotL;
-  float NdotV2 = pbrInputs.NdotV * pbrInputs.NdotV;
-  float v = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotL2 ) / NdotL2 + 1.)) * 0.5;
-  float l = ( -1.0 + sqrt ( pbrInputs.alphaRoughness * (1.0 - NdotV2 ) / NdotV2 + 1.)) * 0.5;
-  return (1.0 / max((1.0 + v + l ), 0.000001));
+    float NdotL = angularInfo.NdotL;
+    float NdotV = angularInfo.NdotV;
+    float r = materialInfo.alphaRoughness;
+
+    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + r * r * (1.0 - (NdotL * NdotL))));
+    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + r * r * (1.0 - (NdotV * NdotV))));
+
+    return attenuationL * attenuationV;
 }
 ```
 
@@ -288,35 +232,33 @@ float geometricOcclusion(PBRInfo pbrInputs)
 Implementation of microfaced distrubtion from [Average Irregularity Representation of a Roughened Surface for Ray Reflection](https://www.osapublishing.org/josa/abstract.cfm?uri=josa-65-5-531) by T. S. Trowbridge, and K. P. Reitz
 
 ```
-float microfacetDistribution(PBRInfo pbrInputs)
+float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
-    float roughnessSq = pbrInputs.alphaRoughness * pbrInputs.alphaRoughness;
-    float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
+    float roughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
+    float f = (angularInfo.NdotH * roughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
     return roughnessSq / (M_PI * f * f);
 }
 ```
 
 ### Diffuse Term
-The following equations are commonly used models of the diffuse term of the lighting equation.
+The following equation is the used model of the diffuse term of the lighting equation.
 
 **Lambert**
 Implementation of diffuse from [Lambert's Photometria](https://archive.org/details/lambertsphotome00lambgoog) by Johann Heinrich Lambert
 
 ```
-vec3 diffuse(PBRInfo pbrInputs)
+vec3 diffuse(MaterialInfo materialInfo)
 {
-    return pbrInputs.diffuseColor / M_PI;
+    return materialInfo.diffuseColor / M_PI;
 }
 ```
 
-**Disney**
-Implementation of diffuse from [Physically-Based Shading at Disney](http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf) by Brent Burley.  See Section 5.3.
-
 ```
-vec3 diffuse(PBRInfo pbrInputs)
-{
-    float f90 = 2.0 * pbrInputs.LdotH * pbrInputs.LdotH * pbrInputs.alphaRoughness - 0.5;
 
-    return (pbrInputs.diffuseColor / M_PI) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotL), 5.0)) * (1.0 + f90 * pow((1.0 - pbrInputs.NdotV), 5.0));
-}
-```
+Features
+--------
+
+- [x] glTF 2.0
+- [x] Support for the KHR_lights_punctual extension
+- [x] Support for the KHR_materials_unlit extension
+- [x] Support for the KHR_texture_transform extension
