@@ -3,7 +3,7 @@ glTF 2.0 Reference Viewer
 
 [![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
 
-This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.khronos.org/webgl/).
+This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) reference viewer using [WebGL](https://www.khronos.org/webgl/).
 
 
 **Table of Contents**
@@ -14,9 +14,10 @@ This is the offical Khronos glTF 2.0 reference viewer using [WebGL](https://www.
   - [Debugging](#debugging)
 - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
 - [Appendix](#appendix)
-  - [Surface Reflection Ratio (F)](#surface-reflection-ratio-f)
-  - [Geometric Occlusion (G)](#geometric-occlusion-g)
-  - [Microfaced Distribution (D)](#microfaced-distribution-d)
+  - [Specular Term](#specular-term)
+    - [Surface Reflection Ratio (F)](#surface-reflection-ratio-f)
+    - [Geometric Occlusion (G)](#geometric-occlusion-g)
+    - [Microfaced Distribution (D)](#microfaced-distribution-d)
   - [Diffuse Term](#diffuse-term)
 - [Features](#features)
 
@@ -35,9 +36,9 @@ If you would like to see this in action, [view the live demo](http://gltf.ux3d.i
 
 `scroll` : Zoom camera
 
-`GUI` : Use to change models
+`GUI` : Use to change models and settings
 
-**Usage**
+**Change glTF model**
 
 * Choose one of the glTF models in the selction list
 
@@ -104,9 +105,11 @@ Modified VSCode gltf-vscode plugin:
 Physically-Based Materials in glTF 2.0
 ======================================
 
-With the change from glTF 1.0 to glTF 2.0, one of the largest changes included core support for materials that could be used for physically-based shading. Part of this process involved chosing technically accurate, yet user-friendly, parameters for which developers and artists could use intuitively. This resulted in the introduction of the **Metallic-Roughness Material** to glTF. If you would like to read more about glTF, you can find the content at its [GitHub page](https://github.com/KhronosGroup/glTF), but I will take a bit of time to explain how this new material works.
+With the change from glTF 1.0 to glTF 2.0, one of the largest changes included core support for materials that could be used for physically-based shading. Part of this process involved chosing technically accurate, yet user-friendly, parameters for which developers and artists could use intuitively. This resulted in the introduction of the **Metallic-Roughness Material** to glTF. If you would like to read more about glTF, you can find the content at its [GitHub page](https://github.com/KhronosGroup/glTF).
 
 A good reference about Physically-Based Materials and its workflow can be found on the [THE PBR GUIDE - PART 1](https://academy.allegorithmic.com/courses/the-pbr-guide-part-1) and [THE PBR GUIDE - PART 2](https://academy.allegorithmic.com/courses/the-pbr-guide-part-2) from [allegorithmic](https://www.allegorithmic.com).
+
+For implementation details and further theory, please find more information in the [Real Shading in Unreal Engine 4](https://blog.selfshadow.com/publications/s2013-shading-course/) presentation from the SIGGRAPH 2013 course.
 
 
 Appendix
@@ -115,14 +118,13 @@ Appendix
 The core lighting equation this sample uses is the Schlick BRDF model from [An Inexpensive BRDF Model for Physically-based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf)
 
 ```
-vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
-vec3 diffuseContrib = (1.0 - F) * diffuse;
+vec3 specularContribution = F * G * D / (4.0 * NdotL * NdotV);
+vec3 diffuseContribution = (1.0 - F) * diffuse;
 ```
 
+Below here you'll find the recommended implementations for the various terms found in the lighting equation.
 
-
-Below here you'll find common implementations for the various terms found in the lighting equation.
-These functions may be swapped into pbr-frag.glsl to tune your desired rendering performance and presentation.
+## Specular Term
 
 ### Surface Reflection Ratio (F)
 
@@ -136,10 +138,12 @@ vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
 }
 ```
 
+Please note, that the above shader code includes the optimization for "turning off" the Fresnel edge brithening (see "Real-Time Rendering" Fourth Edition on page 325).
+
 ### Geometric Occlusion (G)
 
-**Smith**
-The following implementation is from "Geometrical Shadowing of a Random Rough Surface" by Bruce G. Smith
+**Smith GGX**
+The following implementation is from "Geometrical Occlusion of a Random Rough Surface" by Bruce G. Smith
 
 ```
 float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
@@ -157,7 +161,7 @@ float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 
 ### Microfaced Distribution (D)
 
-**Trowbridge-Reitz**
+**Trowbridge-Reitz GGX**
 Implementation of microfaced distrubtion from [Average Irregularity Representation of a Roughened Surface for Ray Reflection](https://www.osapublishing.org/josa/abstract.cfm?uri=josa-65-5-531) by T. S. Trowbridge, and K. P. Reitz
 
 ```
@@ -169,11 +173,11 @@ float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
 }
 ```
 
-### Diffuse Term
+## Diffuse Term
 The following equation is the used model of the diffuse term of the lighting equation.
 
 **Lambert**
-Implementation of diffuse from [Lambert's Photometria](https://archive.org/details/lambertsphotome00lambgoog) by Johann Heinrich Lambert
+Implementation of diffuse from [Lambert's Photometria](https://archive.org/details/lambertsphotome00lambgoog) by Johann Heinrich Lambert.
 
 ```
 vec3 diffuse(MaterialInfo materialInfo)
@@ -188,5 +192,6 @@ Features
 
 - [x] glTF 2.0
 - [x] KHR_lights_punctual extension
+- [x] KHR_materials_pbrSpecularGlossiness
 - [x] KHR_materials_unlit extension
 - [x] KHR_texture_transform extension
