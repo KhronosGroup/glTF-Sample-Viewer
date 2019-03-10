@@ -150,10 +150,10 @@ float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
     float NdotL = angularInfo.NdotL;
     float NdotV = angularInfo.NdotV;
-    float r = materialInfo.alphaRoughness;
+    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
 
-    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + r * r * (1.0 - (NdotL * NdotL))));
-    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + r * r * (1.0 - (NdotV * NdotV))));
+    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + alphaRoughnessSq * (1.0 - (NdotL * NdotL))));
+    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + alphaRoughnessSq * (1.0 - (NdotV * NdotV))));
 
     return attenuationL * attenuationV;
 }
@@ -163,9 +163,9 @@ float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 // Follows the distribution function recommended in the SIGGRAPH 2013 course notes from EPIC Games [1], Equation 3.
 float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
-    float roughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
-    float f = (angularInfo.NdotH * roughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
-    return roughnessSq / (M_PI * f * f);
+    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
+    float f = (angularInfo.NdotH * alphaRoughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
+    return alphaRoughnessSq / (M_PI * f * f);
 }
 
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 view)
@@ -408,7 +408,7 @@ void main()
     #endif
 
     #ifdef DEBUG_ROUGHNESS
-        gl_FragColor.rgb = vec3(perceptualRoughness); //alphaRoughness
+        gl_FragColor.rgb = vec3(perceptualRoughness);
     #endif
 
     #ifdef DEBUG_NORMAL

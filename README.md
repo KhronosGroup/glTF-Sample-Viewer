@@ -127,7 +127,10 @@ Below here you'll find the recommended implementations for the various terms fou
 ## Specular Term
 
 ![](assets/images/math/BRDF.png)
+Alpha is defined as:
 ![](assets/images/math/alpha_roughness.png)
+
+More about the Specular Term can be found [here](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html).
 
 ### Surface Reflection Ratio (F)
 
@@ -153,15 +156,17 @@ The following implementation is from "Geometrical Occlusion of a Random Rough Su
 ![](assets/images/math/G_smith.png)
 ![](assets/images/math/G_GGX.png)
 
+Please note, that the math is rearranged in the shader code.
+
 ```
 float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
     float NdotL = angularInfo.NdotL;
     float NdotV = angularInfo.NdotV;
-    float r = materialInfo.alphaRoughness;
+    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
 
-    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + r * r * (1.0 - (NdotL * NdotL))));
-    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + r * r * (1.0 - (NdotV * NdotV))));
+    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + alphaRoughnessSq * (1.0 - (NdotL * NdotL))));
+    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + alphaRoughnessSq * (1.0 - (NdotV * NdotV))));
 
     return attenuationL * attenuationV;
 }
@@ -177,9 +182,9 @@ Implementation of microfaced distrubtion from [Average Irregularity Representati
 ```
 float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
-    float roughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
-    float f = (angularInfo.NdotH * roughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
-    return roughnessSq / (M_PI * f * f);
+    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
+    float f = (angularInfo.NdotH * alphaRoughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
+    return alphaRoughnessSq / (M_PI * f * f);
 }
 ```
 
