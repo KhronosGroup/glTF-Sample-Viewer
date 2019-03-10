@@ -126,10 +126,14 @@ Below here you'll find the recommended implementations for the various terms fou
 
 ## Specular Term
 
+![](assets/images/math/BRDF.png)
+
 ### Surface Reflection Ratio (F)
 
 **Fresnel Schlick**
 Simplified implementation of fresnel from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
+
+![](assets/images/math/F_schlick.png)
 
 ```
 vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
@@ -144,6 +148,9 @@ Please note, that the above shader code includes the optimization for "turning o
 
 **Smith GGX**
 The following implementation is from "Geometrical Occlusion of a Random Rough Surface" by Bruce G. Smith
+
+![](assets/images/math/G_smith.png)
+![](assets/images/math/G_GGX.png)
 
 ```
 float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
@@ -163,6 +170,8 @@ float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 
 **Trowbridge-Reitz GGX**
 Implementation of microfaced distrubtion from [Average Irregularity Representation of a Roughened Surface for Ray Reflection](https://www.osapublishing.org/josa/abstract.cfm?uri=josa-65-5-531) by T. S. Trowbridge, and K. P. Reitz
+
+![](assets/images/math/D_GGX.png)
 
 ```
 float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
