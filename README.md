@@ -127,6 +127,7 @@ Below here you'll find the recommended implementations for the various terms fou
 ## Specular Term
 
 ![](assets/images/math/BRDF.png)
+![](assets/images/math/alpha_roughness.png)
 
 ### Surface Reflection Ratio (F)
 
