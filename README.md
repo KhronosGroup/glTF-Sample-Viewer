@@ -15,9 +15,9 @@ This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.k
 - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
 - [Appendix](#appendix)
   - [Specular Term](#specular-term)
+    - [Microfaced Distribution (D)](#microfaced-distribution-d)
     - [Surface Reflection Ratio (F)](#surface-reflection-ratio-f)
     - [Geometric Occlusion (G)](#geometric-occlusion-g)
-    - [Microfaced Distribution (D)](#microfaced-distribution-d)
   - [Diffuse Term](#diffuse-term)
 - [Features](#features)
 
@@ -118,7 +118,7 @@ Appendix
 The core lighting equation this sample uses is the Schlick BRDF model from [An Inexpensive BRDF Model for Physically-based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf)
 
 ```
-vec3 specularContribution = F * G * D / (4.0 * NdotL * NdotV);
+vec3 specularContribution = D * F * G  / (4.0 * NdotL * NdotV);
 vec3 diffuseContribution = (1.0 - F) * diffuse;
 ```
 
@@ -132,45 +132,6 @@ Alpha is defined as:
 
 More about the Specular Term can be found [here](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html).
 
-### Surface Reflection Ratio (F)
-
-**Fresnel Schlick**
-Simplified implementation of fresnel from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
-
-![](assets/images/math/F_schlick.png)
-
-```
-vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
-{
-    return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
-}
-```
-
-Please note, that the above shader code includes the optimization for "turning off" the Fresnel edge brithening (see "Real-Time Rendering" Fourth Edition on page 325).
-
-### Geometric Occlusion (G)
-
-**Smith GGX**
-The following implementation is from "Geometrical Occlusion of a Random Rough Surface" by Bruce G. Smith
-
-![](assets/images/math/G_smith.png)
-![](assets/images/math/G_GGX.png)
-
-Please note, that the math is rearranged in the shader code.
-
-```
-float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
-{
-    float NdotL = angularInfo.NdotL;
-    float NdotV = angularInfo.NdotV;
-    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
-
-    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + alphaRoughnessSq * (1.0 - (NdotL * NdotL))));
-    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + alphaRoughnessSq * (1.0 - (NdotV * NdotV))));
-
-    return attenuationL * attenuationV;
-}
-```
 
 ### Microfaced Distribution (D)
 
@@ -187,6 +148,48 @@ float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 ```
+
+
+### Surface Reflection Ratio (F)
+
+**Fresnel Schlick**
+Simplified implementation of fresnel from [An Inexpensive BRDF Model for Physically based Rendering](https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf) by Christophe Schlick.
+
+![](assets/images/math/F_schlick.png)
+
+```
+vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
+{
+    return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
+}
+```
+
+Please note, that the above shader code includes the optimization for "turning off" the Fresnel edge brightening (see "Real-Time Rendering" Fourth Edition on page 325).
+
+
+### Geometric Occlusion (G)
+
+**Smith GGX**
+The following implementation is from "Geometrical Occlusion of a Random Rough Surface" by Bruce G. Smith
+
+![](assets/images/math/G_smith.png)
+![](assets/images/math/G_GGX.png)
+
+```
+float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
+{
+    float NdotL = angularInfo.NdotL;
+    float NdotV = angularInfo.NdotV;
+    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
+
+    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + alphaRoughnessSq * (1.0 - (NdotL * NdotL))));
+    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + alphaRoughnessSq * (1.0 - (NdotV * NdotV))));
+
+    return attenuationL * attenuationV;
+}
+```
+Please note, that the math is rearranged and joint together in the shader code.
+
 
 ## Diffuse Term
 The following equation is the used model of the diffuse term of the lighting equation.
