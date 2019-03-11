@@ -112,20 +112,29 @@ class gltfInterpolator
 
         if(channel.target.path === InterpolationPath.ROTATION)
         {
-            // When using a cubic spline interpolator, the output index needs to be remapped
-            // onto the spline data point: <in-tangent> <data-point> <out-tangent>
-            //
-            // TODO: Currently, only linear slerp is implemented.
-            // Cubic splines are simply re-interpreted as linear interpolations
-            // and all tangent data is ignored.
-            const outputLocation = InterpolationModes.CUBICSPLINE === sampler.interpolation
-                ? i => i * 3 + 1
-                : i => i;
 
-            const q0 = this.getQuat(output, outputLocation(this.prevKey));
-            const q1 = this.getQuat(output, outputLocation(nextKey));
+            if(InterpolationModes.CUBICSPLINE === sampler.interpolation)
+            {
+                // Output data is interpreted like this:
+                // <tangent0> <data0> <tangent1> <tangent2> <data1> <tangent2>
+                // ...        <q0>    <control0> <control1> <q1>    ...
 
-            return this.slerpQuat(q0, q1, t);
+                const q0 = this.getQuat(output, this.prevKey * 3 + 1);
+                const control0 = this.getQuat(output, this.prevKey * 3 + 2);
+                const control1 = this.getQuat(output, nextKey * 3);
+                const q1 = this.getQuat(output, nextKey * 3 + 1);
+
+                const result = quat.sqlerp(quat.create(), q0, control0, control1, q1, t);
+                quat.normalize(result, result);
+                return result;
+            }
+            else {
+                const q0 = this.getQuat(output, this.prevKey);
+                const q1 = this.getQuat(output, nextKey);
+
+                return this.slerpQuat(q0, q1, t);
+            }
+
         }
 
         switch(sampler.interpolation)
