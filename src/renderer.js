@@ -319,49 +319,43 @@ class gltfRenderer
 
     pushVertParameterDefines(vertDefines, gltf, node, primitive)
     {
-        if (!this.parameters.animationTimer.paused)
+        // skinning
+        if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
-            // skinning
-            if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
-            {
-                const skin = gltf.skins[node.skin];
+            const skin = gltf.skins[node.skin];
 
-                vertDefines.push("USE_SKINNING 1");
-                vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
-            }
+            vertDefines.push("USE_SKINNING 1");
+            vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
+        }
 
-            // morphing
-            if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        // morphing
+        if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        {
+            const mesh = gltf.meshes[node.mesh];
+            if(mesh.weights !== undefined && mesh.weights.length > 0)
             {
-                const mesh = gltf.meshes[node.mesh];
-                if(mesh.weights !== undefined && mesh.weights.length > 0)
-                {
-                    vertDefines.push("USE_MORPHING 1");
-                    vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
-                }
+                vertDefines.push("USE_MORPHING 1");
+                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
             }
         }
     }
 
     updateAnimationUniforms(gltf, node, primitive)
     {
-        if (!this.parameters.animationTimer.paused)
+        if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
-            if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
-            {
-                const skin = gltf.skins[node.skin];
+            const skin = gltf.skins[node.skin];
 
-                this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
-                this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
-            }
+            this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
+            this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
+        }
 
-            if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        {
+            const mesh = gltf.meshes[node.mesh];
+            if(mesh.weights !== undefined && mesh.weights.length > 0)
             {
-                const mesh = gltf.meshes[node.mesh];
-                if(mesh.weights !== undefined && mesh.weights.length > 0)
-                {
-                    this.shader.updateUniformArray("u_morphWeights", mesh.weights);
-                }
+                this.shader.updateUniformArray("u_morphWeights", mesh.weights);
             }
         }
     }

@@ -13,9 +13,17 @@ class gltfInterpolator
 
     slerpQuat(q1, q2, t)
     {
-        let quatResult = quat.create();
-        quat.slerp(quatResult, q1, q2, t);
+        const qn1 = quat.create();
+        const qn2 = quat.create();
+
+        quat.normalize(qn1, q1);
+        quat.normalize(qn2, q2);
+
+        const quatResult = quat.create();
+
+        quat.slerp(quatResult, qn1, qn2, t);
         quat.normalize(quatResult, quatResult);
+
         return quatResult;
     }
 
@@ -33,17 +41,19 @@ class gltfInterpolator
 
     cubicSpline(prevKey, nextKey, output, keyDelta, t, stride)
     {
-        const prevIndex = prevKey * stride;
-        const nextIndex = nextKey * stride;
+        // stride: Count of components (4 in a quaternion).
+        // Scale by 3, because each output entry consist of two tangents and one data-point.
+        const prevIndex = prevKey * stride * 3;
+        const nextIndex = nextKey * stride * 3;
         const A = 0;
-        const V = 1;
-        const B = 2;
+        const V = 1 * stride;
+        const B = 2 * stride;
 
-        let result = new glMatrix.ARRAY_TYPE(stride);
-        const tSq = t * t;
-        const tCub = tSq * t;
+        const result = new glMatrix.ARRAY_TYPE(stride);
+        const tSq = t ** 2;
+        const tCub = t ** 3;
 
-        // we assume that the components are layed out like this: in-tangent, point, out-tangent in output
+        // We assume that the components in output are laid out like this: in-tangent, point, out-tangent.
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#appendix-c-spline-interpolation
         for(let i = 0; i < stride; ++i)
         {
@@ -102,7 +112,16 @@ class gltfInterpolator
 
         if(channel.target.path === InterpolationPath.ROTATION)
         {
-            return this.slerpQuat(this.getQuat(output, this.prevKey), this.getQuat(output, nextKey), t);
+            // When using a cubic spline interpolator, the output index needs to be remapped
+            // onto the spline data point: <in-tangent> <data-point> <out-tangent>
+            const outputLocation = InterpolationModes.CUBICSPLINE === sampler.interpolation
+                ? i => i * 3 + 1
+                : i => i;
+
+            const q0 = this.getQuat(output, outputLocation(this.prevKey));
+            const q1 = this.getQuat(output, outputLocation(nextKey));
+
+            return this.slerpQuat(q0, q1, t);
         }
 
         switch(sampler.interpolation)
@@ -115,7 +134,11 @@ class gltfInterpolator
 
     getQuat(output, index)
     {
-        return quat.fromValues(output[4 * index], output[4 * index + 1], output[4 * index + 2], output[4 * index + 3]);
+        const x = output[4 * index];
+        const y = output[4 * index + 1];
+        const z = output[4 * index + 2];
+        const w = output[4 * index + 3];
+        return quat.fromValues(x, y, z, w);
     }
 }
 
