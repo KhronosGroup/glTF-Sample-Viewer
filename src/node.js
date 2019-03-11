@@ -100,7 +100,11 @@ class gltfNode extends GltfObject
         if(this.transform === undefined || this.changed)
         {
             this.transform = mat4.create();
-            mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
+            // If this node has skin, then this node's transform must be ignored.
+            // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins
+            if(this.skin === undefined) {
+                mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
+            }
             this.changed = false;
         }
 
