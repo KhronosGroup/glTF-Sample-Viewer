@@ -192,14 +192,36 @@ class gltfWebGl
 
     compileShader(shaderIdentifier, isVert, shaderSource)
     {
-        let shader = WebGl.context.createShader(isVert ? WebGl.context.VERTEX_SHADER : WebGl.context.FRAGMENT_SHADER);
+        const shader = WebGl.context.createShader(isVert ? WebGl.context.VERTEX_SHADER : WebGl.context.FRAGMENT_SHADER);
         WebGl.context.shaderSource(shader, shaderSource);
         WebGl.context.compileShader(shader);
-        let compiled = WebGl.context.getShaderParameter(shader, WebGl.context.COMPILE_STATUS);
+        const compiled = WebGl.context.getShaderParameter(shader, WebGl.context.COMPILE_STATUS);
 
         if (!compiled)
         {
-            var info = WebGl.context.getShaderInfoLog(shader);
+            // output surrounding source code
+            let info = "";
+            const messages = WebGl.context.getShaderInfoLog(shader).split("\n");
+            for(const message of messages)
+            {
+                info += message + "\n";
+                const matches = message.match(/(?:(?:WARNING)|(?:ERROR)): [0-9]*:([0-9]*).*/i);
+                if (matches && matches.length > 1)
+                {
+                    const lineNumber = parseInt(matches[1]) - 1;
+                    const lines = shaderSource.split("\n");
+
+                    for(let i = Math.max(0, lineNumber - 2); i < Math.min(lines.length, lineNumber + 3); i++)
+                    {
+                        if (lineNumber === i)
+                        {
+                            info += "->";
+                        }
+                        info += "\t" + lines[i] + "\n";
+                    }
+                }
+            }
+
             throw new Error("Could not compile WebGL program '" + shaderIdentifier + "'. \n\n" + info);
         }
 
