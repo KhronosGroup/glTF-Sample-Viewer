@@ -114,6 +114,10 @@ class gltfInterpolator
         {
             // When using a cubic spline interpolator, the output index needs to be remapped
             // onto the spline data point: <in-tangent> <data-point> <out-tangent>
+            //
+            // TODO: Currently, only linear slerp is implemented.
+            // Cubic splines are simply re-interpreted as linear interpolations
+            // and all tangent data is ignored.
             const outputLocation = InterpolationModes.CUBICSPLINE === sampler.interpolation
                 ? i => i * 3 + 1
                 : i => i;
