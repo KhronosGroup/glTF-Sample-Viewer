@@ -83,10 +83,11 @@ class gltfInterpolator
             return jsToGlSlice(output, 0, stride);
         }
 
-        let nextKey = undefined;
+        let nextKey = null;
 
-        const maxKeyTime = input[input.length - 1];
-        t = t % maxKeyTime; // loop animation
+        // Wrap t around, so the animation loops.
+        // Make sure that t is never earlier than the first keyframe.
+        t = Math.max(t % input[input.length - 1], input[0]);
 
         if (this.prevT > t)
         {
@@ -107,8 +108,9 @@ class gltfInterpolator
         nextKey = clamp(nextKey, 1, input.length - 1);
         this.prevKey = clamp(nextKey - 1, 0, nextKey);
 
+        // Remap t from [t0, t1] to [0, 1].
         const keyDelta = input[nextKey] - input[this.prevKey];
-        t = (t - input[this.prevKey]) / keyDelta; // normalize t to 0..1
+        const tn = (t - input[this.prevKey]) / keyDelta;
 
         if(channel.target.path === InterpolationPath.ROTATION)
         {
@@ -124,7 +126,7 @@ class gltfInterpolator
                 const control1 = this.getQuat(output, nextKey * 3);
                 const q1 = this.getQuat(output, nextKey * 3 + 1);
 
-                const result = quat.sqlerp(quat.create(), q0, control0, control1, q1, t);
+                const result = quat.sqlerp(quat.create(), q0, control0, control1, q1, tn);
                 quat.normalize(result, result);
                 return result;
             }
@@ -132,7 +134,7 @@ class gltfInterpolator
                 const q0 = this.getQuat(output, this.prevKey);
                 const q1 = this.getQuat(output, nextKey);
 
-                return this.slerpQuat(q0, q1, t);
+                return this.slerpQuat(q0, q1, tn);
             }
 
         }
