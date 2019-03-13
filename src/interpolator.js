@@ -57,12 +57,12 @@ class gltfInterpolator
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#appendix-c-spline-interpolation
         for(let i = 0; i < stride; ++i)
         {
-            const p0 = output[prevIndex + V + i];
-            const m0 = keyDelta * output[prevIndex + B + i];
-            const p1 = output[nextIndex + V + i];
-            const m1 = keyDelta * output[nextIndex + A + i];
+            const v0 = output[prevIndex + i + V];
+            const a = keyDelta * output[nextIndex + i + A];
+            const b = keyDelta * output[prevIndex + i + B];
+            const v1 = output[nextIndex + i + V];
 
-            result[i] = ((2*tCub - 3*tSq + 1) * p0) + ((tCub - 2*tSq + t) * m0) + ((-2*tCub + 3*tSq) * p1) + ((tCub - tSq) * m1);
+            result[i] = ((2*tCub - 3*tSq + 1) * v0) + ((tCub - 2*tSq + t) * b) + ((-2*tCub + 3*tSq) * v1) + ((tCub - tSq) * a);
         }
 
         return result;
@@ -83,8 +83,6 @@ class gltfInterpolator
             return jsToGlSlice(output, 0, stride);
         }
 
-        let nextKey = null;
-
         // Wrap t around, so the animation loops.
         // Make sure that t is never earlier than the first keyframe.
         t = Math.max(t % input[input.length - 1], input[0]);
@@ -96,20 +94,21 @@ class gltfInterpolator
 
         this.prevT = t;
 
-        for (let i = this.prevKey; i < input.length; ++i) // find current keyframe interval
+        // Find next keyframe: min{ t of input | t > prevKey }
+        let nextKey = null;
+        for (let i = this.prevKey; i < input.length; ++i)
         {
             if (t <= input[i])
             {
-                nextKey = i;
+                nextKey = clamp(i, 1, input.length - 1);
                 break;
             }
         }
-
-        nextKey = clamp(nextKey, 1, input.length - 1);
         this.prevKey = clamp(nextKey - 1, 0, nextKey);
 
-        // Remap t from [t0, t1] to [0, 1].
         const keyDelta = input[nextKey] - input[this.prevKey];
+
+        // Normalize t: [t0, t1] -> [0, 1]
         const tn = (t - input[this.prevKey]) / keyDelta;
 
         if(channel.target.path === InterpolationPath.ROTATION)
@@ -117,23 +116,15 @@ class gltfInterpolator
 
             if(InterpolationModes.CUBICSPLINE === sampler.interpolation)
             {
-                // Output data is interpreted like this:
-                // <tangent0> <data0> <tangent1> <tangent2> <data1> <tangent2>
-                // ...        <q0>    <control0> <control1> <q1>    ...
-
-                const q0 = this.getQuat(output, this.prevKey * 3 + 1);
-                const control0 = this.getQuat(output, this.prevKey * 3 + 2);
-                const control1 = this.getQuat(output, nextKey * 3);
-                const q1 = this.getQuat(output, nextKey * 3 + 1);
-
-                const result = quat.sqlerp(quat.create(), q0, control0, control1, q1, tn);
+                // GLTF requires cubic spline interpolation for quaternions.
+                // https://github.com/KhronosGroup/glTF/issues/1386
+                const result = this.cubicSpline(this.prevKey, nextKey, output, keyDelta, tn, 4);
                 quat.normalize(result, result);
                 return result;
             }
             else {
                 const q0 = this.getQuat(output, this.prevKey);
                 const q1 = this.getQuat(output, nextKey);
-
                 return this.slerpQuat(q0, q1, tn);
             }
 
