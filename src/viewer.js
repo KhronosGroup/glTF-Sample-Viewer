@@ -49,6 +49,10 @@ class gltfViewer
         this.scaledGltfChanged = true;
         this.sceneScaleFactor = 1;
 
+        this.scaledSceneIndex = 0;
+        this.scaledGltfChanged = true;
+        this.sceneScaleFactor = 1;
+
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
         this.currentlyRendering = false;
@@ -345,19 +349,14 @@ class gltfViewer
         const transform = mat4.create();
 
         let scaled = false;
-        if ((this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex != this.renderingParameters.sceneIndex)) || this.prevCameraIndex !== this.renderingParameters.cameraIndex)
+        if (this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex != this.renderingParameters.sceneIndex))
         {
-            this.prevCameraIndex = this.renderingParameters.cameraIndex;
-
             this.sceneScaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
 
             scaled = true;
             this.scaledGltfChanged = false;
             this.scaledSceneIndex = this.renderingParameters.sceneIndex;
-        }
-        else if(!this.renderingParameters.userCameraActive())
-        {
-            this.sceneScaleFactor = 1.0;
+            console.log("Rescaled scene " + this.scaledSceneIndex + " by " + this.sceneScaleFactor);
         }
 
         mat4.scale(transform, transform, vec3.fromValues(this.sceneScaleFactor,  this.sceneScaleFactor,  this.sceneScaleFactor));

@@ -1,4 +1,4 @@
-import { mat4, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec3, vec4, quat } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -59,9 +59,24 @@ class gltfNode extends GltfObject
     {
         this.matrix = jsToGl(matrixData);
 
+        // Normalize axis vectors of matrix.
+        // To extract a correct rotation, the scaling component must be eliminated.
+        const mn = mat4.create();
+        for(const col of [0, 1, 2])
+        {
+            const mat = this.matrix;
+            const length = Math.sqrt(mat[col] ** 2 + mat[col + 4] ** 2 + mat[col + 8] ** 2);
+            mn[col] = mat[col] / length;
+            mn[col + 4] = mat[col + 4] / length;
+            mn[col + 8] = mat[col + 8] / length;
+            mn[col + 12] = mat[col + 12] / length;
+        }
+
         mat4.getScaling(this.scale, this.matrix);
-        mat4.getRotation(this.rotation, this.matrix);
+        mat4.getRotation(this.rotation, mn);
         mat4.getTranslation(this.translation, this.matrix);
+
+        quat.normalize(this.rotation, this.rotation);
 
         this.changed = true;
     }
@@ -97,14 +112,14 @@ class gltfNode extends GltfObject
 
     getLocalTransform()
     {
+        if(this.matrix !== undefined) {
+            //return mat4.clone(this.matrix);
+        }
+
         if(this.transform === undefined || this.changed)
         {
             this.transform = mat4.create();
-            // If this node has skin, then this node's transform must be ignored.
-            // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins
-            if(this.skin === undefined) {
-                mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
-            }
+            mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
             this.changed = false;
         }
 
