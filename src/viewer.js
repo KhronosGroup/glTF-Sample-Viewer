@@ -58,6 +58,8 @@ class gltfViewer
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
 
+        this.gltfLoadedCallback = function(gltf){};
+
         // Holds the last camera index, used for scene scaling when changing to user camera.
         this.prevCameraIndex = null;
 
@@ -110,13 +112,23 @@ class gltfViewer
         this.userCamera.ymag = ymag;
     }
 
-    setAnimation(animationIndex = -1, timeInSec = undefined)
+    setAnimation(animationIndex = 'all', play = false, timeInSec = undefined)
     {
         this.renderingParameters.animationIndex = animationIndex;
         if(timeInSec !== undefined)
         {
             this.renderingParameters.animationTimer.setFixedTime(timeInSec);
         }
+        else if(play)
+        {
+            this.renderingParameters.animationTimer.start();
+        }
+    }
+
+    // callback = function(gltf) {}
+    setGltfLoadedCallback(callback)
+    {
+        this.gltfLoadedCallback = callback;
     }
 
     setupInputBindings(input)
@@ -253,6 +265,10 @@ class gltfViewer
     startRendering(gltf)
     {
         this.notifyLoadingEnded(gltf.path);
+        if(this.gltfLoadedCallback !== undefined)
+        {
+            this.gltfLoadedCallback(gltf);
+        }
 
         if (gltf.scenes.length === 0)
         {

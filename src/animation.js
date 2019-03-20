@@ -11,6 +11,7 @@ class gltfAnimation extends GltfObject
         super();
         this.channels = [];
         this.samplers = [];
+        this.name = '';
 
         // not gltf
         this.interpolators = [];
@@ -20,6 +21,7 @@ class gltfAnimation extends GltfObject
     {
         this.channels = objectsFromJsons(jsonAnimation.channels, gltfAnimationChannel);
         this.samplers = objectsFromJsons(jsonAnimation.samplers, gltfAnimationSampler);
+        this.name = jsonAnimation.name;
 
         if(this.channels === undefined)
         {
