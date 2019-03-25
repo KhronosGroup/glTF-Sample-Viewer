@@ -40,14 +40,24 @@ class gltfScene extends GltfObject
         }
     }
 
-    // can only be called after gltf as been fully parsed and constructed
-    getSceneWithAlphaMode(gltf, mode = 'OPAQUE', not = false)
+    /**
+     * Returns a scene by selecting all nodes where the following applies:
+     * 1. All primitives have a material.
+     * 2. All primitives are opaque.
+     *
+     * @param {glTF} gltf
+     */
+    getSceneWithFullyOpaqueNodes(gltf)
     {
         const nodes = [];
         function addNode(nodeIndex)
         {
             const node = gltf.nodes[nodeIndex];
             const mesh = gltf.meshes[node.mesh];
+
+
+            // Add node to scene if all primitives which have a material and all primitives are opaque.
+            let ok = true;
 
             if (mesh !== undefined)
             {
@@ -56,12 +66,79 @@ class gltfScene extends GltfObject
                     if (primitive.skip === false)
                     {
                         const material = gltf.materials[primitive.material];
-                        if (material !== undefined && (not ? material.alphaMode !== mode : material.alphaMode === mode))
+
+                        if(material === undefined || material.alphaMode !== "OPAQUE")
                         {
-                            nodes.push(nodeIndex);
+                            ok = false;
                         }
                     }
                 }
+            }
+
+            if(ok)
+            {
+                nodes.push(nodeIndex);
+            }
+
+            // recurse into children
+            for(const child of node.children)
+            {
+                addNode(child);
+            }
+        }
+
+        for (const node of this.nodes)
+        {
+            addNode(node);
+        }
+
+        return new gltfScene(nodes, this.name);
+    }
+
+    /**
+     * Returns a scene by selecting all nodes where the following applies:
+     * 1. All primitives have a material.
+     * 2. At least one primitive is transparent.
+     *
+     * @param {glTF} gltf
+     */
+    getSceneWithTransparentNodes(gltf)
+    {
+        const nodes = [];
+        function addNode(nodeIndex)
+        {
+            const node = gltf.nodes[nodeIndex];
+            const mesh = gltf.meshes[node.mesh];
+
+
+            // Add node to scene if all primitives which have a material and any primitive is transparent.
+            let ok = false;
+
+            if (mesh !== undefined)
+            {
+                for (const primitive of mesh.primitives)
+                {
+                    if (primitive.skip === false)
+                    {
+                        const material = gltf.materials[primitive.material];
+
+                        if(material === undefined)
+                        {
+                            ok = false;
+                            break;
+                        }
+
+                        if(material.alphaMode === "BLEND")
+                        {
+                            ok = true;
+                        }
+                    }
+                }
+            }
+
+            if(ok)
+            {
+                nodes.push(nodeIndex);
             }
 
             // recurse into children

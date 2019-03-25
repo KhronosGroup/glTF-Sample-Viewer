@@ -123,33 +123,36 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        let nodes = scene.gatherNodes(gltf);
-        if(sortByDepth)
-        {
-            nodes = currentCamera.sortNodesByDepth(gltf, nodes);
-        }
 
-        for (const node of nodes)
-        {
-            this.drawNode(gltf, node);
-        }
-    }
+        const nodes = scene.gatherNodes(gltf);
 
-    // returns all lights that are relevant for rendering or the default light if there are none
-    getVisibleLights(gltf, scene)
-    {
-        let lights = [];
-        for (let light of gltf.lights)
+        // Update skins.
+        for(const node of nodes)
         {
-            if (light.node !== undefined)
+            if(node.mesh !== undefined && node.skin !== undefined)
             {
-                if (scene.includesNode(gltf, light.node))
-                {
-                    lights.push(light);
-                }
+                this.updateSkin(gltf, node);
             }
         }
-        return lights.length > 0 ? lights : [ new gltfLight() ];
+
+        if(!sortByDepth) {
+
+            for (const node of nodes)
+            {
+                this.drawNode(gltf, node);
+            }
+        }
+        else {
+
+            const sortedPrimitives = currentCamera.sortPrimitivesByDepth(gltf, nodes);
+
+            for (const sortedPrimitive of sortedPrimitives)
+            {
+                this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+            }
+
+        }
+
     }
 
     // same transform, recursive
@@ -159,24 +162,10 @@ class gltfRenderer
         let mesh = gltf.meshes[node.mesh];
         if (mesh !== undefined)
         {
-            if(node.skin !== undefined)
-            {
-                this.updateSkin(gltf, node);
-            }
-
             for (let primitive of mesh.primitives)
             {
                 this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
             }
-        }
-    }
-
-    updateSkin(gltf, node)
-    {
-        if(this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
-        {
-            const skin = gltf.skins[node.skin];
-            skin.computeJoints(gltf, node);
         }
     }
 
@@ -314,6 +303,32 @@ class gltfRenderer
                 continue; // skip this attribute
             }
             WebGl.context.disableVertexAttribArray(location);
+        }
+    }
+
+    // returns all lights that are relevant for rendering or the default light if there are none
+    getVisibleLights(gltf, scene)
+    {
+        let lights = [];
+        for (let light of gltf.lights)
+        {
+            if (light.node !== undefined)
+            {
+                if (scene.includesNode(gltf, light.node))
+                {
+                    lights.push(light);
+                }
+            }
+        }
+        return lights.length > 0 ? lights : [ new gltfLight() ];
+    }
+
+    updateSkin(gltf, node)
+    {
+        if(this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
+        {
+            const skin = gltf.skins[node.skin];
+            skin.computeJoints(gltf, node);
         }
     }
 

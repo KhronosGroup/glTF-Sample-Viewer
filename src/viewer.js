@@ -292,7 +292,7 @@ class gltfViewer
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
 
-        const meshes = gltf.nodes.map(node => gltf.meshes[node.mesh]);
+        const meshes = gltf.nodes.filter(node => node.mesh !== undefined).map(node => gltf.meshes[node.mesh]);
         const primitives = meshes.flatMap(mesh => mesh.primitives);
         for(const primitive of primitives) {
 
@@ -347,11 +347,11 @@ class gltfViewer
 
                     const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
 
-                    let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
+                    let alphaScene = scene.getSceneWithTransparentNodes(self.gltf);
                     if (alphaScene.nodes.length > 0)
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
-                        let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
+                        let opaqueScene = scene.getSceneWithFullyOpaqueNodes(self.gltf);
                         self.renderer.drawScene(self.gltf, opaqueScene, false);
 
                         // render transparent objects ordered by distance from camera
