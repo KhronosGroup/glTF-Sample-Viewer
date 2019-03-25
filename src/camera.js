@@ -86,15 +86,13 @@ class gltfCamera extends GltfObject
             }
         }
 
-        // Remove primitives that are behind the camera.
-        // --> They will never be visible and it is cheap to discard them here.
-        sortedPrimitives.filter((a) => a.depth >= 0);
-
-        // Sort primitives so that the furthest nodes are rendered first.
-        // This is required for correct transparency rendering.
-        sortedPrimitives.sort((a, b) => a.depth - b.depth);
-
-        return sortedPrimitives;
+        // 1. Remove primitives that are behind the camera.
+        //    --> They will never be visible and it is cheap to discard them here.
+        // 2. Sort primitives so that the furthest nodes are rendered first.
+        //    This is required for correct transparency rendering.
+        return sortedPrimitives
+            .filter((a) => a.depth <= 0)
+            .sort((a, b) => a.depth - b.depth);
     }
 
     getProjectionMatrix()
