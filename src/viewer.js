@@ -10,7 +10,7 @@ import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
-import { getScaleFactor } from './gltf_utils.js';
+import { getScaleFactor, computePrimitiveCentroids } from './gltf_utils.js';
 import { gltfSkin } from './skin.js';
 
 class gltfViewer
@@ -292,62 +292,7 @@ class gltfViewer
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
 
-        const meshes = gltf.nodes.filter(node => node.mesh !== undefined).map(node => gltf.meshes[node.mesh]);
-        const primitives = meshes.flatMap(mesh => mesh.primitives);
-        for(const primitive of primitives) {
-
-            const positionsAccessor = gltf.accessors[primitive.attributes.POSITION];
-            const positions = positionsAccessor.getTypedView(gltf);
-
-            if(primitive.indices !== undefined)
-            {
-                // Primitive has indices.
-
-                const indicesAccessor = gltf.accessors[primitive.indices];
-
-                const indices = indicesAccessor.getTypedView(gltf);
-
-                const acc = new Float32Array(3);
-
-                for(let i = 0; i < indices.length; i++) {
-                    const offset = 3 * indices[i];
-                    acc[0] += positions[offset];
-                    acc[1] += positions[offset + 1];
-                    acc[2] += positions[offset + 2];
-                }
-
-                const centroid = new Float32Array([
-                    acc[0] / indices.length,
-                    acc[1] / indices.length,
-                    acc[2] / indices.length,
-                ]);
-
-                primitive.setCentroid(centroid);
-            }
-            else
-            {
-                // Primitive does not have indices.
-
-                const acc = new Float32Array(3);
-
-                for(let i = 0; i < positions.length; i += 3) {
-                    acc[0] += positions[i];
-                    acc[1] += positions[i + 1];
-                    acc[2] += positions[i + 2];
-                }
-
-                const positionVectors = positions.length / 3;
-
-                const centroid = new Float32Array([
-                    acc[0] / positionVectors,
-                    acc[1] / positionVectors,
-                    acc[2] / positionVectors,
-                ]);
-
-                primitive.setCentroid(centroid);
-            }
-
-        }
+        computePrimitiveCentroids(gltf);
     }
 
     render()
