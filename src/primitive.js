@@ -146,6 +146,11 @@ class gltfPrimitive extends GltfObject
     {
         return this.defines;
     }
+
+    setCentroid(centroid)
+    {
+        this.centroid = centroid;
+    }
 }
 
 export { gltfPrimitive };
