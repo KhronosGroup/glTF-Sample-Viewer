@@ -87,7 +87,9 @@ class gltfCamera extends GltfObject
         // --> will never be visible and it is cheap to discard them here
         sortedNodes.filter((a) => a.depth >= 0);
 
-        sortedNodes.sort((a, b) => b.depth - a.depth);
+        // Sort nodes so that the furthest nodes are rendered first.
+        // This is required for correct transparency rendering.
+        sortedNodes.sort((a, b) => a.depth - b.depth);
 
         return sortedNodes.map((a) => a.node);
     }
