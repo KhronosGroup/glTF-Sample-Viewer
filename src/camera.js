@@ -77,8 +77,8 @@ class gltfCamera extends GltfObject
             const modelView = mat4.create();
             mat4.multiply(modelView, this.getViewMatrix(gltf), node.worldTransform);
 
-            for(const primitive of gltf.meshes[node.mesh].primitives) {
-
+            for(const primitive of gltf.meshes[node.mesh].primitives)
+            {
                 // Transform primitive centroid to find the primitive's depth.
                 const pos = vec3.transformMat4(vec3.create(), vec3.clone(primitive.centroid), modelView);
 

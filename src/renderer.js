@@ -123,7 +123,6 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-
         const nodes = scene.gatherNodes(gltf);
 
         // Update skins.
@@ -135,24 +134,22 @@ class gltfRenderer
             }
         }
 
-        if(!sortByDepth) {
-
+        if(!sortByDepth)
+        {
             for (const node of nodes)
             {
                 this.drawNode(gltf, node);
             }
         }
-        else {
-
+        else
+        {
             const sortedPrimitives = currentCamera.sortPrimitivesByDepth(gltf, nodes);
 
             for (const sortedPrimitive of sortedPrimitives)
             {
                 this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
             }
-
         }
-
     }
 
     // same transform, recursive
