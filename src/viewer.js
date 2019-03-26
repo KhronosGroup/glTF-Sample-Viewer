@@ -325,7 +325,7 @@ class gltfViewer
                     if (alphaScene.nodes.length > 0)
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
-                        let opaqueScene = scene.getSceneWithFullyOpaqueNodes(self.gltf);
+                        const opaqueScene = scene.getSceneWithFullyOpaqueNodes(self.gltf);
                         self.renderer.drawScene(self.gltf, opaqueScene, false);
 
                         // render transparent objects ordered by distance from camera

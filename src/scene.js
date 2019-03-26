@@ -42,8 +42,9 @@ class gltfScene extends GltfObject
 
     /**
      * Returns a scene by selecting all nodes where the following applies:
-     * 1. All primitives have a material.
-     * 2. All primitives are opaque.
+     * 1. The node has a mesh attached.
+     * 2. All primitives have a material.
+     * 3. All primitives are opaque or masked.
      *
      * @param {glTF} gltf
      */
@@ -55,29 +56,28 @@ class gltfScene extends GltfObject
             const node = gltf.nodes[nodeIndex];
             const mesh = gltf.meshes[node.mesh];
 
-
-            // Add node to scene if all primitives which have a material and all primitives are opaque.
-            let ok = true;
-
             if (mesh !== undefined)
             {
+                // Add node to scene if all primitives which have a material and all primitives are opaque.
+                let ok = true;
+
                 for (const primitive of mesh.primitives)
                 {
                     if (primitive.skip === false)
                     {
                         const material = gltf.materials[primitive.material];
 
-                        if(material === undefined || material.alphaMode !== "OPAQUE")
+                        if(material === undefined || material.alphaMode === "BLEND")
                         {
                             ok = false;
                         }
                     }
                 }
-            }
 
-            if(ok)
-            {
-                nodes.push(nodeIndex);
+                if(ok)
+                {
+                    nodes.push(nodeIndex);
+                }
             }
 
             // recurse into children
@@ -97,8 +97,9 @@ class gltfScene extends GltfObject
 
     /**
      * Returns a scene by selecting all nodes where the following applies:
-     * 1. All primitives have a material.
-     * 2. At least one primitive has blending or masking alpha mode.
+     * 1. The node has a mesh attached.
+     * 2. All primitives have a material.
+     * 3. At least one primitive has blending alpha mode.
      *
      * @param {glTF} gltf
      */
@@ -110,12 +111,11 @@ class gltfScene extends GltfObject
             const node = gltf.nodes[nodeIndex];
             const mesh = gltf.meshes[node.mesh];
 
-
-            // Add node to scene if all primitives which have a material and any primitive is transparent.
-            let ok = false;
-
             if (mesh !== undefined)
             {
+                // Add node to scene if all primitives which have a material and any primitive is transparent.
+                let ok = false;
+
                 for (const primitive of mesh.primitives)
                 {
                     if (primitive.skip === false)
@@ -128,17 +128,17 @@ class gltfScene extends GltfObject
                             break;
                         }
 
-                        if(material.alphaMode === "BLEND" || material.alphaMode === "MASK")
+                        if(material.alphaMode === "BLEND")
                         {
                             ok = true;
                         }
                     }
                 }
-            }
 
-            if(ok)
-            {
-                nodes.push(nodeIndex);
+                if(ok)
+                {
+                    nodes.push(nodeIndex);
+                }
             }
 
             // recurse into children
