@@ -19,6 +19,9 @@ class gltfPrimitive extends GltfObject
         this.skip = true;
         this.hasWeights = false;
         this.hasJoints = false;
+
+        // The primitive centroid is used for depth sorting.
+        this.centroid = undefined;
     }
 
     initGl(gltf)
@@ -145,6 +148,11 @@ class gltfPrimitive extends GltfObject
     getDefines()
     {
         return this.defines;
+    }
+
+    setCentroid(centroid)
+    {
+        this.centroid = centroid;
     }
 }
 

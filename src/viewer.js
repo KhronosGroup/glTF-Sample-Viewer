@@ -10,7 +10,7 @@ import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
-import { getScaleFactor } from './gltf_utils.js';
+import { getScaleFactor, computePrimitiveCentroids } from './gltf_utils.js';
 import { gltfSkin } from './skin.js';
 
 class gltfViewer
@@ -291,6 +291,8 @@ class gltfViewer
 
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
+
+        computePrimitiveCentroids(gltf);
     }
 
     render()
@@ -319,11 +321,11 @@ class gltfViewer
 
                     const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
 
-                    let alphaScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND'); // get non opaque
+                    let alphaScene = scene.getSceneWithTransparentNodes(self.gltf);
                     if (alphaScene.nodes.length > 0)
                     {
                         // first render opaque objects, oder is not important but could improve performance 'early z rejection'
-                        let opaqueScene = scene.getSceneWithAlphaMode(self.gltf, 'BLEND', true);
+                        const opaqueScene = scene.getSceneWithFullyOpaqueNodes(self.gltf);
                         self.renderer.drawScene(self.gltf, opaqueScene, false);
 
                         // render transparent objects ordered by distance from camera

@@ -68,30 +68,31 @@ class gltfCamera extends GltfObject
         }
     }
 
-    sortNodesByDepth(gltf, nodes)
+    sortPrimitivesByDepth(gltf, nodes)
     {
-        // precompute the distances to avoid their computation during sorting
-        const sortedNodes = [];
-        for (const node of nodes)
+        // Precompute the distances to avoid their computation during sorting.
+        const sortedPrimitives = [];
+        for (const node of nodes.filter(node => node.mesh !== undefined))
         {
             const modelView = mat4.create();
             mat4.multiply(modelView, this.getViewMatrix(gltf), node.worldTransform);
 
-            const pos = vec3.create();
-            mat4.getTranslation(pos, modelView);
+            for(const primitive of gltf.meshes[node.mesh].primitives)
+            {
+                // Transform primitive centroid to find the primitive's depth.
+                const pos = vec3.transformMat4(vec3.create(), vec3.clone(primitive.centroid), modelView);
 
-            sortedNodes.push({depth: pos[2], node: node});
+                sortedPrimitives.push({depth: pos[2], primitive, node});
+            }
         }
 
-        // remove nodes that are behind the camera
-        // --> will never be visible and it is cheap to discard them here
-        sortedNodes.filter((a) => a.depth >= 0);
-
-        // Sort nodes so that the furthest nodes are rendered first.
-        // This is required for correct transparency rendering.
-        sortedNodes.sort((a, b) => a.depth - b.depth);
-
-        return sortedNodes.map((a) => a.node);
+        // 1. Remove primitives that are behind the camera.
+        //    --> They will never be visible and it is cheap to discard them here.
+        // 2. Sort primitives so that the furthest nodes are rendered first.
+        //    This is required for correct transparency rendering.
+        return sortedPrimitives
+            .filter((a) => a.depth <= 0)
+            .sort((a, b) => a.depth - b.depth);
     }
 
     getProjectionMatrix()
