@@ -98,7 +98,7 @@ class gltfScene extends GltfObject
     /**
      * Returns a scene by selecting all nodes where the following applies:
      * 1. All primitives have a material.
-     * 2. At least one primitive is transparent.
+     * 2. At least one primitive has blending or masking alpha mode.
      *
      * @param {glTF} gltf
      */
@@ -128,7 +128,7 @@ class gltfScene extends GltfObject
                             break;
                         }
 
-                        if(material.alphaMode === "BLEND")
+                        if(material.alphaMode === "BLEND" || material.alphaMode === "MASK")
                         {
                             ok = true;
                         }
