@@ -72,7 +72,7 @@ class gltfCamera extends GltfObject
     {
         // Precompute the distances to avoid their computation during sorting.
         const sortedPrimitives = [];
-        for (const node of nodes)
+        for (const node of nodes.filter(node => node.mesh !== undefined))
         {
             const modelView = mat4.create();
             mat4.multiply(modelView, this.getViewMatrix(gltf), node.worldTransform);
