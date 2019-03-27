@@ -445,7 +445,7 @@ class gltfViewer
             {
                 self.loadFromFileObject(this.lastDropped.mainFile, this.lastDropped.additionalFiles);
             }
-        }
+        };
         gui.initialize();
         this.gui = gui;
     }
