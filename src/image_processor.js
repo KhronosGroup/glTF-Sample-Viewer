@@ -1,5 +1,5 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { nearestPowerOf2, makeEven } from './math_utils.js'
+import { nearestPowerOf2, makeEven } from './math_utils.js';
 
 class gltfImageProcessor
 {

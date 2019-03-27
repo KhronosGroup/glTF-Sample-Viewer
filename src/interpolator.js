@@ -132,9 +132,12 @@ class gltfInterpolator
 
         switch(sampler.interpolation)
         {
-            case InterpolationModes.STEP: return jsToGlSlice(output, this.prevKey * stride, stride); // t < 0.5 ? output[preKey] : output[nextKey]
-            case InterpolationModes.CUBICSPLINE: return this.cubicSpline(this.prevKey, nextKey, output, keyDelta, tn, stride);
-            default: return this.linear(this.prevKey, nextKey, output, tn, stride);
+        case InterpolationModes.STEP:
+            return jsToGlSlice(output, this.prevKey * stride, stride); // t < 0.5 ? output[preKey] : output[nextKey]
+        case InterpolationModes.CUBICSPLINE:
+            return this.cubicSpline(this.prevKey, nextKey, output, keyDelta, tn, stride);
+        default:
+            return this.linear(this.prevKey, nextKey, output, tn, stride);
         }
     }
 

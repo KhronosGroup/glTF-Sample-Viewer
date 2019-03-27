@@ -52,19 +52,21 @@ class gltfAnimation extends GltfObject
 
             switch(channel.target.path)
             {
-                case InterpolationPath.TRANSLATION:
-                    node.applyTranslation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
-                    break;
-                case InterpolationPath.ROTATION:
-                    node.applyRotation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4));
-                    break;
-                case InterpolationPath.SCALE:
-                    node.applyScale(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
-                    break;
-                case InterpolationPath.WEIGHTS:
-                    let mesh = gltf.meshes[node.mesh];
-                    mesh.weights = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length);
-                    break;
+            case InterpolationPath.TRANSLATION:
+                node.applyTranslation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
+                break;
+            case InterpolationPath.ROTATION:
+                node.applyRotation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4));
+                break;
+            case InterpolationPath.SCALE:
+                node.applyScale(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
+                break;
+            case InterpolationPath.WEIGHTS:
+            {
+                const mesh = gltf.meshes[node.mesh];
+                mesh.weights = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length);
+                break;
+            }
             }
         }
     }

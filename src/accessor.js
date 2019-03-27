@@ -1,6 +1,6 @@
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
-import { jsToGlSlice} from './utils.js';
+
 
 class gltfAccessor extends GltfObject
 {
@@ -48,24 +48,24 @@ class gltfAccessor extends GltfObject
 
             switch (this.componentType)
             {
-                case WebGl.context.BYTE:
-                    this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
-                    break;
-                case WebGl.context.UNSIGNED_BYTE:
-                    this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
-                    break;
-                case WebGl.context.SHORT:
-                    this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
-                    break;
-                case WebGl.context.UNSIGNED_SHORT:
-                    this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
-                    break;
-                case WebGl.context.UNSIGNED_INT:
-                    this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
-                    break;
-                case WebGl.context.FLOAT:
-                    this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
-                    break;
+            case WebGl.context.BYTE:
+                this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
+                break;
+            case WebGl.context.UNSIGNED_BYTE:
+                this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
+                break;
+            case WebGl.context.SHORT:
+                this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
+                break;
+            case WebGl.context.UNSIGNED_SHORT:
+                this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
+                break;
+            case WebGl.context.UNSIGNED_INT:
+                this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
+                break;
+            case WebGl.context.FLOAT:
+                this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
+                break;
             }
         }
 
@@ -100,30 +100,30 @@ class gltfAccessor extends GltfObject
             let func = 'getFloat32';
             switch (this.componentType)
             {
-                case WebGl.context.BYTE:
-                    this.filteredView = new Int8Array(arrayLength);
-                    func = 'getInt8';
-                    break;
-                case WebGl.context.UNSIGNED_BYTE:
-                    this.filteredView = new Uint8Array(arrayLength);
-                    func = 'getUint8';
-                    break;
-                case WebGl.context.SHORT:
-                    this.filteredView = new Int16Array(arrayLength);
-                    func = 'getInt16';
-                    break;
-                case WebGl.context.UNSIGNED_SHORT:
-                    this.filteredView = new Uint16Array(arrayLength);
-                    func = 'getUint16';
-                    break;
-                case WebGl.context.UNSIGNED_INT:
-                    this.filteredView = new Uint32Array(arrayLength);
-                    func = 'getUint32';
-                    break;
-                case WebGl.context.FLOAT:
-                    this.filteredView = new Float32Array(arrayLength);
-                    func = 'getFloat32';
-                    break;
+            case WebGl.context.BYTE:
+                this.filteredView = new Int8Array(arrayLength);
+                func = 'getInt8';
+                break;
+            case WebGl.context.UNSIGNED_BYTE:
+                this.filteredView = new Uint8Array(arrayLength);
+                func = 'getUint8';
+                break;
+            case WebGl.context.SHORT:
+                this.filteredView = new Int16Array(arrayLength);
+                func = 'getInt16';
+                break;
+            case WebGl.context.UNSIGNED_SHORT:
+                this.filteredView = new Uint16Array(arrayLength);
+                func = 'getUint16';
+                break;
+            case WebGl.context.UNSIGNED_INT:
+                this.filteredView = new Uint32Array(arrayLength);
+                func = 'getUint32';
+                break;
+            case WebGl.context.FLOAT:
+                this.filteredView = new Float32Array(arrayLength);
+                func = 'getFloat32';
+                break;
             }
 
             for(let i = 0; i < arrayLength; ++i)

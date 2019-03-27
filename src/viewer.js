@@ -11,7 +11,6 @@ import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { getScaleFactor, computePrimitiveCentroids } from './gltf_utils.js';
-import { gltfSkin } from './skin.js';
 
 class gltfViewer
 {
@@ -58,7 +57,7 @@ class gltfViewer
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
 
-        this.gltfLoadedCallback = function(gltf){};
+        this.gltfLoadedCallback = function(){};
 
         // Holds the last camera index, used for scene scaling when changing to user camera.
         this.prevCameraIndex = null;
