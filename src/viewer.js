@@ -48,10 +48,6 @@ class gltfViewer
         this.scaledGltfChanged = true;
         this.sceneScaleFactor = 1;
 
-        this.scaledSceneIndex = 0;
-        this.scaledGltfChanged = true;
-        this.sceneScaleFactor = 1;
-
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
         this.currentlyRendering = false;
