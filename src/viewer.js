@@ -320,19 +320,36 @@ class gltfViewer
 
                     const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
 
-                    let alphaScene = scene.getSceneWithTransparentNodes(self.gltf);
-                    if (alphaScene.nodes.length > 0)
-                    {
-                        // first render opaque objects, oder is not important but could improve performance 'early z rejection'
-                        const opaqueScene = scene.getSceneWithFullyOpaqueNodes(self.gltf);
-                        self.renderer.drawScene(self.gltf, opaqueScene, false);
+                    // Check if scene contains transparent primitives.
 
-                        // render transparent objects ordered by distance from camera
-                        self.renderer.drawScene(self.gltf, alphaScene, true);
+                    const nodes = scene.gatherNodes(self.gltf);
+
+                    const alphaModes = nodes
+                        .filter(n => n.mesh !== undefined)
+                        .flatMap(n => self.gltf.meshes[n.mesh].primitives)
+                        .map(p => self.gltf.materials[p.material].alphaMode);
+
+                    let hasBlendPrimitives = false;
+                    for(const alphaMode of alphaModes)
+                    {
+                        if(alphaMode === "BLEND")
+                        {
+                            hasBlendPrimitives = true;
+                            break;
+                        }
+                    }
+
+                    if(hasBlendPrimitives)
+                    {
+                        // Draw all opaque and masked primitives. Depth sort is not yet required.
+                        self.renderer.drawScene(self.gltf, scene, false, primitive => self.gltf.materials[primitive.material].alphaMode !== "BLEND");
+
+                        // Draw all transparent primitives. Depth sort is required.
+                        self.renderer.drawScene(self.gltf, scene, true, primitive => self.gltf.materials[primitive.material].alphaMode === "BLEND");
                     }
                     else
                     {
-                        // no alpha materials, render as is
+                        // Simply draw all primitives.
                         self.renderer.drawScene(self.gltf, scene, false);
                     }
                 }

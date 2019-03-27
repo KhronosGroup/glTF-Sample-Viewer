@@ -100,7 +100,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, sortByDepth)
+    drawScene(gltf, scene, sortByDepth, predicateDrawPrimivitve)
     {
         let currentCamera = undefined;
 
@@ -138,7 +138,17 @@ class gltfRenderer
         {
             for (const node of nodes)
             {
-                this.drawNode(gltf, node);
+                let mesh = gltf.meshes[node.mesh];
+                if (mesh !== undefined)
+                {
+                    for (let primitive of mesh.primitives)
+                    {
+                        if(predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
+                        {
+                            this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
+                        }
+                    }
+                }
             }
         }
         else
@@ -147,21 +157,10 @@ class gltfRenderer
 
             for (const sortedPrimitive of sortedPrimitives)
             {
-                this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
-            }
-        }
-    }
-
-    // same transform, recursive
-    drawNode(gltf, node)
-    {
-        // draw primitive:
-        let mesh = gltf.meshes[node.mesh];
-        if (mesh !== undefined)
-        {
-            for (let primitive of mesh.primitives)
-            {
-                this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
+                if(predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
+                {
+                    this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+                }
             }
         }
     }
