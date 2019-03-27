@@ -170,7 +170,7 @@ Please note, that the above shader code includes the optimization for "turning o
 ### Geometric Occlusion (G)
 
 **Smith GGX**
-The following implementation is from "Geometrical Occlusion of a Random Rough Surface" by Bruce G. Smith
+The following implementation is from "Geometrical Shadowing of a Random Rough Surface" by Bruce G. Smith.
 
 ![](assets/images/math/G_smith.png)
 ![](assets/images/math/G_GGX.png)
