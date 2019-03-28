@@ -68,7 +68,9 @@ const Environments =
     "Pisa courtyard nearing sunset": { folder: "pisa", mipLevel: 11, type: ImageMimeType.HDR },
     "Footprint Court": { folder: "footprint_court", mipLevel: 10, type: ImageMimeType.HDR },
     "Helipad GoldenHour": { folder: "helipad", mipLevel: 10, type: ImageMimeType.HDR },
-    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 11, type: ImageMimeType.HDR }
+    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 11, type: ImageMimeType.HDR },
+    "Studio Grey": { folder: "studio_grey", mipLevel: 11, type: ImageMimeType.HDR },
+    "Studio Red Green": { folder: "studio_red_green", mipLevel: 11, type: ImageMimeType.HDR }
 };
 
 export { UserCameraIndex, gltfRenderingParameters, Environments, ToneMaps, DebugOutput };
