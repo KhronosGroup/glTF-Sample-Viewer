@@ -143,7 +143,7 @@ vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
 }
 
 // Smith Joint GGX
-// Note: V = G / (4 * NdotL * NdotV)
+// Note: Vis = G / (4 * NdotL * NdotV)
 // see Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. Journal of Computer Graphics Techniques, 3
 // see Real-Time Rendering. Page 331 to 336.
 // see https://google.github.io/filament/Filament.md.html#materialsystem/specularbrdf/geometricshadowing(specularg)
@@ -177,12 +177,12 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
     {
         // Calculate the shading terms for the microfacet specular shading model
         vec3 F = specularReflection(materialInfo, angularInfo);
-        float V = visibilityOcclusion(materialInfo, angularInfo);
+        float Vis = visibilityOcclusion(materialInfo, angularInfo);
         float D = microfacetDistribution(materialInfo, angularInfo);
 
         // Calculation of analytical lighting contribution
         vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
-        vec3 specContrib = F * V * D;
+        vec3 specContrib = F * Vis * D;
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
         return angularInfo.NdotL * (diffuseContrib + specContrib);
