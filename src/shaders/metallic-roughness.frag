@@ -142,20 +142,21 @@ vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
     return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
 }
 
-// This calculates the specular geometric attenuation (aka G()),
-// where rougher material will reflect less light back to the viewer.
-// This implementation is based on [1] Equation 4, and we adopt their modifications to
-// alphaRoughness as input as originally proposed in [2].
-float geometricOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
+// Smith Joint GGX
+// Note: V = G / (4 * NdotL * NdotV)
+// see Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. Journal of Computer Graphics Techniques, 3
+// see Real-Time Rendering. Page 331 to 336.
+// see https://google.github.io/filament/Filament.md.html#materialsystem/specularbrdf/geometricshadowing(specularg)
+float visibilityOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 {
     float NdotL = angularInfo.NdotL;
     float NdotV = angularInfo.NdotV;
     float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
 
-    float attenuationL = 2.0 * NdotL / (NdotL + sqrt((NdotL * NdotL) + alphaRoughnessSq * (1.0 - (NdotL * NdotL))));
-    float attenuationV = 2.0 * NdotV / (NdotV + sqrt((NdotV * NdotV) + alphaRoughnessSq * (1.0 - (NdotV * NdotV))));
+    float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
+    float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
 
-    return attenuationL * attenuationV;
+    return 0.5 / (GGXV + GGXL);
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
@@ -176,12 +177,12 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
     {
         // Calculate the shading terms for the microfacet specular shading model
         vec3 F = specularReflection(materialInfo, angularInfo);
-        float G = geometricOcclusion(materialInfo, angularInfo);
+        float V = visibilityOcclusion(materialInfo, angularInfo);
         float D = microfacetDistribution(materialInfo, angularInfo);
 
         // Calculation of analytical lighting contribution
         vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
-        vec3 specContrib = F * G * D / (4.0 * angularInfo.NdotL * angularInfo.NdotV);
+        vec3 specContrib = F * V * D;
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
         return angularInfo.NdotL * (diffuseContrib + specContrib);
