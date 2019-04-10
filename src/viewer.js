@@ -322,7 +322,7 @@ class gltfViewer
 
                     const alphaModes = nodes
                         .filter(n => n.mesh !== undefined)
-                        .flatMap(n => self.gltf.meshes[n.mesh].primitives)
+                        .reduce((acc, n) => acc.concat(self.gltf.meshes[n.mesh].primitives), [])
                         .map(p => self.gltf.materials[p.material].alphaMode);
 
                     let hasBlendPrimitives = false;
@@ -415,14 +415,20 @@ class gltfViewer
                 // Special index, step all animations.
                 for(const anim of gltf.animations)
                 {
-                    anim.advance(gltf, t);
+                    if(anim)
+                    {
+                        anim.advance(gltf, t);
+                    }
                 }
             }
             else
             {
                 // Step selected animation.
                 const anim = gltf.animations[this.renderingParameters.animationIndex];
-                anim.advance(gltf, t);
+                if(anim)
+                {
+                    anim.advance(gltf, t);
+                }
             }
         }
     }
