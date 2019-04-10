@@ -415,14 +415,20 @@ class gltfViewer
                 // Special index, step all animations.
                 for(const anim of gltf.animations)
                 {
-                    anim.advance(gltf, t);
+                    if(anim)
+                    {
+                        anim.advance(gltf, t);
+                    }
                 }
             }
             else
             {
                 // Step selected animation.
                 const anim = gltf.animations[this.renderingParameters.animationIndex];
-                anim.advance(gltf, t);
+                if(anim)
+                {
+                    anim.advance(gltf, t);
+                }
             }
         }
     }
