@@ -322,7 +322,7 @@ class gltfViewer
 
                     const alphaModes = nodes
                         .filter(n => n.mesh !== undefined)
-                        .flatMap(n => self.gltf.meshes[n.mesh].primitives)
+                        .reduce((acc, n) => acc.concat(self.gltf.meshes[n.mesh].primitives), [])
                         .map(p => self.gltf.materials[p.material].alphaMode);
 
                     let hasBlendPrimitives = false;

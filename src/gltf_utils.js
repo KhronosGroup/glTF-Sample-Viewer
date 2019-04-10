@@ -88,7 +88,7 @@ function getScaleFactor(gltf, sceneIndex)
 function computePrimitiveCentroids(gltf)
 {
     const meshes = gltf.nodes.filter(node => node.mesh !== undefined).map(node => gltf.meshes[node.mesh]);
-    const primitives = meshes.flatMap(mesh => mesh.primitives);
+    const primitives = meshes.reduce((acc, mesh) => acc.concat(mesh.primitives), []);
     for(const primitive of primitives) {
 
         const positionsAccessor = gltf.accessors[primitive.attributes.POSITION];
