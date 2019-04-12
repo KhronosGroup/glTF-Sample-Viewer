@@ -21,4 +21,4 @@ function makeEven(n)
     return n;
 }
 
-export { nearestPowerOf2, isPowerOf2, makeEven }
+export { nearestPowerOf2, isPowerOf2, makeEven };
