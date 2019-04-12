@@ -41,7 +41,7 @@ class gltfImageProcessor
 
     processNonSquareImage(image)
     {
-        return { width: makeEven(image.width), height: makeEven(image.height) };
+        return { width: nearestPowerOf2(makeEven(image.width)), height: nearestPowerOf2(makeEven(image.height)) };
     }
 
     resizeImage(image, newDimensions)

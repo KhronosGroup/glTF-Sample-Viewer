@@ -108,7 +108,7 @@ class gltfWebGl
 
             if (textureInfo.generateMips && generateMips)
             {
-                // Until this point, images can be assumed to be power of two and having a square size.
+                // Until this point, images can be assumed to be power of two.
                 switch (gltfSampler.minFilter)
                 {
                 case WebGl.context.NEAREST_MIPMAP_NEAREST:

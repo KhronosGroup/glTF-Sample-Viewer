@@ -124,8 +124,7 @@ class gltfImage extends GltfObject
 
     shouldGenerateMips()
     {
-        return (this.image.width == this.image.height)
-            || (isPowerOf2(this.image.width) && isPowerOf2(this.image.height));
+        return (isPowerOf2(this.image.width) && isPowerOf2(this.image.height));
     }
 }
 
