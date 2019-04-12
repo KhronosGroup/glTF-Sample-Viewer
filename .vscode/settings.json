@@ -1,4 +1,4 @@
-// Default settings for WebGL-PBR in VSCode (https://code.visualstudio.com/).
+// Default settings for Sample Viewer in VSCode (https://code.visualstudio.com/).
 {
     "files.exclude": {
         "**/.git": true,
