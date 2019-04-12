@@ -4,7 +4,8 @@ Thumbs.db
 desktop.ini
 node_modules
 npm-debug.log
-.vscode
+.vscode/launch.json
+.vscode/tasks.json
 package-lock.json
 dist
 .idea
