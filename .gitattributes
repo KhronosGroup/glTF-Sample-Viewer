@@ -1,4 +1,4 @@
-# Set line endings of JS files to unix-style, other files automatic by platform.
+# Set line endings of js,json,html,css files to unix-style, other files automatic by platform.
 * text=auto
 *.js text eol=lf
 *.json text eol=lf
