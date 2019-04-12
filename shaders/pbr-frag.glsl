@@ -8,7 +8,7 @@
 // [2] Physically Based Shading at Disney
 //     http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf
 // [3] README.md - Environment Maps
-//     https://github.com/KhronosGroup/glTF-WebGL-PBR/#environment-maps
+//     https://github.com/KhronosGroup/glTF-Sample-Viewer/#environment-maps
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 #extension GL_EXT_shader_texture_lod: enable
