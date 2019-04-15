@@ -1,4 +1,4 @@
-// Default settings for Sample Viewer in VSCode (https://code.visualstudio.com/).
+// Default settings for WebGL-PBR in VSCode (https://code.visualstudio.com/).
 {
     "files.exclude": {
         "**/.git": true,
@@ -11,7 +11,6 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
     "editor.detectIndentation": false,
-    "jshint.enable": true,
     "javascript.format.insertSpaceAfterCommaDelimiter": true,
     "javascript.format.insertSpaceAfterSemicolonInForStatements": true,
     "javascript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
@@ -19,6 +18,7 @@
     "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
-    "javascript.format.placeOpenBraceOnNewLineForFunctions": false,
-    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": false
+    "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "files.eol": "\n"
 }

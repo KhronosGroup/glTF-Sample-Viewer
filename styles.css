@@ -1,0 +1,44 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: rgb(51, 51, 51);
+}
+
+#canvas {
+    width:  100%;
+    margin:  0px;
+    height: 100%;
+    background: rgb(51, 51, 51);
+}
+
+.dg li.gui-stats:not(.folder) {
+    height: 48px;
+}
+
+select {
+    width: 169px;
+}
+
+#gltf-rv-model-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    border: 16px solid #f3f3f3;
+    pointer-events: none;
+    border-top: 16px solid #86C540;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

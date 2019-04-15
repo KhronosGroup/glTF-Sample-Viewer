@@ -1,0 +1,10 @@
+# Set line endings of js,json,html,css files to unix-style, other files automatic by platform.
+* text=auto
+*.js text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+# Turn off text-based EOL adaptations for various image formats.
+*.jpg binary
+*.png binary
+*.hdr binary

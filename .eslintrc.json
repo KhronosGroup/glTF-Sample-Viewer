@@ -1,0 +1,28 @@
+{
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 2017,
+        "sourceType": "module"
+    },
+    "globals":{
+        "axios": false,
+        "dat": false,
+        "Stats": false
+    },
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true,
+        "node": true
+    },
+    "rules": {
+        "indent": 1,
+        "linebreak-style": 1,
+        "semi": 1,
+        "no-extra-semi": 1,
+        "new-cap": ["warn", { "newIsCapExceptionPattern": "^gl" }],
+        "no-console": [
+            "off"
+        ]
+    }
+}
