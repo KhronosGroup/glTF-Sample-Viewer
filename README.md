@@ -1,7 +1,7 @@
 glTF 2.0 Reference Viewer
 =========================
 
-[![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
+[![](assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer/)
 
 This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) reference viewer using [WebGL](https://www.khronos.org/webgl/).
 
@@ -28,7 +28,7 @@ Viewer
 Usage
 -----
 
-If you would like to see this in action, [view the live demo](http://gltf.ux3d.io/).
+If you would like to see this in action, [view the live demo](https://github.khronos.org/glTF-Sample-Viewer/).
 
 **Controls**
 
@@ -94,12 +94,6 @@ Debugging
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
 * Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
 * `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit.
-
-**VS Code**
-
-Modified VSCode gltf-vscode plugin:
-
-[gltf-vscode](https://github.com/ux3d/gltf-vscode/tree/features/khronosRV-setup)
 
 
 Physically-Based Materials in glTF 2.0
