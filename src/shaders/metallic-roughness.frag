@@ -173,7 +173,8 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, normal, view);
 
-    if (angularInfo.NdotL > 0.0 && angularInfo.NdotV > 0.0)
+    // If one of the dot products is larger than zero, no division by zero can happen. Avoids black borders.
+    if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
         // Calculate the shading terms for the microfacet specular shading model
         vec3 F = specularReflection(materialInfo, angularInfo);
