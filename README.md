@@ -1,9 +1,9 @@
-glTF 2.0 Reference Viewer
-=========================
+glTF 2.0 Sample Viewer
+======================
 
 [![](assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer/)
 
-This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) reference viewer using [WebGL](https://www.khronos.org/webgl/).
+This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/).
 
 
 **Table of Contents**
@@ -71,7 +71,7 @@ Setup
 
 For local usage and debugging, please follow these instructions:
 
-**(1)** Checkout the [`reference-viewer`](../../tree/reference-viewer) branch
+**(1)** Checkout the [`master`](../../tree/master) branch
 
 **(2)** Install dependencies with `npm install`
 
@@ -93,7 +93,7 @@ Debugging
   * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
 * Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
-* `Debug->Start Debugging` should now launch a Firefox window with the reference viewer and VS Code breakpoints should be hit.
+* `Debug->Start Debugging` should now launch a Firefox window with the sample viewer and VS Code breakpoints should be hit.
 
 
 Physically-Based Materials in glTF 2.0
