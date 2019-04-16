@@ -53,7 +53,7 @@ vec3 toneMapACES(vec3 color)
     const float C = 2.43;
     const float D = 0.59;
     const float E = 0.14;
-    return clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0);
+    return gammaCorrection(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
 }
 
 vec3 toneMap(vec3 color)
