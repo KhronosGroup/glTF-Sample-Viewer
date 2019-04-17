@@ -1,7 +1,7 @@
 {
   "name": "gltf-rv",
   "version": "1.0.0",
-  "description": "The official glTF reference viewer.",
+  "description": "The official glTF sample viewer.",
   "main": "dist/gltf-reference-viewer.js",
   "module": "dist/gltf-reference-viewer.module.js",
   "scripts": {
@@ -48,7 +48,7 @@
     "serve": "^10.1.1"
   },
   "bugs": {
-    "url": "https://github.com/ux3d/glTF-WebGL-PBR/issues"
+    "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"
   },
-  "homepage": "https://github.com/ux3d/glTF-WebGL-PBR#readme"
+  "homepage": "https://github.com/KhronosGroup/glTF-Sample-Viewer/#readme"
 }
