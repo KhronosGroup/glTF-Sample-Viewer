@@ -402,6 +402,9 @@ class gltfRenderer
         case(ToneMaps.HEJL_RICHARD):
             fragDefines.push("TONEMAP_HEJLRICHARD 1");
             break;
+        case(ToneMaps.ACES):
+            fragDefines.push("TONEMAP_ACES 1");
+            break;
         case(ToneMaps.LINEAR):
         default:
             break;

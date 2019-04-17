@@ -44,6 +44,18 @@ vec3 toneMapHejlRichard(vec3 color)
     return (color*(6.2*color+.5))/(color*(6.2*color+1.7)+0.06);
 }
 
+// ACES tone map
+// see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+vec3 toneMapACES(vec3 color)
+{
+    const float A = 2.51;
+    const float B = 0.03;
+    const float C = 2.43;
+    const float D = 0.59;
+    const float E = 0.14;
+    return gammaCorrection(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
+}
+
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
@@ -54,6 +66,10 @@ vec3 toneMap(vec3 color)
 
 #ifdef TONEMAP_HEJLRICHARD
     return toneMapHejlRichard(color);
+#endif
+
+#ifdef TONEMAP_ACES
+    return toneMapACES(color);
 #endif
 
     return gammaCorrection(color);
