@@ -8,6 +8,8 @@ This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.k
 
 **Table of Contents**
 
+- [Version](#version)
+- [Credits](#credits)
 - [Viewer](#viewer)
   - [Usage](#usage)
   - [Setup](#setup)
@@ -21,6 +23,16 @@ This is the offical [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.k
   - [Diffuse Term](#diffuse-term)
 - [Features](#features)
 
+
+Version
+-------
+
+Pre-Release
+
+Credits
+-------
+
+Developed by [UX3D](https://www.ux3d.io/) and based on the former [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-Sample-Viewer/tree/glTF-WebGL-PBR) project.
 
 Viewer
 ======
