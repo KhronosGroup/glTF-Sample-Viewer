@@ -37,6 +37,8 @@ Developed by [UX3D](https://www.ux3d.io/) and based on the former [glTF-WebGL-PB
 Viewer
 ======
 
+Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/).
+
 Usage
 -----
 
