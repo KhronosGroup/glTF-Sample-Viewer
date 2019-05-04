@@ -156,7 +156,12 @@ float visibilityOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
     float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
     float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
 
-    return 0.5 / (GGXV + GGXL);
+    float GGX = GGXV + GGXL;
+    if (GGX > 0.0)
+    {
+        return 0.5 / GGX;
+    }
+    return 0.0;
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
@@ -173,7 +178,6 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, normal, view);
 
-    // If one of the dot products is larger than zero, no division by zero can happen. Avoids black borders.
     if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
         // Calculate the shading terms for the microfacet specular shading model
