@@ -125,7 +125,7 @@ For further reference, please read the [glTF 2.0: Appendix B: BRDF Implementatio
 The following sections do summarize the important shader code.
 
 ```
-vec3 specularContribution = D * Vis * G;
+vec3 specularContribution = D * Vis * F;
 vec3 diffuseContribution = (1.0 - F) * diffuse; 
 ```
 
