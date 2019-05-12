@@ -2,6 +2,7 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
+import { WebGl } from './webgl.js';
 
 class gltfMaterial extends GltfObject
 {
@@ -290,6 +291,11 @@ class gltfMaterial extends GltfObject
             const emissiveTexture = new gltfTextureInfo();
             emissiveTexture.fromJson(jsonMaterial.emissiveTexture);
             this.emissiveTexture = emissiveTexture;
+            
+            if (WebGl.context.supports_EXT_sRGB)
+            {
+                this.emissiveTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
+            }
         }
 
         if(jsonMaterial.extensions !== undefined)
@@ -326,6 +332,11 @@ class gltfMaterial extends GltfObject
             const baseColorTexture = new gltfTextureInfo();
             baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture);
             this.baseColorTexture = baseColorTexture;
+            
+            if (WebGl.context.supports_EXT_sRGB)
+            {
+                this.baseColorTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
+            }
         }
 
         if (jsonMetallicRoughness.metallicRoughnessTexture !== undefined)
@@ -343,6 +354,11 @@ class gltfMaterial extends GltfObject
             const diffuseTexture = new gltfTextureInfo();
             diffuseTexture.fromJson(jsonSpecularGlossiness.diffuseTexture);
             this.diffuseTexture = diffuseTexture;
+            
+            if (WebGl.context.supports_EXT_sRGB)
+            {
+                this.diffuseTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
+            }
         }
 
         if (jsonSpecularGlossiness.specularGlossinessTexture !== undefined)

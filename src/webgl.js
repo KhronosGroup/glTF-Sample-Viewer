@@ -27,6 +27,8 @@ class gltfWebGl
         {
             WebGl.context.supports_EXT_texture_filter_anisotropic = false;
         }
+
+        WebGl.context.supports_EXT_sRGB = WebGl.context.getExtension("EXT_sRGB");
     }
 
     setTexture(loc, gltf, textureInfo, texSlot)

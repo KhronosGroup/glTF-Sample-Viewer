@@ -12,7 +12,11 @@ vec3 gammaCorrection(vec3 color)
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
-    return vec4(pow(srgbIn.xyz, vec3(u_Gamma)), srgbIn.w);
+#ifdef USE_HW_SRGB
+    return srgbIn;
+#else    
+    return vec4(pow(srgbIn.xyz, vec3(2.2)), srgbIn.w);
+#endif
 }
 
 // Uncharted 2 tone map
