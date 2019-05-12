@@ -1,18 +1,20 @@
 uniform float u_Exposure;
-uniform float u_Gamma;
 
-// Gamma Correction in Computer Graphics
-// see https://www.teamten.com/lawrence/graphics/gamma/
-vec3 gammaCorrection(vec3 color)
+const float GAMMA = 2.2;
+const float INV_GAMMA = 1.0 / GAMMA;
+
+// linear to sRGB approximation
+// see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+vec3 LINEARtoSRGB(vec3 color)
 {
-    return pow(color, vec3(1.0 / u_Gamma));
+    return pow(color, vec3(INV_GAMMA));
 }
 
 // sRGB to linear approximation
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
-    return vec4(pow(srgbIn.xyz, vec3(2.2)), srgbIn.w);
+    return vec4(pow(srgbIn.xyz, vec3(GAMMA)), srgbIn.w);
 }
 
 // Uncharted 2 tone map
@@ -33,7 +35,7 @@ vec3 toneMapUncharted(vec3 color)
     const float W = 11.2;
     color = toneMapUncharted2Impl(color * 2.0);
     vec3 whiteScale = 1.0 / toneMapUncharted2Impl(vec3(W));
-    return gammaCorrection(color * whiteScale);
+    return LINEARtoSRGB(color * whiteScale);
 }
 
 // Hejl Richard tone map
@@ -53,7 +55,7 @@ vec3 toneMapACES(vec3 color)
     const float C = 2.43;
     const float D = 0.59;
     const float E = 0.14;
-    return gammaCorrection(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
+    return LINEARtoSRGB(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
 }
 
 vec3 toneMap(vec3 color)
@@ -72,5 +74,5 @@ vec3 toneMap(vec3 color)
     return toneMapACES(color);
 #endif
 
-    return gammaCorrection(color);
+    return LINEARtoSRGB(color);
 }

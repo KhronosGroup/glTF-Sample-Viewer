@@ -130,7 +130,6 @@ class gltfUserInterface
         lightingFolder.add(this.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
             .onChange(() => self.onEnvironmentChanged());
         lightingFolder.add(this.renderingParameters, "exposure", 0, 10, 0.1).name("Exposure");
-        lightingFolder.add(this.renderingParameters, "gamma", 0, 10, 0.1).name("Gamma");
         lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
         lightingFolder.addColor(this, "hexColor", this.hexColor).name("Background Color")
             .onChange(() => self.renderingParameters.clearColor = self.fromHexColor(self.hexColor));

@@ -205,7 +205,6 @@ class gltfRenderer
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         this.shader.updateUniform("u_ModelMatrix", node.worldTransform);
         this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
-        this.shader.updateUniform("u_Gamma", this.parameters.gamma, false);
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 

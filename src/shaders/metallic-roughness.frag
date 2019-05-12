@@ -332,7 +332,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    gl_FragColor = vec4(gammaCorrection(baseColor.rgb), baseColor.a);
+    gl_FragColor = vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a);
     return;
 #endif
 
@@ -426,7 +426,7 @@ void main()
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        gl_FragColor.rgb = gammaCorrection(baseColor.rgb);
+        gl_FragColor.rgb = LINEARtoSRGB(baseColor.rgb);
     #endif
 
     #ifdef DEBUG_OCCLUSION
@@ -434,7 +434,7 @@ void main()
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        gl_FragColor.rgb = gammaCorrection(emissive);
+        gl_FragColor.rgb = LINEARtoSRGB(emissive);
     #endif
 
     #ifdef DEBUG_F0
