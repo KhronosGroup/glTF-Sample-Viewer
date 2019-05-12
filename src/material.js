@@ -288,21 +288,9 @@ class gltfMaterial extends GltfObject
 
         if (jsonMaterial.emissiveTexture !== undefined)
         {
-            const emissiveTexture = new gltfTextureInfo();
+            const emissiveTexture = new gltfTextureInfo(undefined, 0, false);
             emissiveTexture.fromJson(jsonMaterial.emissiveTexture);
             this.emissiveTexture = emissiveTexture;
-            
-            if (WebGl.context.supports_EXT_sRGB)
-            {
-                if (this.emissiveTexture.colorSpace == WebGl.context.RGBA)
-                {
-                    this.emissiveTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_ALPHA_EXT;   
-                }
-                else
-                {
-                    this.emissiveTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
-                }
-            }
         }
 
         if(jsonMaterial.extensions !== undefined)
@@ -336,21 +324,9 @@ class gltfMaterial extends GltfObject
     {
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
-            const baseColorTexture = new gltfTextureInfo();
+            const baseColorTexture = new gltfTextureInfo(undefined, 0, false);
             baseColorTexture.fromJson(jsonMetallicRoughness.baseColorTexture);
             this.baseColorTexture = baseColorTexture;
-            
-            if (WebGl.context.supports_EXT_sRGB)
-            {
-                if (this.baseColorTexture.colorSpace == WebGl.context.RGBA)
-                {
-                    this.baseColorTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_ALPHA_EXT;   
-                }
-                else
-                {
-                    this.baseColorTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
-                }
-            }
         }
 
         if (jsonMetallicRoughness.metallicRoughnessTexture !== undefined)
@@ -365,21 +341,9 @@ class gltfMaterial extends GltfObject
     {
         if (jsonSpecularGlossiness.diffuseTexture !== undefined)
         {
-            const diffuseTexture = new gltfTextureInfo();
+            const diffuseTexture = new gltfTextureInfo(undefined, 0, false);
             diffuseTexture.fromJson(jsonSpecularGlossiness.diffuseTexture);
             this.diffuseTexture = diffuseTexture;
-            
-            if (WebGl.context.supports_EXT_sRGB)
-            {
-                if (this.diffuseTexture.colorSpace == WebGl.context.RGBA)
-                {
-                    this.diffuseTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_ALPHA_EXT;   
-                }
-                else
-                {
-                    this.diffuseTexture.colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
-                }
-            }
         }
 
         if (jsonSpecularGlossiness.specularGlossinessTexture !== undefined)

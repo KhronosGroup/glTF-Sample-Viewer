@@ -39,11 +39,11 @@ class gltfTexture extends GltfObject
 
 class gltfTextureInfo
 {
-    constructor(index = undefined, texCoord = 0, colorSpace = WebGl.context.RGBA, samplerName = "", generateMips = true) // linear by default
+    constructor(index = undefined, texCoord = 0, linear = true, samplerName = "", generateMips = true) // linear by default
     {
         this.index = index; // reference to gltfTexture
         this.texCoord = texCoord; // which UV set to use
-        this.colorSpace = colorSpace;
+        this.linear = linear;
         this.samplerName = samplerName;
         this.strength = 1.0; // occlusion
         this.scale = 1.0; // normal

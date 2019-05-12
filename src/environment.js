@@ -18,6 +18,9 @@ class gltfEnvironmentLoader
         case (ImageMimeType.HDR):
             extension = ".hdr";
             break;
+        case (ImageMimeType.PNG):
+            extension = ".png";
+            break;
         case (ImageMimeType.JPEG):
         default:
             extension = ".jpg";

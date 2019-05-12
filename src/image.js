@@ -3,7 +3,7 @@ import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
 
-const ImageMimeType = {JPEG: "image/jpeg", HDR: "image/vnd.radiance"};
+const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance"};
 
 class gltfImage extends GltfObject
 {

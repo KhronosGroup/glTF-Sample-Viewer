@@ -27,8 +27,6 @@ class gltfWebGl
         {
             WebGl.context.supports_EXT_texture_filter_anisotropic = false;
         }
-
-        WebGl.context.supports_EXT_sRGB = WebGl.context.getExtension("EXT_sRGB");
     }
 
     setTexture(loc, gltf, textureInfo, texSlot)
@@ -96,11 +94,10 @@ class gltfWebGl
                 if (image.image.dataRGBE !== undefined)
                 {
                     WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
-                    generateMips = false;
                 }
                 else
                 {
-                    WebGl.context.texImage2D(image.type, image.miplevel, textureInfo.colorSpace, textureInfo.colorSpace, WebGl.context.UNSIGNED_BYTE, image.image);
+                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
                 }
 
                 generateMips = image.shouldGenerateMips();

@@ -383,11 +383,6 @@ class gltfRenderer
         {
             fragDefines.push("USE_IBL 1");
         }
-        
-        if (WebGl.context.supports_EXT_sRGB)
-        {
-            fragDefines.push("USE_HW_SRGB");
-        }
 
         if(this.parameters.useShaderLoD)
         {
@@ -464,16 +459,15 @@ class gltfRenderer
     {
         if (gltf.envData === undefined)
         {
-            let colorSpace = WebGl.context.RGBA;
-            
-            if (WebGl.context.supports_EXT_sRGB && Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
+            let linear = true;
+            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
             {
-                colorSpace = WebGl.context.supports_EXT_sRGB.SRGB_EXT;
+                linear = false;
             }
             
             gltf.envData = {};
-            gltf.envData.diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0, colorSpace);
-            gltf.envData.specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0, colorSpace);
+            gltf.envData.diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0, linear);
+            gltf.envData.specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0, linear);
             gltf.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
             gltf.envData.specularEnvMap.generateMips = false;
             gltf.envData.lut.generateMips = false;
