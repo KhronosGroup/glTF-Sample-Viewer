@@ -32,7 +32,7 @@ Pre-Release
 Credits
 -------
 
-Developed by [UX3D](https://www.ux3d.io/) and based on the former [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-Sample-Viewer/tree/glTF-WebGL-PBR) project.
+Developed by [UX3D](https://www.ux3d.io/) and based on the former [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-Sample-Viewer/tree/glTF-WebGL-PBR) project. Supported by the [Khronos Group](https://www.khronos.org/) and [Facebook](https://www.facebook.com/) for animations, skinning and morphing.
 
 Viewer
 ======
