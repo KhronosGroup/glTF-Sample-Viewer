@@ -1,22 +1,30 @@
 import { mat4, vec2, vec3, quat } from 'gl-matrix';
 import { jsToGl, UniformStruct } from './utils.js';
+import { fromKeys } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfLight extends GltfObject
 {
-    constructor()
+    constructor(
+        type = "directional",
+        color = [1, 1, 1],
+        intensity = 1,
+        innerConeAngle = 0,
+        outerConeAngle = Math.PI / 4,
+        range = -1,
+        name = undefined,
+        node = undefined)
     {
         super();
-        this.type = "directional";
-        this.color = [1, 1, 1];
-        this.intensity = 2;
-        this.innerConeAngle = 0;
-        this.outerConeAngle = Math.PI / 4;
-        this.range = -1;
-        this.name = undefined;
-
+        this.type = type;
+        this.color = color;
+        this.intensity = intensity;
+        this.innerConeAngle = innerConeAngle;
+        this.outerConeAngle = outerConeAngle;
+        this.range = range;
+        this.name = name;
         // non gltf
-        this.node = undefined;
+        this.node = node;
     }
 
     initGl(gltf)
@@ -45,6 +53,16 @@ class gltfLight extends GltfObject
             }
         }
     }
+    
+    fromJson(jsonLight)
+    {
+        super.fromJson(jsonLight);
+
+        if(jsonLight.spot !== undefined)
+        {
+            fromKeys(this, jsonLight.spot);
+        }
+    }
 
     toUniform(gltf)
     {
@@ -52,12 +70,29 @@ class gltfLight extends GltfObject
 
         if (this.node !== undefined)
         {
-            const transform = gltf.nodes[this.node].worldTransform;
-            const rotation = quat.create();
+            const matrix = gltf.nodes[this.node].worldTransform;
+
+            var scale = vec3.fromValues(1, 1, 1);
+            mat4.getScaling(scale, matrix);
+        
+            // To extract a correct rotation, the scaling component must be eliminated.
+            const mn = mat4.create();
+            for(const col of [0, 1, 2])
+            {
+                mn[col] = matrix[col] / scale[0];
+                mn[col + 4] = matrix[col + 4] / scale[1];
+                mn[col + 8] = matrix[col + 8] / scale[2];
+            }
+            var rotation = quat.create();
+            mat4.getRotation(rotation, mn);
+            quat.normalize(rotation, rotation);
+
             const alongNegativeZ = vec3.fromValues(0, 0, -1);
-            mat4.getRotation(rotation, transform);
             vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
-            mat4.getTranslation(uLight.position, transform);
+
+            var translation = vec3.fromValues(0, 0, 0);
+            mat4.getTranslation(translation, matrix);
+            uLight.position = translation;
         }
 
         uLight.range = this.range;
