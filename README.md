@@ -58,26 +58,6 @@ or
 
 * Drag and drop glTF files into viewer
 
-**Offline / Headless Rendering**
-
-**NOTE:** The dimensions of the rendered image are limited by the (virtual) desktop size.
-
-Requirements
-  * [NodeJS](https://nodejs.org)
-  * [Electron](https://electronjs.org/) (Installed automatically)
-
-Configure environment
-- ``npm install`` (also installs Electron)
-- ``npm run build`` (“compile” the code)
-
-Run
-- ``npm run start-offscreen -- -- -h`` for a list of available options
-
-Example
-- ``npm run start-offscreen -- -- assets\models\2.0\FlightHelmet\glTF\FlightHelmet.gltf``
-
-After execution, the screenshot is stored as ``output.png`` on the file system.
-
 Setup
 -----
 
@@ -96,6 +76,27 @@ For local usage and debugging, please follow these instructions:
 When making changes, the project is automatically rebuilt and the `dist/` folder
 is updated. Files in the `dist/` folder should not be included in pull
 requests — they will be updated by project maintainers with each new release.
+
+Offline / Headless Rendering
+----------------------------
+
+**NOTE:** The dimensions of the rendered image are limited by the (virtual) desktop size.
+
+Requirements
+  * [NodeJS](https://nodejs.org)
+  * [Electron](https://electronjs.org/) (Installed automatically)
+
+Configure environment
+- ``npm install`` (also installs Electron)
+- ``npm run build`` (“compile” the code)
+
+Run
+- ``npm run start-offscreen -- -- -h`` for a list of available options
+
+Example
+- ``npm run start-offscreen -- -- assets/models/2.0/FlightHelmet/glTF/FlightHelmet.gltf``
+
+After execution, the screenshot is stored as ``output.png`` on the file system.
 
 Debugging
 ---------
