@@ -199,7 +199,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float getRangeAttenuation(float range, float distance)
 {
-    if (range < 0.0)
+    if (range <= 0.0)
     {
         // negative range means unlimited
         return 1.0;
