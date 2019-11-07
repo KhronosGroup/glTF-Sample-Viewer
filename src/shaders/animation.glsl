@@ -1,65 +1,65 @@
 #ifdef HAS_TARGET_POSITION0
-attribute vec3 a_Target_Position0;
+in vec3 a_Target_Position0;
 #endif
 
 #ifdef HAS_TARGET_POSITION1
-attribute vec3 a_Target_Position1;
+in vec3 a_Target_Position1;
 #endif
 
 #ifdef HAS_TARGET_POSITION2
-attribute vec3 a_Target_Position2;
+in vec3 a_Target_Position2;
 #endif
 
 #ifdef HAS_TARGET_POSITION3
-attribute vec3 a_Target_Position3;
+in vec3 a_Target_Position3;
 #endif
 
 #ifdef HAS_TARGET_POSITION4
-attribute vec3 a_Target_Position4;
+in vec3 a_Target_Position4;
 #endif
 
 #ifdef HAS_TARGET_POSITION5
-attribute vec3 a_Target_Position5;
+in vec3 a_Target_Position5;
 #endif
 
 #ifdef HAS_TARGET_POSITION6
-attribute vec3 a_Target_Position6;
+in vec3 a_Target_Position6;
 #endif
 
 #ifdef HAS_TARGET_POSITION7
-attribute vec3 a_Target_Position7;
+in vec3 a_Target_Position7;
 #endif
 
 #ifdef HAS_TARGET_NORMAL0
-attribute vec3 a_Target_Normal0;
+in vec3 a_Target_Normal0;
 #endif
 
 #ifdef HAS_TARGET_NORMAL1
-attribute vec3 a_Target_Normal1;
+in vec3 a_Target_Normal1;
 #endif
 
 #ifdef HAS_TARGET_NORMAL2
-attribute vec3 a_Target_Normal2;
+in vec3 a_Target_Normal2;
 #endif
 
 #ifdef HAS_TARGET_NORMAL3
-attribute vec3 a_Target_Normal3;
+in vec3 a_Target_Normal3;
 #endif
 
 #ifdef HAS_TARGET_TANGENT0
-attribute vec3 a_Target_Tangent0;
+in vec3 a_Target_Tangent0;
 #endif
 
 #ifdef HAS_TARGET_TANGENT1
-attribute vec3 a_Target_Tangent1;
+in vec3 a_Target_Tangent1;
 #endif
 
 #ifdef HAS_TARGET_TANGENT2
-attribute vec3 a_Target_Tangent2;
+in vec3 a_Target_Tangent2;
 #endif
 
 #ifdef HAS_TARGET_TANGENT3
-attribute vec3 a_Target_Tangent3;
+in vec3 a_Target_Tangent3;
 #endif
 
 #ifdef USE_MORPHING
@@ -67,19 +67,19 @@ uniform float u_morphWeights[WEIGHT_COUNT];
 #endif
 
 #ifdef HAS_JOINT_SET1
-attribute vec4 a_Joint1;
+in vec4 a_Joint1;
 #endif
 
 #ifdef HAS_JOINT_SET2
-attribute vec4 a_Joint2;
+in vec4 a_Joint2;
 #endif
 
 #ifdef HAS_WEIGHT_SET1
-attribute vec4 a_Weight1;
+in vec4 a_Weight1;
 #endif
 
 #ifdef HAS_WEIGHT_SET2
-attribute vec4 a_Weight2;
+in vec4 a_Weight2;
 #endif
 
 #ifdef USE_SKINNING
