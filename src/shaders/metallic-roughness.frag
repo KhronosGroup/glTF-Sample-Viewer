@@ -410,7 +410,7 @@ void main()
 
     #ifdef DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
-            output_color = texture(u_NormalSampler, getNormalUV()).rgb;
+            output_color.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
         #else
             output_color = vec3(0.5, 0.5, 1.0);
         #endif
