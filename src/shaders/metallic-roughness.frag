@@ -323,7 +323,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    exportColor( vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
+    g_finalColor = ( vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
     return;
 #endif
 
