@@ -389,7 +389,7 @@ void main()
 
     vec3 emissive = u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
-    emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
+    emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
 #endif
     color += emissive;
 
