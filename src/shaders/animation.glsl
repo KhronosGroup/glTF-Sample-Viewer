@@ -163,55 +163,55 @@ vec4 getTargetPosition()
     return pos;
 }
 
-vec4 getTargetNormal()
+vec3 getTargetNormal()
 {
-    vec4 normal = vec4(0);
+    vec3 normal = vec3(0);
 
 #ifdef HAS_TARGET_NORMAL0
-    normal.xyz += u_morphWeights[0] * a_Target_Normal0;
+    normal += u_morphWeights[0] * a_Target_Normal0;
 #endif
 
 #ifdef HAS_TARGET_NORMAL1
-    normal.xyz += u_morphWeights[1] * a_Target_Normal1;
+    normal += u_morphWeights[1] * a_Target_Normal1;
 #endif
 
 #ifdef HAS_TARGET_NORMAL2
-    normal.xyz += u_morphWeights[2] * a_Target_Normal2;
+    normal += u_morphWeights[2] * a_Target_Normal2;
 #endif
 
 #ifdef HAS_TARGET_NORMAL3
-    normal.xyz += u_morphWeights[3] * a_Target_Normal3;
+    normal += u_morphWeights[3] * a_Target_Normal3;
 #endif
 
 #ifdef HAS_TARGET_NORMAL4
-    normal.xyz += u_morphWeights[4] * a_Target_Normal4;
+    normal += u_morphWeights[4] * a_Target_Normal4;
 #endif
 
     return normal;
 }
 
-vec4 getTargetTangent()
+vec3 getTargetTangent()
 {
-    vec4 tangent = vec4(0);
+    vec3 tangent = vec3(0);
 
 #ifdef HAS_TARGET_TANGENT0
-    tangent.xyz += u_morphWeights[0] * a_Target_Tangent0;
+    tangent += u_morphWeights[0] * a_Target_Tangent0;
 #endif
 
 #ifdef HAS_TARGET_TANGENT1
-    tangent.xyz += u_morphWeights[1] * a_Target_Tangent1;
+    tangent += u_morphWeights[1] * a_Target_Tangent1;
 #endif
 
 #ifdef HAS_TARGET_TANGENT2
-    tangent.xyz += u_morphWeights[2] * a_Target_Tangent2;
+    tangent += u_morphWeights[2] * a_Target_Tangent2;
 #endif
 
 #ifdef HAS_TARGET_TANGENT3
-    tangent.xyz += u_morphWeights[3] * a_Target_Tangent3;
+    tangent += u_morphWeights[3] * a_Target_Tangent3;
 #endif
 
 #ifdef HAS_TARGET_TANGENT4
-    tangent.xyz += u_morphWeights[4] * a_Target_Tangent4;
+    tangent += u_morphWeights[4] * a_Target_Tangent4;
 #endif
 
     return tangent;

@@ -323,7 +323,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    g_finalColor = ( vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
+    g_finalColor = (vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
     return;
 #endif
 
@@ -387,11 +387,11 @@ void main()
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
-    vec3 emissive = vec3(0);
+    vec3 emissive = u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
-    emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
-    color += emissive;
+    emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
 #endif
+    color += emissive;
 
 #ifndef DEBUG_OUTPUT // no debug
 
