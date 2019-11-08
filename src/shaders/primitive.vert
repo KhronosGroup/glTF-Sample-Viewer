@@ -1,6 +1,6 @@
 #include <animation.glsl>
 
-in vec4 a_Position;
+in vec3 a_Position;
 out vec3 v_Position;
 
 #ifdef HAS_NORMALS
