@@ -100,7 +100,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 
     vec4 diffuseSample = texture(u_DiffuseEnvSampler, n);
 
-    vec4 specularSample = texture(u_SpecularEnvSampler, reflection, lod);
+    vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
 
 #ifdef USE_HDR
     // Already linear.
@@ -401,11 +401,11 @@ void main()
 #else // debug output
 
     #ifdef DEBUG_METALLIC
-        output_color = vec3(metallic);
+        output_color.rgb = vec3(metallic);
     #endif
 
     #ifdef DEBUG_ROUGHNESS
-        output_color = vec3(perceptualRoughness);
+        output_color.rgb = vec3(perceptualRoughness);
     #endif
 
     #ifdef DEBUG_NORMAL
@@ -417,23 +417,23 @@ void main()
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        output_color = LINEARtoSRGB(baseColor.rgb);
+        output_color.rgb = LINEARtoSRGB(baseColor.rgb);
     #endif
 
     #ifdef DEBUG_OCCLUSION
-        output_color = vec3(ao);
+        output_color.rgb = vec3(ao);
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        output_color = LINEARtoSRGB(emissive);
+        output_color.rgb = LINEARtoSRGB(emissive);
     #endif
 
     #ifdef DEBUG_F0
-        output_color = vec3(f0);
+        output_color.rgb = vec3(f0);
     #endif
 
     #ifdef DEBUG_ALPHA
-        output_color = vec3(baseColor.a);
+        output_color.rgb = vec3(baseColor.a);
     #endif
 
     output_color.a = 1.0;
