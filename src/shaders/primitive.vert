@@ -4,7 +4,7 @@ in vec3 a_Position;
 out vec3 v_Position;
 
 #ifdef HAS_NORMALS
-in vec4 a_Normal;
+in vec3 a_Normal;
 #endif
 
 #ifdef HAS_TANGENTS
@@ -62,7 +62,7 @@ vec4 getPosition()
 #ifdef HAS_NORMALS
 vec3 getNormal()
 {
-    vec normal = a_Normal;
+    vec3 normal = a_Normal;
 
 #ifdef USE_MORPHING
     normal += getTargetNormal();

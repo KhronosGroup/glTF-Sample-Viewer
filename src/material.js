@@ -19,6 +19,13 @@ class gltfMaterial extends GltfObject
         this.alphaCutoff = 0.5;
         this.doubleSided = false;
 
+        //Clearcoat
+        this.clearcoatFactor = 0.0;
+        this.clearcoatTexture = undefined;
+        this.clearcoatRoughnessFactor = 0.0;
+        this.clearcoatRoughnessTexture = undefined;
+        this.clearcoatNormalTexture = undefined;
+
         // non gltf properties
         this.type = "unlit";
         this.textures = [];
@@ -38,6 +45,12 @@ class gltfMaterial extends GltfObject
         defaultMaterial.properties.set("u_BaseColorFactor", baseColorFactor);
         defaultMaterial.properties.set("u_MetallicFactor", metallicFactor);
         defaultMaterial.properties.set("u_RoughnessFactor", roughnessFactor);
+        //Clearcoat
+        const clearcoatFactor = 0.0;
+        const clearcoatRoughnessFactor = 0.0;
+        defaultMaterial.properties.set("u_ClearcoatFactor", clearcoatFactor);
+        defaultMaterial.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
+
         return defaultMaterial;
     }
 
@@ -258,6 +271,33 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SpecularFactor", specularFactor);
                 this.properties.set("u_GlossinessFactor", glossinessFactor);
             }
+
+            //Clearcoat in part of the default metallic-roughness shader
+            let clearcoatFactor = 0.0;
+            let clearcoatRoughnessFactor = 0.0;
+            if(this.extensions.KHR_materials_clearcoat !== undefined)
+            {
+                if(this.extensions.KHR_materials_clearcoat.clearcoatFactor !== undefined)
+                {
+                    clearcoatFactor = this.extensions.KHR_materials_clearcoat.clearcoatFactor;
+                }
+                if(this.extensions.KHR_materials_clearcoat !== undefined)
+                {
+                    clearcoatRoughnessFactor = this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor;
+                }
+            }
+
+            this.properties.set("u_ClearcoatFactor", clearcoatFactor);
+            this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
+
+            if (this.clearcoatTexture !== undefined)
+            {
+                this.clearcoatTexture.samplerName = "u_ClearcoatSampler";
+                this.parseTextureInfoExtensions(this.clearcoatTexture, "ClearcoatTexture");
+                this.textures.push(this.clearcoatTexture);
+                this.defines.push("HAS_CLEARCOAT_TEXTURE_MAP 1");
+                this.properties.set("u_ClearcoatUVSet", this.clearcoatTexture.texCoord);
+            }
         }
 
         initGlForMembers(this, gltf);
@@ -318,6 +358,11 @@ class gltfMaterial extends GltfObject
         {
             this.type = "unlit";
         }
+
+        if(jsonExtensions.KHR_materials_clearcoat !== undefined)
+        {
+            this.fromJsonClearcoat(jsonExtensions.KHR_materials_clearcoat);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -351,6 +396,30 @@ class gltfMaterial extends GltfObject
             const specularGlossinessTexture = new gltfTextureInfo();
             specularGlossinessTexture.fromJson(jsonSpecularGlossiness.specularGlossinessTexture);
             this.specularGlossinessTexture = specularGlossinessTexture;
+        }
+    }
+
+    fromJsonClearcoat(jsonClearcoat)
+    {
+        if(jsonClearcoat.clearcoatTexture !== undefined)
+        {
+            const clearcoatTexture = new gltfTextureInfo();
+            clearcoatTexture.fromJson(jsonClearcoat.clearcoatTexture);
+            this.clearcoatTexture = clearcoatTexture;
+        }
+
+        if(jsonClearcoat.clearcoatRoughnessTexture !== undefined)
+        {
+            const clearcoatRoughnessTexture =  new gltfTextureInfo();
+            clearcoatRoughnessTexture.fromJson(jsonClearcoat.clearcoatRoughnessTexture);
+            this.clearcoatRoughnessTexture = clearcoatRoughnessTexture;
+        }
+
+        if(jsonClearcoat.clearcoatNormalTexture !== undefined)
+        {
+            const clearcoatNormalTexture =  new gltfTextureInfo();
+            clearcoatNormalTexture.fromJson(jsonClearcoat.clearcoatNormalTexture);
+            this.clearcoatNormalTexture = clearcoatNormalTexture;
         }
     }
 }
