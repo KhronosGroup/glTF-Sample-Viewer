@@ -81,7 +81,7 @@ class ShaderCache
 
         // console.log(shaderIdentifier);
 
-        let defines = "";
+        let defines = "#version 300 es\n";
         for(let define of permutationDefines)
         {
             // console.log(define);

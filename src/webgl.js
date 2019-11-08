@@ -93,7 +93,7 @@ class gltfWebGl
 
                 if (image.image.dataRGBE !== undefined)
                 {
-                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
+                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB32F, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
                 }
                 else
                 {
