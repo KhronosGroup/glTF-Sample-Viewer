@@ -289,15 +289,6 @@ class gltfMaterial extends GltfObject
 
             this.properties.set("u_ClearcoatFactor", clearcoatFactor);
             this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
-
-            if (this.clearcoatTexture !== undefined)
-            {
-                this.clearcoatTexture.samplerName = "u_ClearcoatSampler";
-                this.parseTextureInfoExtensions(this.clearcoatTexture, "ClearcoatTexture");
-                this.textures.push(this.clearcoatTexture);
-                this.defines.push("HAS_CLEARCOAT_TEXTURE_MAP 1");
-                this.properties.set("u_ClearcoatUVSet", this.clearcoatTexture.texCoord);
-            }
         }
 
         initGlForMembers(this, gltf);
