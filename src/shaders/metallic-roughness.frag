@@ -189,7 +189,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float getRangeAttenuation(float range, float distance)
 {
-    if (range <= 0.0)
+    if (range < 0.0)
     {
         // negative range means unlimited
         return 1.0;
@@ -387,11 +387,11 @@ void main()
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
-    vec3 emissive = u_EmissiveFactor;
+    vec3 emissive = vec3(0);
 #ifdef HAS_EMISSIVE_MAP
-    emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
-#endif
+    emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
     color += emissive;
+#endif
 
 #ifndef DEBUG_OUTPUT // no debug
 
