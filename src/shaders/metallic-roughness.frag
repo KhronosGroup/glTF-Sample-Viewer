@@ -12,6 +12,8 @@
 //     https://github.com/KhronosGroup/glTF-WebGL-PBR/#environment-maps
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
+// [5] "KHR_materials_clearcoat"
+//     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
 
 
 precision highp float;
@@ -67,6 +69,10 @@ uniform float u_GlossinessFactor;
 uniform float u_AlphaCutoff;
 #endif
 
+//Clearcoat
+uniform float u_ClearcoatFactor;
+uniform float u_ClearcoatRoughnessFactor;
+
 uniform vec3 u_Camera;
 
 uniform int u_MipCount;
@@ -83,6 +89,11 @@ struct MaterialInfo
     vec3 specularColor;           // color contribution from specular lighting
 };
 
+//based on Schlicks approximation of Fresnel
+vec3 fresnel(vec3 f0, float NdotL)
+{
+    return f0 + (1.0 - f0) * pow(clamp(1.0 - (NdotL), 0.0, 1.0), 5.0);
+}
 // Calculation of the lighting contribution from an optional Image Based Light source.
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
@@ -99,21 +110,40 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
 
     vec4 diffuseSample = texture(u_DiffuseEnvSampler, n);
-
     vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
+
+    //clearcoat sample
+    lod = clamp(u_ClearcoatRoughnessFactor * float(u_MipCount), 0.0, float(u_MipCount));
+    brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    vec4 specularSampleClearcoat = textureLod(u_SpecularEnvSampler, reflection, lod);
 
 #ifdef USE_HDR
     // Already linear.
     vec3 diffuseLight = diffuseSample.rgb;
     vec3 specularLight = specularSample.rgb;
+    vec3 specularLightClearcoat = specularSampleClearcoat.rgb;
 #else
     vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
     vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;
+    vec3 specularLightClearcoat = SRGBtoLINEAR(specularLightClearcoat).rgb;
 #endif
 
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
+    vec3 specularClearcoat = specularLightClearcoat * (materialInfo.specularColor * brdf.x + brdf.y);
 
+    //apply clearcoat only if clearcoatFactor > 0
+    if(u_ClearcoatFactor > 0.0)
+    {
+        vec3 l = -n;
+        vec3 h = normalize(l + v);
+        float NdotL = clamp(dot(n, l), 0.0, 1.0); // l = 1.0
+        float VdotH = clamp(dot(h, v), 0.0, 1.0); // h = normal( l + v );
+        vec3 factor0 = (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), NdotV)) * (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), NdotL));
+        vec3 factor1 = u_ClearcoatFactor * fresnel(vec3(0.04), VdotH);
+        return (diffuse + specular) * factor0 + specularClearcoat * factor1;
+        //return vec3(factor0.x / factor1.x, 0.0, 0.0);
+    }
     return diffuse + specular;
 }
 #endif
@@ -178,6 +208,15 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
         // Calculation of analytical lighting contribution
         vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
         vec3 specContrib = F * Vis * D;
+
+        //apply clearcoat only if clearcoatFactor > 0
+        if(u_ClearcoatFactor > 0.0)
+        {
+            vec3 clearcoatContrib = specContrib;
+            vec3 factor0 = (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), angularInfo.NdotV)) * (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), angularInfo.NdotL));
+            vec3 factor1 = u_ClearcoatFactor * fresnel(vec3(0.04), angularInfo.VdotH);
+            return angularInfo.NdotL * ((diffuseContrib + specContrib) * factor0 + clearcoatContrib * factor1);
+        }
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
         return angularInfo.NdotL * (diffuseContrib + specContrib);
@@ -248,6 +287,7 @@ void main()
     vec4 baseColor = vec4(0.0, 0.0, 0.0, 1.0);
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
+    vec3 clearcoatColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
     vec4 output_color = baseColor;
 
@@ -307,6 +347,9 @@ void main()
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
 
     specularColor = mix(f0, baseColor.rgb, metallic);
+
+    //assuming that in the metallicRoughness setting f0 stays vec3(0.04)
+    clearcoatColor = mix(f0,baseColor.rgb,metallic);
 
 #endif // ! MATERIAL_METALLICROUGHNESS
 
