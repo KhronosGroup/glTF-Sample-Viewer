@@ -70,8 +70,10 @@ uniform float u_AlphaCutoff;
 #endif
 
 //Clearcoat
+#ifdef MATERIAL_CLEARCOAT
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
+#endif
 
 uniform vec3 u_Camera;
 
@@ -335,18 +337,22 @@ void main()
     baseColor = u_BaseColorFactor;
 #endif
 
-#ifdef HAS_CLEARCOAT_TEXTURE_MAP
-    vec4 mrSample = texture(u_ClearcoatSampler, getClearcoatUV());
-    clearcoatFactor = mrSample.r * u_ClearcoatFactor;
-#else
-    clearcoatFactor = u_ClearcoatFactor;
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
+        vec4 mrSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        clearcoatFactor = mrSample.r * u_ClearcoatFactor;
+    #else
+        clearcoatFactor = u_ClearcoatFactor;
+    #endif
 #endif
 
-#ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-    vec4 mrSample = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
-    clearcoatRoughness = mrSample.g * u_ClearcoatRoughnessFactor;
-#else
-    clearcoatRoughness = u_ClearcoatRoughnessFactor;
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+        vec4 mrSample = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        clearcoatRoughness = mrSample.g * u_ClearcoatRoughnessFactor;
+    #else
+        clearcoatRoughness = u_ClearcoatRoughnessFactor;
+    #endif
 #endif
 
 #ifdef HAS_CLEARCOAT_NORMAL_MAP
@@ -448,10 +454,10 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     color += getIBLContribution(materialInfo, view);
-    if(u_ClearcoatFactor > 0.0)
-    {
+
+    #ifdef MATERIAL_CLEARCOAT
         color += getIBLContribution(clearCoatInfo, view);
-    }
+    #endif
 #endif
 
     float ao = 1.0;
