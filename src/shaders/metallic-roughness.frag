@@ -445,26 +445,23 @@ void main()
         if (light.type == LightType_Directional)
         {
             color += applyDirectionalLight(light, materialInfo, view);
-            if(u_ClearcoatFactor > 0.0)
-            {
+            #ifdef MATERIAL_CLEARCOAT
                 color += applyDirectionalLight(light, clearCoatInfo, view);
-            }
+            #endif
         }
         else if (light.type == LightType_Point)
         {
             color += applyPointLight(light, materialInfo, view);
-            if(u_ClearcoatFactor > 0.0)
-            {
+            #ifdef MATERIAL_CLEARCOAT
                 color += applyPointLight(light, clearCoatInfo, view);
-            }
+            #endif
         }
         else if (light.type == LightType_Spot)
         {
             color += applySpotLight(light, materialInfo, view);
-            if(u_ClearcoatFactor > 0.0)
-            {
+            #ifdef MATERIAL_CLEARCOAT
                 color += applySpotLight(light, clearCoatInfo, view);
-            }
+            #endif
         }
     }
 #endif
