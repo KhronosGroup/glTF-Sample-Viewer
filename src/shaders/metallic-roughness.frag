@@ -87,6 +87,10 @@ struct MaterialInfo
 
     vec3 reflectance90;           // reflectance color at grazing angle
     vec3 specularColor;           // color contribution from specular lighting
+
+    float clearcoatFactor;
+    float clearcoatRoughness;
+    vec3 clearcoatNormal;
 };
 
 //based on Schlicks approximation of Fresnel
@@ -112,41 +116,53 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     vec4 diffuseSample = texture(u_DiffuseEnvSampler, n);
     vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
 
-    //clearcoat sample
-    lod = clamp(u_ClearcoatRoughnessFactor * float(u_MipCount), 0.0, float(u_MipCount));
-    brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec4 specularSampleClearcoat = textureLod(u_SpecularEnvSampler, reflection, lod);
-
 #ifdef USE_HDR
     // Already linear.
     vec3 diffuseLight = diffuseSample.rgb;
     vec3 specularLight = specularSample.rgb;
-    vec3 specularLightClearcoat = specularSampleClearcoat.rgb;
 #else
     vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
     vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;
-    vec3 specularLightClearcoat = SRGBtoLINEAR(specularLightClearcoat).rgb;
 #endif
 
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
-    vec3 specularClearcoat = specularLightClearcoat * (materialInfo.specularColor * brdf.x + brdf.y);
 
-    //apply clearcoat only if clearcoatFactor > 0
-    if(u_ClearcoatFactor > 0.0)
-    {
-        vec3 l = -n;
-        vec3 h = normalize(l + v);
-        float NdotL = clamp(dot(n, l), 0.0, 1.0); // l = 1.0
-        float VdotH = clamp(dot(h, v), 0.0, 1.0); // h = normal( l + v );
-        vec3 factor0 = (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), NdotV)) * (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), NdotL));
-        vec3 factor1 = u_ClearcoatFactor * fresnel(vec3(0.04), VdotH);
-        return (diffuse + specular) * factor0 + specularClearcoat * factor1;
-        //return vec3(factor0.x / factor1.x, 0.0, 0.0);
-    }
     return diffuse + specular;
 }
+
+vec3 getIBLClearcoat(MaterialInfo materialInfo, vec3 v, vec3 color)
+{
+    float NdotVClearcoat = clamp(dot(materialInfo.clearcoatNormal, v), 0.0, 1.0);
+
+    float lod = clamp(materialInfo.clearcoatRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    vec3 reflection = normalize(reflect(-v, materialInfo.clearcoatNormal));
+
+    vec2 brdfSamplePoint = clamp(vec2(NdotVClearcoat, materialInfo.clearcoatRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    // retrieve a scale and bias to F0. See [1], Figure 3
+    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
+
+    vec4 specularSampleClearcoat = textureLod(u_SpecularEnvSampler, reflection, lod);
+
+#ifdef USE_HDR
+    vec3 specularLightClearcoat = specularSampleClearcoat.rgb;
+#else
+    vec3 specularLightClearcoat = SRGBtoLINEAR(specularSampleClearcoat).rgb;
 #endif
+    vec3 specularClearcoat = specularLightClearcoat * (vec3(1.0) * brdf.x + brdf.y);
+
+    vec3 N = materialInfo.clearcoatNormal;
+    vec3 L = -materialInfo.clearcoatNormal;
+    vec3 H = normalize(L + v);
+    float NdotL = clamp(dot(N, L), 0.0, 1.0); // l = 1.0
+    float VdotH = clamp(dot(H, v), 0.0, 1.0); // h = normal( l + v );
+    vec3 factor0 = (1.0 - materialInfo.clearcoatFactor * fresnel(vec3(0.04), NdotVClearcoat)) * (1.0 - materialInfo.clearcoatFactor * fresnel(vec3(0.04), NdotL));
+    vec3 factor1 = materialInfo.clearcoatFactor * fresnel(vec3(0.04), VdotH);
+    return specularClearcoat * factor1;
+}
+#endif //USE_IBL
+
+
 
 // Lambert lighting
 // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
@@ -208,15 +224,6 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
         // Calculation of analytical lighting contribution
         vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
         vec3 specContrib = F * Vis * D;
-
-        //apply clearcoat only if clearcoatFactor > 0
-        if(u_ClearcoatFactor > 0.0)
-        {
-            vec3 clearcoatContrib = specContrib;
-            vec3 factor0 = (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), angularInfo.NdotV)) * (1.0 - u_ClearcoatFactor * fresnel(vec3(0.04), angularInfo.NdotL));
-            vec3 factor1 = u_ClearcoatFactor * fresnel(vec3(0.04), angularInfo.VdotH);
-            return angularInfo.NdotL * ((diffuseContrib + specContrib) * factor0 + clearcoatContrib * factor1);
-        }
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
         return angularInfo.NdotL * (diffuseContrib + specContrib);
@@ -289,6 +296,9 @@ void main()
     vec3 specularColor= vec3(0.0);
     vec3 clearcoatColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
+    float clearcoatFactor = 0.0;
+    float clearcoatRoughness = 0.0;
+    vec3 clearcoatNormal = vec3(0.0);
     vec4 output_color = baseColor;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -342,6 +352,27 @@ void main()
     baseColor = u_BaseColorFactor;
 #endif
 
+#ifdef HAS_CLEARCOAT_TEXTURE_MAP
+    vec4 mrSample = texture(u_ClearcoatSampler, getClearcoatUV());
+    clearcoatFactor = mrSample.r * u_ClearcoatFactor;
+#else
+    clearcoatFactor = u_ClearcoatFactor;
+#endif
+
+#ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+    vec4 mrSample = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+    clearcoatRoughness = mrSample.g * u_ClearcoatRoughnessFactor;
+#else
+    clearcoatRoughness = u_ClearcoatRoughnessFactor;
+#endif
+
+#ifdef HAS_CLEARCOAT_NORMAL_MAP
+    vec4 mrSample = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+    clearcoatNormal = mrSample.xyz;
+#else
+    clearcoatNormal = getSurface();
+#endif
+
     baseColor *= getVertexColor();
 
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
@@ -390,7 +421,10 @@ void main()
         alphaRoughness,
         diffuseColor,
         specularEnvironmentR90,
-        specularColor
+        specularColor,
+        clearcoatFactor,
+        clearcoatRoughness,
+        clearcoatNormal
     );
 
     // LIGHTING
@@ -421,6 +455,10 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     color += getIBLContribution(materialInfo, normal, view);
+    if(u_ClearcoatFactor > 0.0)
+    {
+        color += getIBLClearcoat(materialInfo, view, color);
+    }
 #endif
 
     float ao = 1.0;

@@ -285,10 +285,37 @@ class gltfMaterial extends GltfObject
                 {
                     clearcoatRoughnessFactor = this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor;
                 }
+
+                if (this.clearcoatTexture !== undefined)
+                {
+                    this.clearcoatTexture.samplerName = "u_ClearcoatSampler";
+                    this.parseTextureInfoExtensions(this.clearcoatTexture, "ClearcoatTexture");
+                    this.textures.push(this.clearcoatTexture);
+                    this.defines.push("HAS_CLEARCOAT_TEXTURE_MAP 1");
+                    this.properties.set("u_ClearcoatUVSet", this.clearcoatTexture.texCoord);
+                }
+                if (this.clearcoatRoughnessTexture !== undefined)
+                {
+                    this.clearcoatRoughnessTexture.samplerName = "u_ClearcoatRoughnessSampler";
+                    this.parseTextureInfoExtensions(this.clearcoatRoughnessTexture, "ClearcoatRoughnessTexture");
+                    this.textures.push(this.clearcoatRoughnessTexture);
+                    this.defines.push("HAS_CLEARCOAT_ROUGHNESS_MAP 1");
+                    this.properties.set("u_ClearcoatRoughnessUVSet", this.clearcoatRoughnessTexture.texCoord);
+                }
+                if (this.clearcoatNormalTexture !== undefined)
+                {
+                    this.clearcoatNormalTexture.samplerName = "u_ClearcoatNormalSampler";
+                    this.parseTextureInfoExtensions(this.clearcoatNormalTexture, "ClearcoatNormalTexture");
+                    this.textures.push(this.clearcoatNormalTexture);
+                    this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
+                    this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
+                }
+
             }
 
             this.properties.set("u_ClearcoatFactor", clearcoatFactor);
             this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
+
         }
 
         initGlForMembers(this, gltf);
