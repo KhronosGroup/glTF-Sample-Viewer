@@ -195,9 +195,9 @@ float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
-vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
-    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, view);
+    AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
 
     if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
@@ -210,8 +210,14 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, ve
         vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
         vec3 specContrib = F * Vis * D;
 
+        vec3 factor1 = vec3(1.0);
+        if (materialInfo.clearcoatFactor > 0.0)
+        {
+           factor1 = materialInfo.clearcoatFactor * F;
+        }
+
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-        return angularInfo.NdotL * (diffuseContrib + specContrib);
+        return angularInfo.NdotL * (diffuseContrib + specContrib) * factor1;
     }
 
     return vec3(0.0, 0.0, 0.0);
@@ -243,29 +249,29 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
-vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 view)
 {
     vec3 pointToLight = -light.direction;
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
+    vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return light.intensity * light.color * shade;
 }
 
-vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 view)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float attenuation = getRangeAttenuation(light.range, distance);
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
+    vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return attenuation * light.intensity * light.color * shade;
 }
 
-vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 view)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float rangeAttenuation = getRangeAttenuation(light.range, distance);
     float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
+    vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
 
@@ -424,7 +430,7 @@ void main()
     MaterialInfo clearCoatInfo = MaterialInfo(
         clearcoatRoughness,
         vec3(0.04),
-        1.0,
+        clearcoatRoughness * clearcoatRoughness,
         vec3(0.0),
         vec3(1.0),
         vec3(1.0),
@@ -438,15 +444,27 @@ void main()
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
-            color += applyDirectionalLight(light, materialInfo, normal, view);
+            color += applyDirectionalLight(light, materialInfo, view);
+            if(u_ClearcoatFactor > 0.0)
+            {
+                color += applyDirectionalLight(light, clearCoatInfo, view);
+            }
         }
         else if (light.type == LightType_Point)
         {
-            color += applyPointLight(light, materialInfo, normal, view);
+            color += applyPointLight(light, materialInfo, view);
+            if(u_ClearcoatFactor > 0.0)
+            {
+                color += applyPointLight(light, clearCoatInfo, view);
+            }
         }
         else if (light.type == LightType_Spot)
         {
-            color += applySpotLight(light, materialInfo, normal, view);
+            color += applySpotLight(light, materialInfo, view);
+            if(u_ClearcoatFactor > 0.0)
+            {
+                color += applySpotLight(light, clearCoatInfo, view);
+            }
         }
     }
 #endif
