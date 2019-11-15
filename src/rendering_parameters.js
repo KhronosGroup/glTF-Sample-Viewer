@@ -12,8 +12,7 @@ class gltfRenderingParameters
         exposure = 1.0,
         clearColor = [50, 50, 50],
         toneMap = ToneMaps.LINEAR,
-        debugOutput = DebugOutput.NONE,
-        useShaderLoD = true)
+        debugOutput = DebugOutput.NONE)
     {
         this.environmentName = environmentName;
         this.useIBL = useIBL;
@@ -21,7 +20,6 @@ class gltfRenderingParameters
         this.exposure = exposure;
         this.clearColor = clearColor;
         this.toneMap = toneMap;
-        this.useShaderLoD = useShaderLoD;
         this.debugOutput = debugOutput;
         this.sceneIndex = 0;
         this.cameraIndex = UserCameraIndex;
