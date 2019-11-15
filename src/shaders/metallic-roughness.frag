@@ -138,8 +138,8 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
     {
         vec3 l = -n;
         vec3 h = normalize(l + v);
-        float NdotL = clamp(dot(n, l), 0.0, 1.0); // l = 1.0
-        float VdotH = clamp(dot(h, v), 0.0, 1.0); // h = normal( l + v );
+        float NdotL = clamp(dot(n, l), 0.0, 1.0);
+        float VdotH = clamp(dot(h, v), 0.0, 1.0);
         factor1 = materialInfo.clearcoatFactor * fresnel(materialInfo.reflectance0, VdotH);
     }
 
@@ -213,7 +213,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
         vec3 factor1 = vec3(1.0);
         if (materialInfo.clearcoatFactor > 0.0)
         {
-           factor1 = materialInfo.clearcoatFactor * F;
+           factor1 = materialInfo.clearcoatFactor * fresnel(materialInfo.reflectance0, angularInfo.VdotH);
         }
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
@@ -424,16 +424,16 @@ void main()
         specularEnvironmentR90,
         specularColor,
         normal,
-        0.0
+        0.0 //Clearcoat factor is null
     );
 
     MaterialInfo clearCoatInfo = MaterialInfo(
         clearcoatRoughness,
-        vec3(0.04),
-        clearcoatRoughness * clearcoatRoughness,
-        vec3(0.0),
-        vec3(1.0),
-        vec3(1.0),
+        vec3(0.04), //fixed from specification
+        clearcoatRoughness * clearcoatRoughness, //alphaRoughness is roughnessvalue squared
+        vec3(0.0), //clearcoat layer has no diffuse color
+        vec3(1.0), //F_90 = 1.0
+        vec3(1.0), //clearcoat layer color is white
         clearcoatNormal,
         clearcoatFactor
     );
