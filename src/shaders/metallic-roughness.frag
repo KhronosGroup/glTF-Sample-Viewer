@@ -88,9 +88,8 @@ struct MaterialInfo
     vec3 reflectance90;           // reflectance color at grazing angle
     vec3 specularColor;           // color contribution from specular lighting
 
+    vec3 normal;
     float clearcoatFactor;
-    float clearcoatRoughness;
-    vec3 clearcoatNormal;
 };
 
 //based on Schlicks approximation of Fresnel
@@ -98,12 +97,15 @@ vec3 fresnel(vec3 f0, float NdotL)
 {
     return f0 + (1.0 - f0) * pow(clamp(1.0 - (NdotL), 0.0, 1.0), 5.0);
 }
+
 // Calculation of the lighting contribution from an optional Image Based Light source.
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
 #ifdef USE_IBL
-vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
 {
+    vec3 n = materialInfo.normal;
+
     float NdotV = clamp(dot(n, v), 0.0, 1.0);
 
     float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
@@ -128,37 +130,18 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
 
-    return diffuse + specular;
-}
+    vec3 factor1 = vec3(1.0);
 
-vec3 getIBLClearcoat(MaterialInfo materialInfo, vec3 v, vec3 color)
-{
-    float NdotVClearcoat = clamp(dot(materialInfo.clearcoatNormal, v), 0.0, 1.0);
+    if (materialInfo.clearcoatFactor > 0.0)
+    {
+        vec3 l = -n;
+        vec3 h = normalize(l + v);
+        float NdotL = clamp(dot(n, l), 0.0, 1.0); // l = 1.0
+        float VdotH = clamp(dot(h, v), 0.0, 1.0); // h = normal( l + v );
+        factor1 = materialInfo.clearcoatFactor * fresnel(materialInfo.reflectance0, VdotH);
+    }
 
-    float lod = clamp(materialInfo.clearcoatRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 reflection = normalize(reflect(-v, materialInfo.clearcoatNormal));
-
-    vec2 brdfSamplePoint = clamp(vec2(NdotVClearcoat, materialInfo.clearcoatRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    // retrieve a scale and bias to F0. See [1], Figure 3
-    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
-
-    vec4 specularSampleClearcoat = textureLod(u_SpecularEnvSampler, reflection, lod);
-
-#ifdef USE_HDR
-    vec3 specularLightClearcoat = specularSampleClearcoat.rgb;
-#else
-    vec3 specularLightClearcoat = SRGBtoLINEAR(specularSampleClearcoat).rgb;
-#endif
-    vec3 specularClearcoat = specularLightClearcoat * (vec3(1.0) * brdf.x + brdf.y);
-
-    vec3 N = materialInfo.clearcoatNormal;
-    vec3 L = -materialInfo.clearcoatNormal;
-    vec3 H = normalize(L + v);
-    float NdotL = clamp(dot(N, L), 0.0, 1.0); // l = 1.0
-    float VdotH = clamp(dot(H, v), 0.0, 1.0); // h = normal( l + v );
-    vec3 factor0 = (1.0 - materialInfo.clearcoatFactor * fresnel(vec3(0.04), NdotVClearcoat)) * (1.0 - materialInfo.clearcoatFactor * fresnel(vec3(0.04), NdotL));
-    vec3 factor1 = materialInfo.clearcoatFactor * fresnel(vec3(0.04), VdotH);
-    return specularClearcoat * factor1;
+    return diffuse + specular * factor1;
 }
 #endif //USE_IBL
 
@@ -415,6 +398,12 @@ void main()
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     vec3 specularEnvironmentR90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
 
+    // LIGHTING
+
+    vec3 color = vec3(0.0, 0.0, 0.0);
+    vec3 normal = getNormal();
+    vec3 view = normalize(u_Camera - v_Position);
+
     MaterialInfo materialInfo = MaterialInfo(
         perceptualRoughness,
         specularEnvironmentR0,
@@ -422,16 +411,20 @@ void main()
         diffuseColor,
         specularEnvironmentR90,
         specularColor,
-        clearcoatFactor,
-        clearcoatRoughness,
-        clearcoatNormal
+        normal,
+        0.0
     );
 
-    // LIGHTING
-
-    vec3 color = vec3(0.0, 0.0, 0.0);
-    vec3 normal = getNormal();
-    vec3 view = normalize(u_Camera - v_Position);
+    MaterialInfo clearCoatInfo = MaterialInfo(
+        clearcoatRoughness,
+        vec3(0.04),
+        1.0,
+        vec3(0.0),
+        vec3(1.0),
+        vec3(1.0),
+        clearcoatNormal,
+        clearcoatFactor
+    );
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
@@ -454,10 +447,10 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    color += getIBLContribution(materialInfo, normal, view);
+    color += getIBLContribution(materialInfo, view);
     if(u_ClearcoatFactor > 0.0)
     {
-        color += getIBLClearcoat(materialInfo, view, color);
+        color += getIBLContribution(clearCoatInfo, view);
     }
 #endif
 
