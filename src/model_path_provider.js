@@ -60,10 +60,16 @@ class gltfModelPathProvider
                 const fileName = entry.variants[variant];
                 const modelPath = combinePaths(modelsFolder, entry.name, variant, fileName);
                 let modelKey = getFileNameWithoutExtension(fileName);
+
+                if (entry.name !== undefined)
+                {
+                    modelKey = entry.name;
+                }
                 if (variant !== "glTF")
                 {
                     modelKey += " (" + variant.replace("glTF-", "") + ")";
                 }
+
                 this.modelsDictionary[modelKey] = modelPath;
             }
         }
