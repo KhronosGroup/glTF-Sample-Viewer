@@ -261,10 +261,13 @@ void main()
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
+
     //values from the clearcoat extension
+    #ifdef MATERIAL_CLEARCOAT
     float clearcoatFactor = 0.0;
     float clearcoatRoughness = 0.0;
     vec3 clearcoatNormal = vec3(0.0);
+    #endif
 
     vec4 output_color = baseColor;
 
@@ -337,11 +340,13 @@ void main()
     #endif
 #endif
 
-#ifdef HAS_CLEARCOAT_NORMAL_MAP
-    vec4 mrSample = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-    clearcoatNormal = mrSample.xyz;
-#else
-    clearcoatNormal = getSurface();
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_NORMAL_MAP
+        vec4 mrSample = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        clearcoatNormal = mrSample.xyz;
+    #else
+        clearcoatNormal = getSurface();
+    #endif
 #endif
 
     baseColor *= getVertexColor();
@@ -398,6 +403,7 @@ void main()
         normal,
         0.0 //Clearcoat factor is null
     );
+    #ifdef MATERIAL_CLEARCOAT
     MaterialInfo clearCoatInfo = MaterialInfo(
         clearcoatRoughness,
         vec3(0.04), //fixed from specification //todo use variable from functions
@@ -408,13 +414,16 @@ void main()
         clearcoatNormal,
         clearcoatFactor
     );
+    #endif
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         vec3 lightColor = vec3(0);
-        vec3 clearcoatColor = vec3(0);
-        vec3 pointToLight = vec3(0);
+        #ifdef MATERIAL_CLEARCOAT
+            vec3 clearcoatColor = vec3(0);
+            vec3 pointToLight = vec3(0);
+        #endif
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {

@@ -19,13 +19,6 @@ class gltfMaterial extends GltfObject
         this.alphaCutoff = 0.5;
         this.doubleSided = false;
 
-        //Clearcoat
-        this.clearcoatFactor = 0.0;
-        this.clearcoatTexture = undefined;
-        this.clearcoatRoughnessFactor = 0.0;
-        this.clearcoatRoughnessTexture = undefined;
-        this.clearcoatNormalTexture = undefined;
-
         // non gltf properties
         this.type = "unlit";
         this.textures = [];
@@ -45,11 +38,6 @@ class gltfMaterial extends GltfObject
         defaultMaterial.properties.set("u_BaseColorFactor", baseColorFactor);
         defaultMaterial.properties.set("u_MetallicFactor", metallicFactor);
         defaultMaterial.properties.set("u_RoughnessFactor", roughnessFactor);
-        //Clearcoat
-        const clearcoatFactor = 0.0;
-        const clearcoatRoughnessFactor = 0.0;
-        defaultMaterial.properties.set("u_ClearcoatFactor", clearcoatFactor);
-        defaultMaterial.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
 
         return defaultMaterial;
     }
@@ -312,11 +300,9 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
                 }
-
+                this.properties.set("u_ClearcoatFactor", clearcoatFactor);
+                this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
             }
-
-            this.properties.set("u_ClearcoatFactor", clearcoatFactor);
-            this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
 
         }
 
