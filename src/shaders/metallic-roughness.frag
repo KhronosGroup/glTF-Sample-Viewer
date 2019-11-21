@@ -140,15 +140,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
     vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
 
-    vec3 factor1 = vec3(1.0);
-    if (materialInfo.clearcoatFactor > 0.0)
-    {
-        vec3 l = -materialInfo.normal;
-        AngularInfo angularInfo = getAngularInfo(l, materialInfo.normal, v);
-        factor1 = materialInfo.clearcoatFactor * fresnelReflection(materialInfo,angularInfo);
-    }
-
-    return diffuse + specular * factor1;
+    return diffuse + specular;
 }
 #endif //USE_IBL
 
@@ -199,14 +191,8 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
         vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
         vec3 specContrib = F * Vis * D;
 
-        vec3 factor1 = vec3(1.0);
-        if (materialInfo.clearcoatFactor > 0.0)
-        {
-           factor1 = materialInfo.clearcoatFactor * fresnelReflection(materialInfo, angularInfo);
-        }
-
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-        return angularInfo.NdotL * (diffuseContrib + specContrib) * factor1;
+        return angularInfo.NdotL * (diffuseContrib + specContrib);
     }
 
     return vec3(0.0, 0.0, 0.0);
@@ -274,7 +260,6 @@ void main()
     vec4 baseColor = vec4(0.0, 0.0, 0.0, 1.0);
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
-    vec3 clearcoatColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
     //values from the clearcoat extension
     float clearcoatFactor = 0.0;
@@ -364,10 +349,6 @@ void main()
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
 
     specularColor = mix(f0, baseColor.rgb, metallic);
-
-    //assuming that in the metallicRoughness setting f0 stays vec3(0.04)
-    clearcoatColor = mix(f0,baseColor.rgb,metallic);
-
 #endif // ! MATERIAL_METALLICROUGHNESS
 
 #ifdef ALPHAMODE_MASK
@@ -417,7 +398,6 @@ void main()
         normal,
         0.0 //Clearcoat factor is null
     );
-
     MaterialInfo clearCoatInfo = MaterialInfo(
         clearcoatRoughness,
         vec3(0.04), //fixed from specification //todo use variable from functions
@@ -434,11 +414,13 @@ void main()
     {
         vec3 lightColor = vec3(0);
         vec3 clearcoatColor = vec3(0);
+        vec3 pointToLight = vec3(0);
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
             lightColor = applyDirectionalLight(light, materialInfo, view);
             #ifdef MATERIAL_CLEARCOAT
+                pointToLight = -light.direction;
                 clearcoatColor = applyDirectionalLight(light, clearCoatInfo, view);
             #endif
         }
@@ -446,6 +428,7 @@ void main()
         {
             lightColor = applyPointLight(light, materialInfo, view);
             #ifdef MATERIAL_CLEARCOAT
+                pointToLight = light.position - v_Position;
                 clearcoatColor = applyPointLight(light, clearCoatInfo, view);
             #endif
         }
@@ -453,13 +436,14 @@ void main()
         {
             lightColor = applySpotLight(light, materialInfo, view);
             #ifdef MATERIAL_CLEARCOAT
+                pointToLight = light.position - v_Position;
                 clearcoatColor = applySpotLight(light, clearCoatInfo, view);
             #endif
         }
         #ifdef MATERIAL_CLEARCOAT
-            vec3 pointToLight = -light.direction - v_Position;
             AngularInfo angularInfo = getAngularInfo(pointToLight, clearCoatInfo.normal, view);
             color += clearcoatBlending(lightColor, clearcoatColor, clearCoatInfo.clearcoatFactor, angularInfo);
+            // color += clearcoatColor;
         #else
             color += lightColor;
         #endif
