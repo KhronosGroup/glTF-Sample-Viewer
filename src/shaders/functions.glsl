@@ -84,6 +84,37 @@ vec3 getNormal()
     return n;
 }
 
+vec3 getSurface()
+{
+    vec2 UV = getNormalUV();
+
+    // Retrieve the tangent space matrix
+#ifndef HAS_TANGENTS
+    vec3 pos_dx = dFdx(v_Position);
+    vec3 pos_dy = dFdy(v_Position);
+    vec3 tex_dx = dFdx(vec3(UV, 0.0));
+    vec3 tex_dy = dFdy(vec3(UV, 0.0));
+    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
+
+#ifdef HAS_NORMALS
+    vec3 ng = normalize(v_Normal);
+#else
+    vec3 ng = cross(pos_dx, pos_dy);
+#endif
+
+    t = normalize(t - ng * dot(ng, t));
+    vec3 b = normalize(cross(ng, t));
+    mat3 tbn = mat3(t, b, ng);
+#else // HAS_TANGENTS
+    mat3 tbn = v_TBN;
+#endif
+
+    // The tbn matrix is linearly interpolated, so we need to re-normalize
+    vec3 n = normalize(tbn[2].xyz);
+
+    return n;
+}
+
 float getPerceivedBrightness(vec3 vector)
 {
     return sqrt(0.299 * vector.r * vector.r + 0.587 * vector.g * vector.g + 0.114 * vector.b * vector.b);
@@ -129,4 +160,19 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
         VdotH,
         vec3(0, 0, 0)
     );
+}
+
+ //based on Schlicks approximation of Fresnel
+float fresnel(float f0, float dot)
+{
+    return f0 + (1.0 - f0) * pow(clamp(1.0 - (dot), 0.0, 1.0), 5.0);
+}
+
+
+// See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
+vec3 clearcoatBlending(vec3 color, vec3 clearcoatColor, float clearcoatFactor, AngularInfo angularInfo)
+{
+    float factor0 = (1.0 - clearcoatFactor * fresnel(0.04, angularInfo.NdotV)) * (1.0 - clearcoatFactor * fresnel(0.04, angularInfo.NdotL));
+    float factor1 = clearcoatFactor * fresnel(0.04, angularInfo.VdotH);
+    return color * factor0 + clearcoatColor * factor1;
 }

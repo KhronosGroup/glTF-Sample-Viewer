@@ -12,6 +12,8 @@
 //     https://github.com/KhronosGroup/glTF-WebGL-PBR/#environment-maps
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
+// [5] "KHR_materials_clearcoat"
+//     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
 
 
 precision highp float;
@@ -67,6 +69,12 @@ uniform float u_GlossinessFactor;
 uniform float u_AlphaCutoff;
 #endif
 
+//Clearcoat
+#ifdef MATERIAL_CLEARCOAT
+uniform float u_ClearcoatFactor;
+uniform float u_ClearcoatRoughnessFactor;
+#endif
+
 uniform vec3 u_Camera;
 
 uniform int u_MipCount;
@@ -74,32 +82,50 @@ uniform int u_MipCount;
 struct MaterialInfo
 {
     float perceptualRoughness;    // roughness value, as authored by the model creator (input to shader)
-    vec3 reflectance0;            // full reflectance color (normal incidence angle)
+    vec3 f0;            // full reflectance color (normal incidence angle)
 
     float alphaRoughness;         // roughness mapped to a more linear change in the roughness (proposed by [2])
     vec3 diffuseColor;            // color contribution from diffuse lighting
 
-    vec3 reflectance90;           // reflectance color at grazing angle
+    vec3 f90;           // reflectance color at grazing angle
     vec3 specularColor;           // color contribution from specular lighting
+
+    vec3 normal;
+    float clearcoatFactor;
 };
+
+
+// Lambert lighting
+// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+vec3 diffuse(MaterialInfo materialInfo)
+{
+    return materialInfo.diffuseColor / M_PI;
+}
+
+// The following equation models the Fresnel reflectance term of the spec equation (aka F())
+// Implementation of fresnel from [4], Equation 15
+vec3 fresnelReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
+{
+    //Todo : Discuss which fresnel implementation should be uniformly used
+    return materialInfo.f0 + (materialInfo.f90 - materialInfo.f0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
+}
 
 // Calculation of the lighting contribution from an optional Image Based Light source.
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
 #ifdef USE_IBL
-vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
+vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
 {
-    float NdotV = clamp(dot(n, v), 0.0, 1.0);
+    float NdotV = clamp(dot(materialInfo.normal, v), 0.0, 1.0);
 
     float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 reflection = normalize(reflect(-v, n));
+    vec3 reflection = normalize(reflect(-v, materialInfo.normal));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     // retrieve a scale and bias to F0. See [1], Figure 3
     vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
 
-    vec4 diffuseSample = texture(u_DiffuseEnvSampler, n);
-
+    vec4 diffuseSample = texture(u_DiffuseEnvSampler, materialInfo.normal);
     vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
 
 #ifdef USE_HDR
@@ -116,21 +142,7 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 n, vec3 v)
 
     return diffuse + specular;
 }
-#endif
-
-// Lambert lighting
-// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-vec3 diffuse(MaterialInfo materialInfo)
-{
-    return materialInfo.diffuseColor / M_PI;
-}
-
-// The following equation models the Fresnel reflectance term of the spec equation (aka F())
-// Implementation of fresnel from [4], Equation 15
-vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
-{
-    return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
-}
+#endif //USE_IBL
 
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
@@ -164,14 +176,14 @@ float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
-vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
-    AngularInfo angularInfo = getAngularInfo(pointToLight, normal, view);
+    AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
 
     if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
         // Calculate the shading terms for the microfacet specular shading model
-        vec3 F = specularReflection(materialInfo, angularInfo);
+        vec3 F = fresnelReflection(materialInfo, angularInfo);
         float Vis = visibilityOcclusion(materialInfo, angularInfo);
         float D = microfacetDistribution(materialInfo, angularInfo);
 
@@ -212,29 +224,29 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
-vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 view)
 {
     vec3 pointToLight = -light.direction;
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
+    vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return light.intensity * light.color * shade;
 }
 
-vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 view)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float attenuation = getRangeAttenuation(light.range, distance);
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
+    vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return attenuation * light.intensity * light.color * shade;
 }
 
-vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 normal, vec3 view)
+vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 view)
 {
     vec3 pointToLight = light.position - v_Position;
     float distance = length(pointToLight);
     float rangeAttenuation = getRangeAttenuation(light.range, distance);
     float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
-    vec3 shade = getPointShade(pointToLight, materialInfo, normal, view);
+    vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
 
@@ -249,6 +261,14 @@ void main()
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
+
+    //values from the clearcoat extension
+    #ifdef MATERIAL_CLEARCOAT
+    float clearcoatFactor = 0.0;
+    float clearcoatRoughness = 0.0;
+    vec3 clearcoatNormal = vec3(0.0);
+    #endif
+
     vec4 output_color = baseColor;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -302,12 +322,38 @@ void main()
     baseColor = u_BaseColorFactor;
 #endif
 
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
+        vec4 mrSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        clearcoatFactor = mrSample.r * u_ClearcoatFactor;
+    #else
+        clearcoatFactor = u_ClearcoatFactor;
+    #endif
+#endif
+
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+        vec4 mrSample = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        clearcoatRoughness = mrSample.g * u_ClearcoatRoughnessFactor;
+    #else
+        clearcoatRoughness = u_ClearcoatRoughnessFactor;
+    #endif
+#endif
+
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_NORMAL_MAP
+        vec4 mrSample = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        clearcoatNormal = mrSample.xyz;
+    #else
+        clearcoatNormal = getSurface();
+    #endif
+#endif
+
     baseColor *= getVertexColor();
 
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
 
     specularColor = mix(f0, baseColor.rgb, metallic);
-
 #endif // ! MATERIAL_METALLICROUGHNESS
 
 #ifdef ALPHAMODE_MASK
@@ -341,43 +387,89 @@ void main()
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     vec3 specularEnvironmentR90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
 
-    MaterialInfo materialInfo = MaterialInfo(
-        perceptualRoughness,
-        specularEnvironmentR0,
-        alphaRoughness,
-        diffuseColor,
-        specularEnvironmentR90,
-        specularColor
-    );
-
     // LIGHTING
 
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 normal = getNormal();
     vec3 view = normalize(u_Camera - v_Position);
 
+    MaterialInfo materialInfo = MaterialInfo(
+        perceptualRoughness,
+        specularEnvironmentR0,
+        alphaRoughness,
+        diffuseColor,
+        specularEnvironmentR90,
+        specularColor,
+        normal,
+        0.0 //Clearcoat factor is null
+    );
+    #ifdef MATERIAL_CLEARCOAT
+    MaterialInfo clearCoatInfo = MaterialInfo(
+        clearcoatRoughness,
+        vec3(0.04), //fixed from specification //todo use variable from functions
+        clearcoatRoughness * clearcoatRoughness, //alphaRoughness is roughnessvalue squared
+        vec3(0.0), //clearcoat layer has no diffuse color
+        vec3(1.0), //F_90 = 1.0
+        vec3(1.0), //clearcoat layer color is white
+        clearcoatNormal,
+        clearcoatFactor
+    );
+    #endif
+
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
+        vec3 lightColor = vec3(0);
+        #ifdef MATERIAL_CLEARCOAT
+            vec3 clearcoatColor = vec3(0);
+            vec3 pointToLight = vec3(0);
+        #endif
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
-            color += applyDirectionalLight(light, materialInfo, normal, view);
+            lightColor = applyDirectionalLight(light, materialInfo, view);
+            #ifdef MATERIAL_CLEARCOAT
+                pointToLight = -light.direction;
+                clearcoatColor = applyDirectionalLight(light, clearCoatInfo, view);
+            #endif
         }
         else if (light.type == LightType_Point)
         {
-            color += applyPointLight(light, materialInfo, normal, view);
+            lightColor = applyPointLight(light, materialInfo, view);
+            #ifdef MATERIAL_CLEARCOAT
+                pointToLight = light.position - v_Position;
+                clearcoatColor = applyPointLight(light, clearCoatInfo, view);
+            #endif
         }
         else if (light.type == LightType_Spot)
         {
-            color += applySpotLight(light, materialInfo, normal, view);
+            lightColor = applySpotLight(light, materialInfo, view);
+            #ifdef MATERIAL_CLEARCOAT
+                pointToLight = light.position - v_Position;
+                clearcoatColor = applySpotLight(light, clearCoatInfo, view);
+            #endif
         }
+        #ifdef MATERIAL_CLEARCOAT
+            AngularInfo angularInfo = getAngularInfo(pointToLight, clearCoatInfo.normal, view);
+            color += clearcoatBlending(lightColor, clearcoatColor, clearCoatInfo.clearcoatFactor, angularInfo);
+        #else
+            color += lightColor;
+        #endif
     }
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    color += getIBLContribution(materialInfo, normal, view);
+    vec3 iblColor = getIBLContribution(materialInfo, view);
+
+    #ifdef MATERIAL_CLEARCOAT
+        vec3 clearcoatContribution = getIBLContribution(clearCoatInfo, view);
+        //todo comment on -normal here
+        AngularInfo angularInfo = getAngularInfo(-clearCoatInfo.normal, clearCoatInfo.normal, view);
+        color += clearcoatBlending(iblColor, clearcoatContribution, clearCoatInfo.clearcoatFactor, angularInfo);
+    #else
+        color += iblColor;
+    #endif
 #endif
 
     float ao = 1.0;
@@ -425,7 +517,7 @@ void main()
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        output_color.rgb = LINEARtoSRGB(emissive);
+        output_color.rgb = LINEARtoSRGB(emissive).rgb;
     #endif
 
     #ifdef DEBUG_F0

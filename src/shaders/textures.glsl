@@ -56,6 +56,22 @@ uniform samplerCube u_SpecularEnvSampler;
 uniform sampler2D u_brdfLUT;
 #endif
 
+//clearcoat
+#ifdef HAS_CLEARCOAT_TEXTURE_MAP
+uniform sampler2D u_ClearcoatSampler;
+uniform int u_ClearcoatUVSet;
+#endif
+
+#ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+uniform sampler2D u_ClearcoatRoughnessSampler;
+uniform int u_ClearcoatRoughnessUVSet;
+#endif
+
+#ifdef HAS_CLEARCOAT_NORMAL_MAP
+uniform sampler2D u_ClearcoatNormalSampler;
+uniform int u_ClearcoatNormalUVSet;
+#endif
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(v_UVCoord1, 1.0);
@@ -137,6 +153,33 @@ vec2 getDiffuseUV()
     #ifdef HAS_DIFFUSE_UV_TRANSFORM
     uv *= u_DiffuseUVTransform;
     #endif
+#endif
+    return uv.xy;
+}
+
+vec2 getClearcoatUV()
+{
+    vec3 uv = vec3(v_UVCoord1, 1.0);
+#ifdef HAS_CLEARCOAT_TEXTURE_MAP
+    uv.xy = u_ClearcoatUVSet < 1 ? v_UVCoord1 : v_UVCoord2;
+#endif
+    return uv.xy;
+}
+
+vec2 getClearcoatRoughnessUV()
+{
+    vec3 uv = vec3(v_UVCoord1, 1.0);
+#ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+    uv.xy = u_ClearcoatRoughnessUVSet < 1 ? v_UVCoord1 : v_UVCoord2;
+#endif
+    return uv.xy;
+}
+
+vec2 getClearcoatNormalUV()
+{
+    vec3 uv = vec3(v_UVCoord1, 1.0);
+#ifdef HAS_CLEARCOAT_NORMAL_MAP
+    uv.xy = u_ClearcoatNormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2;
 #endif
     return uv.xy;
 }
