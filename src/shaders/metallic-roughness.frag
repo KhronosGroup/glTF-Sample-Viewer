@@ -443,7 +443,6 @@ void main()
         #ifdef MATERIAL_CLEARCOAT
             AngularInfo angularInfo = getAngularInfo(pointToLight, clearCoatInfo.normal, view);
             color += clearcoatBlending(lightColor, clearcoatColor, clearCoatInfo.clearcoatFactor, angularInfo);
-            // color += clearcoatColor;
         #else
             color += lightColor;
         #endif
