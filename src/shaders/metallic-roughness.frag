@@ -82,22 +82,32 @@ uniform int u_MipCount;
 struct MaterialInfo
 {
     float perceptualRoughness;    // roughness value, as authored by the model creator (input to shader)
-    vec3 reflectance0;            // full reflectance color (normal incidence angle)
+    vec3 f0;            // full reflectance color (normal incidence angle)
 
     float alphaRoughness;         // roughness mapped to a more linear change in the roughness (proposed by [2])
     vec3 diffuseColor;            // color contribution from diffuse lighting
 
-    vec3 reflectance90;           // reflectance color at grazing angle
+    vec3 f90;           // reflectance color at grazing angle
     vec3 specularColor;           // color contribution from specular lighting
 
     vec3 normal;
     float clearcoatFactor;
 };
 
-//based on Schlicks approximation of Fresnel
-vec3 fresnel(vec3 f0, float NdotL)
+
+// Lambert lighting
+// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+vec3 diffuse(MaterialInfo materialInfo)
 {
-    return f0 + (1.0 - f0) * pow(clamp(1.0 - (NdotL), 0.0, 1.0), 5.0);
+    return materialInfo.diffuseColor / M_PI;
+}
+
+// The following equation models the Fresnel reflectance term of the spec equation (aka F())
+// Implementation of fresnel from [4], Equation 15
+vec3 fresnelReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
+{
+    //Todo : Discuss which fresnel implementation should be uniformly used
+    return materialInfo.f0 + (materialInfo.f90 - materialInfo.f0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
 }
 
 // Calculation of the lighting contribution from an optional Image Based Light source.
@@ -106,18 +116,16 @@ vec3 fresnel(vec3 f0, float NdotL)
 #ifdef USE_IBL
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
 {
-    vec3 n = materialInfo.normal;
-
-    float NdotV = clamp(dot(n, v), 0.0, 1.0);
+    float NdotV = clamp(dot(materialInfo.normal, v), 0.0, 1.0);
 
     float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 reflection = normalize(reflect(-v, n));
+    vec3 reflection = normalize(reflect(-v, materialInfo.normal));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     // retrieve a scale and bias to F0. See [1], Figure 3
     vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
 
-    vec4 diffuseSample = texture(u_DiffuseEnvSampler, n);
+    vec4 diffuseSample = texture(u_DiffuseEnvSampler, materialInfo.normal);
     vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
 
 #ifdef USE_HDR
@@ -133,35 +141,16 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
     vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
 
     vec3 factor1 = vec3(1.0);
-
     if (materialInfo.clearcoatFactor > 0.0)
     {
-        vec3 l = -n;
-        vec3 h = normalize(l + v);
-        float NdotL = clamp(dot(n, l), 0.0, 1.0);
-        float VdotH = clamp(dot(h, v), 0.0, 1.0);
-        factor1 = materialInfo.clearcoatFactor * fresnel(materialInfo.reflectance0, VdotH);
+        vec3 l = -materialInfo.normal;
+        AngularInfo angularInfo = getAngularInfo(l, materialInfo.normal, v);
+        factor1 = materialInfo.clearcoatFactor * fresnelReflection(materialInfo,angularInfo);
     }
 
     return diffuse + specular * factor1;
 }
 #endif //USE_IBL
-
-
-
-// Lambert lighting
-// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-vec3 diffuse(MaterialInfo materialInfo)
-{
-    return materialInfo.diffuseColor / M_PI;
-}
-
-// The following equation models the Fresnel reflectance term of the spec equation (aka F())
-// Implementation of fresnel from [4], Equation 15
-vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
-{
-    return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
-}
 
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
@@ -202,7 +191,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
     if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
         // Calculate the shading terms for the microfacet specular shading model
-        vec3 F = specularReflection(materialInfo, angularInfo);
+        vec3 F = fresnelReflection(materialInfo, angularInfo);
         float Vis = visibilityOcclusion(materialInfo, angularInfo);
         float D = microfacetDistribution(materialInfo, angularInfo);
 
@@ -213,7 +202,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
         vec3 factor1 = vec3(1.0);
         if (materialInfo.clearcoatFactor > 0.0)
         {
-           factor1 = materialInfo.clearcoatFactor * fresnel(materialInfo.reflectance0, angularInfo.VdotH);
+           factor1 = materialInfo.clearcoatFactor * fresnelReflection(materialInfo, angularInfo);
         }
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
@@ -287,9 +276,11 @@ void main()
     vec3 specularColor= vec3(0.0);
     vec3 clearcoatColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
+    //values from the clearcoat extension
     float clearcoatFactor = 0.0;
     float clearcoatRoughness = 0.0;
     vec3 clearcoatNormal = vec3(0.0);
+
     vec4 output_color = baseColor;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -429,7 +420,7 @@ void main()
 
     MaterialInfo clearCoatInfo = MaterialInfo(
         clearcoatRoughness,
-        vec3(0.04), //fixed from specification
+        vec3(0.04), //fixed from specification //todo use variable from functions
         clearcoatRoughness * clearcoatRoughness, //alphaRoughness is roughnessvalue squared
         vec3(0.0), //clearcoat layer has no diffuse color
         vec3(1.0), //F_90 = 1.0
