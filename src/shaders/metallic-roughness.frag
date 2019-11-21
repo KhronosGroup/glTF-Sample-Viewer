@@ -432,37 +432,51 @@ void main()
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
+        vec3 lightColor = vec3(0);
+        vec3 clearcoatColor = vec3(0);
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
-            color += applyDirectionalLight(light, materialInfo, view);
+            lightColor = applyDirectionalLight(light, materialInfo, view);
             #ifdef MATERIAL_CLEARCOAT
-                color += applyDirectionalLight(light, clearCoatInfo, view);
+                clearcoatColor = applyDirectionalLight(light, clearCoatInfo, view);
             #endif
         }
         else if (light.type == LightType_Point)
         {
-            color += applyPointLight(light, materialInfo, view);
+            lightColor = applyPointLight(light, materialInfo, view);
             #ifdef MATERIAL_CLEARCOAT
-                color += applyPointLight(light, clearCoatInfo, view);
+                clearcoatColor = applyPointLight(light, clearCoatInfo, view);
             #endif
         }
         else if (light.type == LightType_Spot)
         {
-            color += applySpotLight(light, materialInfo, view);
+            lightColor = applySpotLight(light, materialInfo, view);
             #ifdef MATERIAL_CLEARCOAT
-                color += applySpotLight(light, clearCoatInfo, view);
+                clearcoatColor = applySpotLight(light, clearCoatInfo, view);
             #endif
         }
+        #ifdef MATERIAL_CLEARCOAT
+            vec3 pointToLight = -light.direction - v_Position;
+            AngularInfo angularInfo = getAngularInfo(pointToLight, clearCoatInfo.normal, view);
+            color += clearcoatBlending(lightColor, clearcoatColor, clearCoatInfo.clearcoatFactor, angularInfo);
+        #else
+            color += lightColor;
+        #endif
     }
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    color += getIBLContribution(materialInfo, view);
+    vec3 iblColor = getIBLContribution(materialInfo, view);
 
     #ifdef MATERIAL_CLEARCOAT
-        color += getIBLContribution(clearCoatInfo, view);
+        vec3 clearcoatContribution = getIBLContribution(clearCoatInfo, view);
+        //todo comment on -normal here
+        AngularInfo angularInfo = getAngularInfo(-clearCoatInfo.normal, clearCoatInfo.normal, view);
+        color += clearcoatBlending(iblColor, clearcoatContribution, clearCoatInfo.clearcoatFactor, angularInfo);
+    #else
+        color += iblColor;
     #endif
 #endif
 
