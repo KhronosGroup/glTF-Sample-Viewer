@@ -10,16 +10,6 @@ class gltfScene extends GltfObject
         this.name = name;
     }
 
-    fromJson(jsonScene)
-    {
-        if (jsonScene.nodes !== undefined)
-        {
-            this.nodes = jsonScene.nodes;
-        }
-
-        this.name = jsonScene.name;
-    }
-
     applyTransformHierarchy(gltf, rootTransform = mat4.create())
     {
         function applyTransform(gltf, node, parentTransform)
