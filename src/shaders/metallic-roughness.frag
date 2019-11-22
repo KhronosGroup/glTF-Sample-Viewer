@@ -333,8 +333,8 @@ void main()
 
 #ifdef MATERIAL_CLEARCOAT
     #ifdef HAS_CLEARCOAT_TEXTURE_MAP
-        mrSample = texture(u_ClearcoatSampler, getClearcoatUV());
-        clearcoatFactor = mrSample.r * u_ClearcoatFactor;
+        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        clearcoatFactor = ccSample.r * u_ClearcoatFactor;
     #else
         clearcoatFactor = u_ClearcoatFactor;
     #endif
@@ -342,8 +342,8 @@ void main()
 
 #ifdef MATERIAL_CLEARCOAT
     #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-        mrSample = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
-        clearcoatRoughness = mrSample.g * u_ClearcoatRoughnessFactor;
+        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        clearcoatRoughness = ccSampleRough.g * u_ClearcoatRoughnessFactor;
     #else
         clearcoatRoughness = u_ClearcoatRoughnessFactor;
     #endif
@@ -351,8 +351,8 @@ void main()
 
 #ifdef MATERIAL_CLEARCOAT
     #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        mrSample = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        clearcoatNormal = mrSample.xyz;
+        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        clearcoatNormal = ccSampleNor.xyz;
     #else
         clearcoatNormal = getSurface();
     #endif
