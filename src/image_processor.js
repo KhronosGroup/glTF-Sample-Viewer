@@ -1,3 +1,4 @@
+import { Ktx2Image } from '../libs/ktx2image.js';
 import { HDRImage } from '../libs/hdrpng.js';
 import { nearestPowerOf2, makeEven } from './math_utils.js';
 
@@ -8,9 +9,31 @@ class gltfImageProcessor
         for (const gltfImage of gltf.images)
         {
             const image = gltfImage.image;
+
             if (image instanceof HDRImage)
             {
                 continue;
+            }
+
+            if (image instanceof Ktx2Image)
+            {
+                console.log("loading a Ktx2Image!");
+                continue;
+
+                // if (this.mimeType == ImageMimeType.KTX2)
+                // {
+                //     const image = new Ktx2Image();
+
+                //     console.log("loading " + this.uri);
+
+                //     axios.get(this.uri, { responseType: 'arraybuffer'})
+                //         .then(function(response)
+                //         {
+                //             image.initialize(response.data);
+                //         })
+                //         .catch((error) => console.log(error));
+                //     return true;
+                // }
             }
 
             let newDimensions = undefined;

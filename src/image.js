@@ -1,4 +1,5 @@
 import { HDRImage } from '../libs/hdrpng.js';
+import { Ktx2Image } from '../libs/ktx2image.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
@@ -45,7 +46,20 @@ class gltfImage extends GltfObject
             return;
         }
 
-        this.image = this.mimeType === ImageMimeType.HDR ? new HDRImage() : new Image();
+        if (this.mimeType === ImageMimeType.HDR)
+        {
+            this.image = new HDRImage();
+        }
+        else if (this.mimeType === ImageMimeType.KTX2)
+        {
+            this.image = new Ktx2Image();
+            return;
+        }
+        else
+        {
+            this.image = new Image();
+        }
+
         this.image.crossOrigin = "";
         const self = this;
         const promise = new Promise(function(resolve)
@@ -55,7 +69,7 @@ class gltfImage extends GltfObject
 
             if (!self.setImageFromBufferView(gltf) &&
                 !self.setImageFromFiles(additionalFiles) &&
-                !self.setImageFromUri())
+                !self.setImageFromUri(gltf))
             {
                 console.error("Was not able to resolve image with uri '%s'", self.uri);
                 resolve();
