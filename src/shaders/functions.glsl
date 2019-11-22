@@ -161,18 +161,3 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
         vec3(0, 0, 0)
     );
 }
-
- //based on Schlicks approximation of Fresnel
-float fresnel(float f0, float dot)
-{
-    return f0 + (1.0 - f0) * pow(clamp(1.0 - (dot), 0.0, 1.0), 5.0);
-}
-
-
-// See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
-vec3 clearcoatBlending(vec3 color, vec3 clearcoatColor, float clearcoatFactor, AngularInfo angularInfo)
-{
-    float factor0 = (1.0 - clearcoatFactor * fresnel(0.04, angularInfo.NdotV)) * (1.0 - clearcoatFactor * fresnel(0.04, angularInfo.NdotL));
-    float factor1 = clearcoatFactor * fresnel(0.04, angularInfo.VdotH);
-    return color * factor0 + clearcoatColor * factor1;
-}
