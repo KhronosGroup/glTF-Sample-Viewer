@@ -5,6 +5,7 @@ const HEADER_OFFSET = VERSION_OFFSET + VERSION_LENGTH;
 const HEADER_LENGTH = 9 * 4; // 9 uint32s
 const INDEX_OFFSET = HEADER_OFFSET + HEADER_LENGTH;
 const INDEX_LENGTH = 4 * 4 + 2 * 8; // 4 uint32s and 2 uint64s
+const LEVEL_INDEX_OFFSET = INDEX_OFFSET + INDEX_LENGTH;
 
 class Ktx2Image
 {
@@ -22,6 +23,10 @@ class Ktx2Image
 
         const fileIndex = new DataView(arrayBuffer, INDEX_OFFSET, INDEX_LENGTH);
         this.parseIndex(fileIndex);
+
+        const levelIndexLength = this.levelCount * 3 * 8; // 3 uint64s per level
+        const levelIndex = new DataView(arrayBuffer, LEVEL_INDEX_OFFSET, levelIndexLength);
+        this.parseLevelIndex(levelIndex);
     }
 
     checkVersion(version)
@@ -80,6 +85,29 @@ class Ktx2Image
         this.kvdByteLength = getNext32();
         this.sgdByteOffset = getNext64();
         this.sgdByteLength = getNext64();
+    }
+
+    parseLevelIndex(levelIndex)
+    {
+        let offset = 0;
+        const getNext = () =>
+        {
+            const result = levelIndex.getBigUint64(offset, true);
+            offset += 8;
+            return result;
+        };
+
+        this.levels = [];
+
+        for (let i = 0; i < this.levelCount; i++)
+        {
+            const level = {};
+            level.byteOffset = getNext();
+            level.byteLength = getNext();
+            level.uncompressedByteLength = getNext();
+
+            this.levels.push(level);
+        }
     }
 }
 
