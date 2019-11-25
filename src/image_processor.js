@@ -14,26 +14,9 @@ class gltfImageProcessor
             {
                 continue;
             }
-
             if (image instanceof Ktx2Image)
             {
-                console.log("loading a Ktx2Image!");
                 continue;
-
-                // if (this.mimeType == ImageMimeType.KTX2)
-                // {
-                //     const image = new Ktx2Image();
-
-                //     console.log("loading " + this.uri);
-
-                //     axios.get(this.uri, { responseType: 'arraybuffer'})
-                //         .then(function(response)
-                //         {
-                //             image.initialize(response.data);
-                //         })
-                //         .catch((error) => console.log(error));
-                //     return true;
-                // }
             }
 
             let newDimensions = undefined;

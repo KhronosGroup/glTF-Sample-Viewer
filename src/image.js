@@ -3,6 +3,7 @@ import { Ktx2Image } from '../libs/ktx2image.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
+import axios from '../libs/axios.min.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};
 
@@ -53,7 +54,6 @@ class gltfImage extends GltfObject
         else if (this.mimeType === ImageMimeType.KTX2)
         {
             this.image = new Ktx2Image();
-            return;
         }
         else
         {
@@ -62,14 +62,14 @@ class gltfImage extends GltfObject
 
         this.image.crossOrigin = "";
         const self = this;
-        const promise = new Promise(function(resolve)
+        const promise = new Promise(resolve =>
         {
             self.image.onload = resolve;
             self.image.onerror = resolve;
 
             if (!self.setImageFromBufferView(gltf) &&
                 !self.setImageFromFiles(additionalFiles) &&
-                !self.setImageFromUri(gltf))
+                !self.setImageFromUri(resolve))
             {
                 console.error("Was not able to resolve image with uri '%s'", self.uri);
                 resolve();
@@ -79,14 +79,30 @@ class gltfImage extends GltfObject
         return promise;
     }
 
-    setImageFromUri()
+    setImageFromUri(callback)
     {
         if (this.uri === undefined)
         {
             return false;
         }
 
-        this.image.src = this.uri;
+        if (this.image instanceof Ktx2Image)
+        {
+            console.log("loading " + this.uri);
+
+            axios.get(this.uri, { responseType: 'arraybuffer'})
+                .then(response =>
+                {
+                    console.log("got data");
+                    this.image.initialize(response.data);
+                    callback();
+                });
+        }
+        else
+        {
+            this.image.src = this.uri;
+        }
+
         return true;
     }
 
