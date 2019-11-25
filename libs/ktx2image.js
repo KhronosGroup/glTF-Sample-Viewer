@@ -2,7 +2,9 @@ const VERSION = [ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32, 0x30, 0xBB, 0x0D, 0x0A, 0x
 const VERSION_OFFSET = 0;
 const VERSION_LENGTH = VERSION.length;
 const HEADER_OFFSET = VERSION_OFFSET + VERSION_LENGTH;
-const HEADER_LENGTH = 9 * 4;
+const HEADER_LENGTH = 9 * 4; // 9 uint32s
+const INDEX_OFFSET = HEADER_OFFSET + HEADER_LENGTH;
+const INDEX_LENGTH = 4 * 4 + 2 * 8; // 4 uint32s and 2 uint64s
 
 class Ktx2Image
 {
@@ -11,12 +13,15 @@ class Ktx2Image
         const version = new DataView(arrayBuffer, VERSION_OFFSET, VERSION_LENGTH);
         if (! this.checkVersion(version))
         {
-            console.error("Invalid Ktx2 version identifier");
+            console.error("Invalid KTX2 version identifier");
             return;
         }
 
         const header = new DataView(arrayBuffer, HEADER_OFFSET, HEADER_LENGTH);
         this.parseHeader(header);
+
+        const fileIndex = new DataView(arrayBuffer, INDEX_OFFSET, INDEX_LENGTH);
+        this.parseIndex(fileIndex);
     }
 
     checkVersion(version)
@@ -34,8 +39,13 @@ class Ktx2Image
 
     parseHeader(header)
     {
-        let index = 0;
-        const getNext = () => header.getUint32(index++ * 4, true);
+        let offset = 0;
+        const getNext = () =>
+        {
+            const result = header.getUint32(offset, true);
+            offset += 4;
+            return result;
+        };
 
         this.vkFormat = getNext();
         this.typeSize = getNext();
@@ -46,6 +56,30 @@ class Ktx2Image
         this.faceCount = getNext();
         this.levelCount = getNext();
         this.suporcompressionScheme = getNext();
+    }
+
+    parseIndex(fileIndex)
+    {
+        let offset = 0;
+        const getNext32 = () =>
+        {
+            const result = fileIndex.getUint32(offset, true);
+            offset += 4;
+            return result;
+        };
+        const getNext64 = () =>
+        {
+            const result = fileIndex.getBigUint64(offset, true);
+            offset += 8;
+            return result;
+        };
+
+        this.dfdByteOffset = getNext32();
+        this.dfdByteLength = getNext32();
+        this.kvdByteOffset = getNext32();
+        this.kvdByteLength = getNext32();
+        this.sgdByteOffset = getNext64();
+        this.sgdByteLength = getNext64();
     }
 }
 
