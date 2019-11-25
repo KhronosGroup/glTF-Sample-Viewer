@@ -1,9 +1,9 @@
 class Ktx2Image
 {
-	initialize(binaryData)
-	{
+    initialize(binaryData)
+    {
 
-	}
+    }
 }
 
 export { Ktx2Image };

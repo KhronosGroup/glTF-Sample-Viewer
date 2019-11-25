@@ -4,7 +4,7 @@ import { gltfBufferView } from './buffer_view.js';
 import { gltfCamera } from './camera.js';
 import { gltfImage } from './image.js';
 import { gltfLight } from './light.js';
-import { ImageBasedLight } from './image_based_light.js'
+import { ImageBasedLight } from './image_based_light.js';
 import { gltfMaterial } from './material.js';
 import { gltfMesh } from './mesh.js';
 import { gltfNode } from './node.js';
