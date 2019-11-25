@@ -88,12 +88,9 @@ class gltfImage extends GltfObject
 
         if (this.image instanceof Ktx2Image)
         {
-            console.log("loading " + this.uri);
-
             axios.get(this.uri, { responseType: 'arraybuffer'})
                 .then(response =>
                 {
-                    console.log("got data");
                     this.image.initialize(response.data);
                     callback();
                 });
