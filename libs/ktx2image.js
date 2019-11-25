@@ -21,8 +21,6 @@ class Ktx2Image
 
     checkVersion(version)
     {
-        const VERSION_OFFSET = 0;
-
         for (let i = 0; i < VERSION_LENGTH; i++)
         {
             if (version.getUint8(i) != VERSION[i])
@@ -36,7 +34,18 @@ class Ktx2Image
 
     parseHeader(header)
     {
+        let index = 0;
+        const getNext = () => header.getUint32(index++ * 4, true);
 
+        this.vkFormat = getNext();
+        this.typeSize = getNext();
+        this.pixelWidth = getNext();
+        this.pixelHeight = getNext();
+        this.pixelDepth = getNext();
+        this.layerCount = getNext();
+        this.faceCount = getNext();
+        this.levelCount = getNext();
+        this.suporcompressionScheme = getNext();
     }
 }
 
