@@ -173,7 +173,7 @@ float visibility(float NdotL, float NdotV, float alphaRoughness)
 float microfacetDistribution(float NdotH, float alphaRoughness)
 {
     float alphaRoughnessSq = alphaRoughness * alphaRoughness;
-    float f = (NdotH * alphaRoughnessSq - NdotH) * NdotH + 1.0;
+    float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
