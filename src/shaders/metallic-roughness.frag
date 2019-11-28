@@ -366,16 +366,17 @@ void main()
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
-            lightColor = applyDirectionalLight(light, materialInfo, view);
+            lightColor += applyDirectionalLight(light, materialInfo, view);
         }
         else if (light.type == LightType_Point)
         {
-            lightColor = applyPointLight(light, materialInfo, view);
+            lightColor += applyPointLight(light, materialInfo, view);
         }
         else if (light.type == LightType_Spot)
         {
-            lightColor = applySpotLight(light, materialInfo, view);
+            lightColor += applySpotLight(light, materialInfo, view);
         }
+        color += lightColor;
     }
 #endif
 
