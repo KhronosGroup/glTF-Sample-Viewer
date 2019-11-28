@@ -52,21 +52,18 @@ const int LightType_Spot = 2;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
-#if defined(MATERIAL_METALLICROUGHNESS)
+// METALLICROUGHNESS)
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
-#endif
 
-#ifdef MATERIAL_SPECULARGLOSSINESS
+// SPECULARGLOSSINESS
 uniform vec3 u_SpecularFactor;
 uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
-#endif
 
-#ifdef ALPHAMODE_MASK
+// ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
-#endif
 
 uniform vec3 u_Camera;
 uniform int u_MipCount;
@@ -121,7 +118,6 @@ vec3 fresnelReflection(vec3 f0, vec3 f90, float VdotH)
 // Calculation of the lighting contribution from an optional Image Based Light source.
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
-#ifdef USE_IBL
 vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
 {
     float NdotV = clamp(dot(materialInfo.normal, v), 0.0, 1.0);
@@ -150,7 +146,6 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
 
     return diffuse + specular;
 }
-#endif //USE_IBL
 
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
