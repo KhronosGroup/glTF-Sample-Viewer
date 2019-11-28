@@ -18,12 +18,11 @@
 
 precision highp float;
 
-out vec4 g_finalColor;
-
-
 #include <tonemapping.glsl>
 #include <textures.glsl>
 #include <functions.glsl>
+
+out vec4 g_finalColor;
 
 // KHR_lights_punctual extension.
 // see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
@@ -53,7 +52,7 @@ const int LightType_Spot = 2;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
-#if defined(MATERIAL_SPECULARGLOSSINESS) || defined(MATERIAL_METALLICROUGHNESS)
+#if defined(MATERIAL_METALLICROUGHNESS)
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
@@ -76,8 +75,26 @@ uniform float u_ClearcoatRoughnessFactor;
 #endif
 
 uniform vec3 u_Camera;
-
 uniform int u_MipCount;
+
+vec4 getBaseColor()
+{
+    vec4 baseColor = vec4(1, 1, 1, 1);
+
+    #if defined(MATERIAL_SPECULARGLOSSINESS)
+        baseColor = u_DiffuseFactor;
+    #elif defined(MATERIAL_METALLICROUGHNESS)
+        baseColor = u_BaseColorFactor;
+    #endif
+
+    #if defined(MATERIAL_SPECULARGLOSSINESS) && defined(HAS_DIFFUSE_MAP)
+        baseColor *= SRGBtoLINEAR(texture(u_DiffuseSampler, getDiffuseUV()));
+    #elif defined(MATERIAL_METALLICROUGHNESS) && defined(HAS_BASE_COLOR_MAP)
+        baseColor *= SRGBtoLINEAR(texture(u_BaseColorSampler, getBaseColorUV()));
+    #endif
+
+    return baseColor * getVertexColor();
+}
 
 struct MaterialInfo
 {
@@ -93,7 +110,6 @@ struct MaterialInfo
     vec3 normal;
     float clearcoatFactor;
 };
-
 
 // Lambert lighting
 // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
@@ -266,7 +282,7 @@ void main()
     // or from a metallic-roughness map
     float perceptualRoughness = 0.0;
     float metallic = 0.0;
-    vec4 baseColor = vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 baseColor = getBaseColor();
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
@@ -291,14 +307,6 @@ void main()
     perceptualRoughness = 1.0 - u_GlossinessFactor;
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
 
-#ifdef HAS_DIFFUSE_MAP
-    baseColor = SRGBtoLINEAR(texture(u_DiffuseSampler, getDiffuseUV())) * u_DiffuseFactor;
-#else
-    baseColor = u_DiffuseFactor;
-#endif // !HAS_DIFFUSE_MAP
-
-    baseColor *= getVertexColor();
-
     // f0 = specular
     specularColor = f0;
     float oneMinusSpecularStrength = 1.0 - max(max(f0.r, f0.g), f0.b);
@@ -317,13 +325,6 @@ void main()
 #else
     metallic = u_MetallicFactor;
     perceptualRoughness = u_RoughnessFactor;
-#endif
-
-    // The albedo may be defined from a base texture or a flat color
-#ifdef HAS_BASE_COLOR_MAP
-    baseColor = SRGBtoLINEAR(texture(u_BaseColorSampler, getBaseColorUV())) * u_BaseColorFactor;
-#else
-    baseColor = u_BaseColorFactor;
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
@@ -352,8 +353,6 @@ void main()
         clearcoatNormal = getSurface();
     #endif
 #endif
-
-    baseColor *= getVertexColor();
 
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
 
