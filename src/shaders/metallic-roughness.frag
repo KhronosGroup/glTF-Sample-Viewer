@@ -101,20 +101,6 @@ struct MaterialInfo
     vec3 normal;
 };
 
-// Lambert lighting
-// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-vec3 diffuse(MaterialInfo materialInfo)
-{
-    return materialInfo.diffuseColor / M_PI;
-}
-
-// The following equation models the Fresnel reflectance term of the spec equation (aka F())
-// Implementation of fresnel from [4], Equation 15
-vec3 fresnelReflection(vec3 f0, vec3 f90, float VdotH)
-{
-    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
-}
-
 // Calculation of the lighting contribution from an optional Image Based Light source.
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
@@ -147,16 +133,28 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
     return diffuse + specular;
 }
 
+// Lambert lighting
+// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+vec3 lambertian(vec3 diffuseColor)
+{
+    return diffuseColor / M_PI;
+}
+
+// The following equation models the Fresnel reflectance term of the spec equation (aka F())
+// Implementation of fresnel from [4], Equation 15
+vec3 fresnelReflection(vec3 f0, vec3 f90, float VdotH)
+{
+    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+}
+
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
 // see Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. Journal of Computer Graphics Techniques, 3
 // see Real-Time Rendering. Page 331 to 336.
 // see https://google.github.io/filament/Filament.md.html#materialsystem/specularbrdf/geometricshadowing(specularg)
-float visibilityOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
+float visibility(float NdotL, float NdotV, float alphaRoughness)
 {
-    float NdotL = angularInfo.NdotL;
-    float NdotV = angularInfo.NdotV;
-    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
+    float alphaRoughnessSq = alphaRoughness * alphaRoughness;
 
     float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
     float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
@@ -172,10 +170,10 @@ float visibilityOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
 // Implementation from "Average Irregularity Representation of a Roughened Surface for Ray Reflection" by T. S. Trowbridge, and K. P. Reitz
 // Follows the distribution function recommended in the SIGGRAPH 2013 course notes from EPIC Games [1], Equation 3.
-float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
+float microfacetDistribution(float NdotH, float alphaRoughness)
 {
-    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
-    float f = (angularInfo.NdotH * alphaRoughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
+    float alphaRoughnessSq = alphaRoughness * alphaRoughness;
+    float f = (NdotH * alphaRoughnessSq - NdotH) * NdotH + 1.0;
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
@@ -187,11 +185,11 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
     {
         // Calculate the shading terms for the microfacet specular shading model
         vec3 F = fresnelReflection(materialInfo.f0, materialInfo.f90, angularInfo.VdotH);
-        float Vis = visibilityOcclusion(materialInfo, angularInfo);
-        float D = microfacetDistribution(materialInfo, angularInfo);
+        float Vis = visibility(angularInfo.NdotL, angularInfo.NdotV, materialInfo.alphaRoughness);
+        float D = microfacetDistribution(angularInfo.NdotH, materialInfo.alphaRoughness);
 
         // Calculation of analytical lighting contribution
-        vec3 diffuseContrib = (1.0 - F) * diffuse(materialInfo);
+        vec3 diffuseContrib = (1.0 - F) * lambertian(materialInfo.diffuseColor);
         vec3 specContrib = F * Vis * D;
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
