@@ -327,35 +327,7 @@ void main()
     perceptualRoughness = u_RoughnessFactor;
 #endif
 
-#ifdef MATERIAL_CLEARCOAT
-    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
-        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
-        clearcoatFactor = ccSample.r * u_ClearcoatFactor;
-    #else
-        clearcoatFactor = u_ClearcoatFactor;
-    #endif
-#endif
-
-#ifdef MATERIAL_CLEARCOAT
-    #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
-        clearcoatRoughness = ccSampleRough.g * u_ClearcoatRoughnessFactor;
-    #else
-        clearcoatRoughness = u_ClearcoatRoughnessFactor;
-    #endif
-#endif
-
-#ifdef MATERIAL_CLEARCOAT
-    #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        clearcoatNormal = ccSampleNor.xyz;
-    #else
-        clearcoatNormal = getSurface();
-    #endif
-#endif
-
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
-
     specularColor = mix(f0, baseColor.rgb, metallic);
 #endif // ! MATERIAL_METALLICROUGHNESS
 
@@ -423,70 +395,40 @@ void main()
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         vec3 lightColor = vec3(0);
-        #ifdef MATERIAL_CLEARCOAT
-            vec3 clearcoatColor = vec3(0);
-            vec3 pointToLight = vec3(0);
-        #endif
         Light light = u_Lights[i];
         if (light.type == LightType_Directional)
         {
             lightColor = applyDirectionalLight(light, materialInfo, view);
-            #ifdef MATERIAL_CLEARCOAT
-                pointToLight = -light.direction;
-                clearcoatColor = applyDirectionalLight(light, clearCoatInfo, view);
-            #endif
         }
         else if (light.type == LightType_Point)
         {
             lightColor = applyPointLight(light, materialInfo, view);
-            #ifdef MATERIAL_CLEARCOAT
-                pointToLight = light.position - v_Position;
-                clearcoatColor = applyPointLight(light, clearCoatInfo, view);
-            #endif
         }
         else if (light.type == LightType_Spot)
         {
             lightColor = applySpotLight(light, materialInfo, view);
-            #ifdef MATERIAL_CLEARCOAT
-                pointToLight = light.position - v_Position;
-                clearcoatColor = applySpotLight(light, clearCoatInfo, view);
-            #endif
         }
-        #ifdef MATERIAL_CLEARCOAT
-            AngularInfo angularInfo = getAngularInfo(pointToLight, clearCoatInfo.normal, view);
-            color += clearcoatBlending(lightColor, clearcoatColor, clearCoatInfo.clearcoatFactor, angularInfo);
-        #else
-            color += lightColor;
-        #endif
     }
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    vec3 iblColor = getIBLContribution(materialInfo, view);
-
-    #ifdef MATERIAL_CLEARCOAT
-        vec3 clearcoatContribution = getIBLContribution(clearCoatInfo, view);
-        //todo comment on -normal here
-        AngularInfo angularInfo = getAngularInfo(-clearCoatInfo.normal, clearCoatInfo.normal, view);
-        color += clearcoatBlending(iblColor, clearcoatContribution, clearCoatInfo.clearcoatFactor, angularInfo);
-    #else
-        color += iblColor;
-    #endif
+    color += getIBLContribution(materialInfo, view);
 #endif
 
     float ao = 1.0;
+
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
-    vec3 emissive = vec3(0);
+    vec3 emissive = u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
-    emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb * u_EmissiveFactor;
-    color += emissive;
+    emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
 #endif
+    color += emissive;
 
 #ifndef DEBUG_OUTPUT // no debug
 

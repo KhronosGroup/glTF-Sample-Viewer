@@ -9,10 +9,10 @@ uniform int u_NormalUVSet;
 uniform mat3 u_NormalUVTransform;
 #endif
 
+uniform vec3 u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
 uniform sampler2D u_EmissiveSampler;
 uniform int u_EmissiveUVSet;
-uniform vec3 u_EmissiveFactor;
 uniform mat3 u_EmissiveUVTransform;
 #endif
 
