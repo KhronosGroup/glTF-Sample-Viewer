@@ -193,13 +193,13 @@ float CharlieDistribution(float roughness, float NdotH)
 // https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
 float NeubeltVisibility(AngularInfo angularInfo)
 {
-    return saturate(1.0 / (4.0 * (angularInfo.NdotL + angularInfo.NdotV - angularInfo.NdotL * angularInfo.NdotV)));
+    return clamp(1.0 / (4.0 * (angularInfo.NdotL + angularInfo.NdotV - angularInfo.NdotL * angularInfo.NdotV)),0.0,1.0);
 }
 
 vec3 sheenTerm(vec3 sheenColor, float sheenIntensity, AngularInfo angularInfo, float roughness)
 {
     float sheenDistribution = CharlieDistribution(roughness, angularInfo.NdotH);
-    float sheenVisibility = AshkiminVisibility(angularInfo);
+    float sheenVisibility = NeubeltVisibility(angularInfo);
     return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
 }
 //---------------------------------------------------------------------------------------------------------
