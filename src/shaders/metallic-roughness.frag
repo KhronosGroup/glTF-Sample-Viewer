@@ -190,10 +190,10 @@ float CharlieDistribution(float roughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
 }
 
-//https://www.cs.utah.edu/~shirley/papers/facets.pdf
-float AshkiminVisibility(AngularInfo angularInfo)
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
+float NeubeltVisibility(AngularInfo angularInfo)
 {
-    return 1.0 / (4.0 * (angularInfo.NdotL + angularInfo.NdotV - angularInfo.NdotL * angularInfo.NdotV));
+    return saturate(1.0 / (4.0 * (angularInfo.NdotL + angularInfo.NdotV - angularInfo.NdotL * angularInfo.NdotV)));
 }
 
 vec3 sheenTerm(vec3 sheenColor, float sheenIntensity, AngularInfo angularInfo, float roughness)
