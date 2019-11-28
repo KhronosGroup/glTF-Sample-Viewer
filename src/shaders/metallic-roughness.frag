@@ -204,20 +204,29 @@ vec3 sheenTerm(vec3 sheenColor, float sheenIntensity, AngularInfo angularInfo, f
 }
 //---------------------------------------------------------------------------------------------------------
 
+vec3 diffuseBRDF(MaterialInfo materialInfo, float VdotH)
+{
+    return (1.0 - fresnelReflection(materialInfo.f0, materialInfo.f90, VdotH )) * lambertian(materialInfo.diffuseColor);
+}
+
+vec3 specularMicrofacetBTDF (MaterialInfo materialInfo, AngularInfo angularInfo)
+{
+    vec3 F = fresnelReflection(materialInfo.f0, materialInfo.f90, angularInfo.VdotH);
+    float Vis = visibility(angularInfo.NdotL, angularInfo.NdotV, materialInfo.alphaRoughness);
+    float D = microfacetDistribution(angularInfo.NdotH, materialInfo.alphaRoughness);
+
+    return F * Vis * D;
+}
+
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
 
     if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
-        // Calculate the shading terms for the microfacet specular shading model
-        vec3 F = fresnelReflection(materialInfo.f0, materialInfo.f90, angularInfo.VdotH);
-        float Vis = visibility(angularInfo.NdotL, angularInfo.NdotV, materialInfo.alphaRoughness);
-        float D = microfacetDistribution(angularInfo.NdotH, materialInfo.alphaRoughness);
-
         // Calculation of analytical lighting contribution
-        vec3 diffuseContrib = (1.0 - F) * lambertian(materialInfo.diffuseColor);
-        vec3 specContrib = F * Vis * D;
+        vec3 diffuseContrib = diffuseBRDF(materialInfo, angularInfo.VdotH);
+        vec3 specContrib = specularMicrofacetBTDF(materialInfo, angularInfo);
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
         return angularInfo.NdotL * (diffuseContrib + specContrib);
