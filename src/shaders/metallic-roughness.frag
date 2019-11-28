@@ -270,12 +270,31 @@ vec3 clearcoatBlending(vec3 color, vec3 clearcoatColor, float clearcoatFactor, A
 
 void main()
 {
+    vec4 baseColor = getBaseColor();
+
+#ifdef ALPHAMODE_MASK
+    if(baseColor.a < u_AlphaCutoff)
+    {
+        discard;
+    }
+    baseColor.a = 1.0;
+#endif
+
+#ifdef ALPHAMODE_OPAQUE
+    baseColor.a = 1.0;
+#endif
+
+#ifdef MATERIAL_UNLIT
+    g_finalColor = (vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
+    return;
+#endif
+
     // Metallic and Roughness material properties are packed together
     // In glTF, these factors can be specified by fixed scalar values
     // or from a metallic-roughness map
     float perceptualRoughness = 0.0;
     float metallic = 0.0;
-    vec4 baseColor = getBaseColor();
+
     vec3 diffuseColor = vec3(0.0);
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
@@ -316,23 +335,6 @@ void main()
     diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
     specularColor = mix(f0, baseColor.rgb, metallic);
 #endif // ! MATERIAL_METALLICROUGHNESS
-
-#ifdef ALPHAMODE_MASK
-    if(baseColor.a < u_AlphaCutoff)
-    {
-        discard;
-    }
-    baseColor.a = 1.0;
-#endif
-
-#ifdef ALPHAMODE_OPAQUE
-    baseColor.a = 1.0;
-#endif
-
-#ifdef MATERIAL_UNLIT
-    g_finalColor = (vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
-    return;
-#endif
 
     perceptualRoughness = clamp(perceptualRoughness, 0.0, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
