@@ -120,24 +120,6 @@ float getPerceivedBrightness(vec3 vector)
     return sqrt(0.299 * vector.r * vector.r + 0.587 * vector.g * vector.g + 0.114 * vector.b * vector.b);
 }
 
-// https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows/js/three.pbrUtilities.js#L34
-float solveMetallic(vec3 diffuse, vec3 specular, float oneMinusSpecularStrength) {
-    float specularBrightness = getPerceivedBrightness(specular);
-
-    if (specularBrightness < c_MinReflectance) {
-        return 0.0;
-    }
-
-    float diffuseBrightness = getPerceivedBrightness(diffuse);
-
-    float a = c_MinReflectance;
-    float b = diffuseBrightness * oneMinusSpecularStrength / (1.0 - c_MinReflectance) + specularBrightness - 2.0 * c_MinReflectance;
-    float c = c_MinReflectance - specularBrightness;
-    float D = b * b - 4.0 * a * c;
-
-    return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
-}
-
 AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
 {
     // Standard one-letter names

@@ -304,11 +304,6 @@ void main()
     float oneMinusSpecularStrength = 1.0 - max(max(f0.r, f0.g), f0.b);
     diffuseColor = baseColor.rgb * oneMinusSpecularStrength;
 
-#ifdef DEBUG_METALLIC
-    // do conversion between metallic M-R and S-G metallic
-    metallic = solveMetallic(baseColor.rgb, specularColor, oneMinusSpecularStrength);
-#endif // ! DEBUG_METALLIC
-
 #endif // ! MATERIAL_SPECULARGLOSSINESS
 
 #ifdef MATERIAL_METALLICROUGHNESS
@@ -500,10 +495,6 @@ void main()
     output_color = vec4(toneMap(color), baseColor.a);
 
 #else // debug output
-
-    #ifdef DEBUG_METALLIC
-        output_color.rgb = vec3(metallic);
-    #endif
 
     #ifdef DEBUG_ROUGHNESS
         output_color.rgb = vec3(perceptualRoughness);
