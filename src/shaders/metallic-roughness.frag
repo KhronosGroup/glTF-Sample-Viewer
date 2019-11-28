@@ -177,6 +177,33 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
+//Sheen implementation
+// See  https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
+
+// Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
+float CharlieDistribution(float roughness, float NdotH)
+{
+    float alphaG = roughness * roughness;
+    float invR = 1.0 / alphaG;
+    float cos2h = NdotH * NdotH;
+    float sin2h = 1.0 - cos2h;
+    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
+}
+
+//https://www.cs.utah.edu/~shirley/papers/facets.pdf
+float AshkiminVisibility(AngularInfo angularInfo)
+{
+    return 1.0 / (4.0 * (angularInfo.NdotL + angularInfo.NdotV - angularInfo.NdotL * angularInfo.NdotV));
+}
+
+vec3 sheenTerm(vec3 sheenColor, float sheenIntensity, AngularInfo angularInfo, float roughness)
+{
+    float sheenDistribution = CharlieDistribution(roughness, angularInfo.NdotH);
+    float sheenVisibility = AshkiminVisibility(angularInfo);
+    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
+}
+//---------------------------------------------------------------------------------------------------------
+
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
