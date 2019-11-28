@@ -68,12 +68,6 @@ uniform float u_GlossinessFactor;
 uniform float u_AlphaCutoff;
 #endif
 
-//Clearcoat
-#ifdef MATERIAL_CLEARCOAT
-uniform float u_ClearcoatFactor;
-uniform float u_ClearcoatRoughnessFactor;
-#endif
-
 uniform vec3 u_Camera;
 uniform int u_MipCount;
 
@@ -108,7 +102,6 @@ struct MaterialInfo
     vec3 specularColor;           // color contribution from specular lighting
 
     vec3 normal;
-    float clearcoatFactor;
 };
 
 // Lambert lighting
@@ -287,13 +280,6 @@ void main()
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
 
-    //values from the clearcoat extension
-    #ifdef MATERIAL_CLEARCOAT
-    float clearcoatFactor = 0.0;
-    float clearcoatRoughness = 0.0;
-    vec3 clearcoatNormal = vec3(0.0);
-    #endif
-
     vec4 output_color = baseColor;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -375,21 +361,8 @@ void main()
         diffuseColor,
         specularEnvironmentR90,
         specularColor,
-        normal,
-        0.0 //Clearcoat factor is null
+        normal
     );
-    #ifdef MATERIAL_CLEARCOAT
-    MaterialInfo clearCoatInfo = MaterialInfo(
-        clearcoatRoughness,
-        vec3(0.04), //fixed from specification //todo use variable from functions
-        clearcoatRoughness * clearcoatRoughness, //alphaRoughness is roughnessvalue squared
-        vec3(0.0), //clearcoat layer has no diffuse color
-        vec3(1.0), //F_90 = 1.0
-        vec3(1.0), //clearcoat layer color is white
-        clearcoatNormal,
-        clearcoatFactor
-    );
-    #endif
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
