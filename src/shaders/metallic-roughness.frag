@@ -67,6 +67,10 @@ uniform float u_SheenIntensityFactor;
 uniform vec3 u_SheenColorFactor;
 uniform float u_SheenRoughness;
 
+//Clearcoat
+uniform float u_ClearcoatFactor;
+uniform float u_ClearcoatRoughnessFactor;
+
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
 
@@ -110,6 +114,9 @@ struct MaterialInfo
     vec3 sheenColor;
     float sheenRoughness;
 
+    float clearcoatFactor;
+    vec3 clearcoatNormal;
+    float clearcoatRoughness;
 };
 
 // Lambert lighting
@@ -181,7 +188,16 @@ vec3 sheenLayer(vec3 sheenColor, float sheenIntensity, float sheenRoughness, flo
     float sheenVisibility = NeubeltVisibility(NdotL, NdotV);
     return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility + (1.0 - sheenIntensity * sheenDistribution * sheenVisibility) * diffuse_term;
 }
-//---------------------------------------------------------------------------------------------------------
+
+//--------------------- Clearcoat -------------------------------------------------------------------------
+// See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
+vec3 clearcoatBlending(vec3 color, vec3 clearcoatLayer, float clearcoatFactor, float NdotV, float NdotL, float VdotH)
+{
+    vec3 factor0 = (1.0 - clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), NdotV)) * (1.0 - clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), NdotL));
+    vec3 factor1 = clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), VdotH);
+    return color * factor0 + clearcoatLayer * factor1;
+}
+
 
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 diffuseBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
@@ -235,8 +251,36 @@ vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
     diffuse = sheenLayer(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, NdotL, NdotV, NdotH, diffuse);
 #endif
 
+#ifdef MATERIAL_CLEARCOAT
+    NdotV = clamp(dot(materialInfo.clearcoatNormal, v), 0.0, 1.0);
+
+    lod = clamp(materialInfo.clearcoatRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    reflection = normalize(reflect(-v, materialInfo.clearcoatNormal));
+
+    brdfSamplePoint = clamp(vec2(NdotV, materialInfo.clearcoatRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    // retrieve a scale and bias to F0. See [1], Figure 3
+    brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
+
+    specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
+
+    #ifdef USE_HDR
+    // Already linear.
+        specularLight = specularSample.rgb;
+    #else
+        specularLight = SRGBtoLINEAR(specularSample).rgb;
+    #endif
+
+    float NdotL =  clampedDot(materialInfo.clearcoatNormal, reflection);
+    vec3 h = normalize(reflection + v);
+    float VdotH = clampedDot(v, h);
+    vec3 clearcoatLayer = specularLight * (vec3(1.0) * brdf.x + brdf.y);
+    return clearcoatBlending(diffuse + specular, clearcoatLayer, materialInfo.clearcoatFactor, NdotV,  NdotL, VdotH);
+#endif
+
     return diffuse + specular;
 }
+
+
 
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
@@ -305,16 +349,6 @@ vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 view)
     float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
     vec3 shade = getPointShade(pointToLight, materialInfo, view);
     return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
-}
-
-//--------------------- Extensions ---------------------------------------
-
-// See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
-vec3 clearcoatBlending(vec3 color, vec3 clearcoatColor, float clearcoatFactor, AngularInfo angularInfo)
-{
-    vec3 factor0 = (1.0 - clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), angularInfo.NdotV)) * (1.0 - clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), angularInfo.NdotL));
-    vec3 factor1 = clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), angularInfo.VdotH);
-    return color * factor0 + clearcoatColor * factor1;
 }
 
 void main()
@@ -411,6 +445,29 @@ void main()
         materialInfo.sheenIntensity = u_SheenIntensityFactor;
     #endif
     materialInfo.sheenRoughness = u_SheenRoughness;
+#endif
+
+#ifdef MATERIAL_CLEARCOAT
+    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
+        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        materialInfo.clearcoatFactor = ccSample.r * u_ClearcoatFactor;
+    #else
+        materialInfo.clearcoatFactor = u_ClearcoatFactor;
+    #endif
+
+    #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        materialInfo.clearcoatRoughness = ccSampleRough.g * u_ClearcoatRoughnessFactor;
+    #else
+        materialInfo.clearcoatRoughness = u_ClearcoatRoughnessFactor;
+    #endif
+
+    #ifdef HAS_CLEARCOAT_NORMAL_MAP
+        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        materialInfo.clearcoatNormal = ccSampleNor.xyz;
+    #else
+        materialInfo.clearcoatNormal = getSurface();
+    #endif
 #endif
 
     // LIGHTING
