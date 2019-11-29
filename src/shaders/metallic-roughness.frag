@@ -62,6 +62,11 @@ uniform vec3 u_SpecularFactor;
 uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 
+//Sheen extension
+uniform float u_SheenIntensityFactor;
+uniform vec3 u_SheenColorFactor;
+uniform float u_SheenRoughness;
+
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
 
@@ -99,39 +104,13 @@ struct MaterialInfo
     vec3 specularColor;           // color contribution from specular lighting
 
     vec3 normal;
+
+    vec3 baseColor;
+    float sheenIntensity;
+    vec3 sheenColor;
+    float sheenRoughness;
+
 };
-
-// Calculation of the lighting contribution from an optional Image Based Light source.
-// Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
-// See our README.md on Environment Maps [3] for additional discussion.
-vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
-{
-    float NdotV = clamp(dot(materialInfo.normal, v), 0.0, 1.0);
-
-    float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 reflection = normalize(reflect(-v, materialInfo.normal));
-
-    vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    // retrieve a scale and bias to F0. See [1], Figure 3
-    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
-
-    vec4 diffuseSample = texture(u_DiffuseEnvSampler, materialInfo.normal);
-    vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
-
-#ifdef USE_HDR
-    // Already linear.
-    vec3 diffuseLight = diffuseSample.rgb;
-    vec3 specularLight = specularSample.rgb;
-#else
-    vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
-    vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;
-#endif
-
-    vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
-    vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
-
-    return diffuse + specular;
-}
 
 // Lambert lighting
 // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
@@ -177,14 +156,14 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
-//Sheen implementation
+//Sheen implementation-------------------------------------------------------------------------------------
 // See  https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
 
 // Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
-float CharlieDistribution(float alphaRoughness, float NdotH)
+float CharlieDistribution(float sheenRoughness, float NdotH)
 {
-    float alphaG = alphaRoughness * alphaRoughness; // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen diverges from Estevez et. all.
-    float invR = 1.0 / alphaG;
+    //float alphaG = sheenRoughness * sheenRoughness;
+    float invR = 1.0 / sheenRoughness;
     float cos2h = NdotH * NdotH;
     float sin2h = 1.0 - cos2h;
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
@@ -196,11 +175,11 @@ float NeubeltVisibility(float NdotL, float NdotV)
     return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
 }
 
-vec3 sheenTerm(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotH, float NdotL, float NdotV)
+vec3 sheenLayer(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH, vec3 diffuse_term)
 {
     float sheenDistribution = CharlieDistribution(sheenRoughness, NdotH);
-    float sheenVisibility = NeubeltVisibility(NdotL,NdotV);
-    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
+    float sheenVisibility = NeubeltVisibility(NdotL, NdotV);
+    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility + (1.0 - sheenIntensity * sheenDistribution * sheenVisibility) * diffuse_term;
 }
 //---------------------------------------------------------------------------------------------------------
 
@@ -218,6 +197,45 @@ vec3 specularMicrofacetBRDF (vec3 f0, vec3 f90, float alphaRoughness, float Vdot
     float D = microfacetDistribution(NdotH, alphaRoughness);
 
     return F * Vis * D;
+}
+
+// Calculation of the lighting contribution from an optional Image Based Light source.
+// Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
+// See our README.md on Environment Maps [3] for additional discussion.
+vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
+{
+    float NdotV = clamp(dot(materialInfo.normal, v), 0.0, 1.0);
+
+    float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    vec3 reflection = normalize(reflect(-v, materialInfo.normal));
+
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    // retrieve a scale and bias to F0. See [1], Figure 3
+    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
+
+    vec4 diffuseSample = texture(u_DiffuseEnvSampler, materialInfo.normal);
+    vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
+
+#ifdef USE_HDR
+    // Already linear.
+    vec3 diffuseLight = diffuseSample.rgb;
+    vec3 specularLight = specularSample.rgb;
+#else
+    vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
+    vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;
+#endif
+
+    vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
+    vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
+
+#ifdef MATERIAL_SHEEN
+    float NdotL =  clampedDot(materialInfo.normal, reflection);
+    vec3 h = normalize(reflection + v);
+    float NdotH = clampedDot(materialInfo.normal, h);
+    diffuse = sheenLayer(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, NdotL, NdotV, NdotH, diffuse);
+#endif
+
+    return diffuse + specular;
 }
 
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
@@ -367,6 +385,8 @@ void main()
     specularColor = mix(f0, baseColor.rgb, metallic);
 #endif // ! MATERIAL_METALLICROUGHNESS
 
+    MaterialInfo materialInfo;
+
     perceptualRoughness = clamp(perceptualRoughness, 0.0, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
 
@@ -381,21 +401,31 @@ void main()
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     vec3 specularEnvironmentR90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
 
-    // LIGHTING
+#ifdef MATERIAL_SHEEN
+    #ifdef HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP
+        vec3 sheenSample = texture(u_sheenColorIntensitySampler, getSheenUV());
+        materialInfo.sheenColor = sheenSample.xyz * u_SheenColorFactor;
+        materialInfo.sheenIntensity = sheenSample.w * u_SheenIntensityFactor;
+    #else
+        materialInfo.sheenColor = u_SheenColorFactor;
+        materialInfo.sheenIntensity = u_SheenIntensityFactor;
+    #endif
+    materialInfo.sheenRoughness = u_SheenRoughness;
+#endif
 
+    // LIGHTING
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 normal = getNormal();
     vec3 view = normalize(u_Camera - v_Position);
 
-    MaterialInfo materialInfo = MaterialInfo(
-        perceptualRoughness,
-        specularEnvironmentR0,
-        alphaRoughness,
-        diffuseColor,
-        specularEnvironmentR90,
-        specularColor,
-        normal
-    );
+    materialInfo.perceptualRoughness = perceptualRoughness;
+    materialInfo.f0 = specularEnvironmentR0;
+    materialInfo.alphaRoughness = alphaRoughness;
+    materialInfo.diffuseColor = diffuseColor;
+    materialInfo.f90 = specularEnvironmentR90;
+    materialInfo.specularColor = specularColor;
+    materialInfo.normal = normal;
+    materialInfo.baseColor = baseColor.rgb;
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)

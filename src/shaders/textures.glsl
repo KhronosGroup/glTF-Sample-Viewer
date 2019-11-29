@@ -50,6 +50,10 @@ uniform int u_ClearcoatRoughnessUVSet;
 uniform sampler2D u_ClearcoatNormalSampler;
 uniform int u_ClearcoatNormalUVSet;
 
+//sheen
+uniform sampler2D u_sheenColorIntensitySampler;
+uniform int u_sheenColorIntensityUVSet;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -142,5 +146,14 @@ vec2 getClearcoatRoughnessUV()
 vec2 getClearcoatNormalUV()
 {
     vec3 uv = vec3(u_ClearcoatNormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    return uv.xy;
+}
+
+vec2 getSheenUV()
+{
+    vec3 uv = vec3(v_UVCoord1, 1.0);
+#ifdef HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP
+    uv.xy = u_sheenColorIntensityUVSet < 1 ? v_UVCoord1 : v_UVCoord2;
+#endif
     return uv.xy;
 }

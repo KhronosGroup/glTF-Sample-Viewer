@@ -142,3 +142,8 @@ AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
         vec3(0, 0, 0)
     );
 }
+
+float clampedDot(vec3 x, vec3 y)
+{
+    return clamp(dot(x, y), 0.0, 1.0);
+}
