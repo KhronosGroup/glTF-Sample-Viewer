@@ -177,20 +177,58 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
+//Sheen implementation
+// See  https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
+
+// Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
+float CharlieDistribution(float alphaRoughness, float NdotH)
+{
+    float alphaG = alphaRoughness * alphaRoughness; // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen diverges from Estevez et. all.
+    float invR = 1.0 / alphaG;
+    float cos2h = NdotH * NdotH;
+    float sin2h = 1.0 - cos2h;
+    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
+}
+
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
+float NeubeltVisibility(float NdotL, float NdotV)
+{
+    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
+}
+
+vec3 sheenTerm(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotH, float NdotL, float NdotV)
+{
+    float sheenDistribution = CharlieDistribution(sheenRoughness, NdotH);
+    float sheenVisibility = NeubeltVisibility(NdotL,NdotV);
+    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
+}
+//---------------------------------------------------------------------------------------------------------
+
+//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+vec3 diffuseBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
+{
+    return (1.0 - fresnelReflection(f0, f90, VdotH)) * lambertian(diffuseColor);
+}
+
+//  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+vec3 specularMicrofacetBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
+{
+    vec3 F = fresnelReflection(f0, f90, VdotH);
+    float Vis = visibility(NdotL, NdotV, alphaRoughness);
+    float D = microfacetDistribution(NdotH, alphaRoughness);
+
+    return F * Vis * D;
+}
+
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
     AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
-
     if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
     {
-        // Calculate the shading terms for the microfacet specular shading model
-        vec3 F = fresnelReflection(materialInfo.f0, materialInfo.f90, angularInfo.VdotH);
-        float Vis = visibility(angularInfo.NdotL, angularInfo.NdotV, materialInfo.alphaRoughness);
-        float D = microfacetDistribution(angularInfo.NdotH, materialInfo.alphaRoughness);
-
-        // Calculation of analytical lighting contribution
-        vec3 diffuseContrib = (1.0 - F) * lambertian(materialInfo.diffuseColor);
-        vec3 specContrib = F * Vis * D;
+        // Calculation of analytical ligh
+        //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+        vec3 diffuseContrib = diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.diffuseColor, angularInfo.VdotH);
+        vec3 specContrib = specularMicrofacetBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
         return angularInfo.NdotL * (diffuseContrib + specContrib);
