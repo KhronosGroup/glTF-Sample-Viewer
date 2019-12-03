@@ -77,6 +77,29 @@ uniform float u_AlphaCutoff;
 uniform vec3 u_Camera;
 uniform int u_MipCount;
 
+struct MaterialInfo
+{
+    float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
+    vec3 f0;                        // full reflectance color (normal incidence angle)
+
+    float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
+    vec3 albedoColor;
+
+    vec3 f90;                       // reflectance color at grazing angle
+    float metallic;
+
+    vec3 normal; // getNormal()
+    vec3 baseColor; // getBaseColor()
+
+    float sheenIntensity;
+    vec3 sheenColor;
+    float sheenRoughness;
+
+    float clearcoatFactor;
+    vec3 clearcoatNormal;
+    float clearcoatRoughness;
+};
+
 vec4 getBaseColor()
 {
     vec4 baseColor = vec4(1, 1, 1, 1);
@@ -95,29 +118,6 @@ vec4 getBaseColor()
 
     return baseColor * getVertexColor();
 }
-
-struct MaterialInfo
-{
-    float perceptualRoughness;    // roughness value, as authored by the model creator (input to shader)
-    vec3 f0;            // full reflectance color (normal incidence angle)
-
-    float alphaRoughness;         // roughness mapped to a more linear change in the roughness (proposed by [2])
-    vec3 diffuseColor;            // color contribution from diffuse lighting
-
-    vec3 f90;           // reflectance color at grazing angle
-    vec3 specularColor;           // color contribution from specular lighting
-
-    vec3 normal;
-
-    vec3 baseColor;
-    float sheenIntensity;
-    vec3 sheenColor;
-    float sheenRoughness;
-
-    float clearcoatFactor;
-    vec3 clearcoatNormal;
-    float clearcoatRoughness;
-};
 
 // Lambert lighting
 // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
@@ -251,7 +251,7 @@ vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
     {
         // Calculation of analytical ligh
         //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-        vec3 diffuseContrib = diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.diffuseColor, angularInfo.VdotH);
+        vec3 diffuseContrib = diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
         vec3 specContrib = specularMicrofacetBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
         // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
@@ -313,6 +313,83 @@ vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 view)
     return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
 
+MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
+{
+    info.f0 = u_SpecularFactor;
+    info.perceptualRoughness = u_GlossinessFactor;
+
+#ifdef HAS_SPECULAR_GLOSSINESS_MAP
+    vec4 sgSample = SRGBtoLINEAR(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
+    info.perceptualRoughness *= sgSample.a ; // glossiness to roughness
+    info.f0 *= sgSample.rgb; // specular
+#endif // ! HAS_SPECULAR_GLOSSINESS_MAP
+
+    info.perceptualRoughness = 1.0 - info.perceptualRoughness; // 1 - glossiness
+    info.albedoColor = info.baseColor.rgb * (1.0 - max(max(info.f0.r, info.f0.g), info.f0.b));
+
+    return info;
+}
+
+MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
+{
+    info.metallic = u_MetallicFactor;
+    info.perceptualRoughness = u_RoughnessFactor;
+
+#ifdef HAS_METALLIC_ROUGHNESS_MAP
+    // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
+    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
+    vec4 mrSample = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
+    info.perceptualRoughness *= mrSample.g;
+    info.metallic *= mrSample.b;
+#endif
+
+    vec3 f0 = vec3(0.04);
+    info.albedoColor = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
+    info.f0 = mix(f0, info.baseColor.rgb, info.metallic);
+
+    return info;
+}
+
+MaterialInfo getSheenInfo(MaterialInfo info)
+{
+    info.sheenColor = u_SheenColorFactor;
+    info.sheenIntensity = u_SheenIntensityFactor;
+    info.sheenRoughness = u_SheenRoughness;
+
+    #ifdef HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP
+        vec4 sheenSample = texture(u_sheenColorIntensitySampler, getSheenUV());
+        info.sheenColor *= sheenSample.xyz;
+        info.sheenIntensity *= sheenSample.w;
+    #endif
+
+    return info;
+}
+
+MaterialInfo getClearCoatInfo(MaterialInfo info)
+{
+    info.clearcoatFactor = u_ClearcoatFactor;
+    info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
+
+    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
+        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        info.clearcoatFactor *= ccSample.r;
+    #endif
+
+    #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
+        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        info.clearcoatRoughness *= ccSampleRough.g;
+    #endif
+
+    #ifdef HAS_CLEARCOAT_NORMAL_MAP
+        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        info.clearcoatNormal = ccSampleNor.xyz;
+    #else
+        info.clearcoatNormal = getNormal(true); // get geometry normal
+    #endif
+
+    return info;
+}
+
 void main()
 {
     vec4 baseColor = getBaseColor();
@@ -334,123 +411,53 @@ void main()
     return;
 #endif
 
-    // Metallic and Roughness material properties are packed together
-    // In glTF, these factors can be specified by fixed scalar values
-    // or from a metallic-roughness map
-    float perceptualRoughness = 0.0;
-    float metallic = 0.0;
-
-    vec3 diffuseColor = vec3(0.0);
-    vec3 specularColor= vec3(0.0);
-    vec3 f0 = vec3(0.04);
-
-#ifdef MATERIAL_SPECULARGLOSSINESS
-
-#ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = SRGBtoLINEAR(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
-    perceptualRoughness = (1.0 - sgSample.a * u_GlossinessFactor); // glossiness to roughness
-    f0 = sgSample.rgb * u_SpecularFactor; // specular
-#else
-    f0 = u_SpecularFactor;
-    perceptualRoughness = 1.0 - u_GlossinessFactor;
-#endif // ! HAS_SPECULAR_GLOSSINESS_MAP
-
-    // f0 = specular
-    specularColor = f0;
-    float oneMinusSpecularStrength = 1.0 - max(max(f0.r, f0.g), f0.b);
-    diffuseColor = baseColor.rgb * oneMinusSpecularStrength;
-
-#endif // ! MATERIAL_SPECULARGLOSSINESS
-
-#ifdef MATERIAL_METALLICROUGHNESS
-
-#ifdef HAS_METALLIC_ROUGHNESS_MAP
-    // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
-    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
-    perceptualRoughness = mrSample.g * u_RoughnessFactor;
-    metallic = mrSample.b * u_MetallicFactor;
-#else
-    metallic = u_MetallicFactor;
-    perceptualRoughness = u_RoughnessFactor;
-#endif
-
-    diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
-    specularColor = mix(f0, baseColor.rgb, metallic);
-#endif // ! MATERIAL_METALLICROUGHNESS
-
     MaterialInfo materialInfo;
 
-    perceptualRoughness = clamp(perceptualRoughness, 0.0, 1.0);
-    metallic = clamp(metallic, 0.0, 1.0);
+    materialInfo.baseColor = baseColor.rgb;
 
-    // Roughness is authored as perceptual roughness; as is convention,
-    // convert to material roughness by squaring the perceptual roughness [2].
-    float alphaRoughness = perceptualRoughness * perceptualRoughness;
+#ifdef MATERIAL_SPECULARGLOSSINESS
+    materialInfo = getSpecularGlossinessInfo(materialInfo);
+#endif
 
-    // Compute reflectance.
-    float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
-
-    vec3 specularEnvironmentR0 = specularColor.rgb;
-    // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
-    vec3 specularEnvironmentR90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
+#ifdef MATERIAL_METALLICROUGHNESS
+    materialInfo = getMetallicRoughnessInfo(materialInfo);
+#endif
 
 #ifdef MATERIAL_SHEEN
-    #ifdef HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP
-        vec3 sheenSample = texture(u_sheenColorIntensitySampler, getSheenUV());
-        materialInfo.sheenColor = sheenSample.xyz * u_SheenColorFactor;
-        materialInfo.sheenIntensity = sheenSample.w * u_SheenIntensityFactor;
-    #else
-        materialInfo.sheenColor = u_SheenColorFactor;
-        materialInfo.sheenIntensity = u_SheenIntensityFactor;
-    #endif
-    materialInfo.sheenRoughness = u_SheenRoughness;
+    materialInfo = getSheenInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
-        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
-        materialInfo.clearcoatFactor = ccSample.r * u_ClearcoatFactor;
-    #else
-        materialInfo.clearcoatFactor = u_ClearcoatFactor;
-    #endif
-
-    #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
-        materialInfo.clearcoatRoughness = ccSampleRough.g * u_ClearcoatRoughnessFactor;
-    #else
-        materialInfo.clearcoatRoughness = u_ClearcoatRoughnessFactor;
-    #endif
-
-    #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        materialInfo.clearcoatNormal = ccSampleNor.xyz;
-    #else
-        materialInfo.clearcoatNormal = getNormal(true); // get geometry normal
-    #endif
+    materialInfo = getClearCoatInfo(materialInfo);
 #endif
 
-    // LIGHTING
+    materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
+    materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
+
+    // Roughness is authored as perceptual roughness; as is convention,
+    // convert to material roughness by squaring the perceptual roughness.
+    materialInfo.alphaRoughness = materialInfo.perceptualRoughness * materialInfo.perceptualRoughness;
+
+    // Compute reflectance.
+    float reflectance = max(max(materialInfo.f0.r, materialInfo.f0.g), materialInfo.f0.b);
+
+    // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
+    materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
+
     vec3 normal = getNormal(false);
     vec3 view = normalize(u_Camera - v_Position);
 
-    materialInfo.perceptualRoughness = perceptualRoughness;
-    materialInfo.f0 = specularEnvironmentR0;
-    materialInfo.alphaRoughness = alphaRoughness;
-    materialInfo.diffuseColor = diffuseColor;
-    materialInfo.f90 = specularEnvironmentR90;
-    materialInfo.specularColor = specularColor;
     materialInfo.normal = normal;
-    materialInfo.baseColor = baseColor.rgb;
 
+    // LIGHTING
     vec3 f_specular = vec3(0.0);
     vec3 f_diffuse = vec3(0.0);
     vec3 f_emissive = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getSpecularIBLContribution(normal, view, perceptualRoughness, specularColor);
-    f_diffuse += getDiffuseIBLContribution(normal, diffuseColor);
+    f_specular += getSpecularIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
+    f_diffuse += getDiffuseIBLContribution(normal, materialInfo.albedoColor);
 #endif
 
 vec3 punctualColor = vec3(0.0);
@@ -496,11 +503,11 @@ vec3 punctualColor = vec3(0.0);
 #else // debug output
 
     #ifdef DEBUG_METALLIC
-        g_finalColor.rgb = vec3(metallic);
+        g_finalColor.rgb = vec3(materialInfo.metallic);
     #endif
 
     #ifdef DEBUG_ROUGHNESS
-        g_finalColor.rgb = vec3(perceptualRoughness);
+        g_finalColor.rgb = vec3(materialInfo.perceptualRoughness);
     #endif
 
     #ifdef DEBUG_NORMAL
@@ -512,7 +519,7 @@ vec3 punctualColor = vec3(0.0);
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        g_finalColor.rgb = LINEARtoSRGB(baseColor.rgb);
+        g_finalColor.rgb = LINEARtoSRGB(materialInfo.baseColor);
     #endif
 
     #ifdef DEBUG_OCCLUSION
@@ -520,11 +527,19 @@ vec3 punctualColor = vec3(0.0);
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        g_finalColor.rgb = LINEARtoSRGB(emissive).rgb;
+        g_finalColor.rgb = f_emissive; //LINEARtoSRGB(f_emissive).rgb;
     #endif
 
     #ifdef DEBUG_F0
-        g_finalColor.rgb = vec3(f0);
+        g_finalColor.rgb = materialInfo.f0;
+    #endif
+
+    #ifdef DEBUG_FSPECULAR
+        g_finalColor.rgb = f_specular;
+    #endif
+
+    #ifdef DEBUG_FDIFFUSE
+        g_finalColor.rgb = f_diffuse;
     #endif
 
     #ifdef DEBUG_ALPHA
