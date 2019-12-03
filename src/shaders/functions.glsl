@@ -47,7 +47,7 @@ vec4 getVertexColor()
 
 // Find the normal for this fragment, pulling either from a predefined normal map
 // or from the interpolated mesh normal and tangent attributes.
-vec3 getNormal()
+vec3 getNormal(bool ignoreNormalMap)
 {
     vec2 UV = getNormalUV();
 
@@ -63,60 +63,26 @@ vec3 getNormal()
     vec3 ng = normalize(v_Normal);
 #else
     vec3 ng = cross(pos_dx, pos_dy);
-#endif
+#endif // !HAS_NORMALS
 
     t = normalize(t - ng * dot(ng, t));
     vec3 b = normalize(cross(ng, t));
     mat3 tbn = mat3(t, b, ng);
 #else // HAS_TANGENTS
     mat3 tbn = v_TBN;
-#endif
+#endif // !HAS_TANGENTS
 
 #ifdef HAS_NORMAL_MAP
-    vec3 n = texture(u_NormalSampler, UV).rgb;
-    n = normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
+    if(ignoreNormalMap == false){
+        vec3 n = texture(u_NormalSampler, UV).rgb;
+        return normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
+    }else{
+        return normalize(tbn[2].xyz);
+    }
 #else
     // The tbn matrix is linearly interpolated, so we need to re-normalize
-    vec3 n = normalize(tbn[2].xyz);
+    return normalize(tbn[2].xyz);
 #endif
-
-    return n;
-}
-
-vec3 getSurface()
-{
-    vec2 UV = getNormalUV();
-
-    // Retrieve the tangent space matrix
-#ifndef HAS_TANGENTS
-    vec3 pos_dx = dFdx(v_Position);
-    vec3 pos_dy = dFdy(v_Position);
-    vec3 tex_dx = dFdx(vec3(UV, 0.0));
-    vec3 tex_dy = dFdy(vec3(UV, 0.0));
-    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
-
-#ifdef HAS_NORMALS
-    vec3 ng = normalize(v_Normal);
-#else
-    vec3 ng = cross(pos_dx, pos_dy);
-#endif
-
-    t = normalize(t - ng * dot(ng, t));
-    vec3 b = normalize(cross(ng, t));
-    mat3 tbn = mat3(t, b, ng);
-#else // HAS_TANGENTS
-    mat3 tbn = v_TBN;
-#endif
-
-    // The tbn matrix is linearly interpolated, so we need to re-normalize
-    vec3 n = normalize(tbn[2].xyz);
-
-    return n;
-}
-
-float getPerceivedBrightness(vec3 vector)
-{
-    return sqrt(0.299 * vector.r * vector.r + 0.587 * vector.g * vector.g + 0.114 * vector.b * vector.b);
 }
 
 AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)

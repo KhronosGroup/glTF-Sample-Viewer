@@ -198,7 +198,6 @@ vec3 clearcoatBlending(vec3 color, vec3 clearcoatLayer, float clearcoatFactor, f
     return color * factor0 + clearcoatLayer * factor1;
 }
 
-
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 diffuseBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 {
@@ -215,72 +214,35 @@ vec3 specularMicrofacetBRDF (vec3 f0, vec3 f90, float alphaRoughness, float Vdot
     return F * Vis * D;
 }
 
-// Calculation of the lighting contribution from an optional Image Based Light source.
-// Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
-// See our README.md on Environment Maps [3] for additional discussion.
-vec3 getIBLContribution(MaterialInfo materialInfo, vec3 v)
+vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
 {
-    float NdotV = clamp(dot(materialInfo.normal, v), 0.0, 1.0);
+    float NdotV = clampedDot(n, v);
+    float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    vec3 reflection = normalize(reflect(-v, n));
 
-    float lod = clamp(materialInfo.perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 reflection = normalize(reflect(-v, materialInfo.normal));
-
-    vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    // retrieve a scale and bias to F0. See [1], Figure 3
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
-
-    vec4 diffuseSample = texture(u_DiffuseEnvSampler, materialInfo.normal);
     vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
 
-#ifdef USE_HDR
-    // Already linear.
-    vec3 diffuseLight = diffuseSample.rgb;
     vec3 specularLight = specularSample.rgb;
-#else
-    vec3 diffuseLight = SRGBtoLINEAR(diffuseSample).rgb;
-    vec3 specularLight = SRGBtoLINEAR(specularSample).rgb;
+
+#ifndef USE_HDR
+    specularLight = SRGBtoLINEAR(specularLight);
 #endif
 
-    vec3 diffuse = diffuseLight * materialInfo.diffuseColor;
-    vec3 specular = specularLight * (materialInfo.specularColor * brdf.x + brdf.y);
-
-#ifdef MATERIAL_SHEEN
-    float NdotL =  clampedDot(materialInfo.normal, reflection);
-    vec3 h = normalize(reflection + v);
-    float NdotH = clampedDot(materialInfo.normal, h);
-    diffuse = sheenLayer(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, NdotL, NdotV, NdotH, diffuse);
-#endif
-
-#ifdef MATERIAL_CLEARCOAT
-    NdotV = clamp(dot(materialInfo.clearcoatNormal, v), 0.0, 1.0);
-
-    lod = clamp(materialInfo.clearcoatRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    reflection = normalize(reflect(-v, materialInfo.clearcoatNormal));
-
-    brdfSamplePoint = clamp(vec2(NdotV, materialInfo.clearcoatRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    // retrieve a scale and bias to F0. See [1], Figure 3
-    brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
-
-    specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
-
-    #ifdef USE_HDR
-    // Already linear.
-        specularLight = specularSample.rgb;
-    #else
-        specularLight = SRGBtoLINEAR(specularSample).rgb;
-    #endif
-
-    float NdotL =  clampedDot(materialInfo.clearcoatNormal, reflection);
-    vec3 h = normalize(reflection + v);
-    float VdotH = clampedDot(v, h);
-    vec3 clearcoatLayer = specularLight * (vec3(1.0) * brdf.x + brdf.y);
-    return clearcoatBlending(diffuse + specular, clearcoatLayer, materialInfo.clearcoatFactor, NdotV,  NdotL, VdotH);
-#endif
-
-    return diffuse + specular;
+   return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
+vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
+{
+    vec3 diffuseLight = texture(u_DiffuseEnvSampler, n).rgb;
 
+    #ifndef USE_HDR
+        diffuseLight = SRGBtoLINEAR(diffuseLight);
+    #endif
+
+    return diffuseLight * diffuseColor;
+}
 
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
@@ -382,8 +344,6 @@ void main()
     vec3 specularColor= vec3(0.0);
     vec3 f0 = vec3(0.04);
 
-    vec4 output_color = baseColor;
-
 #ifdef MATERIAL_SPECULARGLOSSINESS
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
@@ -466,13 +426,12 @@ void main()
         vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
         materialInfo.clearcoatNormal = ccSampleNor.xyz;
     #else
-        materialInfo.clearcoatNormal = getSurface();
+        materialInfo.clearcoatNormal = getNormal(true); // get geometry normal
     #endif
 #endif
 
     // LIGHTING
-    vec3 color = vec3(0.0, 0.0, 0.0);
-    vec3 normal = getNormal();
+    vec3 normal = getNormal(false);
     vec3 view = normalize(u_Camera - v_Position);
 
     materialInfo.perceptualRoughness = perceptualRoughness;
@@ -484,88 +443,95 @@ void main()
     materialInfo.normal = normal;
     materialInfo.baseColor = baseColor.rgb;
 
-#ifdef USE_PUNCTUAL
-    for (int i = 0; i < LIGHT_COUNT; ++i)
-    {
-        vec3 lightColor = vec3(0);
-        Light light = u_Lights[i];
-        if (light.type == LightType_Directional)
-        {
-            lightColor += applyDirectionalLight(light, materialInfo, view);
-        }
-        else if (light.type == LightType_Point)
-        {
-            lightColor += applyPointLight(light, materialInfo, view);
-        }
-        else if (light.type == LightType_Spot)
-        {
-            lightColor += applySpotLight(light, materialInfo, view);
-        }
-        color += lightColor;
-    }
-#endif
+    vec3 f_specular = vec3(0.0);
+    vec3 f_diffuse = vec3(0.0);
+    vec3 f_emissive = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    color += getIBLContribution(materialInfo, view);
+    f_specular += getSpecularIBLContribution(normal, view, perceptualRoughness, specularColor);
+    f_diffuse += getDiffuseIBLContribution(normal, diffuseColor);
 #endif
 
-    float ao = 1.0;
+vec3 punctualColor = vec3(0.0);
 
+#ifdef USE_PUNCTUAL
+    for (int i = 0; i < LIGHT_COUNT; ++i)
+    {
+        Light light = u_Lights[i];
+        if (light.type == LightType_Directional)
+        {
+            punctualColor += applyDirectionalLight(light, materialInfo, view);
+        }
+        else if (light.type == LightType_Point)
+        {
+            punctualColor += applyPointLight(light, materialInfo, view);
+        }
+        else if (light.type == LightType_Spot)
+        {
+            punctualColor += applySpotLight(light, materialInfo, view);
+        }
+    }
+#endif // !USE_PUNCTUAL
+
+    f_emissive = u_EmissiveFactor;
+#ifdef HAS_EMISSIVE_MAP
+    f_emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
+#endif
+
+    vec3 color = f_emissive + f_specular + f_diffuse + punctualColor;
+
+    float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     color = mix(color, color * ao, u_OcclusionStrength);
 #endif
 
-    vec3 emissive = u_EmissiveFactor;
-#ifdef HAS_EMISSIVE_MAP
-    emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
-#endif
-    color += emissive;
-
 #ifndef DEBUG_OUTPUT // no debug
 
-   // regular shading
-    output_color = vec4(toneMap(color), baseColor.a);
+    // regular shading
+    g_finalColor = vec4(toneMap(color), baseColor.a);
 
 #else // debug output
 
+    #ifdef DEBUG_METALLIC
+        g_finalColor.rgb = vec3(metallic);
+    #endif
+
     #ifdef DEBUG_ROUGHNESS
-        output_color.rgb = vec3(perceptualRoughness);
+        g_finalColor.rgb = vec3(perceptualRoughness);
     #endif
 
     #ifdef DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
-            output_color.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
+            g_finalColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
         #else
-            output_color.rgb = vec3(0.5, 0.5, 1.0);
+            g_finalColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        output_color.rgb = LINEARtoSRGB(baseColor.rgb);
+        g_finalColor.rgb = LINEARtoSRGB(baseColor.rgb);
     #endif
 
     #ifdef DEBUG_OCCLUSION
-        output_color.rgb = vec3(ao);
+        g_finalColor.rgb = vec3(ao);
     #endif
 
     #ifdef DEBUG_EMISSIVE
-        output_color.rgb = LINEARtoSRGB(emissive).rgb;
+        g_finalColor.rgb = LINEARtoSRGB(emissive).rgb;
     #endif
 
     #ifdef DEBUG_F0
-        output_color.rgb = vec3(f0);
+        g_finalColor.rgb = vec3(f0);
     #endif
 
     #ifdef DEBUG_ALPHA
-        output_color.rgb = vec3(baseColor.a);
+        g_finalColor.rgb = vec3(baseColor.a);
     #endif
 
-    output_color.a = 1.0;
+    g_finalColor.a = 1.0;
 
 #endif // !DEBUG_OUTPUT
-
-    g_finalColor = output_color;
 }
