@@ -69,7 +69,7 @@ vec3 getNormal()
 #endif
 
 #ifdef USE_SKINNING
-    normal = (mat3)(getSkinningNormalMatrix()) * normal;
+    normal = mat3(getSkinningNormalMatrix()) * normal;
 #endif
 
     return normalize(normal);
@@ -86,7 +86,7 @@ vec3 getTangent()
 #endif
 
 #ifdef USE_SKINNING
-    tangent = (mat3)(getSkinningMatrix()) * tangent;
+    tangent = mat3(getSkinningMatrix()) * tangent;
 #endif
 
     return normalize(tangent);
@@ -100,13 +100,13 @@ void main()
 
     #ifdef HAS_NORMALS
     #ifdef HAS_TANGENTS
-    vec3 tangent = getTangent();
-    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
-    vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
-    v_TBN = mat3(tangentW, bitangentW, normalW);
+        vec3 tangent = getTangent();
+        vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
+        vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
+        vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
+        v_TBN = mat3(tangentW, bitangentW, normalW);
     #else // !HAS_TANGENTS
-    v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
+        v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
     #endif
     #endif // !HAS_NORMALS
 
@@ -114,15 +114,15 @@ void main()
     v_UVCoord2 = vec2(0.0, 0.0);
 
     #ifdef HAS_UV_SET1
-    v_UVCoord1 = a_UV1;
+        v_UVCoord1 = a_UV1;
     #endif
 
     #ifdef HAS_UV_SET2
-    v_UVCoord2 = a_UV2;
+        v_UVCoord2 = a_UV2;
     #endif
 
     #if defined(HAS_VERTEX_COLOR_VEC3) || defined(HAS_VERTEX_COLOR_VEC4)
-    v_Color = a_Color;
+        v_Color = a_Color;
     #endif
 
     gl_Position = u_ViewProjectionMatrix * pos;
