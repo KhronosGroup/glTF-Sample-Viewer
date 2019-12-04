@@ -170,8 +170,8 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
 // Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
 float charlieDistribution(float sheenRoughness, float NdotH)
 {
-    //float alphaG = sheenRoughness * sheenRoughness;
-    float invR = 1.0 / sheenRoughness;
+    float alphaG = sheenRoughness * sheenRoughness;
+    float invR = 1.0 / alphaG;
     float cos2h = NdotH * NdotH;
     float sin2h = 1.0 - cos2h;
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
@@ -183,11 +183,13 @@ float neubeltVisibility(float NdotL, float NdotV)
     return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
 }
 
-vec3 sheenLayer(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH, vec3 diffuse_term)
+// f_sheen
+vec3 evaluateSheen(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
     float sheenDistribution = charlieDistribution(sheenRoughness, NdotH);
     float sheenVisibility = neubeltVisibility(NdotL, NdotV);
-    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility + (1.0 - sheenIntensity * sheenDistribution * sheenVisibility) * diffuse_term;
+    vec3 sheenTerm = sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
+    return sheenTerm * M_PI;
 }
 
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
@@ -234,6 +236,12 @@ vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
     #endif
 
     return diffuseLight * diffuseColor;
+}
+
+vec3 getSheenIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 sheenColor)
+{
+    // TODO: implement
+    return vec3(0);
 }
 
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
@@ -417,6 +425,10 @@ void main()
     #ifdef MATERIAL_CLEARCOAT
         f_clearcoat += getSpecularIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
+
+    #ifdef MATERIAL_SHEEN
+        f_sheen += getSheenIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor);
+    #endif
 #endif
 
 vec3 punctualColor = vec3(0.0);
@@ -456,6 +468,10 @@ vec3 punctualColor = vec3(0.0);
             f_diffuse += intensity * angularInfo.NdotL *  diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
             f_specular += intensity * angularInfo.NdotL * specularMicrofacetBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
+            #ifdef MATERIAL_SHEEN
+                f_sheen += intensity * angularInfo.NdotL * evaluateSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            #endif
+
             #ifdef MATERIAL_CLEARCOAT
                 AngularInfo coatAngles = getAngularInfo(pointToLight, materialInfo.clearcoatNormal, view);
                 f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
@@ -475,13 +491,13 @@ vec3 punctualColor = vec3(0.0);
 /// Layer blending
 ///
 
-    vec3 blendFactor = vec3(0.f);
+    vec3 cleacoatBlendFactor = vec3(0.f);
 
     #ifdef MATERIAL_CLEARCOAT
-        blendFactor = materialInfo.clearcoatFactor * fresnelReflection(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+        cleacoatBlendFactor = materialInfo.clearcoatFactor * fresnelReflection(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-    color = (f_emissive + f_diffuse) * (1.0 - blendFactor) + mix(f_specular, f_clearcoat, blendFactor);
+    color = (f_emissive + f_diffuse + (1.0 - reflectance) * f_sheen) * (1.0 - cleacoatBlendFactor) + mix(f_specular, f_clearcoat, cleacoatBlendFactor);
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
