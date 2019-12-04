@@ -167,7 +167,7 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
 // See  https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
 
 // Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
-float CharlieDistribution(float sheenRoughness, float NdotH)
+float charlieDistribution(float sheenRoughness, float NdotH)
 {
     //float alphaG = sheenRoughness * sheenRoughness;
     float invR = 1.0 / sheenRoughness;
@@ -177,15 +177,15 @@ float CharlieDistribution(float sheenRoughness, float NdotH)
 }
 
 // https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
-float NeubeltVisibility(float NdotL, float NdotV)
+float neubeltVisibility(float NdotL, float NdotV)
 {
     return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
 }
 
 vec3 sheenLayer(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH, vec3 diffuse_term)
 {
-    float sheenDistribution = CharlieDistribution(sheenRoughness, NdotH);
-    float sheenVisibility = NeubeltVisibility(NdotL, NdotV);
+    float sheenDistribution = charlieDistribution(sheenRoughness, NdotH);
+    float sheenVisibility = neubeltVisibility(NdotL, NdotV);
     return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility + (1.0 - sheenIntensity * sheenDistribution * sheenVisibility) * diffuse_term;
 }
 
@@ -243,6 +243,15 @@ vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
 
     return diffuseLight * diffuseColor;
 }
+
+// struct LightingOutput
+// {
+//     vec3 f_specular;
+//     vec3 f_diffuse;
+//     vec3 f_clearCoat;
+//     AngularInfo incidence;
+//     // vec3 normal
+// };
 
 vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
 {
@@ -387,6 +396,8 @@ MaterialInfo getClearCoatInfo(MaterialInfo info)
         info.clearcoatNormal = getNormal(true); // get geometry normal
     #endif
 
+    info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
+
     return info;
 }
 
@@ -453,11 +464,16 @@ void main()
     vec3 f_specular = vec3(0.0);
     vec3 f_diffuse = vec3(0.0);
     vec3 f_emissive = vec3(0.0);
+    vec3 f_clearcoat = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     f_specular += getSpecularIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
     f_diffuse += getDiffuseIBLContribution(normal, materialInfo.albedoColor);
+
+    #ifdef MATERIAL_CLEARCOAT
+        f_clearcoat += getSpecularIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, vec3(0.04));
+    #endif
 #endif
 
 vec3 punctualColor = vec3(0.0);
@@ -486,7 +502,15 @@ vec3 punctualColor = vec3(0.0);
     f_emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
 #endif
 
-    vec3 color = f_emissive + f_specular + f_diffuse + punctualColor;
+    vec3 color = vec3(0); // f_emissive + f_specular + f_diffuse + punctualColor;
+
+    vec3 blendFactor = vec3(0.f);
+
+    #ifdef MATERIAL_CLEARCOAT
+        blendFactor = materialInfo.clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), clampedDot(materialInfo.clearcoatNormal, view));
+    #endif
+
+    color = (f_emissive + f_diffuse) * (1.0 - blendFactor) + mix(f_specular, f_clearcoat, blendFactor);
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
