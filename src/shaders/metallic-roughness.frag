@@ -1,4 +1,3 @@
-
 //
 // This fragment shader defines a reference implementation for Physically Based Shading of
 // a microfacet surface material defined by a glTF model.
@@ -95,6 +94,8 @@ struct MaterialInfo
     vec3 sheenColor;
     float sheenRoughness;
 
+    vec3 clearcoatF0;
+    vec3 clearcoatF90;
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
@@ -189,15 +190,6 @@ vec3 sheenLayer(vec3 sheenColor, float sheenIntensity, float sheenRoughness, flo
     return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility + (1.0 - sheenIntensity * sheenDistribution * sheenVisibility) * diffuse_term;
 }
 
-//--------------------- Clearcoat -------------------------------------------------------------------------
-// See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
-vec3 clearcoatBlending(vec3 color, vec3 clearcoatLayer, float clearcoatFactor, float NdotV, float NdotL, float VdotH)
-{
-    vec3 factor0 = (1.0 - clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), NdotV)) * (1.0 - clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), NdotL));
-    vec3 factor1 = clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), VdotH);
-    return color * factor0 + clearcoatLayer * factor1;
-}
-
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 diffuseBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 {
@@ -244,32 +236,6 @@ vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
     return diffuseLight * diffuseColor;
 }
 
-// struct LightingOutput
-// {
-//     vec3 f_specular;
-//     vec3 f_diffuse;
-//     vec3 f_clearCoat;
-//     AngularInfo incidence;
-//     // vec3 normal
-// };
-
-vec3 getPointShade(vec3 pointToLight, MaterialInfo materialInfo, vec3 view)
-{
-    AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
-    if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
-    {
-        // Calculation of analytical ligh
-        //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-        vec3 diffuseContrib = diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
-        vec3 specContrib = specularMicrofacetBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
-
-        // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-        return angularInfo.NdotL * (diffuseContrib + specContrib);
-    }
-
-    return vec3(0.0, 0.0, 0.0);
-}
-
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float getRangeAttenuation(float range, float distance)
 {
@@ -294,32 +260,6 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
         return 1.0;
     }
     return 0.0;
-}
-
-vec3 applyDirectionalLight(Light light, MaterialInfo materialInfo, vec3 view)
-{
-    vec3 pointToLight = -light.direction;
-    vec3 shade = getPointShade(pointToLight, materialInfo, view);
-    return light.intensity * light.color * shade;
-}
-
-vec3 applyPointLight(Light light, MaterialInfo materialInfo, vec3 view)
-{
-    vec3 pointToLight = light.position - v_Position;
-    float distance = length(pointToLight);
-    float attenuation = getRangeAttenuation(light.range, distance);
-    vec3 shade = getPointShade(pointToLight, materialInfo, view);
-    return attenuation * light.intensity * light.color * shade;
-}
-
-vec3 applySpotLight(Light light, MaterialInfo materialInfo, vec3 view)
-{
-    vec3 pointToLight = light.position - v_Position;
-    float distance = length(pointToLight);
-    float rangeAttenuation = getRangeAttenuation(light.range, distance);
-    float spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
-    vec3 shade = getPointShade(pointToLight, materialInfo, view);
-    return rangeAttenuation * spotAttenuation * light.intensity * light.color * shade;
 }
 
 MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
@@ -378,6 +318,8 @@ MaterialInfo getClearCoatInfo(MaterialInfo info)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
+    info.clearcoatF0 = vec3(0.04);
+    info.clearcoatF90 = vec3(clamp(info.clearcoatF0 * 50.0, 0.0, 1.0));
 
     #ifdef HAS_CLEARCOAT_TEXTURE_MAP
         vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
@@ -465,6 +407,7 @@ void main()
     vec3 f_diffuse = vec3(0.0);
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
+    vec3 f_sheen = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
@@ -472,7 +415,7 @@ void main()
     f_diffuse += getDiffuseIBLContribution(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getSpecularIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, vec3(0.04));
+        f_clearcoat += getSpecularIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
 #endif
 
@@ -482,17 +425,41 @@ vec3 punctualColor = vec3(0.0);
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         Light light = u_Lights[i];
-        if (light.type == LightType_Directional)
+
+        vec3 pointToLight = -light.direction;
+        float rangeAttenuation = 1.0;
+        float spotAttenuation = 1.0;
+
+        if(light.type != LightType_Directional)
         {
-            punctualColor += applyDirectionalLight(light, materialInfo, view);
+            pointToLight = light.position - v_Position;
         }
-        else if (light.type == LightType_Point)
+
+        // point and spot
+        if (light.type != LightType_Directional)
         {
-            punctualColor += applyPointLight(light, materialInfo, view);
+            rangeAttenuation = getRangeAttenuation(light.range, length(pointToLight));
         }
-        else if (light.type == LightType_Spot)
+        if (light.type == LightType_Spot)
         {
-            punctualColor += applySpotLight(light, materialInfo, view);
+            spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
+        }
+
+        vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
+
+        AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
+
+        if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
+        {
+            // Calculation of analytical ligh
+            //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+            f_diffuse += intensity * angularInfo.NdotL *  diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
+            f_specular += intensity * angularInfo.NdotL * specularMicrofacetBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+
+            #ifdef MATERIAL_CLEARCOAT
+                AngularInfo coatAngles = getAngularInfo(pointToLight, materialInfo.clearcoatNormal, view);
+                f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
+            #endif
         }
     }
 #endif // !USE_PUNCTUAL
@@ -502,12 +469,16 @@ vec3 punctualColor = vec3(0.0);
     f_emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
 #endif
 
-    vec3 color = vec3(0); // f_emissive + f_specular + f_diffuse + punctualColor;
+    vec3 color = vec3(0);
+
+///
+/// Layer blending
+///
 
     vec3 blendFactor = vec3(0.f);
 
     #ifdef MATERIAL_CLEARCOAT
-        blendFactor = materialInfo.clearcoatFactor * fresnelReflection(vec3(0.04), vec3(1.0), clampedDot(materialInfo.clearcoatNormal, view));
+        blendFactor = materialInfo.clearcoatFactor * fresnelReflection(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
     color = (f_emissive + f_diffuse) * (1.0 - blendFactor) + mix(f_specular, f_clearcoat, blendFactor);
@@ -550,12 +521,12 @@ vec3 punctualColor = vec3(0.0);
         g_finalColor.rgb = vec3(ao);
     #endif
 
-    #ifdef DEBUG_EMISSIVE
-        g_finalColor.rgb = f_emissive; //LINEARtoSRGB(f_emissive).rgb;
-    #endif
-
     #ifdef DEBUG_F0
         g_finalColor.rgb = materialInfo.f0;
+    #endif
+
+    #ifdef DEBUG_EMISSIVE
+        g_finalColor.rgb = f_emissive;
     #endif
 
     #ifdef DEBUG_FSPECULAR
@@ -564,6 +535,10 @@ vec3 punctualColor = vec3(0.0);
 
     #ifdef DEBUG_FDIFFUSE
         g_finalColor.rgb = f_diffuse;
+    #endif
+
+    #ifdef DEBUG_FCLEARCOAT
+        g_finalColor.rgb = f_clearcoat;
     #endif
 
     #ifdef DEBUG_ALPHA
