@@ -92,6 +92,10 @@ class gltfImage extends GltfObject
                 .then(response =>
                 {
                     this.image.initialize(response.data);
+
+                    // TODO: remove this log
+                    console.log(this.image);
+
                     callback();
                 });
         }
