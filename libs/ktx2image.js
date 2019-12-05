@@ -9,6 +9,28 @@ const LEVEL_INDEX_OFFSET = INDEX_OFFSET + INDEX_LENGTH;
 
 class Ktx2Image
 {
+    constructor()
+    {
+        this.vkFormat = 0;
+        this.typeSize = 0;
+        this.pixelWidth = 0;
+        this.pixelHeight = 0;
+        this.pixelDepth = 0;
+        this.layerCount = 0;
+        this.faceCount = 0;
+        this.levelCount = 0;
+        this.suporcompressionScheme = 0;
+
+        this.dfdByteOffset = 0;
+        this.dfdByteLength = 0;
+        this.kvdByteOffset = 0;
+        this.kvdByteLength = 0;
+        this.sgdByteOffset = BigInt(0);
+        this.sgdByteLength = BigInt(0);
+
+        this.levels = [];
+    }
+
     initialize(arrayBuffer)
     {
         const version = new DataView(arrayBuffer, VERSION_OFFSET, VERSION_LENGTH);
@@ -96,8 +118,6 @@ class Ktx2Image
             offset += 8;
             return result;
         };
-
-        this.levels = [];
 
         for (let i = 0; i < this.levelCount; i++)
         {
