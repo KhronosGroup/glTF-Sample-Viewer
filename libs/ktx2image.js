@@ -25,8 +25,8 @@ class Ktx2Image
         this.dfdByteLength = 0;
         this.kvdByteOffset = 0;
         this.kvdByteLength = 0;
-        this.sgdByteOffset = BigInt(0);
-        this.sgdByteLength = BigInt(0);
+        this.sgdByteOffset = 0;
+        this.sgdByteLength = 0;
 
         this.levels = [];
     }
@@ -49,6 +49,8 @@ class Ktx2Image
         const levelIndexLength = this.levelCount * 3 * 8; // 3 uint64s per level
         const levelIndex = new DataView(arrayBuffer, LEVEL_INDEX_OFFSET, levelIndexLength);
         this.parseLevelIndex(levelIndex);
+
+        this.parseLevelData(arrayBuffer);
     }
 
     checkVersion(version)
@@ -96,7 +98,7 @@ class Ktx2Image
         };
         const getNext64 = () =>
         {
-            const result = fileIndex.getBigUint64(offset, true);
+            const result = this.getUint64(fileIndex, offset, true);
             offset += 8;
             return result;
         };
@@ -114,7 +116,7 @@ class Ktx2Image
         let offset = 0;
         const getNext = () =>
         {
-            const result = levelIndex.getBigUint64(offset, true);
+            const result = this.getUint64(levelIndex, offset, true);
             offset += 8;
             return result;
         };
@@ -128,6 +130,31 @@ class Ktx2Image
 
             this.levels.push(level);
         }
+    }
+
+    parseLevelData(arrayBuffer)
+    {
+        for (let level of this.levels)
+        {
+            level.data = new Uint8Array(arrayBuffer, level.byteOffset, level.byteLength);
+        }
+    }
+
+    // https://stackoverflow.com/questions/53103695
+    getUint64(view, byteOffset, littleEndian)
+    {
+        // we should actually be able to use BigInt, but we can't create a Uint8Array with BigInt offset/length
+
+        const left =  view.getUint32(byteOffset, littleEndian);
+        const right = view.getUint32(byteOffset + 4, littleEndian);
+        const combined = littleEndian ? left + (2 ** 32 * right) : (2 ** 32 * left) + right;
+
+        if (! Number.isSafeInteger(combined))
+        {
+            console.warn("ktx2image: " + combined + " exceeds MAX_SAFE_INTEGER. Precision may be lost.");
+        }
+
+        return combined;
     }
 }
 
