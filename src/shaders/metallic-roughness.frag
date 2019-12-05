@@ -493,8 +493,7 @@ vec3 punctualColor = vec3(0.0);
 
             #ifdef MATERIAL_CLEARCOAT
                 AngularInfo coatAngles = getAngularInfo(pointToLight, materialInfo.clearcoatNormal, view);
-                f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.
-                , materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
+                f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
             #endif
         }
     }

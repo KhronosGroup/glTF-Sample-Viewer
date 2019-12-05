@@ -426,7 +426,7 @@ class gltfMaterial extends GltfObject
 
         if(jsonExtensions.KHR_materials_specular !== undefined)
         {
-            this.fromJsonMRSpecular(jsonExtensions.KHR_materials_specular);
+            this.fromJsonMetallicRoughnessSpecular(jsonExtensions.KHR_materials_specular);
         }
     }
 
@@ -488,7 +488,7 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    fromJsonMRSpecular(jsonMRSpecular)
+    fromJsonMetallicRoughnessSpecular(jsonMRSpecular)
     {
         if(jsonMRSpecular.specularTexture !== undefined)
         {
