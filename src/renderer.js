@@ -133,7 +133,7 @@ class gltfRenderer
                     {
                         if(predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
                         {
-                            this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
+                            this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix, scene);
                         }
                     }
                 }
@@ -147,14 +147,14 @@ class gltfRenderer
             {
                 if(predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
                 {
-                    this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+                    this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix, scene);
                 }
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, node, viewProjectionMatrix)
+    drawPrimitive(gltf, primitive, node, viewProjectionMatrix, scene)
     {
         if (primitive.skip) return;
 
@@ -265,7 +265,7 @@ class gltfRenderer
 
         if (this.parameters.useIBL)
         {
-            this.applyEnvironmentMap(gltf, material.textures.length);
+            this.applyEnvironmentMap(gltf, scene, material.textures.length);
         }
 
         if (drawIndexed)
@@ -437,21 +437,39 @@ class gltfRenderer
         this.shader.updateUniform("u_Lights", uniformLights);
     }
 
-    applyEnvironmentMap(gltf, texSlotOffset)
+    applyEnvironmentMap(gltf, scene, texSlotOffset)
     {
         if (gltf.envData === undefined)
         {
+            gltf.envData = {};
             let linear = true;
-            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
+
+            if (scene !== undefined &&
+                scene.imageBasedLight !== undefined)
             {
-                linear = false;
+                // TODO: remove this log
+                console.log("applying IBL from extension");
+
+                const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
+                const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
+                gltf.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
+                gltf.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
+            }
+            else
+            {
+                if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
+                {
+                    linear = false;
+                }
+
+                const diffuseTextureIndex = gltf.textures.length - 3;
+                const specularTextureIndex = gltf.textures.length - 2;
+                gltf.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
+                gltf.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
             }
 
-            gltf.envData = {};
-            gltf.envData.diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0, linear);
-            gltf.envData.specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0, linear);
-            gltf.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
             gltf.envData.specularEnvMap.generateMips = false;
+            gltf.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
             gltf.envData.lut.generateMips = false;
         }
 
@@ -459,7 +477,19 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
 
-        const mipCount = Environments[this.parameters.environmentName].mipLevel;
+
+        let mipCount = 1;
+        if (scene !== undefined &&
+            scene.imageBasedLight !== undefined)
+        {
+            // TODO: should not be hardcoded
+            mipCount = 5;
+        }
+        else
+        {
+            mipCount = Environments[this.parameters.environmentName].mipLevel;
+        }
+
         this.shader.updateUniform("u_MipCount", mipCount);
     }
 

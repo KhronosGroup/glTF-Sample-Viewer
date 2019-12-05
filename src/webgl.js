@@ -1,3 +1,5 @@
+import { Ktx2Image } from '../libs/ktx2image.js';
+
 class gltfWebGl
 {
     constructor()
@@ -71,7 +73,7 @@ class gltfWebGl
 
             if (gltfTex.source.length !== undefined)
             {
-                // assume we have an array of textures (this is an unofficial extension to what glTF json can represent)
+                // assume we have an array of images (this is an unofficial extension to what glTF json can represent)
                 images = gltfTex.source;
             }
             else
@@ -91,7 +93,14 @@ class gltfWebGl
                     return false;
                 }
 
-                if (image.image.dataRGBE !== undefined)
+                if (image.image instanceof Ktx2Image)
+                {
+                    // TODO: implement
+                    // TODO: remove log
+                    console.log("creating GL texture for KTX image");
+                    return false;
+                }
+                else if (image.image.dataRGBE !== undefined)
                 {
                     WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB32F, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
                 }
