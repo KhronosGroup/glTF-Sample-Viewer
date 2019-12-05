@@ -296,7 +296,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 float getMetallicRoughnessSpecularFactor()
 {
     //F0 = 0.08 * specularFactor * specularTexture
-#ifdef HAS_MR_SPECULAR_TEXTURE_MAP
+#ifdef HAS_METALLICROUGHNESSSPECULAR_TEXTURE_MAP
     vec4 specSampler =  texture(u_MetallicRoughnessSpecularTextureSampler, getMetallicRoughnessSpecularUV());
     return 0.08 * u_MetallicRoughnessSpecularFactor * specSampler.a;
 #endif
