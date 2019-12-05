@@ -13,6 +13,8 @@
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 // [5] "KHR_materials_clearcoat"
 //     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
+// [6] "KHR_materials_specular"
+//     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
 
 
 precision highp float;
@@ -69,6 +71,9 @@ uniform float u_SheenRoughness;
 //Clearcoat
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
+
+//KHR Specular
+uniform float u_MetallicRoughnessSpecularFactor;
 
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
@@ -287,6 +292,17 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     return info;
 }
 
+// KHR_extension_specular alters f0 on metallic materials based on the specular factor specified in the extention
+float getMetallicRoughnessSpecularFactor()
+{
+    //F0 = 0.08 * specularFactor * specularTexture
+#ifdef HAS_MR_SPECULAR_TEXTURE_MAP
+    vec4 specSampler =  texture(u_MetallicRoughnessSpecularTextureSampler, getMetallicRoughnessSpecularUV());
+    return 0.08 * u_MetallicRoughnessSpecularFactor * specSampler.a;
+#endif
+    return  0.08 * u_MetallicRoughnessSpecularFactor;
+}
+
 MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 {
     info.metallic = u_MetallicFactor;
@@ -301,6 +317,9 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 #endif
 
     vec3 f0 = vec3(0.04);
+#ifdef MATERIAL_SPECULAR
+    f0 = vec3(getMetallicRoughnessSpecularFactor());
+#endif
     info.albedoColor = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
     info.f0 = mix(f0, info.baseColor.rgb, info.metallic);
 
@@ -474,7 +493,8 @@ vec3 punctualColor = vec3(0.0);
 
             #ifdef MATERIAL_CLEARCOAT
                 AngularInfo coatAngles = getAngularInfo(pointToLight, materialInfo.clearcoatNormal, view);
-                f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
+                f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.
+                , materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
             #endif
         }
     }

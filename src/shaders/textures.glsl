@@ -54,6 +54,10 @@ uniform int u_ClearcoatNormalUVSet;
 uniform sampler2D u_sheenColorIntensitySampler;
 uniform int u_sheenColorIntensityUVSet;
 
+//specular
+uniform sampler2D u_MetallicRoughnessSpecularTextureSampler;
+uniform int u_MetallicRougnessSpecularTextureUVSet;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -155,5 +159,11 @@ vec2 getSheenUV()
 #ifdef HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP
     uv.xy = u_sheenColorIntensityUVSet < 1 ? v_UVCoord1 : v_UVCoord2;
 #endif
+    return uv.xy;
+}
+
+vec2 getMetallicRoughnessSpecularUV()
+{
+    vec3 uv = vec3(u_MetallicRougnessSpecularTextureUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     return uv.xy;
 }

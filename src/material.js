@@ -304,6 +304,7 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
             }
 
+            //Sheen material extension
             let sheenFactor = 0.0;
             let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
             let sheenRoughness = 0.3;
@@ -336,6 +337,27 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SheenRoughness", sheenRoughness);
             }
 
+            //KHR Extension Specular
+            // See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
+            let specularFactor = 0.5;
+            if(this.extensions.KHR_materials_specular)
+            {
+                this.defines.push("MATERIAL_SPECULAR 1");
+
+                if(this.extensions.KHR_materials_specular.specularFactor !== undefined)
+                {
+                    specularFactor = this.extensions.KHR_materials_specular.specularFactor;
+                }
+                if (this.MRSpecularTexture !== undefined)
+                {
+                    this.MRSpecularTexture.samplerName = "u_MetallicRoughnessSpecularTextureSampler";
+                    this.parseTextureInfoExtensions(this.MRSpecularTexture, "MRSpecularTexture");
+                    this.textures.push(this.MRSpecularTexture);
+                    this.defines.push("HAS_MR_SPECULAR_TEXTURE_MAP 1");
+                    this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.MRSpecularTexture.texCoord);
+                }
+            }
+            this.properties.set("u_MetallicRoughnessSpecularFactor", specularFactor);
         }
 
         initGlForMembers(this, gltf);
@@ -401,6 +423,11 @@ class gltfMaterial extends GltfObject
         {
             this.fromJsonClearcoat(jsonExtensions.KHR_materials_clearcoat);
         }
+
+        if(jsonExtensions.KHR_materials_specular !== undefined)
+        {
+            this.fromJsonMRSpecular(jsonExtensions.KHR_materials_specular);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -458,6 +485,16 @@ class gltfMaterial extends GltfObject
             const clearcoatNormalTexture =  new gltfTextureInfo();
             clearcoatNormalTexture.fromJson(jsonClearcoat.clearcoatNormalTexture);
             this.clearcoatNormalTexture = clearcoatNormalTexture;
+        }
+    }
+
+    fromJsonMRSpecular(jsonMRSpecular)
+    {
+        if(jsonMRSpecular.specularTexture !== undefined)
+        {
+            const specularTexture = new gltfTextureInfo();
+            specularTexture.fromJson(jsonMRSpecular.specularTexture);
+            this.MRSpecularTexture = specularTexture;
         }
     }
 }
