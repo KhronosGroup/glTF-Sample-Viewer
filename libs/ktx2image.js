@@ -134,9 +134,17 @@ class Ktx2Image
 
     parseLevelData(arrayBuffer)
     {
+        let miplevel = 0;
         for (let level of this.levels)
         {
-            level.data = new Uint8Array(arrayBuffer, level.byteOffset, level.byteLength);
+            level.miplevel = miplevel++;
+            level.width = this.pixelWidth / (miplevel * miplevel);
+            level.height = this.pixelHeight / (miplevel * miplevel);
+
+            if (this.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
+            {
+                level.data = new Uint16Array(arrayBuffer, level.byteOffset, level.byteLength / this.typeSize);
+            }
         }
     }
 
