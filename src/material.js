@@ -348,13 +348,13 @@ class gltfMaterial extends GltfObject
                 {
                     specularFactor = this.extensions.KHR_materials_specular.specularFactor;
                 }
-                if (this.MetallicRoughnessSpecularTexture !== undefined)
+                if (this.metallicRoughnessSpecularTexture !== undefined)
                 {
-                    this.MetallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularSampler";
-                    this.parseTextureInfoExtensions(this.MetallicRoughnessSpecularTexture, "MetallicRoughnessSpecular");
-                    this.textures.push(this.MetallicRoughnessSpecularTexture);
+                    this.metallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularSampler";
+                    this.parseTextureInfoExtensions(this.metallicRoughnessSpecularTexture, "MetallicRoughnessSpecular");
+                    this.textures.push(this.metallicRoughnessSpecularTexture);
                     this.defines.push("HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP 1");
-                    this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.MetallicRoughnessSpecularTexture.texCoord);
+                    this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.metallicRoughnessSpecularTexture.texCoord);
                 }
             }
             this.properties.set("u_MetallicRoughnessSpecularFactor", specularFactor);
@@ -494,7 +494,7 @@ class gltfMaterial extends GltfObject
         {
             const specularTexture = new gltfTextureInfo();
             specularTexture.fromJson(jsonMRSpecular.specularTexture);
-            this.MetallicRoughnessSpecularTexture = specularTexture;
+            this.metallicRoughnessSpecularTexture = specularTexture;
         }
     }
 }
