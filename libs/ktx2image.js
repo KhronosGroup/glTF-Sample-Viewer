@@ -13,8 +13,8 @@ class Ktx2Image
     {
         this.vkFormat = 0;
         this.typeSize = 0;
-        this.pixelWidth = 0;
-        this.pixelHeight = 0;
+        this.width = 0;
+        this.height = 0;
         this.pixelDepth = 0;
         this.layerCount = 0;
         this.faceCount = 0;
@@ -78,8 +78,8 @@ class Ktx2Image
 
         this.vkFormat = getNext();
         this.typeSize = getNext();
-        this.pixelWidth = getNext();
-        this.pixelHeight = getNext();
+        this.width = getNext();
+        this.height = getNext();
         this.pixelDepth = getNext();
         this.layerCount = getNext();
         this.faceCount = getNext();
@@ -138,8 +138,8 @@ class Ktx2Image
         for (let level of this.levels)
         {
             level.miplevel = miplevel++;
-            level.width = this.pixelWidth / (miplevel * miplevel);
-            level.height = this.pixelHeight / (miplevel * miplevel);
+            level.width = this.width / (miplevel * miplevel);
+            level.height = this.height / (miplevel * miplevel);
 
             if (this.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
             {
