@@ -170,6 +170,7 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
 // Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
 float charlieDistribution(float sheenRoughness, float NdotH)
 {
+    sheenRoughness = max(sheenRoughness, 0.000001); //clamp (0,1]
     float alphaG = sheenRoughness * sheenRoughness;
     float invR = 1.0 / alphaG;
     float cos2h = NdotH * NdotH;
