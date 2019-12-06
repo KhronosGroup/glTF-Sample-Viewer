@@ -342,7 +342,7 @@ class gltfMaterial extends GltfObject
             let specularFactor = 0.5;
             if(this.extensions.KHR_materials_specular)
             {
-                this.defines.push("MATERIAL_METALLICROUGHNESSSPECULAR 1");
+                this.defines.push("MATERIAL_METALLICROUGHNESS_SPECULAROVERRIDE 1");
 
                 if(this.extensions.KHR_materials_specular.specularFactor !== undefined)
                 {
@@ -353,7 +353,7 @@ class gltfMaterial extends GltfObject
                     this.MetallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularTextureSampler";
                     this.parseTextureInfoExtensions(this.MetallicRoughnessSpecularTexture, "MetallicRoughnessSpecularTexture");
                     this.textures.push(this.MetallicRoughnessSpecularTexture);
-                    this.defines.push("HAS_METALLICROUGHNESSSPECULAR_TEXTURE_MAP 1");
+                    this.defines.push("HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP 1");
                     this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.MetallicRoughnessSpecularTexture.texCoord);
                 }
             }
