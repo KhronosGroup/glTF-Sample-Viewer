@@ -329,7 +329,7 @@ class gltfMaterial extends GltfObject
                     this.sheenColorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
                     this.parseTextureInfoExtensions(this.sheenColorIntensityTexture, "SheenColorIntensityTexture");
                     this.textures.push(this.sheenColorIntensityTexture);
-                    this.defines.push("HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP 1");
+                    this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
                     this.properties.set("u_sheenColorIntensityUVSet", this.sheenColorIntensityTexture.texCoord);
                 }
                 this.properties.set("u_SheenIntensityFactor", sheenFactor);
