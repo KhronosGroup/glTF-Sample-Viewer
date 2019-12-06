@@ -158,4 +158,10 @@ class Ktx2Image
     }
 }
 
+// https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkFormat.html
+const VK_FORMAT =
+{
+    R16G16B16A16_SFLOAT: 97
+};
+
 export { Ktx2Image };
