@@ -279,7 +279,7 @@ class gltfMaterial extends GltfObject
                 if (this.clearcoatTexture !== undefined)
                 {
                     this.clearcoatTexture.samplerName = "u_ClearcoatSampler";
-                    this.parseTextureInfoExtensions(this.clearcoatTexture, "ClearcoatTexture");
+                    this.parseTextureInfoExtensions(this.clearcoatTexture, "Clearcoat");
                     this.textures.push(this.clearcoatTexture);
                     this.defines.push("HAS_CLEARCOAT_TEXTURE_MAP 1");
                     this.properties.set("u_ClearcoatUVSet", this.clearcoatTexture.texCoord);
@@ -287,7 +287,7 @@ class gltfMaterial extends GltfObject
                 if (this.clearcoatRoughnessTexture !== undefined)
                 {
                     this.clearcoatRoughnessTexture.samplerName = "u_ClearcoatRoughnessSampler";
-                    this.parseTextureInfoExtensions(this.clearcoatRoughnessTexture, "ClearcoatRoughnessTexture");
+                    this.parseTextureInfoExtensions(this.clearcoatRoughnessTexture, "ClearcoatRoughness");
                     this.textures.push(this.clearcoatRoughnessTexture);
                     this.defines.push("HAS_CLEARCOAT_ROUGHNESS_MAP 1");
                     this.properties.set("u_ClearcoatRoughnessUVSet", this.clearcoatRoughnessTexture.texCoord);
@@ -295,7 +295,7 @@ class gltfMaterial extends GltfObject
                 if (this.clearcoatNormalTexture !== undefined)
                 {
                     this.clearcoatNormalTexture.samplerName = "u_ClearcoatNormalSampler";
-                    this.parseTextureInfoExtensions(this.clearcoatNormalTexture, "ClearcoatNormalTexture");
+                    this.parseTextureInfoExtensions(this.clearcoatNormalTexture, "ClearcoatNormal");
                     this.textures.push(this.clearcoatNormalTexture);
                     this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
@@ -304,6 +304,8 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
             }
 
+            //Sheen material extension
+            // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
             let sheenFactor = 0.0;
             let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
             let sheenRoughness = 0.3;
@@ -326,9 +328,9 @@ class gltfMaterial extends GltfObject
                 if (this.sheenColorIntensityTexture !== undefined)
                 {
                     this.sheenColorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
-                    this.parseTextureInfoExtensions(this.sheenColorIntensityTexture, "SheenColorIntensityTexture");
+                    this.parseTextureInfoExtensions(this.sheenColorIntensityTexture, "SheenColorIntensity");
                     this.textures.push(this.sheenColorIntensityTexture);
-                    this.defines.push("HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP 1");
+                    this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
                     this.properties.set("u_sheenColorIntensityUVSet", this.sheenColorIntensityTexture.texCoord);
                 }
                 this.properties.set("u_SheenIntensityFactor", sheenFactor);
@@ -336,6 +338,28 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SheenRoughness", sheenRoughness);
             }
 
+            //KHR Extension Specular
+            // See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
+            // We call the specular extension and its members 'MetallicRoughnessSpecular' instead to avoid confusion with SpecularGlossiness
+            let specularFactor = 0.5;
+            if(this.extensions.KHR_materials_specular)
+            {
+                this.defines.push("MATERIAL_METALLICROUGHNESS_SPECULAROVERRIDE 1");
+
+                if(this.extensions.KHR_materials_specular.specularFactor !== undefined)
+                {
+                    specularFactor = this.extensions.KHR_materials_specular.specularFactor;
+                }
+                if (this.metallicRoughnessSpecularTexture !== undefined)
+                {
+                    this.metallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularSampler";
+                    this.parseTextureInfoExtensions(this.metallicRoughnessSpecularTexture, "MetallicRoughnessSpecular");
+                    this.textures.push(this.metallicRoughnessSpecularTexture);
+                    this.defines.push("HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP 1");
+                    this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.metallicRoughnessSpecularTexture.texCoord);
+                }
+            }
+            this.properties.set("u_MetallicRoughnessSpecularFactor", specularFactor);
         }
 
         initGlForMembers(this, gltf);
@@ -401,6 +425,11 @@ class gltfMaterial extends GltfObject
         {
             this.fromJsonClearcoat(jsonExtensions.KHR_materials_clearcoat);
         }
+
+        if(jsonExtensions.KHR_materials_specular !== undefined)
+        {
+            this.fromJsonMetallicRoughnessSpecular(jsonExtensions.KHR_materials_specular);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -458,6 +487,16 @@ class gltfMaterial extends GltfObject
             const clearcoatNormalTexture =  new gltfTextureInfo();
             clearcoatNormalTexture.fromJson(jsonClearcoat.clearcoatNormalTexture);
             this.clearcoatNormalTexture = clearcoatNormalTexture;
+        }
+    }
+
+    fromJsonMetallicRoughnessSpecular(jsonMRSpecular)
+    {
+        if(jsonMRSpecular.specularTexture !== undefined)
+        {
+            const specularTexture = new gltfTextureInfo();
+            specularTexture.fromJson(jsonMRSpecular.specularTexture);
+            this.metallicRoughnessSpecularTexture = specularTexture;
         }
     }
 }
