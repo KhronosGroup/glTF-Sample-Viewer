@@ -342,7 +342,7 @@ class gltfMaterial extends GltfObject
             let specularFactor = 0.5;
             if(this.extensions.KHR_materials_specular)
             {
-                this.defines.push("MATERIAL_SPECULAR 1");
+                this.defines.push("MATERIAL_METALLICROUGHNESSSPECULAR 1");
 
                 if(this.extensions.KHR_materials_specular.specularFactor !== undefined)
                 {

@@ -110,13 +110,13 @@ vec4 getBaseColor()
 {
     vec4 baseColor = vec4(1, 1, 1, 1);
 
-    #if defined(MATERIAL_SPECULARGLOSSINESS)
+    #if defined(METALLICROUGHNESSGLOSSINESS)
         baseColor = u_DiffuseFactor;
     #elif defined(MATERIAL_METALLICROUGHNESS)
         baseColor = u_BaseColorFactor;
     #endif
 
-    #if defined(MATERIAL_SPECULARGLOSSINESS) && defined(HAS_DIFFUSE_MAP)
+    #if defined(METALLICROUGHNESSGLOSSINESS) && defined(HAS_DIFFUSE_MAP)
         baseColor *= SRGBtoLINEAR(texture(u_DiffuseSampler, getDiffuseUV()));
     #elif defined(MATERIAL_METALLICROUGHNESS) && defined(HAS_BASE_COLOR_MAP)
         baseColor *= SRGBtoLINEAR(texture(u_BaseColorSampler, getBaseColorUV()));
@@ -296,7 +296,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 float getMetallicRoughnessSpecularFactor()
 {
     //F0 = 0.08 * specularFactor * specularTexture
-#ifdef HAS_METALLICROUGHNESSSPECULAR_TEXTURE_MAP
+#ifdef HAS_METALLICROUGHNESSSPECULAR_MAP
     vec4 specSampler =  texture(u_MetallicRoughnessSpecularTextureSampler, getMetallicRoughnessSpecularUV());
     return 0.08 * u_MetallicRoughnessSpecularFactor * specSampler.a;
 #endif
@@ -317,7 +317,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 #endif
 
     vec3 f0 = vec3(0.04);
-#ifdef MATERIAL_SPECULAR
+#ifdef MATERIAL_METALLICROUGHNESSSPECULAR
     f0 = vec3(getMetallicRoughnessSpecularFactor());
 #endif
     info.albedoColor = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
@@ -395,7 +395,7 @@ void main()
 
     materialInfo.baseColor = baseColor.rgb;
 
-#ifdef MATERIAL_SPECULARGLOSSINESS
+#ifdef METALLICROUGHNESSGLOSSINESS
     materialInfo = getSpecularGlossinessInfo(materialInfo);
 #endif
 

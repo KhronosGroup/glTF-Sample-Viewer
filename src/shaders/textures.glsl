@@ -156,7 +156,7 @@ vec2 getClearcoatNormalUV()
 vec2 getSheenUV()
 {
     vec3 uv = vec3(v_UVCoord1, 1.0);
-#ifdef HAS_SHEEN_COLOR_INTENSITY_TEXTURE_MAP
+#ifdef HAS_SHEEN_COLOR_INTENSITY_MAP
     uv.xy = u_sheenColorIntensityUVSet < 1 ? v_UVCoord1 : v_UVCoord2;
 #endif
     return uv.xy;
