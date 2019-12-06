@@ -95,10 +95,14 @@ class gltfWebGl
 
                 if (image.image instanceof Ktx2Image)
                 {
-                    // TODO: implement
                     // TODO: remove log
                     console.log("creating GL texture for KTX image");
-                    return false;
+
+                    for (const level of image.image.levels)
+                    {
+                        console.log("creating level");
+                        WebGl.context.texImage2D(WebGl.context.TEXTURE_2D, level.miplevel, WebGl.context.RGBA16F, level.width, level.height, 0, WebGl.context.RGBA, WebGl.context.HALF_FLOAT, level.data);
+                    }
                 }
                 else if (image.image.dataRGBE !== undefined)
                 {

@@ -477,7 +477,6 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
 
-
         let mipCount = 1;
         if (scene !== undefined &&
             scene.imageBasedLight !== undefined)
