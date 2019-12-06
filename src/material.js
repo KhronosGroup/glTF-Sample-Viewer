@@ -305,6 +305,7 @@ class gltfMaterial extends GltfObject
             }
 
             //Sheen material extension
+            // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
             let sheenFactor = 0.0;
             let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
             let sheenRoughness = 0.3;
@@ -339,6 +340,7 @@ class gltfMaterial extends GltfObject
 
             //KHR Extension Specular
             // See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
+            // We call the specular extension and its members 'MetallicRoughnessSpecular' instead to avoid confusion with SpecularGlossiness
             let specularFactor = 0.5;
             if(this.extensions.KHR_materials_specular)
             {
