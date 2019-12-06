@@ -351,7 +351,7 @@ class gltfMaterial extends GltfObject
                 if (this.MetallicRoughnessSpecularTexture !== undefined)
                 {
                     this.MetallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularSampler";
-                    this.parseTextureInfoExtensions(this.MetallicRoughnessSpecularTexture, "MetallicRoughnessSpecularTexture");
+                    this.parseTextureInfoExtensions(this.MetallicRoughnessSpecularTexture, "MetallicRoughnessSpecular");
                     this.textures.push(this.MetallicRoughnessSpecularTexture);
                     this.defines.push("HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP 1");
                     this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.MetallicRoughnessSpecularTexture.texCoord);

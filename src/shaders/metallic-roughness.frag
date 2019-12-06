@@ -333,7 +333,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     info.sheenRoughness = u_SheenRoughness;
 
     #ifdef HAS_SHEEN_COLOR_INTENSITY_MAP
-        vec4 sheenSample = texture(u_sheenColorIntensitySampler, getSheenUV());
+        vec4 sheenSample = texture(u_SheenColorIntensitySampler, getSheenUV());
         info.sheenColor *= sheenSample.xyz;
         info.sheenIntensity *= sheenSample.w;
     #endif
