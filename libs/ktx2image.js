@@ -134,6 +134,8 @@ class Ktx2Image
 
     parseLevelData(arrayBuffer)
     {
+        // TODO: take faces into account!
+
         let miplevel = 0;
         for (let level of this.levels)
         {
