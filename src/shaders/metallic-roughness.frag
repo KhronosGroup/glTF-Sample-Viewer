@@ -297,7 +297,7 @@ float getMetallicRoughnessSpecularFactor()
 {
     //F0 = 0.08 * specularFactor * specularTexture
 #ifdef HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP
-    vec4 specSampler =  texture(u_MetallicRoughnessSpecularTextureSampler, getMetallicRoughnessSpecularUV());
+    vec4 specSampler =  texture(u_MetallicRoughnessSpecularSampler, getMetallicRoughnessSpecularUV());
     return 0.08 * u_MetallicRoughnessSpecularFactor * specSampler.a;
 #endif
     return  0.08 * u_MetallicRoughnessSpecularFactor;

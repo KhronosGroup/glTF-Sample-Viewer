@@ -279,7 +279,7 @@ class gltfMaterial extends GltfObject
                 if (this.clearcoatTexture !== undefined)
                 {
                     this.clearcoatTexture.samplerName = "u_ClearcoatSampler";
-                    this.parseTextureInfoExtensions(this.clearcoatTexture, "ClearcoatTexture");
+                    this.parseTextureInfoExtensions(this.clearcoatTexture, "Clearcoat");
                     this.textures.push(this.clearcoatTexture);
                     this.defines.push("HAS_CLEARCOAT_TEXTURE_MAP 1");
                     this.properties.set("u_ClearcoatUVSet", this.clearcoatTexture.texCoord);
@@ -287,7 +287,7 @@ class gltfMaterial extends GltfObject
                 if (this.clearcoatRoughnessTexture !== undefined)
                 {
                     this.clearcoatRoughnessTexture.samplerName = "u_ClearcoatRoughnessSampler";
-                    this.parseTextureInfoExtensions(this.clearcoatRoughnessTexture, "ClearcoatRoughnessTexture");
+                    this.parseTextureInfoExtensions(this.clearcoatRoughnessTexture, "ClearcoatRoughness");
                     this.textures.push(this.clearcoatRoughnessTexture);
                     this.defines.push("HAS_CLEARCOAT_ROUGHNESS_MAP 1");
                     this.properties.set("u_ClearcoatRoughnessUVSet", this.clearcoatRoughnessTexture.texCoord);
@@ -295,7 +295,7 @@ class gltfMaterial extends GltfObject
                 if (this.clearcoatNormalTexture !== undefined)
                 {
                     this.clearcoatNormalTexture.samplerName = "u_ClearcoatNormalSampler";
-                    this.parseTextureInfoExtensions(this.clearcoatNormalTexture, "ClearcoatNormalTexture");
+                    this.parseTextureInfoExtensions(this.clearcoatNormalTexture, "ClearcoatNormal");
                     this.textures.push(this.clearcoatNormalTexture);
                     this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
@@ -327,7 +327,7 @@ class gltfMaterial extends GltfObject
                 if (this.sheenColorIntensityTexture !== undefined)
                 {
                     this.sheenColorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
-                    this.parseTextureInfoExtensions(this.sheenColorIntensityTexture, "SheenColorIntensityTexture");
+                    this.parseTextureInfoExtensions(this.sheenColorIntensityTexture, "SheenColorIntensity");
                     this.textures.push(this.sheenColorIntensityTexture);
                     this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
                     this.properties.set("u_sheenColorIntensityUVSet", this.sheenColorIntensityTexture.texCoord);
@@ -350,7 +350,7 @@ class gltfMaterial extends GltfObject
                 }
                 if (this.MetallicRoughnessSpecularTexture !== undefined)
                 {
-                    this.MetallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularTextureSampler";
+                    this.MetallicRoughnessSpecularTexture.samplerName = "u_MetallicRoughnessSpecularSampler";
                     this.parseTextureInfoExtensions(this.MetallicRoughnessSpecularTexture, "MetallicRoughnessSpecularTexture");
                     this.textures.push(this.MetallicRoughnessSpecularTexture);
                     this.defines.push("HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP 1");
