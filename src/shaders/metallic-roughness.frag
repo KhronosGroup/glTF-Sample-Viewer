@@ -395,7 +395,7 @@ void main()
 
     materialInfo.baseColor = baseColor.rgb;
 
-#ifdef METALLICROUGHNESSGLOSSINESS
+#ifdef MATERIAL_SPECULARGLOSSINESS
     materialInfo = getSpecularGlossinessInfo(materialInfo);
 #endif
 
