@@ -561,7 +561,7 @@ vec3 punctualColor = vec3(0.0);
         g_finalColor.rgb = materialInfo.f0;
     #endif
 
-    #ifdef DEBUG_EMISSIVE
+    #ifdef DEBUG_FEMISSIVE
         g_finalColor.rgb = f_emissive;
     #endif
 
@@ -575,6 +575,10 @@ vec3 punctualColor = vec3(0.0);
 
     #ifdef DEBUG_FCLEARCOAT
         g_finalColor.rgb = f_clearcoat;
+    #endif
+
+    #ifdef DEBUG_FSHEEN
+        g_finalColor.rgb = f_sheen;
     #endif
 
     #ifdef DEBUG_ALPHA

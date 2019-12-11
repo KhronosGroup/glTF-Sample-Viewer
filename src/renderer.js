@@ -414,8 +414,20 @@ class gltfRenderer
         case(DebugOutput.OCCLUSION):
             fragDefines.push("DEBUG_OCCLUSION 1");
             break;
-        case(DebugOutput.EMISIVE):
-            fragDefines.push("DEBUG_EMISSIVE 1");
+        case(DebugOutput.EMISSIVE):
+            fragDefines.push("DEBUG_FEMISSIVE 1");
+            break;
+        case(DebugOutput.SPECULAR):
+            fragDefines.push("DEBUG_FSPECULAR 1");
+            break;
+        case(DebugOutput.DIFFUSE):
+            fragDefines.push("DEBUG_FDIFFUSE 1");
+            break;
+        case(DebugOutput.CLEARCOAT):
+            fragDefines.push("DEBUG_FCLEARCOAT 1");
+            break;
+        case(DebugOutput.SHEEN):
+            fragDefines.push("DEBUG_FSHEEN 1");
             break;
         case(DebugOutput.F0):
             fragDefines.push("DEBUG_F0 1");

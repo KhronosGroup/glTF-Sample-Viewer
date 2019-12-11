@@ -51,7 +51,11 @@ const DebugOutput =
     NORMAL: "Normal",
     BASECOLOR: "Base Color",
     OCCLUSION: "Occlusion",
-    EMISIVE: "Emissive",
+    EMISSIVE: "Emissive",
+    DIFFUSE: "Diffuse",
+    SPECULAR: "Specular",
+    CLEARCOAT: "ClearCoat",
+    SHEEN: "Sheen",
     ALPHA: "Alpha",
     F0: "F0"
 };
