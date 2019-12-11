@@ -141,13 +141,13 @@ class gltfMaterial extends GltfObject
             this.properties.set("u_OcclusionUVSet", this.occlusionTexture.texCoord);
         }
 
+        this.properties.set("u_EmissiveFactor", this.emissiveFactor);
         if (this.emissiveTexture !== undefined)
         {
             this.emissiveTexture.samplerName = "u_EmissiveSampler";
             this.parseTextureInfoExtensions(this.emissiveTexture, "Emissive");
             this.textures.push(this.emissiveTexture);
             this.defines.push("HAS_EMISSIVE_MAP 1");
-            this.properties.set("u_EmissiveFactor", this.emissiveFactor);
             this.properties.set("u_EmissiveUVSet", this.emissiveTexture.texCoord);
         }
 
