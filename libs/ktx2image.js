@@ -148,9 +148,12 @@ class Ktx2Image
             {
                 const face = {};
 
+                const faceLength = level.byteLength / 6;
+                const faceOffset = level.byteOffset + faceLength * i;
+
                 if (this.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
                 {
-                    face.data = new Uint16Array(arrayBuffer, level.byteOffset, level.byteLength / this.typeSize);
+                    face.data = new Uint16Array(arrayBuffer, faceOffset, faceLength / this.typeSize);
                 }
 
                 level.faces.push(face);
