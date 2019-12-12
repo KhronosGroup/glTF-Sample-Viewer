@@ -101,7 +101,16 @@ class gltfWebGl
                     for (const level of image.image.levels)
                     {
                         console.log("creating level");
-                        WebGl.context.texImage2D(WebGl.context.TEXTURE_2D, level.miplevel, WebGl.context.RGBA16F, level.width, level.height, 0, WebGl.context.RGBA, WebGl.context.HALF_FLOAT, level.data);
+
+                        let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
+                        for (const face of level.faces)
+                        {
+                            console.log("creating face");
+
+                            WebGl.context.texImage2D(faceType, level.miplevel, WebGl.context.RGBA16F, level.width, level.height, 0, WebGl.context.RGBA, WebGl.context.HALF_FLOAT, face.data);
+
+                            faceType++;
+                        }
                     }
                 }
                 else if (image.image.dataRGBE !== undefined)
