@@ -21,7 +21,7 @@ class Ktx2Image
         this.layerCount = 0;
         this.faceCount = 0;
         this.levelCount = 0;
-        this.suporcompressionScheme = 0;
+        this.supercompressionScheme = 0;
 
         this.dfdByteOffset = 0;
         this.dfdByteLength = 0;
@@ -86,7 +86,20 @@ class Ktx2Image
         this.layerCount = getNext();
         this.faceCount = getNext();
         this.levelCount = getNext();
-        this.suporcompressionScheme = getNext();
+        this.supercompressionScheme = getNext();
+
+        if (Object.values(VK_FORMAT).includes(this.vkFormat) == false)
+        {
+            console.error("Unsupported vkFormat: " + this.vkFormat + ". Pixel data will not be parsed.");
+        }
+        if (this.supercompressionScheme > 0)
+        {
+            console.error("Supercompression currently not supported. Image data will not be parsed.");
+        }
+        if (this.layerCount > 0)
+        {
+            console.error("Layers currently not supported. Image data will not be parsed.");
+        }
     }
 
     parseIndex(fileIndex)
@@ -136,6 +149,11 @@ class Ktx2Image
 
     parseLevelData(arrayBuffer)
     {
+        if (this.layerCount > 0 || this.supercompressionScheme > 0)
+        {
+            return;
+        }
+
         let miplevel = 0;
         for (let level of this.levels)
         {
@@ -148,7 +166,7 @@ class Ktx2Image
             {
                 const face = {};
 
-                const faceLength = level.byteLength / 6;
+                const faceLength = level.byteLength / this.faceCount;
                 const faceOffset = level.byteOffset + faceLength * i;
 
                 if (this.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
