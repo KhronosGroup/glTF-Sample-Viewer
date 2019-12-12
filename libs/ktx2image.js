@@ -136,8 +136,6 @@ class Ktx2Image
 
     parseLevelData(arrayBuffer)
     {
-        // TODO: take faces into account!
-
         let miplevel = 0;
         for (let level of this.levels)
         {
@@ -145,9 +143,17 @@ class Ktx2Image
             level.width = this.width / (miplevel * miplevel);
             level.height = this.height / (miplevel * miplevel);
 
-            if (this.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
+            level.faces = [];
+            for (let i = 0; i < this.faceCount; i++)
             {
-                level.data = new Uint16Array(arrayBuffer, level.byteOffset, level.byteLength / this.typeSize);
+                const face = {};
+
+                if (this.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
+                {
+                    face.data = new Uint16Array(arrayBuffer, level.byteOffset, level.byteLength / this.typeSize);
+                }
+
+                level.faces.push(face);
             }
         }
     }
