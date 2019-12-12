@@ -105,7 +105,7 @@ class gltfWebGl
                         let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
                         for (const face of level.faces)
                         {
-                            console.log("creating face");
+                            console.log("creating face with type " + faceType);
 
                             WebGl.context.texImage2D(faceType, level.miplevel, WebGl.context.RGBA16F, level.width, level.height, 0, WebGl.context.RGBA, WebGl.context.HALF_FLOAT, face.data);
 
