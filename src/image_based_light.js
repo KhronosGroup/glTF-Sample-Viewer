@@ -14,6 +14,9 @@ class ImageBasedLight extends GltfObject
         this.brightnessOffset = 0;
         this.specularEnvironmentTexture = undefined;
         this.diffuseEnvironmentTexture = undefined;
+
+        // non-gltf
+        this.levelCount = 1;
     }
 
     initGl(gltf)
@@ -22,6 +25,9 @@ class ImageBasedLight extends GltfObject
         {
             const textureObject = gltf.textures[this.specularEnvironmentTexture];
             textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
+
+            const imageObject = gltf.images[textureObject.source];
+            this.levelCount = imageObject.image.levelCount;
         }
         if (this.diffuseEnvironmentTexture !== undefined)
         {

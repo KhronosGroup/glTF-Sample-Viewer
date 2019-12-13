@@ -454,22 +454,22 @@ class gltfRenderer
         if (gltf.envData === undefined)
         {
             gltf.envData = {};
-            let linear = true;
 
             if (scene !== undefined &&
                 scene.imageBasedLight !== undefined)
             {
-                // TODO: remove this log
-                console.log("applying IBL from extension");
-
                 const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
                 const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
 
-                gltf.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
-                gltf.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
+                gltf.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
+                gltf.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
+
+                gltf.envData.mipCount = scene.imageBasedLight.levelCount;
             }
             else
             {
+                let linear = true;
+
                 if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
                 {
                     linear = false;
@@ -479,6 +479,8 @@ class gltfRenderer
                 const specularTextureIndex = gltf.textures.length - 2;
                 gltf.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
                 gltf.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
+
+                gltf.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
             }
 
             gltf.envData.specularEnvMap.generateMips = false;
@@ -490,19 +492,7 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
 
-        let mipCount = 1;
-        if (scene !== undefined &&
-            scene.imageBasedLight !== undefined)
-        {
-            // TODO: should not be hardcoded
-            mipCount = 5;
-        }
-        else
-        {
-            mipCount = Environments[this.parameters.environmentName].mipLevel;
-        }
-
-        this.shader.updateUniform("u_MipCount", mipCount);
+        this.shader.updateUniform("u_MipCount", gltf.envData.mipCount);
     }
 
     destroy()
