@@ -97,7 +97,8 @@ class gltfUserInterface
         function createElement(gltf)
         {
             const scenes = gltf !== undefined ? gltf.scenes : [];
-            return self.gltfFolder.add(self.renderingParameters, "sceneIndex", Object.keys(scenes)).name("Scene Index");
+            return self.gltfFolder.add(self.renderingParameters, "sceneIndex", Object.keys(scenes)).name("Scene Index")
+                .onChange(() => self.update(gltf));
         }
         this.initializeUpdatable(this.gltfFolder, createElement);
     }
