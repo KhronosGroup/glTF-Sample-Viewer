@@ -31,6 +31,9 @@ class Ktx2Image
         this.sgdByteLength = 0;
 
         this.levels = [];
+
+        this.onload = () => { };
+        this.onerror = () => { };
     }
 
     initialize(arrayBuffer)
@@ -39,6 +42,7 @@ class Ktx2Image
         if (! this.checkVersion(version))
         {
             console.error("Invalid KTX2 version identifier");
+            this.onerror();
             return;
         }
 
@@ -53,6 +57,8 @@ class Ktx2Image
         this.parseLevelIndex(levelIndex);
 
         this.parseLevelData(arrayBuffer);
+
+        this.onload();
     }
 
     checkVersion(version)

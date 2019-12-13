@@ -69,7 +69,7 @@ class gltfImage extends GltfObject
 
             if (!self.setImageFromBufferView(gltf) &&
                 !self.setImageFromFiles(additionalFiles) &&
-                !self.setImageFromUri(resolve))
+                !self.setImageFromUri())
             {
                 console.error("Was not able to resolve image with uri '%s'", self.uri);
                 resolve();
@@ -79,7 +79,7 @@ class gltfImage extends GltfObject
         return promise;
     }
 
-    setImageFromUri(callback)
+    setImageFromUri()
     {
         if (this.uri === undefined)
         {
@@ -92,11 +92,6 @@ class gltfImage extends GltfObject
                 .then(response =>
                 {
                     this.image.initialize(response.data);
-
-                    // TODO: remove this log
-                    console.log(this.image);
-
-                    callback();
                 });
         }
         else
