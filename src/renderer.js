@@ -465,9 +465,6 @@ class gltfRenderer
                 const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
                 const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
 
-                gltf.textures[diffuseTextureIndex].type = WebGl.context.TEXTURE_CUBE_MAP;
-                gltf.textures[specularTextureIndex].type = WebGl.context.TEXTURE_CUBE_MAP;
-
                 gltf.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
                 gltf.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
             }
