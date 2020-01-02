@@ -125,16 +125,9 @@ vec4 getBaseColor()
     return baseColor * getVertexColor();
 }
 
-// Lambert lighting
-// see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-vec3 lambertian(vec3 diffuseColor)
-{
-    return diffuseColor / M_PI;
-}
-
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
 // Implementation of fresnel from [4], Equation 15
-vec3 fresnelReflection(vec3 f0, vec3 f90, float VdotH)
+vec3 fresnel(vec3 f0, vec3 f90, float VdotH)
 {
     return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
@@ -144,7 +137,7 @@ vec3 fresnelReflection(vec3 f0, vec3 f90, float VdotH)
 // see Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. Journal of Computer Graphics Techniques, 3
 // see Real-Time Rendering. Page 331 to 336.
 // see https://google.github.io/filament/Filament.md.html#materialsystem/specularbrdf/geometricshadowing(specularg)
-float visibility(float NdotL, float NdotV, float alphaRoughness)
+float V_GGX(float NdotL, float NdotV, float alphaRoughness)
 {
     float alphaRoughnessSq = alphaRoughness * alphaRoughness;
 
@@ -159,10 +152,16 @@ float visibility(float NdotL, float NdotV, float alphaRoughness)
     return 0.0;
 }
 
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
+float V_Neubelt(float NdotL, float NdotV)
+{
+    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
+}
+
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
 // Implementation from "Average Irregularity Representation of a Roughened Surface for Ray Reflection" by T. S. Trowbridge, and K. P. Reitz
 // Follows the distribution function recommended in the SIGGRAPH 2013 course notes from EPIC Games [1], Equation 3.
-float microfacetDistribution(float NdotH, float alphaRoughness)
+float D_GGX(float NdotH, float alphaRoughness)
 {
     float alphaRoughnessSq = alphaRoughness * alphaRoughness;
     float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
@@ -173,7 +172,7 @@ float microfacetDistribution(float NdotH, float alphaRoughness)
 // See  https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
 
 // Estevez and Kulla http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
-float charlieDistribution(float sheenRoughness, float NdotH)
+float D_Charlie(float sheenRoughness, float NdotH)
 {
     sheenRoughness = max(sheenRoughness, 0.000001); //clamp (0,1]
     float alphaG = sheenRoughness * sheenRoughness;
@@ -183,33 +182,27 @@ float charlieDistribution(float sheenRoughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
 }
 
-// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
-float neubeltVisibility(float NdotL, float NdotV)
-{
-    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
-}
-
 // f_sheen
-vec3 evaluateSheen(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
+vec3 sheenBRDF(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
-    float sheenDistribution = charlieDistribution(sheenRoughness, NdotH);
-    float sheenVisibility = neubeltVisibility(NdotL, NdotV);
-    vec3 sheenTerm = sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
-    return sheenTerm * M_PI;
+    float sheenDistribution = D_Charlie(sheenRoughness, NdotH);
+    float sheenVisibility = V_Neubelt(NdotL, NdotV);
+    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility * M_PI;
 }
 
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 diffuseBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
+vec3 lambertianBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 {
-    return (1.0 - fresnelReflection(f0, f90, VdotH)) * lambertian(diffuseColor);
+    // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+    return (1.0 - fresnel(f0, f90, VdotH)) * (diffuseColor / M_PI);
 }
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 specularMicrofacetBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
+vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
 {
-    vec3 F = fresnelReflection(f0, f90, VdotH);
-    float Vis = visibility(NdotL, NdotV, alphaRoughness);
-    float D = microfacetDistribution(NdotH, alphaRoughness);
+    vec3 F = fresnel(f0, f90, VdotH);
+    float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
+    float D = D_GGX(NdotH, alphaRoughness);
 
     return F * Vis * D;
 }
@@ -483,18 +476,18 @@ vec3 punctualColor = vec3(0.0);
 
         if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
         {
-            // Calculation of analytical ligh
+            // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-            f_diffuse += intensity * angularInfo.NdotL *  diffuseBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
-            f_specular += intensity * angularInfo.NdotL * specularMicrofacetBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            f_diffuse += intensity * angularInfo.NdotL *  lambertianBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
+            f_specular += intensity * angularInfo.NdotL * metallicBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * angularInfo.NdotL * evaluateSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+                f_sheen += intensity * angularInfo.NdotL * sheenBRDF(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
                 AngularInfo coatAngles = getAngularInfo(pointToLight, materialInfo.clearcoatNormal, view);
-                f_clearcoat += intensity * coatAngles.NdotL * specularMicrofacetBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
+                f_clearcoat += intensity * coatAngles.NdotL * metallicBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
             #endif
         }
     }
@@ -514,7 +507,7 @@ vec3 punctualColor = vec3(0.0);
     vec3 cleacoatBlendFactor = vec3(0.f);
 
     #ifdef MATERIAL_CLEARCOAT
-        cleacoatBlendFactor = materialInfo.clearcoatFactor * fresnelReflection(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+        cleacoatBlendFactor = materialInfo.clearcoatFactor * fresnel(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
     color = (f_emissive + f_diffuse + (1.0 - reflectance) * f_sheen) * (1.0 - cleacoatBlendFactor) + mix(f_specular, f_clearcoat, cleacoatBlendFactor);
