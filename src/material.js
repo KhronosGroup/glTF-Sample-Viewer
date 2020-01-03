@@ -358,8 +358,8 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_METALLICROUGHNESS_SPECULAROVERRIDE_MAP 1");
                     this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.metallicRoughnessSpecularTexture.texCoord);
                 }
+                this.properties.set("u_MetallicRoughnessSpecularFactor", specularFactor);
             }
-            this.properties.set("u_MetallicRoughnessSpecularFactor", specularFactor);
         }
 
         initGlForMembers(this, gltf);
