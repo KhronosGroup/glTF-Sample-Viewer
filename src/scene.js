@@ -8,16 +8,21 @@ class gltfScene extends GltfObject
         super();
         this.nodes = nodes;
         this.name = name;
+
+        // non gltf
+        this.imageBasedLight = undefined;
     }
 
-    fromJson(jsonScene)
+    initGl(gltf)
     {
-        if (jsonScene.nodes !== undefined)
-        {
-            this.nodes = jsonScene.nodes;
-        }
+        super.initGl(gltf);
 
-        this.name = jsonScene.name;
+        if (this.extensions !== undefined &&
+            this.extensions.KHR_lights_image_based !== undefined)
+        {
+            const index = this.extensions.KHR_lights_image_based.imageBasedLight;
+            this.imageBasedLight = gltf.imageBasedLights[index];
+        }
     }
 
     applyTransformHierarchy(gltf, rootTransform = mat4.create())

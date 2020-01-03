@@ -90,6 +90,11 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(gltf, scene, sortByDepth, predicateDrawPrimivitve)
     {
+        if (scene.envData === undefined)
+        {
+            this.initializeEnvironment(gltf, scene);
+        }
+
         let currentCamera = undefined;
 
         if(!this.parameters.userCameraActive())
@@ -133,7 +138,7 @@ class gltfRenderer
                     {
                         if(predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
                         {
-                            this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
+                            this.drawPrimitive(gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
                         }
                     }
                 }
@@ -147,14 +152,14 @@ class gltfRenderer
             {
                 if(predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
                 {
-                    this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+                    this.drawPrimitive(gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
                 }
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, node, viewProjectionMatrix)
+    drawPrimitive(gltf, envData, primitive, node, viewProjectionMatrix)
     {
         if (primitive.skip) return;
 
@@ -265,7 +270,7 @@ class gltfRenderer
 
         if (this.parameters.useIBL)
         {
-            this.applyEnvironmentMap(gltf, material.textures.length);
+            this.applyEnvironmentMap(gltf, envData, material.textures.length);
         }
 
         if (drawIndexed)
@@ -449,30 +454,50 @@ class gltfRenderer
         this.shader.updateUniform("u_Lights", uniformLights);
     }
 
-    applyEnvironmentMap(gltf, texSlotOffset)
+    initializeEnvironment(gltf, scene)
     {
-        if (gltf.envData === undefined)
+        scene.envData = {};
+
+        if (scene !== undefined &&
+            scene.imageBasedLight !== undefined)
+        {
+            const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
+            const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
+
+            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
+            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
+
+            scene.envData.mipCount = scene.imageBasedLight.levelCount;
+        }
+        else
         {
             let linear = true;
+
             if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
             {
                 linear = false;
             }
 
-            gltf.envData = {};
-            gltf.envData.diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0, linear);
-            gltf.envData.specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0, linear);
-            gltf.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
-            gltf.envData.specularEnvMap.generateMips = false;
-            gltf.envData.lut.generateMips = false;
+            const diffuseTextureIndex = gltf.textures.length - 3;
+            const specularTextureIndex = gltf.textures.length - 2;
+            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
+            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
+
+            scene.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
         }
 
-        WebGl.setTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, gltf.envData.diffuseEnvMap, texSlotOffset);
-        WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
-        WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
+        scene.envData.specularEnvMap.generateMips = false;
+        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.lut.generateMips = false;
+    }
 
-        const mipCount = Environments[this.parameters.environmentName].mipLevel;
-        this.shader.updateUniform("u_MipCount", mipCount);
+    applyEnvironmentMap(gltf, envData, texSlotOffset)
+    {
+        WebGl.setTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
+        WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
+        WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, envData.lut, texSlotOffset + 2);
+
+        this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 
     destroy()
