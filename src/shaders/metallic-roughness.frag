@@ -214,8 +214,8 @@ vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
-    vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
+    vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg;
+    vec4 specularSample = textureLod(u_GGXEnvSampler, reflection, lod);
 
     vec3 specularLight = specularSample.rgb;
 
@@ -228,7 +228,7 @@ vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 
 
 vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
 {
-    vec3 diffuseLight = texture(u_DiffuseEnvSampler, n).rgb;
+    vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
     #ifndef USE_HDR
         diffuseLight = SRGBtoLINEAR(diffuseLight);

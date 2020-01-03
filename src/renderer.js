@@ -493,9 +493,9 @@ class gltfRenderer
 
     applyEnvironmentMap(gltf, envData, texSlotOffset)
     {
-        WebGl.setTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
-        WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
-        WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, envData.lut, texSlotOffset + 2);
+        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXBRDFLUT"), gltf, envData.lut, texSlotOffset + 2);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
