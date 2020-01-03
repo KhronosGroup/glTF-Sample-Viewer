@@ -173,6 +173,7 @@ class gltfRenderer
 
         let fragDefines = material.getDefines().concat(vertDefines);
         this.pushFragParameterDefines(fragDefines);
+        this.pushAdditionalEnvironmentDefines(fragDefines,envData);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
@@ -443,6 +444,14 @@ class gltfRenderer
         }
     }
 
+    pushAdditionalEnvironmentDefines(fragDefines, envData)
+    {
+        if(envData.sheenEnvMap !== undefined)
+        {
+            fragDefines.push("USE_SHEEN_IBL 1");
+        }
+    }
+
     applyLights(gltf)
     {
         let uniformLights = [];
@@ -466,8 +475,12 @@ class gltfRenderer
 
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
-
             scene.envData.mipCount = scene.imageBasedLight.levelCount;
+            if(scene.imageBasedLight.sheenEnvironmentTexture !== undefined)
+            {
+                const sheenCubeMapIndex = scene.imageBasedLight.sheenEnvironmentTexture;
+                scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
+            }
         }
         else
         {
@@ -496,7 +509,10 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXBRDFLUT"), gltf, envData.lut, texSlotOffset + 2);
-
+        if(envData.sheenEnvMap !== undefined)
+        {
+            WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
+        }
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 

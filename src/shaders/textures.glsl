@@ -39,6 +39,7 @@ uniform mat3 u_SpecularGlossinessUVTransform;
 uniform samplerCube u_LambertianEnvSampler;
 uniform samplerCube u_GGXEnvSampler;
 uniform sampler2D u_GGXBRDFLUT;
+uniform samplerCube u_CharlieEnvSampler;
 
 //clearcoat
 uniform sampler2D u_ClearcoatSampler;
