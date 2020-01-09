@@ -248,9 +248,11 @@ vec3 getSheenIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenCol
     vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg; //TODO Get Sample point from D_Charlie generated LUT here
     vec4 specularSample = textureLod(u_CharlieEnvSampler, reflection, lod);
 
-    //HDR not supported
-
     vec3 specularLight = specularSample.rgb;
+
+    #ifndef USE_HDR
+    specularLight = SRGBtoLINEAR(specularLight);
+    #endif
 
     return sheenIntensity * specularLight * (sheenColor * brdf.x + brdf.y);
 #endif
