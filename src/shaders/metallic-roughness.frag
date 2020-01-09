@@ -237,7 +237,7 @@ vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
     return diffuseLight * diffuseColor;
 }
 
-vec3 getSheenIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
+vec3 getSheenIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
 {
 #ifdef USE_SHEEN_IBL
     float NdotV = clampedDot(n, v);
@@ -245,14 +245,14 @@ vec3 getSheenIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenCol
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, sheenRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg; //TODO Get CharlieBRDFLUT here
+    vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg; //TODO Get Sample point from D_Charlie generated LUT here
     vec4 specularSample = textureLod(u_CharlieEnvSampler, reflection, lod);
 
     //HDR not supported
 
     vec3 specularLight = specularSample.rgb;
 
-    return specularLight * (sheenColor * brdf.x + brdf.y);
+    return sheenIntensity * specularLight * (sheenColor * brdf.x + brdf.y);
 #endif
     return vec3(0);
 }
@@ -454,7 +454,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getSheenIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor);
+        f_sheen += getSheenIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
     #endif
 #endif
 
