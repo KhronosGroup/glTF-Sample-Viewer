@@ -207,7 +207,7 @@ vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float N
     return F * Vis * D;
 }
 
-vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
+vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
 {
     float NdotV = clampedDot(n, v);
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
@@ -226,7 +226,7 @@ vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
+vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
 {
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
@@ -237,7 +237,7 @@ vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
     return diffuseLight * diffuseColor;
 }
 
-vec3 getSheenIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
+vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
 {
 #ifdef USE_SHEEN_IBL
     float NdotV = clampedDot(n, v);
@@ -448,15 +448,15 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getSpecularIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
-    f_diffuse += getDiffuseIBLContribution(normal, materialInfo.albedoColor);
+    f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
+    f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getSpecularIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
+        f_clearcoat += getGGXIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getSheenIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+        f_sheen += getCharlieIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
     #endif
 #endif
 
