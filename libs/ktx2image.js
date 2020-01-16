@@ -181,7 +181,7 @@ class Ktx2Image
                 }
                 else if (this.vkFormat == VK_FORMAT.R32G32B32A32_SFLOAT)
                 {
-                    face.data = new Uint32Array(arrayBuffer, faceOffset, faceLength / this.typeSize);
+                    face.data = new Float32Array(arrayBuffer, faceOffset, faceLength / this.typeSize);
                 }
 
                 level.faces.push(face);
