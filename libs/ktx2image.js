@@ -214,4 +214,4 @@ const VK_FORMAT =
     R32G32B32A32_SFLOAT: 109
 };
 
-export { Ktx2Image };
+export { Ktx2Image, VK_FORMAT };
