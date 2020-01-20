@@ -95,12 +95,14 @@ class gltfWebGl
 
                 if (image.image instanceof Ktx2Image)
                 {
-                    for (const level of image.image.levels)
+                    const ktxImage = image.image;
+
+                    for (const level of ktxImage.levels)
                     {
                         let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
                         for (const face of level.faces)
                         {
-                            WebGl.context.texImage2D(faceType, level.miplevel, WebGl.context.RGBA16F, level.width, level.height, 0, WebGl.context.RGBA, WebGl.context.HALF_FLOAT, face.data);
+                            WebGl.context.texImage2D(faceType, level.miplevel, ktxImage.glInternalFormat, level.width, level.height, 0, ktxImage.glFormat, ktxImage.glType, face.data);
 
                             faceType++;
                         }
