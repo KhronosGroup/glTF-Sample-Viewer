@@ -193,7 +193,16 @@ Features
 ========
 
 - [x] glTF 2.0
-- [x] KHR_lights_punctual extension
-- [x] KHR_materials_pbrSpecularGlossiness
-- [x] KHR_materials_unlit extension
-- [x] KHR_texture_transform extension
+- [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)
+- [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
+- [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
+- [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
+- [] PBR next
+    - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/pull/1740)
+    - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/pull/1688) (Punctual lights only, IBL in progress)
+    - [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/pull/1741)
+    - [x] [KHR_lights_image_based & KHR_image_ktx2](https://github.com/KhronosGroup/glTF/pull/1612) (partial support for16 and 32bit SFLOAT) see [glTF-IBL-Sampler](https://github.com/KhronosGroup/glTF-IBL-Sampler) project to generate environments. SH not support yet.
+    - [] [KHR_materials_thinfilm](https://github.com/KhronosGroup/glTF/pull/1742)
+    - [] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)
+    - [] KHR_materials_anisotropic (Specification pending)
+
