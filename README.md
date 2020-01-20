@@ -10,29 +10,48 @@ This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.
 
 - [Version](#version)
 - [Credits](#credits)
+- [Features](#features)
 - [Viewer](#viewer)
   - [Usage](#usage)
   - [Setup](#setup)
   - [Debugging](#debugging)
 - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
-- [Appendix](#appendix)
-  - [Specular Term](#specular-term)
-    - [Microfaced Distribution (D)](#microfaced-distribution-d)
-    - [Surface Reflection Ratio (F)](#surface-reflection-ratio-f)
-    - [Geometric Occlusion (G)](#geometric-occlusion-g)
+- [Appendix A Metallic-Roughness Material](#appendix-a-metallic-roughness-material)
+  - [Specular Term](#specular-term-f_specular)
   - [Diffuse Term](#diffuse-term)
-- [Features](#features)
-
+- [Appendix B: Clear coat Material](#appendix-b-clear-coat-material)
+- [Appendix C: Sheen Material](#appendix-c-sheen-material)
+- [Appendix D: Specular Material](#appendix-d-specular-material)
+- [Appendix E: Thin film Material](#appendix-e-thin-film-material)
+- [Appendix F: Transmission Material](#appendix-f-transmission-material)
+- [Appendix G: Anisotropic Material](#appendix-g-anisotropic-material)
 
 Version
 -------
 
-Pre-Release
+PBR-next pre-release
 
 Credits
 -------
 
 Developed by [UX3D](https://www.ux3d.io/) and based on the former [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-Sample-Viewer/tree/glTF-WebGL-PBR) project. Supported by the [Khronos Group](https://www.khronos.org/) and [Facebook](https://www.facebook.com/) for animations, skinning and morphing.
+
+Features
+========
+
+- [x] glTF 2.0
+- [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)
+- [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
+- [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
+- [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
+- [] PBR next
+    - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/pull/1740)
+    - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/pull/1688) (Punctual lights only, IBL in progress)
+    - [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/pull/1741)
+    - [x] [KHR_lights_image_based & KHR_image_ktx2](https://github.com/KhronosGroup/glTF/pull/1612) (partial support for16 and 32bit SFLOAT) see [glTF-IBL-Sampler](https://github.com/KhronosGroup/glTF-IBL-Sampler) project to generate environments. SH not support yet.
+    - [] [KHR_materials_thinfilm](https://github.com/KhronosGroup/glTF/pull/1742)
+    - [] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)
+    - [] KHR_materials_anisotropic (Specification pending)
 
 Viewer
 ======
@@ -119,31 +138,32 @@ A good reference about Physically-Based Materials and its workflow can be found 
 For implementation details and further theory, please find more information in the [Real Shading in Unreal Engine 4](https://blog.selfshadow.com/publications/s2013-shading-course/) presentation from the SIGGRAPH 2013 course.
 
 
-Appendix
-========
+Appendix A: Metallic-Roughness Material
+=======================================
 
-For further reference, please read the [glTF 2.0: Appendix B: BRDF Implementation](https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#appendix-b-brdf-implementation)  
+For further reference, please read the [glTF 2.0: Appendix B: BRDF Implementation](https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#appendix-b-brdf-implementation)
 The following sections do summarize the important shader code.
 
-```
-vec3 specularContribution = D * Vis * F;
-vec3 diffuseContribution = (1.0 - F) * diffuse; 
+```glsl
+vec3 F_specular = D * Vis * F;
+vec3 F_diffuse = (1.0 - F) * diffuse;
+vec3 F = F_specular + F_diffuse;
 ```
 
 Please note: Vis = G / (4 * NdotL * NdotV)
 
-## Specular Term
+## Specular Term (F_specular)
 
-### Microfaced Distribution (D)
+**Microfacet metallic-roughness BRDF**
 
-**Trowbridge-Reitz GGX**
-
-```
-float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
+```glsl
+vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
 {
-    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
-    float f = (angularInfo.NdotH * alphaRoughnessSq - angularInfo.NdotH) * angularInfo.NdotH + 1.0;
-    return alphaRoughnessSq / (M_PI * f * f);
+    vec3 F = fresnel(f0, f90, VdotH);
+    float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
+    float D = D_GGX(NdotH, alphaRoughness);
+
+    return F * Vis * D;
 }
 ```
 
@@ -151,58 +171,86 @@ float microfacetDistribution(MaterialInfo materialInfo, AngularInfo angularInfo)
 
 **Fresnel Schlick**
 
-```
-vec3 specularReflection(MaterialInfo materialInfo, AngularInfo angularInfo)
+```glsl
+vec3 fresnel(vec3 f0, vec3 f90, float VdotH)
 {
-    return materialInfo.reflectance0 + (materialInfo.reflectance90 - materialInfo.reflectance0) * pow(clamp(1.0 - angularInfo.VdotH, 0.0, 1.0), 5.0);
+    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 ```
 
 Please note, that the above shader code includes the optimization for "turning off" the Fresnel edge brightening (see "Real-Time Rendering" Fourth Edition on page 325).
 
-### Geometric Occlusion (G)
+### Geometric Occlusion / Visiblity (V)
 
 **Smith Joint GGX**
 
-```
-float visibilityOcclusion(MaterialInfo materialInfo, AngularInfo angularInfo)
+```glsl
+float V_GGX(float NdotL, float NdotV, float alphaRoughness)
 {
-    float NdotL = angularInfo.NdotL;
-    float NdotV = angularInfo.NdotV;
-    float alphaRoughnessSq = materialInfo.alphaRoughness * materialInfo.alphaRoughness;
+    float alphaRoughnessSq = alphaRoughness * alphaRoughness;
 
     float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
     float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
 
-    return 0.5 / (GGXV + GGXL);
+    float GGX = GGXV + GGXL;
+    if (GGX > 0.0)
+    {
+        return 0.5 / GGX;
+    }
+    return 0.0;
 }
 ```
 
-## Diffuse Term
+### Normal Distribution (D)
 
-**Lambert**
+**Trowbridge-Reitz GGX**
 
-```
-vec3 diffuse(MaterialInfo materialInfo)
+```glsl
+float D_GGX(float NdotH, float alphaRoughness)
 {
-    return materialInfo.diffuseColor / M_PI;
+    float alphaRoughnessSq = alphaRoughness * alphaRoughness;
+    float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
+    return alphaRoughnessSq / (M_PI * f * f);
 }
 ```
 
-Features
-========
+## Diffuse Term (F_diffuse)
 
-- [x] glTF 2.0
-- [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)
-- [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
-- [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
-- [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
-- [] PBR next
-    - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/pull/1740)
-    - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/pull/1688) (Punctual lights only, IBL in progress)
-    - [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/pull/1741)
-    - [x] [KHR_lights_image_based & KHR_image_ktx2](https://github.com/KhronosGroup/glTF/pull/1612) (partial support for16 and 32bit SFLOAT) see [glTF-IBL-Sampler](https://github.com/KhronosGroup/glTF-IBL-Sampler) project to generate environments. SH not support yet.
-    - [] [KHR_materials_thinfilm](https://github.com/KhronosGroup/glTF/pull/1742)
-    - [] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)
-    - [] KHR_materials_anisotropic (Specification pending)
+**Lambertian**
 
+```glsl
+vec3 lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
+{
+    return (1.0 - fresnel(f0, f90, VdotH)) * (diffuseColor / M_PI);
+}
+```
+
+Appendix B: Clear coat Material
+===============================
+
+(TODO)
+
+Appendix C: Sheen Material
+==========================
+
+(TODO)
+
+Appendix D: Specular Material
+=============================
+
+(TODO)
+
+Appendix E: Thin film Material
+==============================
+
+(TODO)
+
+Appendix F: Transmission Material
+=================================
+
+(TODO)
+
+Appendix G: Anisotropic Material
+================================
+
+(TODO)
