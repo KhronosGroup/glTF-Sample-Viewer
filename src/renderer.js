@@ -480,6 +480,7 @@ class gltfRenderer
             {
                 const sheenCubeMapIndex = scene.imageBasedLight.sheenEnvironmentTexture;
                 scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
+                scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
             }
         }
         else
@@ -500,7 +501,7 @@ class gltfRenderer
         }
 
         scene.envData.specularEnvMap.generateMips = false;
-        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.lut.generateMips = false;
     }
 
@@ -512,6 +513,7 @@ class gltfRenderer
         if(envData.sheenEnvMap !== undefined)
         {
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
+            WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
         }
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }

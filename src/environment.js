@@ -88,8 +88,10 @@ class gltfEnvironmentLoader
         gltf.textures.push(new gltfTexture(specularCubeSamplerIdx, indices, WebGl.context.TEXTURE_CUBE_MAP));
 
         gltf.images.push(new gltfImage(this.basePath + "assets/images/lut_ggx.png", WebGl.context.TEXTURE_2D));
+        gltf.images.push(new gltfImage(this.basePath + "assets/images/lut_charlie.png", WebGl.context.TEXTURE_2D));
 
         // u_brdfLUT tex
+        gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], WebGl.context.TEXTURE_2D));
         gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], WebGl.context.TEXTURE_2D));
     }
 }
