@@ -179,6 +179,10 @@ class Ktx2Image
                 {
                     face.data = new Uint16Array(arrayBuffer, faceOffset, faceLength / this.typeSize);
                 }
+                else if (this.vkFormat == VK_FORMAT.R32G32B32A32_SFLOAT)
+                {
+                    face.data = new Float32Array(arrayBuffer, faceOffset, faceLength / this.typeSize);
+                }
 
                 level.faces.push(face);
             }
@@ -206,7 +210,8 @@ class Ktx2Image
 // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkFormat.html
 const VK_FORMAT =
 {
-    R16G16B16A16_SFLOAT: 97
+    R16G16B16A16_SFLOAT: 97,
+    R32G32B32A32_SFLOAT: 109
 };
 
-export { Ktx2Image };
+export { Ktx2Image, VK_FORMAT };
