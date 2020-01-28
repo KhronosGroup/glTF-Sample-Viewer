@@ -20,6 +20,24 @@ class ImageBasedLight extends GltfObject
         this.levelCount = 1;
     }
 
+    fromJson(jsonIBL)
+    {
+        super.fromJson(jsonIBL);
+
+        if(jsonIBL.extensions !== undefined)
+        {
+            this.fromJsonExtensions(jsonIBL.extensions);
+        }
+    }
+
+    fromJsonExtensions(extensions)
+    {
+        if (extensions.KHR_materials_sheen !== undefined)
+        {
+            this.sheenEnvironmentTexture = extensions.KHR_materials_sheen.specularEnvironmentTexture;
+        }
+    }
+
     initGl(gltf)
     {
         if (this.specularEnvironmentTexture !== undefined)
