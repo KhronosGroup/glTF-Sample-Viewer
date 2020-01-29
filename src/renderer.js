@@ -492,8 +492,8 @@ class gltfRenderer
                 linear = false;
             }
 
-            const diffuseTextureIndex = gltf.textures.length - 3;
-            const specularTextureIndex = gltf.textures.length - 2;
+            const diffuseTextureIndex = gltf.textures.length - 4;
+            const specularTextureIndex = gltf.textures.length - 3;
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
 
