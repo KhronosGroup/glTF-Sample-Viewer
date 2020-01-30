@@ -32,6 +32,11 @@ class Ktx2Image
 
         this.levels = [];
 
+        // for usage in GL
+        this.glInternalFormat = 0;
+        this.glFormat = 0;
+        this.glType = 0;
+
         this.onload = () => { };
         this.onerror = () => { };
     }
@@ -94,7 +99,13 @@ class Ktx2Image
         this.levelCount = getNext();
         this.supercompressionScheme = getNext();
 
-        if (Object.values(VK_FORMAT).includes(this.vkFormat) == false)
+        if (Object.values(VK_FORMAT).includes(this.vkFormat))
+        {
+            this.glInternalFormat = VK_TO_GL[this.vkFormat].glInternalFormat;
+            this.glFormat = VK_TO_GL[this.vkFormat].glFormat;
+            this.glType = VK_TO_GL[this.vkFormat].glType;
+        }
+        else
         {
             console.error("Unsupported vkFormat: " + this.vkFormat + ". Pixel data will not be parsed.");
         }
@@ -216,4 +227,35 @@ const VK_FORMAT =
     R32G32B32A32_SFLOAT: 109
 };
 
-export { Ktx2Image, VK_FORMAT };
+const GL_INTERNAL_FORMAT =
+{
+    RGBA16F: 34842,
+    RGBA32F: 34836
+};
+
+const GL_FORMAT =
+{
+    RGBA: 6408
+};
+
+const GL_TYPE =
+{
+    HALF_FLOAT: 5131,
+    FLOAT: 5126
+};
+
+const VK_TO_GL = {};
+VK_TO_GL[VK_FORMAT.R16G16B16A16_SFLOAT] =
+{
+    glInternalFormat: GL_INTERNAL_FORMAT.RGBA16F,
+    glFormat: GL_FORMAT.RGBA,
+    glType: GL_TYPE.HALF_FLOAT
+};
+VK_TO_GL[VK_FORMAT.R32G32B32A32_SFLOAT] =
+{
+    glInternalFormat: GL_INTERNAL_FORMAT.RGBA32F,
+    glFormat: GL_FORMAT.RGBA,
+    glType: GL_TYPE.FLOAT
+};
+
+export { Ktx2Image };
