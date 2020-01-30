@@ -152,11 +152,23 @@ class gltfImage extends GltfObject
 
         const reader = new FileReader();
         const self = this;
-        reader.onloadend = function(event)
+
+        if (this.image instanceof Ktx2Image)
         {
-            self.image.src = event.target.result;
-        };
-        reader.readAsDataURL(foundFile);
+            reader.onloadend = function(event)
+            {
+                self.image.initialize(event.target.result);
+            }
+            reader.readAsArrayBuffer(foundFile);
+        }
+        else
+        {
+            reader.onloadend = function(event)
+            {
+                self.image.src = event.target.result;
+            };
+            reader.readAsDataURL(foundFile);
+        }
 
         return true;
     }
