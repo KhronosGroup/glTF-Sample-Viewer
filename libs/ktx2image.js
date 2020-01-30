@@ -163,9 +163,11 @@ class Ktx2Image
         let miplevel = 0;
         for (let level of this.levels)
         {
+            const divisor = Math.pow(2, miplevel);
+
             level.miplevel = miplevel++;
-            level.width = this.width / (miplevel * miplevel);
-            level.height = this.height / (miplevel * miplevel);
+            level.width = this.width / divisor;
+            level.height = this.height / divisor;
 
             level.faces = [];
             for (let i = 0; i < this.faceCount; i++)
