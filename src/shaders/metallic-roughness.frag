@@ -245,7 +245,7 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, sheenRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg; //TODO Get Sample point from D_Charlie generated LUT here
+    float brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).b;
     vec4 specularSample = textureLod(u_CharlieEnvSampler, reflection, lod);
 
     vec3 specularLight = specularSample.rgb;
@@ -254,7 +254,7 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     specularLight = SRGBtoLINEAR(specularLight);
     #endif
 
-    return sheenIntensity * specularLight * (sheenColor * brdf.x + brdf.y);
+    return sheenIntensity * specularLight * (sheenColor * brdf);
 #endif
     return vec3(0);
 }
