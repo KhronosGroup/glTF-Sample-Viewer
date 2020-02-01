@@ -377,7 +377,7 @@ class gltfRenderer
             fragDefines.push("USE_IBL 1");
         }
 
-        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR)
+        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR || Environments[this.parameters.environmentName].type === ImageMimeType.KTX2)
         {
             fragDefines.push("USE_HDR 1");
         }
@@ -487,7 +487,7 @@ class gltfRenderer
         {
             let linear = true;
 
-            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
+            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR && Environments[this.parameters.environmentName].type !== ImageMimeType.KTX2)
             {
                 linear = false;
             }

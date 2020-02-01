@@ -15,6 +15,9 @@ class gltfEnvironmentLoader
         let extension;
         switch (environment.type)
         {
+        case (ImageMimeType.KTX2):
+            extension = ".ktx2";
+            break;
         case (ImageMimeType.HDR):
             extension = ".hdr";
             break;
