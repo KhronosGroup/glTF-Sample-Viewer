@@ -426,6 +426,11 @@ class gltfMaterial extends GltfObject
             this.fromJsonClearcoat(jsonExtensions.KHR_materials_clearcoat);
         }
 
+        if(jsonExtensions.KHR_materials_sheen !== undefined)
+        {
+            this.fromJsonSheen(jsonExtensions.KHR_materials_sheen);
+        }
+
         if(jsonExtensions.KHR_materials_specular !== undefined)
         {
             this.fromJsonMetallicRoughnessSpecular(jsonExtensions.KHR_materials_specular);
@@ -487,6 +492,16 @@ class gltfMaterial extends GltfObject
             const clearcoatNormalTexture =  new gltfTextureInfo();
             clearcoatNormalTexture.fromJson(jsonClearcoat.clearcoatNormalTexture);
             this.clearcoatNormalTexture = clearcoatNormalTexture;
+        }
+    }
+
+    fromJsonSheen(jsonSheen)
+    {
+        if(jsonSheen.sheenColorIntensityTexture !== undefined)
+        {
+            const sheenColorIntensityTexture = new gltfTextureInfo();
+            sheenColorIntensityTexture.fromJson(jsonSheen.sheenColorIntensityTexture);
+            this.sheenColorIntensityTexture = sheenColorIntensityTexture;
         }
     }
 
