@@ -308,7 +308,7 @@ class gltfMaterial extends GltfObject
             // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
             let sheenFactor = 0.0;
             let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
-            let sheenRoughness = 0.3;
+            let sheenRoughness = this.properties.get("u_RoughnessFactor");
             if(this.extensions.KHR_materials_sheen !== undefined)
             {
                 this.defines.push("MATERIAL_SHEEN 1");
