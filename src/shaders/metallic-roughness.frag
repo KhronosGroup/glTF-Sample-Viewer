@@ -239,7 +239,6 @@ vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
 
 vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
 {
-#ifdef USE_SHEEN_IBL
     float NdotV = clampedDot(n, v);
     float lod = clamp(sheenRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     vec3 reflection = normalize(reflect(-v, n));
@@ -255,8 +254,6 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     #endif
 
     return sheenIntensity * specularLight * (sheenColor * brdf);
-#endif
-    return vec3(0);
 }
 
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property

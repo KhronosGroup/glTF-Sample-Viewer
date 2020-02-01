@@ -93,7 +93,7 @@ class gltfWebGl
                     return false;
                 }
 
-                if (image.image instanceof Ktx2Image)
+                if (image.type === WebGl.context.TEXTURE_CUBE_MAP)
                 {
                     const ktxImage = image.image;
 

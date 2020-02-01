@@ -34,7 +34,7 @@ class ImageBasedLight extends GltfObject
     {
         if (extensions.KHR_materials_sheen !== undefined)
         {
-            this.sheenEnvironmentTexture = extensions.KHR_materials_sheen.specularEnvironmentTexture;
+            this.sheenEnvironmentTexture = extensions.KHR_materials_sheen.sheenEnvironmentTexture;
         }
     }
 
