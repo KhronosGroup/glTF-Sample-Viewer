@@ -313,17 +313,13 @@ class gltfMaterial extends GltfObject
             {
                 this.defines.push("MATERIAL_SHEEN 1");
 
-                if(this.extensions.KHR_materials_sheen.sheenFactor !== undefined)
+                if(this.extensions.KHR_materials_sheen.intensityFactor !== undefined)
                 {
-                    sheenFactor = this.extensions.KHR_materials_sheen.sheenFactor;
+                    sheenFactor = this.extensions.KHR_materials_sheen.intensityFactor;
                 }
-                if(this.extensions.KHR_materials_sheen.sheenColor !== undefined)
+                if(this.extensions.KHR_materials_sheen.colorFactor !== undefined)
                 {
-                    sheenColor = jsToGl(this.extensions.KHR_materials_sheen.sheenColor);
-                }
-                if(this.extensions.KHR_materials_sheen.sheenRoughness !== undefined)
-                {
-                    sheenRoughness = this.extensions.KHR_materials_sheen.sheenRoughness;
+                    sheenColor = jsToGl(this.extensions.KHR_materials_sheen.colorFactor);
                 }
                 if (this.sheenColorIntensityTexture !== undefined)
                 {
