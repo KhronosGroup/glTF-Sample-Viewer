@@ -321,13 +321,13 @@ class gltfMaterial extends GltfObject
                 {
                     sheenColor = jsToGl(this.extensions.KHR_materials_sheen.colorFactor);
                 }
-                if (this.sheenColorIntensityTexture !== undefined)
+                if (this.colorIntensityTexture !== undefined)
                 {
-                    this.sheenColorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
-                    this.parseTextureInfoExtensions(this.sheenColorIntensityTexture, "SheenColorIntensity");
-                    this.textures.push(this.sheenColorIntensityTexture);
+                    this.colorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
+                    this.parseTextureInfoExtensions(this.colorIntensityTexture, "SheenColorIntensity");
+                    this.textures.push(this.colorIntensityTexture);
                     this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
-                    this.properties.set("u_sheenColorIntensityUVSet", this.sheenColorIntensityTexture.texCoord);
+                    this.properties.set("u_sheenColorIntensityUVSet", this.colorIntensityTexture.texCoord);
                 }
                 this.properties.set("u_SheenIntensityFactor", sheenFactor);
                 this.properties.set("u_SheenColorFactor", sheenColor);
@@ -493,11 +493,11 @@ class gltfMaterial extends GltfObject
 
     fromJsonSheen(jsonSheen)
     {
-        if(jsonSheen.sheenColorIntensityTexture !== undefined)
+        if(jsonSheen.colorIntensityTexture !== undefined)
         {
-            const sheenColorIntensityTexture = new gltfTextureInfo();
-            sheenColorIntensityTexture.fromJson(jsonSheen.sheenColorIntensityTexture);
-            this.sheenColorIntensityTexture = sheenColorIntensityTexture;
+            const colorIntensityTexture = new gltfTextureInfo();
+            colorIntensityTexture.fromJson(jsonSheen.colorIntensityTexture);
+            this.colorIntensityTexture = colorIntensityTexture;
         }
     }
 
