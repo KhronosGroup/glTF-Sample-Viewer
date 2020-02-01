@@ -207,15 +207,15 @@ vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float N
     return F * Vis * D;
 }
 
-vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
+vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
 {
     float NdotV = clampedDot(n, v);
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 brdf = texture(u_brdfLUT, brdfSamplePoint).rg;
-    vec4 specularSample = textureLod(u_SpecularEnvSampler, reflection, lod);
+    vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg;
+    vec4 specularSample = textureLod(u_GGXEnvSampler, reflection, lod);
 
     vec3 specularLight = specularSample.rgb;
 
@@ -226,9 +226,9 @@ vec3 getSpecularIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
+vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
 {
-    vec3 diffuseLight = texture(u_DiffuseEnvSampler, n).rgb;
+    vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
     #ifndef USE_HDR
         diffuseLight = SRGBtoLINEAR(diffuseLight);
@@ -237,9 +237,25 @@ vec3 getDiffuseIBLContribution(vec3 n, vec3 diffuseColor)
     return diffuseLight * diffuseColor;
 }
 
-vec3 getSheenIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 sheenColor)
+vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
 {
-    // TODO: implement
+#ifdef USE_SHEEN_IBL
+    float NdotV = clampedDot(n, v);
+    float lod = clamp(sheenRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    vec3 reflection = normalize(reflect(-v, n));
+
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, sheenRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    float brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).b;
+    vec4 specularSample = textureLod(u_CharlieEnvSampler, reflection, lod);
+
+    vec3 specularLight = specularSample.rgb;
+
+    #ifndef USE_HDR
+    specularLight = SRGBtoLINEAR(specularLight);
+    #endif
+
+    return sheenIntensity * specularLight * (sheenColor * brdf);
+#endif
     return vec3(0);
 }
 
@@ -432,15 +448,15 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getSpecularIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
-    f_diffuse += getDiffuseIBLContribution(normal, materialInfo.albedoColor);
+    f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
+    f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getSpecularIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
+        f_clearcoat += getGGXIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getSheenIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor);
+        f_sheen += getCharlieIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
     #endif
 #endif
 
@@ -504,13 +520,13 @@ vec3 punctualColor = vec3(0.0);
 /// Layer blending
 ///
 
-    vec3 cleacoatBlendFactor = vec3(0.f);
+    vec3 clearcoatBlendFactor = vec3(0.f);
 
     #ifdef MATERIAL_CLEARCOAT
-        cleacoatBlendFactor = materialInfo.clearcoatFactor * fresnel(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+        clearcoatBlendFactor = materialInfo.clearcoatFactor * fresnel(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-    color = (f_emissive + f_diffuse + (1.0 - reflectance) * f_sheen) * (1.0 - cleacoatBlendFactor) + mix(f_specular, f_clearcoat, cleacoatBlendFactor);
+    color = (f_emissive + f_diffuse + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + mix(f_specular, f_clearcoat, clearcoatBlendFactor);
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
