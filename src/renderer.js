@@ -203,6 +203,15 @@ class gltfRenderer
 
         this.updateAnimationUniforms(gltf, node, primitive);
 
+		if  (mat4.determinant(node.worldTransform) < 0.0)
+		{
+			WebGl.context.frontFace(WebGl.context.CW);
+		}
+		else
+		{
+			WebGl.context.frontFace(WebGl.context.CCW);
+		}
+
         if (material.doubleSided)
         {
             WebGl.context.disable(WebGl.context.CULL_FACE);
