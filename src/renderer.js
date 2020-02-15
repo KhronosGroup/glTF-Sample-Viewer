@@ -224,7 +224,7 @@ class gltfRenderer
         if(material.alphaMode === 'BLEND')
         {
             WebGl.context.enable(WebGl.context.BLEND);
-            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.ONE, WebGl.context.ONE_MINUS_SRC_ALPHA);
+            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA);
             WebGl.context.blendEquation(WebGl.context.FUNC_ADD);
         }
         else
