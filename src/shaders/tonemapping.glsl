@@ -12,9 +12,14 @@ vec3 LINEARtoSRGB(vec3 color)
 
 // sRGB to linear approximation
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+vec3 SRGBtoLINEAR(vec3 srgbIn)
+{
+    return vec3(pow(srgbIn.xyz, vec3(GAMMA)));
+}
+
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
-    return vec4(pow(srgbIn.xyz, vec3(GAMMA)), srgbIn.w);
+    return vec4(SRGBtoLINEAR(srgbIn.xyz), srgbIn.w);
 }
 
 // Uncharted 2 tone map
