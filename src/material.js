@@ -260,11 +260,12 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_GlossinessFactor", glossinessFactor);
             }
 
-            //Clearcoat in part of the default metallic-roughness shader
-            let clearcoatFactor = 0.0;
-            let clearcoatRoughnessFactor = 0.0;
+            //Clearcoat is part of the default metallic-roughness shader
             if(this.extensions.KHR_materials_clearcoat !== undefined)
             {
+                let clearcoatFactor = 0.0;
+                let clearcoatRoughnessFactor = 0.0;
+
                 this.defines.push("MATERIAL_CLEARCOAT 1");
 
                 if(this.extensions.KHR_materials_clearcoat.clearcoatFactor !== undefined)
@@ -306,11 +307,12 @@ class gltfMaterial extends GltfObject
 
             //Sheen material extension
             // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
-            let sheenFactor = 0.0;
-            let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
-            let sheenRoughness = this.properties.get("u_RoughnessFactor");
             if(this.extensions.KHR_materials_sheen !== undefined)
             {
+                let sheenFactor = 0.0;
+                let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
+                let sheenRoughness = this.properties.get("u_RoughnessFactor");
+
                 this.defines.push("MATERIAL_SHEEN 1");
 
                 if(this.extensions.KHR_materials_sheen.intensityFactor !== undefined)
@@ -329,6 +331,7 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
                     this.properties.set("u_sheenColorIntensityUVSet", this.colorIntensityTexture.texCoord);
                 }
+
                 this.properties.set("u_SheenIntensityFactor", sheenFactor);
                 this.properties.set("u_SheenColorFactor", sheenColor);
                 this.properties.set("u_SheenRoughness", sheenRoughness);
@@ -337,9 +340,10 @@ class gltfMaterial extends GltfObject
             //KHR Extension Specular
             // See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
             // We call the specular extension and its members 'MetallicRoughnessSpecular' instead to avoid confusion with SpecularGlossiness
-            let specularFactor = 0.5;
             if(this.extensions.KHR_materials_specular)
             {
+                let specularFactor = 0.5;
+
                 this.defines.push("MATERIAL_METALLICROUGHNESS_SPECULAROVERRIDE 1");
 
                 if(this.extensions.KHR_materials_specular.specularFactor !== undefined)
