@@ -1,5 +1,5 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { Ktx2Image, VK_FORMAT } from '../libs/ktx2image.js';
+import { Ktx2Image } from '../libs/ktx2image.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
@@ -92,19 +92,6 @@ class gltfImage extends GltfObject
                 .then(response =>
                 {
                     this.image.initialize(response.data);
-
-                    if (this.image.vkFormat == VK_FORMAT.R16G16B16A16_SFLOAT)
-                    {
-                        this.image.glInternalFormat = WebGl.context.RGBA16F;
-                        this.image.glFormat = WebGl.context.RGBA;
-                        this.image.glType = WebGl.context.HALF_FLOAT;
-                    }
-                    else if (this.image.vkFormat == VK_FORMAT.R32G32B32A32_SFLOAT)
-                    {
-                        this.image.glInternalFormat = WebGl.context.RGBA32F;
-                        this.image.glFormat = WebGl.context.RGBA;
-                        this.image.glType = WebGl.context.FLOAT;
-                    }
                 });
         }
         else
@@ -152,11 +139,23 @@ class gltfImage extends GltfObject
 
         const reader = new FileReader();
         const self = this;
-        reader.onloadend = function(event)
+
+        if (this.image instanceof Ktx2Image)
         {
-            self.image.src = event.target.result;
-        };
-        reader.readAsDataURL(foundFile);
+            reader.onloadend = function(event)
+            {
+                self.image.initialize(event.target.result);
+            }
+            reader.readAsArrayBuffer(foundFile);
+        }
+        else
+        {
+            reader.onloadend = function(event)
+            {
+                self.image.src = event.target.result;
+            };
+            reader.readAsDataURL(foundFile);
+        }
 
         return true;
     }
