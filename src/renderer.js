@@ -279,7 +279,8 @@ class gltfRenderer
 
         if (this.parameters.useIBL)
         {
-            this.applyEnvironmentMap(gltf, envData, material.textures.length, material.defines.includes("MATERIAL_SHEEN 1"));
+            const hasSheen = material.extensions != undefined && material.extensions.KHR_materials_sheen !== undefined;
+            this.applyEnvironmentMap(gltf, envData, material.textures.length, hasSheen);
         }
 
         if (drawIndexed)
