@@ -203,6 +203,15 @@ class gltfRenderer
 
         this.updateAnimationUniforms(gltf, node, primitive);
 
+        if  (mat4.determinant(node.worldTransform) < 0.0)
+        {
+            WebGl.context.frontFace(WebGl.context.CW);
+        }
+        else
+        {
+            WebGl.context.frontFace(WebGl.context.CCW);
+        }
+
         if (material.doubleSided)
         {
             WebGl.context.disable(WebGl.context.CULL_FACE);
@@ -215,7 +224,7 @@ class gltfRenderer
         if(material.alphaMode === 'BLEND')
         {
             WebGl.context.enable(WebGl.context.BLEND);
-            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.ONE, WebGl.context.ONE_MINUS_SRC_ALPHA);
+            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA);
             WebGl.context.blendEquation(WebGl.context.FUNC_ADD);
         }
         else
@@ -270,7 +279,8 @@ class gltfRenderer
 
         if (this.parameters.useIBL)
         {
-            this.applyEnvironmentMap(gltf, envData, material.textures.length);
+            const hasSheen = material.extensions != undefined && material.extensions.KHR_materials_sheen !== undefined;
+            this.applyEnvironmentMap(gltf, envData, material.textures.length, hasSheen);
         }
 
         if (drawIndexed)
@@ -376,7 +386,7 @@ class gltfRenderer
             fragDefines.push("USE_IBL 1");
         }
 
-        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR)
+        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR || Environments[this.parameters.environmentName].type === ImageMimeType.KTX2)
         {
             fragDefines.push("USE_HDR 1");
         }
@@ -458,45 +468,59 @@ class gltfRenderer
     {
         scene.envData = {};
 
-        if (scene !== undefined &&
-            scene.imageBasedLight !== undefined)
+        if (scene !== undefined && scene.imageBasedLight !== undefined)
         {
             const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
             const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
+            const sheenCubeMapIndex = scene.imageBasedLight.sheenEnvironmentTexture;
 
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
 
             scene.envData.mipCount = scene.imageBasedLight.levelCount;
+
+            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
+            scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
         }
         else
         {
             let linear = true;
 
-            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
+            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR && Environments[this.parameters.environmentName].type !== ImageMimeType.KTX2)
             {
                 linear = false;
             }
 
-            const diffuseTextureIndex = gltf.textures.length - 3;
-            const specularTextureIndex = gltf.textures.length - 2;
+            const diffuseTextureIndex = gltf.textures.length - 5;
+            const specularTextureIndex = gltf.textures.length - 4;
+            const sheenTextureIndex = gltf.textures.length - 3;
+
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
 
             scene.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
+
+            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, linear);
+            scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
         }
 
+        scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;
-        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.sheenEnvMap.generateMips = false;
+        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.lut.generateMips = false;
     }
 
-    applyEnvironmentMap(gltf, envData, texSlotOffset)
+    applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen)
     {
-        WebGl.setTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
-        WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
-        WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, envData.lut, texSlotOffset + 2);
-
+        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXBRDFLUT"), gltf, envData.lut, texSlotOffset + 2);
+        if (hasSheen)
+        {
+            WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
+            WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
+        }
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 
