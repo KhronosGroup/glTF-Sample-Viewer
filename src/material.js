@@ -340,7 +340,7 @@ class gltfMaterial extends GltfObject
             //KHR Extension Specular
             // See https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
             // We call the specular extension and its members 'MetallicRoughnessSpecular' instead to avoid confusion with SpecularGlossiness
-            if(this.extensions.KHR_materials_specular)
+            if(this.extensions.KHR_materials_specular !== undefined)
             {
                 let specularFactor = 0.5;
 
@@ -359,6 +359,62 @@ class gltfMaterial extends GltfObject
                     this.properties.set("u_MetallicRougnessSpecularTextureUVSet", this.metallicRoughnessSpecularTexture.texCoord);
                 }
                 this.properties.set("u_MetallicRoughnessSpecularFactor", specularFactor);
+            }
+
+            //KHR Extension Subsurface
+            // See https://github.com/KhronosGroup/glTF/pull/1766
+            // We call the specular extension and its members 'MetallicRoughnessSpecular' instead to avoid confusion with SpecularGlossiness
+            if(this.extensions.KHR_materials_subsurface !== undefined)
+            {
+                let scale = 1.0;
+				let distortion = 0.0;
+				let power = 1.0;
+				let colorFactor = vec3.fromValues(1.0, 1.0, 1.0);
+				let thicknessFactor = 1.0;
+
+                this.defines.push("MATERIAL_SUBSURFACE 1");
+
+                if(this.extensions.KHR_materials_subsurface.scale !== undefined)
+                {
+                    scale = this.extensions.KHR_materials_subsurface.scale;
+                }
+                if(this.extensions.KHR_materials_subsurface.distortion !== undefined)
+                {
+                    distortion = this.extensions.KHR_materials_subsurface.distortion;
+                }
+                if(this.extensions.KHR_materials_subsurface.power !== undefined)
+                {
+                    power = this.extensions.KHR_materials_subsurface.power;
+                }
+                if(this.extensions.KHR_materials_subsurface.colorFactor !== undefined)
+                {
+                    colorFactor = jsToGl(this.extensions.KHR_materials_subsurface.colorFactor);
+                }
+                if(this.extensions.KHR_materials_subsurface.thicknessFactor !== undefined)
+                {
+                    thicknessFactor = this.extensions.KHR_materials_subsurface.thicknessFactor;
+                }
+                if (this.subsurfaceColorTexture !== undefined)
+                {
+                    this.subsurfaceColorTexture.samplerName = "u_SubsurfaceColorSampler";
+                    this.parseTextureInfoExtensions(this.subsurfaceColorTexture, "SubsurfaceColor");
+                    this.textures.push(this.subsurfaceColorTexture);
+                    this.defines.push("HAS_SUBSURFACE_COLOR_MAP 1");
+                    this.properties.set("u_SubsurfaceColorUVSet", this.subsurfaceColorTexture.texCoord);
+                }
+                if (this.subsurfaceThicknessTexture !== undefined)
+                {
+                    this.subsurfaceThicknessTexture.samplerName = "u_SubsurfaceThicknessSampler";
+                    this.parseTextureInfoExtensions(this.subsurfaceThicknessTexture, "SubsurfaceThickness");
+                    this.textures.push(this.subsurfaceThicknessTexture);
+                    this.defines.push("HAS_SUBSURFACE_THICKNESS_MAP 1");
+                    this.properties.set("u_SubsurfaceThicknessUVSet", this.subsurfaceThicknessTexture.texCoord);
+                }
+                this.properties.set("u_SubsurfaceScale", scale);
+                this.properties.set("u_SubsurfaceDistortion", distortion);
+                this.properties.set("u_SubsurfacePower", power);
+                this.properties.set("u_SubsurfaceColorFactor", colorFactor);
+                this.properties.set("u_SubsurfaceThicknessFactor", thicknessFactor);
             }
         }
 
@@ -434,6 +490,11 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_specular !== undefined)
         {
             this.fromJsonMetallicRoughnessSpecular(jsonExtensions.KHR_materials_specular);
+        }
+
+        if(jsonExtensions.KHR_materials_subsurface !== undefined)
+        {
+            this.fromJsonSubsurface(jsonExtensions.KHR_materials_subsurface);
         }
     }
 
@@ -512,6 +573,23 @@ class gltfMaterial extends GltfObject
             const specularTexture = new gltfTextureInfo();
             specularTexture.fromJson(jsonMRSpecular.specularTexture);
             this.metallicRoughnessSpecularTexture = specularTexture;
+        }
+    }
+
+    fromJsonSubsurface(jsonSubsurface)
+    {
+        if(jsonSubsurface.colorTexture !== undefined)
+        {
+            const colorTexture = new gltfTextureInfo();
+            colorTexture.fromJson(jsonSubsurface.colorTexture);
+            this.subsurfaceColorTexture = colorTexture;
+        }
+
+        if(jsonSubsurface.thicknessTexture !== undefined)
+        {
+            const thicknessTexture = new gltfTextureInfo();
+            thicknessTexture.fromJson(jsonSubsurface.thicknessTexture);
+            this.subsurfaceThicknessTexture = thicknessTexture;
         }
     }
 }

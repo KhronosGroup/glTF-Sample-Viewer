@@ -15,7 +15,8 @@
 //     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
 // [6] "KHR_materials_specular"
 //     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
-
+// [7] "KHR_materials_subsurface"
+//     https://github.com/KhronosGroup/glTF/pull/1766
 
 precision highp float;
 
@@ -75,6 +76,13 @@ uniform float u_ClearcoatRoughnessFactor;
 //KHR Specular
 uniform float u_MetallicRoughnessSpecularFactor;
 
+//Subsurface
+uniform float u_SubsurfaceScale;
+uniform float u_SubsurfaceDistortion;
+uniform float u_SubsurfacePower;
+uniform vec3 u_SubsurfaceColorFactor;
+uniform float u_SubsurfaceThicknessFactor;
+
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
 
@@ -104,6 +112,12 @@ struct MaterialInfo
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
+	
+	float subsurfaceScale;
+	float subsurfaceDistortion;
+	float subsurfacePower;
+	vec3 subsurfaceColor;
+	float subsurfaceThickness;
 };
 
 vec4 getBaseColor()
@@ -256,6 +270,14 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     return sheenIntensity * sheenLight * (sheenColor * brdf);
 }
 
+vec3 getSubsurfaceContribution(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
+{
+    vec3 distortedHalfway = light + normal * distortion;
+    float backIntensity = max(0.0, dot(viewer, -distortedHalfway));
+    float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
+    return(reverseDiffuse + color) * (1.0 - thickness);
+}
+
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float getRangeAttenuation(float range, float distance)
 {
@@ -348,6 +370,25 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     return info;
 }
 
+MaterialInfo getSubsurfaceInfo(MaterialInfo info)
+{
+	info.subsurfaceScale = u_SubsurfaceScale;
+	info.subsurfaceDistortion = u_SubsurfaceDistortion;
+	info.subsurfacePower = u_SubsurfacePower;
+	info.subsurfaceColor = u_SubsurfaceColorFactor;
+	info.subsurfaceThickness = u_SubsurfaceThicknessFactor;
+
+    #ifdef HAS_SUBSURFACE_COLOR_MAP
+        info.subsurfaceColor *= texture(u_SubsurfaceColorSampler, getSubsurfaceColorUV()).rgb;
+    #endif
+
+    #ifdef HAS_SUBSURFACE_THICKNESS_MAP
+        info.subsurfaceThickness *= texture(u_SubsurfaceThicknessSampler, getSubsurfaceThicknessUV()).r;
+    #endif
+
+    return info;
+}
+
 MaterialInfo getClearCoatInfo(MaterialInfo info)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
@@ -414,6 +455,10 @@ void main()
     materialInfo = getSheenInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_SUBSURFACE
+    materialInfo = getSubsurfaceInfo(materialInfo);
+#endif
+
 #ifdef MATERIAL_CLEARCOAT
     materialInfo = getClearCoatInfo(materialInfo);
 #endif
@@ -442,6 +487,7 @@ void main()
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
+	vec3 f_subsurface = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
@@ -454,6 +500,16 @@ void main()
 
     #ifdef MATERIAL_SHEEN
         f_sheen += getCharlieIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+    #endif
+
+    #ifdef MATERIAL_SUBSURFACE
+		vec3 diffuseLight = texture(u_LambertianEnvSampler, normal).rgb;
+
+		#ifndef USE_HDR
+			diffuseLight = SRGBtoLINEAR(diffuseLight);
+		#endif
+
+        f_subsurface += diffuseLight * getSubsurfaceContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, -view, normal, view);
     #endif
 #endif
 
@@ -503,6 +559,10 @@ vec3 punctualColor = vec3(0.0);
                 f_clearcoat += intensity * coatAngles.NdotL * metallicBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
             #endif
         }
+
+		#ifdef MATERIAL_SUBSURFACE
+			f_subsurface += intensity * getSubsurfaceContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
+		#endif
     }
 #endif // !USE_PUNCTUAL
 
@@ -523,7 +583,7 @@ vec3 punctualColor = vec3(0.0);
         clearcoatBlendFactor = materialInfo.clearcoatFactor * fresnel(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-    color = (f_emissive + f_diffuse + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + mix(f_specular, f_clearcoat, clearcoatBlendFactor);
+    color = (f_emissive + f_diffuse + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + mix(f_specular, f_clearcoat, clearcoatBlendFactor);
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading

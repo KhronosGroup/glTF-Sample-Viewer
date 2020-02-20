@@ -65,6 +65,15 @@ uniform sampler2D u_MetallicRoughnessSpecularSampler;
 uniform int u_MetallicRougnessSpecularTextureUVSet;
 uniform mat3 u_MetallicRougnessSpecularUVTransform;
 
+//subsurface
+uniform sampler2D u_SubsurfaceColorSampler;
+uniform int u_SubsurfaceColorUVSet;
+uniform mat3 u_SubsurfaceColorUVTransform;
+
+uniform sampler2D u_SubsurfaceThicknessSampler;
+uniform int u_SubsurfaceThicknessUVSet;
+uniform mat3 u_SubsurfaceThicknessUVTransform;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -183,6 +192,24 @@ vec2 getMetallicRoughnessSpecularUV()
     vec3 uv = vec3(u_MetallicRougnessSpecularTextureUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     #ifdef HAS_METALLICROUGHNESSSPECULAR_UV_TRANSFORM
     uv *= u_MetallicRougnessSpecularUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getSubsurfaceColorUV()
+{
+    vec3 uv = vec3(u_SubsurfaceColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_SUBSURFACECOLOR_UV_TRANSFORM
+    uv *= u_SubsurfaceColorUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getSubsurfaceThicknessUV()
+{
+    vec3 uv = vec3(u_SubsurfaceThicknessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_SUBSURFACETHICKNESS_UV_TRANSFORM
+    uv *= u_SubsurfaceThicknessUVTransform;
     #endif
     return uv.xy;
 }
