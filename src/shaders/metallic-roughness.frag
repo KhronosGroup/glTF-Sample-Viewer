@@ -221,6 +221,14 @@ vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float N
     return F * Vis * D;
 }
 
+vec3 subsurfaceNonBRDF(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
+{
+    vec3 distortedHalfway = light + normal * distortion;
+    float backIntensity = max(0.0, dot(viewer, -distortedHalfway));
+    float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
+    return(reverseDiffuse + color) * (1.0 - thickness);
+}
+
 vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
 {
     float NdotV = clampedDot(n, v);
@@ -270,12 +278,15 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     return sheenIntensity * sheenLight * (sheenColor * brdf);
 }
 
-vec3 getSubsurfaceContribution(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
+vec3 getSubsurfaceIBLContribution(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
 {
-    vec3 distortedHalfway = light + normal * distortion;
-    float backIntensity = max(0.0, dot(viewer, -distortedHalfway));
-    float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
-    return(reverseDiffuse + color) * (1.0 - thickness);
+	vec3 diffuseLight = texture(u_LambertianEnvSampler, normal).rgb;
+
+	#ifndef USE_HDR
+		diffuseLight = SRGBtoLINEAR(diffuseLight);
+	#endif
+
+	return diffuseLight * subsurfaceNonBRDF(scale, distortion, power, color, thickness, light, normal, viewer);
 }
 
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
@@ -503,13 +514,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_SUBSURFACE
-		vec3 diffuseLight = texture(u_LambertianEnvSampler, normal).rgb;
-
-		#ifndef USE_HDR
-			diffuseLight = SRGBtoLINEAR(diffuseLight);
-		#endif
-
-        f_subsurface += diffuseLight * getSubsurfaceContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, -view, normal, view);
+        f_subsurface += getSubsurfaceIBLContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, -view, normal, view);
     #endif
 #endif
 
@@ -561,7 +566,7 @@ vec3 punctualColor = vec3(0.0);
         }
 
 		#ifdef MATERIAL_SUBSURFACE
-			f_subsurface += intensity * getSubsurfaceContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
+			f_subsurface += intensity * subsurfaceNonBRDF(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
 		#endif
     }
 #endif // !USE_PUNCTUAL
