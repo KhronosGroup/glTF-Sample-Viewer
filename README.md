@@ -1,9 +1,9 @@
-glTF 2.0 Sample Viewer
-======================
+glTF 2.0 Sample Viewer for PBR Next
+===================================
 
 [![](assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer/)
 
-This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/)
+This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://gltf.ux3d.io/)
 
 
 **Table of Contents**
@@ -45,18 +45,19 @@ Features
 - [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 - [ ] PBR next
-    - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/pull/1740)
-    - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/pull/1688) (Punctual lights only, IBL in progress)
+    - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/pull/1756)
     - [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/pull/1741)
-    - [x] [KHR_lights_image_based & KHR_image_ktx2](https://github.com/KhronosGroup/glTF/pull/1612) (partial support for16 and 32bit SFLOAT) see [glTF-IBL-Sampler](https://github.com/KhronosGroup/glTF-IBL-Sampler) project to generate environments. SH not support yet.
+    - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/pull/1688)
+    - [x] [KHR_materials_subsurface](https://github.com/KhronosGroup/glTF/pull/1766)
     - [ ] [KHR_materials_thinfilm](https://github.com/KhronosGroup/glTF/pull/1742)
     - [ ] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)
     - [ ] KHR_materials_anisotropic (Specification pending)
+    - [x] KHR_image_ktx2 (Specification pending)
 
 Viewer
 ======
 
-Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/).
+Link to the live [glTF 2.0 Sample Viewer](https://gltf.ux3d.io/).
 
 Usage
 -----
@@ -251,6 +252,11 @@ Appendix F: Transmission Material
 (TODO)
 
 Appendix G: Anisotropic Material
+================================
+
+(TODO)
+
+Appendix H: Subsurface Material
 ================================
 
 (TODO)
