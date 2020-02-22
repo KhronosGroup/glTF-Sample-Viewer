@@ -243,7 +243,7 @@ vec3 sheenBRDF(vec3 sheenColor, float sheenIntensity, float sheenRoughness, floa
 {
     float sheenDistribution = D_Charlie(sheenRoughness, NdotH);
     float sheenVisibility = V_Ashikhmin(NdotL, NdotV);
-    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility * M_PI;
+    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
 }
 
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
@@ -317,7 +317,7 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     sheenLight = SRGBtoLINEAR(sheenLight);
     #endif
 
-    return sheenIntensity * sheenLight * (sheenColor * brdf);
+    return sheenIntensity * sheenLight * sheenColor * brdf;
 }
 
 vec3 getSubsurfaceIBLContribution(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
