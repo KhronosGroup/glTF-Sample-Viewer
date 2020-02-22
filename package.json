@@ -33,7 +33,7 @@
   "dependencies": {
     "argparse": "^1.0.10",
     "gl-matrix": "^2.8.1",
-    "open": "0.0.5"
+    "open": "7.0.0"
   },
   "devDependencies": {
     "acorn": "^6.0.4",
