@@ -48,7 +48,7 @@ class gltfMaterial extends GltfObject
         {
         default:
         case "SG": // fall through till we sparate shaders
-        case "MR": return "metallic-roughness.frag";
+        case "MR": return "pbr.frag";
             //case "SG": return "specular-glossiness.frag" ;
         }
     }

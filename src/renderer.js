@@ -5,7 +5,7 @@ import { ShaderCache } from './shader_cache.js';
 import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
-import metallicRoughnessShader from './shaders/metallic-roughness.frag';
+import pbrShader from './shaders/pbr.frag';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
@@ -27,7 +27,7 @@ class gltfRenderer
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
-        shaderSources.set("metallic-roughness.frag", metallicRoughnessShader);
+        shaderSources.set("pbr.frag", pbrShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
