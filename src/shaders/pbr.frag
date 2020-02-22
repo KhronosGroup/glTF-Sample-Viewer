@@ -139,11 +139,33 @@ vec4 getBaseColor()
     return baseColor * getVertexColor();
 }
 
+//
+// Fresnel
+//
+// http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
+// https://github.com/wdas/brdf/tree/master/src/brdfs
+// https://google.github.io/filament/Filament.md.html
+//
+
+vec3 F_None(vec3 f0, vec3 f90, float VdotH)
+{
+	return f0;
+}
+
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
 // Implementation of fresnel from [4], Equation 15
-vec3 fresnel(vec3 f0, vec3 f90, float VdotH)
+vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
 {
     return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+}
+
+vec3 F_CookTorrance(vec3 f0, vec3 f90, float VdotH)
+{
+	vec3 f0_sqrt = sqrt(f0);
+    vec3 ior = (1.0 + f0_sqrt) / (1.0 - f0_sqrt);
+	vec3 c = vec3(VdotH);
+	vec3 g = sqrt(ior*ior + c*c - 1.0);
+    return 0.5 * pow(g-c, vec3(2.0)) / pow(g+c, vec3(2.0)) * (1.0 + pow(c*(g+c) - 1.0, vec3(2.0)) / pow(c*(g-c) + 1.0, vec3(2.0)));	
 }
 
 // Smith Joint GGX
@@ -167,9 +189,18 @@ float V_GGX(float NdotL, float NdotV, float alphaRoughness)
 }
 
 // https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
-float V_Neubelt(float NdotL, float NdotV)
+// https://github.com/google/filament/blob/master/libs/ibl/src/CubemapIBL.cpp#L179
+// Note: Google call it V_Ashikhmin and V_Neubelt
+float V_Ashikhmin(float NdotL, float NdotV)
 {
     return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
+}
+
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L131
+float V_Kelemen(float LdotH)
+{
+    // Kelemen 2001, "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
+    return 0.25 / (LdotH * LdotH);
 }
 
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
@@ -180,6 +211,16 @@ float D_GGX(float NdotH, float alphaRoughness)
     float alphaRoughnessSq = alphaRoughness * alphaRoughness;
     float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
     return alphaRoughnessSq / (M_PI * f * f);
+}
+
+float D_Ashikhmin(float NdotH, float alphaRoughness) {
+    // Ashikhmin 2007, "Distribution-based BRDFs"
+	float a2 = alphaRoughness * alphaRoughness;
+	float cos2h = NdotH * NdotH;
+	float sin2h = 1.0 - cos2h;
+	float sin4h = sin2h * sin2h;
+	float cot2 = -cos2h / (a2 * sin2h);
+	return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
 }
 
 //Sheen implementation-------------------------------------------------------------------------------------
@@ -200,7 +241,7 @@ float D_Charlie(float sheenRoughness, float NdotH)
 vec3 sheenBRDF(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
     float sheenDistribution = D_Charlie(sheenRoughness, NdotH);
-    float sheenVisibility = V_Neubelt(NdotL, NdotV);
+    float sheenVisibility = V_Ashikhmin(NdotL, NdotV);
     return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility * M_PI;
 }
 
@@ -208,13 +249,13 @@ vec3 sheenBRDF(vec3 sheenColor, float sheenIntensity, float sheenRoughness, floa
 vec3 lambertianBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 {
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-    return (1.0 - fresnel(f0, f90, VdotH)) * (diffuseColor / M_PI);
+    return (1.0 - F_Schlick(f0, f90, VdotH)) * (diffuseColor / M_PI);
 }
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
 {
-    vec3 F = fresnel(f0, f90, VdotH);
+    vec3 F = F_Schlick(f0, f90, VdotH);
     float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
     float D = D_GGX(NdotH, alphaRoughness);
 
@@ -585,7 +626,7 @@ vec3 punctualColor = vec3(0.0);
     vec3 clearcoatBlendFactor = vec3(0.f);
 
     #ifdef MATERIAL_CLEARCOAT
-        clearcoatBlendFactor = materialInfo.clearcoatFactor * fresnel(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+        clearcoatBlendFactor = materialInfo.clearcoatFactor * F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
     color = (f_emissive + f_diffuse + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + mix(f_specular, f_clearcoat, clearcoatBlendFactor);
