@@ -213,7 +213,8 @@ float D_GGX(float NdotH, float alphaRoughness)
     return alphaRoughnessSq / (M_PI * f * f);
 }
 
-float D_Ashikhmin(float NdotH, float alphaRoughness) {
+float D_Ashikhmin(float NdotH, float alphaRoughness)
+{
     // Ashikhmin 2007, "Distribution-based BRDFs"
 	float a2 = alphaRoughness * alphaRoughness;
 	float cos2h = NdotH * NdotH;
