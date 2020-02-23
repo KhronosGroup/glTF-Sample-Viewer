@@ -40,6 +40,11 @@ class ImageBasedLight extends GltfObject
 
     initGl(gltf)
     {
+        if (this.diffuseEnvironmentTexture !== undefined)
+        {
+            const textureObject = gltf.textures[this.diffuseEnvironmentTexture];
+            textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
+        }
         if (this.specularEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.specularEnvironmentTexture];
@@ -48,16 +53,17 @@ class ImageBasedLight extends GltfObject
             const imageObject = gltf.images[textureObject.source];
             this.levelCount = imageObject.image.levelCount;
         }
-        if (this.diffuseEnvironmentTexture !== undefined)
-        {
-            const textureObject = gltf.textures[this.diffuseEnvironmentTexture];
-            textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
-        }
         if(this.sheenEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.sheenEnvironmentTexture];
             textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
-        }
+
+            const imageObject = gltf.images[textureObject.source];
+            if (this.levelCount !== imageObject.image.levelCount)
+			{
+				console.error("Specular and sheen do not have same level count");
+			}
+		}
     }
 }
 

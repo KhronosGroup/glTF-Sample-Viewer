@@ -278,7 +278,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 brdf = texture(u_GGXBRDFLUT, brdfSamplePoint).rg;
+    vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
     vec4 specularSample = textureLod(u_GGXEnvSampler, reflection, lod);
 
     vec3 specularLight = specularSample.rgb;

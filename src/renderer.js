@@ -476,51 +476,47 @@ class gltfRenderer
 
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
+            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
 
             scene.envData.mipCount = scene.imageBasedLight.levelCount;
-
-            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
-            scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
         }
         else
         {
-            let linear = true;
-
-            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR && Environments[this.parameters.environmentName].type !== ImageMimeType.KTX2)
-            {
-                linear = false;
-            }
-
             const diffuseTextureIndex = gltf.textures.length - 5;
             const specularTextureIndex = gltf.textures.length - 4;
             const sheenTextureIndex = gltf.textures.length - 3;
 
-            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, linear);
-            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, linear);
+            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
+            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
+            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
 
             scene.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
-
-            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, linear);
-            scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
         }
 
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;
         scene.envData.sheenEnvMap.generateMips = false;
+		
         scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 2);
-        scene.envData.lut.generateMips = false;
+		scene.envData.lut.generateMips = false;
+		
+        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.sheenLUT.generateMips = false;
     }
 
     applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen)
     {
         WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
+		
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXBRDFLUT"), gltf, envData.lut, texSlotOffset + 2);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset + 2);
+		
         if (hasSheen)
         {
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
         }
+		
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 

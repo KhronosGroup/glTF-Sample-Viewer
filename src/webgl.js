@@ -108,10 +108,6 @@ class gltfWebGl
                         }
                     }
                 }
-                else if (image.image.dataRGBE !== undefined)
-                {
-                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB32F, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
-                }
                 else
                 {
                     WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
@@ -199,8 +195,7 @@ class gltfWebGl
             WebGl.context.bindBuffer(WebGl.context.ARRAY_BUFFER, gltfAccessor.glBuffer);
         }
 
-        WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType,
-            gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+        WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
         WebGl.context.enableVertexAttribArray(attributeLocation);
 
         return true;

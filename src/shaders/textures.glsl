@@ -38,7 +38,7 @@ uniform mat3 u_SpecularGlossinessUVTransform;
 // IBL
 uniform samplerCube u_LambertianEnvSampler;
 uniform samplerCube u_GGXEnvSampler;
-uniform sampler2D u_GGXBRDFLUT;
+uniform sampler2D u_GGXLUT;
 uniform samplerCube u_CharlieEnvSampler;
 uniform sampler2D u_CharlieLUT;
 
