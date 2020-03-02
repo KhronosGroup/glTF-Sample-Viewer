@@ -165,7 +165,7 @@ vec3 F_CookTorrance(vec3 f0, vec3 f90, float VdotH)
     vec3 ior = (1.0 + f0_sqrt) / (1.0 - f0_sqrt);
 	vec3 c = vec3(VdotH);
 	vec3 g = sqrt(ior*ior + c*c - 1.0);
-    return 0.5 * pow(g-c, vec3(2.0)) / pow(g+c, vec3(2.0)) * (1.0 + pow(c*(g+c) - 1.0, vec3(2.0)) / pow(c*(g-c) + 1.0, vec3(2.0)));	
+    return 0.5 * pow(g-c, vec3(2.0)) / pow(g+c, vec3(2.0)) * (1.0 + pow(c*(g+c) - 1.0, vec3(2.0)) / pow(c*(g-c) + 1.0, vec3(2.0)));
 }
 
 // Smith Joint GGX
