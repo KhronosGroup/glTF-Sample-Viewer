@@ -624,15 +624,15 @@ vec3 punctualColor = vec3(0.0);
 /// Layer blending
 ///
 
-	vec3 clearcoatFactor = vec3(0.f);
-    vec3 clearcoatBlendFactor = vec3(0.f);
+	float clearcoatFactor = 0.0;
+    vec3 clearcoatFresnel = vec3(0.0);
 
     #ifdef MATERIAL_CLEARCOAT
-		clearcoatFactor = vec3(materialInfo.clearcoatFactor);
-        clearcoatBlendFactor = clearcoatFactor * F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+		clearcoatFactor = materialInfo.clearcoatFactor;
+        clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-    color = (f_emissive + f_diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + f_clearcoat * clearcoatFactor;
+    color = (f_emissive + f_diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
