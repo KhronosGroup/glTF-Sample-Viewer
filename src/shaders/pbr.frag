@@ -698,6 +698,10 @@ vec3 punctualColor = vec3(0.0);
         g_finalColor.rgb = vec3(baseColor.a);
     #endif
 
+    #ifdef DEBUG_FSUBSURFACE
+        g_finalColor.rgb = f_subsurface;
+    #endif
+
     g_finalColor.a = 1.0;
 
 #endif // !DEBUG_OUTPUT

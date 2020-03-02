@@ -444,6 +444,9 @@ class gltfRenderer
         case(DebugOutput.SHEEN):
             fragDefines.push("DEBUG_FSHEEN 1");
             break;
+        case(DebugOutput.SUBSURFACE):
+            fragDefines.push("DEBUG_FSUBSURFACE 1");
+            break;
         case(DebugOutput.F0):
             fragDefines.push("DEBUG_F0 1");
             break;

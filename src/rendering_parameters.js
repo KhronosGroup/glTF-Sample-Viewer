@@ -56,6 +56,7 @@ const DebugOutput =
     SPECULAR: "Specular",
     CLEARCOAT: "ClearCoat",
     SHEEN: "Sheen",
+    SUBSURFACE: "Subsurface",
     ALPHA: "Alpha",
     F0: "F0"
 };
