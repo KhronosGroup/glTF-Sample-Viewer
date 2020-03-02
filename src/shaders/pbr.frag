@@ -630,7 +630,7 @@ vec3 punctualColor = vec3(0.0);
         clearcoatBlendFactor = materialInfo.clearcoatFactor * F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-    color = (f_emissive + f_diffuse + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + mix(f_specular, f_clearcoat, clearcoatBlendFactor);
+    color = (f_emissive + f_diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatBlendFactor) + f_clearcoat * clearcoatBlendFactor;
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
