@@ -290,17 +290,13 @@ vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, vec3 n, vec3 v, float thinFilmF
 
     if (thinFilmFactor == 0.0)
     {
+        // No thin film applied.
+        // TODO: Why are we then still applying F_Schlick()?
         return F;
     }
 
-    thinFilmThickness = 0.65;
-
-    //return texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb;
-
-    vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, 1.0 - NdotV)).rgb - 0.5;
+    vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb - 0.5;
 	vec3 intensity = thinFilmFactor * 4.0 * f0 * (1.0 - f0);
-    //return intensity * lutSample;
-    //return lutSample;
 	return clamp(intensity * lutSample, 0.0, 1.0);
 }
 
