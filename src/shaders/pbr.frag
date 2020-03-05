@@ -285,7 +285,7 @@ vec3 subsurfaceNonBRDF(float scale, float distortion, float power, vec3 color, f
 
 vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, vec3 n, vec3 v, float thinFilmFactor, float thinFilmThickness)
 {
-    float NdotV = clampedDot(n, v);
+    float NdotV = abs(dot(n, v)); // Absolute angle in case of double-sided materials.
     vec3 F = F_Schlick(f0, f90, NdotV);
 
     if (thinFilmFactor == 0.0)
