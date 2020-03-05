@@ -643,8 +643,8 @@ class gltfMaterial extends GltfObject
         if(jsonThinFilm.thinfilmThicknessTexture !== undefined)
         {
             const thinfilmThicknessTexture = new gltfTextureInfo();
-            thinfilmThicknessTexture.fromJson(jsonThinFilm.thicknessTexture);
-            this.subsurfaceThicknessTexture = thinfilmThicknessTexture;
+            thinfilmThicknessTexture.fromJson(jsonThinFilm.thinfilmThicknessTexture);
+            this.thinfilmThicknessTexture = thinfilmThicknessTexture;
         }
     }
 }
