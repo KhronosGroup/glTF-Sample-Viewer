@@ -280,7 +280,8 @@ class gltfRenderer
         if (this.parameters.useIBL)
         {
             const hasSheen = material.extensions != undefined && material.extensions.KHR_materials_sheen !== undefined;
-            this.applyEnvironmentMap(gltf, envData, material.textures.length, hasSheen);
+            const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
+            this.applyEnvironmentMap(gltf, envData, material.textures.length, hasSheen, hasThinFilm);
         }
 
         if (drawIndexed)
@@ -485,9 +486,9 @@ class gltfRenderer
         }
         else
         {
-            const diffuseTextureIndex = gltf.textures.length - 5;
-            const specularTextureIndex = gltf.textures.length - 4;
-            const sheenTextureIndex = gltf.textures.length - 3;
+            const diffuseTextureIndex = gltf.textures.length - 6;
+            const specularTextureIndex = gltf.textures.length - 5;
+            const sheenTextureIndex = gltf.textures.length - 4;
 
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
@@ -499,27 +500,34 @@ class gltfRenderer
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;
         scene.envData.sheenEnvMap.generateMips = false;
-		
-        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 2);
+
+        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
 		scene.envData.lut.generateMips = false;
-		
-        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
+
+        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.sheenLUT.generateMips = false;
+
+        scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.thinFilmLUT.generateMips = false;
     }
 
-    applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen)
+    applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen, hasThinFilm)
     {
         WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
-		
+
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset + 2);
-		
+
         if (hasSheen)
         {
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
         }
-		
+        if (hasThinFilm)
+        {
+            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
+        }
+
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 

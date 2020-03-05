@@ -17,6 +17,8 @@
 //     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
 // [7] "KHR_materials_subsurface"
 //     https://github.com/KhronosGroup/glTF/pull/1766
+// [8] "KHR_materials_thinfilm"
+//     https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
 
 precision highp float;
 
@@ -83,6 +85,11 @@ uniform float u_SubsurfacePower;
 uniform vec3 u_SubsurfaceColorFactor;
 uniform float u_SubsurfaceThicknessFactor;
 
+// Thin Film
+uniform float u_ThinFilmFactor;
+uniform float u_ThinFilmThicknessMinimum;
+uniform float u_ThinFilmThicknessMaximum;
+
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
 
@@ -118,6 +125,11 @@ struct MaterialInfo
 	float subsurfacePower;
 	vec3 subsurfaceColor;
 	float subsurfaceThickness;
+
+    float thinFilmFactor;
+    float thinFilmThicknessMinimum;
+    float thinFilmThicknessMaximum;
+    float thinFilmThickness;
 };
 
 vec4 getBaseColor()
@@ -269,6 +281,27 @@ vec3 subsurfaceNonBRDF(float scale, float distortion, float power, vec3 color, f
     float backIntensity = max(0.0, dot(viewer, -distortedHalfway));
     float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
     return(reverseDiffuse + color) * (1.0 - thickness);
+}
+
+vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, vec3 n, vec3 v, float thinFilmFactor, float thinFilmThickness)
+{
+    float NdotV = clampedDot(n, v);
+    vec3 F = F_Schlick(f0, f90, NdotV);
+
+    if (thinFilmFactor == 0.0)
+    {
+        return F;
+    }
+
+    thinFilmThickness = 0.65;
+
+    //return texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb;
+
+    vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, 1.0 - NdotV)).rgb - 0.5;
+	vec3 intensity = thinFilmFactor * 4.0 * f0 * (1.0 - f0);
+    //return intensity * lutSample;
+    //return lutSample;
+	return clamp(intensity * lutSample, 0.0, 1.0);
 }
 
 vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
@@ -442,6 +475,29 @@ MaterialInfo getSubsurfaceInfo(MaterialInfo info)
     return info;
 }
 
+#ifdef MATERIAL_THIN_FILM
+MaterialInfo getThinFilmInfo(MaterialInfo info)
+{
+    info.thinFilmFactor = u_ThinFilmFactor;
+    info.thinFilmThicknessMinimum = u_ThinFilmThicknessMinimum;
+    info.thinFilmThicknessMaximum = u_ThinFilmThicknessMaximum;
+    info.thinFilmThickness = u_ThinFilmThicknessMaximum;
+
+    #ifdef HAS_THIN_FILM_MAP
+        info.thinFilmFactor *= texture(u_ThinFilmSampler, getThinFilmUV()).r;
+    #endif
+
+    #ifdef HAS_THIN_FILM_THICKNESS_MAP
+        float thicknessSampled /* [0, 1] */ = texture(u_ThinFilmThicknessSampler, getThinFilmThicknessUV()).r;
+        float thickness /* [t_min / 1200, t_max / 1200] */ =
+            (thicknessSampled * (u_ThinFilmThicknessMaximum - u_ThinFilmThicknessMinimum) + u_ThinFilmThicknessMinimum) / 1200.0;
+        info.thinFilmThickness = thickness;
+    #endif
+
+    return info;
+}
+#endif
+
 MaterialInfo getClearCoatInfo(MaterialInfo info)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
@@ -512,6 +568,10 @@ void main()
     materialInfo = getSubsurfaceInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_THIN_FILM
+    materialInfo = getThinFilmInfo(materialInfo);
+#endif
+
 #ifdef MATERIAL_CLEARCOAT
     materialInfo = getClearCoatInfo(materialInfo);
 #endif
@@ -544,7 +604,13 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.f0); // specularColor
+    //vec3 specularColor = materialInfo.f0;
+    vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, normal, view, materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
+
+    //g_finalColor.rgb = specularColor;
+    //return;
+
+    f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
     f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT

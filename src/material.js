@@ -416,6 +416,39 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SubsurfaceColorFactor", colorFactor);
                 this.properties.set("u_SubsurfaceThicknessFactor", thicknessFactor);
             }
+
+            // KHR Extension: Thin film
+            // See https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
+            if(this.extensions.KHR_materials_thinfilm !== undefined)
+            {
+                let factor = this.extensions.KHR_materials_thinfilm.thinfilmFactor || 0.0;
+                let thicknessMinimum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMinimum || 400.0;
+                let thicknessMaximum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMaximum || 1200.0;
+
+                this.defines.push("MATERIAL_THIN_FILM 1");
+
+                if (this.thinfilmTexture !== undefined)
+                {
+                    this.thinfilmTexture.samplerName = "u_ThinFilmSampler";
+                    this.parseTextureInfoExtensions(this.thinfilmTexture, "ThinFilm");
+                    this.textures.push(this.thinfilmTexture);
+                    this.defines.push("HAS_THIN_FILM_MAP");
+                    this.properties.set("u_ThinFilmUVSet", this.thinfilmTexture.texCoord);
+                }
+
+                if (this.thinfilmThicknessTexture !== undefined)
+                {
+                    this.thinfilmThicknessTexture.samplerName = "u_ThinFilmThicknessSampler";
+                    this.parseTextureInfoExtensions(this.thinfilmThicknessTexture, "ThinFilmThickness");
+                    this.textures.push(this.thinfilmThicknessTexture);
+                    this.defines.push("HAS_THIN_FILM_THICKNESS_MAP 1");
+                    this.properties.set("u_ThinFilmThicknessUVSet", this.thinfilmThicknessTexture.texCoord);
+                }
+
+                this.properties.set("u_ThinFilmFactor", factor);
+                this.properties.set("u_ThinFilmThicknessMinimum", thicknessMinimum);
+                this.properties.set("u_ThinFilmThicknessMaximum", thicknessMaximum);
+            }
         }
 
         initGlForMembers(this, gltf);
@@ -495,6 +528,11 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_subsurface !== undefined)
         {
             this.fromJsonSubsurface(jsonExtensions.KHR_materials_subsurface);
+        }
+
+        if(jsonExtensions.KHR_materials_thinfilm !== undefined)
+        {
+            this.fromJsonThinFilm(jsonExtensions.KHR_materials_thinfilm);
         }
     }
 
@@ -590,6 +628,23 @@ class gltfMaterial extends GltfObject
             const thicknessTexture = new gltfTextureInfo();
             thicknessTexture.fromJson(jsonSubsurface.thicknessTexture);
             this.subsurfaceThicknessTexture = thicknessTexture;
+        }
+    }
+
+    fromJsonThinFilm(jsonThinFilm)
+    {
+        if(jsonThinFilm.intensityTexture !== undefined)
+        {
+            const thinfilmTexture = new gltfTextureInfo();
+            thinfilmTexture.fromJson(jsonThinFilm.thinfilmTexture);
+            this.thinfilmTexture = thinfilmTexture;
+        }
+
+        if(jsonThinFilm.thinfilmThicknessTexture !== undefined)
+        {
+            const thinfilmThicknessTexture = new gltfTextureInfo();
+            thinfilmThicknessTexture.fromJson(jsonThinFilm.thicknessTexture);
+            this.subsurfaceThicknessTexture = thinfilmThicknessTexture;
         }
     }
 }
