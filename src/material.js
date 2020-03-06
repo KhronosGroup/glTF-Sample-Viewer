@@ -432,7 +432,7 @@ class gltfMaterial extends GltfObject
                     this.thinfilmTexture.samplerName = "u_ThinFilmSampler";
                     this.parseTextureInfoExtensions(this.thinfilmTexture, "ThinFilm");
                     this.textures.push(this.thinfilmTexture);
-                    this.defines.push("HAS_THIN_FILM_MAP");
+                    this.defines.push("HAS_THIN_FILM_MAP 1");
                     this.properties.set("u_ThinFilmUVSet", this.thinfilmTexture.texCoord);
                 }
 
@@ -633,7 +633,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonThinFilm(jsonThinFilm)
     {
-        if(jsonThinFilm.intensityTexture !== undefined)
+        if(jsonThinFilm.thinfilmTexture !== undefined)
         {
             const thinfilmTexture = new gltfTextureInfo();
             thinfilmTexture.fromJson(jsonThinFilm.thinfilmTexture);

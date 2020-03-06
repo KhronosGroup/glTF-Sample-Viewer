@@ -264,9 +264,8 @@ vec3 lambertianBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 }
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 metallicBRDF (vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
+vec3 metallicBRDF(vec3 F, float alphaRoughness, float NdotL, float NdotV, float NdotH)
 {
-    vec3 F = F_Schlick(f0, f90, VdotH);
     float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
     float D = D_GGX(NdotH, alphaRoughness);
 
@@ -281,9 +280,8 @@ vec3 subsurfaceNonBRDF(float scale, float distortion, float power, vec3 color, f
     return(reverseDiffuse + color) * (1.0 - thickness);
 }
 
-vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, vec3 n, vec3 v, float thinFilmFactor, float thinFilmThickness)
+vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, float NdotV, float thinFilmFactor, float thinFilmThickness)
 {
-    float NdotV = abs(dot(n, v)); // Absolute angle in case of double-sided materials.
     vec3 F = F_Schlick(f0, f90, NdotV);
 
     if (thinFilmFactor == 0.0)
@@ -595,7 +593,7 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, normal, view, materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
+    vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, clampedDot(normal, view), materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
     f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
     f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
@@ -647,7 +645,8 @@ vec3 punctualColor = vec3(0.0);
             // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             f_diffuse += intensity * angularInfo.NdotL *  lambertianBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
-            f_specular += intensity * angularInfo.NdotL * metallicBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, angularInfo.VdotH, materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
+            f_specular += intensity * angularInfo.NdotL * metallicBRDF(specularColor, materialInfo.alphaRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * angularInfo.NdotL * sheenBRDF(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);

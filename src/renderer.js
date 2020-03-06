@@ -277,11 +277,15 @@ class gltfRenderer
             }
         }
 
+        const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
         if (this.parameters.useIBL)
         {
             const hasSheen = material.extensions != undefined && material.extensions.KHR_materials_sheen !== undefined;
-            const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
             this.applyEnvironmentMap(gltf, envData, material.textures.length, hasSheen, hasThinFilm);
+        }
+        else if (hasThinFilm)
+        {
+            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, material.textures.length);
         }
 
         if (drawIndexed)
