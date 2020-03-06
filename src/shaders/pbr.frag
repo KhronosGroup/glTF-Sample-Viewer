@@ -478,8 +478,7 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 
     #ifdef HAS_THIN_FILM_THICKNESS_MAP
         float thicknessSampled /* [0, 1] */ = texture(u_ThinFilmThicknessSampler, getThinFilmThicknessUV()).g;
-        float thickness /* [t_min / 1200, t_max / 1200] */ =
-            (thicknessSampled * (u_ThinFilmThicknessMaximum - u_ThinFilmThicknessMinimum) + u_ThinFilmThicknessMinimum) / 1200.0;
+        float thickness /* [t_min / 1200, t_max / 1200] */ = mix(u_ThinFilmThicknessMinimum, u_ThinFilmThicknessMaximum, thicknessSampled) * 0.000833333;
         info.thinFilmThickness = thickness;
     #endif
 
