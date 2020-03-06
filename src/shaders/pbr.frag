@@ -119,7 +119,7 @@ struct MaterialInfo
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
-	
+
 	float subsurfaceScale;
 	float subsurfaceDistortion;
 	float subsurfacePower;
