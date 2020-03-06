@@ -127,8 +127,6 @@ struct MaterialInfo
 	float subsurfaceThickness;
 
     float thinFilmFactor;
-    float thinFilmThicknessMinimum;
-    float thinFilmThicknessMaximum;
     float thinFilmThickness;
 };
 
@@ -291,7 +289,6 @@ vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, vec3 n, vec3 v, float thinFilmF
     if (thinFilmFactor == 0.0)
     {
         // No thin film applied.
-        // TODO: Why are we then still applying F_Schlick()?
         return F;
     }
 
@@ -475,16 +472,14 @@ MaterialInfo getSubsurfaceInfo(MaterialInfo info)
 MaterialInfo getThinFilmInfo(MaterialInfo info)
 {
     info.thinFilmFactor = u_ThinFilmFactor;
-    info.thinFilmThicknessMinimum = u_ThinFilmThicknessMinimum;
-    info.thinFilmThicknessMaximum = u_ThinFilmThicknessMaximum;
-    info.thinFilmThickness = u_ThinFilmThicknessMaximum;
+    info.thinFilmThickness = u_ThinFilmThicknessMaximum / 1200.0;
 
     #ifdef HAS_THIN_FILM_MAP
         info.thinFilmFactor *= texture(u_ThinFilmSampler, getThinFilmUV()).r;
     #endif
 
     #ifdef HAS_THIN_FILM_THICKNESS_MAP
-        float thicknessSampled /* [0, 1] */ = texture(u_ThinFilmThicknessSampler, getThinFilmThicknessUV()).r;
+        float thicknessSampled /* [0, 1] */ = texture(u_ThinFilmThicknessSampler, getThinFilmThicknessUV()).g;
         float thickness /* [t_min / 1200, t_max / 1200] */ =
             (thicknessSampled * (u_ThinFilmThicknessMaximum - u_ThinFilmThicknessMinimum) + u_ThinFilmThicknessMinimum) / 1200.0;
         info.thinFilmThickness = thickness;
@@ -600,12 +595,7 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    //vec3 specularColor = materialInfo.f0;
     vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, normal, view, materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
-
-    //g_finalColor.rgb = specularColor;
-    //return;
-
     f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
     f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
