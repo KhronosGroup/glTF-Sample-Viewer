@@ -282,12 +282,10 @@ vec3 subsurfaceNonBRDF(float scale, float distortion, float power, vec3 color, f
 
 vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, float NdotV, float thinFilmFactor, float thinFilmThickness)
 {
-    vec3 F = F_Schlick(f0, f90, NdotV);
-
     if (thinFilmFactor == 0.0)
     {
         // No thin film applied.
-        return F;
+        return f0;
     }
 
     vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb - 0.5;
