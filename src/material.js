@@ -443,10 +443,14 @@ class gltfMaterial extends GltfObject
                     this.textures.push(this.thinfilmThicknessTexture);
                     this.defines.push("HAS_THIN_FILM_THICKNESS_MAP 1");
                     this.properties.set("u_ThinFilmThicknessUVSet", this.thinfilmThicknessTexture.texCoord);
+
+                    // The thickness minimum is only required when there is a thickness texture present.
+                    // Because 1.0 is the default value for the thickness, no texture implies that only the
+                    // maximum thickness is ever read in the shader.
+                    this.properties.set("u_ThinFilmThicknessMinimum", thicknessMinimum);
                 }
 
                 this.properties.set("u_ThinFilmFactor", factor);
-                this.properties.set("u_ThinFilmThicknessMinimum", thicknessMinimum);
                 this.properties.set("u_ThinFilmThicknessMaximum", thicknessMaximum);
             }
         }
