@@ -182,7 +182,7 @@ function createWindow(width, height)
         width: width, height: height,
         webPreferences: {
             offscreen: true,
-			nodeIntegration: true
+            nodeIntegration: true
         }
     });
 

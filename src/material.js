@@ -2,7 +2,6 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { WebGl } from './webgl.js';
 
 class gltfMaterial extends GltfObject
 {
@@ -367,10 +366,10 @@ class gltfMaterial extends GltfObject
             if(this.extensions.KHR_materials_subsurface !== undefined)
             {
                 let scale = 1.0;
-				let distortion = 0.0;
-				let power = 1.0;
-				let colorFactor = vec3.fromValues(1.0, 1.0, 1.0);
-				let thicknessFactor = 1.0;
+                let distortion = 0.0;
+                let power = 1.0;
+                let colorFactor = vec3.fromValues(1.0, 1.0, 1.0);
+                let thicknessFactor = 1.0;
 
                 this.defines.push("MATERIAL_SUBSURFACE 1");
 

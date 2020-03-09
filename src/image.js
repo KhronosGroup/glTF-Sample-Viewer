@@ -145,7 +145,7 @@ class gltfImage extends GltfObject
             reader.onloadend = function(event)
             {
                 self.image.initialize(event.target.result);
-            }
+            };
             reader.readAsArrayBuffer(foundFile);
         }
         else
