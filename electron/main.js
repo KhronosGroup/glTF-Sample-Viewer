@@ -10,8 +10,8 @@ let mainWindow;
 
 function createWindow () {
     mainWindow = new BrowserWindow({ width: 1920, height: 1080,
-        icon: path.join(__dirname, "../assets/images/gltf.png")
-		webPreferences: {
+        icon: path.join(__dirname, "../assets/images/gltf.png"),
+        webPreferences: {
             nodeIntegration: true
         }
     });

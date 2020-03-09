@@ -21,7 +21,7 @@ class gltfAccessor extends GltfObject
         // non gltf
         this.glBuffer = undefined;
         this.typedView = undefined;
-		this.filteredView = undefined;
+        this.filteredView = undefined;
     }
 
     getTypedView(gltf)
@@ -74,10 +74,10 @@ class gltfAccessor extends GltfObject
         {
             console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
         }
-		else if (this.sparse !== undefined)
-		{
-			this.applySparse(gltf, this.typedView);
-		}
+        else if (this.sparse !== undefined)
+        {
+            this.applySparse(gltf, this.typedView);
+        }
 
         return this.typedView;
     }
@@ -137,100 +137,100 @@ class gltfAccessor extends GltfObject
                 this.filteredView[i] = dv[func](offset, true);
             }
         }
-		
+
         if (this.filteredView === undefined)
         {
             console.warn("Failed to convert buffer view to filtered view!: " + this.bufferView);
         }
-		else if (this.sparse !== undefined)
-		{
-			this.applySparse(gltf, this.filteredView);
-		}
+        else if (this.sparse !== undefined)
+        {
+            this.applySparse(gltf, this.filteredView);
+        }
 
         return this.filteredView;
     }
-	
-	applySparse(gltf, view)
-	{
-		// Gather indices.
-		
-		const indicesBufferView = gltf.bufferViews[this.sparse.indices.bufferView];
-		const indicesBuffer = gltf.buffers[indicesBufferView.buffer];
-		const indicesByteOffset = this.sparse.indices.byteOffset + indicesBufferView.byteOffset;
 
-		const indicesComponentSize = this.getComponentSize(this.sparse.indices.componentType);
-		let indicesComponentCount = 1;
+    applySparse(gltf, view)
+    {
+        // Gather indices.
 
-		if(indicesBufferView.byteStride !== 0)
-		{
-			indicesComponentCount = indicesBufferView.byteStride / indicesComponentSize;
-		}
+        const indicesBufferView = gltf.bufferViews[this.sparse.indices.bufferView];
+        const indicesBuffer = gltf.buffers[indicesBufferView.buffer];
+        const indicesByteOffset = this.sparse.indices.byteOffset + indicesBufferView.byteOffset;
 
-		const indicesArrayLength = this.sparse.count * indicesComponentCount;
-					
-		let indicesTypedView;
-		switch (this.sparse.indices.componentType)
-		{
-		case WebGl.context.UNSIGNED_BYTE:
-			indicesTypedView = new Uint8Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
-			break;
-		case WebGl.context.UNSIGNED_SHORT:
-			indicesTypedView = new Uint16Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
-			break;
-		case WebGl.context.UNSIGNED_INT:
-			indicesTypedView = new Uint32Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
-			break;
-		}
+        const indicesComponentSize = this.getComponentSize(this.sparse.indices.componentType);
+        let indicesComponentCount = 1;
 
-		// Gather values.
-		
-		const valuesBufferView = gltf.bufferViews[this.sparse.values.bufferView];
-		const valuesBuffer = gltf.buffers[valuesBufferView.buffer];
-		const valuesByteOffset = this.sparse.values.byteOffset + valuesBufferView.byteOffset;
+        if(indicesBufferView.byteStride !== 0)
+        {
+            indicesComponentCount = indicesBufferView.byteStride / indicesComponentSize;
+        }
 
-		const valuesComponentSize = this.getComponentSize(this.componentType);
-		let valuesComponentCount = this.getComponentCount(this.type);
+        const indicesArrayLength = this.sparse.count * indicesComponentCount;
 
-		if(valuesBufferView.byteStride !== 0)
-		{
-			valuesComponentCount = valuesBufferView.byteStride / valuesComponentSize;
-		}
+        let indicesTypedView;
+        switch (this.sparse.indices.componentType)
+        {
+        case WebGl.context.UNSIGNED_BYTE:
+            indicesTypedView = new Uint8Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_SHORT:
+            indicesTypedView = new Uint16Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_INT:
+            indicesTypedView = new Uint32Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
+            break;
+        }
 
-		const valuesArrayLength = this.sparse.count * valuesComponentCount;
+        // Gather values.
 
-		let valuesTypedView;
-		switch (this.componentType)
-		{
-		case WebGl.context.BYTE:
-			valuesTypedView = new Int8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
-			break;
-		case WebGl.context.UNSIGNED_BYTE:
-			valuesTypedView = new Uint8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
-			break;
-		case WebGl.context.SHORT:
-			valuesTypedView = new Int16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
-			break;
-		case WebGl.context.UNSIGNED_SHORT:
-			valuesTypedView = new Uint16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
-			break;
-		case WebGl.context.UNSIGNED_INT:
-			valuesTypedView = new Uint32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
-			break;
-		case WebGl.context.FLOAT:
-			valuesTypedView = new Float32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
-			break;
-		}
-		
-		// Overwrite values.
-		
-		for(let i = 0; i < this.sparse.count; ++i)
-		{
-			for(let k = 0; k < valuesComponentCount; ++k)
-			{
-				view[indicesTypedView[i] * valuesComponentCount + k] = valuesTypedView[i * valuesComponentCount + k];
-			}
-		}		
-	}
+        const valuesBufferView = gltf.bufferViews[this.sparse.values.bufferView];
+        const valuesBuffer = gltf.buffers[valuesBufferView.buffer];
+        const valuesByteOffset = this.sparse.values.byteOffset + valuesBufferView.byteOffset;
+
+        const valuesComponentSize = this.getComponentSize(this.componentType);
+        let valuesComponentCount = this.getComponentCount(this.type);
+
+        if(valuesBufferView.byteStride !== 0)
+        {
+            valuesComponentCount = valuesBufferView.byteStride / valuesComponentSize;
+        }
+
+        const valuesArrayLength = this.sparse.count * valuesComponentCount;
+
+        let valuesTypedView;
+        switch (this.componentType)
+        {
+        case WebGl.context.BYTE:
+            valuesTypedView = new Int8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_BYTE:
+            valuesTypedView = new Uint8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.SHORT:
+            valuesTypedView = new Int16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_SHORT:
+            valuesTypedView = new Uint16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_INT:
+            valuesTypedView = new Uint32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.FLOAT:
+            valuesTypedView = new Float32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        }
+
+        // Overwrite values.
+
+        for(let i = 0; i < this.sparse.count; ++i)
+        {
+            for(let k = 0; k < valuesComponentCount; ++k)
+            {
+                view[indicesTypedView[i] * valuesComponentCount + k] = valuesTypedView[i * valuesComponentCount + k];
+            }
+        }
+    }
 
     getComponentCount(type)
     {

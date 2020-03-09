@@ -499,10 +499,10 @@ class gltfRenderer
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;
         scene.envData.sheenEnvMap.generateMips = false;
-		
+
         scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 2);
-		scene.envData.lut.generateMips = false;
-		
+        scene.envData.lut.generateMips = false;
+
         scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 1);
         scene.envData.sheenLUT.generateMips = false;
     }
@@ -510,16 +510,16 @@ class gltfRenderer
     applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen)
     {
         WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
-		
+
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset + 2);
-		
+
         if (hasSheen)
         {
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
             WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
         }
-		
+
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 

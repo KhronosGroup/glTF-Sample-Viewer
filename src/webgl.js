@@ -1,4 +1,3 @@
-import { Ktx2Image } from '../libs/ktx2image.js';
 
 class gltfWebGl
 {
