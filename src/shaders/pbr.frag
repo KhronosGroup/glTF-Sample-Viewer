@@ -120,11 +120,11 @@ struct MaterialInfo
     vec3 clearcoatNormal;
     float clearcoatRoughness;
 
-	float subsurfaceScale;
-	float subsurfaceDistortion;
-	float subsurfacePower;
-	vec3 subsurfaceColor;
-	float subsurfaceThickness;
+    float subsurfaceScale;
+    float subsurfaceDistortion;
+    float subsurfacePower;
+    vec3 subsurfaceColor;
+    float subsurfaceThickness;
 
     float thinFilmFactor;
     float thinFilmThickness;
@@ -159,7 +159,7 @@ vec4 getBaseColor()
 
 vec3 F_None(vec3 f0, vec3 f90, float VdotH)
 {
-	return f0;
+    return f0;
 }
 
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
@@ -171,10 +171,10 @@ vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
 
 vec3 F_CookTorrance(vec3 f0, vec3 f90, float VdotH)
 {
-	vec3 f0_sqrt = sqrt(f0);
+    vec3 f0_sqrt = sqrt(f0);
     vec3 ior = (1.0 + f0_sqrt) / (1.0 - f0_sqrt);
-	vec3 c = vec3(VdotH);
-	vec3 g = sqrt(ior*ior + c*c - 1.0);
+    vec3 c = vec3(VdotH);
+    vec3 g = sqrt(ior*ior + c*c - 1.0);
     return 0.5 * pow(g-c, vec3(2.0)) / pow(g+c, vec3(2.0)) * (1.0 + pow(c*(g+c) - 1.0, vec3(2.0)) / pow(c*(g-c) + 1.0, vec3(2.0)));
 }
 
@@ -226,12 +226,12 @@ float D_GGX(float NdotH, float alphaRoughness)
 float D_Ashikhmin(float NdotH, float alphaRoughness)
 {
     // Ashikhmin 2007, "Distribution-based BRDFs"
-	float a2 = alphaRoughness * alphaRoughness;
-	float cos2h = NdotH * NdotH;
-	float sin2h = 1.0 - cos2h;
-	float sin4h = sin2h * sin2h;
-	float cot2 = -cos2h / (a2 * sin2h);
-	return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+    float a2 = alphaRoughness * alphaRoughness;
+    float cos2h = NdotH * NdotH;
+    float sin2h = 1.0 - cos2h;
+    float sin4h = sin2h * sin2h;
+    float cot2 = -cos2h / (a2 * sin2h);
+    return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
 }
 
 //Sheen implementation-------------------------------------------------------------------------------------
@@ -289,8 +289,8 @@ vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, float NdotV, float thinFilmFact
     }
 
     vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb - 0.5;
-	vec3 intensity = thinFilmFactor * 4.0 * f0 * (1.0 - f0);
-	return clamp(intensity * lutSample, 0.0, 1.0);
+    vec3 intensity = thinFilmFactor * 4.0 * f0 * (1.0 - f0);
+    return clamp(intensity * lutSample, 0.0, 1.0);
 }
 
 vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
@@ -344,13 +344,13 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
 
 vec3 getSubsurfaceIBLContribution(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
 {
-	vec3 diffuseLight = texture(u_LambertianEnvSampler, normal).rgb;
+    vec3 diffuseLight = texture(u_LambertianEnvSampler, normal).rgb;
 
-	#ifndef USE_HDR
-		diffuseLight = SRGBtoLINEAR(diffuseLight);
-	#endif
+    #ifndef USE_HDR
+        diffuseLight = SRGBtoLINEAR(diffuseLight);
+    #endif
 
-	return diffuseLight * subsurfaceNonBRDF(scale, distortion, power, color, thickness, light, normal, viewer);
+    return diffuseLight * subsurfaceNonBRDF(scale, distortion, power, color, thickness, light, normal, viewer);
 }
 
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
@@ -447,11 +447,11 @@ MaterialInfo getSheenInfo(MaterialInfo info)
 
 MaterialInfo getSubsurfaceInfo(MaterialInfo info)
 {
-	info.subsurfaceScale = u_SubsurfaceScale;
-	info.subsurfaceDistortion = u_SubsurfaceDistortion;
-	info.subsurfacePower = u_SubsurfacePower;
-	info.subsurfaceColor = u_SubsurfaceColorFactor;
-	info.subsurfaceThickness = u_SubsurfaceThicknessFactor;
+    info.subsurfaceScale = u_SubsurfaceScale;
+    info.subsurfaceDistortion = u_SubsurfaceDistortion;
+    info.subsurfacePower = u_SubsurfacePower;
+    info.subsurfaceColor = u_SubsurfaceColorFactor;
+    info.subsurfaceThickness = u_SubsurfaceThicknessFactor;
 
     #ifdef HAS_SUBSURFACE_COLOR_MAP
         info.subsurfaceColor *= texture(u_SubsurfaceColorSampler, getSubsurfaceColorUV()).rgb;
@@ -586,7 +586,7 @@ void main()
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
-	vec3 f_subsurface = vec3(0.0);
+    vec3 f_subsurface = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
@@ -655,9 +655,9 @@ vec3 punctualColor = vec3(0.0);
             #endif
         }
 
-		#ifdef MATERIAL_SUBSURFACE
-			f_subsurface += intensity * subsurfaceNonBRDF(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
-		#endif
+        #ifdef MATERIAL_SUBSURFACE
+            f_subsurface += intensity * subsurfaceNonBRDF(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
+        #endif
     }
 #endif // !USE_PUNCTUAL
 
@@ -672,11 +672,11 @@ vec3 punctualColor = vec3(0.0);
 /// Layer blending
 ///
 
-	float clearcoatFactor = 0.0;
+    float clearcoatFactor = 0.0;
     vec3 clearcoatFresnel = vec3(0.0);
 
     #ifdef MATERIAL_CLEARCOAT
-		clearcoatFactor = materialInfo.clearcoatFactor;
+        clearcoatFactor = materialInfo.clearcoatFactor;
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 

@@ -506,7 +506,7 @@ class gltfRenderer
         scene.envData.sheenEnvMap.generateMips = false;
 
         scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
-		scene.envData.lut.generateMips = false;
+        scene.envData.lut.generateMips = false;
 
         scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.sheenLUT.generateMips = false;

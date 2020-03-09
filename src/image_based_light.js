@@ -1,6 +1,6 @@
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { WebGl } from './webgl.js'
+import { WebGl } from './webgl.js';
 
 // https://github.com/KhronosGroup/glTF/blob/khr_ktx2_ibl/extensions/2.0/Khronos/KHR_lights_image_based/schema/imageBasedLight.schema.json
 
@@ -60,10 +60,10 @@ class ImageBasedLight extends GltfObject
 
             const imageObject = gltf.images[textureObject.source];
             if (this.levelCount !== imageObject.image.levelCount)
-			{
-				console.error("Specular and sheen do not have same level count");
-			}
-		}
+            {
+                console.error("Specular and sheen do not have same level count");
+            }
+        }
     }
 }
 
