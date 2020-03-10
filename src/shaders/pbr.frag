@@ -445,6 +445,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     return info;
 }
 
+#ifdef MATERIAL_SUBSURFACE
 MaterialInfo getSubsurfaceInfo(MaterialInfo info)
 {
     info.subsurfaceScale = u_SubsurfaceScale;
@@ -463,6 +464,7 @@ MaterialInfo getSubsurfaceInfo(MaterialInfo info)
 
     return info;
 }
+#endif
 
 #ifdef MATERIAL_THIN_FILM
 MaterialInfo getThinFilmInfo(MaterialInfo info)
@@ -475,8 +477,8 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
     #endif
 
     #ifdef HAS_THIN_FILM_THICKNESS_MAP
-        float thicknessSampled /* [0, 1] */ = texture(u_ThinFilmThicknessSampler, getThinFilmThicknessUV()).g;
-        float thickness /* [t_min / 1200, t_max / 1200] */ = mix(u_ThinFilmThicknessMinimum, u_ThinFilmThicknessMaximum, thicknessSampled) * 0.000833333;
+        float thicknessSampled = texture(u_ThinFilmThicknessSampler, getThinFilmThicknessUV()).g;
+        float thickness = mix(u_ThinFilmThicknessMinimum / 1200.0, u_ThinFilmThicknessMaximum / 1200.0, thicknessSampled);
         info.thinFilmThickness = thickness;
     #endif
 

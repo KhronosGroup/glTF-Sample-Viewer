@@ -64,7 +64,6 @@ class gltfShader
         {
             if (this.unknownUniforms.find(n => n === name) === undefined)
             {
-                console.log("Uniform '%s' does not exist", name);
                 this.unknownUniforms.push(name);
             }
             return -1;

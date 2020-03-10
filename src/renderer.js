@@ -508,11 +508,11 @@ class gltfRenderer
         scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
         scene.envData.lut.generateMips = false;
 
-        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
-        scene.envData.sheenLUT.generateMips = false;
+		scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
+		scene.envData.sheenLUT.generateMips = false;
 
-        scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
-        scene.envData.thinFilmLUT.generateMips = false;
+		scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
+		scene.envData.thinFilmLUT.generateMips = false;
     }
 
     applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen, hasThinFilm)
@@ -522,15 +522,10 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
         WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset + 2);
 
-        if (hasSheen)
-        {
-            WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
-            WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
-        }
-        if (hasThinFilm)
-        {
-            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
-        }
+        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
+        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
+        
+		WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
