@@ -35,6 +35,7 @@ class gltfImage extends GltfObject
     {
         if (this.uri !== undefined)
         {
+            this.uri = this.uri.replace(/\.\//, ''); // Remove preceding './' from URI
             this.uri = basePath + this.uri;
         }
     }
