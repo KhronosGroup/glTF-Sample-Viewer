@@ -34,7 +34,6 @@ class gltfWebGl
     {
         if (loc === -1)
         {
-            console.warn("Tried to access unknown uniform");
             return false;
         }
 
