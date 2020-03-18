@@ -293,16 +293,27 @@ vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, float NdotV, float thinFilmFact
     return clamp(intensity * lutSample, 0.0, 1.0);
 }
 
-vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
+vec3 getReflectionVector(vec3 normal, vec3 incident)
 {
-    float NdotV = clampedDot(n, v);
-    float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 reflection = normalize(reflect(-v, n));
+    return normalize(reflect(-incident, normal));
+}
 
+/// TODO: Doc
+vec3 getRefractionVector(vec3 normal, vec3 incident, float ior_1, float ior_2) {
+    return refract(incident, normal, ior_1 / ior_2);
+}
+
+vec3 getGGXIBLContribution(vec3 n, vec3 v, vec3 sampleDirection, float perceptualRoughness, vec3 specularColor)
+{
+    // Sample GGX LUT.
+    float NdotV = clampedDot(n, v);
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
-    vec4 specularSample = textureLod(u_GGXEnvSampler, reflection, lod);
 
+    // Sample GGX environment map.
+    float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    vec3 reflection = sampleDirection;
+    vec4 specularSample = textureLod(u_GGXEnvSampler, reflection, lod);
     vec3 specularLight = specularSample.rgb;
 
 #ifndef USE_HDR
@@ -593,11 +604,18 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, clampedDot(normal, view), materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
-    f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
+
+    vec3 sampleDirection = getRefractionVector(normal, -view, 1.0, 1.5);
+    //vec3 sampleDirection = sphereRefractionModel(view, normal, normal, 1.0, 1.0, 1.0);
+
+    //g_finalColor.rgb = sampleDirection;
+    //return;
+    f_specular += getGGXIBLContribution(normal, view, sampleDirection, materialInfo.perceptualRoughness, specularColor);
+    //f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
     f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getGGXIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
+        f_clearcoat += getGGXIBLContribution(materialInfo.clearcoatNormal, view, getReflectionVector(normal, view), materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
 
     #ifdef MATERIAL_SHEEN
