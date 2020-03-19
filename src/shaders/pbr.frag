@@ -732,10 +732,12 @@ vec3 punctualColor = vec3(0.0);
     #endif
 
 #ifdef MATERIAL_TRANSMISSION
-    f_diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
+    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
+#else
+    vec3 diffuse = f_diffuse;
 #endif
 
-    color = (f_emissive + f_diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    color = (f_emissive + diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
@@ -805,6 +807,10 @@ vec3 punctualColor = vec3(0.0);
 
     #ifdef DEBUG_FSUBSURFACE
         g_finalColor.rgb = f_subsurface;
+    #endif
+
+    #ifdef DEBUG_FTRANSMISSION
+        g_finalColor.rgb = f_transmission;
     #endif
 
     g_finalColor.a = 1.0;

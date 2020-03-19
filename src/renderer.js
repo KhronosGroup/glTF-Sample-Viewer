@@ -452,6 +452,9 @@ class gltfRenderer
         case(DebugOutput.SUBSURFACE):
             fragDefines.push("DEBUG_FSUBSURFACE 1");
             break;
+        case(DebugOutput.TRANSMISSION):
+            fragDefines.push("DEBUG_FTRANSMISSION 1");
+            break;
         case(DebugOutput.F0):
             fragDefines.push("DEBUG_F0 1");
             break;
@@ -524,7 +527,7 @@ class gltfRenderer
 
         WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
         WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
-        
+
 		WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
