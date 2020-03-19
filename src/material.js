@@ -419,8 +419,17 @@ class gltfMaterial extends GltfObject
             // KHR Extension: Transmission
             if(this.extensions.KHR_materials_transmission !== undefined)
             {
-                let ior = this.extensions.KHR_materials_transmission.ior || 1.0;
-                let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor || 1.0;
+                let ior = this.extensions.KHR_materials_transmission.ior;
+                let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
+
+                if (ior == undefined)
+                {
+                    ior = 1.0;
+                }
+                if (transmissionFactor == undefined)
+                {
+                    transmissionFactor = 1.0;
+                }
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
