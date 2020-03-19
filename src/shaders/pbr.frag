@@ -90,6 +90,10 @@ uniform float u_ThinFilmFactor;
 uniform float u_ThinFilmThicknessMinimum;
 uniform float u_ThinFilmThicknessMaximum;
 
+// Transmission
+uniform float u_TransmissionIor;
+uniform float u_TransmissionFactor;
+
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
 
@@ -128,6 +132,9 @@ struct MaterialInfo
 
     float thinFilmFactor;
     float thinFilmThickness;
+
+    float transmissionIor;
+    float transmissionFactor;
 };
 
 vec4 getBaseColor()
@@ -497,6 +504,16 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 }
 #endif
 
+#ifdef MATERIAL_TRANSMISSION
+MaterialInfo getTransmissionInfo(MaterialInfo info)
+{
+    info.transmissionIor = u_TransmissionIor;
+    info.transmissionFactor = u_TransmissionFactor;
+
+    return info;
+}
+#endif
+
 MaterialInfo getClearCoatInfo(MaterialInfo info)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
@@ -573,6 +590,10 @@ void main()
 
 #ifdef MATERIAL_CLEARCOAT
     materialInfo = getClearCoatInfo(materialInfo);
+#endif
+
+#ifdef MATERIAL_TRANSMISSION
+    materialInfo = getTransmissionInfo(materialInfo);
 #endif
 
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);

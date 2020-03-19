@@ -416,41 +416,16 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SubsurfaceThicknessFactor", thicknessFactor);
             }
 
-            // KHR Extension: Thin film
-            // See https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
-            if(this.extensions.KHR_materials_thinfilm !== undefined)
+            // KHR Extension: Transmission
+            if(this.extensions.KHR_materials_transmission !== undefined)
             {
-                let factor = this.extensions.KHR_materials_thinfilm.thinfilmFactor || 0.0;
-                let thicknessMinimum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMinimum || 400.0;
-                let thicknessMaximum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMaximum || 1200.0;
+                let ior = this.extensions.KHR_materials_transmission.ior || 1.0;
+                let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor || 1.0;
 
-                this.defines.push("MATERIAL_THIN_FILM 1");
+                this.defines.push("MATERIAL_TRANSMISSION 1");
 
-                if (this.thinfilmTexture !== undefined)
-                {
-                    this.thinfilmTexture.samplerName = "u_ThinFilmSampler";
-                    this.parseTextureInfoExtensions(this.thinfilmTexture, "ThinFilm");
-                    this.textures.push(this.thinfilmTexture);
-                    this.defines.push("HAS_THIN_FILM_MAP 1");
-                    this.properties.set("u_ThinFilmUVSet", this.thinfilmTexture.texCoord);
-                }
-
-                if (this.thinfilmThicknessTexture !== undefined)
-                {
-                    this.thinfilmThicknessTexture.samplerName = "u_ThinFilmThicknessSampler";
-                    this.parseTextureInfoExtensions(this.thinfilmThicknessTexture, "ThinFilmThickness");
-                    this.textures.push(this.thinfilmThicknessTexture);
-                    this.defines.push("HAS_THIN_FILM_THICKNESS_MAP 1");
-                    this.properties.set("u_ThinFilmThicknessUVSet", this.thinfilmThicknessTexture.texCoord);
-
-                    // The thickness minimum is only required when there is a thickness texture present.
-                    // Because 1.0 is the default value for the thickness, no texture implies that only the
-                    // maximum thickness is ever read in the shader.
-                    this.properties.set("u_ThinFilmThicknessMinimum", thicknessMinimum);
-                }
-
-                this.properties.set("u_ThinFilmFactor", factor);
-                this.properties.set("u_ThinFilmThicknessMaximum", thicknessMaximum);
+                this.properties.set("u_TransmissionIor", ior);
+                this.properties.set("u_TransmissionFactor", transmissionFactor);
             }
         }
 
@@ -649,6 +624,11 @@ class gltfMaterial extends GltfObject
             thinfilmThicknessTexture.fromJson(jsonThinFilm.thinfilmThicknessTexture);
             this.thinfilmThicknessTexture = thinfilmThicknessTexture;
         }
+    }
+
+    fromJsonTransmission(JsonTransmission)
+    {
+        JsonTransmission;
     }
 }
 
