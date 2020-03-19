@@ -319,7 +319,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor, float ior, float factor, vec3 baseColor)
+vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -328,8 +328,8 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, v
 
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    //vec3 sampleDirection = refractionThin(v, n, 1.0, 1.5);
-    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, 1.5, getNormal(true), 2.0);
+    //vec3 sampleDirection = refractionThin(v, n, 1.0, ior);
+    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, getNormal(true), 2.0);
     vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
     vec3 specularLight = specularSample.rgb;
 
@@ -337,7 +337,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, v
     specularLight = SRGBtoLINEAR(specularLight);
 #endif
 
-   vec3 specular = specularLight * (specularColor * brdf.x + brdf.y);
+   vec3 specular = specularLight * (brdf.x + brdf.y);
    return specular;
 }
 
@@ -654,15 +654,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        //f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor, materialInfo.transmissionIor, materialInfo.transmissionFactor, materialInfo.baseColor);
-        //f_specular = f_transmission;
-        //g_finalColor.rgb = f_specular + f_diffuse;
-        //return;
-        //g_finalColor.rgb = materialInfo.baseColor;
-        //g_finalColor.rgb = f_transmission.rgb;
-        //return;
-        //f_diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
-        //f_diffuse = f_transmission;
+        f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.transmissionIor, materialInfo.baseColor);
     #endif
 #endif
 
@@ -739,8 +731,11 @@ vec3 punctualColor = vec3(0.0);
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
+#ifdef MATERIAL_TRANSMISSION
+    f_diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
+#endif
+
     color = (f_emissive + f_diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
-    color = f_diffuse + f_specular;
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
