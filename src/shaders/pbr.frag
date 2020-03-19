@@ -605,11 +605,12 @@ void main()
 #ifdef USE_IBL
     vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, clampedDot(normal, view), materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
 
-    vec3 sampleDirection = getRefractionVector(normal, -view, 1.0, 1.5);
-    //vec3 sampleDirection = sphereRefractionModel(view, normal, normal, 1.0, 1.0, 1.0);
+    vec3 sampleDirection = refractionSolidSphere(view, normal, 1.0, 1.5, getNormal(true), 2.0);
+    //vec3 sampleDirection = refractionThin(view, normal, 1.0, 1.5);
 
     //g_finalColor.rgb = sampleDirection;
     //return;
+
     f_specular += getGGXIBLContribution(normal, view, sampleDirection, materialInfo.perceptualRoughness, specularColor);
     //f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
     f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
