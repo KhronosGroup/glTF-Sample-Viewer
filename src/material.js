@@ -480,7 +480,6 @@ class gltfMaterial extends GltfObject
                     this.textures.push(this.transmissionDepthTexture);
                     this.defines.push("HAS_TRANSMISSION_DEPTH_MAP 1");
                     this.properties.set("u_TransmissionDepthUVSet", this.transmissionDepthTexture.texCoord);
-                    console.log("has transmission depth map");
                 }
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
