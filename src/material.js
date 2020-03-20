@@ -420,9 +420,22 @@ class gltfMaterial extends GltfObject
             // See https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
             if(this.extensions.KHR_materials_thinfilm !== undefined)
             {
-                let factor = this.extensions.KHR_materials_thinfilm.thinfilmFactor || 0.0;
-                let thicknessMinimum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMinimum || 400.0;
-                let thicknessMaximum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMaximum || 1200.0;
+                let factor = this.extensions.KHR_materials_thinfilm.thinfilmFactor;
+                let thicknessMinimum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMinimum;
+                let thicknessMaximum = this.extensions.KHR_materials_thinfilm.thinfilmThicknessMaximum;
+
+                if (factor === undefined)
+                {
+                    factor = 0.0;
+                }
+                if (thicknessMinimum === undefined)
+                {
+                    thicknessMinimum = 400.0;
+                }
+                if (thicknessMaximum === undefined)
+                {
+                    thicknessMaximum = 1200.0;
+                }
 
                 this.defines.push("MATERIAL_THIN_FILM 1");
 
