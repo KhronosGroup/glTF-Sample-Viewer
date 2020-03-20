@@ -421,6 +421,7 @@ class gltfMaterial extends GltfObject
             {
                 let ior = this.extensions.KHR_materials_transmission.ior;
                 let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
+                let transmissionDepth = this.extensions.KHR_materials_transmission.transmissionDepth;
 
                 if (ior == undefined)
                 {
@@ -430,11 +431,26 @@ class gltfMaterial extends GltfObject
                 {
                     transmissionFactor = 1.0;
                 }
+                if (transmissionDepth == undefined)
+                {
+                    transmissionDepth = 1.0;
+                }
+
+                if (this.transmissionDepthTexture !== undefined)
+                {
+                    this.transmissionDepthTexture.samplerName = "u_TransmissionDepthSampler";
+                    this.parseTextureInfoExtensions(this.transmissionDepthTexture, "TransmissionDepth");
+                    this.textures.push(this.transmissionDepthTexture);
+                    this.defines.push("HAS_TRANSMISSION_DEPTH_MAP 1");
+                    this.properties.set("u_TransmissionDepthUVSet", this.transmissionDepthTexture.texCoord);
+                    console.log("has transmission depth map");
+                }
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
                 this.properties.set("u_TransmissionIor", ior);
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
+                this.properties.set("u_TransmissionDepth", transmissionDepth);
             }
         }
 
@@ -520,6 +536,11 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_thinfilm !== undefined)
         {
             this.fromJsonThinFilm(jsonExtensions.KHR_materials_thinfilm);
+        }
+
+        if(jsonExtensions.KHR_materials_transmission!== undefined)
+        {
+            this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
         }
     }
 
@@ -635,9 +656,14 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    fromJsonTransmission(JsonTransmission)
+    fromJsonTransmission(jsonTransmission)
     {
-        JsonTransmission;
+        if(jsonTransmission.transmissionDepthTexture !== undefined)
+        {
+            const transmissionDepthTexture = new gltfTextureInfo();
+            transmissionDepthTexture.fromJson(jsonTransmission.transmissionDepthTexture);
+            this.transmissionDepthTexture = transmissionDepthTexture;
+        }
     }
 }
 

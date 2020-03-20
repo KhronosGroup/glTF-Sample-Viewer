@@ -93,6 +93,7 @@ uniform float u_ThinFilmThicknessMaximum;
 // Transmission
 uniform float u_TransmissionIor;
 uniform float u_TransmissionFactor;
+uniform float u_TransmissionDepth;
 
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
@@ -135,6 +136,7 @@ struct MaterialInfo
 
     float transmissionIor;
     float transmissionFactor;
+    float transmissionDepth;
 };
 
 vec4 getBaseColor()
@@ -319,7 +321,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
+vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, float depth)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -329,7 +331,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     //vec3 sampleDirection = refractionThin(v, n, 1.0, ior);
-    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, getNormal(true), 2.0);
+    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, getNormal(true), depth);
     vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
     vec3 specularLight = specularSample.rgb;
 
@@ -520,6 +522,12 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
     info.transmissionIor = u_TransmissionIor;
     info.transmissionFactor = u_TransmissionFactor;
+    info.transmissionDepth = u_TransmissionDepth;
+
+    #ifdef HAS_TRANSMISSION_DEPTH_MAP
+        float depthSampled = texture(u_TransmissionDepthSampler, getTransmissionDepthUV()).r;
+        info.transmissionDepth *= depthSampled;
+    #endif
 
     return info;
 }
@@ -654,7 +662,8 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, materialInfo.transmissionIor, materialInfo.baseColor);
+        f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness,
+            materialInfo.transmissionIor, materialInfo.baseColor, materialInfo.transmissionDepth);
     #endif
 #endif
 
