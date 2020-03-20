@@ -460,15 +460,15 @@ class gltfMaterial extends GltfObject
                 let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
                 let transmissionDepth = this.extensions.KHR_materials_transmission.transmissionDepth;
 
-                if (ior == undefined)
+                if (ior === undefined)
                 {
                     ior = 1.0;
                 }
-                if (transmissionFactor == undefined)
+                if (transmissionFactor === undefined)
                 {
                     transmissionFactor = 1.0;
                 }
-                if (transmissionDepth == undefined)
+                if (transmissionDepth === undefined)
                 {
                     transmissionDepth = 1.0;
                 }
