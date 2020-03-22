@@ -86,9 +86,9 @@ uniform int u_ThinFilmThicknessUVSet;
 uniform mat3 u_ThinFilmThicknessUVTransform;
 
 // Transmission:
-uniform sampler2D u_TransmissionDepthSampler;
-uniform int u_TransmissionDepthUVSet;
-uniform mat3 u_TransmissionDepthUVTransform;
+uniform sampler2D u_TransmissionThicknessSampler;
+uniform int u_TransmissionThicknessUVSet;
+uniform mat3 u_TransmissionThicknessUVTransform;
 
 vec2 getNormalUV()
 {
@@ -252,12 +252,12 @@ vec2 getThinFilmThicknessUV()
     return uv.xy;
 }
 
-vec2 getTransmissionDepthUV()
+vec2 getTransmissionThicknessUV()
 {
-    vec3 uv = vec3(u_TransmissionDepthUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_TransmissionThicknessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
 
-    #ifdef HAS_TRANSMISSION_DEPTH_UV_TRANSFORM
-    uv *= u_TransmissionDepthUVTransform;
+    #ifdef HAS_TRANSMISSION_THICKNESS_UV_TRANSFORM
+    uv *= u_TransmissionThicknessUVTransform;
     #endif
 
     return uv.xy;

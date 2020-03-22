@@ -93,7 +93,7 @@ uniform float u_ThinFilmThicknessMaximum;
 // Transmission
 uniform float u_TransmissionIor;
 uniform float u_TransmissionFactor;
-uniform float u_TransmissionDepth;
+uniform float u_TransmissionThickness;
 
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
@@ -136,7 +136,7 @@ struct MaterialInfo
 
     float transmissionIor;
     float transmissionFactor;
-    float transmissionDepth;
+    float transmissionThickness;
 };
 
 vec4 getBaseColor()
@@ -321,7 +321,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, float depth)
+vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, float thickness)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -331,7 +331,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     //vec3 sampleDirection = refractionThin(v, n, 1.0, ior);
-    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, getNormal(true), depth);
+    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, getNormal(true), thickness);
     vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
     vec3 specularLight = specularSample.rgb;
 
@@ -522,11 +522,11 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
     info.transmissionIor = u_TransmissionIor;
     info.transmissionFactor = u_TransmissionFactor;
-    info.transmissionDepth = u_TransmissionDepth;
+    info.transmissionThickness = u_TransmissionThickness;
 
-    #ifdef HAS_TRANSMISSION_DEPTH_MAP
-        float depthSampled = texture(u_TransmissionDepthSampler, getTransmissionDepthUV()).r;
-        info.transmissionDepth *= depthSampled;
+    #ifdef HAS_TRANSMISSION_THICKNESS_MAP
+        float thicknessSampled = texture(u_TransmissionThicknessSampler, getTransmissionThicknessUV()).r;
+        info.transmissionThickness *= thicknessSampled;
     #endif
 
     return info;
@@ -663,7 +663,7 @@ void main()
 
     #ifdef MATERIAL_TRANSMISSION
         f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness,
-            materialInfo.transmissionIor, materialInfo.baseColor, materialInfo.transmissionDepth);
+            materialInfo.transmissionIor, materialInfo.baseColor, materialInfo.transmissionThickness);
     #endif
 #endif
 

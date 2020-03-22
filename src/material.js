@@ -458,7 +458,7 @@ class gltfMaterial extends GltfObject
             {
                 let ior = this.extensions.KHR_materials_transmission.ior;
                 let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
-                let transmissionDepth = this.extensions.KHR_materials_transmission.transmissionDepth;
+                let transmissionThickness = this.extensions.KHR_materials_transmission.transmissionThickness;
 
                 if (ior === undefined)
                 {
@@ -468,25 +468,25 @@ class gltfMaterial extends GltfObject
                 {
                     transmissionFactor = 1.0;
                 }
-                if (transmissionDepth === undefined)
+                if (transmissionThickness === undefined)
                 {
-                    transmissionDepth = 1.0;
+                    transmissionThickness = 1.0;
                 }
 
-                if (this.transmissionDepthTexture !== undefined)
+                if (this.transmissionThicknessTexture !== undefined)
                 {
-                    this.transmissionDepthTexture.samplerName = "u_TransmissionDepthSampler";
-                    this.parseTextureInfoExtensions(this.transmissionDepthTexture, "TransmissionDepth");
-                    this.textures.push(this.transmissionDepthTexture);
-                    this.defines.push("HAS_TRANSMISSION_DEPTH_MAP 1");
-                    this.properties.set("u_TransmissionDepthUVSet", this.transmissionDepthTexture.texCoord);
+                    this.transmissionThicknessTexture.samplerName = "u_TransmissionThicknessSampler";
+                    this.parseTextureInfoExtensions(this.transmissionThicknessTexture, "TransmissionThickness");
+                    this.textures.push(this.transmissionThicknessTexture);
+                    this.defines.push("HAS_TRANSMISSION_THICKNESS_MAP 1");
+                    this.properties.set("u_TransmissionThicknessUVSet", this.transmissionThicknessTexture.texCoord);
                 }
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
                 this.properties.set("u_TransmissionIor", ior);
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
-                this.properties.set("u_TransmissionDepth", transmissionDepth);
+                this.properties.set("u_TransmissionThickness", transmissionThickness);
             }
         }
 
@@ -694,11 +694,11 @@ class gltfMaterial extends GltfObject
 
     fromJsonTransmission(jsonTransmission)
     {
-        if(jsonTransmission.transmissionDepthTexture !== undefined)
+        if(jsonTransmission.transmissionThicknessTexture !== undefined)
         {
-            const transmissionDepthTexture = new gltfTextureInfo();
-            transmissionDepthTexture.fromJson(jsonTransmission.transmissionDepthTexture);
-            this.transmissionDepthTexture = transmissionDepthTexture;
+            const transmissionThicknessTexture = new gltfTextureInfo();
+            transmissionThicknessTexture.fromJson(jsonTransmission.transmissionThicknessTexture);
+            this.transmissionThicknessTexture = transmissionThicknessTexture;
         }
     }
 }
