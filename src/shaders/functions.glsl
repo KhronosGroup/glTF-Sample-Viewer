@@ -114,50 +114,38 @@ float clampedDot(vec3 x, vec3 y)
     return clamp(dot(x, y), 0.0, 1.0);
 }
 
-// Refracts the light vector v on a surface with normal n.
-vec3 refractionThin(vec3 v, vec3 n, float ior_1, float ior_2)
-{
-    vec3 p = normalize(refract(-v, n, ior_1 / ior_2)); // Refracted vector
-    return p;
-}
-
-// vec3 refractionSolidSphere(vec3 r, const vec3 n, float ior_1, float ior_2, float thickness/*, out float dist, out vec3 dir,*/) {
-//     r = refract(r, n, ior_1 / ior_2);
-//     float NoR = dot(n, r);
-//     //dist = thickness * -NoR;
-//     vec3 n1 = normalize(NoR * r - n * 0.5);
-//     return refract(r, n1,  ior_2 / ior_1);
-// }
-
 vec3 refraction(vec3 l, vec3 n, float n1, float n2, out bool internal_reflection) {
     float c = dot(-n, l);
     float r = n1 / n2;
     float D = 1.0 - r * r * (1.0 - c * c);
     internal_reflection = D < 0.0;
-    return r * l + (r * c - sqrt(D)) * n;
+    vec3 q = r * l + (r * c - sqrt(D)) * n;
+    return normalize(q);
 }
 
 // Refracts the light vector v on a surface with normal n.
-// Assumes that the incident point is tangent to a sphere beneat it with a given diameter.
+// Assumes that the incident point is tangent to a sphere beneat it with a given thickness.
 // Models the exiting refraction that would be caused by this sphere.
-vec3 refractionSolidSphere(vec3 v, vec3 N, float ior_1, float ior_2, float thickness, out float dist)
+// Writes the travel distance through the medium by the refracted ray into `dist`.
+// Returns the double-refracted ray.
+vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thickness, out float dist)
 {
     bool internal_reflection;
 
-    vec3 r = normalize(-v);
-    vec3 r_ = normalize(refraction(normalize(r), normalize(N), ior_1, ior_2, internal_reflection));
+    vec3 r = -v;
+    vec3 r_ = refraction(r, n, ior_1, ior_2, internal_reflection);
     if (internal_reflection) {
-        return reflect(-v, N);
+        return reflect(-v, n);
     }
 
-    dist = thickness * dot(-N, r_);
+    dist = thickness * dot(-n, r_);
 
-    vec3 a = thickness / 2.0 * -N;
+    vec3 a = thickness / 2.0 * -n;
     vec3 b = normalize(dist * r_ - a);
 
     vec3 q = -refraction(-r_, b, ior_2, ior_1, internal_reflection);
     if (internal_reflection) {
-        return reflect(-v, N);
+        return reflect(-v, n);
     }
     return q;
 }

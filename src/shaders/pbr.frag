@@ -332,7 +332,6 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
 
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    //vec3 sampleDirection = refractionThin(v, n, 1.0, ior);
     float dist;
     vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, thickness, dist);
     vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
