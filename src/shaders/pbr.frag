@@ -94,6 +94,7 @@ uniform float u_ThinFilmThicknessMaximum;
 uniform float u_TransmissionIor;
 uniform float u_TransmissionFactor;
 uniform float u_TransmissionThickness;
+uniform vec3 u_TransmissionAbsorption;
 
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
@@ -137,6 +138,7 @@ struct MaterialInfo
     float transmissionIor;
     float transmissionFactor;
     float transmissionThickness;
+    vec3 transmissionAbsorption;
 };
 
 vec4 getBaseColor()
@@ -321,7 +323,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, float thickness)
+vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, float thickness, vec3 absorption)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -341,7 +343,9 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
 #endif
 
    vec3 specular = specularLight * (brdf.x + brdf.y);
-   return specular;
+   vec3 T = exp(-absorption * dist);
+   vec3 attenuatedSpecular = T * specular;
+   return attenuatedSpecular;
 }
 
 vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
@@ -524,6 +528,7 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
     info.transmissionIor = u_TransmissionIor;
     info.transmissionFactor = u_TransmissionFactor;
     info.transmissionThickness = u_TransmissionThickness;
+    info.transmissionAbsorption = u_TransmissionAbsorption;
 
     #ifdef HAS_TRANSMISSION_THICKNESS_MAP
         float thicknessSampled = texture(u_TransmissionThicknessSampler, getTransmissionThicknessUV()).r;
@@ -664,7 +669,7 @@ void main()
 
     #ifdef MATERIAL_TRANSMISSION
         f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness,
-            materialInfo.transmissionIor, materialInfo.baseColor, materialInfo.transmissionThickness);
+            materialInfo.transmissionIor, materialInfo.baseColor, materialInfo.transmissionThickness, materialInfo.transmissionAbsorption);
     #endif
 #endif
 
@@ -820,7 +825,7 @@ vec3 punctualColor = vec3(0.0);
     #endif
 
     #ifdef DEBUG_FTRANSMISSION
-        g_finalColor.rgb = f_transmission;
+        g_finalColor.rgb = LINEARtoSRGB(f_transmission);
     #endif
 
     g_finalColor.a = 1.0;

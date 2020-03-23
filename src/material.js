@@ -459,6 +459,7 @@ class gltfMaterial extends GltfObject
                 let ior = this.extensions.KHR_materials_transmission.ior;
                 let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
                 let transmissionThickness = this.extensions.KHR_materials_transmission.transmissionThickness;
+                let transmissionAbsorption = vec3.fromValues(0, 0, 0);
 
                 if (ior === undefined)
                 {
@@ -471,6 +472,10 @@ class gltfMaterial extends GltfObject
                 if (transmissionThickness === undefined)
                 {
                     transmissionThickness = 1.0;
+                }
+                if (this.extensions.KHR_materials_transmission.transmissionAbsorption !== undefined)
+                {
+                    transmissionAbsorption = jsToGl(this.extensions.KHR_materials_transmission.transmissionAbsorption);
                 }
 
                 if (this.transmissionThicknessTexture !== undefined)
@@ -487,6 +492,7 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_TransmissionIor", ior);
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
                 this.properties.set("u_TransmissionThickness", transmissionThickness);
+                this.properties.set("u_TransmissionAbsorption", transmissionAbsorption);
             }
         }
 
