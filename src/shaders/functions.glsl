@@ -114,20 +114,6 @@ float clampedDot(vec3 x, vec3 y)
     return clamp(dot(x, y), 0.0, 1.0);
 }
 
-/// Computes the intersection between a sphere of radius r and center c with a ray
-/// from o with direction l. l should be normalized.
-/// The result is undefined if the ray does not intersect the sphere.
-vec2 sphereLineIntersection(vec3 o, vec3 l, vec3 c, float r)
-{
-    float LdotOC = dot(l, o - c);
-    float OC = length(o - c);
-
-    float D = LdotOC * LdotOC - (OC * OC -  r * r);
-    float S = sqrt(D);
-
-    return vec2(-LdotOC - S, -LdotOC + S);
-}
-
 // Refracts the light vector v on a surface with normal n.
 vec3 refractionThin(vec3 v, vec3 n, float ior_1, float ior_2)
 {
@@ -135,16 +121,33 @@ vec3 refractionThin(vec3 v, vec3 n, float ior_1, float ior_2)
     return p;
 }
 
+// vec3 refractionSolidSphere(vec3 r, const vec3 n, float ior_1, float ior_2, float thickness/*, out float dist, out vec3 dir,*/) {
+//     r = refract(r, n, ior_1 / ior_2);
+//     float NoR = dot(n, r);
+//     //dist = thickness * -NoR;
+//     vec3 n1 = normalize(NoR * r - n * 0.5);
+//     return refract(r, n1,  ior_2 / ior_1);
+// }
+
+vec3 refraction(vec3 l, vec3 n, float n1, float n2) {
+    float c = dot(-n, l);
+    float r = n1 / n2;
+    float D = 1.0 - r * r * (1.0 - c * c);
+    return r * l + (r * c - sqrt(D)) * n;
+}
+
 // Refracts the light vector v on a surface with normal n.
 // Assumes that the incident point is tangent to a sphere beneat it with a given diameter.
 // Models the exiting refraction that would be caused by this sphere.
-vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, vec3 n_geom, float diameter)
+vec3 refractionSolidSphere(vec3 v, vec3 N, float ior_1, float ior_2, float thickness, out float dist)
 {
-    float r = diameter / 2.0;
-    vec3 p = normalize(refract(-v, n, ior_1 / ior_2)); // Refracted vector
-    float lambda = sphereLineIntersection(vec3(0), p, -n_geom, r).g;
-    vec3 P = lambda * p; // Exit point
-    vec3 m = normalize(P + r * n_geom); // Sphere normal of the exit point
-    vec3 q = -refract(-p, m, ior_2 / ior_1); // Exit vector
-    return normalize(q);
+    vec3 r = normalize(-v);
+    vec3 r_ = normalize(refraction(normalize(r), normalize(N), ior_1, ior_2));
+    dist = thickness * dot(-N, r_);
+
+    vec3 a = thickness / 2.0 * -N;
+    vec3 b = normalize(dist * r_ - a);
+
+    vec3 q = -refraction(-r_, b, ior_2, ior_1);
+    return q;
 }
