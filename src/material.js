@@ -518,7 +518,7 @@ class gltfMaterial extends GltfObject
 
                 if (transmission === undefined)
                 {
-                    transmission = 1.0;
+                    transmission = 0.0;
                 }
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
