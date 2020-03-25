@@ -96,9 +96,11 @@ uniform float u_IOR;
 // Thickness
 uniform float u_Thickness;
 
+// Absorption
+uniform vec3 u_Absorption;
+
 // Transmission
 uniform float u_TransmissionFactor;
-uniform vec3 u_TransmissionAbsorption;
 
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
@@ -141,8 +143,9 @@ struct MaterialInfo
 
     float thickness;
 
+    vec3 absorption;
+
     float transmissionFactor;
-    vec3 transmissionAbsorption;
 };
 
 vec4 getBaseColor()
@@ -346,9 +349,12 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
 #endif
 
    vec3 specular = specularLight * (brdf.x + brdf.y);
-   vec3 T = exp(-absorption * dist);
-   vec3 attenuatedSpecular = T * specular;
-   return attenuatedSpecular;
+
+   #ifdef MATERIAL_ABSORPTION
+   specular *= exp(-absorption * dist);
+   #endif
+
+   return specular;
 }
 
 vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
@@ -529,7 +535,6 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
     info.transmissionFactor = u_TransmissionFactor;
-    info.transmissionAbsorption = u_TransmissionAbsorption;
 
     return info;
 }
@@ -546,6 +551,17 @@ MaterialInfo getThicknessInfo(MaterialInfo info)
     info.thickness *= texture(u_ThicknessSampler, getThicknessUV()).r;
     #endif
 
+    #endif
+
+    return info;
+}
+
+MaterialInfo getAbsorptionInfo(MaterialInfo info)
+{
+    info.absorption = vec3(0.0);
+
+    #ifdef MATERIAL_ABSORPTION
+    info.absorption = u_Absorption;
     #endif
 
     return info;
@@ -640,6 +656,7 @@ void main()
 #endif
 
     materialInfo = getThicknessInfo(materialInfo);
+    materialInfo = getAbsorptionInfo(materialInfo);
 
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
@@ -689,7 +706,7 @@ void main()
 
     #ifdef MATERIAL_TRANSMISSION
         f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior,
-            materialInfo.baseColor, materialInfo.thickness, materialInfo.transmissionAbsorption);
+            materialInfo.baseColor, materialInfo.thickness, materialInfo.absorption);
     #endif
 #endif
 

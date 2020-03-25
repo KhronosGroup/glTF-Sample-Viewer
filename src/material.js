@@ -492,26 +492,38 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_IOR", ior);
             }
 
+            // KHR Extension: Absorption
+            if (this.extensions.KHR_materials_absorption !== undefined)
+            {
+                let absorption;
+
+                if (this.extensions.KHR_materials_absorption.absorption !== undefined)
+                {
+                    absorption = jsToGl(this.extensions.KHR_materials_absorption.absorption);
+                }
+                else
+                {
+                    absorption = vec3.fromValues(0, 0, 0);
+                }
+
+                this.defines.push("MATERIAL_ABSORPTION 1");
+
+                this.properties.set("u_Absorption", absorption);
+            }
+
             // KHR Extension: Transmission
             if (this.extensions.KHR_materials_transmission !== undefined)
             {
                 let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
-                let transmissionAbsorption = vec3.fromValues(0, 0, 0);
 
                 if (transmissionFactor === undefined)
                 {
                     transmissionFactor = 1.0;
                 }
 
-                if (this.extensions.KHR_materials_transmission.transmissionAbsorption !== undefined)
-                {
-                    transmissionAbsorption = jsToGl(this.extensions.KHR_materials_transmission.transmissionAbsorption);
-                }
-
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
-                this.properties.set("u_TransmissionAbsorption", transmissionAbsorption);
             }
         }
 
