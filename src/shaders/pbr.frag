@@ -100,7 +100,7 @@ uniform float u_Thickness;
 uniform vec3 u_Absorption;
 
 // Transmission
-uniform float u_TransmissionFactor;
+uniform float u_Transmission;
 
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
@@ -145,7 +145,7 @@ struct MaterialInfo
 
     vec3 absorption;
 
-    float transmissionFactor;
+    float transmission;
 };
 
 vec4 getBaseColor()
@@ -531,14 +531,11 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 }
 #endif
 
-#ifdef MATERIAL_TRANSMISSION
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
-    info.transmissionFactor = u_TransmissionFactor;
-
+    info.transmission = u_Transmission;
     return info;
 }
-#endif
 
 MaterialInfo getThicknessInfo(MaterialInfo info)
 {
@@ -783,11 +780,11 @@ vec3 punctualColor = vec3(0.0);
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-#ifdef MATERIAL_TRANSMISSION
-    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
-#else
+    #ifdef MATERIAL_TRANSMISSION
+    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmission);
+    #else
     vec3 diffuse = f_diffuse;
-#endif
+    #endif
 
     color = (f_emissive + diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
