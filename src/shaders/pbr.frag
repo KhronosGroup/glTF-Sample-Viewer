@@ -93,9 +93,11 @@ uniform float u_ThinFilmThicknessMaximum;
 // IOR
 uniform float u_IOR;
 
+// Thickness
+uniform float u_Thickness;
+
 // Transmission
 uniform float u_TransmissionFactor;
-uniform float u_TransmissionThickness;
 uniform vec3 u_TransmissionAbsorption;
 
 // ALPHAMODE_MASK
@@ -137,8 +139,9 @@ struct MaterialInfo
     float thinFilmFactor;
     float thinFilmThickness;
 
+    float thickness;
+
     float transmissionFactor;
-    float transmissionThickness;
     vec3 transmissionAbsorption;
 };
 
@@ -526,17 +529,27 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
     info.transmissionFactor = u_TransmissionFactor;
-    info.transmissionThickness = u_TransmissionThickness;
     info.transmissionAbsorption = u_TransmissionAbsorption;
-
-    #ifdef HAS_TRANSMISSION_THICKNESS_MAP
-        float thicknessSampled = texture(u_TransmissionThicknessSampler, getTransmissionThicknessUV()).r;
-        info.transmissionThickness *= thicknessSampled;
-    #endif
 
     return info;
 }
 #endif
+
+MaterialInfo getThicknessInfo(MaterialInfo info)
+{
+    info.thickness = 1.0;
+
+    #ifdef MATERIAL_THICKNESS
+    info.thickness = u_Thickness;
+
+    #ifdef HAS_THICKNESS_MAP
+    info.thickness *= texture(u_ThicknessSampler, getThicknessUV()).r;
+    #endif
+
+    #endif
+
+    return info;
+}
 
 MaterialInfo getClearCoatInfo(MaterialInfo info)
 {
@@ -626,6 +639,8 @@ void main()
     float ior = 1.0;
 #endif
 
+    materialInfo = getThicknessInfo(materialInfo);
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -674,7 +689,7 @@ void main()
 
     #ifdef MATERIAL_TRANSMISSION
         f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior,
-            materialInfo.baseColor, materialInfo.transmissionThickness, materialInfo.transmissionAbsorption);
+            materialInfo.baseColor, materialInfo.thickness, materialInfo.transmissionAbsorption);
     #endif
 #endif
 
@@ -811,6 +826,10 @@ vec3 punctualColor = vec3(0.0);
 
     #ifdef DEBUG_FDIFFUSE
         g_finalColor.rgb = f_diffuse;
+    #endif
+
+    #ifdef DEBUG_THICKNESS
+        g_finalColor.rgb = vec3(materialInfo.thickness);
     #endif
 
     #ifdef DEBUG_FCLEARCOAT

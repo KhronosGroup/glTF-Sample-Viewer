@@ -443,6 +443,9 @@ class gltfRenderer
         case(DebugOutput.DIFFUSE):
             fragDefines.push("DEBUG_FDIFFUSE 1");
             break;
+        case(DebugOutput.THICKNESS):
+            fragDefines.push("DEBUG_THICKNESS 1");
+            break;
         case(DebugOutput.CLEARCOAT):
             fragDefines.push("DEBUG_FCLEARCOAT 1");
             break;

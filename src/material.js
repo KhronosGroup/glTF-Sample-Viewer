@@ -453,8 +453,32 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_ThinFilmThicknessMaximum", thicknessMaximum);
             }
 
+            // KHR Extension: Thickness
+            if (this.extensions.KHR_materials_thickness !== undefined)
+            {
+                let thickness = this.extensions.KHR_materials_thickness.thickness;
+
+                if (thickness === undefined)
+                {
+                    thickness = 1.0;
+                }
+
+                if (this.thicknessTexture !== undefined)
+                {
+                    this.thicknessTexture.samplerName = "u_ThicknessSampler";
+                    this.parseTextureInfoExtensions(this.thicknessTexture, "Thickness");
+                    this.textures.push(this.thicknessTexture);
+                    this.defines.push("HAS_THICKNESS_MAP 1");
+                    this.properties.set("u_ThicknessUVSet", this.thicknessTexture.texCoord);
+                }
+
+                this.defines.push("MATERIAL_THICKNESS 1");
+
+                this.properties.set("u_Thickness", thickness);
+            }
+
             // KHR Extension: IOR
-            if(this.extensions.KHR_materials_ior !== undefined)
+            if (this.extensions.KHR_materials_ior !== undefined)
             {
                 let ior = this.extensions.KHR_materials_ior.ior;
 
@@ -469,38 +493,24 @@ class gltfMaterial extends GltfObject
             }
 
             // KHR Extension: Transmission
-            if(this.extensions.KHR_materials_transmission !== undefined)
+            if (this.extensions.KHR_materials_transmission !== undefined)
             {
                 let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
-                let transmissionThickness = this.extensions.KHR_materials_transmission.transmissionThickness;
                 let transmissionAbsorption = vec3.fromValues(0, 0, 0);
 
                 if (transmissionFactor === undefined)
                 {
                     transmissionFactor = 1.0;
                 }
-                if (transmissionThickness === undefined)
-                {
-                    transmissionThickness = 1.0;
-                }
+
                 if (this.extensions.KHR_materials_transmission.transmissionAbsorption !== undefined)
                 {
                     transmissionAbsorption = jsToGl(this.extensions.KHR_materials_transmission.transmissionAbsorption);
                 }
 
-                if (this.transmissionThicknessTexture !== undefined)
-                {
-                    this.transmissionThicknessTexture.samplerName = "u_TransmissionThicknessSampler";
-                    this.parseTextureInfoExtensions(this.transmissionThicknessTexture, "TransmissionThickness");
-                    this.textures.push(this.transmissionThicknessTexture);
-                    this.defines.push("HAS_TRANSMISSION_THICKNESS_MAP 1");
-                    this.properties.set("u_TransmissionThicknessUVSet", this.transmissionThicknessTexture.texCoord);
-                }
-
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
-                this.properties.set("u_TransmissionThickness", transmissionThickness);
                 this.properties.set("u_TransmissionAbsorption", transmissionAbsorption);
             }
         }
@@ -589,9 +599,14 @@ class gltfMaterial extends GltfObject
             this.fromJsonThinFilm(jsonExtensions.KHR_materials_thinfilm);
         }
 
-        if(jsonExtensions.KHR_materials_transmission!== undefined)
+        if(jsonExtensions.KHR_materials_transmission !== undefined)
         {
             this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
+        }
+
+        if(jsonExtensions.KHR_materials_thickness !== undefined)
+        {
+            this.fromJsonThickness(jsonExtensions.KHR_materials_thickness);
         }
     }
 
@@ -709,11 +724,15 @@ class gltfMaterial extends GltfObject
 
     fromJsonTransmission(jsonTransmission)
     {
-        if(jsonTransmission.transmissionThicknessTexture !== undefined)
+        jsonTransmission;
+    }
+
+    fromJsonThickness(jsonThickness)
+    {
+        if(jsonThickness.thicknessTexture !== undefined)
         {
-            const transmissionThicknessTexture = new gltfTextureInfo();
-            transmissionThicknessTexture.fromJson(jsonTransmission.transmissionThicknessTexture);
-            this.transmissionThicknessTexture = transmissionThicknessTexture;
+            this.thicknessTexture = new gltfTextureInfo();
+            this.thicknessTexture.fromJson(jsonThickness.thicknessTexture);
         }
     }
 }
