@@ -453,18 +453,28 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_ThinFilmThicknessMaximum", thicknessMaximum);
             }
 
-            // KHR Extension: Transmission
-            if(this.extensions.KHR_materials_transmission !== undefined)
+            // KHR Extension: IOR
+            if(this.extensions.KHR_materials_ior !== undefined)
             {
-                let ior = this.extensions.KHR_materials_transmission.ior;
-                let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
-                let transmissionThickness = this.extensions.KHR_materials_transmission.transmissionThickness;
-                let transmissionAbsorption = vec3.fromValues(0, 0, 0);
+                let ior = this.extensions.KHR_materials_ior.ior;
 
                 if (ior === undefined)
                 {
                     ior = 1.0;
                 }
+
+                this.defines.push("MATERIAL_IOR 1");
+
+                this.properties.set("u_IOR", ior);
+            }
+
+            // KHR Extension: Transmission
+            if(this.extensions.KHR_materials_transmission !== undefined)
+            {
+                let transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
+                let transmissionThickness = this.extensions.KHR_materials_transmission.transmissionThickness;
+                let transmissionAbsorption = vec3.fromValues(0, 0, 0);
+
                 if (transmissionFactor === undefined)
                 {
                     transmissionFactor = 1.0;
@@ -489,7 +499,6 @@ class gltfMaterial extends GltfObject
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
-                this.properties.set("u_TransmissionIor", ior);
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
                 this.properties.set("u_TransmissionThickness", transmissionThickness);
                 this.properties.set("u_TransmissionAbsorption", transmissionAbsorption);

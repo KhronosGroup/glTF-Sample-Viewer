@@ -90,8 +90,10 @@ uniform float u_ThinFilmFactor;
 uniform float u_ThinFilmThicknessMinimum;
 uniform float u_ThinFilmThicknessMaximum;
 
+// IOR
+uniform float u_IOR;
+
 // Transmission
-uniform float u_TransmissionIor;
 uniform float u_TransmissionFactor;
 uniform float u_TransmissionThickness;
 uniform vec3 u_TransmissionAbsorption;
@@ -135,7 +137,6 @@ struct MaterialInfo
     float thinFilmFactor;
     float thinFilmThickness;
 
-    float transmissionIor;
     float transmissionFactor;
     float transmissionThickness;
     vec3 transmissionAbsorption;
@@ -524,7 +525,6 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 #ifdef MATERIAL_TRANSMISSION
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
-    info.transmissionIor = u_TransmissionIor;
     info.transmissionFactor = u_TransmissionFactor;
     info.transmissionThickness = u_TransmissionThickness;
     info.transmissionAbsorption = u_TransmissionAbsorption;
@@ -620,6 +620,12 @@ void main()
     materialInfo = getTransmissionInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_IOR
+    float ior = u_IOR;
+#else
+    float ior = 1.0;
+#endif
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -667,8 +673,8 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness,
-            materialInfo.transmissionIor, materialInfo.baseColor, materialInfo.transmissionThickness, materialInfo.transmissionAbsorption);
+        f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior,
+            materialInfo.baseColor, materialInfo.transmissionThickness, materialInfo.transmissionAbsorption);
     #endif
 #endif
 
