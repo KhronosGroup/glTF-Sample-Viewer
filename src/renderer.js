@@ -280,8 +280,7 @@ class gltfRenderer
         const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
         if (this.parameters.useIBL)
         {
-            const hasSheen = material.extensions != undefined && material.extensions.KHR_materials_sheen !== undefined;
-            this.applyEnvironmentMap(gltf, envData, material.textures.length, hasSheen, hasThinFilm);
+            this.applyEnvironmentMap(gltf, envData, material.textures.length);
         }
         else if (hasThinFilm)
         {
@@ -514,14 +513,14 @@ class gltfRenderer
         scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
         scene.envData.lut.generateMips = false;
 
-		scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
-		scene.envData.sheenLUT.generateMips = false;
+        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
+        scene.envData.sheenLUT.generateMips = false;
 
-		scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
-		scene.envData.thinFilmLUT.generateMips = false;
+        scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.thinFilmLUT.generateMips = false;
     }
 
-    applyEnvironmentMap(gltf, envData, texSlotOffset, hasSheen, hasThinFilm)
+    applyEnvironmentMap(gltf, envData, texSlotOffset)
     {
         WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
 
@@ -531,7 +530,7 @@ class gltfRenderer
         WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
         WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
 
-		WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
+        WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
