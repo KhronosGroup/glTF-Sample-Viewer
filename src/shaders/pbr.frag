@@ -330,7 +330,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, float thickness, vec3 absorption)
+vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, vec3 absorption)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -340,7 +340,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     float dist;
-    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, thickness, dist);
+    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, 1.0, dist);
     vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
     vec3 specularLight = specularSample.rgb;
 
@@ -703,7 +703,7 @@ void main()
 
     #ifdef MATERIAL_TRANSMISSION
         f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior,
-            materialInfo.baseColor, materialInfo.thickness, materialInfo.absorption);
+            materialInfo.baseColor, materialInfo.absorption);
     #endif
 #endif
 

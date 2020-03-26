@@ -132,20 +132,18 @@ vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thick
 {
     bool internal_reflection;
 
-    vec3 r = -v;
-    vec3 r_ = refraction(r, n, ior_1, ior_2, internal_reflection);
+    vec3 r = refraction(-v, n, ior_1, ior_2, internal_reflection);
     if (internal_reflection) {
         return reflect(-v, n);
     }
 
-    dist = thickness * dot(-n, r_);
+    dist = thickness * dot(-n, r);
 
-    vec3 a = thickness / 2.0 * -n;
-    vec3 b = normalize(dist * r_ - a);
+    vec3 m = 2.0 * dot(-n, r) * r + n; // The exit normal does not depend on the sphere radius.
 
-    vec3 q = -refraction(-r_, b, ior_2, ior_1, internal_reflection);
+    vec3 rr = -refraction(-r, m, ior_2, ior_1, internal_reflection);
     if (internal_reflection) {
         return reflect(-v, n);
     }
-    return q;
+    return rr;
 }
