@@ -97,7 +97,7 @@ uniform float u_IOR;
 uniform float u_Thickness;
 
 // Absorption
-uniform vec3 u_Absorption;
+uniform vec3 u_AbsorptionColor;
 
 // Transmission
 uniform float u_Transmission;
@@ -558,7 +558,7 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
     info.absorption = vec3(0.0);
 
     #ifdef MATERIAL_ABSORPTION
-    info.absorption = u_Absorption;
+    info.absorption = u_AbsorptionColor;
     #endif
 
     return info;

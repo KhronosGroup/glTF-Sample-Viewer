@@ -495,20 +495,20 @@ class gltfMaterial extends GltfObject
             // KHR Extension: Absorption
             if (this.extensions.KHR_materials_absorption !== undefined)
             {
-                let absorption;
+                let absorptionColor;
 
-                if (this.extensions.KHR_materials_absorption.absorption !== undefined)
+                if (this.extensions.KHR_materials_absorption.absorptionColor !== undefined)
                 {
-                    absorption = jsToGl(this.extensions.KHR_materials_absorption.absorption);
+                    absorptionColor = jsToGl(this.extensions.KHR_materials_absorption.absorptionColor);
                 }
                 else
                 {
-                    absorption = vec3.fromValues(0, 0, 0);
+                    absorptionColor = vec3.fromValues(0, 0, 0);
                 }
 
                 this.defines.push("MATERIAL_ABSORPTION 1");
 
-                this.properties.set("u_Absorption", absorption);
+                this.properties.set("u_AbsorptionColor", absorptionColor);
             }
 
             // KHR Extension: Transmission
