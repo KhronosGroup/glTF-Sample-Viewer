@@ -123,12 +123,7 @@ vec3 refraction(vec3 l, vec3 n, float n1, float n2, out bool internal_reflection
     return normalize(q);
 }
 
-// Refracts the light vector v on a surface with normal n.
-// Assumes that the incident point is tangent to a sphere beneat it with a given thickness.
-// Models the exiting refraction that would be caused by this sphere.
-// Writes the travel distance through the medium by the refracted ray into `dist`.
-// Returns the double-refracted ray.
-vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thickness, out float dist)
+vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2)
 {
     bool internal_reflection;
 
@@ -137,8 +132,6 @@ vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thick
         return reflect(-v, n);
     }
 
-    dist = thickness * dot(-n, r);
-
     vec3 m = 2.0 * dot(-n, r) * r + n; // The exit normal does not depend on the sphere radius.
 
     vec3 rr = -refraction(-r, m, ior_2, ior_1, internal_reflection);
@@ -146,4 +139,11 @@ vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thick
         return reflect(-v, n);
     }
     return rr;
+}
+
+float refractionDistanceSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thickness)
+{
+    bool internal_reflection;
+    vec3 r = refraction(-v, n, ior_1, ior_2, internal_reflection);
+    return thickness * dot(-n, r);
 }

@@ -330,7 +330,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor, vec3 absorption)
+vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -339,8 +339,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
 
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    float dist;
-    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior, 1.0, dist);
+    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior);
     vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
     vec3 specularLight = specularSample.rgb;
 
@@ -348,13 +347,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
     specularLight = SRGBtoLINEAR(specularLight);
 #endif
 
-   vec3 specular = specularLight * (brdf.x + brdf.y);
-
-   #ifdef MATERIAL_ABSORPTION
-   specular *= exp(-absorption * dist);
-   #endif
-
-   return specular;
+   return specularLight * (brdf.x + brdf.y);
 }
 
 vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
@@ -702,8 +695,12 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior,
-            materialInfo.baseColor, materialInfo.absorption);
+        f_transmission = getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
+
+        #ifdef MATERIAL_ABSORPTION
+            float refraction_distance = refractionDistanceSolidSphere(view, normal, 1.0, ior, materialInfo.thickness);
+            f_transmission *= exp(-materialInfo.absorption * refraction_distance);
+        #endif
     #endif
 #endif
 
