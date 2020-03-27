@@ -350,6 +350,20 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
    return specularLight * (brdf.x + brdf.y);
 }
 
+vec3 getTransmissionRadiance(vec3 v, vec3 n, vec3 l, float alphaRoughness, float ior, vec3 f0)
+{
+    vec3 v_r = refract(-v, n, 1.0 / ior);
+    vec3 h = normalize(l - v_r);
+    float NdotL = clampedDot(-n, l);
+    float NdotH = clampedDot(n, h);
+    float NdotV = clampedDot(n, -v_r);
+
+    float Vis = V_GGX(clampedDot(-n, l), NdotV, alphaRoughness);
+    float D = D_GGX(clampedDot(v_r, l), alphaRoughness);
+
+    return NdotL * f0 * Vis * D;
+}
+
 vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
 {
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
@@ -696,10 +710,6 @@ void main()
 
     #ifdef MATERIAL_TRANSMISSION
         f_transmission = getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
-
-        #ifdef MATERIAL_ABSORPTION
-            f_transmission *= lightAbsorption(refractionDistanceSolidSphere(view, normal, 1.0, ior, materialInfo.thickness), materialInfo.absorption);
-        #endif
     #endif
 #endif
 
@@ -754,6 +764,12 @@ vec3 punctualColor = vec3(0.0);
         #ifdef MATERIAL_SUBSURFACE
             f_subsurface += intensity * subsurfaceNonBRDF(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
         #endif
+
+        #ifdef MATERIAL_TRANSMISSION
+        {
+            f_transmission += intensity * getTransmissionRadiance(view, normal, normalize(pointToLight), materialInfo.alphaRoughness, ior, materialInfo.f0);
+        }
+        #endif
     }
 #endif // !USE_PUNCTUAL
 
@@ -774,6 +790,10 @@ vec3 punctualColor = vec3(0.0);
     #ifdef MATERIAL_CLEARCOAT
         clearcoatFactor = materialInfo.clearcoatFactor;
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+    #endif
+
+    #ifdef MATERIAL_ABSORPTION
+        f_transmission *= lightAbsorption(refractionDistanceSolidSphere(view, normal, 1.0, ior, materialInfo.thickness), materialInfo.absorption);
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
