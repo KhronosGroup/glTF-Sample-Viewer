@@ -698,8 +698,7 @@ void main()
         f_transmission = getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
 
         #ifdef MATERIAL_ABSORPTION
-            float refraction_distance = refractionDistanceSolidSphere(view, normal, 1.0, ior, materialInfo.thickness);
-            f_transmission *= exp(-materialInfo.absorption * refraction_distance);
+            f_transmission *= lightAbsorption(refractionDistanceSolidSphere(view, normal, 1.0, ior, materialInfo.thickness), materialInfo.absorption);
         #endif
     #endif
 #endif

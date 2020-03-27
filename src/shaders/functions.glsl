@@ -147,3 +147,8 @@ float refractionDistanceSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, fl
     vec3 r = refraction(-v, n, ior_1, ior_2, internal_reflection);
     return thickness * dot(-n, r);
 }
+
+vec3 lightAbsorption(float mediumTravelDistance, vec3 absorptionColor)
+{
+    return exp(-absorptionColor * mediumTravelDistance);
+}
