@@ -114,37 +114,17 @@ float clampedDot(vec3 x, vec3 y)
     return clamp(dot(x, y), 0.0, 1.0);
 }
 
-vec3 refraction(vec3 l, vec3 n, float n1, float n2, out bool internal_reflection) {
-    float c = dot(-n, l);
-    float r = n1 / n2;
-    float D = 1.0 - r * r * (1.0 - c * c);
-    internal_reflection = D < 0.0;
-    vec3 q = r * l + (r * c - sqrt(D)) * n;
-    return normalize(q);
-}
-
 vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2)
 {
-    bool internal_reflection;
-
-    vec3 r = refraction(-v, n, ior_1, ior_2, internal_reflection);
-    if (internal_reflection) {
-        return reflect(-v, n);
-    }
-
-    vec3 m = 2.0 * dot(-n, r) * r + n; // The exit normal does not depend on the sphere radius.
-
-    vec3 rr = -refraction(-r, m, ior_2, ior_1, internal_reflection);
-    if (internal_reflection) {
-        return reflect(-v, n);
-    }
+    vec3 r = refract(-v, n, ior_1 / ior_2);
+    vec3 m = 2.0 * dot(-n, r) * r + n;
+    vec3 rr = -refract(-r, m, ior_2 / ior_1);
     return rr;
 }
 
 float refractionDistanceSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thickness)
 {
-    bool internal_reflection;
-    vec3 r = refraction(-v, n, ior_1, ior_2, internal_reflection);
+    vec3 r = refract(-v, n, ior_1 / ior_2);
     return thickness * dot(-n, r);
 }
 
