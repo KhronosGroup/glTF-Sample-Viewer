@@ -330,7 +330,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
+vec3 getTransmissionIrradianceIBL(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -339,8 +339,13 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
 
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 sampleDirection = refractionSolidSphere(v, n, 1.0, ior);
-    vec4 specularSample = textureLod(u_GGXEnvSampler, sampleDirection, lod);
+
+    // Approximate double refraction by assuming a solid sphere beneath the point.
+    vec3 r = refract(-v, n, 1.0 / ior);
+    vec3 m = 2.0 * dot(-n, r) * r + n;
+    vec3 rr = -refract(-r, m, ior);
+
+    vec4 specularSample = textureLod(u_GGXEnvSampler, rr, lod);
     vec3 specularLight = specularSample.rgb;
 
 #ifndef USE_HDR
@@ -350,7 +355,7 @@ vec3 getTransmissionIBLContribution(vec3 n, vec3 v, float perceptualRoughness, f
    return specularLight * (brdf.x + brdf.y);
 }
 
-vec3 getTransmissionRadiance(vec3 v, vec3 n, vec3 l, float alphaRoughness, float ior, vec3 f0)
+vec3 getTransmissionIrradianceAnalytical(vec3 v, vec3 n, vec3 l, float alphaRoughness, float ior, vec3 f0)
 {
     vec3 v_r = refract(-v, n, 1.0 / ior);
     vec3 h = normalize(l - v_r);
@@ -709,7 +714,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission = getTransmissionIBLContribution(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
+        f_transmission += getTransmissionIrradianceIBL(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
     #endif
 #endif
 
@@ -766,9 +771,7 @@ vec3 punctualColor = vec3(0.0);
         #endif
 
         #ifdef MATERIAL_TRANSMISSION
-        {
-            f_transmission += intensity * getTransmissionRadiance(view, normal, normalize(pointToLight), materialInfo.alphaRoughness, ior, materialInfo.f0);
-        }
+            f_transmission += intensity * getTransmissionIrradianceAnalytical(view, normal, normalize(pointToLight), materialInfo.alphaRoughness, ior, materialInfo.f0);
         #endif
     }
 #endif // !USE_PUNCTUAL
@@ -793,7 +796,7 @@ vec3 punctualColor = vec3(0.0);
     #endif
 
     #ifdef MATERIAL_ABSORPTION
-        f_transmission *= lightAbsorption(refractionDistanceSolidSphere(view, normal, 1.0, ior, materialInfo.thickness), materialInfo.absorption);
+        f_transmission *= transmissionAbsorption(view, normal, ior, materialInfo.thickness, materialInfo.absorption);
     #endif
 
     #ifdef MATERIAL_TRANSMISSION

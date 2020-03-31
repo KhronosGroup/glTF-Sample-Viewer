@@ -114,21 +114,8 @@ float clampedDot(vec3 x, vec3 y)
     return clamp(dot(x, y), 0.0, 1.0);
 }
 
-vec3 refractionSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2)
+vec3 transmissionAbsorption(vec3 v, vec3 n, float ior, float thickness, vec3 absorptionColor)
 {
-    vec3 r = refract(-v, n, ior_1 / ior_2);
-    vec3 m = 2.0 * dot(-n, r) * r + n;
-    vec3 rr = -refract(-r, m, ior_2 / ior_1);
-    return rr;
-}
-
-float refractionDistanceSolidSphere(vec3 v, vec3 n, float ior_1, float ior_2, float thickness)
-{
-    vec3 r = refract(-v, n, ior_1 / ior_2);
-    return thickness * dot(-n, r);
-}
-
-vec3 lightAbsorption(float mediumTravelDistance, vec3 absorptionColor)
-{
-    return exp(-absorptionColor * mediumTravelDistance);
+    vec3 r = refract(-v, n, 1.0 / ior);
+    return exp(-absorptionColor * thickness * dot(-n, r));
 }
