@@ -718,8 +718,6 @@ void main()
     #endif
 #endif
 
-vec3 punctualColor = vec3(0.0);
-
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
