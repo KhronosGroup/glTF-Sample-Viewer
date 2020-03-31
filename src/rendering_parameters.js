@@ -54,9 +54,11 @@ const DebugOutput =
     EMISSIVE: "Emissive",
     DIFFUSE: "Diffuse",
     SPECULAR: "Specular",
+    THICKNESS: "Thickness",
     CLEARCOAT: "ClearCoat",
     SHEEN: "Sheen",
     SUBSURFACE: "Subsurface",
+    TRANSMISSION: "Transmission",
     ALPHA: "Alpha",
     F0: "F0"
 };

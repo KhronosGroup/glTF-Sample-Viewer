@@ -465,6 +465,79 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_ThinFilmFactor", factor);
                 this.properties.set("u_ThinFilmThicknessMaximum", thicknessMaximum);
             }
+
+            // KHR Extension: Thickness
+            if (this.extensions.KHR_materials_thickness !== undefined)
+            {
+                let thickness = this.extensions.KHR_materials_thickness.thickness;
+
+                if (thickness === undefined)
+                {
+                    thickness = 1.0;
+                }
+
+                if (this.thicknessTexture !== undefined)
+                {
+                    this.thicknessTexture.samplerName = "u_ThicknessSampler";
+                    this.parseTextureInfoExtensions(this.thicknessTexture, "Thickness");
+                    this.textures.push(this.thicknessTexture);
+                    this.defines.push("HAS_THICKNESS_MAP 1");
+                    this.properties.set("u_ThicknessUVSet", this.thicknessTexture.texCoord);
+                }
+
+                this.defines.push("MATERIAL_THICKNESS 1");
+
+                this.properties.set("u_Thickness", thickness);
+            }
+
+            // KHR Extension: IOR
+            if (this.extensions.KHR_materials_ior !== undefined)
+            {
+                let ior = this.extensions.KHR_materials_ior.ior;
+
+                if (ior === undefined)
+                {
+                    ior = 1.0;
+                }
+
+                this.defines.push("MATERIAL_IOR 1");
+
+                this.properties.set("u_IOR", ior);
+            }
+
+            // KHR Extension: Absorption
+            if (this.extensions.KHR_materials_absorption !== undefined)
+            {
+                let absorptionColor;
+
+                if (this.extensions.KHR_materials_absorption.absorptionColor !== undefined)
+                {
+                    absorptionColor = jsToGl(this.extensions.KHR_materials_absorption.absorptionColor);
+                }
+                else
+                {
+                    absorptionColor = vec3.fromValues(0, 0, 0);
+                }
+
+                this.defines.push("MATERIAL_ABSORPTION 1");
+
+                this.properties.set("u_AbsorptionColor", absorptionColor);
+            }
+
+            // KHR Extension: Transmission
+            if (this.extensions.KHR_materials_transmission !== undefined)
+            {
+                let transmission = this.extensions.KHR_materials_transmission.transmission;
+
+                if (transmission === undefined)
+                {
+                    transmission = 0.0;
+                }
+
+                this.defines.push("MATERIAL_TRANSMISSION 1");
+
+                this.properties.set("u_Transmission", transmission);
+            }
         }
 
         initGlForMembers(this, gltf);
@@ -549,6 +622,16 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_thinfilm !== undefined)
         {
             this.fromJsonThinFilm(jsonExtensions.KHR_materials_thinfilm);
+        }
+
+        if(jsonExtensions.KHR_materials_transmission !== undefined)
+        {
+            this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
+        }
+
+        if(jsonExtensions.KHR_materials_thickness !== undefined)
+        {
+            this.fromJsonThickness(jsonExtensions.KHR_materials_thickness);
         }
     }
 
@@ -661,6 +744,20 @@ class gltfMaterial extends GltfObject
             const thinfilmThicknessTexture = new gltfTextureInfo();
             thinfilmThicknessTexture.fromJson(jsonThinFilm.thinfilmThicknessTexture);
             this.thinfilmThicknessTexture = thinfilmThicknessTexture;
+        }
+    }
+
+    fromJsonTransmission(jsonTransmission)
+    {
+        jsonTransmission;
+    }
+
+    fromJsonThickness(jsonThickness)
+    {
+        if(jsonThickness.thicknessTexture !== undefined)
+        {
+            this.thicknessTexture = new gltfTextureInfo();
+            this.thicknessTexture.fromJson(jsonThickness.thicknessTexture);
         }
     }
 }

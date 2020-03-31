@@ -90,6 +90,18 @@ uniform float u_ThinFilmFactor;
 uniform float u_ThinFilmThicknessMinimum;
 uniform float u_ThinFilmThicknessMaximum;
 
+// IOR
+uniform float u_IOR;
+
+// Thickness
+uniform float u_Thickness;
+
+// Absorption
+uniform vec3 u_AbsorptionColor;
+
+// Transmission
+uniform float u_Transmission;
+
 // ALPHAMODE_MASK
 uniform float u_AlphaCutoff;
 
@@ -128,6 +140,12 @@ struct MaterialInfo
 
     float thinFilmFactor;
     float thinFilmThickness;
+
+    float thickness;
+
+    vec3 absorption;
+
+    float transmission;
 };
 
 vec4 getBaseColor()
@@ -312,6 +330,45 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
+vec3 getTransmissionIrradianceIBL(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
+{
+    // Sample GGX LUT.
+    float NdotV = clampedDot(n, v);
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
+
+    // Sample GGX environment map.
+    float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+
+    // Approximate double refraction by assuming a solid sphere beneath the point.
+    vec3 r = refract(-v, n, 1.0 / ior);
+    vec3 m = 2.0 * dot(-n, r) * r + n;
+    vec3 rr = -refract(-r, m, ior);
+
+    vec4 specularSample = textureLod(u_GGXEnvSampler, rr, lod);
+    vec3 specularLight = specularSample.rgb;
+
+#ifndef USE_HDR
+    specularLight = SRGBtoLINEAR(specularLight);
+#endif
+
+   return specularLight * (brdf.x + brdf.y);
+}
+
+vec3 getTransmissionIrradianceAnalytical(vec3 v, vec3 n, vec3 l, float alphaRoughness, float ior, vec3 f0)
+{
+    vec3 v_r = refract(-v, n, 1.0 / ior);
+    vec3 h = normalize(l - v_r);
+    float NdotL = clampedDot(-n, l);
+    float NdotH = clampedDot(n, h);
+    float NdotV = clampedDot(n, -v_r);
+
+    float Vis = V_GGX(clampedDot(-n, l), NdotV, alphaRoughness);
+    float D = D_GGX(clampedDot(v_r, l), alphaRoughness);
+
+    return NdotL * f0 * Vis * D;
+}
+
 vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
 {
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
@@ -486,6 +543,39 @@ MaterialInfo getThinFilmInfo(MaterialInfo info)
 }
 #endif
 
+MaterialInfo getTransmissionInfo(MaterialInfo info)
+{
+    info.transmission = u_Transmission;
+    return info;
+}
+
+MaterialInfo getThicknessInfo(MaterialInfo info)
+{
+    info.thickness = 1.0;
+
+    #ifdef MATERIAL_THICKNESS
+    info.thickness = u_Thickness;
+
+    #ifdef HAS_THICKNESS_MAP
+    info.thickness *= texture(u_ThicknessSampler, getThicknessUV()).r;
+    #endif
+
+    #endif
+
+    return info;
+}
+
+MaterialInfo getAbsorptionInfo(MaterialInfo info)
+{
+    info.absorption = vec3(0.0);
+
+    #ifdef MATERIAL_ABSORPTION
+    info.absorption = u_AbsorptionColor;
+    #endif
+
+    return info;
+}
+
 MaterialInfo getClearCoatInfo(MaterialInfo info)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
@@ -564,6 +654,19 @@ void main()
     materialInfo = getClearCoatInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_TRANSMISSION
+    materialInfo = getTransmissionInfo(materialInfo);
+#endif
+
+#ifdef MATERIAL_IOR
+    float ior = u_IOR;
+#else
+    float ior = 1.0;
+#endif
+
+    materialInfo = getThicknessInfo(materialInfo);
+    materialInfo = getAbsorptionInfo(materialInfo);
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -589,10 +692,12 @@ void main()
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
     vec3 f_subsurface = vec3(0.0);
+    vec3 f_transmission = vec3(0.0);
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, clampedDot(normal, view), materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
+
     f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
     f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
 
@@ -607,9 +712,11 @@ void main()
     #ifdef MATERIAL_SUBSURFACE
         f_subsurface += getSubsurfaceIBLContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, -view, normal, view);
     #endif
-#endif
 
-vec3 punctualColor = vec3(0.0);
+    #ifdef MATERIAL_TRANSMISSION
+        f_transmission += getTransmissionIrradianceIBL(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
+    #endif
+#endif
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
@@ -660,6 +767,10 @@ vec3 punctualColor = vec3(0.0);
         #ifdef MATERIAL_SUBSURFACE
             f_subsurface += intensity * subsurfaceNonBRDF(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
         #endif
+
+        #ifdef MATERIAL_TRANSMISSION
+            f_transmission += intensity * getTransmissionIrradianceAnalytical(view, normal, normalize(pointToLight), materialInfo.alphaRoughness, ior, materialInfo.f0);
+        #endif
     }
 #endif // !USE_PUNCTUAL
 
@@ -682,7 +793,17 @@ vec3 punctualColor = vec3(0.0);
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
     #endif
 
-    color = (f_emissive + f_diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    #ifdef MATERIAL_ABSORPTION
+        f_transmission *= transmissionAbsorption(view, normal, ior, materialInfo.thickness, materialInfo.absorption);
+    #endif
+
+    #ifdef MATERIAL_TRANSMISSION
+    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmission);
+    #else
+    vec3 diffuse = f_diffuse;
+    #endif
+
+    color = (f_emissive + diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
@@ -738,6 +859,10 @@ vec3 punctualColor = vec3(0.0);
         g_finalColor.rgb = f_diffuse;
     #endif
 
+    #ifdef DEBUG_THICKNESS
+        g_finalColor.rgb = vec3(materialInfo.thickness);
+    #endif
+
     #ifdef DEBUG_FCLEARCOAT
         g_finalColor.rgb = f_clearcoat;
     #endif
@@ -752,6 +877,10 @@ vec3 punctualColor = vec3(0.0);
 
     #ifdef DEBUG_FSUBSURFACE
         g_finalColor.rgb = f_subsurface;
+    #endif
+
+    #ifdef DEBUG_FTRANSMISSION
+        g_finalColor.rgb = LINEARtoSRGB(f_transmission);
     #endif
 
     g_finalColor.a = 1.0;

@@ -85,6 +85,11 @@ uniform sampler2D u_ThinFilmThicknessSampler;
 uniform int u_ThinFilmThicknessUVSet;
 uniform mat3 u_ThinFilmThicknessUVTransform;
 
+// Thickness:
+uniform sampler2D u_ThicknessSampler;
+uniform int u_ThicknessUVSet;
+uniform mat3 u_ThicknessUVTransform;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -242,6 +247,17 @@ vec2 getThinFilmThicknessUV()
 
     #ifdef HAS_THIN_FILM_THICKNESS_UV_TRANSFORM
     uv *= u_ThinFilmThicknessUVTransform;
+    #endif
+
+    return uv.xy;
+}
+
+vec2 getThicknessUV()
+{
+    vec3 uv = vec3(u_ThicknessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+
+    #ifdef HAS_THICKNESS_UV_TRANSFORM
+    uv *= u_ThicknessUVTransform;
     #endif
 
     return uv.xy;
