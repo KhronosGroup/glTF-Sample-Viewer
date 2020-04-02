@@ -464,6 +464,7 @@ void main()
             spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
         }
 
+        vec3 l = normalize(pointToLight);
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
 
         AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
@@ -482,20 +483,19 @@ void main()
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                f_clearcoat += intensity * getClearCoatPunctualIrradiance(materialInfo.clearcoatNormal, view, pointToLight,
+                f_clearcoat += intensity * getClearCoatPunctualIrradiance(materialInfo.clearcoatNormal, view, l,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
 
         #ifdef MATERIAL_SUBSURFACE
-            f_subsurface += intensity * getSubsurfacePunctualIrradiance(normal, view, normalize(pointToLight),
+            f_subsurface += intensity * getSubsurfacePunctualIrradiance(normal, view, l,
                 materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower,
                 materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
         #endif
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getTransmissionPunctualIrradiance(normal, view, normalize(pointToLight),
-                materialInfo.alphaRoughness, ior, materialInfo.f0);
+            f_transmission += intensity * getTransmissionPunctualIrradiance(normal, view, l, materialInfo.alphaRoughness, ior, materialInfo.f0);
         #endif
     }
 #endif // !USE_PUNCTUAL
