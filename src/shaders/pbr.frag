@@ -137,9 +137,9 @@ vec4 getBaseColor()
     #endif
 
     #if defined(MATERIAL_SPECULARGLOSSINESS) && defined(HAS_DIFFUSE_MAP)
-        baseColor *= SRGBtoLINEAR(texture(u_DiffuseSampler, getDiffuseUV()));
+        baseColor *= sRGBToLinear(texture(u_DiffuseSampler, getDiffuseUV()));
     #elif defined(MATERIAL_METALLICROUGHNESS) && defined(HAS_BASE_COLOR_MAP)
-        baseColor *= SRGBtoLINEAR(texture(u_BaseColorSampler, getBaseColorUV()));
+        baseColor *= sRGBToLinear(texture(u_BaseColorSampler, getBaseColorUV()));
     #endif
 
     return baseColor * getVertexColor();
@@ -164,7 +164,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     info.perceptualRoughness = u_GlossinessFactor;
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = SRGBtoLINEAR(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
+    vec4 sgSample = sRGBToLinear(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
     info.perceptualRoughness *= sgSample.a ; // glossiness to roughness
     info.f0 *= sgSample.rgb; // specular
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
@@ -344,7 +344,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
-    g_finalColor = (vec4(LINEARtoSRGB(baseColor.rgb), baseColor.a));
+    g_finalColor = (vec4(linearTosRGB(baseColor.rgb), baseColor.a));
     return;
 #endif
 
@@ -502,7 +502,7 @@ void main()
 
     f_emissive = u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
-    f_emissive *= SRGBtoLINEAR(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
+    f_emissive *= sRGBToLinear(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
 #endif
 
     vec3 color = vec3(0);
@@ -562,7 +562,7 @@ void main()
     #endif
 
     #ifdef DEBUG_BASECOLOR
-        g_finalColor.rgb = LINEARtoSRGB(materialInfo.baseColor);
+        g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
     #endif
 
     #ifdef DEBUG_OCCLUSION
@@ -606,7 +606,7 @@ void main()
     #endif
 
     #ifdef DEBUG_FTRANSMISSION
-        g_finalColor.rgb = LINEARtoSRGB(f_transmission);
+        g_finalColor.rgb = linearTosRGB(f_transmission);
     #endif
 
     g_finalColor.a = 1.0;

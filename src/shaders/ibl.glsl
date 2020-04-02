@@ -12,7 +12,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
     vec3 specularLight = specularSample.rgb;
 
 #ifndef USE_HDR
-    specularLight = SRGBtoLINEAR(specularLight);
+    specularLight = sRGBToLinear(specularLight);
 #endif
 
    return specularLight * (specularColor * brdf.x + brdf.y);
@@ -37,7 +37,7 @@ vec3 getTransmissionIrradianceIBL(vec3 n, vec3 v, float perceptualRoughness, flo
     vec3 specularLight = specularSample.rgb;
 
 #ifndef USE_HDR
-    specularLight = SRGBtoLINEAR(specularLight);
+    specularLight = sRGBToLinear(specularLight);
 #endif
 
    return specularLight * (brdf.x + brdf.y);
@@ -48,7 +48,7 @@ vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
     #ifndef USE_HDR
-        diffuseLight = SRGBtoLINEAR(diffuseLight);
+        diffuseLight = sRGBToLinear(diffuseLight);
     #endif
 
     return diffuseLight * diffuseColor;
@@ -67,7 +67,7 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     vec3 sheenLight = sheenSample.rgb;
 
     #ifndef USE_HDR
-    sheenLight = SRGBtoLINEAR(sheenLight);
+    sheenLight = sRGBToLinear(sheenLight);
     #endif
 
     return sheenIntensity * sheenLight * sheenColor * brdf;
@@ -78,7 +78,7 @@ vec3 getSubsurfaceIrradianceIBL(vec3 n, vec3 v, float scale, float distortion, f
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
     #ifndef USE_HDR
-        diffuseLight = SRGBtoLINEAR(diffuseLight);
+        diffuseLight = sRGBToLinear(diffuseLight);
     #endif
 
     return diffuseLight * getSubsurfacePunctualIrradiance(n, v, -v, scale, distortion, power, color, thickness);
