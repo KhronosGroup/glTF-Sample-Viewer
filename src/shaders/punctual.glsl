@@ -47,6 +47,14 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
+vec3 getSubsurfacePunctualIrradiance(vec3 n, vec3 v, vec3 l, float scale, float distortion, float power, vec3 color, float thickness)
+{
+    vec3 distortedHalfway = l + n * distortion;
+    float backIntensity = max(0.0, dot(v, -distortedHalfway));
+    float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
+    return (reverseDiffuse + color) * (1.0 - thickness);
+}
+
 vec3 getTransmissionPunctualIrradiance(vec3 n, vec3 v, vec3 l, float alphaRoughness, float ior, vec3 f0)
 {
     vec3 r = refract(-v, n, 1.0 / ior);

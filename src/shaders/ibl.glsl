@@ -73,13 +73,13 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     return sheenIntensity * sheenLight * sheenColor * brdf;
 }
 
-vec3 getSubsurfaceIBLContribution(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
+vec3 getSubsurfaceIrradianceIBL(vec3 n, vec3 v, float scale, float distortion, float power, vec3 color, float thickness)
 {
-    vec3 diffuseLight = texture(u_LambertianEnvSampler, normal).rgb;
+    vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
     #ifndef USE_HDR
         diffuseLight = SRGBtoLINEAR(diffuseLight);
     #endif
 
-    return diffuseLight * subsurfaceNonBRDF(scale, distortion, power, color, thickness, light, normal, viewer);
+    return diffuseLight * getSubsurfacePunctualIrradiance(n, v, -v, scale, distortion, power, color, thickness);
 }

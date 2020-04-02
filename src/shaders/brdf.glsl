@@ -122,11 +122,3 @@ vec3 metallicBRDF(vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float Nd
 
     return F * Vis * D;
 }
-
-vec3 subsurfaceNonBRDF(float scale, float distortion, float power, vec3 color, float thickness, vec3 light, vec3 normal, vec3 viewer)
-{
-    vec3 distortedHalfway = light + normal * distortion;
-    float backIntensity = max(0.0, dot(viewer, -distortedHalfway));
-    float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
-    return(reverseDiffuse + color) * (1.0 - thickness);
-}

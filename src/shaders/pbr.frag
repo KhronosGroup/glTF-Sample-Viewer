@@ -432,7 +432,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_SUBSURFACE
-        f_subsurface += getSubsurfaceIBLContribution(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, -view, normal, view);
+        f_subsurface += getSubsurfaceIrradianceIBL(normal, view, materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
@@ -487,7 +487,9 @@ void main()
         }
 
         #ifdef MATERIAL_SUBSURFACE
-            f_subsurface += intensity * subsurfaceNonBRDF(materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness, normalize(pointToLight), normal, view);
+            f_subsurface += intensity * getSubsurfacePunctualIrradiance(normal, view, normalize(pointToLight),
+                materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower,
+                materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
         #endif
 
         #ifdef MATERIAL_TRANSMISSION
