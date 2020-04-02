@@ -1,5 +1,5 @@
 
-vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
+vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
 {
     float NdotV = clampedDot(n, v);
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
@@ -18,7 +18,7 @@ vec3 getGGXIBLContribution(vec3 n, vec3 v, float perceptualRoughness, vec3 specu
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getTransmissionIrradianceIBL(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
+vec3 getIBLRadianceTransmission(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
@@ -43,7 +43,7 @@ vec3 getTransmissionIrradianceIBL(vec3 n, vec3 v, float perceptualRoughness, flo
    return specularLight * (brdf.x + brdf.y);
 }
 
-vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
+vec3 getIBLRadianceLambertian(vec3 n, vec3 diffuseColor)
 {
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 
@@ -54,7 +54,7 @@ vec3 getLambertianIBLContribution(vec3 n, vec3 diffuseColor)
     return diffuseLight * diffuseColor;
 }
 
-vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
+vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
 {
     float NdotV = clampedDot(n, v);
     float lod = clamp(sheenRoughness * float(u_MipCount), 0.0, float(u_MipCount));
@@ -73,7 +73,7 @@ vec3 getCharlieIBLContribution(vec3 n, vec3 v, float sheenRoughness, vec3 sheenC
     return sheenIntensity * sheenLight * sheenColor * brdf;
 }
 
-vec3 getSubsurfaceIrradianceIBL(vec3 n, vec3 v, float scale, float distortion, float power, vec3 color, float thickness)
+vec3 getIBLRadianceSubsurface(vec3 n, vec3 v, float scale, float distortion, float power, vec3 color, float thickness)
 {
     vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
 

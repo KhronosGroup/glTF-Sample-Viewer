@@ -420,23 +420,23 @@ void main()
 #ifdef USE_IBL
     vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, clampedDot(normal, view), materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
 
-    f_specular += getGGXIBLContribution(normal, view, materialInfo.perceptualRoughness, specularColor);
-    f_diffuse += getLambertianIBLContribution(normal, materialInfo.albedoColor);
+    f_specular += getIBLRadianceGGX(normal, view, materialInfo.perceptualRoughness, specularColor);
+    f_diffuse += getIBLRadianceLambertian(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getGGXIBLContribution(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
+        f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getCharlieIBLContribution(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+        f_sheen += getIBLRadianceCharlie(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
     #endif
 
     #ifdef MATERIAL_SUBSURFACE
-        f_subsurface += getSubsurfaceIrradianceIBL(normal, view, materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
+        f_subsurface += getIBLRadianceSubsurface(normal, view, materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getTransmissionIrradianceIBL(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
+        f_transmission += getIBLRadianceTransmission(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
     #endif
 #endif
 
