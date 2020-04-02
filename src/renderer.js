@@ -8,6 +8,7 @@ import { ImageMimeType } from './image.js';
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
 import iblShader from './shaders/ibl.glsl';
+import punctualShader from './shaders/punctual.glsl';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
@@ -32,6 +33,7 @@ class gltfRenderer
         shaderSources.set("pbr.frag", pbrShader);
         shaderSources.set("brdf.glsl", brdfShader);
         shaderSources.set("ibl.glsl", iblShader);
+        shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
