@@ -35,29 +35,29 @@ out vec4 g_finalColor;
 uniform Light u_Lights[LIGHT_COUNT];
 #endif
 
-// METALLICROUGHNESS)
+// Metallic Roughness
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
 uniform vec4 u_BaseColorFactor;
 
-// SPECULARGLOSSINESS
+// Specular Glossiness
 uniform vec3 u_SpecularFactor;
 uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 
-//Sheen extension
+// Sheen
 uniform float u_SheenIntensityFactor;
 uniform vec3 u_SheenColorFactor;
 uniform float u_SheenRoughness;
 
-//Clearcoat
+// Clearcoat
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
-//KHR Specular
+// Specular
 uniform float u_MetallicRoughnessSpecularFactor;
 
-//Subsurface
+// Subsurface
 uniform float u_SubsurfaceScale;
 uniform float u_SubsurfaceDistortion;
 uniform float u_SubsurfacePower;
@@ -81,7 +81,7 @@ uniform vec3 u_AbsorptionColor;
 // Transmission
 uniform float u_Transmission;
 
-// ALPHAMODE_MASK
+// Alpha mode
 uniform float u_AlphaCutoff;
 
 uniform vec3 u_Camera;
