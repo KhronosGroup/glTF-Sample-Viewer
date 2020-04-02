@@ -81,5 +81,5 @@ vec3 getIBLRadianceSubsurface(vec3 n, vec3 v, float scale, float distortion, flo
         diffuseLight = sRGBToLinear(diffuseLight);
     #endif
 
-    return diffuseLight * getSubsurfacePunctualIrradiance(n, v, -v, scale, distortion, power, color, thickness);
+    return diffuseLight * getPunctualRadianceSubsurface(n, v, -v, scale, distortion, power, color, thickness);
 }

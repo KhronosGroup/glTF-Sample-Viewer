@@ -478,24 +478,24 @@ void main()
             f_specular += intensity * angularInfo.NdotL * metallicBRDF(specularColor, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * getSheenPunctualIrradiance(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
+                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
                     angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                f_clearcoat += intensity * getClearCoatPunctualIrradiance(materialInfo.clearcoatNormal, view, l,
+                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, view, l,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
 
         #ifdef MATERIAL_SUBSURFACE
-            f_subsurface += intensity * getSubsurfacePunctualIrradiance(normal, view, l,
+            f_subsurface += intensity * getPunctualRadianceSubsurface(normal, view, l,
                 materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower,
                 materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
         #endif
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getTransmissionPunctualIrradiance(normal, view, l, materialInfo.alphaRoughness, ior, materialInfo.f0);
+            f_transmission += intensity * getPunctualRadianceTransmission(normal, view, l, materialInfo.alphaRoughness, ior, materialInfo.f0);
         #endif
     }
 #endif // !USE_PUNCTUAL
