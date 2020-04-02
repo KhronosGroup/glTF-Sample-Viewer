@@ -477,7 +477,8 @@ void main()
             f_specular += intensity * angularInfo.NdotL * metallicBRDF(specularColor, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * angularInfo.NdotL * sheenBRDF(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+                f_sheen += intensity * getSheenPunctualIrradiance(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
+                    angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
             #endif
 
             #ifdef MATERIAL_CLEARCOAT

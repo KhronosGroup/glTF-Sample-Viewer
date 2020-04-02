@@ -73,3 +73,8 @@ vec3 getClearCoatPunctualIrradiance(vec3 clearcoatNormal, vec3 v, vec3 pointToLi
     AngularInfo coatAngles = getAngularInfo(pointToLight, clearcoatNormal, v);
     return coatAngles.NdotL * metallicBRDF(f0, f90, clearcoatRoughness * clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
 }
+
+vec3 getSheenPunctualIrradiance(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
+{
+    return NdotL * sheenBRDF(sheenColor, sheenIntensity, sheenRoughness, NdotL, NdotV, NdotH);
+}
