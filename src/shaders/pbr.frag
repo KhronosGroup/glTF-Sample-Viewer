@@ -158,19 +158,6 @@ vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, float NdotV, float thinFilmFact
     return clamp(intensity * lutSample, 0.0, 1.0);
 }
 
-vec3 getTransmissionIrradianceAnalytical(vec3 v, vec3 n, vec3 l, float alphaRoughness, float ior, vec3 f0)
-{
-    vec3 r = refract(-v, n, 1.0 / ior);
-    vec3 h = normalize(l - r);
-    float NdotL = clampedDot(-n, l);
-    float NdotV = clampedDot(n, -r);
-
-    float Vis = V_GGX(clampedDot(-n, l), NdotV, alphaRoughness);
-    float D = D_GGX(clampedDot(r, l), alphaRoughness);
-
-    return NdotL * f0 * Vis * D;
-}
-
 MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 {
     info.f0 = u_SpecularFactor;
@@ -504,7 +491,8 @@ void main()
         #endif
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getTransmissionIrradianceAnalytical(view, normal, normalize(pointToLight), materialInfo.alphaRoughness, ior, materialInfo.f0);
+            f_transmission += intensity * getTransmissionPunctualIrradiance(normal, view, normalize(pointToLight),
+                materialInfo.alphaRoughness, ior, materialInfo.f0);
         #endif
     }
 #endif // !USE_PUNCTUAL
