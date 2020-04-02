@@ -481,8 +481,8 @@ void main()
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                AngularInfo coatAngles = getAngularInfo(pointToLight, materialInfo.clearcoatNormal, view);
-                f_clearcoat += intensity * coatAngles.NdotL * metallicBRDF(materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness * materialInfo.clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
+                f_clearcoat += intensity * getClearCoatPunctualIrradiance(materialInfo.clearcoatNormal, view, pointToLight,
+                    materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
 
