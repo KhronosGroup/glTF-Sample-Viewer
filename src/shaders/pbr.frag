@@ -282,8 +282,9 @@ vec3 lambertianBRDF(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 }
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 metallicBRDF(vec3 F, float alphaRoughness, float NdotL, float NdotV, float NdotH)
+vec3 metallicBRDF(vec3 f0, vec3 f90, float alphaRoughness, float VdotH, float NdotL, float NdotV, float NdotH)
 {
+    vec3 F = F_Schlick(f0, f90, VdotH);
     float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
     float D = D_GGX(NdotH, alphaRoughness);
 
@@ -752,7 +753,7 @@ void main()
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             f_diffuse += intensity * angularInfo.NdotL *  lambertianBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
             vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, angularInfo.VdotH, materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
-            f_specular += intensity * angularInfo.NdotL * metallicBRDF(specularColor, materialInfo.alphaRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            f_specular += intensity * angularInfo.NdotL * metallicBRDF(specularColor, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * angularInfo.NdotL * sheenBRDF(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
