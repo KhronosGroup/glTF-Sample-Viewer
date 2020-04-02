@@ -36,6 +36,7 @@ uniform int u_SpecularGlossinessUVSet;
 uniform mat3 u_SpecularGlossinessUVTransform;
 
 // IBL
+uniform int u_MipCount;
 uniform samplerCube u_LambertianEnvSampler;
 uniform samplerCube u_GGXEnvSampler;
 uniform sampler2D u_GGXLUT;
