@@ -145,19 +145,6 @@ vec4 getBaseColor()
     return baseColor * getVertexColor();
 }
 
-vec3 getThinFilmSpecularColor(vec3 f0, vec3 f90, float NdotV, float thinFilmFactor, float thinFilmThickness)
-{
-    if (thinFilmFactor == 0.0)
-    {
-        // No thin film applied.
-        return f0;
-    }
-
-    vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb - 0.5;
-    vec3 intensity = thinFilmFactor * 4.0 * f0 * (1.0 - f0);
-    return clamp(intensity * lutSample, 0.0, 1.0);
-}
-
 MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 {
     info.f0 = u_SpecularFactor;
@@ -244,6 +231,19 @@ MaterialInfo getSubsurfaceInfo(MaterialInfo info)
     return info;
 }
 #endif
+
+vec3 getThinFilmF0(vec3 f0, vec3 f90, float NdotV, float thinFilmFactor, float thinFilmThickness)
+{
+    if (thinFilmFactor == 0.0)
+    {
+        // No thin film applied.
+        return f0;
+    }
+
+    vec3 lutSample = texture(u_ThinFilmLUT, vec2(thinFilmThickness, NdotV)).rgb - 0.5;
+    vec3 intensity = thinFilmFactor * 4.0 * f0 * (1.0 - f0);
+    return clamp(intensity * lutSample, 0.0, 1.0);
+}
 
 #ifdef MATERIAL_THIN_FILM
 MaterialInfo getThinFilmInfo(MaterialInfo info)
@@ -407,6 +407,11 @@ void main()
 
     materialInfo.normal = normal;
 
+#ifdef MATERIAL_THIN_FILM
+    materialInfo.f0 = getThinFilmF0(materialInfo.f0, materialInfo.f90, clampedDot(normal, view),
+        materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
+#endif
+
     // LIGHTING
     vec3 f_specular = vec3(0.0);
     vec3 f_diffuse = vec3(0.0);
@@ -418,9 +423,7 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, clampedDot(normal, view), materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
-
-    f_specular += getIBLRadianceGGX(normal, view, materialInfo.perceptualRoughness, specularColor);
+    f_specular += getIBLRadianceGGX(normal, view, materialInfo.perceptualRoughness, materialInfo.f0);
     f_diffuse += getIBLRadianceLambertian(normal, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
@@ -474,8 +477,7 @@ void main()
             // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             f_diffuse += intensity * angularInfo.NdotL *  lambertianBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
-            vec3 specularColor = getThinFilmSpecularColor(materialInfo.f0, materialInfo.f90, angularInfo.VdotH, materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
-            f_specular += intensity * angularInfo.NdotL * metallicBRDF(specularColor, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            f_specular += intensity * angularInfo.NdotL * metallicBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
