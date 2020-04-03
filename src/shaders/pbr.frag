@@ -476,8 +476,8 @@ void main()
         {
             // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-            f_diffuse += intensity * angularInfo.NdotL *  lambertianBRDF(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
-            f_specular += intensity * angularInfo.NdotL * metallicBRDF(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            f_diffuse += intensity * angularInfo.NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
+            f_specular += intensity * angularInfo.NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
