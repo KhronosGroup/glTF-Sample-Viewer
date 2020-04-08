@@ -584,6 +584,14 @@ void main()
         #endif
     #endif
 
+    #ifdef DEBUG_TANGENT
+        g_finalColor.rgb = tangent * 0.5 + vec3(0.5);
+    #endif
+
+    #ifdef DEBUG_BITANGENT
+        g_finalColor.rgb = bitangent * 0.5 + vec3(0.5);
+    #endif
+
     #ifdef DEBUG_BASECOLOR
         g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
     #endif

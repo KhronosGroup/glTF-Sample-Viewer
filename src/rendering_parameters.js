@@ -49,6 +49,8 @@ const DebugOutput =
     METALLIC: "Metallic",
     ROUGHNESS: "Roughness",
     NORMAL: "Normal",
+    TANGENT: "Tangent",
+    BITANGENT: "Bitangent",
     BASECOLOR: "Base Color",
     OCCLUSION: "Occlusion",
     EMISSIVE: "Emissive",
