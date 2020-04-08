@@ -100,7 +100,7 @@ struct MaterialInfo
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
 
-    vec3 normal; // getNormal()
+    vec3 normal;
     vec3 baseColor; // getBaseColor()
 
     float sheenIntensity;
@@ -301,7 +301,7 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
     return info;
 }
 
-MaterialInfo getClearCoatInfo(MaterialInfo info)
+MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
@@ -322,7 +322,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info)
         vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
         info.clearcoatNormal = ccSampleNor.xyz;
     #else
-        info.clearcoatNormal = getNormal(true); // get geometry normal
+        info.clearcoatNormal = normalInfo.ng;
     #endif
 
     info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
@@ -351,8 +351,16 @@ void main()
     return;
 #endif
 
-    MaterialInfo materialInfo;
+    NormalInfo normalInfo = getNormalInfo();
+    vec3 normal = normalInfo.ng;
+    vec3 tangent = normalInfo.tg;
+    vec3 bitangent = normalInfo.bg;
+    vec3 view = normalize(u_Camera - v_Position);
 
+    float TdotV = dot(tangent, view);
+    float BdotV = dot(bitangent, view);
+
+    MaterialInfo materialInfo;
     materialInfo.baseColor = baseColor.rgb;
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -376,7 +384,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    materialInfo = getClearCoatInfo(materialInfo);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
@@ -404,14 +412,6 @@ void main()
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
-
-    vec3 normal = getNormal(false);
-    vec3 tangent = normalize(v_TBN[0].xyz);
-    vec3 bitangent = normalize(v_TBN[1].xyz);
-    vec3 view = normalize(u_Camera - v_Position);
-
-    float TdotV = dot(tangent, view);
-    float BdotV = dot(bitangent, view);
 
     materialInfo.normal = normal;
 

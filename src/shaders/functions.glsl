@@ -45,19 +45,26 @@ vec4 getVertexColor()
    return color;
 }
 
-// Find the normal for this fragment, pulling either from a predefined normal map
-// or from the interpolated mesh normal and tangent attributes.
-vec3 getNormal(bool ignoreNormalMap)
+struct NormalInfo {
+    vec3 n;  // Normal
+    vec3 t;  // Tangent
+    vec3 b;  // Bitangent
+    vec3 ng; // Geometric normal
+    vec3 tg; // Geometric tangent
+    vec3 bg; // Geometric bitangent
+};
+
+// Get normal, tangent and bitangent vectors.
+NormalInfo getNormalInfo()
 {
     vec2 UV = getNormalUV();
 
     // Retrieve the tangent space matrix
-#ifndef HAS_TANGENTS
+#ifdef HAS_TANGENTS
+    mat3 tbn = v_TBN;
+#else
     vec3 pos_dx = dFdx(v_Position);
     vec3 pos_dy = dFdy(v_Position);
-    vec3 tex_dx = dFdx(vec3(UV, 0.0));
-    vec3 tex_dy = dFdy(vec3(UV, 0.0));
-    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
 #ifdef HAS_NORMALS
     vec3 ng = normalize(v_Normal);
@@ -65,24 +72,33 @@ vec3 getNormal(bool ignoreNormalMap)
     vec3 ng = cross(pos_dx, pos_dy);
 #endif // !HAS_NORMALS
 
+    vec3 tex_dx = dFdx(vec3(UV, 0.0));
+    vec3 tex_dy = dFdy(vec3(UV, 0.0));
+    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
     t = normalize(t - ng * dot(ng, t));
     vec3 b = normalize(cross(ng, t));
     mat3 tbn = mat3(t, b, ng);
-#else // HAS_TANGENTS
-    mat3 tbn = v_TBN;
 #endif // !HAS_TANGENTS
 
+    NormalInfo info;
+    info.tg = normalize(tbn[0].xyz);
+    info.bg = normalize(tbn[1].xyz);
+    info.ng = normalize(tbn[2].xyz);
+
 #ifdef HAS_NORMAL_MAP
-    if(ignoreNormalMap == false){
-        vec3 n = texture(u_NormalSampler, UV).rgb;
-        return normalize(tbn * ((2.0 * n - 1.0) * vec3(u_NormalScale, u_NormalScale, 1.0)));
-    }else{
-        return normalize(tbn[2].xyz);
-    }
+    vec3 n = texture(u_NormalSampler, UV).rgb;
+    n = ((2.0 * n - 1.0); // Map normal range from [0.0, 1.0] to [-1.0, 1.0].
+    n *= vec3(u_NormalScale, u_NormalScale, 1.0)); // Scale normal according to normal texture info.
+    info.n = normalize(tbn * n); // Re-normalized because the tbn matrix is linearly interpolated.
+    info.t = info.tg;
+    info.b = info.bg;
 #else
-    // The tbn matrix is linearly interpolated, so we need to re-normalize
-    return normalize(tbn[2].xyz);
+    info.t = info.tg;
+    info.b = info.bg;
+    info.n = info.ng;
 #endif
+
+    return info;
 }
 
 AngularInfo getAngularInfo(vec3 pointToLight, vec3 normal, vec3 view)
