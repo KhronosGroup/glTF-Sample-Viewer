@@ -57,6 +57,9 @@ uniform float u_ClearcoatRoughnessFactor;
 // Specular
 uniform float u_MetallicRoughnessSpecularFactor;
 
+// Anisotropy
+uniform float u_AnisotropyFactor;
+
 // Subsurface
 uniform float u_SubsurfaceScale;
 uniform float u_SubsurfaceDistortion;
@@ -403,7 +406,12 @@ void main()
     materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
 
     vec3 normal = getNormal(false);
+    vec3 tangent = normalize(v_TBN[0].xyz);
+    vec3 bitangent = normalize(v_TBN[1].xyz);
     vec3 view = normalize(u_Camera - v_Position);
+
+    float TdotV = dot(tangent, view);
+    float BdotV = dot(bitangent, view);
 
     materialInfo.normal = normal;
 
@@ -468,9 +476,15 @@ void main()
         }
 
         vec3 l = normalize(pointToLight);
+        vec3 h = normalize(l + view);
+
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
 
         AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
+        float TdotL = dot(tangent, l);
+        float BdotL = dot(bitangent, l);
+        float TdotH = dot(tangent, h);
+        float BdotH = dot(bitangent, h);
 
         if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
         {
@@ -478,10 +492,10 @@ void main()
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             f_diffuse += intensity * angularInfo.NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
 
-            #ifdef MATERIAL_ANISOTROPIC
+            #ifdef MATERIAL_ANISOTROPY
             f_specular += intensity * angularInfo.NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
                 angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH,
-                BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, materialInfo.anisotropy);
+                BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, u_AnisotropyFactor);
             #else
             f_specular += intensity * angularInfo.NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
             #endif
