@@ -58,7 +58,8 @@ uniform float u_ClearcoatRoughnessFactor;
 uniform float u_MetallicRoughnessSpecularFactor;
 
 // Anisotropy
-uniform float u_AnisotropyFactor;
+uniform float u_Anisotropy;
+uniform float u_AnisotropicRotation;
 
 // Subsurface
 uniform float u_SubsurfaceScale;
@@ -106,6 +107,11 @@ struct MaterialInfo
     float sheenIntensity;
     vec3 sheenColor;
     float sheenRoughness;
+
+    float anisotropy;
+    float anisotropicRotation;
+    vec3 anisotropicT;
+    vec3 anisotropicB;
 
     vec3 clearcoatF0;
     vec3 clearcoatF90;
@@ -301,6 +307,18 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
     return info;
 }
 
+MaterialInfo getAnisotropyInfo(MaterialInfo info, mat3 TBN)
+{
+    info.anisotropy = u_Anisotropy;
+    info.anisotropicRotation = u_AnisotropicRotation;
+
+    // Compute global space tangent and bitangent rotated according to the anisotropic rotation.
+    info.anisotropicT = TBN * vec3(cos(info.anisotropicRotation * M_PI), sin(info.anisotropicRotation * M_PI), 0.0);
+    info.anisotropicB = TBN * vec3(-sin(info.anisotropicRotation * M_PI), cos(info.anisotropicRotation * M_PI), 0.0);
+
+    return info;
+}
+
 MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
@@ -355,6 +373,7 @@ void main()
     vec3 normal = normalInfo.ng;
     vec3 tangent = normalInfo.tg;
     vec3 bitangent = normalInfo.bg;
+    mat3 TBN = mat3(tangent, bitangent, normal);
     vec3 view = normalize(u_Camera - v_Position);
 
     float TdotV = dot(tangent, view);
@@ -389,6 +408,10 @@ void main()
 
 #ifdef MATERIAL_TRANSMISSION
     materialInfo = getTransmissionInfo(materialInfo);
+#endif
+
+#ifdef MATERIAL_ANISOTROPY
+    materialInfo = getAnisotropyInfo(materialInfo, TBN);
 #endif
 
 #ifdef MATERIAL_IOR
@@ -481,10 +504,10 @@ void main()
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
 
         AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
-        float TdotL = dot(tangent, l);
-        float BdotL = dot(bitangent, l);
-        float TdotH = dot(tangent, h);
-        float BdotH = dot(bitangent, h);
+        float TdotL = dot(materialInfo.anisotropicT, l);
+        float BdotL = dot(materialInfo.anisotropicB, l);
+        float TdotH = dot(materialInfo.anisotropicT, h);
+        float BdotH = dot(materialInfo.anisotropicB, h);
 
         if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
         {
@@ -495,7 +518,7 @@ void main()
             #ifdef MATERIAL_ANISOTROPY
             f_specular += intensity * angularInfo.NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
                 angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH,
-                BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, u_AnisotropyFactor);
+                BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, materialInfo.anisotropy);
             #else
             f_specular += intensity * angularInfo.NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
             #endif

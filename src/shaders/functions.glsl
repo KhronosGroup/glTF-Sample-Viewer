@@ -87,8 +87,8 @@ NormalInfo getNormalInfo()
 
 #ifdef HAS_NORMAL_MAP
     vec3 n = texture(u_NormalSampler, UV).rgb;
-    n = ((2.0 * n - 1.0); // Map normal range from [0.0, 1.0] to [-1.0, 1.0].
-    n *= vec3(u_NormalScale, u_NormalScale, 1.0)); // Scale normal according to normal texture info.
+    n = 2.0 * n - 1.0; // Map normal range from [0.0, 1.0] to [-1.0, 1.0].
+    n *= vec3(u_NormalScale, u_NormalScale, 1.0); // Scale normal according to normal texture info.
     info.n = normalize(tbn * n); // Re-normalized because the tbn matrix is linearly interpolated.
     info.t = info.tg;
     info.b = info.bg;

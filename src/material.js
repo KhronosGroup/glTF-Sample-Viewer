@@ -419,16 +419,22 @@ class gltfMaterial extends GltfObject
             // Extension: Anisotropy
             if(this.extensions.KHR_materials_anisotropy !== undefined)
             {
-                let anisotropyFactor = this.extensions.KHR_materials_anisotropy.anisotropyFactor;
+                let anisotropy = this.extensions.KHR_materials_anisotropy.anisotropy;
+                let anisotropicRotation = this.extensions.KHR_materials_anisotropy.anisotropicRotation;
 
-                if(anisotropyFactor === undefined)
+                if(anisotropy === undefined)
                 {
-                    anisotropyFactor = 0.0;
+                    anisotropy = 0.0;
+                }
+                if(anisotropicRotation === undefined)
+                {
+                    anisotropicRotation = 0.0;
                 }
 
                 this.defines.push("MATERIAL_ANISOTROPY 1");
 
-                this.properties.set("u_AnisotropyFactor", anisotropyFactor);
+                this.properties.set("u_Anisotropy", anisotropy);
+                this.properties.set("u_AnisotropicRotation", anisotropicRotation);
             }
 
             // KHR Extension: Thin film
