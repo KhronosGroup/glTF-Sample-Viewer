@@ -499,15 +499,8 @@ void main()
         }
 
         vec3 l = normalize(pointToLight);
-        vec3 h = normalize(l + view);
-
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
-
         AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
-        float TdotL = dot(materialInfo.anisotropicT, l);
-        float BdotL = dot(materialInfo.anisotropicB, l);
-        float TdotH = dot(materialInfo.anisotropicT, h);
-        float BdotH = dot(materialInfo.anisotropicB, h);
 
         if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
         {
@@ -516,6 +509,11 @@ void main()
             f_diffuse += intensity * angularInfo.NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
 
             #ifdef MATERIAL_ANISOTROPY
+            vec3 h = normalize(l + view);
+            float TdotL = dot(materialInfo.anisotropicT, l);
+            float BdotL = dot(materialInfo.anisotropicB, l);
+            float TdotH = dot(materialInfo.anisotropicT, h);
+            float BdotH = dot(materialInfo.anisotropicB, h);
             f_specular += intensity * angularInfo.NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
                 angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH,
                 BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, materialInfo.anisotropy);
