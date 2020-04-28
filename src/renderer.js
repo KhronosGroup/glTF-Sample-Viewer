@@ -433,6 +433,12 @@ class gltfRenderer
         case(DebugOutput.NORMAL):
             fragDefines.push("DEBUG_NORMAL 1");
             break;
+        case(DebugOutput.TANGENT):
+            fragDefines.push("DEBUG_TANGENT 1");
+            break;
+        case(DebugOutput.BITANGENT):
+            fragDefines.push("DEBUG_BITANGENT 1");
+            break;
         case(DebugOutput.BASECOLOR):
             fragDefines.push("DEBUG_BASECOLOR 1");
             break;

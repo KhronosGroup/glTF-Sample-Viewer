@@ -416,6 +416,27 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SubsurfaceThicknessFactor", thicknessFactor);
             }
 
+            // Extension: Anisotropy
+            if(this.extensions.KHR_materials_anisotropy !== undefined)
+            {
+                let anisotropy = this.extensions.KHR_materials_anisotropy.anisotropy;
+                let anisotropicRotation = this.extensions.KHR_materials_anisotropy.anisotropicRotation;
+
+                if(anisotropy === undefined)
+                {
+                    anisotropy = 0.0;
+                }
+                if(anisotropicRotation === undefined)
+                {
+                    anisotropicRotation = 0.0;
+                }
+
+                this.defines.push("MATERIAL_ANISOTROPY 1");
+
+                this.properties.set("u_Anisotropy", anisotropy);
+                this.properties.set("u_AnisotropicRotation", anisotropicRotation);
+            }
+
             // KHR Extension: Thin film
             // See https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
             if(this.extensions.KHR_materials_thinfilm !== undefined)

@@ -57,6 +57,10 @@ uniform float u_ClearcoatRoughnessFactor;
 // Specular
 uniform float u_MetallicRoughnessSpecularFactor;
 
+// Anisotropy
+uniform float u_Anisotropy;
+uniform float u_AnisotropicRotation;
+
 // Subsurface
 uniform float u_SubsurfaceScale;
 uniform float u_SubsurfaceDistortion;
@@ -97,12 +101,17 @@ struct MaterialInfo
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
 
-    vec3 normal; // getNormal()
+    vec3 normal;
     vec3 baseColor; // getBaseColor()
 
     float sheenIntensity;
     vec3 sheenColor;
     float sheenRoughness;
+
+    float anisotropy;
+    float anisotropicRotation;
+    vec3 anisotropicT;
+    vec3 anisotropicB;
 
     vec3 clearcoatF0;
     vec3 clearcoatF90;
@@ -302,7 +311,19 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
     return info;
 }
 
-MaterialInfo getClearCoatInfo(MaterialInfo info)
+MaterialInfo getAnisotropyInfo(MaterialInfo info, mat3 TBN)
+{
+    info.anisotropy = u_Anisotropy;
+    info.anisotropicRotation = u_AnisotropicRotation;
+
+    // Compute global space tangent and bitangent rotated according to the anisotropic rotation.
+    info.anisotropicT = TBN * vec3(cos(info.anisotropicRotation * M_PI), sin(info.anisotropicRotation * M_PI), 0.0);
+    info.anisotropicB = TBN * vec3(-sin(info.anisotropicRotation * M_PI), cos(info.anisotropicRotation * M_PI), 0.0);
+
+    return info;
+}
+
+MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
@@ -323,7 +344,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info)
         vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
         info.clearcoatNormal = ccSampleNor.xyz;
     #else
-        info.clearcoatNormal = getNormal(true); // get geometry normal
+        info.clearcoatNormal = normalInfo.ng;
     #endif
 
     info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
@@ -352,8 +373,17 @@ void main()
     return;
 #endif
 
-    MaterialInfo materialInfo;
+    NormalInfo normalInfo = getNormalInfo();
+    vec3 normal = normalInfo.ng;
+    vec3 tangent = normalInfo.tg;
+    vec3 bitangent = normalInfo.bg;
+    mat3 TBN = mat3(tangent, bitangent, normal);
+    vec3 view = normalize(u_Camera - v_Position);
 
+    float TdotV = dot(tangent, view);
+    float BdotV = dot(bitangent, view);
+
+    MaterialInfo materialInfo;
     materialInfo.baseColor = baseColor.rgb;
 
 
@@ -385,11 +415,15 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    materialInfo = getClearCoatInfo(materialInfo);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
     materialInfo = getTransmissionInfo(materialInfo);
+#endif
+
+#ifdef MATERIAL_ANISOTROPY
+    materialInfo = getAnisotropyInfo(materialInfo, TBN);
 #endif
 
     materialInfo = getThicknessInfo(materialInfo);
@@ -407,9 +441,6 @@ void main()
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
-
-    vec3 normal = getNormal(false);
-    vec3 view = normalize(u_Camera - v_Position);
 
     materialInfo.normal = normal;
 
@@ -475,7 +506,6 @@ void main()
 
         vec3 l = normalize(pointToLight);
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
-
         AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
 
         if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
@@ -483,7 +513,19 @@ void main()
             // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             f_diffuse += intensity * angularInfo.NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
+
+            #ifdef MATERIAL_ANISOTROPY
+            vec3 h = normalize(l + view);
+            float TdotL = dot(materialInfo.anisotropicT, l);
+            float BdotL = dot(materialInfo.anisotropicB, l);
+            float TdotH = dot(materialInfo.anisotropicT, h);
+            float BdotH = dot(materialInfo.anisotropicB, h);
+            f_specular += intensity * angularInfo.NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
+                angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH,
+                BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, materialInfo.anisotropy);
+            #else
             f_specular += intensity * angularInfo.NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            #endif
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
@@ -567,6 +609,14 @@ void main()
         #else
             g_finalColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif
+    #endif
+
+    #ifdef DEBUG_TANGENT
+        g_finalColor.rgb = tangent * 0.5 + vec3(0.5);
+    #endif
+
+    #ifdef DEBUG_BITANGENT
+        g_finalColor.rgb = bitangent * 0.5 + vec3(0.5);
     #endif
 
     #ifdef DEBUG_BASECOLOR
