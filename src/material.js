@@ -420,15 +420,15 @@ class gltfMaterial extends GltfObject
             if(this.extensions.KHR_materials_anisotropy !== undefined)
             {
                 let anisotropy = this.extensions.KHR_materials_anisotropy.anisotropy;
-                let anisotropicRotation = this.extensions.KHR_materials_anisotropy.anisotropicRotation;
+                let anisotropyDirection = vec3.fromValues(1.0, 0.0, 0.0);
 
                 if(anisotropy === undefined)
                 {
                     anisotropy = 0.0;
                 }
-                if(anisotropicRotation === undefined)
+                if(this.extensions.KHR_materials_anisotropy.anisotropyDirection !== undefined)
                 {
-                    anisotropicRotation = 0.0;
+                    anisotropyDirection = jsToGl(this.extensions.KHR_materials_anisotropy.anisotropyDirection);
                 }
                 if (this.anisotropyTexture !== undefined)
                 {
@@ -442,7 +442,7 @@ class gltfMaterial extends GltfObject
                 this.defines.push("MATERIAL_ANISOTROPY 1");
 
                 this.properties.set("u_Anisotropy", anisotropy);
-                this.properties.set("u_AnisotropicRotation", anisotropicRotation);
+                this.properties.set("u_AnisotropyDirection", anisotropyDirection);
             }
 
             // KHR Extension: Thin film
