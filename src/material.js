@@ -438,11 +438,23 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_ANISOTROPY_MAP 1");
                     this.properties.set("u_AnisotropyUVSet", this.anisotropyTexture.texCoord);
                 }
+                if (this.anisotropyDirectionTexture !== undefined)
+                {
+                    this.anisotropyDirectionTexture.samplerName = "u_AnisotropyDirectionSampler";
+                    this.parseTextureInfoExtensions(this.anisotropyDirectionTexture, "AnisotropyDirection");
+                    this.textures.push(this.anisotropyDirectionTexture);
+                    this.defines.push("HAS_ANISOTROPY_DIRECTION_MAP 1");
+                    this.properties.set("u_AnisotropyDirectionUVSet", this.anisotropyDirectionTexture.texCoord);
+                }
 
                 this.defines.push("MATERIAL_ANISOTROPY 1");
 
                 this.properties.set("u_Anisotropy", anisotropy);
-                this.properties.set("u_AnisotropyDirection", anisotropyDirection);
+
+                if (this.anisotropyDirectionTexture === undefined) {
+                    // Texture overrides uniform value.
+                    this.properties.set("u_AnisotropyDirection", anisotropyDirection);
+                }
             }
 
             // KHR Extension: Thin film
@@ -795,12 +807,17 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    fromJsonAnisotropy(jsonThickness)
+    fromJsonAnisotropy(jsonAnisotropy)
     {
-        if(jsonThickness.anisotropyTexture !== undefined)
+        if(jsonAnisotropy.anisotropyTexture !== undefined)
         {
             this.anisotropyTexture = new gltfTextureInfo();
-            this.anisotropyTexture.fromJson(jsonThickness.anisotropyTexture);
+            this.anisotropyTexture.fromJson(jsonAnisotropy.anisotropyTexture);
+        }
+        if(jsonAnisotropy.anisotropyDirectionTexture !== undefined)
+        {
+            this.anisotropyDirectionTexture = new gltfTextureInfo();
+            this.anisotropyDirectionTexture.fromJson(jsonAnisotropy.anisotropyDirectionTexture);
         }
     }
 }

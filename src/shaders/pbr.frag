@@ -109,7 +109,6 @@ struct MaterialInfo
     float sheenRoughness;
 
     float anisotropy;
-    float anisotropicRotation;
     vec3 anisotropicT;
     vec3 anisotropicB;
 
@@ -319,7 +318,15 @@ MaterialInfo getAnisotropyInfo(MaterialInfo info, vec3 ng, mat3 TBN)
     info.anisotropy *= texture(u_AnisotropySampler, getAnisotropyUV()).r;
 #endif
 
-    vec3 direction = u_AnisotropyDirection;
+    vec3 direction;
+
+#ifdef HAS_ANISOTROPY_DIRECTION_MAP
+    direction.xyz = texture(u_AnisotropyDirectionSampler, getAnisotropyDirectionUV()).xyz;
+    direction = 2.0 * direction - vec3(1.0);
+#else
+    direction = u_AnisotropyDirection;
+#endif
+
     info.anisotropicT = normalize(TBN * direction);
     info.anisotropicB = normalize(cross(ng, info.anisotropicT));
 
