@@ -430,6 +430,14 @@ class gltfMaterial extends GltfObject
                 {
                     anisotropicRotation = 0.0;
                 }
+                if (this.anisotropyTexture !== undefined)
+                {
+                    this.anisotropyTexture.samplerName = "u_AnisotropySampler";
+                    this.parseTextureInfoExtensions(this.anisotropyTexture, "Anisotropy");
+                    this.textures.push(this.anisotropyTexture);
+                    this.defines.push("HAS_ANISOTROPY_MAP 1");
+                    this.properties.set("u_AnisotropyUVSet", this.anisotropyTexture.texCoord);
+                }
 
                 this.defines.push("MATERIAL_ANISOTROPY 1");
 
@@ -654,6 +662,11 @@ class gltfMaterial extends GltfObject
         {
             this.fromJsonThickness(jsonExtensions.KHR_materials_thickness);
         }
+
+        if(jsonExtensions.KHR_materials_anisotropy !== undefined)
+        {
+            this.fromJsonAnisotropy(jsonExtensions.KHR_materials_anisotropy);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -779,6 +792,15 @@ class gltfMaterial extends GltfObject
         {
             this.thicknessTexture = new gltfTextureInfo();
             this.thicknessTexture.fromJson(jsonThickness.thicknessTexture);
+        }
+    }
+
+    fromJsonAnisotropy(jsonThickness)
+    {
+        if(jsonThickness.anisotropyTexture !== undefined)
+        {
+            this.anisotropyTexture = new gltfTextureInfo();
+            this.anisotropyTexture.fromJson(jsonThickness.anisotropyTexture);
         }
     }
 }

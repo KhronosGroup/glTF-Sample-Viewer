@@ -314,6 +314,11 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
 MaterialInfo getAnisotropyInfo(MaterialInfo info, mat3 TBN)
 {
     info.anisotropy = u_Anisotropy;
+
+#ifdef HAS_ANISOTROPY_MAP
+    info.anisotropy *= texture(u_AnisotropySampler, getAnisotropyUV()).r;
+#endif
+
     info.anisotropicRotation = u_AnisotropicRotation;
 
     // Compute global space tangent and bitangent rotated according to the anisotropic rotation.

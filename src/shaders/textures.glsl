@@ -91,6 +91,11 @@ uniform sampler2D u_ThicknessSampler;
 uniform int u_ThicknessUVSet;
 uniform mat3 u_ThicknessUVTransform;
 
+// Anisotropy:
+uniform sampler2D u_AnisotropySampler;
+uniform int u_AnisotropyUVSet;
+uniform mat3 u_AnisotropyUVTransform;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -259,6 +264,17 @@ vec2 getThicknessUV()
 
     #ifdef HAS_THICKNESS_UV_TRANSFORM
     uv *= u_ThicknessUVTransform;
+    #endif
+
+    return uv.xy;
+}
+
+vec2 getAnisotropyUV()
+{
+    vec3 uv = vec3(u_AnisotropyUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+
+    #ifdef HAS_ANISOTROPY_UV_TRANSFORM
+    uv *= u_AnisotropyUVTransform;
     #endif
 
     return uv.xy;
