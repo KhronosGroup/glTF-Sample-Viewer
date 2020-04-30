@@ -80,6 +80,11 @@ NormalInfo getNormalInfo()
     mat3 tbn = mat3(t, b, ng);
 #endif // !HAS_TANGENTS
 
+    // For a back-facing surface, the tangential basis is inverted.
+    if (!gl_FrontFacing) {
+        tbn *= -1.0;
+    }
+
     NormalInfo info;
     info.tg = normalize(tbn[0].xyz);
     info.bg = normalize(tbn[1].xyz);
