@@ -420,21 +420,41 @@ class gltfMaterial extends GltfObject
             if(this.extensions.KHR_materials_anisotropy !== undefined)
             {
                 let anisotropy = this.extensions.KHR_materials_anisotropy.anisotropy;
-                let anisotropicRotation = this.extensions.KHR_materials_anisotropy.anisotropicRotation;
+                let anisotropyDirection = vec3.fromValues(1.0, 0.0, 0.0);
 
                 if(anisotropy === undefined)
                 {
                     anisotropy = 0.0;
                 }
-                if(anisotropicRotation === undefined)
+                if(this.extensions.KHR_materials_anisotropy.anisotropyDirection !== undefined)
                 {
-                    anisotropicRotation = 0.0;
+                    anisotropyDirection = jsToGl(this.extensions.KHR_materials_anisotropy.anisotropyDirection);
+                }
+                if (this.anisotropyTexture !== undefined)
+                {
+                    this.anisotropyTexture.samplerName = "u_AnisotropySampler";
+                    this.parseTextureInfoExtensions(this.anisotropyTexture, "Anisotropy");
+                    this.textures.push(this.anisotropyTexture);
+                    this.defines.push("HAS_ANISOTROPY_MAP 1");
+                    this.properties.set("u_AnisotropyUVSet", this.anisotropyTexture.texCoord);
+                }
+                if (this.anisotropyDirectionTexture !== undefined)
+                {
+                    this.anisotropyDirectionTexture.samplerName = "u_AnisotropyDirectionSampler";
+                    this.parseTextureInfoExtensions(this.anisotropyDirectionTexture, "AnisotropyDirection");
+                    this.textures.push(this.anisotropyDirectionTexture);
+                    this.defines.push("HAS_ANISOTROPY_DIRECTION_MAP 1");
+                    this.properties.set("u_AnisotropyDirectionUVSet", this.anisotropyDirectionTexture.texCoord);
                 }
 
                 this.defines.push("MATERIAL_ANISOTROPY 1");
 
                 this.properties.set("u_Anisotropy", anisotropy);
-                this.properties.set("u_AnisotropicRotation", anisotropicRotation);
+
+                if (this.anisotropyDirectionTexture === undefined) {
+                    // Texture overrides uniform value.
+                    this.properties.set("u_AnisotropyDirection", anisotropyDirection);
+                }
             }
 
             // KHR Extension: Thin film
@@ -654,6 +674,11 @@ class gltfMaterial extends GltfObject
         {
             this.fromJsonThickness(jsonExtensions.KHR_materials_thickness);
         }
+
+        if(jsonExtensions.KHR_materials_anisotropy !== undefined)
+        {
+            this.fromJsonAnisotropy(jsonExtensions.KHR_materials_anisotropy);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -779,6 +804,20 @@ class gltfMaterial extends GltfObject
         {
             this.thicknessTexture = new gltfTextureInfo();
             this.thicknessTexture.fromJson(jsonThickness.thicknessTexture);
+        }
+    }
+
+    fromJsonAnisotropy(jsonAnisotropy)
+    {
+        if(jsonAnisotropy.anisotropyTexture !== undefined)
+        {
+            this.anisotropyTexture = new gltfTextureInfo();
+            this.anisotropyTexture.fromJson(jsonAnisotropy.anisotropyTexture);
+        }
+        if(jsonAnisotropy.anisotropyDirectionTexture !== undefined)
+        {
+            this.anisotropyDirectionTexture = new gltfTextureInfo();
+            this.anisotropyDirectionTexture.fromJson(jsonAnisotropy.anisotropyDirectionTexture);
         }
     }
 }

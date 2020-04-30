@@ -59,7 +59,7 @@ uniform float u_MetallicRoughnessSpecularFactor;
 
 // Anisotropy
 uniform float u_Anisotropy;
-uniform float u_AnisotropicRotation;
+uniform vec3 u_AnisotropyDirection;
 
 // Subsurface
 uniform float u_SubsurfaceScale;
@@ -109,7 +109,6 @@ struct MaterialInfo
     float sheenRoughness;
 
     float anisotropy;
-    float anisotropicRotation;
     vec3 anisotropicT;
     vec3 anisotropicB;
 
@@ -311,14 +310,22 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
     return info;
 }
 
-MaterialInfo getAnisotropyInfo(MaterialInfo info, mat3 TBN)
+MaterialInfo getAnisotropyInfo(MaterialInfo info, vec3 ng, mat3 TBN)
 {
     info.anisotropy = u_Anisotropy;
-    info.anisotropicRotation = u_AnisotropicRotation;
 
-    // Compute global space tangent and bitangent rotated according to the anisotropic rotation.
-    info.anisotropicT = TBN * vec3(cos(info.anisotropicRotation * M_PI), sin(info.anisotropicRotation * M_PI), 0.0);
-    info.anisotropicB = TBN * vec3(-sin(info.anisotropicRotation * M_PI), cos(info.anisotropicRotation * M_PI), 0.0);
+#ifdef HAS_ANISOTROPY_MAP
+    info.anisotropy *= texture(u_AnisotropySampler, getAnisotropyUV()).r * 2.0 - 1.0;
+#endif
+
+#ifdef HAS_ANISOTROPY_DIRECTION_MAP
+    vec3 direction = texture(u_AnisotropyDirectionSampler, getAnisotropyDirectionUV()).xyz * 2.0 - vec3(1.0);
+#else
+    vec3 direction = u_AnisotropyDirection;
+#endif
+
+    info.anisotropicT = normalize(TBN * direction);
+    info.anisotropicB = normalize(cross(ng, info.anisotropicT));
 
     return info;
 }
@@ -423,7 +430,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_ANISOTROPY
-    materialInfo = getAnisotropyInfo(materialInfo, TBN);
+    materialInfo = getAnisotropyInfo(materialInfo, normal, TBN);
 #endif
 
     materialInfo = getThicknessInfo(materialInfo);
