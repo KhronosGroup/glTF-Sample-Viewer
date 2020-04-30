@@ -315,16 +315,13 @@ MaterialInfo getAnisotropyInfo(MaterialInfo info, vec3 ng, mat3 TBN)
     info.anisotropy = u_Anisotropy;
 
 #ifdef HAS_ANISOTROPY_MAP
-    info.anisotropy *= texture(u_AnisotropySampler, getAnisotropyUV()).r;
+    info.anisotropy *= texture(u_AnisotropySampler, getAnisotropyUV()).r * 2.0 - 1.0;
 #endif
 
-    vec3 direction;
-
 #ifdef HAS_ANISOTROPY_DIRECTION_MAP
-    direction.xyz = texture(u_AnisotropyDirectionSampler, getAnisotropyDirectionUV()).xyz;
-    direction = 2.0 * direction - vec3(1.0);
+    vec3 direction = texture(u_AnisotropyDirectionSampler, getAnisotropyDirectionUV()).xyz * 2.0 - vec3(1.0);
 #else
-    direction = u_AnisotropyDirection;
+    vec3 direction = u_AnisotropyDirection;
 #endif
 
     info.anisotropicT = normalize(TBN * direction);
