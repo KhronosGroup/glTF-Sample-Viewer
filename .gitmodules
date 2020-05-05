@@ -3,4 +3,4 @@
 	url = https://github.com/KhronosGroup/glTF-Sample-Models.git
 [submodule "assets/environments"]
 	path = assets/environments
-	url = https://github.com/ux3d/glTF-Sample-Environments.git
+	url = https://github.com/KhronosGroup/glTF-Sample-Environments.git
