@@ -55,7 +55,7 @@ struct NormalInfo {
 };
 
 // Get normal, tangent and bitangent vectors.
-NormalInfo getNormalInfo()
+NormalInfo getNormalInfo(vec3 v)
 {
     vec2 UV = getNormalUV();
 
@@ -81,7 +81,7 @@ NormalInfo getNormalInfo()
 #endif // !HAS_TANGENTS
 
     // For a back-facing surface, the tangential basis is inverted.
-    if (!gl_FrontFacing) {
+    if (dot(v, tbn[2]) < 0.0) {
         tbn *= -1.0;
     }
 

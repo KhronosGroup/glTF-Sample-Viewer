@@ -380,12 +380,14 @@ void main()
     return;
 #endif
 
-    NormalInfo normalInfo = getNormalInfo();
+    vec3 view = normalize(u_Camera - v_Position);
+    NormalInfo normalInfo = getNormalInfo(view);
     vec3 normal = normalInfo.ng;
     vec3 tangent = normalInfo.tg;
     vec3 bitangent = normalInfo.bg;
+    // normal = normalize(v_Normal);
+    // normal = -normal;
     mat3 TBN = mat3(tangent, bitangent, normal);
-    vec3 view = normalize(u_Camera - v_Position);
 
     float TdotV = dot(tangent, view);
     float BdotV = dot(bitangent, view);
