@@ -64,13 +64,13 @@ NormalInfo getNormalInfo(vec3 v)
     vec3 uv_dx = dFdx(vec3(UV, 0.0));
     vec3 uv_dy = dFdy(vec3(UV, 0.0));
 
-    vec3 t_ = (uv_dy.t * dFdx(v_Position) - uv_dx.t * dFdy(v_Position)) / (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
+    vec3 t_ = (uv_dy.t * dFdx(v_Position) - uv_dx.t * dFdy(v_Position)) /
+        (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
 
     vec3 n, t, b, ng, tg, bg;
     mat3 TBN, TBNg;
 
     // Compute geometrical TBN:
-
     #ifdef HAS_TANGENTS
         // Trivial TBN computation, present as vertex attribute.
         // Normalize eigenvectors as matrix is linearly interpolated.
@@ -92,15 +92,13 @@ NormalInfo getNormalInfo(vec3 v)
     #endif
 
     // For a back-facing surface, the tangential basis vectors are negated.
-    if (dot(v, ng) < 0.0) {
-        TBNg *= -1.0;
-        tg *= -1.0;
-        bg *= -1.0;
-        ng *= -1.0;
-    }
+    float facing = step(0.0, dot(v, ng)) * 2.0 - 1.0;
+    TBNg *= facing;
+    tg *= facing;
+    bg *= facing;
+    ng *= facing;
 
     // Compute pertubed normals:
-
     #ifdef HAS_NORMAL_MAP
         n = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
         n *= vec3(u_NormalScale, u_NormalScale, 1.0);
