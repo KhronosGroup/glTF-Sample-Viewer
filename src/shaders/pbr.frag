@@ -408,7 +408,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
         vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
         info.clearcoatNormal = normalize(ccSampleNor.xyz);
     #else
-        info.clearcoatNormal = normalize(normalInfo.ng);
+        info.clearcoatNormal = normalInfo.ng;
     #endif
 
     info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
