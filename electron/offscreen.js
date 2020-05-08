@@ -8,7 +8,10 @@ const Environments =
     "Pisa courtyard nearing sunset",
     "Footprint Court",
     "Helipad GoldenHour",
-    "Dining room of the Ennis-Brown House"
+    "Dining room of the Ennis-Brown House",
+    "Neutral",
+    "Directional",
+    "Chromatic"
 ];
 
 const { app, BrowserWindow } = require('electron');
