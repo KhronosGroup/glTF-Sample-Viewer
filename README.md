@@ -1,9 +1,9 @@
-glTF 2.0 Sample Viewer for PBR Next
-===================================
+glTF 2.0 Sample Viewer
+======================
 
 [![](assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer/)
 
-This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://gltf.ux3d.io/)
+This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/)
 
 
 **Table of Contents**
@@ -29,7 +29,7 @@ This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.
 Version
 -------
 
-PBR-next pre-release
+Pre-release
 
 Credits
 -------
@@ -44,20 +44,11 @@ Features
 - [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
 - [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
-- [ ] PBR next
-    - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/pull/1756)
-    - [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/pull/1741)
-    - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/pull/1688)
-    - [x] [KHR_materials_subsurface](https://github.com/KhronosGroup/glTF/pull/1766)
-    - [ ] [KHR_materials_thinfilm](https://github.com/KhronosGroup/glTF/pull/1742)
-    - [ ] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)
-    - [ ] KHR_materials_anisotropic (Specification pending)
-    - [x] KHR_image_ktx2 (Specification pending)
 
 Viewer
 ======
 
-Link to the live [glTF 2.0 Sample Viewer](https://gltf.ux3d.io/).
+Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/).
 
 Usage
 -----
@@ -87,7 +78,7 @@ For local usage and debugging, please follow these instructions:
 
 **(2)** Install dependencies with `npm install`
 
-**(3)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/ux3d/Sample-Environments) `git submodule update  --init --recursive`
+**(3)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
 **(4a)** Start a demo in the browser with `npm run dev`, and open http://localhost:8000.
 
@@ -225,38 +216,3 @@ vec3 lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
     return (1.0 - fresnel(f0, f90, VdotH)) * (diffuseColor / M_PI);
 }
 ```
-
-Appendix B: Clear coat Material
-===============================
-
-(TODO)
-
-Appendix C: Sheen Material
-==========================
-
-(TODO)
-
-Appendix D: Specular Material
-=============================
-
-(TODO)
-
-Appendix E: Thin film Material
-==============================
-
-(TODO)
-
-Appendix F: Transmission Material
-=================================
-
-(TODO)
-
-Appendix G: Anisotropic Material
-================================
-
-(TODO)
-
-Appendix H: Subsurface Material
-================================
-
-(TODO)
