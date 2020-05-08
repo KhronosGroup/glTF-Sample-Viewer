@@ -453,7 +453,7 @@ void main()
 #ifdef MATERIAL_IOR
     float ior = u_IOR;
 #else
-    // The default index of refraction of 1.5 yields a dielectric n incidence reflectance of 0.04.
+    // The default index of refraction of 1.5 yields a dielectric normal incidence reflectance of 0.04.
     float ior = 1.5;
 #endif
 
