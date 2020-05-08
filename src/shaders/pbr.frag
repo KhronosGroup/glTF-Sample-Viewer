@@ -387,8 +387,9 @@ void main()
     vec3 b = normalInfo.b;
     mat3 TBN = normalInfo.TBN;
 
-    float TdotV = dot(t, v);
-    float BdotV = dot(b, v);
+    float NdotV = clampedDot(n, v);
+    float TdotV = clampedDot(t, v);
+    float BdotV = clampedDot(b, v);
 
     MaterialInfo materialInfo;
     materialInfo.baseColor = baseColor.rgb;
@@ -500,7 +501,7 @@ void main()
             pointToLight = light.position - v_Position;
         }
 
-        // point and spot
+        // Compute range and spot light attenuation.
         if (light.type != LightType_Directional)
         {
             rangeAttenuation = getRangeAttenuation(light.range, length(pointToLight));
@@ -510,15 +511,21 @@ void main()
             spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
         }
 
-        vec3 l = normalize(pointToLight);
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
-        AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.n, v);
 
-        if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
+        vec3 l = normalize(pointToLight);   // Direction from surface point to light
+        vec3 h = normalize(l + v);          // Direction of the vector between l and v, called halfway vector
+        float NdotL = clampedDot(n, l);
+        float NdotV = clampedDot(n, v);
+        float NdotH = clampedDot(n, h);
+        float LdotH = clampedDot(l, h);
+        float VdotH = clampedDot(v, h);
+
+        if (NdotL > 0.0 || NdotV > 0.0)
         {
             // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-            f_diffuse += intensity * angularInfo.NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
+            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, VdotH);
 
             #ifdef MATERIAL_ANISOTROPY
             vec3 h = normalize(l + v);
@@ -526,20 +533,21 @@ void main()
             float BdotL = dot(materialInfo.anisotropicB, l);
             float TdotH = dot(materialInfo.anisotropicT, h);
             float BdotH = dot(materialInfo.anisotropicB, h);
-            f_specular += intensity * angularInfo.NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
-                angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH,
+            f_specular += intensity * NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
+                VdotH, NdotL, NdotV, NdotH,
                 BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, materialInfo.anisotropy);
             #else
-            f_specular += intensity * angularInfo.NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
             #endif
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
-                    angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+                    NdotL, NdotV, NdotH);
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
                 f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l,
+                    h, VdotH,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }

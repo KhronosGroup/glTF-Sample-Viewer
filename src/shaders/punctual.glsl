@@ -68,10 +68,12 @@ vec3 getPunctualRadianceTransmission(vec3 n, vec3 v, vec3 l, float alphaRoughnes
     return NdotL * f0 * Vis * D;
 }
 
-vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 f0, vec3 f90, float clearcoatRoughness)
+vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, float VdotH, vec3 f0, vec3 f90, float clearcoatRoughness)
 {
-    AngularInfo coatAngles = getAngularInfo(l, clearcoatNormal, v);
-    return coatAngles.NdotL * BRDF_specularGGX(f0, f90, clearcoatRoughness * clearcoatRoughness, coatAngles.VdotH, coatAngles.NdotL, coatAngles.NdotV, coatAngles.NdotH);
+    float NdotL = clampedDot(clearcoatNormal, l);
+    float NdotV = clampedDot(clearcoatNormal, v);
+    float NdotH = clampedDot(clearcoatNormal, h);
+    return NdotL * BRDF_specularGGX(f0, f90, clearcoatRoughness * clearcoatRoughness, VdotH, NdotL, NdotV, NdotH);
 }
 
 vec3 getPunctualRadianceSheen(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
