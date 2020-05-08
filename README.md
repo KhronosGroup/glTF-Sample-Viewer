@@ -1,9 +1,9 @@
 glTF 2.0 Sample Viewer
 ======================
 
-[![](assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer/)
+[![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
 
-This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/)
+This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) sample viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
 
 **Table of Contents**
@@ -19,12 +19,7 @@ This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.
 - [Appendix A Metallic-Roughness Material](#appendix-a-metallic-roughness-material)
   - [Specular Term](#specular-term-f_specular)
   - [Diffuse Term](#diffuse-term)
-- [Appendix B: Clear coat Material](#appendix-b-clear-coat-material)
-- [Appendix C: Sheen Material](#appendix-c-sheen-material)
-- [Appendix D: Specular Material](#appendix-d-specular-material)
-- [Appendix E: Thin film Material](#appendix-e-thin-film-material)
-- [Appendix F: Transmission Material](#appendix-f-transmission-material)
-- [Appendix G: Anisotropic Material](#appendix-g-anisotropic-material)
+- [Appendix B FAQ](#appendix-b-faq)
 
 Version
 -------
@@ -48,7 +43,7 @@ Features
 Viewer
 ======
 
-Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer/).
+Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
 
 Usage
 -----
@@ -216,3 +211,10 @@ vec3 lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
     return (1.0 - fresnel(f0, f90, VdotH)) * (diffuseColor / M_PI);
 }
 ```
+
+Appendix B: FAQ
+===============
+
+Q: Why do I not see environment lighting here [https://github.khronos.org/glTF-Sample-Viewer/](https://github.khronos.org/glTF-Sample-Viewer/)?  
+A: The glTF Sample Viewer is using [KTX2](http://github.khronos.org/KTX-Specification/) for the pre-filtered environments. However, the mime type is not yet registered [here](https://github.com/jshttp/mime-db).
+
