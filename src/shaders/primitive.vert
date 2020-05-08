@@ -1,43 +1,43 @@
 #include <animation.glsl>
 
-attribute vec4 a_Position;
-varying vec3 v_Position;
+in vec3 a_Position;
+out vec3 v_Position;
 
 #ifdef HAS_NORMALS
-attribute vec4 a_Normal;
+in vec3 a_Normal;
 #endif
 
 #ifdef HAS_TANGENTS
-attribute vec4 a_Tangent;
+in vec4 a_Tangent;
 #endif
 
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
-varying mat3 v_TBN;
+out mat3 v_TBN;
 #else
-varying vec3 v_Normal;
+out vec3 v_Normal;
 #endif
 #endif
 
 #ifdef HAS_UV_SET1
-attribute vec2 a_UV1;
+in vec2 a_UV1;
 #endif
 
 #ifdef HAS_UV_SET2
-attribute vec2 a_UV2;
+in vec2 a_UV2;
 #endif
 
-varying vec2 v_UVCoord1;
-varying vec2 v_UVCoord2;
+out vec2 v_UVCoord1;
+out vec2 v_UVCoord2;
 
 #ifdef HAS_VERTEX_COLOR_VEC3
-attribute vec3 a_Color;
-varying vec3 v_Color;
+in vec3 a_Color;
+out vec3 v_Color;
 #endif
 
 #ifdef HAS_VERTEX_COLOR_VEC4
-attribute vec4 a_Color;
-varying vec4 v_Color;
+in vec4 a_Color;
+out vec4 v_Color;
 #endif
 
 uniform mat4 u_ViewProjectionMatrix;
@@ -46,7 +46,7 @@ uniform mat4 u_NormalMatrix;
 
 vec4 getPosition()
 {
-    vec4 pos = a_Position;
+    vec4 pos = vec4(a_Position, 1.0);
 
 #ifdef USE_MORPHING
     pos += getTargetPosition();
@@ -60,16 +60,16 @@ vec4 getPosition()
 }
 
 #ifdef HAS_NORMALS
-vec4 getNormal()
+vec3 getNormal()
 {
-    vec4 normal = a_Normal;
+    vec3 normal = a_Normal;
 
 #ifdef USE_MORPHING
     normal += getTargetNormal();
 #endif
 
 #ifdef USE_SKINNING
-    normal = getSkinningNormalMatrix() * normal;
+    normal = mat3(getSkinningNormalMatrix()) * normal;
 #endif
 
     return normalize(normal);
@@ -77,16 +77,16 @@ vec4 getNormal()
 #endif
 
 #ifdef HAS_TANGENTS
-vec4 getTangent()
+vec3 getTangent()
 {
-    vec4 tangent = a_Tangent;
+    vec3 tangent = a_Tangent.xyz;
 
 #ifdef USE_MORPHING
     tangent += getTargetTangent();
 #endif
 
 #ifdef USE_SKINNING
-    tangent = getSkinningMatrix() * tangent;
+    tangent = mat3(getSkinningMatrix()) * tangent;
 #endif
 
     return normalize(tangent);
@@ -100,13 +100,13 @@ void main()
 
     #ifdef HAS_NORMALS
     #ifdef HAS_TANGENTS
-    vec4 tangent = getTangent();
-    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal().xyz, 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent.xyz, 0.0)));
-    vec3 bitangentW = cross(normalW, tangentW) * tangent.w;
-    v_TBN = mat3(tangentW, bitangentW, normalW);
+        vec3 tangent = getTangent();
+        vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
+        vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
+        vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
+        v_TBN = mat3(tangentW, bitangentW, normalW);
     #else // !HAS_TANGENTS
-    v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal().xyz, 0.0)));
+        v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
     #endif
     #endif // !HAS_NORMALS
 
@@ -114,15 +114,15 @@ void main()
     v_UVCoord2 = vec2(0.0, 0.0);
 
     #ifdef HAS_UV_SET1
-    v_UVCoord1 = a_UV1;
+        v_UVCoord1 = a_UV1;
     #endif
 
     #ifdef HAS_UV_SET2
-    v_UVCoord2 = a_UV2;
+        v_UVCoord2 = a_UV2;
     #endif
 
     #if defined(HAS_VERTEX_COLOR_VEC3) || defined(HAS_VERTEX_COLOR_VEC4)
-    v_Color = a_Color;
+        v_Color = a_Color;
     #endif
 
     gl_Position = u_ViewProjectionMatrix * pos;

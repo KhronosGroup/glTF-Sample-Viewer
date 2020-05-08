@@ -3,7 +3,6 @@
 const Environments =
 [
     "Papermill Ruins E",
-    "Papermill Ruins E (LDR)",
     "Field",
     "Courtyard of the Doge's palace",
     "Pisa courtyard nearing sunset",
@@ -183,6 +182,7 @@ function createWindow(width, height)
         width: width, height: height,
         webPreferences: {
             offscreen: true,
+            nodeIntegration: true
         }
     });
 

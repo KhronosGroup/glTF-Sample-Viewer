@@ -18,9 +18,25 @@
 
     <script src="dist/gltf-reference-viewer.umd.js"></script>
 </head>
+<script>
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
 
+function getUrlParam(parameter, defaultvalue){
+    var urlparameter = defaultvalue;
+    if(window.location.href.indexOf(parameter) > -1){
+        urlparameter = getUrlVars()[parameter];
+        }
+    return urlparameter;
+}
+</script>
 <!-- Just create a rendering canvas like below and call gltf_rv! -->
-<body onload="viewer = gltf_rv.gltf_rv('canvas', 'assets/models/2.0/model-index.json');">
+<body onload="viewer = gltf_rv.gltf_rv('canvas', 'assets/models/2.0/model-index.json', 'Courtyard of the Doge\'s palace', false, undefined, '', getUrlParam('model','BoomBox'));">
     <div id="gltf-rv-model-spinner"> </div>
     <canvas id="canvas">No Canvas!</canvas>
 </body>

@@ -135,7 +135,7 @@ class UniformLight extends UniformStruct
         this.range = -1;
 
         this.color = jsToGl([1, 1, 1]);
-        this.intensity = 2;
+        this.intensity = 1;
 
         this.position = jsToGl([0, 0, 0]);
         this.innerConeCos = 0.0;

@@ -15,12 +15,13 @@ class gltfAccessor extends GltfObject
         this.type = undefined;
         this.max = undefined;
         this.min = undefined;
-        this.sparse = undefined; // CURRENTLY UNSUPPORTED
+        this.sparse = undefined;
         this.name = undefined;
 
         // non gltf
         this.glBuffer = undefined;
         this.typedView = undefined;
+        this.filteredView = undefined;
     }
 
     getTypedView(gltf)
@@ -36,8 +37,8 @@ class gltfAccessor extends GltfObject
             const buffer = gltf.buffers[bufferView.buffer];
             const byteOffset = this.byteOffset + bufferView.byteOffset;
 
-            const componentSize = this.getComponentSize();
-            let componentCount = this.getComponentCount();
+            const componentSize = this.getComponentSize(this.componentType);
+            let componentCount = this.getComponentCount(this.type);
 
             if(bufferView.byteStride !== 0)
             {
@@ -73,6 +74,10 @@ class gltfAccessor extends GltfObject
         {
             console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
         }
+        else if (this.sparse !== undefined)
+        {
+            this.applySparse(gltf, this.typedView);
+        }
 
         return this.typedView;
     }
@@ -90,8 +95,8 @@ class gltfAccessor extends GltfObject
             const buffer = gltf.buffers[bufferView.buffer];
             const byteOffset = this.byteOffset + bufferView.byteOffset;
 
-            const componentSize = this.getComponentSize();
-            const componentCount = this.getComponentCount();
+            const componentSize = this.getComponentSize(this.componentType);
+            const componentCount = this.getComponentCount(this.type);
             const arrayLength = this.count * componentCount;
 
             let stride = bufferView.byteStride !== 0 ? bufferView.byteStride : componentCount * componentSize;
@@ -133,17 +138,108 @@ class gltfAccessor extends GltfObject
             }
         }
 
+        if (this.filteredView === undefined)
+        {
+            console.warn("Failed to convert buffer view to filtered view!: " + this.bufferView);
+        }
+        else if (this.sparse !== undefined)
+        {
+            this.applySparse(gltf, this.filteredView);
+        }
+
         return this.filteredView;
     }
 
-    getComponentCount()
+    applySparse(gltf, view)
     {
-        return CompononentCount.get(this.type);
+        // Gather indices.
+
+        const indicesBufferView = gltf.bufferViews[this.sparse.indices.bufferView];
+        const indicesBuffer = gltf.buffers[indicesBufferView.buffer];
+        const indicesByteOffset = this.sparse.indices.byteOffset + indicesBufferView.byteOffset;
+
+        const indicesComponentSize = this.getComponentSize(this.sparse.indices.componentType);
+        let indicesComponentCount = 1;
+
+        if(indicesBufferView.byteStride !== 0)
+        {
+            indicesComponentCount = indicesBufferView.byteStride / indicesComponentSize;
+        }
+
+        const indicesArrayLength = this.sparse.count * indicesComponentCount;
+
+        let indicesTypedView;
+        switch (this.sparse.indices.componentType)
+        {
+        case WebGl.context.UNSIGNED_BYTE:
+            indicesTypedView = new Uint8Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_SHORT:
+            indicesTypedView = new Uint16Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_INT:
+            indicesTypedView = new Uint32Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
+            break;
+        }
+
+        // Gather values.
+
+        const valuesBufferView = gltf.bufferViews[this.sparse.values.bufferView];
+        const valuesBuffer = gltf.buffers[valuesBufferView.buffer];
+        const valuesByteOffset = this.sparse.values.byteOffset + valuesBufferView.byteOffset;
+
+        const valuesComponentSize = this.getComponentSize(this.componentType);
+        let valuesComponentCount = this.getComponentCount(this.type);
+
+        if(valuesBufferView.byteStride !== 0)
+        {
+            valuesComponentCount = valuesBufferView.byteStride / valuesComponentSize;
+        }
+
+        const valuesArrayLength = this.sparse.count * valuesComponentCount;
+
+        let valuesTypedView;
+        switch (this.componentType)
+        {
+        case WebGl.context.BYTE:
+            valuesTypedView = new Int8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_BYTE:
+            valuesTypedView = new Uint8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.SHORT:
+            valuesTypedView = new Int16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_SHORT:
+            valuesTypedView = new Uint16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.UNSIGNED_INT:
+            valuesTypedView = new Uint32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        case WebGl.context.FLOAT:
+            valuesTypedView = new Float32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
+            break;
+        }
+
+        // Overwrite values.
+
+        for(let i = 0; i < this.sparse.count; ++i)
+        {
+            for(let k = 0; k < valuesComponentCount; ++k)
+            {
+                view[indicesTypedView[i] * valuesComponentCount + k] = valuesTypedView[i * valuesComponentCount + k];
+            }
+        }
     }
 
-    getComponentSize()
+    getComponentCount(type)
     {
-        switch (this.componentType)
+        return CompononentCount.get(type);
+    }
+
+    getComponentSize(componentType)
+    {
+        switch (componentType)
         {
         case WebGl.context.BYTE:
         case WebGl.context.UNSIGNED_BYTE:

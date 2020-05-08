@@ -5,7 +5,10 @@ import { ShaderCache } from './shader_cache.js';
 import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
-import metallicRoughnessShader from './shaders/metallic-roughness.frag';
+import pbrShader from './shaders/pbr.frag';
+import brdfShader from './shaders/brdf.glsl';
+import iblShader from './shaders/ibl.glsl';
+import punctualShader from './shaders/punctual.glsl';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from'./shaders/tonemapping.glsl';
@@ -27,7 +30,10 @@ class gltfRenderer
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
-        shaderSources.set("metallic-roughness.frag", metallicRoughnessShader);
+        shaderSources.set("pbr.frag", pbrShader);
+        shaderSources.set("brdf.glsl", brdfShader);
+        shaderSources.set("ibl.glsl", iblShader);
+        shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
@@ -36,17 +42,11 @@ class gltfRenderer
         this.shaderCache = new ShaderCache(shaderSources);
 
         let requiredWebglExtensions = [
-            "EXT_shader_texture_lod",
-            "OES_standard_derivatives",
-            "OES_element_index_uint",
             "EXT_texture_filter_anisotropic",
-            "OES_texture_float",
             "OES_texture_float_linear"
         ];
 
         WebGl.loadWebGlExtensions(requiredWebglExtensions);
-        // use shader lod ext if requested and supported
-        this.parameters.useShaderLoD = this.parameters.useShaderLoD && WebGl.context.getExtension("EXT_shader_texture_lod") !== null;
 
         this.visibleLights = [];
 
@@ -67,12 +67,6 @@ class gltfRenderer
     // app state
     init()
     {
-        if (!this.parameters.useShaderLoD)
-        {
-            this.parameters.useIBL = false;
-            this.parameters.usePunctual = true;
-        }
-
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
         WebGl.context.enable(WebGl.context.DEPTH_TEST);
         WebGl.context.depthFunc(WebGl.context.LEQUAL);
@@ -102,6 +96,11 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(gltf, scene, sortByDepth, predicateDrawPrimivitve)
     {
+        if (scene.envData === undefined)
+        {
+            this.initializeEnvironment(gltf, scene);
+        }
+
         let currentCamera = undefined;
 
         if(!this.parameters.userCameraActive())
@@ -145,7 +144,7 @@ class gltfRenderer
                     {
                         if(predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
                         {
-                            this.drawPrimitive(gltf, primitive, node, this.viewProjectionMatrix);
+                            this.drawPrimitive(gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
                         }
                     }
                 }
@@ -159,14 +158,14 @@ class gltfRenderer
             {
                 if(predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
                 {
-                    this.drawPrimitive(gltf, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+                    this.drawPrimitive(gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
                 }
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, primitive, node, viewProjectionMatrix)
+    drawPrimitive(gltf, envData, primitive, node, viewProjectionMatrix)
     {
         if (primitive.skip) return;
 
@@ -210,6 +209,15 @@ class gltfRenderer
 
         this.updateAnimationUniforms(gltf, node, primitive);
 
+        if  (mat4.determinant(node.worldTransform) < 0.0)
+        {
+            WebGl.context.frontFace(WebGl.context.CW);
+        }
+        else
+        {
+            WebGl.context.frontFace(WebGl.context.CCW);
+        }
+
         if (material.doubleSided)
         {
             WebGl.context.disable(WebGl.context.CULL_FACE);
@@ -222,7 +230,7 @@ class gltfRenderer
         if(material.alphaMode === 'BLEND')
         {
             WebGl.context.enable(WebGl.context.BLEND);
-            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.ONE, WebGl.context.ONE_MINUS_SRC_ALPHA);
+            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA);
             WebGl.context.blendEquation(WebGl.context.FUNC_ADD);
         }
         else
@@ -275,9 +283,14 @@ class gltfRenderer
             }
         }
 
+        const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
         if (this.parameters.useIBL)
         {
-            this.applyEnvironmentMap(gltf, material.textures.length);
+            this.applyEnvironmentMap(gltf, envData, material.textures.length);
+        }
+        else if (hasThinFilm)
+        {
+            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, material.textures.length);
         }
 
         if (drawIndexed)
@@ -383,12 +396,7 @@ class gltfRenderer
             fragDefines.push("USE_IBL 1");
         }
 
-        if(this.parameters.useShaderLoD)
-        {
-            fragDefines.push("USE_TEX_LOD 1");
-        }
-
-        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR)
+        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR || Environments[this.parameters.environmentName].type === ImageMimeType.KTX2)
         {
             fragDefines.push("USE_HDR 1");
         }
@@ -425,14 +433,41 @@ class gltfRenderer
         case(DebugOutput.NORMAL):
             fragDefines.push("DEBUG_NORMAL 1");
             break;
+        case(DebugOutput.TANGENT):
+            fragDefines.push("DEBUG_TANGENT 1");
+            break;
+        case(DebugOutput.BITANGENT):
+            fragDefines.push("DEBUG_BITANGENT 1");
+            break;
         case(DebugOutput.BASECOLOR):
             fragDefines.push("DEBUG_BASECOLOR 1");
             break;
         case(DebugOutput.OCCLUSION):
             fragDefines.push("DEBUG_OCCLUSION 1");
             break;
-        case(DebugOutput.EMISIVE):
-            fragDefines.push("DEBUG_EMISSIVE 1");
+        case(DebugOutput.EMISSIVE):
+            fragDefines.push("DEBUG_FEMISSIVE 1");
+            break;
+        case(DebugOutput.SPECULAR):
+            fragDefines.push("DEBUG_FSPECULAR 1");
+            break;
+        case(DebugOutput.DIFFUSE):
+            fragDefines.push("DEBUG_FDIFFUSE 1");
+            break;
+        case(DebugOutput.THICKNESS):
+            fragDefines.push("DEBUG_THICKNESS 1");
+            break;
+        case(DebugOutput.CLEARCOAT):
+            fragDefines.push("DEBUG_FCLEARCOAT 1");
+            break;
+        case(DebugOutput.SHEEN):
+            fragDefines.push("DEBUG_FSHEEN 1");
+            break;
+        case(DebugOutput.SUBSURFACE):
+            fragDefines.push("DEBUG_FSUBSURFACE 1");
+            break;
+        case(DebugOutput.TRANSMISSION):
+            fragDefines.push("DEBUG_FTRANSMISSION 1");
             break;
         case(DebugOutput.F0):
             fragDefines.push("DEBUG_F0 1");
@@ -454,30 +489,62 @@ class gltfRenderer
         this.shader.updateUniform("u_Lights", uniformLights);
     }
 
-    applyEnvironmentMap(gltf, texSlotOffset)
+    initializeEnvironment(gltf, scene)
     {
-        if (gltf.envData === undefined)
+        scene.envData = {};
+
+        if (scene !== undefined && scene.imageBasedLight !== undefined)
         {
-            let linear = true;
-            if (Environments[this.parameters.environmentName].type !== ImageMimeType.HDR)
-            {
-                linear = false;
-            }
-            
-            gltf.envData = {};
-            gltf.envData.diffuseEnvMap = new gltfTextureInfo(gltf.textures.length - 3, 0, linear);
-            gltf.envData.specularEnvMap = new gltfTextureInfo(gltf.textures.length - 2, 0, linear);
-            gltf.envData.lut = new gltfTextureInfo(gltf.textures.length - 1);
-            gltf.envData.specularEnvMap.generateMips = false;
-            gltf.envData.lut.generateMips = false;
+            const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
+            const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
+            const sheenCubeMapIndex = scene.imageBasedLight.sheenEnvironmentTexture;
+
+            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
+            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
+            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
+
+            scene.envData.mipCount = scene.imageBasedLight.levelCount;
+        }
+        else
+        {
+            const diffuseTextureIndex = gltf.textures.length - 6;
+            const specularTextureIndex = gltf.textures.length - 5;
+            const sheenTextureIndex = gltf.textures.length - 4;
+
+            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
+            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
+            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
+
+            scene.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
         }
 
-        WebGl.setTexture(this.shader.getUniformLocation("u_DiffuseEnvSampler"), gltf, gltf.envData.diffuseEnvMap, texSlotOffset);
-        WebGl.setTexture(this.shader.getUniformLocation("u_SpecularEnvSampler"), gltf, gltf.envData.specularEnvMap, texSlotOffset + 1);
-        WebGl.setTexture(this.shader.getUniformLocation("u_brdfLUT"), gltf, gltf.envData.lut, texSlotOffset + 2);
+        scene.envData.diffuseEnvMap.generateMips = false;
+        scene.envData.specularEnvMap.generateMips = false;
+        scene.envData.sheenEnvMap.generateMips = false;
 
-        const mipCount = Environments[this.parameters.environmentName].mipLevel;
-        this.shader.updateUniform("u_MipCount", mipCount);
+        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
+        scene.envData.lut.generateMips = false;
+
+        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
+        scene.envData.sheenLUT.generateMips = false;
+
+        scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.thinFilmLUT.generateMips = false;
+    }
+
+    applyEnvironmentMap(gltf, envData, texSlotOffset)
+    {
+        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
+
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset + 2);
+
+        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
+        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
+
+        WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
+
+        this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
 
     destroy()

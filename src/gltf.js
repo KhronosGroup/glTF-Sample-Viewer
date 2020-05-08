@@ -4,6 +4,7 @@ import { gltfBufferView } from './buffer_view.js';
 import { gltfCamera } from './camera.js';
 import { gltfImage } from './image.js';
 import { gltfLight } from './light.js';
+import { ImageBasedLight } from './image_based_light.js';
 import { gltfMaterial } from './material.js';
 import { gltfMesh } from './mesh.js';
 import { gltfNode } from './node.js';
@@ -28,6 +29,7 @@ class glTF extends GltfObject
         this.scenes = [];
         this.cameras = [];
         this.lights = [];
+        this.imageBasedLights = [];
         this.textures = [];
         this.images = [];
         this.samplers = [];
@@ -61,6 +63,7 @@ class glTF extends GltfObject
         this.textures = objectsFromJsons(json.textures, gltfTexture);
         this.nodes = objectsFromJsons(json.nodes, gltfNode);
         this.lights = objectsFromJsons(getJsonLightsFromExtensions(json.extensions), gltfLight);
+        this.imageBasedLights = objectsFromJsons(getJsonIBLsFromExtensions(json.extensions), ImageBasedLight);
         this.images = objectsFromJsons(json.images, gltfImage);
         this.animations = objectsFromJsons(json.animations, gltfAnimation);
         this.skins = objectsFromJsons(json.skins, gltfSkin);
@@ -93,6 +96,19 @@ function getJsonLightsFromExtensions(extensions)
         return [];
     }
     return extensions.KHR_lights_punctual.lights;
+}
+
+function getJsonIBLsFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_lights_image_based === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_lights_image_based.imageBasedLights;
 }
 
 export { glTF };

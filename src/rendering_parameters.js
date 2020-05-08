@@ -12,8 +12,7 @@ class gltfRenderingParameters
         exposure = 1.0,
         clearColor = [50, 50, 50],
         toneMap = ToneMaps.LINEAR,
-        debugOutput = DebugOutput.NONE,
-        useShaderLoD = true)
+        debugOutput = DebugOutput.NONE)
     {
         this.environmentName = environmentName;
         this.useIBL = useIBL;
@@ -21,7 +20,6 @@ class gltfRenderingParameters
         this.exposure = exposure;
         this.clearColor = clearColor;
         this.toneMap = toneMap;
-        this.useShaderLoD = useShaderLoD;
         this.debugOutput = debugOutput;
         this.sceneIndex = 0;
         this.cameraIndex = UserCameraIndex;
@@ -51,25 +49,34 @@ const DebugOutput =
     METALLIC: "Metallic",
     ROUGHNESS: "Roughness",
     NORMAL: "Normal",
+    TANGENT: "Tangent",
+    BITANGENT: "Bitangent",
     BASECOLOR: "Base Color",
     OCCLUSION: "Occlusion",
-    EMISIVE: "Emissive",
+    EMISSIVE: "Emissive",
+    DIFFUSE: "Diffuse",
+    SPECULAR: "Specular",
+    THICKNESS: "Thickness",
+    CLEARCOAT: "ClearCoat",
+    SHEEN: "Sheen",
+    SUBSURFACE: "Subsurface",
+    TRANSMISSION: "Transmission",
     ALPHA: "Alpha",
     F0: "F0"
 };
 
 const Environments =
 {
-    "Papermill Ruins E": { folder: "papermill", mipLevel: 10, type: ImageMimeType.HDR },
-    "Papermill Ruins E (LDR)": { folder: "papermill", mipLevel: 10, type: ImageMimeType.LDR },
-    "Field": { folder: "field", mipLevel: 11, type: ImageMimeType.HDR },
-    "Courtyard of the Doge's palace": { folder: "doge2", mipLevel: 11, type: ImageMimeType.HDR },
-    "Pisa courtyard nearing sunset": { folder: "pisa", mipLevel: 11, type: ImageMimeType.HDR },
-    "Footprint Court": { folder: "footprint_court", mipLevel: 10, type: ImageMimeType.HDR },
-    "Helipad GoldenHour": { folder: "helipad", mipLevel: 10, type: ImageMimeType.HDR },
-    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 11, type: ImageMimeType.HDR },
-    "Studio Grey": { folder: "studio_grey", mipLevel: 11, type: ImageMimeType.HDR },
-    "Studio Red Green": { folder: "studio_red_green", mipLevel: 11, type: ImageMimeType.HDR }
+    "Papermill Ruins E": { folder: "papermill", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Field": { folder: "field", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Courtyard of the Doge's palace": { folder: "doge2", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Pisa courtyard nearing sunset": { folder: "pisa", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Footprint Court": { folder: "footprint_court", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Helipad GoldenHour": { folder: "helipad", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Dining room of the Ennis-Brown House": { folder: "ennis", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Neutral": { folder: "neutral", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Directional": { folder: "directional", mipLevel: 11, type: ImageMimeType.KTX2 },
+    "Chromatic": { folder: "chromatic", mipLevel: 11, type: ImageMimeType.KTX2 }
 };
 
 export { UserCameraIndex, gltfRenderingParameters, Environments, ToneMaps, DebugOutput };

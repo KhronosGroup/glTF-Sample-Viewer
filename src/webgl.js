@@ -1,3 +1,4 @@
+
 class gltfWebGl
 {
     constructor()
@@ -33,7 +34,6 @@ class gltfWebGl
     {
         if (loc === -1)
         {
-            console.warn("Tried to access unknown uniform");
             return false;
         }
 
@@ -71,7 +71,7 @@ class gltfWebGl
 
             if (gltfTex.source.length !== undefined)
             {
-                // assume we have an array of textures (this is an unofficial extension to what glTF json can represent)
+                // assume we have an array of images (this is an unofficial extension to what glTF json can represent)
                 images = gltfTex.source;
             }
             else
@@ -91,9 +91,20 @@ class gltfWebGl
                     return false;
                 }
 
-                if (image.image.dataRGBE !== undefined)
+                if (image.type === WebGl.context.TEXTURE_CUBE_MAP)
                 {
-                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGB, image.image.width, image.image.height, 0, WebGl.context.RGB, WebGl.context.FLOAT, image.image.dataFloat);
+                    const ktxImage = image.image;
+
+                    for (const level of ktxImage.levels)
+                    {
+                        let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
+                        for (const face of level.faces)
+                        {
+                            WebGl.context.texImage2D(faceType, level.miplevel, ktxImage.glInternalFormat, level.width, level.height, 0, ktxImage.glFormat, ktxImage.glType, face.data);
+
+                            faceType++;
+                        }
+                    }
                 }
                 else
                 {
@@ -182,8 +193,7 @@ class gltfWebGl
             WebGl.context.bindBuffer(WebGl.context.ARRAY_BUFFER, gltfAccessor.glBuffer);
         }
 
-        WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(), gltfAccessor.componentType,
-            gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+        WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
         WebGl.context.enableVertexAttribArray(attributeLocation);
 
         return true;

@@ -14,10 +14,12 @@ class gltfUserInterface
         this.stats = stats;
         this.hexColor = this.toHexColor(this.renderingParameters.clearColor);
         this.version = "";
+        this.sceneEnvironment = "Controlled by the scene";
 
         this.gui = undefined;
         this.gltfFolder = undefined;
         this.animationFolder = undefined;
+        this.lightingFolder = undefined;
         this.updatables = [];
 
         this.onModelChanged = undefined;
@@ -95,7 +97,8 @@ class gltfUserInterface
         function createElement(gltf)
         {
             const scenes = gltf !== undefined ? gltf.scenes : [];
-            return self.gltfFolder.add(self.renderingParameters, "sceneIndex", Object.keys(scenes)).name("Scene Index");
+            return self.gltfFolder.add(self.renderingParameters, "sceneIndex", Object.keys(scenes)).name("Scene Index")
+                .onChange(() => self.update(gltf));
         }
         this.initializeUpdatable(this.gltfFolder, createElement);
     }
@@ -115,24 +118,34 @@ class gltfUserInterface
     initializeLightingSettings()
     {
         const self = this;
-        const lightingFolder = this.gui.addFolder("Lighting");
-        if (this.renderingParameters.useShaderLoD)
-        {
-            lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
-        }
-        else
-        {
-            const message = "not available";
-            const messageObject = { message: message };
-            lightingFolder.add(messageObject, "message").name("Image-Based Lighting").onChange(() => messageObject.message = message);
-        }
-        lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
-        lightingFolder.add(this.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
-            .onChange(() => self.onEnvironmentChanged());
-        lightingFolder.add(this.renderingParameters, "exposure", 0, 10, 0.1).name("Exposure");
-        lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
-        lightingFolder.addColor(this, "hexColor", this.hexColor).name("Background Color")
+        this.lightingFolder = this.gui.addFolder("Lighting");
+        this.lightingFolder.add(this.renderingParameters, "useIBL").name("Image-Based Lighting");
+        this.lightingFolder.add(this.renderingParameters, "usePunctual").name("Punctual Lighting");
+        this.lightingFolder.add(this.renderingParameters, "exposure", 0, 10, 0.1).name("Exposure");
+        this.lightingFolder.add(this.renderingParameters, "toneMap", Object.values(ToneMaps)).name("Tone Map");
+        this.lightingFolder.addColor(this, "hexColor", this.hexColor).name("Background Color")
             .onChange(() => self.renderingParameters.clearColor = self.fromHexColor(self.hexColor));
+
+        this.initializeEnvironmentSelection();
+    }
+
+    initializeEnvironmentSelection()
+    {
+        const self = this;
+        function createElement(gltf)
+        {
+            if (gltf !== undefined &&
+                gltf.scenes[self.renderingParameters.sceneIndex].imageBasedLight !== undefined)
+            {
+                const sceneEnvironment = self.sceneEnvironment;
+                return self.lightingFolder.add(self, "sceneEnvironment", sceneEnvironment).name("Environment")
+                    .onChange(() => self.sceneEnvironment = sceneEnvironment);
+            }
+
+            return self.lightingFolder.add(self.renderingParameters, "environmentName", Object.keys(Environments)).name("Environment")
+                .onChange(() => self.onEnvironmentChanged());
+        }
+        this.initializeUpdatable(this.lightingFolder, createElement);
     }
 
     initializeAnimationSettings()
