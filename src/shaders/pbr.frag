@@ -93,7 +93,7 @@ uniform vec3 u_Camera;
 struct MaterialInfo
 {
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
-    vec3 f0;                        // full reflectance color (normal incidence angle)
+    vec3 f0;                        // full reflectance color (n incidence angle)
 
     float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
     vec3 albedoColor;
@@ -101,7 +101,7 @@ struct MaterialInfo
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
 
-    vec3 normal;
+    vec3 n;
     vec3 baseColor; // getBaseColor()
 
     float sheenIntensity;
@@ -109,8 +109,6 @@ struct MaterialInfo
     float sheenRoughness;
 
     float anisotropy;
-    vec3 anisotropicT;
-    vec3 anisotropicB;
 
     vec3 clearcoatF0;
     vec3 clearcoatF90;
@@ -133,6 +131,74 @@ struct MaterialInfo
 
     float transmission;
 };
+
+// Get normal, tangent and bitangent vectors.
+NormalInfo getNormalInfo(vec3 v)
+{
+    vec2 UV = getNormalUV();
+    vec3 uv_dx = dFdx(vec3(UV, 0.0));
+    vec3 uv_dy = dFdy(vec3(UV, 0.0));
+
+    vec3 t_ = (uv_dy.t * dFdx(v_Position) - uv_dx.t * dFdy(v_Position)) /
+        (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
+
+    vec3 n, t, b, ng;
+
+    // Compute geometrical TBN:
+    #ifdef HAS_TANGENTS
+        // Trivial TBN computation, present as vertex attribute.
+        // Normalize eigenvectors as matrix is linearly interpolated.
+        t = normalize(v_TBN[0]);
+        b = normalize(v_TBN[1]);
+        ng = normalize(v_TBN[2]);
+    #else
+        // Normals are either present as vertex attributes or approximated.
+        #ifdef HAS_NORMALS
+            ng = normalize(v_Normal);
+        #else
+            ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
+        #endif
+
+        t = normalize(t_ - ng * dot(ng, t_));
+        b = cross(ng, t);
+    #endif
+
+    // For a back-facing surface, the tangential basis vectors are negated.
+    float facing = step(0.0, dot(v, ng)) * 2.0 - 1.0;
+    t *= facing;
+    b *= facing;
+    ng *= facing;
+
+    // Due to anisoptry, the tangent can be further rotated around the geometric normal.
+    vec3 direction;
+    #ifdef MATERIAL_ANISOTROPY
+        #ifdef HAS_ANISOTROPY_DIRECTION_MAP
+            direction = texture(u_AnisotropyDirectionSampler, getAnisotropyDirectionUV()).xyz * 2.0 - vec3(1.0);
+        #else
+            direction = u_AnisotropyDirection;
+        #endif
+    #else
+        direction = vec3(1.0, 0.0, 0.0);
+    #endif
+    t = mat3(t, b, ng) * normalize(direction);
+    b = normalize(cross(ng, t));
+
+    // Compute pertubed normals:
+    #ifdef HAS_NORMAL_MAP
+        n = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
+        n *= vec3(u_NormalScale, u_NormalScale, 1.0);
+        n = mat3(t, b, ng) * normalize(n);
+    #else
+        n = ng;
+    #endif
+
+    NormalInfo info;
+    info.ng = ng;
+    info.t = t;
+    info.b = b;
+    info.n = n;
+    return info;
+}
 
 vec4 getBaseColor()
 {
@@ -310,22 +376,13 @@ MaterialInfo getAbsorptionInfo(MaterialInfo info)
     return info;
 }
 
-MaterialInfo getAnisotropyInfo(MaterialInfo info, vec3 ng, mat3 TBN)
+MaterialInfo getAnisotropyInfo(MaterialInfo info)
 {
     info.anisotropy = u_Anisotropy;
 
 #ifdef HAS_ANISOTROPY_MAP
     info.anisotropy *= texture(u_AnisotropySampler, getAnisotropyUV()).r * 2.0 - 1.0;
 #endif
-
-#ifdef HAS_ANISOTROPY_DIRECTION_MAP
-    vec3 direction = texture(u_AnisotropyDirectionSampler, getAnisotropyDirectionUV()).xyz * 2.0 - vec3(1.0);
-#else
-    vec3 direction = u_AnisotropyDirection;
-#endif
-
-    info.anisotropicT = normalize(TBN * direction);
-    info.anisotropicB = normalize(cross(ng, info.anisotropicT));
 
     return info;
 }
@@ -349,7 +406,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 
     #ifdef HAS_CLEARCOAT_NORMAL_MAP
         vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        info.clearcoatNormal = ccSampleNor.xyz;
+        info.clearcoatNormal = normalize(ccSampleNor.xyz);
     #else
         info.clearcoatNormal = normalInfo.ng;
     #endif
@@ -380,21 +437,18 @@ void main()
     return;
 #endif
 
-    vec3 view = normalize(u_Camera - v_Position);
-    NormalInfo normalInfo = getNormalInfo(view);
-    vec3 normal = normalInfo.ng;
-    vec3 tangent = normalInfo.tg;
-    vec3 bitangent = normalInfo.bg;
-    // normal = normalize(v_Normal);
-    // normal = -normal;
-    mat3 TBN = mat3(tangent, bitangent, normal);
+    vec3 v = normalize(u_Camera - v_Position);
+    NormalInfo normalInfo = getNormalInfo(v);
+    vec3 n = normalInfo.n;
+    vec3 t = normalInfo.t;
+    vec3 b = normalInfo.b;
 
-    float TdotV = dot(tangent, view);
-    float BdotV = dot(bitangent, view);
+    float NdotV = clampedDot(n, v);
+    float TdotV = clampedDot(t, v);
+    float BdotV = clampedDot(b, v);
 
     MaterialInfo materialInfo;
     materialInfo.baseColor = baseColor.rgb;
-
 
 #ifdef MATERIAL_IOR
     float ior = u_IOR;
@@ -432,7 +486,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_ANISOTROPY
-    materialInfo = getAnisotropyInfo(materialInfo, normal, TBN);
+    materialInfo = getAnisotropyInfo(materialInfo);
 #endif
 
     materialInfo = getThicknessInfo(materialInfo);
@@ -451,10 +505,10 @@ void main()
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
 
-    materialInfo.normal = normal;
+    materialInfo.n = n;
 
 #ifdef MATERIAL_THIN_FILM
-    materialInfo.f0 = getThinFilmF0(materialInfo.f0, materialInfo.f90, clampedDot(normal, view),
+    materialInfo.f0 = getThinFilmF0(materialInfo.f0, materialInfo.f90, clampedDot(n, v),
         materialInfo.thinFilmFactor, materialInfo.thinFilmThickness);
 #endif
 
@@ -469,23 +523,23 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getIBLRadianceGGX(normal, view, materialInfo.perceptualRoughness, materialInfo.f0);
-    f_diffuse += getIBLRadianceLambertian(normal, materialInfo.albedoColor);
+    f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0);
+    f_diffuse += getIBLRadianceLambertian(n, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, view, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
+        f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getIBLRadianceCharlie(normal, view, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
     #endif
 
     #ifdef MATERIAL_SUBSURFACE
-        f_subsurface += getIBLRadianceSubsurface(normal, view, materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
+        f_subsurface += getIBLRadianceSubsurface(n, v, materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower, materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getIBLRadianceTransmission(normal, view, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
+        f_transmission += getIBLRadianceTransmission(n, v, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
     #endif
 #endif
 
@@ -503,7 +557,7 @@ void main()
             pointToLight = light.position - v_Position;
         }
 
-        // point and spot
+        // Compute range and spot light attenuation.
         if (light.type != LightType_Directional)
         {
             rangeAttenuation = getRangeAttenuation(light.range, length(pointToLight));
@@ -513,48 +567,55 @@ void main()
             spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
         }
 
-        vec3 l = normalize(pointToLight);
         vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
-        AngularInfo angularInfo = getAngularInfo(pointToLight, materialInfo.normal, view);
 
-        if (angularInfo.NdotL > 0.0 || angularInfo.NdotV > 0.0)
+        vec3 l = normalize(pointToLight);   // Direction from surface point to light
+        vec3 h = normalize(l + v);          // Direction of the vector between l and v, called halfway vector
+        float NdotL = clampedDot(n, l);
+        float NdotV = clampedDot(n, v);
+        float NdotH = clampedDot(n, h);
+        float LdotH = clampedDot(l, h);
+        float VdotH = clampedDot(v, h);
+
+        if (NdotL > 0.0 || NdotV > 0.0)
         {
             // Calculation of analytical light
             //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-            f_diffuse += intensity * angularInfo.NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, angularInfo.VdotH);
+            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, VdotH);
 
             #ifdef MATERIAL_ANISOTROPY
-            vec3 h = normalize(l + view);
-            float TdotL = dot(materialInfo.anisotropicT, l);
-            float BdotL = dot(materialInfo.anisotropicB, l);
-            float TdotH = dot(materialInfo.anisotropicT, h);
-            float BdotH = dot(materialInfo.anisotropicB, h);
-            f_specular += intensity * angularInfo.NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
-                angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH,
+            vec3 h = normalize(l + v);
+            float TdotL = dot(t, l);
+            float BdotL = dot(b, l);
+            float TdotH = dot(t, h);
+            float BdotH = dot(b, h);
+            f_specular += intensity * NdotL * BRDF_specularAnisotropicGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness,
+                VdotH, NdotL, NdotV, NdotH,
                 BdotV, TdotV, TdotL, BdotL, TdotH, BdotH, materialInfo.anisotropy);
             #else
-            f_specular += intensity * angularInfo.NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, angularInfo.VdotH, angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+            f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
             #endif
 
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
-                    angularInfo.NdotL, angularInfo.NdotV, angularInfo.NdotH);
+                    NdotL, NdotV, NdotH);
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, view, l,
+                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l,
+                    h, VdotH,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
 
         #ifdef MATERIAL_SUBSURFACE
-            f_subsurface += intensity * getPunctualRadianceSubsurface(normal, view, l,
+            f_subsurface += intensity * getPunctualRadianceSubsurface(n, v, l,
                 materialInfo.subsurfaceScale, materialInfo.subsurfaceDistortion, materialInfo.subsurfacePower,
                 materialInfo.subsurfaceColor, materialInfo.subsurfaceThickness);
         #endif
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getPunctualRadianceTransmission(normal, view, l, materialInfo.alphaRoughness, ior, materialInfo.f0);
+            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, ior, materialInfo.f0);
         #endif
     }
 #endif // !USE_PUNCTUAL
@@ -575,11 +636,11 @@ void main()
 
     #ifdef MATERIAL_CLEARCOAT
         clearcoatFactor = materialInfo.clearcoatFactor;
-        clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, view));
+        clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, v));
     #endif
 
     #ifdef MATERIAL_ABSORPTION
-        f_transmission *= transmissionAbsorption(view, normal, ior, materialInfo.thickness, materialInfo.absorption);
+        f_transmission *= transmissionAbsorption(v, n, ior, materialInfo.thickness, materialInfo.absorption);
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
@@ -621,11 +682,11 @@ void main()
     #endif
 
     #ifdef DEBUG_TANGENT
-        g_finalColor.rgb = tangent * 0.5 + vec3(0.5);
+        g_finalColor.rgb = t * 0.5 + vec3(0.5);
     #endif
 
     #ifdef DEBUG_BITANGENT
-        g_finalColor.rgb = bitangent * 0.5 + vec3(0.5);
+        g_finalColor.rgb = b * 0.5 + vec3(0.5);
     #endif
 
     #ifdef DEBUG_BASECOLOR
