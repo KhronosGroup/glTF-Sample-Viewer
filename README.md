@@ -41,6 +41,10 @@ Features
 - [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 
+Experimental
+- [x] [KHR_materials_ior](https://github.com/KhronosGroup/glTF/pull/1718)  
+- [x] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)  
+
 Viewer
 ======
 
