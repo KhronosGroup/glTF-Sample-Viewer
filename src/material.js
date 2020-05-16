@@ -541,9 +541,15 @@ class gltfMaterial extends GltfObject
                     ior = 1.0;
                 }
 
+                // Compute the achromatic normal incidence reflectance based on a given index of refraction of a dielectric material.
+                // The index of refraction of the surrounding is assumed to be 1.0, which is approximatly the case for air.
+                // For an index of refraction of 1.5, this results the known default value of 0.04 reflectivity for dielectrics.
+                let f0_ior = (ior - 1.0) / (ior + 1.0);
+                f0_ior *= f0_ior;
+
                 this.defines.push("MATERIAL_IOR 1");
 
-                this.properties.set("u_IOR", ior);
+                this.properties.set("u_IOR_and_f0", jsToGl([ior, f0_ior]));
             }
 
             // KHR Extension: Absorption

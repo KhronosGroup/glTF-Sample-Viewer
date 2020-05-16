@@ -6,6 +6,10 @@
         "**/Thumbs.db": true,
         "node_modules": true
     },
+    "search.exclude": {
+        "**/node_modules": true,
+        "assets/models/1.0": true
+    },
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
     "editor.insertSpaces": true,

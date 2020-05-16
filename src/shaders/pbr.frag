@@ -73,8 +73,8 @@ uniform float u_ThinFilmFactor;
 uniform float u_ThinFilmThicknessMinimum;
 uniform float u_ThinFilmThicknessMaximum;
 
-// IOR
-uniform float u_IOR;
+// IOR (in .x) and the corresponding f0 (in .y)
+uniform vec2 u_IOR_and_f0;
 
 // Thickness
 uniform float u_Thickness;
@@ -247,7 +247,7 @@ float getMetallicRoughnessSpecularFactor()
     return  0.08 * u_MetallicRoughnessSpecularFactor;
 }
 
-MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float ior)
+MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
 {
     info.metallic = u_MetallicFactor;
     info.perceptualRoughness = u_RoughnessFactor;
@@ -265,7 +265,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float ior)
     vec3 f0 = vec3(getMetallicRoughnessSpecularFactor());
 #else
     // Achromatic f0 based on IOR.
-    vec3 f0 = vec3(f0_ior(ior));
+    vec3 f0 = vec3(f0_ior);
 #endif
 
     info.albedoColor = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
@@ -451,10 +451,12 @@ void main()
     materialInfo.baseColor = baseColor.rgb;
 
 #ifdef MATERIAL_IOR
-    float ior = u_IOR;
+    float ior = u_IOR_and_f0.x;
+    float f0_ior = u_IOR_and_f0.y;
 #else
     // The default index of refraction of 1.5 yields a dielectric normal incidence reflectance of 0.04.
     float ior = 1.5;
+    float f0_ior = 0.04;
 #endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -462,7 +464,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_METALLICROUGHNESS
-    materialInfo = getMetallicRoughnessInfo(materialInfo, ior);
+    materialInfo = getMetallicRoughnessInfo(materialInfo, f0_ior);
 #endif
 
 #ifdef MATERIAL_SHEEN
