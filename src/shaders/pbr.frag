@@ -420,14 +420,6 @@ void main()
 {
     vec4 baseColor = getBaseColor();
 
-#ifdef ALPHAMODE_MASK
-    if(baseColor.a < u_AlphaCutoff)
-    {
-        discard;
-    }
-    baseColor.a = 1.0;
-#endif
-
 #ifdef ALPHAMODE_OPAQUE
     baseColor.a = 1.0;
 #endif
@@ -661,6 +653,15 @@ void main()
 #endif
 
 #ifndef DEBUG_OUTPUT // no debug
+
+#ifdef ALPHAMODE_MASK
+    // Late discard to avaoid samplig artifacts. See https://github.com/KhronosGroup/glTF-Sample-Viewer/issues/267
+    if(baseColor.a < u_AlphaCutoff)
+    {
+        discard;
+    }
+    baseColor.a = 1.0;
+#endif
 
     // regular shading
     g_finalColor = vec4(toneMap(color), baseColor.a);
