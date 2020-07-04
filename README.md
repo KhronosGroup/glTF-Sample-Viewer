@@ -63,7 +63,7 @@ Usage
 
 **Change glTF model**
 
-* Choose one of the glTF models in the selction list
+* Choose one of the glTF models in the selection list
 
 or
 
@@ -123,7 +123,7 @@ Debugging
 Physically-Based Materials in glTF 2.0
 ======================================
 
-With the change from glTF 1.0 to glTF 2.0, one of the largest changes included core support for materials that could be used for physically-based shading. Part of this process involved chosing technically accurate, yet user-friendly, parameters for which developers and artists could use intuitively. This resulted in the introduction of the **Metallic-Roughness Material** to glTF. If you would like to read more about glTF, you can find the content at its [GitHub page](https://github.com/KhronosGroup/glTF).
+With the change from glTF 1.0 to glTF 2.0, one of the largest changes included core support for materials that could be used for physically-based shading. Part of this process involved choosing technically accurate, yet user-friendly, parameters for which developers and artists could use intuitively. This resulted in the introduction of the **Metallic-Roughness Material** to glTF. If you would like to read more about glTF, you can find the content at its [GitHub page](https://github.com/KhronosGroup/glTF).
 
 A good reference about Physically-Based Materials and its workflow can be found on the [THE PBR GUIDE - PART 1](https://academy.allegorithmic.com/courses/the-pbr-guide-part-1) and [THE PBR GUIDE - PART 2](https://academy.allegorithmic.com/courses/the-pbr-guide-part-2) from [allegorithmic](https://www.allegorithmic.com).
 
@@ -172,7 +172,7 @@ vec3 fresnel(vec3 f0, vec3 f90, float VdotH)
 
 Please note, that the above shader code includes the optimization for "turning off" the Fresnel edge brightening (see "Real-Time Rendering" Fourth Edition on page 325).
 
-### Geometric Occlusion / Visiblity (V)
+### Geometric Occlusion / Visibility (V)
 
 **Smith Joint GGX**
 
