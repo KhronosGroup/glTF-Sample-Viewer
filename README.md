@@ -74,6 +74,8 @@ Setup
 
 For local usage and debugging, please follow these instructions:
 
+**(0)** Make sure [Git LFS](https://git-lfs.github.com) is installed.
+
 **(1)** Checkout the [`master`](../../tree/master) branch
 
 **(2)** Install dependencies with `npm install`
