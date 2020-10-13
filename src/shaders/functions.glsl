@@ -24,7 +24,7 @@ vec4 getVertexColor()
    vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
 
 #ifdef HAS_VERTEX_COLOR_VEC3
-    color.rgb = v_Color;
+    color.rgb = v_Color.rgb;
 #endif
 #ifdef HAS_VERTEX_COLOR_VEC4
     color = v_Color;
