@@ -537,6 +537,13 @@ void main()
     #endif
 #endif
 
+    float ao = 1.0;
+    // Apply optional PBR terms for additional (optional) shading
+#ifdef HAS_OCCLUSION_MAP
+    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
+    f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
+#endif
+
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
@@ -644,13 +651,6 @@ void main()
     #endif
 
     color = (f_emissive + diffuse + f_specular + f_subsurface + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
-
-    float ao = 1.0;
-    // Apply optional PBR terms for additional (optional) shading
-#ifdef HAS_OCCLUSION_MAP
-    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
-    color = mix(color, color * ao, u_OcclusionStrength);
-#endif
 
 #ifndef DEBUG_OUTPUT // no debug
 
