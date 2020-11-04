@@ -433,6 +433,9 @@ class gltfRenderer
         case(DebugOutput.NORMAL):
             fragDefines.push("DEBUG_NORMAL 1");
             break;
+        case(DebugOutput.WORLDSPACENORMAL):
+            fragDefines.push("DEBUG_WORLDSPACE_NORMAL 1");
+            break;
         case(DebugOutput.TANGENT):
             fragDefines.push("DEBUG_TANGENT 1");
             break;

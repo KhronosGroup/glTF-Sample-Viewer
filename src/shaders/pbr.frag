@@ -684,6 +684,10 @@ void main()
         #endif
     #endif
 
+    #ifdef DEBUG_WORLDSPACE_NORMAL
+            g_finalColor.rgb = n;
+    #endif
+
     #ifdef DEBUG_TANGENT
         g_finalColor.rgb = t * 0.5 + vec3(0.5);
     #endif
