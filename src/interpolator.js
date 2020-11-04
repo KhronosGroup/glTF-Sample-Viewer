@@ -134,10 +134,15 @@ class gltfInterpolator
                 quat.normalize(result, result);
                 return result;
             }
-            else {
+            else if(sampler.interpolation === InterpolationModes.LINEAR)
+            {
                 const q0 = this.getQuat(output, this.prevKey);
                 const q1 = this.getQuat(output, nextKey);
                 return this.slerpQuat(q0, q1, tn);
+            }
+            else if(sampler.interpolation === InterpolationModes.STEP)
+            {
+                return this.getQuat(output, this.prevKey);
             }
 
         }
