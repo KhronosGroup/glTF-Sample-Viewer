@@ -164,12 +164,11 @@ NormalInfo getNormalInfo(vec3 v)
     #endif
 
     // For a back-facing surface, the tangential basis vectors are negated.
-    float facing = sign(dot(v, ng));
-    if (facing < 0.0)
+    if (gl_FrontFacing == false)
     {
-        t *= facing;
-        b *= facing;
-        ng *= facing;
+        t *= -1.0;
+        b *= -1.0;
+        ng *= -1.0;
     }
 
     // Due to anisoptry, the tangent can be further rotated around the geometric normal.
