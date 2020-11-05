@@ -4,6 +4,7 @@ import { jsToGl, clamp } from './utils.js';
 import { getSceneExtends } from './gltf_utils.js';
 
 const VecZero = vec3.create();
+const panSpeedDenominator = 1200;
 
 class UserCamera extends gltfCamera
 {
@@ -25,7 +26,7 @@ class UserCamera extends gltfCamera
         this.zoom = zoom;
         this.zoomFactor = 1.04;
         this.rotateSpeed = 1 / 180;
-        this.scaleFactor = 1;
+        this.panSpeed = 1;
     }
 
     updatePosition()
@@ -71,18 +72,22 @@ class UserCamera extends gltfCamera
 
     pan(x, y)
     {
-        const moveSpeed = 1 / (this.scaleFactor * 200);
-
         const left = vec3.fromValues(-1, 0, 0);
         this.toLocalRotation(left);
-        vec3.scale(left, left, x * moveSpeed);
+        vec3.scale(left, left, x * this.panSpeed);
 
         const up = vec3.fromValues(0, 1, 0);
         this.toLocalRotation(up);
-        vec3.scale(up, up, y * moveSpeed);
+        vec3.scale(up, up, y * this.panSpeed);
 
         vec3.add(this.target, this.target, up);
         vec3.add(this.target, this.target, left);
+    }
+
+    fitPanSpeedToScene(min, max)
+    {
+        const longestDistance = vec3.distance(min, max);
+        this.panSpeed = longestDistance / panSpeedDenominator;
     }
 
     fitViewToScene(gltf, sceneIndex)
@@ -92,6 +97,7 @@ class UserCamera extends gltfCamera
         getSceneExtends(gltf, sceneIndex, min, max);
         this.fitCameraTargetToExtents(min, max);
         this.fitZoomToExtents(min, max);
+        this.fitPanSpeedToScene(min, max);
         this.fitCameraPlanesToExtents(min, max);
     }
 
@@ -100,6 +106,7 @@ class UserCamera extends gltfCamera
         const min = vec3.create();
         const max = vec3.create();
         getSceneExtends(gltf, sceneIndex, min, max);
+        this.fitPanSpeedToScene(min, max);
         this.fitCameraPlanesToExtents(min, max);
     }
 

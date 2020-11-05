@@ -10,7 +10,7 @@ import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
-import { getScaleFactor, computePrimitiveCentroids } from './gltf_utils.js';
+import { computePrimitiveCentroids } from './gltf_utils.js';
 
 class gltfViewer
 {
@@ -43,10 +43,6 @@ class gltfViewer
         this.loadingTimer = new Timer();
         this.gltf = undefined;
         this.lastDropped = undefined;
-
-        this.scaledSceneIndex = 0;
-        this.scaledGltfChanged = true;
-        this.sceneScaleFactor = 1;
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
@@ -282,7 +278,6 @@ class gltfViewer
 
         this.gltf = gltf;
         this.currentlyRendering = true;
-        this.scaledGltfChanged = true;
 
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
