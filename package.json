@@ -6,7 +6,6 @@
   "module": "dist/gltf-reference-viewer.module.js",
   "scripts": {
     "start": "electron electron/main.js",
-    "start-offscreen": "electron electron/offscreen.js --enable-logging",
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",
     "dev:electron": "concurrently \"rollup -c -w\" \"npm start\"",
