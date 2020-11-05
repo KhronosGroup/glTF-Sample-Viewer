@@ -49,6 +49,7 @@ const DebugOutput =
     METALLIC: "Metallic",
     ROUGHNESS: "Roughness",
     NORMAL: "Normal",
+    WORLDSPACENORMAL: "Worldspace Normal",
     TANGENT: "Tangent",
     BITANGENT: "Bitangent",
     BASECOLOR: "Base Color",
