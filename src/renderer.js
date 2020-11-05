@@ -328,7 +328,7 @@ class gltfRenderer
                 }
             }
         }
-        return lights.length > 0 ? lights : [ new gltfLight() ];
+        return lights;
     }
 
     updateSkin(gltf, node)
@@ -492,7 +492,10 @@ class gltfRenderer
             uniformLights.push(light.toUniform(gltf));
         }
 
-        this.shader.updateUniform("u_Lights", uniformLights);
+        if(uniformLights.length > 0)
+        {
+            this.shader.updateUniform("u_Lights", uniformLights);
+        }
     }
 
     initializeEnvironment(gltf, scene)

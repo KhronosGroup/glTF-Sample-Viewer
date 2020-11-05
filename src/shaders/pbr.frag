@@ -32,7 +32,7 @@ precision highp float;
 out vec4 g_finalColor;
 
 #ifdef USE_PUNCTUAL
-uniform Light u_Lights[LIGHT_COUNT];
+uniform Light u_Lights[LIGHT_COUNT + 1]; //Array [0] is not allowed
 #endif
 
 // Metallic Roughness
