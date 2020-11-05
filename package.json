@@ -22,7 +22,7 @@
     "pbr"
   ],
   "author": "Khronos Group Inc.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "argparse": "^1.0.10",
     "gl-matrix": "^3.2.1",
