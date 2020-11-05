@@ -124,10 +124,12 @@ NormalInfo getNormalInfo(vec3 v)
     #endif
 
     // For a back-facing surface, the tangential basis vectors are negated.
-    float facing = step(0.0, dot(v, ng)) * 2.0 - 1.0;
-    t *= facing;
-    b *= facing;
-    ng *= facing;
+    if (gl_FrontFacing == false)
+    {
+        t *= -1.0;
+        b *= -1.0;
+        ng *= -1.0;
+    }
 
     // Compute pertubed normals:
     #ifdef HAS_NORMAL_MAP
@@ -330,6 +332,13 @@ void main()
     #endif
 #endif
 
+    float ao = 1.0;
+    // Apply optional PBR terms for additional (optional) shading
+#ifdef HAS_OCCLUSION_MAP
+    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
+    f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
+#endif
+
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
@@ -406,13 +415,6 @@ void main()
 
     color = (f_emissive + f_diffuse + f_specular + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
-    float ao = 1.0;
-    // Apply optional PBR terms for additional (optional) shading
-#ifdef HAS_OCCLUSION_MAP
-    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
-    color = mix(color, color * ao, u_OcclusionStrength);
-#endif
-
 #ifndef DEBUG_OUTPUT // no debug
 
 #ifdef ALPHAMODE_MASK
@@ -445,8 +447,12 @@ void main()
         #endif
     #endif
 
+    #ifdef DEBUG_GEOMETRY_NORMAL
+        g_finalColor.rgb = (normalInfo.ng + 1.0) / 2.0;
+    #endif
+
     #ifdef DEBUG_WORLDSPACE_NORMAL
-            g_finalColor.rgb = (n + 1.0) / 2.0;
+        g_finalColor.rgb = (n + 1.0) / 2.0;
     #endif
 
     #ifdef DEBUG_TANGENT
