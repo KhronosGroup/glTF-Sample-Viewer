@@ -10,3 +10,4 @@ package-lock.json
 dist
 .idea
 yarn.lock
+.project
