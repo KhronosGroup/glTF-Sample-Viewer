@@ -686,8 +686,12 @@ void main()
         #endif
     #endif
 
+    #ifdef DEBUG_GEOMETRY_NORMAL
+        g_finalColor.rgb = (normalInfo.ng + 1.0) / 2.0;
+    #endif
+
     #ifdef DEBUG_WORLDSPACE_NORMAL
-            g_finalColor.rgb = (n + 1.0) / 2.0;
+        g_finalColor.rgb = (n + 1.0) / 2.0;
     #endif
 
     #ifdef DEBUG_TANGENT
