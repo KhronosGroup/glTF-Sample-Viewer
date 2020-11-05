@@ -5,23 +5,16 @@
   "main": "dist/gltf-reference-viewer.js",
   "module": "dist/gltf-reference-viewer.module.js",
   "scripts": {
-    "start": "electron electron/main.js",
-    "start-offscreen": "electron electron/offscreen.js --enable-logging",
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",
-    "dev:electron": "concurrently \"rollup -c -w\" \"npm start\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js electron/*.js",
-    "lint:fix": "eslint --fix src/**/*.js electron/*.js",
-    "version": "npm run build",
-    "postversion": "git push && git push --tags",
-    "package-mac": "electron-packager . gltf-reference-viewer --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
-    "package-win": "electron-packager . gltf-reference-viewer --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.ProductName=\"glTF Reference Viewer\"",
-    "package-linux": "electron-packager . gltf-reference-viewer --overwrite --asar=true --platform=linux --arch=x64 --prune=true --out=release-builds"
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ux3d/glTF-WebGL-PBR.git"
+    "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
   },
   "keywords": [
     "gltf",
@@ -38,8 +31,6 @@
   "devDependencies": {
     "acorn": "^7.1.0",
     "concurrently": "^5.1.0",
-    "electron": "^4.0.0",
-    "electron-packager": "^14.2.1",
     "eslint": "^6.8.0",
     "rollup": "^1.31.1",
     "rollup-plugin-commonjs": "^10.1.0",

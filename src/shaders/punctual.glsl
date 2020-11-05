@@ -47,27 +47,6 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
-vec3 getPunctualRadianceSubsurface(vec3 n, vec3 v, vec3 l, float scale, float distortion, float power, vec3 color, float thickness)
-{
-    vec3 distortedHalfway = l + n * distortion;
-    float backIntensity = max(0.0, dot(v, -distortedHalfway));
-    float reverseDiffuse = pow(clamp(0.0, 1.0, backIntensity), power) * scale;
-    return (reverseDiffuse + color) * (1.0 - thickness);
-}
-
-vec3 getPunctualRadianceTransmission(vec3 n, vec3 v, vec3 l, float alphaRoughness, float ior, vec3 f0)
-{
-    vec3 r = refract(-v, n, 1.0 / ior);
-    vec3 h = normalize(l - r);
-    float NdotL = clampedDot(-n, l);
-    float NdotV = clampedDot(n, -r);
-
-    float Vis = V_GGX(clampedDot(-n, l), NdotV, alphaRoughness);
-    float D = D_GGX(clampedDot(r, l), alphaRoughness);
-
-    return NdotL * f0 * Vis * D;
-}
-
 vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, float VdotH, vec3 f0, vec3 f90, float clearcoatRoughness)
 {
     float NdotL = clampedDot(clearcoatNormal, l);

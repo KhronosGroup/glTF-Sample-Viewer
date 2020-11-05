@@ -42,8 +42,8 @@ Features
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 
 Experimental
-- [x] [KHR_materials_ior](https://github.com/KhronosGroup/glTF/pull/1718)  
-- [x] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)  
+- [x] [KHR_materials_ior](https://github.com/KhronosGroup/glTF/pull/1718)
+- [x] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/pull/1698)
 
 Viewer
 ======
@@ -82,34 +82,12 @@ For local usage and debugging, please follow these instructions:
 
 **(3)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
-**(4a)** Start a demo in the browser with `npm run dev`, and open http://localhost:8000.
-
-**(4b)** Start a demo in Electron with `npm run dev:electron`.
+**(4)** Start a demo in the browser with `npm run dev`, and open http://localhost:8000.
 
 When making changes, the project is automatically rebuilt and the `dist/` folder
 is updated. Files in the `dist/` folder should not be included in pull
 requests — they will be updated by project maintainers with each new release.
 
-Offline / Headless Rendering
-----------------------------
-
-**NOTE:** The dimensions of the rendered image are limited by the (virtual) desktop size.
-
-Requirements
-  * [NodeJS](https://nodejs.org)
-  * [Electron](https://electronjs.org/) (Installed automatically)
-
-Configure environment
-- ``npm install`` (also installs Electron)
-- ``npm run build`` (“compile” the code)
-
-Run
-- ``npm run start-offscreen -- -- -h`` for a list of available options
-
-Example
-- ``npm run start-offscreen -- -- assets/models/2.0/FlightHelmet/glTF/FlightHelmet.gltf``
-
-After execution, the screenshot is stored as ``output.png`` on the file system.
 
 Debugging
 ---------
@@ -222,6 +200,6 @@ vec3 lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float VdotH)
 Appendix B: FAQ
 ===============
 
-Q: Why do I not see environment lighting here [https://github.khronos.org/glTF-Sample-Viewer/](https://github.khronos.org/glTF-Sample-Viewer/)?  
+Q: Why do I not see environment lighting here [https://github.khronos.org/glTF-Sample-Viewer/](https://github.khronos.org/glTF-Sample-Viewer/)?
 A: The glTF Sample Viewer is using [KTX2](http://github.khronos.org/KTX-Specification/) for the pre-filtered environments. However, the mime type is not yet registered [here](https://github.com/jshttp/mime-db).
 
