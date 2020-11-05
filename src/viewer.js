@@ -303,6 +303,7 @@ class gltfViewer
             if (self.currentlyRendering)
             {
                 self.prepareSceneForRendering(self.gltf);
+                self.userCamera.fitCameraPlanesToScene(self.gltf, self.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
@@ -375,33 +376,6 @@ class gltfViewer
         this.animateNode(gltf);
 
         scene.applyTransformHierarchy(gltf);
-
-        const transform = mat4.create();
-
-        let scaled = false;
-        if (this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex !== this.renderingParameters.sceneIndex || this.prevCameraIndex !== this.renderingParameters.cameraIndex))
-        {
-            this.sceneScaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
-
-            scaled = true;
-            this.scaledGltfChanged = false;
-            this.scaledSceneIndex = this.renderingParameters.sceneIndex;
-            console.log("Rescaled scene " + this.scaledSceneIndex + " by " + this.sceneScaleFactor);
-        }
-        else if(!this.renderingParameters.userCameraActive() && this.prevCameraIndex !== this.renderingParameters.cameraIndex)
-        {
-            this.sceneScaleFactor = 1;
-        }
-
-        this.prevCameraIndex = this.renderingParameters.cameraIndex;
-
-        mat4.scale(transform, transform, vec3.fromValues(this.sceneScaleFactor,  this.sceneScaleFactor,  this.sceneScaleFactor));
-        scene.applyTransformHierarchy(gltf, transform);
-
-        if(scaled)
-        {
-            this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
-        }
     }
 
     animateNode(gltf)
