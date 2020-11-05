@@ -27,6 +27,18 @@ class gltfInterpolator
         return quatResult;
     }
 
+    step(prevKey, output, stride)
+    {
+        const result = new glMatrix.ARRAY_TYPE(stride);
+
+        for(let i = 0; i < stride; ++i)
+        {
+            result[i] = output[prevKey * stride + i];
+        }
+
+        return result;
+    }
+
     linear(prevKey, nextKey, output, t, stride)
     {
         const result = new glMatrix.ARRAY_TYPE(stride);
@@ -122,10 +134,15 @@ class gltfInterpolator
                 quat.normalize(result, result);
                 return result;
             }
-            else {
+            else if(sampler.interpolation === InterpolationModes.LINEAR)
+            {
                 const q0 = this.getQuat(output, this.prevKey);
                 const q1 = this.getQuat(output, nextKey);
                 return this.slerpQuat(q0, q1, tn);
+            }
+            else if(sampler.interpolation === InterpolationModes.STEP)
+            {
+                return this.getQuat(output, this.prevKey);
             }
 
         }
@@ -133,7 +150,7 @@ class gltfInterpolator
         switch(sampler.interpolation)
         {
         case InterpolationModes.STEP:
-            return jsToGlSlice(output, this.prevKey * stride, stride); // t < 0.5 ? output[preKey] : output[nextKey]
+            return this.step(this.prevKey, output, stride);
         case InterpolationModes.CUBICSPLINE:
             return this.cubicSpline(this.prevKey, nextKey, output, keyDelta, tn, stride);
         default:
