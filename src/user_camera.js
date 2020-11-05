@@ -106,7 +106,6 @@ class UserCamera extends gltfCamera
         const min = vec3.create();
         const max = vec3.create();
         getSceneExtends(gltf, sceneIndex, min, max);
-        this.fitPanSpeedToScene(min, max);
         this.fitCameraPlanesToExtents(min, max);
     }
 
