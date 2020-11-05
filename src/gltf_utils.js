@@ -67,7 +67,7 @@ function getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
 
     const radius = vec3.length(centerToSurface);
 
-    for (const i of [1, 2, 3])
+    for (const i of [0, 1, 2])
     {
         outMin[i] = center[i] - radius;
         outMax[i] = center[i] + radius;
