@@ -685,7 +685,7 @@ void main()
     #endif
 
     #ifdef DEBUG_WORLDSPACE_NORMAL
-            g_finalColor.rgb = n;
+            g_finalColor.rgb = (n + 1.0) / 2.0;
     #endif
 
     #ifdef DEBUG_TANGENT
