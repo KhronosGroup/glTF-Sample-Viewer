@@ -145,7 +145,7 @@ class UserCamera extends gltfCamera
         let zNear = this.zoom - (longestDistance * 0.6);
         let zFar = this.zoom + (longestDistance * 0.6);
 
-        zNear = Math.max(zNear, 0.0); // should not be negative
+        zNear = Math.max(zNear, Number.EPSILON); // should not be negative
         zFar = Math.abs(zFar);
 
         this.znear = zNear;
