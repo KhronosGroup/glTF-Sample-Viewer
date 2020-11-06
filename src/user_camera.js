@@ -4,7 +4,8 @@ import { jsToGl, clamp } from './utils.js';
 import { getSceneExtends } from './gltf_utils.js';
 
 const VecZero = vec3.create();
-const panSpeedDenominator = 1200;
+const PanSpeedDenominator = 1200;
+const MaxNearFarRatio = 10000;
 
 class UserCamera extends gltfCamera
 {
@@ -87,7 +88,7 @@ class UserCamera extends gltfCamera
     fitPanSpeedToScene(min, max)
     {
         const longestDistance = vec3.distance(min, max);
-        this.panSpeed = longestDistance / panSpeedDenominator;
+        this.panSpeed = longestDistance / PanSpeedDenominator;
     }
 
     fitViewToScene(gltf, sceneIndex)
@@ -145,8 +146,8 @@ class UserCamera extends gltfCamera
         let zNear = this.zoom - (longestDistance * 0.6);
         let zFar = this.zoom + (longestDistance * 0.6);
 
-        zNear = Math.max(zNear, Number.EPSILON); // should not be negative
-        zFar = Math.abs(zFar);
+        // minimum near plane value needs to depend on far plane value to avoid z fighting or too large near planes
+        zNear = Math.max(zNear, zFar / MaxNearFarRatio);
 
         this.znear = zNear;
         this.zfar = zFar;
