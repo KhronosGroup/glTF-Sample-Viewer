@@ -103,13 +103,13 @@ class gltfRenderer
 
         let currentCamera = undefined;
 
-        if(!this.parameters.userCameraActive())
+        if(this.parameters.userCameraActive())
         {
-            currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
+            currentCamera = this.defaultCamera;
         }
         else
         {
-            currentCamera = this.defaultCamera;
+            currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
