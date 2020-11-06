@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
 import { jsToGl, clamp } from './utils.js';
-import { getSceneExtends } from './gltf_utils.js';
+import { getSceneExtents } from './gltf_utils.js';
 
 const VecZero = vec3.create();
 const PanSpeedDenominator = 1200;
@@ -95,7 +95,7 @@ class UserCamera extends gltfCamera
     {
         const min = vec3.create();
         const max = vec3.create();
-        getSceneExtends(gltf, sceneIndex, min, max);
+        getSceneExtents(gltf, sceneIndex, min, max);
         this.fitCameraTargetToExtents(min, max);
         this.fitZoomToExtents(min, max);
         this.fitPanSpeedToScene(min, max);
@@ -106,7 +106,7 @@ class UserCamera extends gltfCamera
     {
         const min = vec3.create();
         const max = vec3.create();
-        getSceneExtends(gltf, sceneIndex, min, max);
+        getSceneExtents(gltf, sceneIndex, min, max);
         this.fitCameraPlanesToExtents(min, max);
     }
 
