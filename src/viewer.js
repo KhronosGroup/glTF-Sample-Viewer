@@ -451,7 +451,7 @@ class gltfViewer
 
     showSpinner()
     {
-        let spinner = document.getElementById("gltf-rv-model-spinner");
+        let spinner = document.getElementById("gltf-sample-viewer-model-spinner");
         if (spinner !== undefined)
         {
             spinner.style.display = "block";
@@ -460,7 +460,7 @@ class gltfViewer
 
     hideSpinner()
     {
-        let spinner = document.getElementById("gltf-rv-model-spinner");
+        let spinner = document.getElementById("gltf-sample-viewer-model-spinner");
         if (spinner !== undefined)
         {
             spinner.style.display = "none";

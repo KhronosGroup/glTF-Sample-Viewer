@@ -1,9 +1,9 @@
 {
-  "name": "gltf-rv",
+  "name": "gltf-sample-viewer",
   "version": "1.0.0",
   "description": "The official glTF sample viewer.",
-  "main": "dist/gltf-reference-viewer.js",
-  "module": "dist/gltf-reference-viewer.module.js",
+  "main": "dist/gltf-sample-viewer.js",
+  "module": "dist/gltf-sample-viewer.module.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",

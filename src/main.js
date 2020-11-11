@@ -2,7 +2,7 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 
-function gltf_rv(
+function gltfSampleViewer(
     canvasId,
     index,
     envMap = "Courtyard of the Doge's palace",
@@ -50,4 +50,4 @@ function getWebGlContext(canvas)
     return context;
 }
 
-export { gltf_rv };
+export { gltfSampleViewer };
