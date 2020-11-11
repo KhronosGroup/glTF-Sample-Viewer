@@ -16,6 +16,7 @@
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/stats.min.js"></script>
 
+    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder.js"></script>
     <script src="dist/gltf-reference-viewer.umd.js"></script>
 </head>
 <script>
@@ -36,7 +37,7 @@ function getUrlParam(parameter, defaultvalue){
 }
 </script>
 <!-- Just create a rendering canvas like below and call gltf_rv! -->
-<body onload="viewer = gltf_rv.gltf_rv('canvas', 'assets/models/2.0/model-index.json', 'Courtyard of the Doge\'s palace', false, undefined, '', getUrlParam('model','BoomBox'));">
+<body onload="gltf_rv.gltf_rv('canvas', 'assets/models/2.0/model-index.json', 'Courtyard of the Doge\'s palace', false, undefined, '', getUrlParam('model','BoomBox'));">
     <div id="gltf-rv-model-spinner"> </div>
     <canvas id="canvas">No Canvas!</canvas>
 </body>
