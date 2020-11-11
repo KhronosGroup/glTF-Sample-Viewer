@@ -24,12 +24,9 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "argparse": "^1.0.10",
-    "gl-matrix": "^3.2.1",
-    "open": "7.0.2"
+    "gl-matrix": "^3.2.1"
   },
   "devDependencies": {
-    "acorn": "^7.1.0",
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
     "rollup": "^1.31.1",
