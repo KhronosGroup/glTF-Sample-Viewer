@@ -67,22 +67,11 @@ function getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
 
     const radius = vec3.length(centerToSurface);
 
-    for (const i of [1, 2, 3])
+    for (const i of [0, 1, 2])
     {
         outMin[i] = center[i] - radius;
         outMax[i] = center[i] + radius;
     }
-}
-
-function getScaleFactor(gltf, sceneIndex)
-{
-    const min = vec3.create();
-    const max = vec3.create();
-    getSceneExtends(gltf, sceneIndex, min, max);
-    const minValue = Math.min(min[0], Math.min(min[1], min[2]));
-    const maxValue = Math.max(max[0], Math.max(max[1], max[2]));
-    const deltaValue = maxValue - minValue;
-    return 1.0 / deltaValue;
 }
 
 function computePrimitiveCentroids(gltf)
@@ -145,4 +134,4 @@ function computePrimitiveCentroids(gltf)
     }
 }
 
-export { getSceneExtends, getScaleFactor, computePrimitiveCentroids };
+export { getSceneExtends, computePrimitiveCentroids };
