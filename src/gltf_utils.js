@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 
-function getSceneExtends(gltf, sceneIndex, outMin, outMax)
+function getSceneExtents(gltf, sceneIndex, outMin, outMax)
 {
     for (const i of [0, 1, 2])
     {
@@ -39,7 +39,7 @@ function getSceneExtends(gltf, sceneIndex, outMin, outMax)
             const accessor = gltf.accessors[attribute.accessor];
             const assetMin = vec3.create();
             const assetMax = vec3.create();
-            getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
+            getExtentsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
 
             for (const i of [0, 1, 2])
             {
@@ -50,7 +50,7 @@ function getSceneExtends(gltf, sceneIndex, outMin, outMax)
     }
 }
 
-function getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
+function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
 {
     const boxMin = vec3.create();
     vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
@@ -134,4 +134,4 @@ function computePrimitiveCentroids(gltf)
     }
 }
 
-export { getSceneExtends, computePrimitiveCentroids };
+export { getSceneExtents, computePrimitiveCentroids };
