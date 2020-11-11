@@ -29,9 +29,7 @@ function gltf_rv(
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
 
-    const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
-
-    return viewer; // Succeeded in creating a glTF viewer!
+    new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
 }
 
 function getWebGlContext(canvas)
