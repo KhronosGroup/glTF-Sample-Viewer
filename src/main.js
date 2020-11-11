@@ -6,7 +6,6 @@ function gltfSampleViewer(
     canvasId,
     index,
     envMap = "Courtyard of the Doge's palace",
-    headless = false,
     onRendererReady = undefined,
     basePath = "",
     initialModel = "BoomBox")
@@ -29,7 +28,7 @@ function gltfSampleViewer(
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
 
-    new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
+    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap);
 }
 
 function getWebGlContext(canvas)
