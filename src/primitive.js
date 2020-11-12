@@ -38,6 +38,19 @@ class gltfPrimitive extends GltfObject
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
 
+        if (this.extensions !== undefined)
+        {
+            if (this.extensions.KHR_draco_mesh_compression !== undefined)
+            {
+                console.log("draco present");
+                let dracoExtension = this.extensions.KHR_draco_mesh_compression;
+                let dracoBufferView = dracoExtension.bufferView;
+                let dracoAttributes = dracoExtension.attributes;
+                console.log(dracoBufferView);
+                console.log(dracoAttributes);
+            }
+        }
+
         // VERTEX ATTRIBUTES
         for (const attribute of Object.keys(this.attributes))
         {
