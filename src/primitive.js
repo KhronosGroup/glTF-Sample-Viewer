@@ -2,6 +2,8 @@ import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { DracoDecoder } from './draco.js';
+import { gltfBuffer } from './buffer.js';
+import { gltfBufferView } from './buffer_view.js';
 
 class gltfPrimitive extends GltfObject
 {
@@ -43,7 +45,7 @@ class gltfPrimitive extends GltfObject
         {
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
-                this.decodeDraco(this.extensions.KHR_draco_mesh_compression, gltf);
+                this.decodeDraco(this.attributes, this.extensions.KHR_draco_mesh_compression, gltf);
             }
         }
 
@@ -164,7 +166,7 @@ class gltfPrimitive extends GltfObject
         this.centroid = centroid;
     }
 
-    decodeDraco(dracoExtension, gltf)
+    decodeDraco(attributes, dracoExtension, gltf)
     {
         let dracoBufferViewIDX = dracoExtension.bufferView;
         let dracoAttributes = dracoExtension.attributes;
@@ -199,12 +201,36 @@ class gltfPrimitive extends GltfObject
         }
 
         const positionAttribute = decoder.GetAttribute(outputGeometry, decoderModule.POSITION);
-        let positionBuffer = new decoderModule.DracoUInt8Array();
-        let decodingWorked = decoder.GetAttributeUInt8ForAllPoints(outputGeometry, positionAttribute, positionBuffer);
-        if (decodingWorked === false)
+        const positionDracoBuffer = new decoderModule.DracoFloat32Array();
+        if (!decoder.GetAttributeFloatForAllPoints(outputGeometry, positionAttribute, positionDracoBuffer))
         {
             return false;
         }
+
+        const positionBuffer = new Uint8Array(positionDracoBuffer.size() * 4);
+        for (let i = 0; i < positionDracoBuffer.size(); i++)
+        {
+            const dracoFloat = new Float32Array(1);
+            dracoFloat[0] = positionDracoBuffer.GetValue(i);
+            const bytes = new Uint8Array(dracoFloat, 0, 4);
+            positionBuffer[4 * i + 0] = bytes[0];
+            positionBuffer[4 * i + 1] = bytes[1];
+            positionBuffer[4 * i + 2] = bytes[2];
+            positionBuffer[4 * i + 3] = bytes[3];
+        }
+
+        const positionGltfBuffer = new gltfBuffer();
+        positionGltfBuffer.byteLength = positionBuffer.length;
+        positionGltfBuffer.buffer = positionBuffer;
+        gltf.buffers.push(positionGltfBuffer);
+
+        const positionGltfBufferView = new gltfBufferView();
+        positionGltfBufferView.buffer = gltf.buffers.length - 1;
+        positionGltfBufferView.byteLength = positionBuffer.length;
+        gltf.bufferViews.push(positionGltfBufferView);
+
+        gltf.accessors[attributes["POSITION"]].byteOffset = 0;
+        gltf.accessors[attributes["POSITION"]].bufferView = gltf.bufferViews.length - 1;
 
         // You must explicitly delete objects created from the DracoDecoderModule
         // or Decoder.
