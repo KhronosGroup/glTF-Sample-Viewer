@@ -6,16 +6,16 @@ export default {
   input: 'src/main.js',
   output: [
     {
-      file: 'dist/gltf-reference-viewer.js',
+      file: 'dist/gltf-sample-viewer.js',
       format: 'cjs'
     },
     {
-      file: 'dist/gltf-reference-viewer.module.js',
+      file: 'dist/gltf-sample-viewer.module.js',
       format: 'esm'
     },
     {
-      name: 'gltf_rv',
-      file: 'dist/gltf-reference-viewer.umd.js',
+      name: 'gltfSampleViewer',
+      file: 'dist/gltf-sample-viewer.umd.js',
       format: 'umd',
       sourcemap: true
     }

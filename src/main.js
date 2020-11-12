@@ -2,11 +2,10 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 
-function gltf_rv(
+function gltfSampleViewer(
     canvasId,
     index,
     envMap = "Courtyard of the Doge's palace",
-    headless = false,
     onRendererReady = undefined,
     basePath = "",
     initialModel = "BoomBox")
@@ -29,9 +28,7 @@ function gltf_rv(
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
 
-    const viewer = new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
-
-    return viewer; // Succeeded in creating a glTF viewer!
+    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap);
 }
 
 function getWebGlContext(canvas)
@@ -52,4 +49,4 @@ function getWebGlContext(canvas)
     return context;
 }
 
-export { gltf_rv };
+export { gltfSampleViewer };

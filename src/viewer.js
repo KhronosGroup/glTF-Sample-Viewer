@@ -18,13 +18,11 @@ class gltfViewer
         canvas,
         modelIndex,
         input,
-        headless = false,
         onRendererReady = undefined,
         basePath = "",
         initialModel = "",
         environmentMap = undefined)
     {
-        this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.initialModel = initialModel;
@@ -54,33 +52,26 @@ class gltfViewer
         // Holds the last camera index, used for scene scaling when changing to user camera.
         this.prevCameraIndex = null;
 
-        if (this.headless === true)
+        this.setupInputBindings(input);
+
+        if (this.initialModel.includes("/"))
         {
-            this.hideSpinner();
+            // no UI if a path is provided (e.g. in the vscode plugin)
+            this.loadFromPath(this.initialModel);
         }
         else
         {
-            this.setupInputBindings(input);
-
-            if (this.initialModel.includes("/"))
+            const self = this;
+            this.stats = new Stats();
+            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+            this.pathProvider.initialize().then(() =>
             {
-                // no UI if a path is provided (e.g. in the vscode plugin)
-                this.loadFromPath(this.initialModel);
-            }
-            else
-            {
-                const self = this;
-                this.stats = new Stats();
-                this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
-                this.pathProvider.initialize().then(() =>
-                {
-                    self.initializeGui();
-                    self.loadFromPath(self.pathProvider.resolve(self.initialModel));
-                });
-            }
+                self.initializeGui();
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+            });
         }
 
-        this.render(); // Starts a rendering loop.
+        this.render();
     }
 
     setCamera(eye = [0.0, 0.0, 0.05], target = [0.0, 0.0, 0.0], up = [0.0, 1.0, 0.0],
@@ -213,7 +204,7 @@ class gltfViewer
         }).catch(function(error)
         {
             console.error(error.stack);
-            if (!self.headless) self.hideSpinner();
+            self.hideSpinner();
         });
     }
 
@@ -305,10 +296,7 @@ class gltfViewer
 
                 if (self.gltf.scenes.length !== 0)
                 {
-                    if (self.headless === false)
-                    {
-                        self.userCamera.updatePosition();
-                    }
+                    self.userCamera.updatePosition();
 
                     const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
 
@@ -431,27 +419,19 @@ class gltfViewer
     {
         this.loadingTimer.start();
         console.log("Loading '" + path + "' with environment '" + this.renderingParameters.environmentName + "'");
-
-        if (!this.headless)
-        {
-            this.showSpinner();
-        }
+        this.showSpinner();
     }
 
     notifyLoadingEnded(path)
     {
         this.loadingTimer.stop();
         console.log("Loading '" + path + "' took " + this.loadingTimer.seconds + " seconds");
-
-        if (!this.headless)
-        {
-            this.hideSpinner();
-        }
+        this.hideSpinner();
     }
 
     showSpinner()
     {
-        let spinner = document.getElementById("gltf-rv-model-spinner");
+        let spinner = document.getElementById("gltf-sample-viewer-model-spinner");
         if (spinner !== undefined)
         {
             spinner.style.display = "block";
@@ -460,7 +440,7 @@ class gltfViewer
 
     hideSpinner()
     {
-        let spinner = document.getElementById("gltf-rv-model-spinner");
+        let spinner = document.getElementById("gltf-sample-viewer-model-spinner");
         if (spinner !== undefined)
         {
             spinner.style.display = "none";
