@@ -69,10 +69,10 @@ class gltfPrimitive extends GltfObject
                 this.defines.push("HAS_NORMALS 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_Normal", accessor: idx });
                 break;
-            case "TANGENT":
-                this.defines.push("HAS_TANGENTS 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Tangent", accessor: idx });
-                break;
+            // case "TANGENT":
+            //     this.defines.push("HAS_TANGENTS 1");
+            //     this.glAttributes.push({ attribute: attribute, name: "a_Tangent", accessor: idx });
+            //     break;
             case "TEXCOORD_0":
                 this.defines.push("HAS_UV_SET1 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_UV1", accessor: idx });
@@ -171,8 +171,6 @@ class gltfPrimitive extends GltfObject
         let dracoBufferViewIDX = dracoExtension.bufferView;
         let dracoAttributes = dracoExtension.attributes;
 
-        let dracoPositionID = dracoAttributes["POSITION"];
-
         // Create the Draco decoder.
         const decoderModule = gltf.dracoDecoder.module;
 
@@ -200,7 +198,50 @@ class gltfPrimitive extends GltfObject
             return false;
         }
 
-        const positionAttribute = decoder.GetAttribute(outputGeometry, decoderModule.POSITION);
+        this.decodeBuffer(attributes, "POSITION", gltf, decoderModule, decoder, decoderModule.POSITION, outputGeometry);
+        this.decodeBuffer(attributes, "NORMAL", gltf, decoderModule, decoder, decoderModule.NORMAL, outputGeometry);
+        this.decodeBuffer(attributes, "TEXCOORD_0", gltf, decoderModule, decoder, decoderModule.TEX_COORD, outputGeometry);
+
+        // create index buffer
+        let indexBuffer = new Uint32Array(outputGeometry.num_faces() * 3);
+        for (let i = 0; i < outputGeometry.num_faces(); i++)
+        {
+            const dracoFaceArray = new decoderModule.DracoInt32Array (1);
+            let result = decoder.GetFaceFromMesh(outputGeometry, i,
+                dracoFaceArray);
+            if(result)
+            {
+                indexBuffer[i * 3] = dracoFaceArray.GetValue(0);
+                indexBuffer[i * 3 + 1] = dracoFaceArray.GetValue(1);
+                indexBuffer[i * 3 + 2] = dracoFaceArray.GetValue(2);
+            }
+        }
+
+        const indicesGltfBuffer = new gltfBuffer();
+        indicesGltfBuffer.byteLength = indexBuffer.length;
+        indicesGltfBuffer.buffer = indexBuffer;
+        gltf.buffers.push(indicesGltfBuffer);
+
+        const indicesGltfBufferView = new gltfBufferView();
+        indicesGltfBufferView.buffer = gltf.buffers.length - 1;
+        indicesGltfBufferView.byteLength = indexBuffer.length;
+        gltf.bufferViews.push(indicesGltfBufferView);
+
+        gltf.accessors[this.indices].byteOffset = 0;
+        gltf.accessors[this.indices].bufferView = gltf.bufferViews.length - 1;
+
+        // You must explicitly delete objects created from the DracoDecoderModule
+        // or Decoder.
+        decoderModule.destroy(outputGeometry);
+        decoderModule.destroy(decoder);
+        decoderModule.destroy(dracoBuffer);
+
+        return true;
+    }
+
+    decodeBuffer(attributes, attributesValue, gltf, decoderModule, decoder, dracoDecoderEnum, outputGeometry)
+    {
+        const positionAttribute = decoder.GetAttribute(outputGeometry, dracoDecoderEnum);
         const positionDracoBuffer = new decoderModule.DracoFloat32Array();
         if (!decoder.GetAttributeFloatForAllPoints(outputGeometry, positionAttribute, positionDracoBuffer))
         {
@@ -210,9 +251,11 @@ class gltfPrimitive extends GltfObject
         const positionBuffer = new Uint8Array(positionDracoBuffer.size() * 4);
         for (let i = 0; i < positionDracoBuffer.size(); i++)
         {
-            const dracoFloat = new Float32Array(1);
-            dracoFloat[0] = positionDracoBuffer.GetValue(i);
-            const bytes = new Uint8Array(dracoFloat, 0, 4);
+            var buffer = new ArrayBuffer(4);         // JS numbers are 8 bytes long, or 64 bits
+            var longNum = new Float32Array(buffer);  // so equivalent to Float64
+            longNum[0] = positionDracoBuffer.GetValue(i);
+
+            let bytes = Array.from(new Int8Array(buffer));
             positionBuffer[4 * i + 0] = bytes[0];
             positionBuffer[4 * i + 1] = bytes[1];
             positionBuffer[4 * i + 2] = bytes[2];
@@ -229,16 +272,8 @@ class gltfPrimitive extends GltfObject
         positionGltfBufferView.byteLength = positionBuffer.length;
         gltf.bufferViews.push(positionGltfBufferView);
 
-        gltf.accessors[attributes["POSITION"]].byteOffset = 0;
-        gltf.accessors[attributes["POSITION"]].bufferView = gltf.bufferViews.length - 1;
-
-        // You must explicitly delete objects created from the DracoDecoderModule
-        // or Decoder.
-        decoderModule.destroy(outputGeometry);
-        decoderModule.destroy(decoder);
-        decoderModule.destroy(buffer);
-
-        return true;
+        gltf.accessors[attributes[attributesValue]].byteOffset = 0;
+        gltf.accessors[attributes[attributesValue]].bufferView = gltf.bufferViews.length - 1;
     }
 }
 
