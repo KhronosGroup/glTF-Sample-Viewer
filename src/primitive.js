@@ -1,6 +1,7 @@
 import { initGlForMembers } from './utils.js';
 import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
+import { DracoDecoder } from './draco.js';
 
 class gltfPrimitive extends GltfObject
 {
@@ -42,12 +43,7 @@ class gltfPrimitive extends GltfObject
         {
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
-                console.log("draco present");
-                let dracoExtension = this.extensions.KHR_draco_mesh_compression;
-                let dracoBufferView = dracoExtension.bufferView;
-                let dracoAttributes = dracoExtension.attributes;
-                console.log(dracoBufferView);
-                console.log(dracoAttributes);
+                this.decodeDraco(this.extensions.KHR_draco_mesh_compression, gltf);
             }
         }
 
@@ -167,6 +163,58 @@ class gltfPrimitive extends GltfObject
     {
         this.centroid = centroid;
     }
+
+    decodeDraco(dracoExtension, gltf)
+    {
+        let dracoBufferViewIDX = dracoExtension.bufferView;
+        let dracoAttributes = dracoExtension.attributes;
+
+        let dracoPositionID = dracoAttributes["POSITION"];
+
+        // Create the Draco decoder.
+        const decoderModule = gltf.dracoDecoder.module;
+
+        const bufferView = gltf.bufferViews[dracoBufferViewIDX];
+        const buffer = gltf.buffers[bufferView.buffer];
+        const bufferArray = new Uint8Array(buffer.buffer, bufferView.byteOffset, bufferView.byteLength);
+
+        const dracoBuffer = new decoderModule.DecoderBuffer();
+        dracoBuffer.Init(bufferArray, bufferArray.byteLength);
+
+        // Create a buffer to hold the encoded data.
+        const decoder = new decoderModule.Decoder();
+        const geometryType = decoder.GetEncodedGeometryType(dracoBuffer);
+
+        // Decode the encoded geometry.
+        let outputGeometry;
+        let status;
+        if (geometryType == decoderModule.TRIANGULAR_MESH) {
+            outputGeometry = new decoderModule.Mesh();
+            status = decoder.DecodeBufferToMesh(dracoBuffer, outputGeometry);
+        }
+
+        if (status.ok() === false)
+        {
+            return false;
+        }
+
+        const positionAttribute = decoder.GetAttribute(outputGeometry, decoderModule.POSITION);
+        let positionBuffer = new decoderModule.DracoUInt8Array();
+        let decodingWorked = decoder.GetAttributeUInt8ForAllPoints(outputGeometry, positionAttribute, positionBuffer);
+        if (decodingWorked === false)
+        {
+            return false;
+        }
+
+        // You must explicitly delete objects created from the DracoDecoderModule
+        // or Decoder.
+        decoderModule.destroy(outputGeometry);
+        decoderModule.destroy(decoder);
+        decoderModule.destroy(buffer);
+
+        return true;
+    }
 }
 
 export { gltfPrimitive };
+

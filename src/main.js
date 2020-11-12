@@ -30,12 +30,10 @@ async function gltf_rv(
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
 
-    const dracoDecoder = new DracoDecoder()
-    await dracoDecoder.ready()
-    const buffer = new dracoDecoder.module.DecoderBuffer();
-    dracoDecoder.module.destroy(buffer);
+    const dracoDecoder = new DracoDecoder();
+    await dracoDecoder.ready();
 
-    new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap);
+    new gltfViewer(canvas, index, input, headless, onRendererReady, basePath, initialModel, envMap, dracoDecoder);
 }
 
 function getWebGlContext(canvas)

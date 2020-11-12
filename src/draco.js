@@ -2,7 +2,7 @@
 class DracoDecoder {
 
     constructor() {
-        this.module = null
+        this.module = null;
 
         this.initializingPromise = new Promise(resolve => {
             let dracoDecoderType = {};
@@ -20,4 +20,4 @@ class DracoDecoder {
 
 }
 
-export { DracoDecoder }
+export { DracoDecoder };
