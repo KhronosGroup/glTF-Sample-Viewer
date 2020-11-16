@@ -20,10 +20,10 @@ const view = new GltfView(canvas);
 
 ### GltfState
 
-The GltfState is the view model for a GltfView. It can be shared between multiple GltfViews and always is a complete description of the content that should be visible in the GltfView's associated canvas. 
+The GltfState is the view model for a GltfView. It can be copied to other GltfViews and always is a complete description of the content that should be visible in the GltfView's associated canvas. *As currently some WebGL resources are stored directly in the Gltf objects, the state cannot be shared between views.*
 
 ```js
-const state = new GltfState();
+const state = view.createState();
 state.activeScene = 0;
 state.activeAnimations = [0, 1, 2];
 state.renderingOptions = { useIbl: false };
@@ -37,7 +37,7 @@ As the name implies, ResourceLoader can be used to load external resources and m
 state.gltf = await ResourceLoader.loadGltf("path/to/some.gltf");
 ```
 
-One can also directly load some resources to WebGL2 memory by providing the context. In this case the view that displays the state needs to make that the resource is available in its context, if it was created for another context this would require a copy.
+One can also directly load some resources to WebGL2 memory by providing the context. 
 
 ```js
 state.environment = await ResourceLoader.loadEnvironment("path/to/environment.hdr", view.context);
