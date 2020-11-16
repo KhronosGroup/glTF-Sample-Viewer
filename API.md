@@ -62,7 +62,7 @@ const view = new GltfSV.GltfView(canvas);
 // GltfState holds all state associated with one view of a gltf model
 // you could have multiple of these if you want to e.g. one shows a debug
 // output channel view and another the default shaded view
-const state = new GltfSV.GltfState();
+const state = view.createState();
 
 // we can also provide helpers that are not required for core functionality
 const input = new GltfSV.Input(canvas, document);
