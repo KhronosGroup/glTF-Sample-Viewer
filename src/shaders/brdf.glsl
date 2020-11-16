@@ -52,7 +52,7 @@ float V_GGX(float NdotL, float NdotV, float alphaRoughness)
 // Note: Google call it V_Ashikhmin and V_Neubelt
 float V_Ashikhmin(float NdotL, float NdotV)
 {
-    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)),0.0,1.0);
+    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
 }
 
 // https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L131
@@ -115,9 +115,9 @@ vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float VdotH, floa
 }
 
 // f_sheen
-vec3 BRDF_specularSheen(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
+vec3 BRDF_specularSheen(vec3 sheenColor, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
     float sheenDistribution = D_Charlie(sheenRoughness, NdotH);
     float sheenVisibility = V_Ashikhmin(NdotL, NdotV);
-    return sheenColor * sheenIntensity * sheenDistribution * sheenVisibility;
+    return sheenColor * sheenDistribution * sheenVisibility;
 }

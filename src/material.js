@@ -308,32 +308,38 @@ class gltfMaterial extends GltfObject
             // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
             if(this.extensions.KHR_materials_sheen !== undefined)
             {
-                let sheenFactor = 0.0;
-                let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
-                let sheenRoughness = this.properties.get("u_RoughnessFactor");
+                let sheenRoughnessFactor = 0.0;
+                let sheenColorFactor =  vec3.fromValues(1.0, 1.0, 1.0);
 
                 this.defines.push("MATERIAL_SHEEN 1");
 
-                if(this.extensions.KHR_materials_sheen.intensityFactor !== undefined)
+                if(this.extensions.KHR_materials_sheen.sheenRoughnessFactor !== undefined)
                 {
-                    sheenFactor = this.extensions.KHR_materials_sheen.intensityFactor;
+                    sheenRoughnessFactor = this.extensions.KHR_materials_sheen.sheenRoughnessFactor;
                 }
-                if(this.extensions.KHR_materials_sheen.colorFactor !== undefined)
+                if(this.extensions.KHR_materials_sheen.sheenColorFactor !== undefined)
                 {
-                    sheenColor = jsToGl(this.extensions.KHR_materials_sheen.colorFactor);
+                    sheenColorFactor = jsToGl(this.extensions.KHR_materials_sheen.sheenColorFactor);
                 }
-                if (this.colorIntensityTexture !== undefined)
+                if (this.sheenRoughnessTexture !== undefined)
                 {
-                    this.colorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
-                    this.parseTextureInfoExtensions(this.colorIntensityTexture, "SheenColorIntensity");
-                    this.textures.push(this.colorIntensityTexture);
-                    this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
-                    this.properties.set("u_sheenColorIntensityUVSet", this.colorIntensityTexture.texCoord);
+                    this.sheenRoughnessTexture.samplerName = "u_sheenRoughnessSampler";
+                    this.parseTextureInfoExtensions(this.sheenRoughnessTexture, "SheenColorRoughness");
+                    this.textures.push(this.sheenRoughnessTexture);
+                    this.defines.push("HAS_SHEEN_COLOR_ROUGHNESS_MAP 1");
+                    this.properties.set("u_sheenColorRoughnessUVSet", this.sheenRoughnessTexture.texCoord);
+                }
+                if (this.sheenColorTexture !== undefined)
+                {
+                    this.sheenColorTexture.samplerName = "u_sheenColorSampler";
+                    this.parseTextureInfoExtensions(this.sheenColorTexture, "SheenColor");
+                    this.textures.push(this.sheenColorTexture);
+                    this.defines.push("HAS_SHEEN_COLOR_MAP 1");
+                    this.properties.set("u_sheenColorUVSet", this.sheenColorTexture.texCoord);
                 }
 
-                this.properties.set("u_SheenIntensityFactor", sheenFactor);
-                this.properties.set("u_SheenColorFactor", sheenColor);
-                this.properties.set("u_SheenRoughness", sheenRoughness);
+                this.properties.set("u_SheenRoughnessFactor", sheenRoughnessFactor);
+                this.properties.set("u_SheenColorFactor", sheenColorFactor);
             }
 
             // KHR Extension: Transmission
@@ -512,11 +518,17 @@ class gltfMaterial extends GltfObject
 
     fromJsonSheen(jsonSheen)
     {
-        if(jsonSheen.colorIntensityTexture !== undefined)
+        if(jsonSheen.sheenColorTexture !== undefined)
         {
-            const colorIntensityTexture = new gltfTextureInfo();
-            colorIntensityTexture.fromJson(jsonSheen.colorIntensityTexture);
-            this.colorIntensityTexture = colorIntensityTexture;
+            const sheenColorTexture = new gltfTextureInfo();
+            sheenColorTexture.fromJson(jsonSheen.sheenColorTexture);
+            this.sheenColorTexture = sheenColorTexture;
+        }
+        if(jsonSheen.sheenRoughnessTexture !== undefined)
+        {
+            const sheenRoughnessTexture = new gltfTextureInfo();
+            sheenRoughnessTexture.fromJson(jsonSheen.sheenRoughnessTexture);
+            this.sheenRoughnessTexture = sheenRoughnessTexture;
         }
     }
 

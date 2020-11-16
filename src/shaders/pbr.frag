@@ -46,9 +46,8 @@ uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 
 // Sheen
-uniform float u_SheenIntensityFactor;
+uniform float u_SheenRoughnessFactor;
 uniform vec3 u_SheenColorFactor;
-uniform float u_SheenRoughness;
 
 // Clearcoat
 uniform float u_ClearcoatFactor;
@@ -76,9 +75,8 @@ struct MaterialInfo
     vec3 n;
     vec3 baseColor; // getBaseColor()
 
-    float sheenIntensity;
-    vec3 sheenColor;
-    float sheenRoughness;
+    float sheenRoughnessFactor;
+    vec3 sheenColorFactor;
 
     vec3 clearcoatF0;
     vec3 clearcoatF90;
@@ -208,14 +206,17 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
 
 MaterialInfo getSheenInfo(MaterialInfo info)
 {
-    info.sheenColor = u_SheenColorFactor;
-    info.sheenIntensity = u_SheenIntensityFactor;
-    info.sheenRoughness = u_SheenRoughness;
+    info.sheenColorFactor = u_SheenColorFactor;
+    info.sheenRoughnessFactor = u_SheenRoughnessFactor;
 
-    #ifdef HAS_SHEEN_COLOR_INTENSITY_MAP
-        vec4 sheenSample = texture(u_SheenColorIntensitySampler, getSheenUV());
-        info.sheenColor *= sheenSample.xyz;
-        info.sheenIntensity *= sheenSample.w;
+    #ifdef HAS_SHEEN_COLOR_MAP
+        vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
+        info.sheenColorFactor *= sheenColorSample.xyz;
+    #endif
+
+    #ifdef HAS_SHEEN_ROUGHNESS_MAP
+        vec4 sheenRoughnessSample = texture(u_SheenRoughnessSampler, getSheenRoughnessUV());
+        info.sheenRoughnessFactor *= sheenRoughnessSample.w;
     #endif
 
     return info;
@@ -328,7 +329,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
     #endif
 #endif
 
@@ -381,7 +382,7 @@ void main()
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
+                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor,
                     NdotL, NdotV, NdotH);
             #endif
 
