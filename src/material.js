@@ -101,12 +101,12 @@ class gltfMaterial extends GltfObject
 
             if(uvTransform.scale !== undefined)
             {
-                scale = jsToGl([uvTransform.scale[0],0,0, 0,uvTransform.scale[1],0, 0,0,1]);
+                scale = jsToGl([uvTransform.scale[0], 0, 0, 0, uvTransform.scale[1], 0, 0, 0, 1]);
             }
 
             if(uvTransform.offset !== undefined)
             {
-                translation = jsToGl([1,0,uvTransform.offset[0], 0,1,uvTransform.offset[1], 0, 0, 1]);
+                translation = jsToGl([1, 0, uvTransform.offset[0], 0, 1, uvTransform.offset[1], 0, 0, 1]);
             }
 
             let uvMatrix = mat3.create();
@@ -324,18 +324,18 @@ class gltfMaterial extends GltfObject
                 if (this.sheenRoughnessTexture !== undefined)
                 {
                     this.sheenRoughnessTexture.samplerName = "u_sheenRoughnessSampler";
-                    this.parseTextureInfoExtensions(this.sheenRoughnessTexture, "SheenColorRoughness");
+                    this.parseTextureInfoExtensions(this.sheenRoughnessTexture, "SheenRoughness");
                     this.textures.push(this.sheenRoughnessTexture);
-                    this.defines.push("HAS_SHEEN_COLOR_ROUGHNESS_MAP 1");
-                    this.properties.set("u_sheenColorRoughnessUVSet", this.sheenRoughnessTexture.texCoord);
+                    this.defines.push("HAS_SHEEN_ROUGHNESS_MAP 1");
+                    this.properties.set("u_SheenRoughnessUVSet", this.sheenRoughnessTexture.texCoord);
                 }
                 if (this.sheenColorTexture !== undefined)
                 {
-                    this.sheenColorTexture.samplerName = "u_sheenColorSampler";
+                    this.sheenColorTexture.samplerName = "u_SheenColorSampler";
                     this.parseTextureInfoExtensions(this.sheenColorTexture, "SheenColor");
                     this.textures.push(this.sheenColorTexture);
                     this.defines.push("HAS_SHEEN_COLOR_MAP 1");
-                    this.properties.set("u_sheenColorUVSet", this.sheenColorTexture.texCoord);
+                    this.properties.set("u_SheenColorUVSet", this.sheenColorTexture.texCoord);
                 }
 
                 this.properties.set("u_SheenRoughnessFactor", sheenRoughnessFactor);

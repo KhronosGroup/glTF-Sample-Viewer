@@ -42,6 +42,7 @@ uniform samplerCube u_GGXEnvSampler;
 uniform sampler2D u_GGXLUT;
 uniform samplerCube u_CharlieEnvSampler;
 uniform sampler2D u_CharlieLUT;
+uniform sampler2D u_SheenELUT;
 
 //clearcoat
 uniform sampler2D u_ClearcoatSampler;

@@ -251,6 +251,11 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
     return info;
 }
 
+float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
+{
+    return texture(u_SheenELUT, vec2(NdotV, sheenRoughnessFactor)).b;
+}
+
 void main()
 {
     vec4 baseColor = getBaseColor();
@@ -318,6 +323,7 @@ void main()
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
+    float albedoSheenScaling = 1.0;
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
@@ -384,6 +390,11 @@ void main()
             #ifdef MATERIAL_SHEEN
                 f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor,
                     NdotL, NdotV, NdotH);
+
+                albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) *
+                    albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
+                    1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL,
+                    materialInfo.sheenRoughnessFactor));
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
@@ -414,7 +425,9 @@ void main()
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, v));
     #endif
 
-    color = (f_emissive + f_diffuse + f_specular + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    color = f_emissive + f_diffuse + f_specular;
+    color = f_sheen + color * albedoSheenScaling;
+    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
 #ifndef DEBUG_OUTPUT // no debug
 

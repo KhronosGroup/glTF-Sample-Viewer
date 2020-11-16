@@ -72,9 +72,12 @@ class gltfEnvironmentLoader
         gltf.images.push(new gltfImage(this.basePath + "assets/images/lut_ggx.png", WebGl.context.TEXTURE_2D));
         gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], WebGl.context.TEXTURE_2D));
 
+        // Sheen
         // Charlie
-
         gltf.images.push(new gltfImage(this.basePath + "assets/images/lut_charlie.png", WebGl.context.TEXTURE_2D));
+        gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], WebGl.context.TEXTURE_2D));
+        // Sheen E LUT
+        gltf.images.push(new gltfImage(this.basePath + "assets/images/lut_sheen_E.png", WebGl.context.TEXTURE_2D));
         gltf.textures.push(new gltfTexture(lutSamplerIdx, [++imageIdx], WebGl.context.TEXTURE_2D));
 
         // Thin film

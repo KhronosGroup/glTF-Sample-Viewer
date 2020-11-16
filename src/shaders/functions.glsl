@@ -44,3 +44,8 @@ float clampedDot(vec3 x, vec3 y)
 {
     return clamp(dot(x, y), 0.0, 1.0);
 }
+
+float max3(vec3 v)
+{
+    return max(max(v.x, v.y), v.z);
+}
