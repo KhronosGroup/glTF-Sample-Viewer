@@ -211,12 +211,12 @@ MaterialInfo getSheenInfo(MaterialInfo info)
 
     #ifdef HAS_SHEEN_COLOR_MAP
         vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
-        info.sheenColorFactor *= sheenColorSample.xyz;
+        info.sheenColorFactor *= sheenColorSample.rgb;
     #endif
 
     #ifdef HAS_SHEEN_ROUGHNESS_MAP
         vec4 sheenRoughnessSample = texture(u_SheenRoughnessSampler, getSheenRoughnessUV());
-        info.sheenRoughnessFactor *= sheenRoughnessSample.w;
+        info.sheenRoughnessFactor *= sheenRoughnessSample.a;
     #endif
 
     return info;
@@ -253,7 +253,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 
 float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
 {
-    return texture(u_SheenELUT, vec2(NdotV, sheenRoughnessFactor)).b;
+    return texture(u_SheenELUT, vec2(NdotV, sheenRoughnessFactor)).r;
 }
 
 void main()
@@ -388,13 +388,9 @@ void main()
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor,
-                    NdotL, NdotV, NdotH);
-
-                albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) *
-                    albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
-                    1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL,
-                    materialInfo.sheenRoughnessFactor));
+                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
+                albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
+                1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL, materialInfo.sheenRoughnessFactor));
             #endif
 
             #ifdef MATERIAL_CLEARCOAT

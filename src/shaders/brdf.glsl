@@ -47,14 +47,6 @@ float V_GGX(float NdotL, float NdotV, float alphaRoughness)
     return 0.0;
 }
 
-// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
-// https://github.com/google/filament/blob/master/libs/ibl/src/CubemapIBL.cpp#L179
-// Note: Google call it V_Ashikhmin and V_Neubelt
-float V_Ashikhmin(float NdotL, float NdotV)
-{
-    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
-}
-
 // https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L131
 float V_Kelemen(float LdotH)
 {
@@ -81,6 +73,40 @@ float D_Ashikhmin(float NdotH, float alphaRoughness)
     float sin4h = sin2h * sin2h;
     float cot2 = -cos2h / (a2 * sin2h);
     return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+}
+
+// TODO move to correct place
+float lambdaSheenNumericHelper(float x, float alphaG)
+{
+    float oneMinusAlphaSq = (1.0 - alphaG) * (1.0 - alphaG);
+    float a = mix(21.5473, 25.3245, oneMinusAlphaSq);
+    float b = mix(3.82987, 3.32435, oneMinusAlphaSq);
+    float c = mix(0.19823, 0.16801, oneMinusAlphaSq);
+    float d = mix(-1.97760, -1.27393, oneMinusAlphaSq);
+    float e = mix(-4.32054, -4.85967, oneMinusAlphaSq);
+    return a / (1.0 + b * pow(x, c)) + d * x + e;
+}
+
+// TODO move to correct place
+float lambdaSheen(float cosTheta, float alphaG)
+{
+    if(abs(cosTheta) < 0.5)
+    {
+        return exp(lambdaSheenNumericHelper(cosTheta, alphaG));
+    }
+    else
+    {
+        return exp(2.0 * lambdaSheenNumericHelper(0.5, alphaG) - lambdaSheenNumericHelper(1.0 - cosTheta, alphaG));
+    }
+}
+
+float V_Sheen(float NdotL, float NdotV, float sheenRoughness)
+{
+    sheenRoughness = max(sheenRoughness, 0.000001); //clamp (0,1]
+    float alphaG = sheenRoughness * sheenRoughness;
+
+    return clamp(1.0 / ((1.0 + lambdaSheen(NdotV, alphaG) + lambdaSheen(NdotL, alphaG)) *
+        (4.0 * NdotV * NdotL)), 0.0, 1.0);
 }
 
 //Sheen implementation-------------------------------------------------------------------------------------
@@ -118,6 +144,6 @@ vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float VdotH, floa
 vec3 BRDF_specularSheen(vec3 sheenColor, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
     float sheenDistribution = D_Charlie(sheenRoughness, NdotH);
-    float sheenVisibility = V_Ashikhmin(NdotL, NdotV);
+    float sheenVisibility = V_Sheen(NdotL, NdotV, sheenRoughness);
     return sheenColor * sheenDistribution * sheenVisibility;
 }
