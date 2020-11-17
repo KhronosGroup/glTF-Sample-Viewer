@@ -486,23 +486,23 @@ void main()
     #endif
 
     #ifdef DEBUG_FEMISSIVE
-        g_finalColor.rgb = f_emissive;
+        g_finalColor.rgb = linearTosRGB(f_emissive);
     #endif
 
     #ifdef DEBUG_FSPECULAR
-        g_finalColor.rgb = f_specular;
+        g_finalColor.rgb = linearTosRGB(f_specular);
     #endif
 
     #ifdef DEBUG_FDIFFUSE
-        g_finalColor.rgb = f_diffuse;
+        g_finalColor.rgb = linearTosRGB(f_diffuse);
     #endif
 
     #ifdef DEBUG_FCLEARCOAT
-        g_finalColor.rgb = f_clearcoat;
+        g_finalColor.rgb = linearTosRGB(f_clearcoat);
     #endif
 
     #ifdef DEBUG_FSHEEN
-        g_finalColor.rgb = f_sheen;
+        g_finalColor.rgb = linearTosRGB(f_sheen);
     #endif
 
     #ifdef DEBUG_ALPHA
