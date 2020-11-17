@@ -203,40 +203,42 @@ class gltfPrimitive extends GltfObject
         // indices
         let indexBuffer = dracoGeometry.index.array;
         const indicesGltfBuffer = new gltfBuffer();
-        indicesGltfBuffer.byteLength = indexBuffer.length;
+        indicesGltfBuffer.byteLength = indexBuffer.byteLength;
         indicesGltfBuffer.buffer = indexBuffer;
         gltf.buffers.push(indicesGltfBuffer);
 
         const indicesGltfBufferView = new gltfBufferView();
         indicesGltfBufferView.buffer = gltf.buffers.length - 1;
-        indicesGltfBufferView.byteLength = indexBuffer.length;
+        indicesGltfBufferView.byteLength = indexBuffer.byteLength;
         indicesGltfBufferView.name = "index buffer view";
         indicesGltfBufferView.target = 34963;
         gltf.bufferViews.push(indicesGltfBufferView);
 
         gltf.accessors[this.indices].byteOffset = 0;
         gltf.accessors[this.indices].bufferView = gltf.bufferViews.length - 1;
+        gltf.accessors[this.indices].componentType = 5125;
 
         // Position
         let posTmpBuffer = new ArrayBuffer(dracoGeometry.attributes[1].array.length * 4);         // JS numbers are 8 bytes long, or 64 bits
         let longNumArray = new Float32Array(posTmpBuffer);  // so equivalent to Float64
         longNumArray.set(dracoGeometry.attributes[1].array);
-        const positionBuffer = new Uint8Array(posTmpBuffer);
+        //const positionBuffer = new Uint8Array(posTmpBuffer);
 
         const positionGltfBuffer = new gltfBuffer();
-        positionGltfBuffer.byteLength = positionBuffer.length;
-        positionGltfBuffer.buffer = positionBuffer;
+        positionGltfBuffer.byteLength = posTmpBuffer.byteLength;
+        positionGltfBuffer.buffer = posTmpBuffer;
         gltf.buffers.push(positionGltfBuffer);
 
         const positionGltfBufferView = new gltfBufferView();
         positionGltfBufferView.buffer = gltf.buffers.length - 1;
-        positionGltfBufferView.byteLength = positionBuffer.length;
+        positionGltfBufferView.byteLength = posTmpBuffer.byteLength;
         positionGltfBufferView.name = "position buffer view";
         positionGltfBufferView.target = 34962;
         gltf.bufferViews.push(positionGltfBufferView);
 
         gltf.accessors[primitiveAttributes["POSITION"]].byteOffset = 0;
         gltf.accessors[primitiveAttributes["POSITION"]].bufferView = gltf.bufferViews.length - 1;
+        // gltf.accessors[primitiveAttributes["POSITION"]].componentType = 5126;
 
         // Normal
 
@@ -246,19 +248,20 @@ class gltfPrimitive extends GltfObject
         const normalBuffer = new Uint8Array(buffer);
 
         const normalGltfBuffer = new gltfBuffer();
-        normalGltfBuffer.byteLength = normalBuffer.length;
+        normalGltfBuffer.byteLength = normalBuffer.byteLength;
         normalGltfBuffer.buffer = normalBuffer;
         gltf.buffers.push(normalGltfBuffer);
 
         const normalGltfBufferView = new gltfBufferView();
         normalGltfBufferView.buffer = gltf.buffers.length - 1;
-        normalGltfBufferView.byteLength = normalBuffer.length;
+        normalGltfBufferView.byteLength = normalBuffer.byteLength;
         normalGltfBufferView.name = "normal buffer view";
         normalGltfBufferView.target = 34962;
         gltf.bufferViews.push(normalGltfBufferView);
 
         gltf.accessors[primitiveAttributes["NORMAL"]].byteOffset = 0;
         gltf.accessors[primitiveAttributes["NORMAL"]].bufferView = gltf.bufferViews.length - 1;
+        // gltf.accessors[primitiveAttributes["NORMAL"]].componentType = 5126;
     }
 
     decodeGeometry( draco, decoder, decoderBuffer, taskConfig ) {
