@@ -211,6 +211,7 @@ class gltfPrimitive extends GltfObject
         indicesGltfBufferView.buffer = gltf.buffers.length - 1;
         indicesGltfBufferView.byteLength = indexBuffer.length;
         indicesGltfBufferView.name = "index buffer view";
+        indicesGltfBufferView.target = 34963;
         gltf.bufferViews.push(indicesGltfBufferView);
 
         gltf.accessors[this.indices].byteOffset = 0;
@@ -231,6 +232,7 @@ class gltfPrimitive extends GltfObject
         positionGltfBufferView.buffer = gltf.buffers.length - 1;
         positionGltfBufferView.byteLength = positionBuffer.length;
         positionGltfBufferView.name = "position buffer view";
+        positionGltfBufferView.target = 34962;
         gltf.bufferViews.push(positionGltfBufferView);
 
         gltf.accessors[primitiveAttributes["POSITION"]].byteOffset = 0;
@@ -251,7 +253,8 @@ class gltfPrimitive extends GltfObject
         const normalGltfBufferView = new gltfBufferView();
         normalGltfBufferView.buffer = gltf.buffers.length - 1;
         normalGltfBufferView.byteLength = normalBuffer.length;
-        normalGltfBufferView.name = "position buffer view";
+        normalGltfBufferView.name = "normal buffer view";
+        normalGltfBufferView.target = 34962;
         gltf.bufferViews.push(normalGltfBufferView);
 
         gltf.accessors[primitiveAttributes["NORMAL"]].byteOffset = 0;
