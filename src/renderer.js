@@ -11,7 +11,7 @@ import iblShader from './shaders/ibl.glsl';
 import punctualShader from './shaders/punctual.glsl';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
-import tonemappingShader from'./shaders/tonemapping.glsl';
+import tonemappingShader from './shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
 
@@ -25,7 +25,7 @@ class gltfRenderer
         this.basePath = basePath;
         this.shader = undefined; // current shader
 
-        this.currentWidth  = 0;
+        this.currentWidth = 0;
         this.currentHeight = 0;
 
         const shaderSources = new Map();
@@ -78,10 +78,10 @@ class gltfRenderer
     {
         if (this.currentWidth !== width || this.currentHeight !== height)
         {
-            this.canvas.width  = width;
+            this.canvas.width = width;
             this.canvas.height = height;
             this.currentHeight = height;
-            this.currentWidth  = width;
+            this.currentWidth = width;
             WebGl.context.viewport(0, 0, width, height);
         }
     }
@@ -89,7 +89,7 @@ class gltfRenderer
     // frame state
     newFrame()
     {
-        WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2]  / 255.0, 1.0);
+        WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2] / 255.0, 1.0);
         WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
     }
 
@@ -103,7 +103,7 @@ class gltfRenderer
 
         let currentCamera = undefined;
 
-        if(this.parameters.userCameraActive())
+        if (this.parameters.userCameraActive())
         {
             currentCamera = this.defaultCamera;
         }
@@ -125,15 +125,15 @@ class gltfRenderer
         const nodes = scene.gatherNodes(gltf);
 
         // Update skins.
-        for(const node of nodes)
+        for (const node of nodes)
         {
-            if(node.mesh !== undefined && node.skin !== undefined)
+            if (node.mesh !== undefined && node.skin !== undefined)
             {
                 this.updateSkin(gltf, node);
             }
         }
 
-        if(!sortByDepth)
+        if (!sortByDepth)
         {
             for (const node of nodes)
             {
@@ -142,7 +142,7 @@ class gltfRenderer
                 {
                     for (let primitive of mesh.primitives)
                     {
-                        if(predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
+                        if (predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
                         {
                             this.drawPrimitive(gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
                         }
@@ -156,7 +156,7 @@ class gltfRenderer
 
             for (const sortedPrimitive of sortedPrimitives)
             {
-                if(predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
+                if (predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
                 {
                     this.drawPrimitive(gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
                 }
@@ -181,7 +181,7 @@ class gltfRenderer
         this.pushFragParameterDefines(fragDefines);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash  = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
+        const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -209,7 +209,7 @@ class gltfRenderer
 
         this.updateAnimationUniforms(gltf, node, primitive);
 
-        if  (mat4.determinant(node.worldTransform) < 0.0)
+        if (mat4.determinant(node.worldTransform) < 0.0)
         {
             WebGl.context.frontFace(WebGl.context.CW);
         }
@@ -227,7 +227,7 @@ class gltfRenderer
             WebGl.context.enable(WebGl.context.CULL_FACE);
         }
 
-        if(material.alphaMode === 'BLEND')
+        if (material.alphaMode === 'BLEND')
         {
             WebGl.context.enable(WebGl.context.BLEND);
             WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA);
@@ -264,12 +264,12 @@ class gltfRenderer
             }
         }
 
-        for(let [uniform, val] of material.getProperties().entries())
+        for (let [uniform, val] of material.getProperties().entries())
         {
             this.shader.updateUniform(uniform, val);
         }
 
-        for(let i = 0; i < material.textures.length; ++i)
+        for (let i = 0; i < material.textures.length; ++i)
         {
             let info = material.textures[i];
             const location = this.shader.getUniformLocation(info.samplerName);
@@ -284,13 +284,19 @@ class gltfRenderer
         }
 
         const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
+        let textureCount = material.textures.length;
         if (this.parameters.useIBL)
         {
-            this.applyEnvironmentMap(gltf, envData, material.textures.length);
+            textureCount = this.applyEnvironmentMap(gltf, envData, textureCount);
         }
         else if (hasThinFilm)
         {
-            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, material.textures.length);
+            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, textureCount++);
+        }
+
+        if (this.parameters.usePunctual)
+        {
+            WebGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), gltf, envData.sheenELUT, textureCount++);
         }
 
         if (drawIndexed)
@@ -333,7 +339,7 @@ class gltfRenderer
 
     updateSkin(gltf, node)
     {
-        if(this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
+        if (this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
         {
             const skin = gltf.skins[node.skin];
             skin.computeJoints(gltf, node);
@@ -343,7 +349,7 @@ class gltfRenderer
     pushVertParameterDefines(vertDefines, gltf, node, primitive)
     {
         // skinning
-        if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+        if (this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
             const skin = gltf.skins[node.skin];
 
@@ -352,10 +358,10 @@ class gltfRenderer
         }
 
         // morphing
-        if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if (this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
-            if(mesh.weights !== undefined && mesh.weights.length > 0)
+            if (mesh.weights !== undefined && mesh.weights.length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
                 vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
@@ -365,7 +371,7 @@ class gltfRenderer
 
     updateAnimationUniforms(gltf, node, primitive)
     {
-        if(this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+        if (this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
             const skin = gltf.skins[node.skin];
 
@@ -373,10 +379,10 @@ class gltfRenderer
             this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
         }
 
-        if(this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if (this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
-            if(mesh.weights !== undefined && mesh.weights.length > 0)
+            if (mesh.weights !== undefined && mesh.weights.length > 0)
             {
                 this.shader.updateUniformArray("u_morphWeights", mesh.weights);
             }
@@ -401,84 +407,84 @@ class gltfRenderer
             fragDefines.push("USE_HDR 1");
         }
 
-        switch(this.parameters.toneMap)
+        switch (this.parameters.toneMap)
         {
-        case(ToneMaps.UNCHARTED):
+        case (ToneMaps.UNCHARTED):
             fragDefines.push("TONEMAP_UNCHARTED 1");
             break;
-        case(ToneMaps.HEJL_RICHARD):
+        case (ToneMaps.HEJL_RICHARD):
             fragDefines.push("TONEMAP_HEJLRICHARD 1");
             break;
-        case(ToneMaps.ACES):
+        case (ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;
-        case(ToneMaps.LINEAR):
+        case (ToneMaps.LINEAR):
         default:
             break;
         }
 
-        if(this.parameters.debugOutput !== DebugOutput.NONE)
+        if (this.parameters.debugOutput !== DebugOutput.NONE)
         {
             fragDefines.push("DEBUG_OUTPUT 1");
         }
 
-        switch(this.parameters.debugOutput)
+        switch (this.parameters.debugOutput)
         {
-        case(DebugOutput.METALLIC):
+        case (DebugOutput.METALLIC):
             fragDefines.push("DEBUG_METALLIC 1");
             break;
-        case(DebugOutput.ROUGHNESS):
+        case (DebugOutput.ROUGHNESS):
             fragDefines.push("DEBUG_ROUGHNESS 1");
             break;
-        case(DebugOutput.NORMAL):
+        case (DebugOutput.NORMAL):
             fragDefines.push("DEBUG_NORMAL 1");
             break;
-        case(DebugOutput.WORLDSPACENORMAL):
+        case (DebugOutput.WORLDSPACENORMAL):
             fragDefines.push("DEBUG_WORLDSPACE_NORMAL 1");
             break;
-        case(DebugOutput.GEOMETRYNORMAL):
+        case (DebugOutput.GEOMETRYNORMAL):
             fragDefines.push("DEBUG_GEOMETRY_NORMAL 1");
             break;
-        case(DebugOutput.TANGENT):
+        case (DebugOutput.TANGENT):
             fragDefines.push("DEBUG_TANGENT 1");
             break;
-        case(DebugOutput.BITANGENT):
+        case (DebugOutput.BITANGENT):
             fragDefines.push("DEBUG_BITANGENT 1");
             break;
-        case(DebugOutput.BASECOLOR):
+        case (DebugOutput.BASECOLOR):
             fragDefines.push("DEBUG_BASECOLOR 1");
             break;
-        case(DebugOutput.OCCLUSION):
+        case (DebugOutput.OCCLUSION):
             fragDefines.push("DEBUG_OCCLUSION 1");
             break;
-        case(DebugOutput.EMISSIVE):
+        case (DebugOutput.EMISSIVE):
             fragDefines.push("DEBUG_FEMISSIVE 1");
             break;
-        case(DebugOutput.SPECULAR):
+        case (DebugOutput.SPECULAR):
             fragDefines.push("DEBUG_FSPECULAR 1");
             break;
-        case(DebugOutput.DIFFUSE):
+        case (DebugOutput.DIFFUSE):
             fragDefines.push("DEBUG_FDIFFUSE 1");
             break;
-        case(DebugOutput.THICKNESS):
+        case (DebugOutput.THICKNESS):
             fragDefines.push("DEBUG_THICKNESS 1");
             break;
-        case(DebugOutput.CLEARCOAT):
+        case (DebugOutput.CLEARCOAT):
             fragDefines.push("DEBUG_FCLEARCOAT 1");
             break;
-        case(DebugOutput.SHEEN):
+        case (DebugOutput.SHEEN):
             fragDefines.push("DEBUG_FSHEEN 1");
             break;
-        case(DebugOutput.SUBSURFACE):
+        case (DebugOutput.SUBSURFACE):
             fragDefines.push("DEBUG_FSUBSURFACE 1");
             break;
-        case(DebugOutput.TRANSMISSION):
+        case (DebugOutput.TRANSMISSION):
             fragDefines.push("DEBUG_FTRANSMISSION 1");
             break;
-        case(DebugOutput.F0):
+        case (DebugOutput.F0):
             fragDefines.push("DEBUG_F0 1");
             break;
-        case(DebugOutput.ALPHA):
+        case (DebugOutput.ALPHA):
             fragDefines.push("DEBUG_ALPHA 1");
             break;
         }
@@ -492,7 +498,7 @@ class gltfRenderer
             uniformLights.push(light.toUniform(gltf));
         }
 
-        if(uniformLights.length > 0)
+        if (uniformLights.length > 0)
         {
             this.shader.updateUniform("u_Lights", uniformLights);
         }
@@ -546,18 +552,17 @@ class gltfRenderer
 
     applyEnvironmentMap(gltf, envData, texSlotOffset)
     {
-        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset);
+        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset++);
 
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset + 1);
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset + 2);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset++);
+        WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset++);
 
-        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
-        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
-        WebGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), gltf, envData.sheenELUT, texSlotOffset + 5);
-
-        WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 6);
+        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset++);
+        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset++);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
+
+        return texSlotOffset;
     }
 
     destroy()
