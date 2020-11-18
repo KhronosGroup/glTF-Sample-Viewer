@@ -18,6 +18,10 @@ As it owns the WebGL2 context, it is used to create WebGL2 resources.
 const view = new GltfView(canvas);
 ```
 
+```js
+const view = new GltfView(context);
+```
+
 ### GltfState
 
 The GltfState is the view model for a GltfView. It can be copied to other GltfViews and always is a complete description of the content that should be visible in the GltfView's associated canvas. *As currently some WebGL resources are stored directly in the Gltf objects, the state cannot be shared between views.*
@@ -43,9 +47,15 @@ One can also directly load some resources to WebGL2 memory by providing the cont
 state.environment = await ResourceLoader.loadEnvironment("path/to/environment.hdr", view.context);
 ```
 
+IBL environments can be loaded and sampled as with the above functionality, or they can be loaded from prefiltered images as with the following example.
+
+```js
+state.environment = await ResourceLoader.loadEnvironmentPrefiltered("path/to/environments", view.context);
+```
+
 ### User interface
 
-The user interface is now fully separate from the other components of the sample viewer. This means that it is an optional component and applications that want to use the sample viewer with their own UI can do so. For reference, convenience and to provide a standalone application a simple UI is provided together with the core functionality of Gltf Sample Viewer. In the standalone application the UI is bound to the viewer with RxJS. For example the UI element to select the active scene could be bound to the GltfState with code similar to the following
+The user interface is now fully separate from the other components of the sample viewer. This means that it is an optional component and applications that want to use the sample viewer with their own UI can do so. For reference, convenience and to provide a standalone application a simple UI is provided together with the core functionality of Gltf Sample Viewer. In the standalone application the UI is bound to the viewer with RxJS and Angular, Vue or React. For example the UI element to select the active scene could be bound to the GltfState with code similar to the following
 
 ```js
 const ui = new GltfSV.UI(htmlUIElement);
@@ -131,3 +141,9 @@ await finished;
 
 
 ```
+
+## Component diagram
+![](figures/component_diagram.svg)
+
+## State diagram
+![](figures/state_diagram.svg)
