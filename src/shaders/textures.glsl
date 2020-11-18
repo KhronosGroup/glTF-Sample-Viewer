@@ -1,6 +1,14 @@
 in vec2 v_UVCoord1;
 in vec2 v_UVCoord2;
 
+// IBL
+uniform int u_MipCount;
+uniform samplerCube u_LambertianEnvSampler;
+uniform samplerCube u_GGXEnvSampler;
+uniform sampler2D u_GGXLUT;
+uniform samplerCube u_CharlieEnvSampler;
+uniform sampler2D u_CharlieLUT;
+
 // General Material
 uniform sampler2D u_NormalSampler;
 uniform float u_NormalScale;
@@ -35,15 +43,7 @@ uniform sampler2D u_SpecularGlossinessSampler;
 uniform int u_SpecularGlossinessUVSet;
 uniform mat3 u_SpecularGlossinessUVTransform;
 
-// IBL
-uniform int u_MipCount;
-uniform samplerCube u_LambertianEnvSampler;
-uniform samplerCube u_GGXEnvSampler;
-uniform sampler2D u_GGXLUT;
-uniform samplerCube u_CharlieEnvSampler;
-uniform sampler2D u_CharlieLUT;
-
-//clearcoat
+// Clearcoat Material
 uniform sampler2D u_ClearcoatSampler;
 uniform int u_ClearcoatUVSet;
 uniform mat3 u_ClearcoatUVTransform;
@@ -56,15 +56,10 @@ uniform sampler2D u_ClearcoatNormalSampler;
 uniform int u_ClearcoatNormalUVSet;
 uniform mat3 u_ClearcoatNormalUVTransform;
 
-//sheen
+// Sheen Material
 uniform sampler2D u_SheenColorIntensitySampler;
 uniform int u_SheenColorIntensityUVSet;
 uniform mat3 u_SheenColorIntensityUVTransform;
-
-//specular
-uniform sampler2D u_MetallicRoughnessSpecularSampler;
-uniform int u_MetallicRougnessSpecularTextureUVSet;
-uniform mat3 u_MetallicRougnessSpecularUVTransform;
 
 vec2 getNormalUV()
 {
@@ -175,15 +170,6 @@ vec2 getSheenUV()
     vec3 uv = vec3(u_SheenColorIntensityUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     #ifdef HAS_SHEENCOLORINTENSITY_UV_TRANSFORM
     uv *= u_SheenUVTransform;
-    #endif
-    return uv.xy;
-}
-
-vec2 getMetallicRoughnessSpecularUV()
-{
-    vec3 uv = vec3(u_MetallicRougnessSpecularTextureUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
-    #ifdef HAS_METALLICROUGHNESSSPECULAR_UV_TRANSFORM
-    uv *= u_MetallicRougnessSpecularUVTransform;
     #endif
     return uv.xy;
 }

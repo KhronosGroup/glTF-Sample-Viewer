@@ -13,12 +13,6 @@
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 // [5] "KHR_materials_clearcoat"
 //     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
-// [6] "KHR_materials_specular"
-//     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
-// [7] "KHR_materials_subsurface"
-//     https://github.com/KhronosGroup/glTF/pull/1766
-// [8] "KHR_materials_thinfilm"
-//     https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
 
 precision highp float;
 
@@ -54,9 +48,6 @@ uniform float u_SheenRoughness;
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
-// Transmission
-uniform float u_Transmission;
-
 // Alpha mode
 uniform float u_AlphaCutoff;
 
@@ -85,11 +76,6 @@ struct MaterialInfo
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
-
-    float thinFilmFactor;
-    float thinFilmThickness;
-
-    float transmission;
 };
 
 // Get normal, tangent and bitangent vectors.

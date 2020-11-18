@@ -283,14 +283,9 @@ class gltfRenderer
             }
         }
 
-        const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
         if (this.parameters.useIBL)
         {
             this.applyEnvironmentMap(gltf, envData, material.textures.length);
-        }
-        else if (hasThinFilm)
-        {
-            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, material.textures.length);
         }
 
         if (drawIndexed)
@@ -536,9 +531,6 @@ class gltfRenderer
 
         scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.sheenLUT.generateMips = false;
-
-        scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
-        scene.envData.thinFilmLUT.generateMips = false;
     }
 
     applyEnvironmentMap(gltf, envData, texSlotOffset)
@@ -550,8 +542,6 @@ class gltfRenderer
 
         WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset + 3);
         WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset + 4);
-
-        WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, texSlotOffset + 5);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
     }
