@@ -198,12 +198,21 @@ class gltfPrimitive extends GltfObject
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_0"], 34962,
                         "TEXCOORD_0 buffer view");
         }
+
         // Tangent
         if(dracoGeometry.attributes.tangent !== undefined)
         {
             let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.tangent.array);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TANGENT"], 34962,
                         "Tangent buffer view");
+        }
+
+        // Color
+        if(dracoGeometry.attributes.color !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.color.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["COLOR_0"], 34962,
+                        "color buffer view");
         }
     }
 
@@ -250,22 +259,27 @@ class gltfPrimitive extends GltfObject
         taskConfig.attributeTypes = {};
         for(let dracoAttr in dracoExtension.attributes)
         {
-            if(dracoAttr !== "NORMAL")
+            if(dracoAttr === "NORMAL")
             {
                 taskConfig.attributeIDs.normal = "NORMAL";
                 taskConfig.attributeTypes.normal = "Float32Array";
             }
-            if(dracoAttr !== "POSITION")
+            else if(dracoAttr === "POSITION")
             {
                 taskConfig.attributeIDs.position = "POSITION";
                 taskConfig.attributeTypes.position = "Float32Array";
             }
-            if(dracoAttr !== "TEXCOORD_0")
+            else if(dracoAttr === "TEXCOORD_0")
             {
                 taskConfig.attributeIDs.tex_coord = "TEX_COORD";
                 taskConfig.attributeTypes.tex_coord = "Float32Array";
             }
-            if(dracoAttr !== "GENERIC")
+            else if(dracoAttr === "COLOR_0")
+            {
+                taskConfig.attributeIDs.color = "COLOR";
+                taskConfig.attributeTypes.color = "Float32Array";
+            }
+            else if(dracoAttr === "GENERIC")
             {
                 taskConfig.attributeIDs.tangent = "GENERIC";
                 taskConfig.attributeTypes.tangent = "Float32Array";
