@@ -44,3 +44,9 @@ float clampedDot(vec3 x, vec3 y)
 {
     return clamp(dot(x, y), 0.0, 1.0);
 }
+
+vec3 transmissionAbsorption(vec3 v, vec3 n, float ior, float thickness, vec3 absorptionColor)
+{
+    vec3 r = refract(-v, n, 1.0 / ior);
+    return exp(-absorptionColor * thickness * dot(-n, r));
+}

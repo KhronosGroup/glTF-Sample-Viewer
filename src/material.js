@@ -335,6 +335,21 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SheenColorFactor", sheenColor);
                 this.properties.set("u_SheenRoughness", sheenRoughness);
             }
+
+            // KHR Extension: Transmission
+            if (this.extensions.KHR_materials_transmission !== undefined)
+            {
+                let transmission = this.extensions.KHR_materials_transmission.transmission;
+
+                if (transmission === undefined)
+                {
+                    transmission = 0.0;
+                }
+
+                this.defines.push("MATERIAL_TRANSMISSION 1");
+
+                this.properties.set("u_Transmission", transmission);
+            }
         }
 
         initGlForMembers(this, gltf);
@@ -404,6 +419,11 @@ class gltfMaterial extends GltfObject
         {
             this.fromJsonSheen(jsonExtensions.KHR_materials_sheen);
         }
+
+        if(jsonExtensions.KHR_materials_transmission !== undefined)
+        {
+            this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -472,6 +492,11 @@ class gltfMaterial extends GltfObject
             colorIntensityTexture.fromJson(jsonSheen.colorIntensityTexture);
             this.colorIntensityTexture = colorIntensityTexture;
         }
+    }
+
+    fromJsonTransmission(jsonTransmission)
+    {
+        jsonTransmission;
     }
 }
 
