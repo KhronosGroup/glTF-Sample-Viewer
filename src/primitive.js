@@ -45,7 +45,7 @@ class gltfPrimitive extends GltfObject
         {
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
-                let dracoGeometry = this.decodeTest(this.extensions.KHR_draco_mesh_compression, gltf);
+                let dracoGeometry = this.decodeDracoBufferToIntermediate(this.extensions.KHR_draco_mesh_compression, gltf);
                 this.copyDataFromDecodedGeometry(gltf, dracoGeometry, this.attributes);
             }
         }
@@ -167,7 +167,59 @@ class gltfPrimitive extends GltfObject
         this.centroid = centroid;
     }
 
-    decodeTest(dracoExtension, gltf)
+    copyDataFromDecodedGeometry(gltf, dracoGeometry, primitiveAttributes)
+    {
+        // indices
+        let indexBuffer = dracoGeometry.index.array;
+        this.loadBufferIntoGltf(indexBuffer, gltf, this.indices, 34963,
+                    "index buffer view");
+
+        // Position
+        let positionBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes[0].array);
+        this.loadBufferIntoGltf(positionBuffer, gltf, primitiveAttributes["POSITION"], 34962,
+                    "position buffer view");
+
+        // Normal
+        let normalBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes[1].array);
+        this.loadBufferIntoGltf(normalBuffer, gltf, primitiveAttributes["NORMAL"], 34962,
+                    "normal buffer view");
+
+        // uv
+        let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes[2].array);
+        this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_0"], 34962,
+                    "TEXCOORD_0 buffer view");
+    }
+
+    loadBufferIntoGltf(buffer, gltf, gltfAccessorIndex, gltfBufferViewTarget, gltfBufferViewName)
+    {
+        const gltfBufferObj = new gltfBuffer();
+        gltfBufferObj.byteLength = buffer.byteLength;
+        gltfBufferObj.buffer = buffer;
+        gltf.buffers.push(gltfBufferObj);
+
+        const gltfBufferViewObj = new gltfBufferView();
+        gltfBufferViewObj.buffer = gltf.buffers.length - 1;
+        gltfBufferViewObj.byteLength = buffer.byteLength;
+        if(gltfBufferViewName !== undefined)
+        {
+            gltfBufferViewObj.name = gltfBufferViewName;
+        }
+        gltfBufferViewObj.target = gltfBufferViewTarget;
+        gltf.bufferViews.push(gltfBufferViewObj);
+
+        gltf.accessors[gltfAccessorIndex].byteOffset = 0;
+        gltf.accessors[gltfAccessorIndex].bufferView = gltf.bufferViews.length - 1;
+    }
+
+    loadFloat32ArrayIntoArrayBuffer(float32ArrayBuffer)
+    {
+        let arrayBuffer = new ArrayBuffer(float32ArrayBuffer.length * 4);         // JS numbers are 8 bytes long, or 64 bits
+        let floatArray = new Float32Array(arrayBuffer);  // so equivalent to Float64
+        floatArray.set(float32ArrayBuffer);
+        return arrayBuffer;
+    }
+
+    decodeDracoBufferToIntermediate(dracoExtension, gltf)
     {
         let dracoBufferViewIDX = dracoExtension.bufferView;
 
@@ -177,14 +229,14 @@ class gltfPrimitive extends GltfObject
 
         let taskConfig = {};
         taskConfig.attributeIDs = {
-            normal: "NORMAL",
             position: "POSITION",
+            normal: "NORMAL",
             uv: "TEX_COORD",
         };
         taskConfig.attributeTypes = {
             normal: "Float32Array",
             position: "Float32Array",
-            uv: "Float32Array"
+            uv: "Float32Array",
         };
 
         let draco = gltf.dracoDecoder.module;
@@ -192,76 +244,10 @@ class gltfPrimitive extends GltfObject
         let decoderBuffer = new draco.DecoderBuffer();
         decoderBuffer.Init( new Int8Array( origGltfDracoBuffer.buffer ), origGltfDracoBufferViewObj.byteLength );
         let geometry = this.decodeGeometry( draco, decoder, decoderBuffer, taskConfig );
-        let buffers = geometry.attributes.map( ( attr ) => attr.array.buffer );
-        if ( geometry.index ) buffers.push( geometry.index.array.buffer );
+
+        draco.destroy( decoderBuffer );
 
         return geometry;
-    }
-
-    copyDataFromDecodedGeometry(gltf, dracoGeometry, primitiveAttributes)
-    {
-        // indices
-        let indexBuffer = dracoGeometry.index.array;
-        const indicesGltfBuffer = new gltfBuffer();
-        indicesGltfBuffer.byteLength = indexBuffer.byteLength;
-        indicesGltfBuffer.buffer = indexBuffer;
-        gltf.buffers.push(indicesGltfBuffer);
-
-        const indicesGltfBufferView = new gltfBufferView();
-        indicesGltfBufferView.buffer = gltf.buffers.length - 1;
-        indicesGltfBufferView.byteLength = indexBuffer.byteLength;
-        indicesGltfBufferView.name = "index buffer view";
-        indicesGltfBufferView.target = 34963;
-        gltf.bufferViews.push(indicesGltfBufferView);
-
-        gltf.accessors[this.indices].byteOffset = 0;
-        gltf.accessors[this.indices].bufferView = gltf.bufferViews.length - 1;
-        gltf.accessors[this.indices].componentType = 5125;
-
-        // Position
-        let posTmpBuffer = new ArrayBuffer(dracoGeometry.attributes[1].array.length * 4);         // JS numbers are 8 bytes long, or 64 bits
-        let longNumArray = new Float32Array(posTmpBuffer);  // so equivalent to Float64
-        longNumArray.set(dracoGeometry.attributes[1].array);
-        //const positionBuffer = new Uint8Array(posTmpBuffer);
-
-        const positionGltfBuffer = new gltfBuffer();
-        positionGltfBuffer.byteLength = posTmpBuffer.byteLength;
-        positionGltfBuffer.buffer = posTmpBuffer;
-        gltf.buffers.push(positionGltfBuffer);
-
-        const positionGltfBufferView = new gltfBufferView();
-        positionGltfBufferView.buffer = gltf.buffers.length - 1;
-        positionGltfBufferView.byteLength = posTmpBuffer.byteLength;
-        positionGltfBufferView.name = "position buffer view";
-        positionGltfBufferView.target = 34962;
-        gltf.bufferViews.push(positionGltfBufferView);
-
-        gltf.accessors[primitiveAttributes["POSITION"]].byteOffset = 0;
-        gltf.accessors[primitiveAttributes["POSITION"]].bufferView = gltf.bufferViews.length - 1;
-        // gltf.accessors[primitiveAttributes["POSITION"]].componentType = 5126;
-
-        // Normal
-
-        let buffer = new ArrayBuffer(dracoGeometry.attributes[0].array.length * 4);         // JS numbers are 8 bytes long, or 64 bits
-        longNumArray = new Float32Array(buffer);  // so equivalent to Float64
-        longNumArray.set(dracoGeometry.attributes[0].array);
-        const normalBuffer = new Uint8Array(buffer);
-
-        const normalGltfBuffer = new gltfBuffer();
-        normalGltfBuffer.byteLength = normalBuffer.byteLength;
-        normalGltfBuffer.buffer = normalBuffer;
-        gltf.buffers.push(normalGltfBuffer);
-
-        const normalGltfBufferView = new gltfBufferView();
-        normalGltfBufferView.buffer = gltf.buffers.length - 1;
-        normalGltfBufferView.byteLength = normalBuffer.byteLength;
-        normalGltfBufferView.name = "normal buffer view";
-        normalGltfBufferView.target = 34962;
-        gltf.bufferViews.push(normalGltfBufferView);
-
-        gltf.accessors[primitiveAttributes["NORMAL"]].byteOffset = 0;
-        gltf.accessors[primitiveAttributes["NORMAL"]].bufferView = gltf.bufferViews.length - 1;
-        // gltf.accessors[primitiveAttributes["NORMAL"]].componentType = 5126;
     }
 
     decodeGeometry( draco, decoder, decoderBuffer, taskConfig ) {
@@ -275,10 +261,9 @@ class gltfPrimitive extends GltfObject
         if ( geometryType === draco.TRIANGULAR_MESH ) {
             dracoGeometry = new draco.Mesh();
             decodingStatus = decoder.DecodeBufferToMesh( decoderBuffer, dracoGeometry );
-        } else if ( geometryType === draco.POINT_CLOUD ) {
-            dracoGeometry = new draco.PointCloud();
-            decodingStatus = decoder.DecodeBufferToPointCloud( decoderBuffer, dracoGeometry );
-        } else {
+        }
+        else
+        {
             throw new Error( 'THREE.DRACOLoader: Unexpected geometry type.' );
         }
 
@@ -290,33 +275,21 @@ class gltfPrimitive extends GltfObject
 
         let geometry = { index: null, attributes: [] };
 
-        let geometryBuffer = {};
-
         // Gather all vertex attributes.
         for ( let attributeName in attributeIDs ) {
             let attributeType = self[ attributeTypes[ attributeName ] ];
-            let attribute;
-            let attributeID;
-
-            // A Draco file may be created with default vertex attributes, whose attribute IDs
-            // are mapped 1:1 from their semantic name (POSITION, NORMAL, ...). Alternatively,
-            // a Draco file may contain a custom set of attributes, identified by known unique
-            // IDs. glTF files always do the latter, and `.drc` files typically do the former.
-            if ( taskConfig.useUniqueIDs ) {
-                attributeID = attributeIDs[ attributeName ];
-                attribute = decoder.GetAttributeByUniqueId( dracoGeometry, attributeID );
-
-            } else {
-                attributeID = decoder.GetAttributeId( dracoGeometry, draco[ attributeIDs[ attributeName ] ] );
-
-                if ( attributeID === - 1 ) continue;
-
-                attribute = decoder.GetAttribute( dracoGeometry, attributeID );
+            let attributeID = decoder.GetAttributeId( dracoGeometry,
+                            draco[ attributeIDs[ attributeName ] ] );
+            if ( attributeID === -1 )
+            {
+                continue;
             }
-            geometry.attributes.push(this.decodeAttribute( draco, decoder, dracoGeometry, attributeName, attributeType, attribute, geometryBuffer) );
+            let attribute = decoder.GetAttribute( dracoGeometry, attributeID );
+            geometry.attributes.push(this.decodeAttribute( draco, decoder,
+                        dracoGeometry, attributeName, attributeType, attribute) );
         }
 
-        // Add index.
+        // Add index buffer
         if ( geometryType === draco.TRIANGULAR_MESH ) {
 
             // Generate mesh faces.
@@ -336,74 +309,17 @@ class gltfPrimitive extends GltfObject
         return geometry;
     }
 
-    decodeAttribute( draco, decoder, dracoGeometry, attributeName, attributeType, attribute, geometryBuffer) {
-
+    decodeAttribute( draco, decoder, dracoGeometry,
+                    attributeName, attributeType, attribute) {
         let numComponents = attribute.num_components();
         let numPoints = dracoGeometry.num_points();
         let numValues = numPoints * numComponents;
-        let ptr;
-        let array;
 
-        let dataSize;
-        switch ( attributeType ) {
-
-        case Float32Array:
-            dataSize = numValues * 4;
-            ptr = draco._malloc( dataSize );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_FLOAT32, dataSize, ptr );
-            array = new Float32Array( draco.HEAPF32.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        case Int8Array:
-            ptr = draco._malloc( numValues );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT8, numValues, ptr );
-            geometryBuffer[ attributeName ] = new Int8Array( draco.HEAP8.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        case Int16Array:
-            dataSize = numValues * 2;
-            ptr = draco._malloc( dataSize );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT16, dataSize, ptr );
-            array = new Int16Array( draco.HEAP16.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        case Int32Array:
-            dataSize = numValues * 4;
-            ptr = draco._malloc( dataSize );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT32, dataSize, ptr );
-            array = new Int32Array( draco.HEAP32.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        case Uint8Array:
-            ptr = draco._malloc( numValues );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT8, numValues, ptr );
-            geometryBuffer[ attributeName ] = new Uint8Array( draco.HEAPU8.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        case Uint16Array:
-            dataSize = numValues * 2;
-            ptr = draco._malloc( dataSize );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT16, dataSize, ptr );
-            array = new Uint16Array( draco.HEAPU16.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        case Uint32Array:
-            dataSize = numValues * 4;
-            ptr = draco._malloc( dataSize );
-            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT32, dataSize, ptr );
-            array = new Uint32Array( draco.HEAPU32.buffer, ptr, numValues ).slice();
-            draco._free( ptr );
-            break;
-
-        default:
-            throw new Error( 'THREE.DRACOLoader: Unexpected attribute type.' );
-        }
+        let dataSize = numValues * 4;
+        let ptr = draco._malloc( dataSize );
+        decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_FLOAT32, dataSize, ptr );
+        let array = new Float32Array( draco.HEAPF32.buffer, ptr, numValues ).slice();
+        draco._free( ptr );
 
         return {
             name: attributeName,
@@ -411,15 +327,6 @@ class gltfPrimitive extends GltfObject
             itemSize: numComponents
         };
 
-    }
-
-    concatTypedArrays(a, b) { // a, b TypedArray of same type
-        let aUin8Array = new Uint8Array(a);
-
-        let c = new Uint8Array(aUin8Array.length + b.length);
-        c.set(aUin8Array, 0);
-        c.set(b, aUin8Array.length);
-        return c.buffer;
     }
 }
 
