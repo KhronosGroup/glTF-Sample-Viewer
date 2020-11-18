@@ -45,7 +45,8 @@ class gltfPrimitive extends GltfObject
         {
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
-                let dracoGeometry = this.decodeDracoBufferToIntermediate(this.extensions.KHR_draco_mesh_compression, gltf);
+                let dracoGeometry = this.decodeDracoBufferToIntermediate(
+                    this.extensions.KHR_draco_mesh_compression, gltf);
                 this.copyDataFromDecodedGeometry(gltf, dracoGeometry, this.attributes);
             }
         }
@@ -70,10 +71,10 @@ class gltfPrimitive extends GltfObject
                 this.defines.push("HAS_NORMALS 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_Normal", accessor: idx });
                 break;
-            // case "TANGENT":
-            //     this.defines.push("HAS_TANGENTS 1");
-            //     this.glAttributes.push({ attribute: attribute, name: "a_Tangent", accessor: idx });
-            //     break;
+            case "TANGENT":
+                this.defines.push("HAS_TANGENTS 1");
+                this.glAttributes.push({ attribute: attribute, name: "a_Tangent", accessor: idx });
+                break;
             case "TEXCOORD_0":
                 this.defines.push("HAS_UV_SET1 1");
                 this.glAttributes.push({ attribute: attribute, name: "a_UV1", accessor: idx });
@@ -175,19 +176,35 @@ class gltfPrimitive extends GltfObject
                     "index buffer view");
 
         // Position
-        let positionBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes[0].array);
-        this.loadBufferIntoGltf(positionBuffer, gltf, primitiveAttributes["POSITION"], 34962,
-                    "position buffer view");
+        if(dracoGeometry.attributes.position !== undefined)
+        {
+            let positionBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.position.array);
+            this.loadBufferIntoGltf(positionBuffer, gltf, primitiveAttributes["POSITION"], 34962,
+                        "position buffer view");
+        }
 
         // Normal
-        let normalBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes[1].array);
-        this.loadBufferIntoGltf(normalBuffer, gltf, primitiveAttributes["NORMAL"], 34962,
-                    "normal buffer view");
+        if(dracoGeometry.attributes.normal !== undefined)
+        {
+            let normalBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.normal.array);
+            this.loadBufferIntoGltf(normalBuffer, gltf, primitiveAttributes["NORMAL"], 34962,
+                        "normal buffer view");
+        }
 
         // uv
-        let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes[2].array);
-        this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_0"], 34962,
-                    "TEXCOORD_0 buffer view");
+        if(dracoGeometry.attributes.tex_coord !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.tex_coord.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_0"], 34962,
+                        "TEXCOORD_0 buffer view");
+        }
+        // Tangent
+        if(dracoGeometry.attributes.tangent !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.tangent.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TANGENT"], 34962,
+                        "Tangent buffer view");
+        }
     }
 
     loadBufferIntoGltf(buffer, gltf, gltfAccessorIndex, gltfBufferViewTarget, gltfBufferViewName)
@@ -227,17 +244,33 @@ class gltfPrimitive extends GltfObject
         const origGltfDracoBufferViewObj = gltf.bufferViews[dracoBufferViewIDX];
         const origGltfDracoBuffer = gltf.buffers[origGltfDracoBufferViewObj.buffer];
 
+        // build taskConfig
         let taskConfig = {};
-        taskConfig.attributeIDs = {
-            position: "POSITION",
-            normal: "NORMAL",
-            uv: "TEX_COORD",
-        };
-        taskConfig.attributeTypes = {
-            normal: "Float32Array",
-            position: "Float32Array",
-            uv: "Float32Array",
-        };
+        taskConfig.attributeIDs = {};
+        taskConfig.attributeTypes = {};
+        for(let dracoAttr in dracoExtension.attributes)
+        {
+            if(dracoAttr !== "NORMAL")
+            {
+                taskConfig.attributeIDs.normal = "NORMAL";
+                taskConfig.attributeTypes.normal = "Float32Array";
+            }
+            if(dracoAttr !== "POSITION")
+            {
+                taskConfig.attributeIDs.position = "POSITION";
+                taskConfig.attributeTypes.position = "Float32Array";
+            }
+            if(dracoAttr !== "TEXCOORD_0")
+            {
+                taskConfig.attributeIDs.tex_coord = "TEX_COORD";
+                taskConfig.attributeTypes.tex_coord = "Float32Array";
+            }
+            if(dracoAttr !== "GENERIC")
+            {
+                taskConfig.attributeIDs.tangent = "GENERIC";
+                taskConfig.attributeTypes.tangent = "Float32Array";
+            }
+        }
 
         let draco = gltf.dracoDecoder.module;
         let decoder = new draco.Decoder();
@@ -273,7 +306,7 @@ class gltfPrimitive extends GltfObject
 
         }
 
-        let geometry = { index: null, attributes: [] };
+        let geometry = { index: null, attributes: {} };
 
         // Gather all vertex attributes.
         for ( let attributeName in attributeIDs ) {
@@ -285,8 +318,9 @@ class gltfPrimitive extends GltfObject
                 continue;
             }
             let attribute = decoder.GetAttribute( dracoGeometry, attributeID );
-            geometry.attributes.push(this.decodeAttribute( draco, decoder,
-                        dracoGeometry, attributeName, attributeType, attribute) );
+            var tmpObj = this.decodeAttribute( draco, decoder,
+                        dracoGeometry, attributeName, attributeType, attribute);
+            geometry.attributes[tmpObj.name] = tmpObj;
         }
 
         // Add index buffer
