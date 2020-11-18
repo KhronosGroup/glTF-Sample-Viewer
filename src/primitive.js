@@ -176,43 +176,80 @@ class gltfPrimitive extends GltfObject
                     "index buffer view");
 
         // Position
-        if(dracoGeometry.attributes.position !== undefined)
+        if(dracoGeometry.attributes.POSITION !== undefined)
         {
-            let positionBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.position.array);
+            let positionBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.POSITION.array);
             this.loadBufferIntoGltf(positionBuffer, gltf, primitiveAttributes["POSITION"], 34962,
                         "position buffer view");
         }
 
         // Normal
-        if(dracoGeometry.attributes.normal !== undefined)
+        if(dracoGeometry.attributes.NORMAL !== undefined)
         {
-            let normalBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.normal.array);
+            let normalBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.NORMAL.array);
             this.loadBufferIntoGltf(normalBuffer, gltf, primitiveAttributes["NORMAL"], 34962,
                         "normal buffer view");
         }
 
-        // uv
-        if(dracoGeometry.attributes.tex_coord !== undefined)
+        // TEXCOORD_0
+        if(dracoGeometry.attributes.TEXCOORD_0 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.tex_coord.array);
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.TEXCOORD_0.array);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_0"], 34962,
                         "TEXCOORD_0 buffer view");
         }
 
-        // Tangent
-        if(dracoGeometry.attributes.tangent !== undefined)
+        // TEXCOORD_1
+        if(dracoGeometry.attributes.TEXCOORD_1 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.tangent.array);
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.TEXCOORD_1.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_1"], 34962,
+                        "TEXCOORD_1 buffer view");
+        }
+
+        // Tangent
+        if(dracoGeometry.attributes.TANGENT !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.TANGENT.array);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TANGENT"], 34962,
                         "Tangent buffer view");
         }
 
         // Color
-        if(dracoGeometry.attributes.color !== undefined)
+        if(dracoGeometry.attributes.COLOR_0 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.color.array);
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.COLOR_0.array);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["COLOR_0"], 34962,
                         "color buffer view");
+        }
+
+        // JOINTS_0
+        if(dracoGeometry.attributes.COLOR_0 !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_0.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["JOINTS_0"], 34962,
+                        "JOINTS_0 buffer view");
+        }
+        // WEIGHTS_0
+        if(dracoGeometry.attributes.WEIGHTS_0 !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.WEIGHTS_0.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["WEIGHTS_0"], 34962,
+                        "WEIGHTS_0 buffer view");
+        }
+        // JOINTS_1
+        if(dracoGeometry.attributes.JOINTS_1 !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_1.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["JOINTS_1"], 34962,
+                        "JOINTS_1 buffer view");
+        }
+        // WEIGHTS_1
+        if(dracoGeometry.attributes.WEIGHTS_1 !== undefined)
+        {
+            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.WEIGHTS_1.array);
+            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["WEIGHTS_1"], 34962,
+                        "WEIGHTS_1 buffer view");
         }
     }
 
@@ -254,37 +291,7 @@ class gltfPrimitive extends GltfObject
         const origGltfDracoBuffer = gltf.buffers[origGltfDracoBufferViewObj.buffer];
 
         // build taskConfig
-        let taskConfig = {};
-        taskConfig.attributeIDs = {};
-        taskConfig.attributeTypes = {};
-        for(let dracoAttr in dracoExtension.attributes)
-        {
-            if(dracoAttr === "NORMAL")
-            {
-                taskConfig.attributeIDs.normal = "NORMAL";
-                taskConfig.attributeTypes.normal = "Float32Array";
-            }
-            else if(dracoAttr === "POSITION")
-            {
-                taskConfig.attributeIDs.position = "POSITION";
-                taskConfig.attributeTypes.position = "Float32Array";
-            }
-            else if(dracoAttr === "TEXCOORD_0")
-            {
-                taskConfig.attributeIDs.tex_coord = "TEX_COORD";
-                taskConfig.attributeTypes.tex_coord = "Float32Array";
-            }
-            else if(dracoAttr === "COLOR_0")
-            {
-                taskConfig.attributeIDs.color = "COLOR";
-                taskConfig.attributeTypes.color = "Float32Array";
-            }
-            else if(dracoAttr === "GENERIC")
-            {
-                taskConfig.attributeIDs.tangent = "GENERIC";
-                taskConfig.attributeTypes.tangent = "Float32Array";
-            }
-        }
+        let taskConfig = this.createTaskConfig(dracoExtension.attributes);
 
         let draco = gltf.dracoDecoder.module;
         let decoder = new draco.Decoder();
@@ -297,17 +304,89 @@ class gltfPrimitive extends GltfObject
         return geometry;
     }
 
-    decodeGeometry( draco, decoder, decoderBuffer, taskConfig ) {
-        let attributeIDs = taskConfig.attributeIDs;
-        let attributeTypes = taskConfig.attributeTypes;
+    createTaskConfig(dracoAttributes)
+    {
+        let taskConfig = {};
+        for(let dracoAttr in dracoAttributes)
+        {
+            if(dracoAttr === "NORMAL")
+            {
+                taskConfig.normal = {};
+                taskConfig.normal.name = "NORMAL";
+                taskConfig.normal.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "POSITION")
+            {
+                taskConfig.position = {};
+                taskConfig.position.name = "POSITION";
+                taskConfig.position.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "TEXCOORD_0")
+            {
+                taskConfig.tex_coord0 = {};
+                taskConfig.tex_coord0.name = "TEXCOORD_0";
+                taskConfig.tex_coord0.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "TEXCOORD_1")
+            {
+                taskConfig.tex_coord1 = {};
+                taskConfig.tex_coord1.name = "TEXCOORD_1";
+                taskConfig.tex_coord1.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "COLOR_0")
+            {
+                taskConfig.color0 = {};
+                taskConfig.color0.name = "COLOR_0";
+                taskConfig.color0.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "TANGENT")
+            {
+                taskConfig.tangent = {};
+                taskConfig.tangent.name = "TANGENT";
+                taskConfig.tangent.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "JOINTS_0")
+            {
+                taskConfig.joints0 = {};
+                taskConfig.joints0.name = "JOINTS_0";
+                taskConfig.joints0.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "WEIGHTS_0")
+            {
+                taskConfig.weights0 = {};
+                taskConfig.weights0.name = "WEIGHTS_0";
+                taskConfig.weights0.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "JOINTS_1")
+            {
+                taskConfig.joints1 = {};
+                taskConfig.joints1.name = "JOINTS_1";
+                taskConfig.joints1.id = dracoAttributes[dracoAttr];
+            }
+            else if(dracoAttr === "WEIGHTS_1")
+            {
+                taskConfig.weights1 = {};
+                taskConfig.weights1.name = "WEIGHTS_1";
+                taskConfig.weights1.id = dracoAttributes[dracoAttr];
+            }
+        }
 
+        return taskConfig;
+    }
+
+    decodeGeometry( draco, decoder, decoderBuffer, taskConfig ) {
         let dracoGeometry;
         let decodingStatus;
 
+        // decode mesh in draco decoder
         let geometryType = decoder.GetEncodedGeometryType( decoderBuffer );
         if ( geometryType === draco.TRIANGULAR_MESH ) {
             dracoGeometry = new draco.Mesh();
             decodingStatus = decoder.DecodeBufferToMesh( decoderBuffer, dracoGeometry );
+        }
+        else if ( geometryType === draco.POINT_CLOUD ) {
+            dracoGeometry = new draco.Mesh();
+            decodingStatus = decoder.DecodeBufferToPointCloud( decoderBuffer, dracoGeometry );
         }
         else
         {
@@ -323,17 +402,10 @@ class gltfPrimitive extends GltfObject
         let geometry = { index: null, attributes: {} };
 
         // Gather all vertex attributes.
-        for ( let attributeName in attributeIDs ) {
-            let attributeType = self[ attributeTypes[ attributeName ] ];
-            let attributeID = decoder.GetAttributeId( dracoGeometry,
-                            draco[ attributeIDs[ attributeName ] ] );
-            if ( attributeID === -1 )
-            {
-                continue;
-            }
-            let attribute = decoder.GetAttribute( dracoGeometry, attributeID );
+        for (const [atributeKey, attributeConfig] of Object.entries(taskConfig)) {
+            let dracoAttribute = decoder.GetAttributeByUniqueId( dracoGeometry, attributeConfig.id );
             var tmpObj = this.decodeAttribute( draco, decoder,
-                        dracoGeometry, attributeName, attributeType, attribute);
+                        dracoGeometry, attributeConfig.name, dracoAttribute);
             geometry.attributes[tmpObj.name] = tmpObj;
         }
 
@@ -358,7 +430,7 @@ class gltfPrimitive extends GltfObject
     }
 
     decodeAttribute( draco, decoder, dracoGeometry,
-                    attributeName, attributeType, attribute) {
+                    attributeName, attribute) {
         let numComponents = attribute.num_components();
         let numPoints = dracoGeometry.num_points();
         let numValues = numPoints * numComponents;
