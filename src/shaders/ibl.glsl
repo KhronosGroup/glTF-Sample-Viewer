@@ -18,29 +18,25 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularC
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-vec3 getIBLRadianceTransmission(vec3 n, vec3 v, float perceptualRoughness, float ior, vec3 baseColor)
+vec3 getIBLRadianceTransmission(vec3 n, vec3 v, float perceptualRoughness, vec3 baseColor, vec3 f0, vec3 f90)
 {
     // Sample GGX LUT.
     float NdotV = clampedDot(n, v);
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
+    vec3 specularColor = f0 * brdf.x + f90 * brdf.y;
+
 
     // Sample GGX environment map.
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-
-    // Approximate double refraction by assuming a solid sphere beneath the point.
-    vec3 r = refract(-v, n, 1.0 / ior);
-    vec3 m = 2.0 * dot(-n, r) * r + n;
-    vec3 rr = -refract(-r, m, ior);
-
-    vec4 specularSample = textureLod(u_GGXEnvSampler, rr, lod);
-    vec3 specularLight = specularSample.rgb;
+    vec3 transmissionVector = normalize(-v); //  view vector
+    vec3 transmittedLight = textureLod(u_GGXEnvSampler, transmissionVector, lod).rgb;
 
 #ifndef USE_HDR
-    specularLight = sRGBToLinear(specularLight);
+    transmittedLight = sRGBToLinear(transmittedLight);
 #endif
 
-   return specularLight * (brdf.x + brdf.y);
+   return (1.0-specularColor) * transmittedLight * baseColor;
 }
 
 vec3 getIBLRadianceLambertian(vec3 n, vec3 diffuseColor)

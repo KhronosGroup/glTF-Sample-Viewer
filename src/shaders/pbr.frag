@@ -48,7 +48,7 @@ uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
 // Transmission
-uniform float u_Transmission;
+uniform float u_TransmissionFactor;
 
 // Alpha mode
 uniform float u_AlphaCutoff;
@@ -78,7 +78,7 @@ struct MaterialInfo
     vec3 clearcoatNormal;
     float clearcoatRoughness;
 
-    float transmission;
+    float transmissionFactor;
 };
 
 // Get normal, tangent and bitangent vectors.
@@ -139,7 +139,7 @@ NormalInfo getNormalInfo(vec3 v)
 
 vec4 getBaseColor()
 {
-    vec4 baseColor = vec4(1, 1, 1, 1);
+    vec4 baseColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     #if defined(MATERIAL_SPECULARGLOSSINESS)
         baseColor = u_DiffuseFactor;
@@ -216,7 +216,13 @@ MaterialInfo getSheenInfo(MaterialInfo info)
 #ifdef MATERIAL_TRANSMISSION
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
-    info.transmission = u_Transmission;
+    info.transmissionFactor = u_TransmissionFactor;
+
+    #ifdef HAS_TRANSMISSION_MAP
+        vec4 transmissionSample = texture(u_TransmissionSampler, getTransmissionUV());
+        info.transmissionFactor *= transmissionSample.a;
+    #endif
+
     return info;
 }
 #endif
@@ -341,6 +347,10 @@ void main()
     #ifdef MATERIAL_SHEEN
         f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
     #endif
+
+    #ifdef MATERIAL_TRANSMISSION
+        f_transmission += getIBLRadianceTransmission(n, v, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
+    #endif
 #endif
 
     float ao = 1.0;
@@ -348,10 +358,6 @@ void main()
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
-#endif
-
-#ifdef MATERIAL_TRANSMISSION
-    f_transmission += getIBLRadianceTransmission(n, v, materialInfo.perceptualRoughness, ior, materialInfo.baseColor);
 #endif
 
 #ifdef USE_PUNCTUAL
@@ -409,7 +415,7 @@ void main()
         }
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, ior, materialInfo.f0);
+            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor);
         #endif
     }
 #endif // !USE_PUNCTUAL
@@ -434,7 +440,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmission);
+        vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
     #else
         vec3 diffuse = f_diffuse;
     #endif
