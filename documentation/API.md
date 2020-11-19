@@ -18,10 +18,6 @@ As it owns the WebGL2 context, it is used to create WebGL2 resources.
 const view = new GltfView(canvas);
 ```
 
-```js
-const view = new GltfView(context);
-```
-
 ### GltfState
 
 The GltfState is the view model for a GltfView. It can be copied to other GltfViews and always is a complete description of the content that should be visible in the GltfView's associated canvas. *As currently some WebGL resources are stored directly in the Gltf objects, the state cannot be shared between views.*
@@ -146,4 +142,6 @@ await finished;
 ![](figures/component_diagram.svg)
 
 ## State diagram
+This state diagram oversimplifies states in order to remain understandable. The key takeaway is that gltf, environment and renderer states are concurrent or independent. 
+
 ![](figures/state_diagram.svg)
