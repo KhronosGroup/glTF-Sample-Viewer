@@ -517,9 +517,9 @@ class gltfRenderer
         }
         else
         {
-            const diffuseTextureIndex = gltf.textures.length - 7;
-            const specularTextureIndex = gltf.textures.length - 6;
-            const sheenTextureIndex = gltf.textures.length - 5;
+            const diffuseTextureIndex = gltf.textures.length - 6;
+            const specularTextureIndex = gltf.textures.length - 5;
+            const sheenTextureIndex = gltf.textures.length - 4;
 
             scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
             scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
@@ -532,13 +532,13 @@ class gltfRenderer
         scene.envData.specularEnvMap.generateMips = false;
         scene.envData.sheenEnvMap.generateMips = false;
 
-        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 4);
+        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
         scene.envData.lut.generateMips = false;
 
-        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 3);
+        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.sheenLUT.generateMips = false;
 
-        scene.envData.sheenELUT = new gltfTextureInfo(gltf.textures.length - 2);
+        scene.envData.sheenELUT = new gltfTextureInfo(gltf.textures.length - 1);
         scene.envData.sheenELUT.generateMips = false;
     }
 
