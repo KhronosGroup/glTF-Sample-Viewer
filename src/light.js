@@ -53,7 +53,7 @@ class gltfLight extends GltfObject
             }
         }
     }
-    
+
     fromJson(jsonLight)
     {
         super.fromJson(jsonLight);
@@ -74,7 +74,7 @@ class gltfLight extends GltfObject
 
             var scale = vec3.fromValues(1, 1, 1);
             mat4.getScaling(scale, matrix);
-        
+
             // To extract a correct rotation, the scaling component must be eliminated.
             const mn = mat4.create();
             for(const col of [0, 1, 2])
@@ -142,7 +142,8 @@ class UniformLight extends UniformStruct
 
         this.outerConeCos = Math.PI / 4;
         this.type = Type_Directional;
-        this.padding = vec2.create();
+        this.padding1 = 0.0;
+        this.padding2 = 0.0;
     }
 }
 
