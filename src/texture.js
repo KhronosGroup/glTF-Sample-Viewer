@@ -26,6 +26,17 @@ class gltfTexture extends GltfObject
         initGlForMembers(this, gltf);
     }
 
+    fromJson(jsonTexture)
+    {
+        super.fromJson(jsonTexture);
+        if (jsonTexture.extensions !== undefined &&
+            jsonTexture.extensions.KHR_texture_basisu !== undefined &&
+            jsonTexture.extensions.KHR_texture_basisu.source !== undefined)
+        {
+            this.source = jsonTexture.extensions.KHR_texture_basisu.source;
+        }
+    }
+
     destroy()
     {
         if (this.glTexture !== undefined)
