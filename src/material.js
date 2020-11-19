@@ -396,7 +396,6 @@ class gltfMaterial extends GltfObject
             this.fromJsonMaterialExtensions(jsonMaterial.extensions);
         }
 
-        // dont do MR if we parsed SG before
         if (jsonMaterial.pbrMetallicRoughness !== undefined && this.type !== "SG")
         {
             this.type = "MR";
@@ -427,34 +426,9 @@ class gltfMaterial extends GltfObject
             this.fromJsonSheen(jsonExtensions.KHR_materials_sheen);
         }
 
-        if(jsonExtensions.KHR_materials_specular !== undefined)
-        {
-            this.fromJsonMetallicRoughnessSpecular(jsonExtensions.KHR_materials_specular);
-        }
-
-        if(jsonExtensions.KHR_materials_subsurface !== undefined)
-        {
-            this.fromJsonSubsurface(jsonExtensions.KHR_materials_subsurface);
-        }
-
-        if(jsonExtensions.KHR_materials_thinfilm !== undefined)
-        {
-            this.fromJsonThinFilm(jsonExtensions.KHR_materials_thinfilm);
-        }
-
         if(jsonExtensions.KHR_materials_transmission !== undefined)
         {
             this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
-        }
-
-        if(jsonExtensions.KHR_materials_thickness !== undefined)
-        {
-            this.fromJsonThickness(jsonExtensions.KHR_materials_thickness);
-        }
-
-        if(jsonExtensions.KHR_materials_anisotropy !== undefined)
-        {
-            this.fromJsonAnisotropy(jsonExtensions.KHR_materials_anisotropy);
         }
     }
 
@@ -532,76 +506,9 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    fromJsonMetallicRoughnessSpecular(jsonMRSpecular)
-    {
-        if(jsonMRSpecular.specularTexture !== undefined)
-        {
-            const specularTexture = new gltfTextureInfo();
-            specularTexture.fromJson(jsonMRSpecular.specularTexture);
-            this.metallicRoughnessSpecularTexture = specularTexture;
-        }
-    }
-
-    fromJsonSubsurface(jsonSubsurface)
-    {
-        if(jsonSubsurface.colorTexture !== undefined)
-        {
-            const colorTexture = new gltfTextureInfo();
-            colorTexture.fromJson(jsonSubsurface.colorTexture);
-            this.subsurfaceColorTexture = colorTexture;
-        }
-
-        if(jsonSubsurface.thicknessTexture !== undefined)
-        {
-            const thicknessTexture = new gltfTextureInfo();
-            thicknessTexture.fromJson(jsonSubsurface.thicknessTexture);
-            this.subsurfaceThicknessTexture = thicknessTexture;
-        }
-    }
-
-    fromJsonThinFilm(jsonThinFilm)
-    {
-        if(jsonThinFilm.thinfilmTexture !== undefined)
-        {
-            const thinfilmTexture = new gltfTextureInfo();
-            thinfilmTexture.fromJson(jsonThinFilm.thinfilmTexture);
-            this.thinfilmTexture = thinfilmTexture;
-        }
-
-        if(jsonThinFilm.thinfilmThicknessTexture !== undefined)
-        {
-            const thinfilmThicknessTexture = new gltfTextureInfo();
-            thinfilmThicknessTexture.fromJson(jsonThinFilm.thinfilmThicknessTexture);
-            this.thinfilmThicknessTexture = thinfilmThicknessTexture;
-        }
-    }
-
     fromJsonTransmission(jsonTransmission)
     {
         jsonTransmission;
-    }
-
-    fromJsonThickness(jsonThickness)
-    {
-        if(jsonThickness.thicknessTexture !== undefined)
-        {
-            this.thicknessTexture = new gltfTextureInfo();
-            this.thicknessTexture.fromJson(jsonThickness.thicknessTexture);
-        }
-    }
-
-    fromJsonAnisotropy(jsonAnisotropy)
-    {
-        if(jsonAnisotropy.anisotropyTexture !== undefined)
-        {
-            this.anisotropyTexture = new gltfTextureInfo();
-            this.anisotropyTexture.fromJson(jsonAnisotropy.anisotropyTexture);
-        }
-        if(jsonAnisotropy.anisotropyDirectionTexture !== undefined)
-        {
-            this.anisotropyDirectionTexture = new gltfTextureInfo();
-            this.anisotropyDirectionTexture.fromJson(jsonAnisotropy.anisotropyDirectionTexture);
-        }
     }
 }
 

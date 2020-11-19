@@ -283,15 +283,10 @@ class gltfRenderer
             }
         }
 
-        const hasThinFilm = material.extensions != undefined && material.extensions.KHR_materials_thinfilm !== undefined;
         let textureCount = material.textures.length;
         if (this.parameters.useIBL)
         {
             textureCount = this.applyEnvironmentMap(gltf, envData, textureCount);
-        }
-        else if (hasThinFilm)
-        {
-            WebGl.setTexture(this.shader.getUniformLocation("u_ThinFilmLUT"), gltf, envData.thinFilmLUT, textureCount++);
         }
 
         if (this.parameters.usePunctual)
@@ -545,9 +540,6 @@ class gltfRenderer
 
         scene.envData.sheenELUT = new gltfTextureInfo(gltf.textures.length - 2);
         scene.envData.sheenELUT.generateMips = false;
-
-        scene.envData.thinFilmLUT = new gltfTextureInfo(gltf.textures.length - 1);
-        scene.envData.thinFilmLUT.generateMips = false;
     }
 
     applyEnvironmentMap(gltf, envData, texSlotOffset)
