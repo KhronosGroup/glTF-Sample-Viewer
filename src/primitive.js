@@ -224,7 +224,7 @@ class gltfPrimitive extends GltfObject
         }
 
         // JOINTS_0
-        if(dracoGeometry.attributes.COLOR_0 !== undefined)
+        if(dracoGeometry.attributes.JOINTS_0 !== undefined)
         {
             let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_0.array);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["JOINTS_0"], 34962,
@@ -287,8 +287,12 @@ class gltfPrimitive extends GltfObject
         let dracoBufferViewIDX = dracoExtension.bufferView;
 
         // Create the Draco decoder.
-        const origGltfDracoBufferViewObj = gltf.bufferViews[dracoBufferViewIDX];
-        const origGltfDracoBuffer = gltf.buffers[origGltfDracoBufferViewObj.buffer];
+        const origGltfDrBufViewObj = gltf.bufferViews[dracoBufferViewIDX];
+        const origGltfDracoBuffer = gltf.buffers[origGltfDrBufViewObj.buffer];
+
+        const totalBuffer = new Int8Array( origGltfDracoBuffer.buffer );
+        const actualBuffer = totalBuffer.slice(origGltfDrBufViewObj.byteOffset,
+                                 origGltfDrBufViewObj.byteOffset + origGltfDrBufViewObj.byteLength);
 
         // build taskConfig
         let taskConfig = this.createTaskConfig(dracoExtension.attributes);
@@ -296,7 +300,7 @@ class gltfPrimitive extends GltfObject
         let draco = gltf.dracoDecoder.module;
         let decoder = new draco.Decoder();
         let decoderBuffer = new draco.DecoderBuffer();
-        decoderBuffer.Init( new Int8Array( origGltfDracoBuffer.buffer ), origGltfDracoBufferViewObj.byteLength );
+        decoderBuffer.Init(actualBuffer, origGltfDrBufViewObj.byteLength);
         let geometry = this.decodeGeometry( draco, decoder, decoderBuffer, taskConfig );
 
         draco.destroy( decoderBuffer );
@@ -383,10 +387,6 @@ class gltfPrimitive extends GltfObject
         if ( geometryType === draco.TRIANGULAR_MESH ) {
             dracoGeometry = new draco.Mesh();
             decodingStatus = decoder.DecodeBufferToMesh( decoderBuffer, dracoGeometry );
-        }
-        else if ( geometryType === draco.POINT_CLOUD ) {
-            dracoGeometry = new draco.Mesh();
-            decodingStatus = decoder.DecodeBufferToPointCloud( decoderBuffer, dracoGeometry );
         }
         else
         {
