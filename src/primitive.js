@@ -487,7 +487,7 @@ class gltfPrimitive extends GltfObject
         // Gather all vertex attributes.
         for (const [atributeKey, attributeConfig] of Object.entries(taskConfig)) {
             // check if vertex counts match up
-            if(vertexCount !== attributeConfig.count || attributeConfig.count === 12)
+            if(vertexCount !== attributeConfig.count)
             {
                 throw new Error(`DRACOLoader: Accessor vertex count ${vertexCount} does not match draco decoder vertex count  ${attributeConfig.count}`);
             }
