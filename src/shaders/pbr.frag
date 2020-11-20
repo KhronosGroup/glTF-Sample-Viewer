@@ -529,14 +529,14 @@ void main()
         g_finalColor.rgb = linearTosRGB(f_sheen);
     #endif
 
+    #ifdef DEBUG_FTRANSMISSION
+        g_finalColor.rgb = linearTosRGB(f_transmission);
+    #endif
+
     #ifdef DEBUG_ALPHA
         g_finalColor.rgb = vec3(baseColor.a);
     #endif
 
-
-    #ifdef DEBUG_FTRANSMISSION
-        g_finalColor.rgb = linearTosRGB(f_transmission);
-    #endif
     g_finalColor.a = 1.0;
 
 #endif // !DEBUG_OUTPUT
