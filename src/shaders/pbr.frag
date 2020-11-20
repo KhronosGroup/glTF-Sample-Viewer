@@ -221,11 +221,11 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 }
 #endif
 
-MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
+MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0_ior)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
-    info.clearcoatF0 = vec3(0.04);
+    info.clearcoatF0 = f0_ior;
     info.clearcoatF90 = vec3(1.0);
 
     #ifdef HAS_CLEARCOAT_TEXTURE_MAP
@@ -298,7 +298,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    materialInfo = getClearCoatInfo(materialInfo, normalInfo);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo, f0_ior);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
@@ -402,8 +402,7 @@ void main()
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l,
-                    h, VdotH,
+                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
