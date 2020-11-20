@@ -221,26 +221,26 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 }
 #endif
 
-MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
+MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0_ior)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
-    info.clearcoatF0 = vec3(0.04);
-    info.clearcoatF90 = vec3(clamp(info.clearcoatF0 * 50.0, 0.0, 1.0));
+    info.clearcoatF0 = f0_ior;
+    info.clearcoatF90 = vec3(1.0);
 
     #ifdef HAS_CLEARCOAT_TEXTURE_MAP
-        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
-        info.clearcoatFactor *= ccSample.r;
+        vec4 clearcoatSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        info.clearcoatFactor *= clearcoatSample.r;
     #endif
 
     #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
-        info.clearcoatRoughness *= ccSampleRough.g;
+        vec4 clearcoatSampleRoughness = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        info.clearcoatRoughness *= clearcoatSampleRoughness.g;
     #endif
 
     #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        info.clearcoatNormal = normalize(ccSampleNor.xyz);
+        vec4 clearcoatSampleNormal = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        info.clearcoatNormal = normalize(clearcoatSampleNormal.xyz);
     #else
         info.clearcoatNormal = normalInfo.ng;
     #endif
@@ -298,7 +298,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    materialInfo = getClearCoatInfo(materialInfo, normalInfo);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo, f0_ior);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
@@ -402,8 +402,7 @@ void main()
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l,
-                    h, VdotH,
+                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
