@@ -173,83 +173,93 @@ class gltfPrimitive extends GltfObject
         // indices
         let indexBuffer = dracoGeometry.index.array;
         this.loadBufferIntoGltf(indexBuffer, gltf, this.indices, 34963,
-                    "index buffer view");
+            "index buffer view");
 
         // Position
         if(dracoGeometry.attributes.POSITION !== undefined)
         {
-            let positionBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.POSITION.array);
+            let positionBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.POSITION.array,
+                dracoGeometry.attributes.POSITION.componentType);
             this.loadBufferIntoGltf(positionBuffer, gltf, primitiveAttributes["POSITION"], 34962,
-                        "position buffer view");
+                "position buffer view");
         }
 
         // Normal
         if(dracoGeometry.attributes.NORMAL !== undefined)
         {
-            let normalBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.NORMAL.array);
+            let normalBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.NORMAL.array,
+                dracoGeometry.attributes.NORMAL.componentType);
             this.loadBufferIntoGltf(normalBuffer, gltf, primitiveAttributes["NORMAL"], 34962,
-                        "normal buffer view");
+                "normal buffer view");
         }
 
         // TEXCOORD_0
         if(dracoGeometry.attributes.TEXCOORD_0 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.TEXCOORD_0.array);
+            let uvBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.TEXCOORD_0.array,
+                dracoGeometry.attributes.TEXCOORD_0.componentType);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_0"], 34962,
-                        "TEXCOORD_0 buffer view");
+                "TEXCOORD_0 buffer view");
         }
 
         // TEXCOORD_1
         if(dracoGeometry.attributes.TEXCOORD_1 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.TEXCOORD_1.array);
+            let uvBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.TEXCOORD_1.array,
+                dracoGeometry.attributes.TEXCOORD_1.componentType);
             this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TEXCOORD_1"], 34962,
-                        "TEXCOORD_1 buffer view");
+                "TEXCOORD_1 buffer view");
         }
 
         // Tangent
         if(dracoGeometry.attributes.TANGENT !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.TANGENT.array);
-            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["TANGENT"], 34962,
-                        "Tangent buffer view");
+            let tangentBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.TANGENT.array,
+                dracoGeometry.attributes.TANGENT.componentType);
+            this.loadBufferIntoGltf(tangentBuffer, gltf, primitiveAttributes["TANGENT"], 34962,
+                "Tangent buffer view");
         }
 
         // Color
         if(dracoGeometry.attributes.COLOR_0 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.COLOR_0.array);
-            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["COLOR_0"], 34962,
-                        "color buffer view");
+            let colorBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.COLOR_0.array,
+                dracoGeometry.attributes.COLOR_0.componentType);
+            this.loadBufferIntoGltf(colorBuffer, gltf, primitiveAttributes["COLOR_0"], 34962,
+                "color buffer view");
         }
 
         // JOINTS_0
         if(dracoGeometry.attributes.JOINTS_0 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_0.array);
-            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["JOINTS_0"], 34962,
-                        "JOINTS_0 buffer view");
+            let jointsBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_0.array,
+                dracoGeometry.attributes.JOINTS_0.componentType);
+            this.loadBufferIntoGltf(jointsBuffer, gltf, primitiveAttributes["JOINTS_0"], 34963,
+                "JOINTS_0 buffer view");
         }
         // WEIGHTS_0
         if(dracoGeometry.attributes.WEIGHTS_0 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.WEIGHTS_0.array);
-            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["WEIGHTS_0"], 34962,
-                        "WEIGHTS_0 buffer view");
+            let weightsBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.WEIGHTS_0.array,
+                dracoGeometry.attributes.WEIGHTS_0.componentType);
+            this.loadBufferIntoGltf(weightsBuffer, gltf, primitiveAttributes["WEIGHTS_0"], 34963,
+                "WEIGHTS_0 buffer view");
         }
         // JOINTS_1
         if(dracoGeometry.attributes.JOINTS_1 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_1.array);
-            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["JOINTS_1"], 34962,
-                        "JOINTS_1 buffer view");
+            let jointsBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.JOINTS_1.array,
+                dracoGeometry.attributes.JOINTS_1.componentType);
+            this.loadBufferIntoGltf(jointsBuffer, gltf, primitiveAttributes["JOINTS_1"], 34963,
+                "JOINTS_1 buffer view");
         }
         // WEIGHTS_1
         if(dracoGeometry.attributes.WEIGHTS_1 !== undefined)
         {
-            let uvBuffer = this.loadFloat32ArrayIntoArrayBuffer(dracoGeometry.attributes.WEIGHTS_1.array);
-            this.loadBufferIntoGltf(uvBuffer, gltf, primitiveAttributes["WEIGHTS_1"], 34962,
-                        "WEIGHTS_1 buffer view");
+            let weightsBuffer = this.loadArrayIntoArrayBuffer(dracoGeometry.attributes.WEIGHTS_1.array,
+                dracoGeometry.attributes.WEIGHTS_1.componentType);
+            this.loadBufferIntoGltf(weightsBuffer, gltf, primitiveAttributes["WEIGHTS_1"], 34963,
+                "WEIGHTS_1 buffer view");
         }
     }
 
@@ -267,18 +277,57 @@ class gltfPrimitive extends GltfObject
         {
             gltfBufferViewObj.name = gltfBufferViewName;
         }
-        //gltfBufferViewObj.target = gltfBufferViewTarget;
+        gltfBufferViewObj.target = gltfBufferViewTarget;
         gltf.bufferViews.push(gltfBufferViewObj);
 
         gltf.accessors[gltfAccessorIndex].byteOffset = 0;
         gltf.accessors[gltfAccessorIndex].bufferView = gltf.bufferViews.length - 1;
     }
 
-    loadFloat32ArrayIntoArrayBuffer(float32ArrayBuffer)
+    loadArrayIntoArrayBuffer(arrayData, componentType)
     {
-        let arrayBuffer = new ArrayBuffer(float32ArrayBuffer.length * 4);         // JS numbers are 8 bytes long, or 64 bits
-        let floatArray = new Float32Array(arrayBuffer);  // so equivalent to Float64
-        floatArray.set(float32ArrayBuffer);
+        let arrayBuffer;
+        switch (componentType)
+        {
+        case "Int8Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length);
+            let int8Array = new Int8Array(arrayBuffer);
+            int8Array.set(arrayData);
+            break;
+        case "Uint8Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length);
+            let uint8Array = new Uint8Array(arrayBuffer);
+            uint8Array.set(arrayData);
+            break;
+        case "Int16Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length * 2);
+            let int16Array = new Int16Array(arrayBuffer);
+            int16Array.set(arrayData);
+            break;
+        case "Uint16Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length * 2);
+            let uint16Array = new Uint16Array(arrayBuffer);
+            uint16Array.set(arrayData);
+            break;
+        case "Int32Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length * 4);
+            let int32Array = new Int32Array(arrayBuffer);
+            int32Array.set(arrayData);
+            break;
+        case "Uint32Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length * 4);
+            let uint32Array = new Uint32Array(arrayBuffer);
+            uint32Array.set(arrayData);
+            break;
+        default:
+        case "Float32Array":
+            arrayBuffer = new ArrayBuffer(arrayData.length * 4);
+            let floatArray = new Float32Array(arrayBuffer);
+            floatArray.set(arrayData);
+            break;
+        }
+
+
         return arrayBuffer;
     }
 
@@ -292,7 +341,7 @@ class gltfPrimitive extends GltfObject
 
         const totalBuffer = new Int8Array( origGltfDracoBuffer.buffer );
         const actualBuffer = totalBuffer.slice(origGltfDrBufViewObj.byteOffset,
-                                 origGltfDrBufViewObj.byteOffset + origGltfDrBufViewObj.byteLength);
+            origGltfDrBufViewObj.byteOffset + origGltfDrBufViewObj.byteLength);
 
         // build taskConfig
         let taskConfig = this.createTaskConfig(dracoExtension.attributes, gltf);
@@ -450,7 +499,7 @@ class gltfPrimitive extends GltfObject
         for (const [atributeKey, attributeConfig] of Object.entries(taskConfig)) {
             let dracoAttribute = decoder.GetAttributeByUniqueId( dracoGeometry, attributeConfig.id );
             var tmpObj = this.decodeAttribute( draco, decoder,
-                        dracoGeometry, attributeConfig.name, dracoAttribute, attributeConfig.type);
+                dracoGeometry, attributeConfig.name, dracoAttribute, attributeConfig.type);
             geometry.attributes[tmpObj.name] = tmpObj;
         }
 
@@ -474,8 +523,7 @@ class gltfPrimitive extends GltfObject
         return geometry;
     }
 
-    decodeAttribute( draco, decoder, dracoGeometry,
-                    attributeName, attribute, attributeType) {
+    decodeAttribute( draco, decoder, dracoGeometry, attributeName, attribute, attributeType) {
         let numComponents = attribute.num_components();
         let numPoints = dracoGeometry.num_points();
         let numValues = numPoints * numComponents;
@@ -485,68 +533,69 @@ class gltfPrimitive extends GltfObject
 
         let dataSize;
         switch ( attributeType ) {
-            case "Float32Array":
-                dataSize = numValues * 4;
-                ptr = draco._malloc( dataSize );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_FLOAT32, dataSize, ptr );
-                array = new Float32Array( draco.HEAPF32.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Float32Array":
+            dataSize = numValues * 4;
+            ptr = draco._malloc( dataSize );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_FLOAT32, dataSize, ptr );
+            array = new Float32Array( draco.HEAPF32.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            case "Int8Array":
-                ptr = draco._malloc( numValues );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT8, numValues, ptr );
-                geometryBuffer[ attributeName ] = new Int8Array( draco.HEAP8.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Int8Array":
+            ptr = draco._malloc( numValues );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT8, numValues, ptr );
+            array = new Int8Array( draco.HEAP8.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            case "Int16Array":
-                dataSize = numValues * 2;
-                ptr = draco._malloc( dataSize );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT16, dataSize, ptr );
-                array = new Int16Array( draco.HEAP16.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Int16Array":
+            dataSize = numValues * 2;
+            ptr = draco._malloc( dataSize );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT16, dataSize, ptr );
+            array = new Int16Array( draco.HEAP16.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            case "Int32Array":
-                dataSize = numValues * 4;
-                ptr = draco._malloc( dataSize );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT32, dataSize, ptr );
-                array = new Int32Array( draco.HEAP32.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Int32Array":
+            dataSize = numValues * 4;
+            ptr = draco._malloc( dataSize );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_INT32, dataSize, ptr );
+            array = new Int32Array( draco.HEAP32.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            case "Uint8Array":
-                ptr = draco._malloc( numValues );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT8, numValues, ptr );
-                geometryBuffer[ attributeName ] = new Uint8Array( draco.HEAPU8.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Uint8Array":
+            ptr = draco._malloc( numValues );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT8, numValues, ptr );
+            array = new Uint8Array( draco.HEAPU8.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            case "Uint16Array":
-                dataSize = numValues * 2;
-                ptr = draco._malloc( dataSize );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT16, dataSize, ptr );
-                array = new Uint16Array( draco.HEAPU16.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Uint16Array":
+            dataSize = numValues * 2;
+            ptr = draco._malloc( dataSize );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT16, dataSize, ptr );
+            array = new Uint16Array( draco.HEAPU16.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            case "Uint32Array":
-                dataSize = numValues * 4;
-                ptr = draco._malloc( dataSize );
-                decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT32, dataSize, ptr );
-                array = new Uint32Array( draco.HEAPU32.buffer, ptr, numValues ).slice();
-                draco._free( ptr );
-                break;
+        case "Uint32Array":
+            dataSize = numValues * 4;
+            ptr = draco._malloc( dataSize );
+            decoder.GetAttributeDataArrayForAllPoints( dracoGeometry, attribute, draco.DT_UINT32, dataSize, ptr );
+            array = new Uint32Array( draco.HEAPU32.buffer, ptr, numValues ).slice();
+            draco._free( ptr );
+            break;
 
-            default:
-                throw new Error( 'THREE.DRACOLoader: Unexpected attribute type.' );
+        default:
+            throw new Error( 'THREE.DRACOLoader: Unexpected attribute type.' );
         }
 
         return {
             name: attributeName,
             array: array,
-            itemSize: numComponents
+            itemSize: numComponents,
+            componentType: attributeType
         };
 
     }
