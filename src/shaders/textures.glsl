@@ -65,6 +65,11 @@ uniform sampler2D u_SheenRoughnessSampler;
 uniform int u_SheenRoughnessUVSet;
 uniform mat3 u_SheenRoughnessUVTransform;
 
+// Transmission Material
+uniform sampler2D u_TransmissionSampler;
+uniform int u_TransmissionUVSet;
+uniform mat3 u_TransmissionUVTransform;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -183,6 +188,15 @@ vec2 getSheenRoughnessUV()
     vec3 uv = vec3(u_SheenRoughnessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     #ifdef HAS_SHEENROUGHNESS_UV_TRANSFORM
     uv *= u_SheenRoughnessUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getTransmissionUV()
+{
+    vec3 uv = vec3(u_TransmissionUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_TRANSMISSION_UV_TRANSFORM
+    uv *= u_TransmissionUVTransform;
     #endif
     return uv.xy;
 }
