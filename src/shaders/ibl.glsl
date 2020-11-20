@@ -54,7 +54,7 @@ vec3 getIBLRadianceLambertian(vec3 n, vec3 diffuseColor)
     return diffuseLight * diffuseColor;
 }
 
-vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor, float sheenIntensity)
+vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
 {
     float NdotV = clampedDot(n, v);
     float lod = clamp(sheenRoughness * float(u_MipCount), 0.0, float(u_MipCount));
@@ -70,5 +70,5 @@ vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor
     sheenLight = sRGBToLinear(sheenLight);
     #endif
 
-    return sheenIntensity * sheenLight * sheenColor * brdf;
+    return sheenLight * sheenColor * brdf;
 }

@@ -50,3 +50,8 @@ vec3 transmissionAbsorption(vec3 v, vec3 n, float ior, float thickness, vec3 abs
     vec3 r = refract(-v, n, 1.0 / ior);
     return exp(-absorptionColor * thickness * dot(-n, r));
 }
+
+float max3(vec3 v)
+{
+    return max(max(v.x, v.y), v.z);
+}

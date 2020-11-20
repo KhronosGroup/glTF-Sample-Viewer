@@ -40,9 +40,8 @@ uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 
 // Sheen
-uniform float u_SheenIntensityFactor;
+uniform float u_SheenRoughnessFactor;
 uniform vec3 u_SheenColorFactor;
-uniform float u_SheenRoughness;
 
 // Clearcoat
 uniform float u_ClearcoatFactor;
@@ -70,9 +69,8 @@ struct MaterialInfo
     vec3 n;
     vec3 baseColor; // getBaseColor()
 
-    float sheenIntensity;
-    vec3 sheenColor;
-    float sheenRoughness;
+    float sheenRoughnessFactor;
+    vec3 sheenColorFactor;
 
     vec3 clearcoatF0;
     vec3 clearcoatF90;
@@ -199,14 +197,17 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
 
 MaterialInfo getSheenInfo(MaterialInfo info)
 {
-    info.sheenColor = u_SheenColorFactor;
-    info.sheenIntensity = u_SheenIntensityFactor;
-    info.sheenRoughness = u_SheenRoughness;
+    info.sheenColorFactor = u_SheenColorFactor;
+    info.sheenRoughnessFactor = u_SheenRoughnessFactor;
 
-    #ifdef HAS_SHEEN_COLOR_INTENSITY_MAP
-        vec4 sheenSample = texture(u_SheenColorIntensitySampler, getSheenUV());
-        info.sheenColor *= sheenSample.xyz;
-        info.sheenIntensity *= sheenSample.w;
+    #ifdef HAS_SHEEN_COLOR_MAP
+        vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
+        info.sheenColorFactor *= sheenColorSample.rgb;
+    #endif
+
+    #ifdef HAS_SHEEN_ROUGHNESS_MAP
+        vec4 sheenRoughnessSample = texture(u_SheenRoughnessSampler, getSheenRoughnessUV());
+        info.sheenRoughnessFactor *= sheenRoughnessSample.a;
     #endif
 
     return info;
@@ -247,6 +248,11 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
     info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
 
     return info;
+}
+
+float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
+{
+    return texture(u_SheenELUT, vec2(NdotV, sheenRoughnessFactor)).r;
 }
 
 void main()
@@ -321,6 +327,8 @@ void main()
     vec3 f_sheen = vec3(0.0);
     vec3 f_transmission = vec3(0.0);
 
+    float albedoSheenScaling = 1.0;
+
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0);
@@ -331,7 +339,7 @@ void main()
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
     #endif
 #endif
 
@@ -388,8 +396,9 @@ void main()
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
-                    NdotL, NdotV, NdotH);
+                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
+                albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
+                    1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL, materialInfo.sheenRoughnessFactor));
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
@@ -430,7 +439,9 @@ void main()
         vec3 diffuse = f_diffuse;
     #endif
 
-    color = (f_emissive + f_diffuse + f_specular + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    color = f_emissive + diffuse + f_specular;
+    color = f_sheen + color * albedoSheenScaling;
+    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
 #ifndef DEBUG_OUTPUT // no debug
 
@@ -493,23 +504,23 @@ void main()
     #endif
 
     #ifdef DEBUG_FEMISSIVE
-        g_finalColor.rgb = f_emissive;
+        g_finalColor.rgb = linearTosRGB(f_emissive);
     #endif
 
     #ifdef DEBUG_FSPECULAR
-        g_finalColor.rgb = f_specular;
+        g_finalColor.rgb = linearTosRGB(f_specular);
     #endif
 
     #ifdef DEBUG_FDIFFUSE
-        g_finalColor.rgb = f_diffuse;
+        g_finalColor.rgb = linearTosRGB(f_diffuse);
     #endif
 
     #ifdef DEBUG_FCLEARCOAT
-        g_finalColor.rgb = f_clearcoat;
+        g_finalColor.rgb = linearTosRGB(f_clearcoat);
     #endif
 
     #ifdef DEBUG_FSHEEN
-        g_finalColor.rgb = f_sheen;
+        g_finalColor.rgb = linearTosRGB(f_sheen);
     #endif
 
     #ifdef DEBUG_ALPHA
