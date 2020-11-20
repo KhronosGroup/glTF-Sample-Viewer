@@ -75,7 +75,6 @@ float D_Ashikhmin(float NdotH, float alphaRoughness)
     return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
 }
 
-// TODO move to correct place
 float lambdaSheenNumericHelper(float x, float alphaG)
 {
     float oneMinusAlphaSq = (1.0 - alphaG) * (1.0 - alphaG);
@@ -87,7 +86,6 @@ float lambdaSheenNumericHelper(float x, float alphaG)
     return a / (1.0 + b * pow(x, c)) + d * x + e;
 }
 
-// TODO move to correct place
 float lambdaSheen(float cosTheta, float alphaG)
 {
     if(abs(cosTheta) < 0.5)
