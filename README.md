@@ -21,12 +21,12 @@ This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.
   - [Diffuse Term](#diffuse-term)
 - [Appendix B FAQ](#appendix-b-faq)
 
+See also the [proposal for API and UI enhancements](documentation)
+
 Version
 -------
 
 Development for PBR next phase one
-
-[Proposal for API and UI enhancements](documentation)
 
 Credits
 -------
