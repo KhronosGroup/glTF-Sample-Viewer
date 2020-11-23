@@ -1,6 +1,6 @@
 # Proposal for a new glTF-Sample-Viewer API
 
-The main goal of refactoring the glTF-Sample-Viewer API is to make it compatible with NodeJS by removing the strong dependency on the HTML user interface. Furthermore it should be possible to load resources asynchroneously, parallel and independently. 
+The main goal of refactoring the glTF-Sample-Viewer API is to make it compatible with NodeJS by removing the strong dependency on the HTML user interface. Furthermore it should be possible to load resources asynchroneously and independently from each other, thus avoiding a full reload of the sample viewer when one of the resources is changed.
 
 Our proposal aims to separate the current interface into smaller components that can be called and used individually while keeping the underlying functionality intact.
 
@@ -12,15 +12,23 @@ The current `GltfViewer` object combines resource loading, render loop execution
 
 The GltfView component is associated with one WebGL2 context. In practice this means it will be associated with one HTML5 Canvas. This component manages the interaction between the canvas and the GL context. For example it therefore specifies the viewport, the swapchain and can be used to schedule frame renders. 
 
-As it owns the WebGL2 context, it is used to create WebGL2 resources.
-
 ```js
 const view = new GltfView(canvas);
 ```
 
+The view is also used to render frames, either on every window repaint event or on demand, e.g. when taking a frame capture.
+
+```js
+const finished = view.startRendering(state);
+```
+
+```js
+const buffer = await view.renderToBuffer(state);
+```
+
 ### GltfState
 
-The GltfState is the view model for a GltfView. It can be copied to other GltfViews and always is a complete description of the content that should be visible in the GltfView's associated canvas. *As currently some WebGL resources are stored directly in the Gltf objects, the state cannot be shared between views.*
+The GltfState is the view model for a GltfView. It is a complete description of the content that should be visible in the GltfView's associated canvas. You could create multiple states for one view and swap between them, e.g. when a resource is done loading. *As currently some WebGL resources are stored directly in the Gltf objects, the state cannot be shared between views.*
 
 ```js
 const state = view.createState();
@@ -31,7 +39,7 @@ state.renderingOptions = { useIbl: false };
 
 ### ResourceLoader
 
-As the name implies, ResourceLoader can be used to load external resources and make them available to the renderer. Loading is done asynchroneously and results in reusable objects.
+As the name implies, ResourceLoader can be used to load external resources and make them available to the renderer. Loading is done asynchroneously and results in reusable objects. 
 
 ```js
 state.gltf = await ResourceLoader.loadGltf("path/to/some.gltf");
@@ -58,6 +66,10 @@ const ui = new GltfSV.UI(htmlUIElement);
 ui.activeScene.subscribe( (scene) => state.activeScene = scene);
 
 ``` 
+
+Image the user interface here
+
+Link to the sllideshow containing all UI slides
 
 ## Full Example
 
@@ -138,10 +150,57 @@ await finished;
 
 ```
 
-## Component diagram
+## Component diagram (simplified)
 ![](figures/component_diagram.svg)
 
-## State diagram
-This state diagram oversimplifies states in order to remain understandable. The key takeaway is that gltf, environment and renderer states are concurrent or independent. 
+## State diagram (simplified)
 
 ![](figures/state_diagram.svg)
+
+# Test Suite Integration
+
+With the proposed changes to the API, an integration into the Google Render Fidelity Comparison Tool would be achievable like in the following example.
+
+```js
+private async[$updateScenario](scenario: ScenarioConfig) {
+    if (this[$view] == null) {
+        this[$canvas] = this.shadowRoot!.querySelector('canvas');
+        this[$view] = new GltfSV.GltfView(this[$canvas]);
+        this[$state] = this[$view].createState();
+    }
+    this[$updateSize]();
+        
+    this[$state].gltf = await GltfSV.ResourceLoader.loadGltf(scenario.model);
+
+    const {orbit, target, verticalFoV, renderSkybox} = scenario;
+
+    this[$state].clearColor = new Color4(0, 0, 0, 0);
+
+    //Setup camera
+    this[$state].activeCamera = new GltfSV.UserCamera(
+        'Camera',
+        alpha,
+        beta,
+        orbit.radius,
+        verticalFoV,
+        target);
+  
+    this[$state].environment = await GltfSV.ResourceLoader.loadEnvironment(scenario.lighting);
+
+    this[$state].renderSkybox = renderSkybox;
+    
+    this[$state].toneMapping = GltfSV.TONEMAPPING_ACES;      
+    
+    this[$view].renderFrame([$state]).then(() => {
+        requestAnimationFrame(() => {
+            this.dispatchEvent(
+                //This notifies the framework that the model is visible and the screenshot can be taken
+                new CustomEvent('model-visibility', {detail: {visible: true}}));
+        });
+    });
+}
+```
+
+
+![](figures/goggletestsArchitecture.png)
+
