@@ -1,6 +1,6 @@
 # Proposal for a new glTF-Sample-Viewer API and Design
 
-The main goal of refactoring the glTF-Sample-Viewer API is to make it compatible with NodeJS by removing the strong dependency on the HTML user interface. Furthermore it should be possible to load resources asynchroneously and independently from each other, thus avoiding a full reload of the sample viewer when one of the resources is changed.
+The main goal of refactoring the glTF-Sample-Viewer API is to make it compatible with NodeJS by removing the strong dependency on the HTML user interface. Furthermore, it should be possible to load resources asynchroneously and independently from each other, thus avoiding a full reload of the sample viewer when one of the resources is changed.
 
 Our proposal aims to separate the current interface into smaller components that can be called and used individually while keeping the underlying functionality intact.
 
@@ -39,7 +39,7 @@ state.renderingOptions = { useIbl: false };
 
 ### ResourceLoader
 
-As the name implies, ResourceLoader can be used to load external resources and make them available to the renderer. Loading is done asynchroneously and results in reusable objects. 
+As the name implies, ResourceLoader can be used to load external resources and make them available to the renderer. Loading is done asynchronously and results in reusable objects. 
 
 ```js
 state.gltf = await ResourceLoader.loadGltf("path/to/some.gltf");
@@ -51,7 +51,7 @@ One can also directly load some resources to WebGL2 memory by providing the cont
 state.environment = await ResourceLoader.loadEnvironment("path/to/environment.hdr", view.context);
 ```
 
-IBL environments can be loaded and sampled as with the above functionality, or they can be loaded from prefiltered images as with the following example.
+IBL environments can be loaded and sampled as with the above functionality, or they can be loaded from pre-filtered images as with the following example.
 
 ```js
 state.environment = await ResourceLoader.loadEnvironmentPrefiltered("path/to/environments", view.context);
