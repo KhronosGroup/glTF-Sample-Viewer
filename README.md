@@ -49,6 +49,8 @@ Features
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 - [ ] KHR_xmp_ld
 
+[Proposal for API and UI enhancements](documentation)
+
 Viewer
 ======
 
