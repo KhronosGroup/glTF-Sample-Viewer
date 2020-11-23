@@ -9,3 +9,5 @@
 *.png binary
 *.hdr binary
 *.ktx2 binary
+*.svg binary
+*.pdf binary
