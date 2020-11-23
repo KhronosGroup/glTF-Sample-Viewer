@@ -16,6 +16,12 @@ The GltfView component is associated with one WebGL2 context. In practice this m
 const view = new GltfView(canvas);
 ```
 
+One could also create a headless view with code like the following. *Note that the signature might change in the final API*
+
+```js
+const view = new GltfView(hedlessGlContext);
+```
+
 The view is also used to render frames, either on every window repaint event or on demand, e.g. when taking a frame capture.
 
 ```js
