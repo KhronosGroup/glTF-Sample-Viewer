@@ -67,9 +67,8 @@ ui.activeScene.subscribe( (scene) => state.activeScene = scene);
 
 ``` 
 
-Image the user interface here
+[UI design proposal![](figures/sample_viewer_ui.jpg)](documents/UI_proposal.pdf)
 
-Link to the sllideshow containing all UI slides
 
 ## Full Example
 
@@ -202,5 +201,5 @@ private async[$updateScenario](scenario: ScenarioConfig) {
 ```
 
 
-![](figures/goggletestsArchitecture.png)
+![](figures/goggletestsArchitecture.jpg)
 
