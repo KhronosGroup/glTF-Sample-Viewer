@@ -1,4 +1,4 @@
-# Proposal for a new glTF-Sample-Viewer API
+# Proposal for a new glTF-Sample-Viewer API and Design
 
 The main goal of refactoring the glTF-Sample-Viewer API is to make it compatible with NodeJS by removing the strong dependency on the HTML user interface. Furthermore it should be possible to load resources asynchroneously and independently from each other, thus avoiding a full reload of the sample viewer when one of the resources is changed.
 
