@@ -343,100 +343,16 @@ class gltfPrimitive extends GltfObject
         const actualBuffer = totalBuffer.slice(origGltfDrBufViewObj.byteOffset,
             origGltfDrBufViewObj.byteOffset + origGltfDrBufViewObj.byteLength);
 
-        // build taskConfig
-        let taskConfig = this.createTaskConfig(dracoExtension.attributes, gltf);
-
+        // decode draco buffer to geometry intermediate
         let draco = gltf.dracoDecoder.module;
         let decoder = new draco.Decoder();
         let decoderBuffer = new draco.DecoderBuffer();
         decoderBuffer.Init(actualBuffer, origGltfDrBufViewObj.byteLength);
-        let geometry = this.decodeGeometry( draco, decoder, decoderBuffer, taskConfig );
+        let geometry = this.decodeGeometry( draco, decoder, decoderBuffer, dracoExtension.attributes, gltf );
 
         draco.destroy( decoderBuffer );
 
         return geometry;
-    }
-
-    createTaskConfig(dracoAttributes, gltf)
-    {
-        let taskConfig = {};
-        for(let dracoAttr in dracoAttributes)
-        {
-            let componentType = WebGl.context.BYTE;
-            let count;
-            // find gltf accessor for this draco attribute
-            for (const [key, value] of Object.entries(this.attributes))
-            {
-                if(key === dracoAttr)
-                {
-                    componentType = gltf.accessors[value].componentType;
-                    count = gltf.accessors[value].count;
-                    break;
-                }
-            }
-            componentType = this.getDracoArrayTypeFromComponentType(componentType);
-
-            if(dracoAttr === "NORMAL")
-            {
-                taskConfig.normal = {};
-                this.fillTaskListEntry(taskConfig.normal, "NORMAL", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "POSITION")
-            {
-                taskConfig.position = {};
-                this.fillTaskListEntry(taskConfig.position, "POSITION", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "TEXCOORD_0")
-            {
-                taskConfig.tex_coord0 = {};
-                this.fillTaskListEntry(taskConfig.tex_coord0, "TEXCOORD_0", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "TEXCOORD_1")
-            {
-                taskConfig.tex_coord1 = {};
-                this.fillTaskListEntry(taskConfig.tex_coord1, "TEXCOORD_1", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "COLOR_0")
-            {
-                taskConfig.color0 = {};
-                this.fillTaskListEntry(taskConfig.color0, "COLOR_0", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "TANGENT")
-            {
-                taskConfig.tangent = {};
-                this.fillTaskListEntry(taskConfig.tangent, "TANGENT", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "JOINTS_0")
-            {
-                taskConfig.joints0 = {};
-                this.fillTaskListEntry(taskConfig.joints0, "JOINTS_0", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "WEIGHTS_0")
-            {
-                taskConfig.weights0 = {};
-                this.fillTaskListEntry(taskConfig.weights0, "WEIGHTS_0", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "JOINTS_1")
-            {
-                taskConfig.joints1 = {};
-                this.fillTaskListEntry(taskConfig.joints1, "JOINTS_1", dracoAttributes[dracoAttr], componentType, count);
-            }
-            else if(dracoAttr === "WEIGHTS_1")
-            {
-                taskConfig.weights1 = {};
-                this.fillTaskListEntry(taskConfig.weights1, "WEIGHTS_1", dracoAttributes[dracoAttr], componentType, count);
-            }
-        }
-
-        return taskConfig;
-    }
-
-    fillTaskListEntry(entry, name, id, componentType, count)
-    {
-        entry.name = name;
-        entry.id = id;
-        entry.type = componentType;
-        entry.count = count;
     }
 
     getDracoArrayTypeFromComponentType(componentType)
@@ -462,7 +378,7 @@ class gltfPrimitive extends GltfObject
         }
     }
 
-    decodeGeometry(draco, decoder, decoderBuffer, taskConfig) {
+    decodeGeometry(draco, decoder, decoderBuffer, gltfDracoAttributes, gltf) {
         let dracoGeometry;
         let decodingStatus;
 
@@ -485,15 +401,31 @@ class gltfPrimitive extends GltfObject
         let vertexCount = dracoGeometry.num_points();
 
         // Gather all vertex attributes.
-        for (const [atributeKey, attributeConfig] of Object.entries(taskConfig)) {
-            // check if vertex counts match up
-            if(vertexCount !== attributeConfig.count)
+        for(let dracoAttr in gltfDracoAttributes)
+        {
+            let componentType = WebGl.context.BYTE;
+            let accessotVertexCount;
+            // find gltf accessor for this draco attribute
+            for (const [key, value] of Object.entries(this.attributes))
             {
-                throw new Error(`DRACOLoader: Accessor vertex count ${vertexCount} does not match draco decoder vertex count  ${attributeConfig.count}`);
+                if(key === dracoAttr)
+                {
+                    componentType = gltf.accessors[value].componentType;
+                    accessotVertexCount = gltf.accessors[value].count;
+                    break;
+                }
             }
-            let dracoAttribute = decoder.GetAttributeByUniqueId( dracoGeometry, attributeConfig.id );
+
+            // check if vertex count matches
+            if(vertexCount !== accessotVertexCount)
+            {
+                throw new Error(`DRACOLoader: Accessor vertex count ${accessotVertexCount} does not match draco decoder vertex count  ${vertexCount}`);
+            }
+            componentType = this.getDracoArrayTypeFromComponentType(componentType);
+
+            let dracoAttribute = decoder.GetAttributeByUniqueId( dracoGeometry, gltfDracoAttributes[dracoAttr]);
             var tmpObj = this.decodeAttribute( draco, decoder,
-                dracoGeometry, attributeConfig.name, dracoAttribute, attributeConfig.type);
+                dracoGeometry, dracoAttr, dracoAttribute, componentType);
             geometry.attributes[tmpObj.name] = tmpObj;
         }
 
