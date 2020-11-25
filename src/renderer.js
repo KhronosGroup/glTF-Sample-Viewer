@@ -404,12 +404,6 @@ class gltfRenderer
 
         switch (this.parameters.toneMap)
         {
-        case (ToneMaps.UNCHARTED):
-            fragDefines.push("TONEMAP_UNCHARTED 1");
-            break;
-        case (ToneMaps.HEJL_RICHARD):
-            fragDefines.push("TONEMAP_HEJLRICHARD 1");
-            break;
         case (ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;
