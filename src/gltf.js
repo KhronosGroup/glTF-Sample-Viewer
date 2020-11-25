@@ -69,6 +69,7 @@ class glTF extends GltfObject
         this.animations = objectsFromJsons(json.animations, gltfAnimation);
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
+        this.variants = enforceVariantsUniqueness(this.variants);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -124,6 +125,24 @@ function getJsonVariantsFromExtension(extensions)
         return [];
     }
     return extensions.KHR_materials_variants.variants;
+}
+
+function enforceVariantsUniqueness(variants)
+{
+    for(let i=0;i<variants.length;i++)
+    {
+        const name = variants[i].name;
+        for(let j=i+1;j<variants.length;j++)
+        {
+            if(variants[j].name == name)
+            {
+                variants[j].name += "0";  // Add random character to duplicates
+            }
+        }
+    }
+
+
+    return variants;
 }
 
 export { glTF };
