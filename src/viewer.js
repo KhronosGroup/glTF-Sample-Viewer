@@ -21,11 +21,13 @@ class gltfViewer
         onRendererReady = undefined,
         basePath = "",
         initialModel = "",
-        environmentMap = undefined)
+        environmentMap = undefined,
+        dracoDecoder)
     {
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.initialModel = initialModel;
+        this.dracoDecoder = dracoDecoder;
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -221,6 +223,7 @@ class gltfViewer
 
         const gltf = new glTF(path);
         gltf.fromJson(json);
+        gltf.dracoDecoder = this.dracoDecoder;
 
         this.injectEnvironment(gltf);
 

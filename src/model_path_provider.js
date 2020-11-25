@@ -7,7 +7,7 @@ import {
 
 class gltfModelPathProvider
 {
-    constructor(modelIndexerPath, ignoredVariants = ["glTF-Draco", "glTF-Embedded"])
+    constructor(modelIndexerPath, ignoredVariants = ["glTF-Embedded"])
     {
         this.modelIndexerPath = modelIndexerPath;
         this.ignoredVariants = ignoredVariants;
