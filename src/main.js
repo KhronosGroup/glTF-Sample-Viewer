@@ -1,8 +1,9 @@
 import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
+import { DracoDecoder } from './draco.js';
 
-function gltfSampleViewer(
+async function gltfSampleViewer(
     canvasId,
     index,
     envMap = "Courtyard of the Doge's palace",
@@ -28,7 +29,10 @@ function gltfSampleViewer(
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
 
-    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap);
+    const dracoDecoder = new DracoDecoder();
+    await dracoDecoder.ready();
+
+    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap, dracoDecoder);
 }
 
 function getWebGlContext(canvas)
