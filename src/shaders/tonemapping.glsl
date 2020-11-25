@@ -34,12 +34,41 @@ vec3 toneMapACES(vec3 color)
     return linearTosRGB(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
 }
 
+float toneMapACESccScalar(float color)
+{
+    if(color <= 0.0)
+    {
+        return -0.3588571428571428;
+    }
+    else if(color < 0.000030517578125)
+    {
+        return (log2(0.0000152587890625 + (color * 0.5)) + 9.72) / 17.52;
+    }
+    else
+    {
+        return (log2(color) + 9.72) / 17.52;
+    }
+}
+
+// ACEScc tone map
+// see: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html#TRANSFER_ACESCC
+vec3 toneMapACEScc(vec3 color)
+{
+    vec3 result;
+    result.x = toneMapACESccScalar(color.x);
+    result.y = toneMapACESccScalar(color.y);
+    result.z = toneMapACESccScalar(color.z);
+
+    return linearTosRGB(result);
+}
+
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
 #ifdef TONEMAP_ACES
-    return toneMapACES(color);
+    //return toneMapACES(color);
+    return toneMapACEScc(color);
 #endif
 
     return linearTosRGB(color);
