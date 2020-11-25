@@ -1,3 +1,5 @@
+import axios from '../../libs/axios.min.js';
+
 import { gltfAccessor } from "../accessor";
 import { glTF } from '../gltf.js';
 import { getIsGlb } from '../utils.js';
@@ -28,3 +30,5 @@ async function loadGltfFromPath(path)
 
     return gltf;
 }
+
+export { loadGltfFromPath };
