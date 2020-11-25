@@ -22,7 +22,7 @@ select {
     width: 169px;
 }
 
-#gltf-rv-model-spinner {
+#gltf-sample-viewer-model-spinner {
     position: absolute;
     top: 0;
     left: 0;

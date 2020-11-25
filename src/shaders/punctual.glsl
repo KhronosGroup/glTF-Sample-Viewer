@@ -13,8 +13,8 @@ struct Light
 
     float outerConeCos;
     int type;
-
-    vec2 padding;
+    float padding1;
+    float padding2;
 };
 
 const int LightType_Directional = 0;
@@ -27,7 +27,7 @@ float getRangeAttenuation(float range, float distance)
     if (range <= 0.0)
     {
         // negative range means unlimited
-        return 1.0;
+        return 1.0 / pow(distance, 2.0);
     }
     return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
@@ -47,6 +47,26 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
+
+vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness, vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor)
+{
+    vec3 n = normalize(normal);           // Outward direction of surface point
+    vec3 v = normalize(view);             // Direction from surface point to view
+    vec3 l = normalize(pointToLight);
+    vec3 l_mirror = normalize(l + 2.0*n*dot(-l, n));     // Mirror light reflection vector on surface
+    vec3 h = normalize(l_mirror + v);            // Halfway vector between transmission light vector and v
+
+    float D = D_GGX(clamp(dot(n, h), 0.0, 1.0), alphaRoughness);
+    vec3 F = F_Schlick(f0, f90, clamp(dot(v, h), 0.0, 1.0));
+    float T = transmissionPercentage;
+    float Vis = V_GGX(clamp(dot(n, l_mirror), 0.0, 1.0), clamp(dot(n, v), 0.0, 1.0), alphaRoughness);
+
+    // Transmission BTDF
+    vec3 f_transmission = (1.0 - F) * T * baseColor * D * Vis;
+
+    return f_transmission;
+}
+
 vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, float VdotH, vec3 f0, vec3 f90, float clearcoatRoughness)
 {
     float NdotL = clampedDot(clearcoatNormal, l);
@@ -55,7 +75,7 @@ vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, 
     return NdotL * BRDF_specularGGX(f0, f90, clearcoatRoughness * clearcoatRoughness, VdotH, NdotL, NdotV, NdotH);
 }
 
-vec3 getPunctualRadianceSheen(vec3 sheenColor, float sheenIntensity, float sheenRoughness, float NdotL, float NdotV, float NdotH)
+vec3 getPunctualRadianceSheen(vec3 sheenColor, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
-    return NdotL * BRDF_specularSheen(sheenColor, sheenIntensity, sheenRoughness, NdotL, NdotV, NdotH);
+    return NdotL * BRDF_specularSheen(sheenColor, sheenRoughness, NdotL, NdotV, NdotH);
 }

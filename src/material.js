@@ -101,12 +101,12 @@ class gltfMaterial extends GltfObject
 
             if(uvTransform.scale !== undefined)
             {
-                scale = jsToGl([uvTransform.scale[0],0,0, 0,uvTransform.scale[1],0, 0,0,1]);
+                scale = jsToGl([uvTransform.scale[0], 0, 0, 0, uvTransform.scale[1], 0, 0, 0, 1]);
             }
 
             if(uvTransform.offset !== undefined)
             {
-                translation = jsToGl([1,0,uvTransform.offset[0], 0,1,uvTransform.offset[1], 0, 0, 1]);
+                translation = jsToGl([1, 0, uvTransform.offset[0], 0, 1, uvTransform.offset[1], 0, 0, 1]);
             }
 
             let uvMatrix = mat3.create();
@@ -308,47 +308,61 @@ class gltfMaterial extends GltfObject
             // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
             if(this.extensions.KHR_materials_sheen !== undefined)
             {
-                let sheenFactor = 0.0;
-                let sheenColor =  vec3.fromValues(1.0, 1.0, 1.0);
-                let sheenRoughness = this.properties.get("u_RoughnessFactor");
+                let sheenRoughnessFactor = 0.0;
+                let sheenColorFactor =  vec3.fromValues(1.0, 1.0, 1.0);
 
                 this.defines.push("MATERIAL_SHEEN 1");
 
-                if(this.extensions.KHR_materials_sheen.intensityFactor !== undefined)
+                if(this.extensions.KHR_materials_sheen.sheenRoughnessFactor !== undefined)
                 {
-                    sheenFactor = this.extensions.KHR_materials_sheen.intensityFactor;
+                    sheenRoughnessFactor = this.extensions.KHR_materials_sheen.sheenRoughnessFactor;
                 }
-                if(this.extensions.KHR_materials_sheen.colorFactor !== undefined)
+                if(this.extensions.KHR_materials_sheen.sheenColorFactor !== undefined)
                 {
-                    sheenColor = jsToGl(this.extensions.KHR_materials_sheen.colorFactor);
+                    sheenColorFactor = jsToGl(this.extensions.KHR_materials_sheen.sheenColorFactor);
                 }
-                if (this.colorIntensityTexture !== undefined)
+                if (this.sheenRoughnessTexture !== undefined)
                 {
-                    this.colorIntensityTexture.samplerName = "u_sheenColorIntensitySampler";
-                    this.parseTextureInfoExtensions(this.colorIntensityTexture, "SheenColorIntensity");
-                    this.textures.push(this.colorIntensityTexture);
-                    this.defines.push("HAS_SHEEN_COLOR_INTENSITY_MAP 1");
-                    this.properties.set("u_sheenColorIntensityUVSet", this.colorIntensityTexture.texCoord);
+                    this.sheenRoughnessTexture.samplerName = "u_sheenRoughnessSampler";
+                    this.parseTextureInfoExtensions(this.sheenRoughnessTexture, "SheenRoughness");
+                    this.textures.push(this.sheenRoughnessTexture);
+                    this.defines.push("HAS_SHEEN_ROUGHNESS_MAP 1");
+                    this.properties.set("u_SheenRoughnessUVSet", this.sheenRoughnessTexture.texCoord);
+                }
+                if (this.sheenColorTexture !== undefined)
+                {
+                    this.sheenColorTexture.samplerName = "u_SheenColorSampler";
+                    this.parseTextureInfoExtensions(this.sheenColorTexture, "SheenColor");
+                    this.textures.push(this.sheenColorTexture);
+                    this.defines.push("HAS_SHEEN_COLOR_MAP 1");
+                    this.properties.set("u_SheenColorUVSet", this.sheenColorTexture.texCoord);
                 }
 
-                this.properties.set("u_SheenIntensityFactor", sheenFactor);
-                this.properties.set("u_SheenColorFactor", sheenColor);
-                this.properties.set("u_SheenRoughness", sheenRoughness);
+                this.properties.set("u_SheenRoughnessFactor", sheenRoughnessFactor);
+                this.properties.set("u_SheenColorFactor", sheenColorFactor);
             }
 
             // KHR Extension: Transmission
             if (this.extensions.KHR_materials_transmission !== undefined)
             {
-                let transmission = this.extensions.KHR_materials_transmission.transmission;
-
-                if (transmission === undefined)
-                {
-                    transmission = 0.0;
-                }
+                let transmissionFactor = 0.0;
 
                 this.defines.push("MATERIAL_TRANSMISSION 1");
 
-                this.properties.set("u_Transmission", transmission);
+                if (transmissionFactor !== undefined)
+                {
+                    transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
+                }
+                if (this.transmissionTexture !== undefined)
+                {
+                    this.transmissionTexture.samplerName = "u_TransmissionSampler";
+                    this.parseTextureInfoExtensions(this.transmissionTexture, "Transmission");
+                    this.textures.push(this.transmissionTexture);
+                    this.defines.push("HAS_TRANSMISSION_MAP 1");
+                    this.properties.set("u_TransmissionUVSet", this.transmissionTexture.texCoord);
+                }
+
+                this.properties.set("u_TransmissionFactor", transmissionFactor);
             }
         }
 
@@ -390,7 +404,6 @@ class gltfMaterial extends GltfObject
             this.fromJsonMaterialExtensions(jsonMaterial.extensions);
         }
 
-        // dont do MR if we parsed SG before
         if (jsonMaterial.pbrMetallicRoughness !== undefined && this.type !== "SG")
         {
             this.type = "MR";
@@ -421,34 +434,9 @@ class gltfMaterial extends GltfObject
             this.fromJsonSheen(jsonExtensions.KHR_materials_sheen);
         }
 
-        if(jsonExtensions.KHR_materials_specular !== undefined)
-        {
-            this.fromJsonMetallicRoughnessSpecular(jsonExtensions.KHR_materials_specular);
-        }
-
-        if(jsonExtensions.KHR_materials_subsurface !== undefined)
-        {
-            this.fromJsonSubsurface(jsonExtensions.KHR_materials_subsurface);
-        }
-
-        if(jsonExtensions.KHR_materials_thinfilm !== undefined)
-        {
-            this.fromJsonThinFilm(jsonExtensions.KHR_materials_thinfilm);
-        }
-
         if(jsonExtensions.KHR_materials_transmission !== undefined)
         {
             this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
-        }
-
-        if(jsonExtensions.KHR_materials_thickness !== undefined)
-        {
-            this.fromJsonThickness(jsonExtensions.KHR_materials_thickness);
-        }
-
-        if(jsonExtensions.KHR_materials_anisotropy !== undefined)
-        {
-            this.fromJsonAnisotropy(jsonExtensions.KHR_materials_anisotropy);
         }
     }
 
@@ -512,83 +500,27 @@ class gltfMaterial extends GltfObject
 
     fromJsonSheen(jsonSheen)
     {
-        if(jsonSheen.colorIntensityTexture !== undefined)
+        if(jsonSheen.sheenColorTexture !== undefined)
         {
-            const colorIntensityTexture = new gltfTextureInfo();
-            colorIntensityTexture.fromJson(jsonSheen.colorIntensityTexture);
-            this.colorIntensityTexture = colorIntensityTexture;
+            const sheenColorTexture = new gltfTextureInfo();
+            sheenColorTexture.fromJson(jsonSheen.sheenColorTexture);
+            this.sheenColorTexture = sheenColorTexture;
         }
-    }
-
-    fromJsonMetallicRoughnessSpecular(jsonMRSpecular)
-    {
-        if(jsonMRSpecular.specularTexture !== undefined)
+        if(jsonSheen.sheenRoughnessTexture !== undefined)
         {
-            const specularTexture = new gltfTextureInfo();
-            specularTexture.fromJson(jsonMRSpecular.specularTexture);
-            this.metallicRoughnessSpecularTexture = specularTexture;
-        }
-    }
-
-    fromJsonSubsurface(jsonSubsurface)
-    {
-        if(jsonSubsurface.colorTexture !== undefined)
-        {
-            const colorTexture = new gltfTextureInfo();
-            colorTexture.fromJson(jsonSubsurface.colorTexture);
-            this.subsurfaceColorTexture = colorTexture;
-        }
-
-        if(jsonSubsurface.thicknessTexture !== undefined)
-        {
-            const thicknessTexture = new gltfTextureInfo();
-            thicknessTexture.fromJson(jsonSubsurface.thicknessTexture);
-            this.subsurfaceThicknessTexture = thicknessTexture;
-        }
-    }
-
-    fromJsonThinFilm(jsonThinFilm)
-    {
-        if(jsonThinFilm.thinfilmTexture !== undefined)
-        {
-            const thinfilmTexture = new gltfTextureInfo();
-            thinfilmTexture.fromJson(jsonThinFilm.thinfilmTexture);
-            this.thinfilmTexture = thinfilmTexture;
-        }
-
-        if(jsonThinFilm.thinfilmThicknessTexture !== undefined)
-        {
-            const thinfilmThicknessTexture = new gltfTextureInfo();
-            thinfilmThicknessTexture.fromJson(jsonThinFilm.thinfilmThicknessTexture);
-            this.thinfilmThicknessTexture = thinfilmThicknessTexture;
+            const sheenRoughnessTexture = new gltfTextureInfo();
+            sheenRoughnessTexture.fromJson(jsonSheen.sheenRoughnessTexture);
+            this.sheenRoughnessTexture = sheenRoughnessTexture;
         }
     }
 
     fromJsonTransmission(jsonTransmission)
     {
-        jsonTransmission;
-    }
-
-    fromJsonThickness(jsonThickness)
-    {
-        if(jsonThickness.thicknessTexture !== undefined)
+        if(jsonTransmission.transmissionTexture !== undefined)
         {
-            this.thicknessTexture = new gltfTextureInfo();
-            this.thicknessTexture.fromJson(jsonThickness.thicknessTexture);
-        }
-    }
-
-    fromJsonAnisotropy(jsonAnisotropy)
-    {
-        if(jsonAnisotropy.anisotropyTexture !== undefined)
-        {
-            this.anisotropyTexture = new gltfTextureInfo();
-            this.anisotropyTexture.fromJson(jsonAnisotropy.anisotropyTexture);
-        }
-        if(jsonAnisotropy.anisotropyDirectionTexture !== undefined)
-        {
-            this.anisotropyDirectionTexture = new gltfTextureInfo();
-            this.anisotropyDirectionTexture.fromJson(jsonAnisotropy.anisotropyDirectionTexture);
+            const transmissionTexture = new gltfTextureInfo();
+            transmissionTexture.fromJson(jsonTransmission.transmissionTexture);
+            this.transmissionTexture = transmissionTexture;
         }
     }
 }

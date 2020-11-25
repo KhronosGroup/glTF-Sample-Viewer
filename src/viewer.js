@@ -10,7 +10,7 @@ import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
-import { getScaleFactor, computePrimitiveCentroids } from './gltf_utils.js';
+import { computePrimitiveCentroids } from './gltf_utils.js';
 
 class gltfViewer
 {
@@ -18,14 +18,12 @@ class gltfViewer
         canvas,
         modelIndex,
         input,
-        headless = false,
         onRendererReady = undefined,
         basePath = "",
         initialModel = "",
         environmentMap = undefined,
         dracoDecoder)
     {
-        this.headless = headless;
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.initialModel = initialModel;
@@ -46,10 +44,6 @@ class gltfViewer
         this.gltf = undefined;
         this.lastDropped = undefined;
 
-        this.scaledSceneIndex = 0;
-        this.scaledGltfChanged = true;
-        this.sceneScaleFactor = 1;
-
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
         this.currentlyRendering = false;
@@ -60,33 +54,26 @@ class gltfViewer
         // Holds the last camera index, used for scene scaling when changing to user camera.
         this.prevCameraIndex = null;
 
-        if (this.headless === true)
+        this.setupInputBindings(input);
+
+        if (this.initialModel.includes("/"))
         {
-            this.hideSpinner();
+            // no UI if a path is provided (e.g. in the vscode plugin)
+            this.loadFromPath(this.initialModel);
         }
         else
         {
-            this.setupInputBindings(input);
-
-            if (this.initialModel.includes("/"))
+            const self = this;
+            this.stats = new Stats();
+            this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
+            this.pathProvider.initialize().then(() =>
             {
-                // no UI if a path is provided (e.g. in the vscode plugin)
-                this.loadFromPath(this.initialModel);
-            }
-            else
-            {
-                const self = this;
-                this.stats = new Stats();
-                this.pathProvider = new gltfModelPathProvider(this.basePath + modelIndex);
-                this.pathProvider.initialize().then(() =>
-                {
-                    self.initializeGui();
-                    self.loadFromPath(self.pathProvider.resolve(self.initialModel));
-                });
-            }
+                self.initializeGui();
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+            });
         }
 
-        this.render(); // Starts a rendering loop.
+        this.render();
     }
 
     setCamera(eye = [0.0, 0.0, 0.05], target = [0.0, 0.0, 0.0], up = [0.0, 1.0, 0.0],
@@ -219,7 +206,7 @@ class gltfViewer
         }).catch(function(error)
         {
             console.error(error.stack);
-            if (!self.headless) self.hideSpinner();
+            self.hideSpinner();
         });
     }
 
@@ -285,7 +272,6 @@ class gltfViewer
 
         this.gltf = gltf;
         this.currentlyRendering = true;
-        this.scaledGltfChanged = true;
 
         this.prepareSceneForRendering(gltf);
         this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
@@ -306,16 +292,14 @@ class gltfViewer
             if (self.currentlyRendering)
             {
                 self.prepareSceneForRendering(self.gltf);
+                self.userCamera.fitCameraPlanesToScene(self.gltf, self.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
                 if (self.gltf.scenes.length !== 0)
                 {
-                    if (self.headless === false)
-                    {
-                        self.userCamera.updatePosition();
-                    }
+                    self.userCamera.updatePosition();
 
                     const scene = self.gltf.scenes[self.renderingParameters.sceneIndex];
 
@@ -378,33 +362,6 @@ class gltfViewer
         this.animateNode(gltf);
 
         scene.applyTransformHierarchy(gltf);
-
-        const transform = mat4.create();
-
-        let scaled = false;
-        if (this.renderingParameters.userCameraActive() && (this.scaledGltfChanged || this.scaledSceneIndex !== this.renderingParameters.sceneIndex || this.prevCameraIndex !== this.renderingParameters.cameraIndex))
-        {
-            this.sceneScaleFactor = getScaleFactor(gltf, this.renderingParameters.sceneIndex);
-
-            scaled = true;
-            this.scaledGltfChanged = false;
-            this.scaledSceneIndex = this.renderingParameters.sceneIndex;
-            console.log("Rescaled scene " + this.scaledSceneIndex + " by " + this.sceneScaleFactor);
-        }
-        else if(!this.renderingParameters.userCameraActive() && this.prevCameraIndex !== this.renderingParameters.cameraIndex)
-        {
-            this.sceneScaleFactor = 1;
-        }
-
-        this.prevCameraIndex = this.renderingParameters.cameraIndex;
-
-        mat4.scale(transform, transform, vec3.fromValues(this.sceneScaleFactor,  this.sceneScaleFactor,  this.sceneScaleFactor));
-        scene.applyTransformHierarchy(gltf, transform);
-
-        if(scaled)
-        {
-            this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
-        }
     }
 
     animateNode(gltf)
@@ -465,27 +422,19 @@ class gltfViewer
     {
         this.loadingTimer.start();
         console.log("Loading '" + path + "' with environment '" + this.renderingParameters.environmentName + "'");
-
-        if (!this.headless)
-        {
-            this.showSpinner();
-        }
+        this.showSpinner();
     }
 
     notifyLoadingEnded(path)
     {
         this.loadingTimer.stop();
         console.log("Loading '" + path + "' took " + this.loadingTimer.seconds + " seconds");
-
-        if (!this.headless)
-        {
-            this.hideSpinner();
-        }
+        this.hideSpinner();
     }
 
     showSpinner()
     {
-        let spinner = document.getElementById("gltf-rv-model-spinner");
+        let spinner = document.getElementById("gltf-sample-viewer-model-spinner");
         if (spinner !== undefined)
         {
             spinner.style.display = "block";
@@ -494,7 +443,7 @@ class gltfViewer
 
     hideSpinner()
     {
-        let spinner = document.getElementById("gltf-rv-model-spinner");
+        let spinner = document.getElementById("gltf-sample-viewer-model-spinner");
         if (spinner !== undefined)
         {
             spinner.style.display = "none";

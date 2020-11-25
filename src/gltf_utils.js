@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 
-function getSceneExtends(gltf, sceneIndex, outMin, outMax)
+function getSceneExtents(gltf, sceneIndex, outMin, outMax)
 {
     for (const i of [0, 1, 2])
     {
@@ -39,7 +39,7 @@ function getSceneExtends(gltf, sceneIndex, outMin, outMax)
             const accessor = gltf.accessors[attribute.accessor];
             const assetMin = vec3.create();
             const assetMax = vec3.create();
-            getExtendsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
+            getExtentsFromAccessor(accessor, node.worldTransform, assetMin, assetMax);
 
             for (const i of [0, 1, 2])
             {
@@ -50,7 +50,7 @@ function getSceneExtends(gltf, sceneIndex, outMin, outMax)
     }
 }
 
-function getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
+function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
 {
     const boxMin = vec3.create();
     vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
@@ -67,22 +67,11 @@ function getExtendsFromAccessor(accessor, worldTransform, outMin, outMax)
 
     const radius = vec3.length(centerToSurface);
 
-    for (const i of [1, 2, 3])
+    for (const i of [0, 1, 2])
     {
         outMin[i] = center[i] - radius;
         outMax[i] = center[i] + radius;
     }
-}
-
-function getScaleFactor(gltf, sceneIndex)
-{
-    const min = vec3.create();
-    const max = vec3.create();
-    getSceneExtends(gltf, sceneIndex, min, max);
-    const minValue = Math.min(min[0], Math.min(min[1], min[2]));
-    const maxValue = Math.max(max[0], Math.max(max[1], max[2]));
-    const deltaValue = maxValue - minValue;
-    return 1.0 / deltaValue;
 }
 
 function computePrimitiveCentroids(gltf)
@@ -145,4 +134,4 @@ function computePrimitiveCentroids(gltf)
     }
 }
 
-export { getSceneExtends, getScaleFactor, computePrimitiveCentroids };
+export { getSceneExtents, computePrimitiveCentroids };

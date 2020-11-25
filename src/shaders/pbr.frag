@@ -13,12 +13,6 @@
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 // [5] "KHR_materials_clearcoat"
 //     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
-// [6] "KHR_materials_specular"
-//     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_specular
-// [7] "KHR_materials_subsurface"
-//     https://github.com/KhronosGroup/glTF/pull/1766
-// [8] "KHR_materials_thinfilm"
-//     https://github.com/ux3d/glTF/tree/extensions/KHR_materials_thinfilm/extensions/2.0/Khronos/KHR_materials_thinfilm
 
 precision highp float;
 
@@ -46,16 +40,15 @@ uniform vec4 u_DiffuseFactor;
 uniform float u_GlossinessFactor;
 
 // Sheen
-uniform float u_SheenIntensityFactor;
+uniform float u_SheenRoughnessFactor;
 uniform vec3 u_SheenColorFactor;
-uniform float u_SheenRoughness;
 
 // Clearcoat
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
 // Transmission
-uniform float u_Transmission;
+uniform float u_TransmissionFactor;
 
 // Alpha mode
 uniform float u_AlphaCutoff;
@@ -76,9 +69,8 @@ struct MaterialInfo
     vec3 n;
     vec3 baseColor; // getBaseColor()
 
-    float sheenIntensity;
-    vec3 sheenColor;
-    float sheenRoughness;
+    float sheenRoughnessFactor;
+    vec3 sheenColorFactor;
 
     vec3 clearcoatF0;
     vec3 clearcoatF90;
@@ -86,10 +78,7 @@ struct MaterialInfo
     vec3 clearcoatNormal;
     float clearcoatRoughness;
 
-    float thinFilmFactor;
-    float thinFilmThickness;
-
-    float transmission;
+    float transmissionFactor;
 };
 
 // Get normal, tangent and bitangent vectors.
@@ -150,7 +139,7 @@ NormalInfo getNormalInfo(vec3 v)
 
 vec4 getBaseColor()
 {
-    vec4 baseColor = vec4(1, 1, 1, 1);
+    vec4 baseColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     #if defined(MATERIAL_SPECULARGLOSSINESS)
         baseColor = u_DiffuseFactor;
@@ -208,39 +197,56 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
 
 MaterialInfo getSheenInfo(MaterialInfo info)
 {
-    info.sheenColor = u_SheenColorFactor;
-    info.sheenIntensity = u_SheenIntensityFactor;
-    info.sheenRoughness = u_SheenRoughness;
+    info.sheenColorFactor = u_SheenColorFactor;
+    info.sheenRoughnessFactor = u_SheenRoughnessFactor;
 
-    #ifdef HAS_SHEEN_COLOR_INTENSITY_MAP
-        vec4 sheenSample = texture(u_SheenColorIntensitySampler, getSheenUV());
-        info.sheenColor *= sheenSample.xyz;
-        info.sheenIntensity *= sheenSample.w;
+    #ifdef HAS_SHEEN_COLOR_MAP
+        vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
+        info.sheenColorFactor *= sheenColorSample.rgb;
+    #endif
+
+    #ifdef HAS_SHEEN_ROUGHNESS_MAP
+        vec4 sheenRoughnessSample = texture(u_SheenRoughnessSampler, getSheenRoughnessUV());
+        info.sheenRoughnessFactor *= sheenRoughnessSample.a;
     #endif
 
     return info;
 }
 
-MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
+#ifdef MATERIAL_TRANSMISSION
+MaterialInfo getTransmissionInfo(MaterialInfo info)
+{
+    info.transmissionFactor = u_TransmissionFactor;
+
+    #ifdef HAS_TRANSMISSION_MAP
+        vec4 transmissionSample = texture(u_TransmissionSampler, getTransmissionUV());
+        info.transmissionFactor *= transmissionSample.a;
+    #endif
+
+    return info;
+}
+#endif
+
+MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0_ior)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
-    info.clearcoatF0 = vec3(0.04);
-    info.clearcoatF90 = vec3(clamp(info.clearcoatF0 * 50.0, 0.0, 1.0));
+    info.clearcoatF0 = vec3(f0_ior);
+    info.clearcoatF90 = vec3(1.0);
 
     #ifdef HAS_CLEARCOAT_TEXTURE_MAP
-        vec4 ccSample = texture(u_ClearcoatSampler, getClearcoatUV());
-        info.clearcoatFactor *= ccSample.r;
+        vec4 clearcoatSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        info.clearcoatFactor *= clearcoatSample.r;
     #endif
 
     #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-        vec4 ccSampleRough = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
-        info.clearcoatRoughness *= ccSampleRough.g;
+        vec4 clearcoatSampleRoughness = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        info.clearcoatRoughness *= clearcoatSampleRoughness.g;
     #endif
 
     #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        vec4 ccSampleNor = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        info.clearcoatNormal = normalize(ccSampleNor.xyz);
+        vec4 clearcoatSampleNormal = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        info.clearcoatNormal = normalize(clearcoatSampleNormal.xyz);
     #else
         info.clearcoatNormal = normalInfo.ng;
     #endif
@@ -248,6 +254,11 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
     info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
 
     return info;
+}
+
+float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
+{
+    return texture(u_SheenELUT, vec2(NdotV, sheenRoughnessFactor)).r;
 }
 
 void main()
@@ -293,9 +304,12 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    materialInfo = getClearCoatInfo(materialInfo, normalInfo);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo, f0_ior);
 #endif
 
+#ifdef MATERIAL_TRANSMISSION
+    materialInfo = getTransmissionInfo(materialInfo);
+#endif
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -317,6 +331,9 @@ void main()
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
+    vec3 f_transmission = vec3(0.0);
+
+    float albedoSheenScaling = 1.0;
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
@@ -328,7 +345,11 @@ void main()
     #endif
 
     #ifdef MATERIAL_SHEEN
-        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughness, materialInfo.sheenColor, materialInfo.sheenIntensity);
+        f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
+    #endif
+
+    #ifdef MATERIAL_TRANSMISSION
+        f_transmission += getIBLRadianceTransmission(n, v, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
     #endif
 #endif
 
@@ -381,16 +402,20 @@ void main()
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
 
             #ifdef MATERIAL_SHEEN
-                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColor, materialInfo.sheenIntensity, materialInfo.sheenRoughness,
-                    NdotL, NdotV, NdotH);
+                f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
+                albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
+                    1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL, materialInfo.sheenRoughnessFactor));
             #endif
 
             #ifdef MATERIAL_CLEARCOAT
-                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l,
-                    h, VdotH,
+                f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
                     materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
             #endif
         }
+
+        #ifdef MATERIAL_TRANSMISSION
+            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor);
+        #endif
     }
 #endif // !USE_PUNCTUAL
 
@@ -413,7 +438,15 @@ void main()
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, v));
     #endif
 
-    color = (f_emissive + f_diffuse + f_specular + (1.0 - reflectance) * f_sheen) * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    #ifdef MATERIAL_TRANSMISSION
+        vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
+    #else
+        vec3 diffuse = f_diffuse;
+    #endif
+
+    color = f_emissive + diffuse + f_specular;
+    color = f_sheen + color * albedoSheenScaling;
+    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
 
 #ifndef DEBUG_OUTPUT // no debug
 
@@ -476,23 +509,27 @@ void main()
     #endif
 
     #ifdef DEBUG_FEMISSIVE
-        g_finalColor.rgb = f_emissive;
+        g_finalColor.rgb = linearTosRGB(f_emissive);
     #endif
 
     #ifdef DEBUG_FSPECULAR
-        g_finalColor.rgb = f_specular;
+        g_finalColor.rgb = linearTosRGB(f_specular);
     #endif
 
     #ifdef DEBUG_FDIFFUSE
-        g_finalColor.rgb = f_diffuse;
+        g_finalColor.rgb = linearTosRGB(f_diffuse);
     #endif
 
     #ifdef DEBUG_FCLEARCOAT
-        g_finalColor.rgb = f_clearcoat;
+        g_finalColor.rgb = linearTosRGB(f_clearcoat);
     #endif
 
     #ifdef DEBUG_FSHEEN
-        g_finalColor.rgb = f_sheen;
+        g_finalColor.rgb = linearTosRGB(f_sheen);
+    #endif
+
+    #ifdef DEBUG_FTRANSMISSION
+        g_finalColor.rgb = linearTosRGB(f_transmission);
     #endif
 
     #ifdef DEBUG_ALPHA
