@@ -237,6 +237,7 @@ class gltfPrimitive extends GltfObject
             this.loadBufferIntoGltf(jointsBuffer, gltf, primitiveAttributes["JOINTS_0"], 34963,
                 "JOINTS_0 buffer view");
         }
+
         // WEIGHTS_0
         if(dracoGeometry.attributes.WEIGHTS_0 !== undefined)
         {
@@ -245,6 +246,7 @@ class gltfPrimitive extends GltfObject
             this.loadBufferIntoGltf(weightsBuffer, gltf, primitiveAttributes["WEIGHTS_0"], 34963,
                 "WEIGHTS_0 buffer view");
         }
+
         // JOINTS_1
         if(dracoGeometry.attributes.JOINTS_1 !== undefined)
         {
@@ -253,6 +255,7 @@ class gltfPrimitive extends GltfObject
             this.loadBufferIntoGltf(jointsBuffer, gltf, primitiveAttributes["JOINTS_1"], 34963,
                 "JOINTS_1 buffer view");
         }
+
         // WEIGHTS_1
         if(dracoGeometry.attributes.WEIGHTS_1 !== undefined)
         {
@@ -335,7 +338,6 @@ class gltfPrimitive extends GltfObject
     {
         let dracoBufferViewIDX = dracoExtension.bufferView;
 
-        // Create the Draco decoder.
         const origGltfDrBufViewObj = gltf.bufferViews[dracoBufferViewIDX];
         const origGltfDracoBuffer = gltf.buffers[origGltfDrBufViewObj.buffer];
 
