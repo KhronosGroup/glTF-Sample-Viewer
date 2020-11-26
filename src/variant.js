@@ -14,8 +14,6 @@ class gltfVariant extends GltfObject
         {
             this.name = jsonVariant.name;
         }
-        // TODO
-        // ELSE ERROR: Invalid glTF
     }
 }
 
