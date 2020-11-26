@@ -11,6 +11,7 @@ import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { gltfEnvironmentLoader } from './environment.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
+import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 
 class gltfViewer
 {
@@ -57,7 +58,7 @@ class gltfViewer
         if (this.initialModel.includes("/"))
         {
             // no UI if a path is provided (e.g. in the vscode plugin)
-            this.loadFromPath(this.initialModel);
+            this.loadFromPath(this.initialModel).then( (gltf) => this.startRendering(gltf) );
         }
         else
         {
@@ -67,7 +68,7 @@ class gltfViewer
             this.pathProvider.initialize().then(() =>
             {
                 self.initializeGui();
-                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel)).then( (gltf) => this.startRendering(gltf) );
             });
         }
 
@@ -179,69 +180,29 @@ class gltfViewer
         }
     }
 
-    loadFromPath(gltfFile, basePath = "")
+    async loadFromPath(gltfFile, basePath = "")
     {
         this.lastDropped = undefined;
 
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-        const isGlb = getIsGlb(gltfFile);
-
-        const self = this;
-        return axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
-        {
-            let json = response.data;
-            let buffers = undefined;
-            if (isGlb)
-            {
-                const glbParser = new GlbParser(response.data);
-                const glb = glbParser.extractGlbData();
-                json = glb.json;
-                buffers = glb.buffers;
-            }
-            return self.createGltf(gltfFile, json, buffers);
-        }).catch(function(error)
+        let gltf = await loadGltfFromPath(gltfFile).catch(function(error)
         {
             console.error(error.stack);
             self.hideSpinner();
         });
-    }
 
-    createGltf(path, json, buffers)
-    {
-        this.currentlyRendering = false;
+        const environmentDesc = Environments[this.renderingParameters.environmentName];
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
 
-        // unload previous scene
-        if (this.gltf !== undefined)
-        {
-            gltfLoader.unload(this.gltf);
-            this.gltf = undefined;
-        }
+        // inject environment into gltf
+        // gltf.samplers.push(...(await environment).samplers);
+        // gltf.images.push(...(await environment).images);
+        // gltf.textures.push(...(await environment).textures);
+        gltf = await environment;
 
-        const gltf = new glTF(path);
-        gltf.fromJson(json);
-
-        this.injectEnvironment(gltf);
-
-        const self = this;
-        return gltfLoader.load(gltf, buffers)
-            .then(() => self.startRendering(gltf));
-    }
-
-    injectEnvironment(gltf)
-    {
-        // this is hacky, because we inject stuff into the gltf
-
-        // because the environment loader adds images with paths that are not relative
-        // to the gltf, we have to resolve all image paths before that
-        for (const image of gltf.images)
-        {
-            image.resolveRelativePath(getContainingFolder(gltf.path));
-        }
-
-        const environment = Environments[this.renderingParameters.environmentName];
-        new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment);
+        return gltf;
     }
 
     startRendering(gltf)
@@ -399,12 +360,12 @@ class gltfViewer
             this.stats);
 
         const self = this;
-        gui.onModelChanged = () => self.loadFromPath(this.pathProvider.resolve(gui.selectedModel));
+        gui.onModelChanged = () => self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
         gui.onEnvironmentChanged = () =>
         {
             if (this.lastDropped === undefined)
             {
-                self.loadFromPath(this.pathProvider.resolve(gui.selectedModel));
+                self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
             }
             else
             {
