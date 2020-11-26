@@ -3,6 +3,22 @@ uniform float u_Exposure;
 const float GAMMA = 2.2;
 const float INV_GAMMA = 1.0 / GAMMA;
 
+// sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
+const mat3 ACESInputMat = mat3
+(
+    0.59719, 0.07600, 0.02840,
+    0.35458, 0.90834, 0.13383,
+    0.04823, 0.01566, 0.83777
+);
+
+// ODT_SAT => XYZ => D60_2_D65 => sRGB
+const mat3 ACESOutputMat = mat3
+(
+    1.60475, -0.10208, -0.00327,
+    -0.53108,  1.10813, -0.07276,
+    -0.07367, -0.00605,  1.07602
+);
+
 // linear to sRGB approximation
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 vec3 linearTosRGB(vec3 color)
@@ -22,44 +38,40 @@ vec4 sRGBToLinear(vec4 srgbIn)
     return vec4(sRGBToLinear(srgbIn.xyz), srgbIn.w);
 }
 
-// ACES tone map
+// ACES tone map (faster approximation)
 // see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
-vec3 toneMapACES(vec3 color)
+vec3 toneMapACESFast(vec3 color)
 {
     const float A = 2.51;
     const float B = 0.03;
     const float C = 2.43;
     const float D = 0.59;
     const float E = 0.14;
-    return linearTosRGB(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
+    return clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0);
 }
 
-float toneMapACESccScalar(float color)
+// ACES filmic tone map approximation
+// see https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
+vec3 RRTAndODTFit(vec3 v)
 {
-    if(color <= 0.0)
-    {
-        return -0.3588571428571428;
-    }
-    else if(color < 0.000030517578125)
-    {
-        return (log2(0.0000152587890625 + (color * 0.5)) + 9.72) / 17.52;
-    }
-    else
-    {
-        return (log2(color) + 9.72) / 17.52;
-    }
+    vec3 a = v * (v + 0.0245786) - 0.000090537;
+    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+    return a / b;
 }
 
-// ACEScc tone map
-// see: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html#TRANSFER_ACESCC
-vec3 toneMapACEScc(vec3 color)
+vec3 toneMapACES(vec3 color)
 {
-    vec3 result;
-    result.x = toneMapACESccScalar(color.x);
-    result.y = toneMapACESccScalar(color.y);
-    result.z = toneMapACESccScalar(color.z);
+    color = ACESInputMat * color;
 
-    return linearTosRGB(result);
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = ACESOutputMat * color;
+
+    // Clamp to [0, 1]
+    color = clamp(color, 0.0, 1.0);
+
+    return color * 1.8;
 }
 
 vec3 toneMap(vec3 color)
@@ -67,8 +79,8 @@ vec3 toneMap(vec3 color)
     color *= u_Exposure;
 
 #ifdef TONEMAP_ACES
-    //return toneMapACES(color);
-    return toneMapACEScc(color);
+    //return linearTosRGB(toneMapACESFast(color));
+    return linearTosRGB(toneMapACES(color));
 #endif
 
     return linearTosRGB(color);
