@@ -49,7 +49,7 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     // Prepare samplers.
     //
 
-    let samplerIdx = gltf.samplers.length - 1;
+    let samplerIdx = gltf.samplers.length;
 
     environment.samplers.push(new gltfSampler(WebGl.context.LINEAR, WebGl.context.LINEAR, WebGl.context.CLAMP_TO_EDGE, WebGl.context.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
     const diffuseCubeSamplerIdx = samplerIdx++;
