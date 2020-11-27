@@ -410,7 +410,7 @@ class gltfRenderer
         case (ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;
-        case (ToneMaps.LINEAR):
+        case (ToneMaps.NONE):
         default:
             break;
         }
