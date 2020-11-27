@@ -404,6 +404,9 @@ class gltfRenderer
 
         switch (this.parameters.toneMap)
         {
+        case (ToneMaps.ACES_FAST):
+            fragDefines.push("TONEMAP_ACES_FAST 1");
+            break;
         case (ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;

@@ -42,6 +42,8 @@ vec4 sRGBToLinear(vec4 srgbIn)
 // see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 vec3 toneMapACESFast(vec3 color)
 {
+    // TODO debate this factor
+    color *= 0.6;
     const float A = 2.51;
     const float B = 0.03;
     const float C = 2.43;
@@ -52,10 +54,10 @@ vec3 toneMapACESFast(vec3 color)
 
 // ACES filmic tone map approximation
 // see https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
-vec3 RRTAndODTFit(vec3 v)
+vec3 RRTAndODTFit(vec3 color)
 {
-    vec3 a = v * (v + 0.0245786) - 0.000090537;
-    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+    vec3 a = color * (color + 0.0245786) - 0.000090537;
+    vec3 b = color * (0.983729 * color + 0.4329510) + 0.238081;
     return a / b;
 }
 
@@ -71,15 +73,20 @@ vec3 toneMapACES(vec3 color)
     // Clamp to [0, 1]
     color = clamp(color, 0.0, 1.0);
 
-    return color * 1.8;
+    return color;
+    // TODO debate this factor
+    //return color * 1.8;
 }
 
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
+#ifdef TONEMAP_ACES_FAST
+    return linearTosRGB(toneMapACESFast(color));
+#endif
+
 #ifdef TONEMAP_ACES
-    //return linearTosRGB(toneMapACESFast(color));
     return linearTosRGB(toneMapACES(color));
 #endif
 

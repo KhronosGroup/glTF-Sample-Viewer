@@ -38,6 +38,7 @@ class gltfRenderingParameters
 const ToneMaps =
 {
     LINEAR: "Linear",
+    ACES_FAST: "ACES fast",
     ACES: "ACES"
 };
 
