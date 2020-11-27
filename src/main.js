@@ -2,6 +2,7 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
+import { KtxDecoder } from './ktx.js';
 
 async function gltfSampleViewer(
     canvasId,
@@ -31,6 +32,9 @@ async function gltfSampleViewer(
 
     const dracoDecoder = new DracoDecoder();
     await dracoDecoder.ready();
+
+    const ktxDecoder = new KtxDecoder();
+    await ktxDecoder.init();
 
     new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap, dracoDecoder);
 }
