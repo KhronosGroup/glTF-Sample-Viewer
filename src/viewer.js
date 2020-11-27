@@ -184,14 +184,6 @@ class gltfViewer
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-
-        // unload previous scene
-        if (this.gltf !== undefined)
-        {
-            gltfLoader.unload(this.gltf);
-            this.gltf = undefined;
-        }
-
         const gltf = await loadGltfFromPath(gltfFile).catch(function(error)
         {
             console.error(error.stack);
@@ -211,6 +203,15 @@ class gltfViewer
 
     startRendering(gltf)
     {
+        this.currentlyRendering = false;
+
+        // unload previous scene
+        if (this.gltf !== undefined)
+        {
+            gltfLoader.unload(this.gltf);
+            this.gltf = undefined;
+        }
+
         this.gltf = gltf;
         this.notifyLoadingEnded(gltf.path);
         if(this.gltfLoadedCallback !== undefined)
