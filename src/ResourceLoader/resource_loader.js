@@ -1,6 +1,6 @@
 import axios from '../../libs/axios.min.js';
 import { glTF } from '../gltf.js';
-import { getIsGlb } from '../utils.js';
+import { getIsGlb, getContainingFolder } from '../utils.js';
 import { GlbParser } from '../glb_parser.js';
 import { gltfLoader } from "../loader";
 import { gltfImage, ImageMimeType } from "../image";
@@ -28,6 +28,13 @@ async function loadGltfFromPath(path)
     const gltf = new glTF(path);
     gltf.fromJson(json);
 
+    // because the gltf image paths are not relative
+    // to the gltf, we have to resolve all image paths before that
+    for (const image of gltf.images)
+    {
+        image.resolveRelativePath(getContainingFolder(gltf.path));
+    }
+
     await gltfLoader.load(gltf, buffers);
 
     return gltf;
@@ -36,7 +43,7 @@ async function loadGltfFromPath(path)
 async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf)
 {
     // TODO: create class for environment
-    const environment = gltf;
+    const environment = new glTF();
 
     //
     // Prepare samplers.
@@ -67,21 +74,21 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", WebGl.context.TEXTURE_CUBE_MAP);
     lambertian.mimeType = ImageMimeType.KTX2;
     environment.images.push(lambertian);
-    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [textureIdx], WebGl.context.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [textureIdx++], WebGl.context.TEXTURE_CUBE_MAP));
 
     // Specular
 
     const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", WebGl.context.TEXTURE_CUBE_MAP);
     specular.mimeType = ImageMimeType.KTX2;
     environment.images.push(specular);
-    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [++textureIdx], WebGl.context.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [textureIdx++], WebGl.context.TEXTURE_CUBE_MAP));
 
     // Sheen
 
     const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", WebGl.context.TEXTURE_CUBE_MAP);
     sheen.mimeType = ImageMimeType.KTX2;
     environment.images.push(sheen);
-    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [++textureIdx], WebGl.context.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [textureIdx++], WebGl.context.TEXTURE_CUBE_MAP));
 
     //
     // Look Up Tables.
@@ -90,19 +97,19 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     // GGX
 
     environment.images.push(new gltfImage("assets/images/lut_ggx.png", WebGl.context.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [++textureIdx], WebGl.context.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGl.context.TEXTURE_2D));
 
     // Sheen
     // Charlie
     environment.images.push(new gltfImage("assets/images/lut_charlie.png", WebGl.context.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [++textureIdx], WebGl.context.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGl.context.TEXTURE_2D));
     // Sheen E LUT
     environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", WebGl.context.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [++textureIdx], WebGl.context.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGl.context.TEXTURE_2D));
 
     await gltfLoader.loadImages(environment).then(() => gltfLoader.processImages(environment));
 
-    await environment.initGl();
+    environment.initGl();
 
     return environment;
 }

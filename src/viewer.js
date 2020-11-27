@@ -1,7 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
-import axios from '../libs/axios.min.js';
-import { glTF } from './gltf.js';
-import { gltfLoader } from './loader.js';
+
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
 import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
@@ -9,9 +6,9 @@ import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
-import { gltfEnvironmentLoader } from './environment.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
+import { gltfLoader } from "./loader";
 
 class gltfViewer
 {
@@ -187,7 +184,15 @@ class gltfViewer
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-        let gltf = await loadGltfFromPath(gltfFile).catch(function(error)
+
+        // unload previous scene
+        if (this.gltf !== undefined)
+        {
+            gltfLoader.unload(this.gltf);
+            this.gltf = undefined;
+        }
+
+        const gltf = await loadGltfFromPath(gltfFile).catch(function(error)
         {
             console.error(error.stack);
             self.hideSpinner();
@@ -197,16 +202,16 @@ class gltfViewer
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
 
         // inject environment into gltf
-        // gltf.samplers.push(...(await environment).samplers);
-        // gltf.images.push(...(await environment).images);
-        // gltf.textures.push(...(await environment).textures);
-        gltf = await environment;
+        gltf.samplers.push(...(await environment).samplers);
+        gltf.images.push(...(await environment).images);
+        gltf.textures.push(...(await environment).textures);
 
         return gltf;
     }
 
     startRendering(gltf)
     {
+        this.gltf = gltf;
         this.notifyLoadingEnded(gltf.path);
         if(this.gltfLoadedCallback !== undefined)
         {

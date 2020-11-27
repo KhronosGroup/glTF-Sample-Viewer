@@ -44,7 +44,7 @@ class gltfImage extends GltfObject
         }
     }
 
-    load(gltf, additionalFiles = undefined)
+    async load(gltf, additionalFiles = undefined)
     {
         if (this.image !== undefined)
         {
@@ -67,47 +67,53 @@ class gltfImage extends GltfObject
 
         this.image.crossOrigin = "";
         const self = this;
-        const promise = new Promise(resolve =>
+
+        if (!await self.setImageFromBufferView(gltf) &&
+            !await self.setImageFromFiles(additionalFiles) &&
+            !await self.setImageFromUri())
         {
-            self.image.onload = resolve;
-            self.image.onerror = resolve;
+            console.error("Was not able to resolve image with uri '%s'", self.uri);
+            return;
+        }
 
-            if (!self.setImageFromBufferView(gltf) &&
-                !self.setImageFromFiles(additionalFiles) &&
-                !self.setImageFromUri())
-            {
-                console.error("Was not able to resolve image with uri '%s'", self.uri);
-                resolve();
-            }
-        });
-
-        return promise;
+        return;
     }
 
-    setImageFromUri()
+    static loadHTMLImage(url)
+    {
+        return new Promise( (resolve, reject) => {
+            const image = new Image();
+            image.addEventListener('load', () => resolve(image) );
+            image.addEventListener('error', reject);
+            image.src = url;
+        });
+    }
+
+    async setImageFromUri()
     {
         if (this.uri === undefined)
         {
             return false;
         }
 
-        if (this.image instanceof Ktx2Image)
+        if (this.image instanceof Image)
         {
-            axios.get(this.uri, { responseType: 'arraybuffer'})
-                .then(response =>
-                {
-                    this.image.initialize(response.data);
-                });
+            this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
+                console.error(error);
+            });
         }
-        else
+        else if (this.image instanceof Ktx2Image)
         {
-            this.image.src = this.uri;
+            let response = await axios.get(this.uri, { responseType: 'arraybuffer'}).catch( (error) => {
+                console.error("Could not get image: " + error);
+            });
+            await this.image.initialize(response.data);
         }
 
         return true;
     }
 
-    setImageFromBufferView(gltf)
+    async setImageFromBufferView(gltf)
     {
         const view = gltf.bufferViews[this.bufferView];
         if (view === undefined)
@@ -118,11 +124,12 @@ class gltfImage extends GltfObject
         const buffer = gltf.buffers[view.buffer].buffer;
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
         const blob = new Blob([array], { "type": this.mimeType });
-        this.image.src = URL.createObjectURL(blob);
+
+        this.image = await gltfImage.loadHTMLImage(blob);
         return true;
     }
 
-    setImageFromFiles(files)
+    async setImageFromFiles(files)
     {
         if (this.uri === undefined || files === undefined)
         {
