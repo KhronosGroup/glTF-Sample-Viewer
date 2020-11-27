@@ -152,6 +152,7 @@ class gltfImage extends GltfObject
         const reader = new FileReader();
         const self = this;
 
+        // TODO: do this with promise and await
         if (this.image instanceof Ktx2Image)
         {
             reader.onloadend = function(event)
