@@ -8,6 +8,8 @@ import { gltfTexture } from '../texture.js';
 import { gltfSampler } from '../sampler.js';
 import { WebGl } from '../webgl.js';
 
+import { AsyncFileReader } from './async_file_reader.js';
+
 async function loadGltf(path, json, buffers)
 {
     const gltf = new glTF(path);
@@ -29,35 +31,16 @@ async function loadGltfFromDrop(mainFile, additionalFiles)
 {
     const gltfFile = mainFile.name;
 
-    const readAsArrayBuffer = () => {
-        return new Promise( (resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(mainFile);
-        });
-    };
-
-    const readAsText = () => {
-        return new Promise( (resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsText(mainFile);
-        });
-    };
-
-
     if (getIsGlb(gltfFile))
     {
-        const data = await readAsArrayBuffer(mainFile);
+        const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
         return await loadGltf(gltfFile, glb.json, glb.buffers);
     }
     else
     {
-        const data = await readAsText(mainFile);
+        const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
         return await loadGltf(gltfFile, json, additionalFiles);
     }
