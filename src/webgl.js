@@ -172,6 +172,12 @@ class gltfWebGl
             return false;
         }
 
+        if(gltfAccessor.bufferView === undefined)
+        {
+            console.warn("Tried to access undefined bufferview");
+            return true;
+        }
+
         let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
 
         if (gltfAccessor.glBuffer === undefined)
