@@ -124,8 +124,10 @@ class gltfImage extends GltfObject
         const buffer = gltf.buffers[view.buffer].buffer;
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
         const blob = new Blob([array], { "type": this.mimeType });
-
-        this.image = await gltfImage.loadHTMLImage(blob);
+        const objectURL = URL.createObjectURL(blob);
+        this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
+            console.error("Could not load image from buffer view");
+        });
         return true;
     }
 
