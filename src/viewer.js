@@ -3,7 +3,7 @@ import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
 import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
 import { gltfUserInterface } from './user_interface.js';
-import { UserCamera } from './user_camera.js';
+
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
@@ -44,7 +44,6 @@ class gltfViewer
 
         this.state = new GltfState();
         this.state.renderingParameters = new gltfRenderingParameters(environmentMap);
-        this.state.userCamera = new UserCamera();
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.state.userCamera, this.state.renderingParameters, this.basePath);
 

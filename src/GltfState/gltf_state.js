@@ -1,3 +1,4 @@
+import { UserCamera } from './user_camera.js';
 
 class GltfState
 {
@@ -6,7 +7,7 @@ class GltfState
         this.gltf = undefined;
         this.environment = undefined;
         this.renderingParameters = {};
-        this.userCamera = undefined;
+        this.userCamera = new UserCamera();
     }
 }
 
