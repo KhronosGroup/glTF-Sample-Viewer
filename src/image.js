@@ -5,6 +5,8 @@ import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
 import axios from '../libs/axios.min.js';
 
+import { AsyncFileReader } from './ResourceLoader/async_file_reader.js';
+
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};
 
 class gltfImage extends GltfObject
@@ -151,25 +153,21 @@ class gltfImage extends GltfObject
             return false;
         }
 
-        const reader = new FileReader();
-        const self = this;
-
-        // TODO: do this with promise and await
         if (this.image instanceof Ktx2Image)
         {
-            reader.onloadend = function(event)
-            {
-                self.image.initialize(event.target.result);
-            };
-            reader.readAsArrayBuffer(foundFile);
+            const imageData = await AsyncFileReader.readAsArrayBuffer(foundFile).catch( () => {
+                console.error("Could not load ktx2 image with FileReader");
+            });
+            await this.image.initialize(imageData);
         }
         else
         {
-            reader.onloadend = function(event)
-            {
-                self.image.src = event.target.result;
-            };
-            reader.readAsDataURL(foundFile);
+            const imageData = await AsyncFileReader.readAsDataURL(foundFile).catch( () => {
+                console.error("Could not load image with FileReader");
+            });
+            this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {
+                console.error("Could not create image from FileReader image data");
+            });
         }
 
         return true;

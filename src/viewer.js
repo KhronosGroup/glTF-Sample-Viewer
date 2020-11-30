@@ -144,17 +144,31 @@ class gltfViewer
                 self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
             }
         };
-        input.onDropFiles = this.loadFromFileObject.bind(this);
+        input.onDropFiles = (mainFile, additionalFiles) => {
+            this.loadFromFileObject(mainFile, additionalFiles).then( (gltf) => {
+                this.startRendering(gltf);
+            });
+        };
     }
 
-    loadFromFileObject(mainFile, additionalFiles)
+    async loadFromFileObject(mainFile, additionalFiles)
     {
         this.lastDropped = { mainFile: mainFile, additionalFiles: additionalFiles };
 
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
-        loadGltfFromDrop(mainFile, additionalFiles).then( (gltf) => this.startRendering(gltf) );
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
+
+        const environmentDesc = Environments[this.renderingParameters.environmentName];
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+
+        // inject environment into gltf
+        gltf.samplers.push(...(await environment).samplers);
+        gltf.images.push(...(await environment).images);
+        gltf.textures.push(...(await environment).textures);
+
+        return gltf;
     }
 
     async loadFromPath(gltfFile, basePath = "")
