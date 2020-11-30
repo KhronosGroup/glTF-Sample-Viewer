@@ -55,6 +55,7 @@ class gltfUserInterface
         this.initializeSceneSelection();
         this.initializeCameraSelection();
         this.initializeAnimationSettings();
+        this.initializeVariantsSelection();
 
         this.gltfFolder.open();
     }
@@ -111,6 +112,19 @@ class gltfUserInterface
             const indices = gltf !== undefined ? Object.keys(gltf.cameras) : [];
             indices.unshift(UserCameraIndex);
             return self.gltfFolder.add(self.renderingParameters, "cameraIndex", indices).name("Camera Index");
+        }
+        this.initializeUpdatable(this.gltfFolder, createElement);
+    }
+
+    initializeVariantsSelection()
+    {
+        const self = this;
+        function createElement(gltf)
+        {
+            const variants = gltf !== undefined ? gltf.variants.map(obj => obj.name) : [];
+            variants.unshift("default");
+            return self.gltfFolder.add(self.renderingParameters, "variant", variants).name("Variant")
+                .onChange(() => self.update(gltf));
         }
         this.initializeUpdatable(this.gltfFolder, createElement);
     }
