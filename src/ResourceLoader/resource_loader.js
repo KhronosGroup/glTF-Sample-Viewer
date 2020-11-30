@@ -8,6 +8,61 @@ import { gltfTexture } from '../texture.js';
 import { gltfSampler } from '../sampler.js';
 import { WebGl } from '../webgl.js';
 
+async function loadGltf(path, json, buffers)
+{
+    const gltf = new glTF(path);
+    gltf.fromJson(json);
+
+    // because the gltf image paths are not relative
+    // to the gltf, we have to resolve all image paths before that
+    for (const image of gltf.images)
+    {
+        image.resolveRelativePath(getContainingFolder(gltf.path));
+    }
+
+    await gltfLoader.load(gltf, buffers);
+
+    return gltf;
+}
+
+async function loadGltfFromDrop(mainFile, additionalFiles)
+{
+    const gltfFile = mainFile.name;
+
+    const readAsArrayBuffer = () => {
+        return new Promise( (resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(mainFile);
+        });
+    };
+
+    const readAsText = () => {
+        return new Promise( (resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsText(mainFile);
+        });
+    };
+
+
+    if (getIsGlb(gltfFile))
+    {
+        const data = await readAsArrayBuffer(mainFile);
+        const glbParser = new GlbParser(data);
+        const glb = glbParser.extractGlbData();
+        return await loadGltf(gltfFile, glb.json, glb.buffers);
+    }
+    else
+    {
+        const data = await readAsText(mainFile);
+        const json = JSON.parse(data);
+        return await loadGltf(gltfFile, json, additionalFiles);
+    }
+}
+
 async function loadGltfFromPath(path)
 {
     const isGlb = getIsGlb(path);
@@ -25,19 +80,7 @@ async function loadGltfFromPath(path)
         buffers = glb.buffers;
     }
 
-    const gltf = new glTF(path);
-    gltf.fromJson(json);
-
-    // because the gltf image paths are not relative
-    // to the gltf, we have to resolve all image paths before that
-    for (const image of gltf.images)
-    {
-        image.resolveRelativePath(getContainingFolder(gltf.path));
-    }
-
-    await gltfLoader.load(gltf, buffers);
-
-    return gltf;
+    return await loadGltf(path, json, buffers);
 }
 
 async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf)
@@ -114,4 +157,4 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     return environment;
 }
 
-export { loadGltfFromPath, loadPrefilteredEnvironmentFromPath };
+export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath };

@@ -7,7 +7,7 @@ import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
-import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
+import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 import { gltfLoader } from "./loader";
 
 class gltfViewer
@@ -154,29 +154,7 @@ class gltfViewer
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
-        const reader = new FileReader();
-        const self = this;
-        if (getIsGlb(gltfFile))
-        {
-            reader.onloadend = function(event)
-            {
-                const data = event.target.result;
-                const glbParser = new GlbParser(data);
-                const glb = glbParser.extractGlbData();
-                self.createGltf(gltfFile, glb.json, glb.buffers);
-            };
-            reader.readAsArrayBuffer(mainFile);
-        }
-        else
-        {
-            reader.onloadend = function(event)
-            {
-                const data = event.target.result;
-                const json = JSON.parse(data);
-                self.createGltf(gltfFile, json, additionalFiles);
-            };
-            reader.readAsText(mainFile);
-        }
+        loadGltfFromDrop(mainFile, additionalFiles).then( (gltf) => this.startRendering(gltf) );
     }
 
     async loadFromPath(gltfFile, basePath = "")
