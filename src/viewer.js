@@ -44,9 +44,9 @@ class gltfViewer
 
         this.state = new GltfState();
         this.state.renderingParameters = new gltfRenderingParameters(environmentMap);
-        this.userCamera = new UserCamera();
+        this.state.userCamera = new UserCamera();
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.userCamera, this.state.renderingParameters, this.basePath);
+        this.renderer = new gltfRenderer(canvas, this.state.userCamera, this.state.renderingParameters, this.basePath);
 
 
 
@@ -85,16 +85,16 @@ class gltfViewer
     {
         this.state.renderingParameters.cameraIndex = UserCameraIndex; // force use default camera
 
-        this.userCamera.target = jsToGl(target);
-        this.userCamera.up = jsToGl(up);
-        this.userCamera.position = jsToGl(eye);
-        this.userCamera.type = type;
-        this.userCamera.znear = znear;
-        this.userCamera.zfar = zfar;
-        this.userCamera.yfov = yfov;
-        this.userCamera.aspectRatio = aspectRatio;
-        this.userCamera.xmag = xmag;
-        this.userCamera.ymag = ymag;
+        this.state.userCamera.target = jsToGl(target);
+        this.state.userCamera.up = jsToGl(up);
+        this.state.userCamera.position = jsToGl(eye);
+        this.state.userCamera.type = type;
+        this.state.userCamera.znear = znear;
+        this.state.userCamera.zfar = zfar;
+        this.state.userCamera.yfov = yfov;
+        this.state.userCamera.aspectRatio = aspectRatio;
+        this.state.userCamera.xmag = xmag;
+        this.state.userCamera.ymag = ymag;
     }
 
     setAnimation(animationIndex = 'all', play = false, timeInSec = undefined)
@@ -123,28 +123,28 @@ class gltfViewer
         {
             if (this.state.renderingParameters.userCameraActive())
             {
-                this.userCamera.rotate(deltaX, deltaY);
+                this.state.userCamera.rotate(deltaX, deltaY);
             }
         };
         input.onPan = (deltaX, deltaY) =>
         {
             if (this.state.renderingParameters.userCameraActive())
             {
-                this.userCamera.pan(deltaX, deltaY);
+                this.state.userCamera.pan(deltaX, deltaY);
             }
         };
         input.onZoom = (delta) =>
         {
             if (this.state.renderingParameters.userCameraActive())
             {
-                this.userCamera.zoomIn(delta);
+                this.state.userCamera.zoomIn(delta);
             }
         };
         input.onResetCamera = () =>
         {
             if (this.state.renderingParameters.userCameraActive())
             {
-                self.userCamera.reset(self.state.gltf , this.state.renderingParameters.sceneIndex);
+                self.state.userCamera.reset(self.state.gltf , this.state.renderingParameters.sceneIndex);
             }
         };
         input.onDropFiles = (mainFile, additionalFiles) => {
@@ -235,7 +235,7 @@ class gltfViewer
         this.currentlyRendering = true;
 
         this.prepareSceneForRendering(gltf);
-        this.userCamera.fitViewToScene(gltf, this.state.renderingParameters.sceneIndex);
+        this.state.userCamera.fitViewToScene(gltf, this.state.renderingParameters.sceneIndex);
 
         computePrimitiveCentroids(gltf);
     }
@@ -253,14 +253,14 @@ class gltfViewer
             if (self.currentlyRendering)
             {
                 self.prepareSceneForRendering(self.state.gltf);
-                self.userCamera.fitCameraPlanesToScene(self.state.gltf, self.state.renderingParameters.sceneIndex);
+                self.state.userCamera.fitCameraPlanesToScene(self.state.gltf, self.state.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
                 if (self.state.gltf .scenes.length !== 0)
                 {
-                    self.userCamera.updatePosition();
+                    self.state.userCamera.updatePosition();
 
                     const scene = self.state.gltf .scenes[self.state.renderingParameters.sceneIndex];
 
