@@ -42,12 +42,13 @@ class gltfViewer
         this.loadingTimer = new Timer();
         this.lastDropped = undefined;
 
-        this.renderingParameters = new gltfRenderingParameters(environmentMap);
+        this.state = new GltfState();
+        this.state.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.userCamera = new UserCamera();
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.userCamera, this.renderingParameters, this.basePath);
+        this.renderer = new gltfRenderer(canvas, this.userCamera, this.state.renderingParameters, this.basePath);
 
-        this.state = new GltfState();
+
 
         this.gltfLoadedCallback = function(){};
 
@@ -82,7 +83,7 @@ class gltfViewer
         yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
         xmag = 1.0, ymag = 1.0)
     {
-        this.renderingParameters.cameraIndex = UserCameraIndex; // force use default camera
+        this.state.renderingParameters.cameraIndex = UserCameraIndex; // force use default camera
 
         this.userCamera.target = jsToGl(target);
         this.userCamera.up = jsToGl(up);
@@ -98,14 +99,14 @@ class gltfViewer
 
     setAnimation(animationIndex = 'all', play = false, timeInSec = undefined)
     {
-        this.renderingParameters.animationIndex = animationIndex;
+        this.state.renderingParameters.animationIndex = animationIndex;
         if(timeInSec !== undefined)
         {
-            this.renderingParameters.animationTimer.setFixedTime(timeInSec);
+            this.state.renderingParameters.animationTimer.setFixedTime(timeInSec);
         }
         else if(play)
         {
-            this.renderingParameters.animationTimer.start();
+            this.state.renderingParameters.animationTimer.start();
         }
     }
 
@@ -120,30 +121,30 @@ class gltfViewer
         const self = this;
         input.onRotate = (deltaX, deltaY) =>
         {
-            if (this.renderingParameters.userCameraActive())
+            if (this.state.renderingParameters.userCameraActive())
             {
                 this.userCamera.rotate(deltaX, deltaY);
             }
         };
         input.onPan = (deltaX, deltaY) =>
         {
-            if (this.renderingParameters.userCameraActive())
+            if (this.state.renderingParameters.userCameraActive())
             {
                 this.userCamera.pan(deltaX, deltaY);
             }
         };
         input.onZoom = (delta) =>
         {
-            if (this.renderingParameters.userCameraActive())
+            if (this.state.renderingParameters.userCameraActive())
             {
                 this.userCamera.zoomIn(delta);
             }
         };
         input.onResetCamera = () =>
         {
-            if (this.renderingParameters.userCameraActive())
+            if (this.state.renderingParameters.userCameraActive())
             {
-                self.userCamera.reset(self.state.gltf , self.renderingParameters.sceneIndex);
+                self.userCamera.reset(self.state.gltf , this.state.renderingParameters.sceneIndex);
             }
         };
         input.onDropFiles = (mainFile, additionalFiles) => {
@@ -162,7 +163,7 @@ class gltfViewer
 
         const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
 
-        const environmentDesc = Environments[this.renderingParameters.environmentName];
+        const environmentDesc = Environments[this.state.renderingParameters.environmentName];
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
 
         // inject environment into gltf
@@ -186,7 +187,7 @@ class gltfViewer
             self.hideSpinner();
         });
 
-        const environmentDesc = Environments[this.renderingParameters.environmentName];
+        const environmentDesc = Environments[this.state.renderingParameters.environmentName];
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
 
         // inject environment into gltf
@@ -220,10 +221,10 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
-        this.renderingParameters.cameraIndex = UserCameraIndex;
-        this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
-        this.renderingParameters.animationTimer.reset();
-        this.renderingParameters.animationIndex = "all";
+        this.state.renderingParameters.cameraIndex = UserCameraIndex;
+        this.state.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
+        this.state.renderingParameters.animationTimer.reset();
+        this.state.renderingParameters.animationIndex = "all";
 
         if (this.gui !== undefined)
         {
@@ -234,7 +235,7 @@ class gltfViewer
         this.currentlyRendering = true;
 
         this.prepareSceneForRendering(gltf);
-        this.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
+        this.userCamera.fitViewToScene(gltf, this.state.renderingParameters.sceneIndex);
 
         computePrimitiveCentroids(gltf);
     }
@@ -252,7 +253,7 @@ class gltfViewer
             if (self.currentlyRendering)
             {
                 self.prepareSceneForRendering(self.state.gltf);
-                self.userCamera.fitCameraPlanesToScene(self.state.gltf, self.renderingParameters.sceneIndex);
+                self.userCamera.fitCameraPlanesToScene(self.state.gltf, self.state.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
@@ -261,11 +262,11 @@ class gltfViewer
                 {
                     self.userCamera.updatePosition();
 
-                    const scene = self.state.gltf .scenes[self.renderingParameters.sceneIndex];
+                    const scene = self.state.gltf .scenes[self.state.renderingParameters.sceneIndex];
 
                     // Check if scene contains transparent primitives.
 
-                    const nodes = scene.gatherNodes(self.state.gltf );
+                    const nodes = scene.gatherNodes(self.state.gltf);
 
                     const alphaModes = nodes
                         .filter(n => n.mesh !== undefined)
@@ -317,7 +318,7 @@ class gltfViewer
 
     prepareSceneForRendering(gltf)
     {
-        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
+        const scene = gltf.scenes[this.state.renderingParameters.sceneIndex];
 
         this.animateNode(gltf);
 
@@ -326,11 +327,11 @@ class gltfViewer
 
     animateNode(gltf)
     {
-        if(gltf.animations !== undefined && !this.renderingParameters.animationTimer.paused)
+        if(gltf.animations !== undefined && !this.state.renderingParameters.animationTimer.paused)
         {
-            const t = this.renderingParameters.animationTimer.elapsedSec();
+            const t = this.state.renderingParameters.animationTimer.elapsedSec();
 
-            if(this.renderingParameters.animationIndex === "all")
+            if(this.state.renderingParameters.animationIndex === "all")
             {
                 // Special index, step all animations.
                 for(const anim of gltf.animations)
@@ -344,7 +345,7 @@ class gltfViewer
             else
             {
                 // Step selected animation.
-                const anim = gltf.animations[this.renderingParameters.animationIndex];
+                const anim = gltf.animations[this.state.renderingParameters.animationIndex];
                 if(anim)
                 {
                     anim.advance(gltf, t);
@@ -358,7 +359,7 @@ class gltfViewer
         const gui = new gltfUserInterface(
             this.pathProvider,
             this.initialModel,
-            this.renderingParameters,
+            this.state.renderingParameters,
             this.stats);
 
         const self = this;
@@ -381,7 +382,7 @@ class gltfViewer
     notifyLoadingStarted(path)
     {
         this.loadingTimer.start();
-        console.log("Loading '" + path + "' with environment '" + this.renderingParameters.environmentName + "'");
+        console.log("Loading '" + path + "' with environment '" + this.state.renderingParameters.environmentName + "'");
         this.showSpinner();
     }
 
