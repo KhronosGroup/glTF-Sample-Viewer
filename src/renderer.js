@@ -67,8 +67,8 @@ class gltfRenderer
     init()
     {
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
-        WebGl.context.enable(WebGl.context.DEPTH_TEST);
-        WebGl.context.depthFunc(WebGl.context.LEQUAL);
+        WebGl.context.enable(WebGL2RenderingContext.DEPTH_TEST);
+        WebGl.context.depthFunc(WebGL2RenderingContext.LEQUAL);
         WebGl.context.colorMask(true, true, true, true);
         WebGl.context.clearDepth(1.0);
     }
@@ -89,7 +89,7 @@ class gltfRenderer
     newFrame()
     {
         WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2] / 255.0, 1.0);
-        WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
+        WebGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
     }
 
     // render complete gltf scene with given camera
@@ -228,31 +228,31 @@ class gltfRenderer
 
         if (mat4.determinant(node.worldTransform) < 0.0)
         {
-            WebGl.context.frontFace(WebGl.context.CW);
+            WebGl.context.frontFace(WebGL2RenderingContext.CW);
         }
         else
         {
-            WebGl.context.frontFace(WebGl.context.CCW);
+            WebGl.context.frontFace(WebGL2RenderingContext.CCW);
         }
 
         if (material.doubleSided)
         {
-            WebGl.context.disable(WebGl.context.CULL_FACE);
+            WebGl.context.disable(WebGL2RenderingContext.CULL_FACE);
         }
         else
         {
-            WebGl.context.enable(WebGl.context.CULL_FACE);
+            WebGl.context.enable(WebGL2RenderingContext.CULL_FACE);
         }
 
         if (material.alphaMode === 'BLEND')
         {
-            WebGl.context.enable(WebGl.context.BLEND);
-            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA);
-            WebGl.context.blendEquation(WebGl.context.FUNC_ADD);
+            WebGl.context.enable(WebGL2RenderingContext.BLEND);
+            WebGl.context.blendFuncSeparate(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA, WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
+            WebGl.context.blendEquation(WebGL2RenderingContext.FUNC_ADD);
         }
         else
         {
-            WebGl.context.disable(WebGl.context.BLEND);
+            WebGl.context.disable(WebGL2RenderingContext.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;

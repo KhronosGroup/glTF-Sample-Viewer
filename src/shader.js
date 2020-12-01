@@ -14,7 +14,7 @@ class gltfShader
 
         if(this.program !== undefined)
         {
-            const uniformCount = WebGl.context.getProgramParameter(this.program, WebGl.context.ACTIVE_UNIFORMS);
+            const uniformCount = WebGl.context.getProgramParameter(this.program, WebGL2RenderingContext.ACTIVE_UNIFORMS);
             for(let i = 0; i < uniformCount; ++i)
             {
                 const info = WebGl.context.getActiveUniform(this.program, i);
@@ -22,7 +22,7 @@ class gltfShader
                 this.uniforms.set(info.name, {type: info.type, loc: loc});
             }
 
-            const attribCount = WebGl.context.getProgramParameter(this.program, WebGl.context.ACTIVE_ATTRIBUTES);
+            const attribCount = WebGl.context.getProgramParameter(this.program, WebGL2RenderingContext.ACTIVE_ATTRIBUTES);
             for(let i = 0; i < attribCount; ++i)
             {
                 const info = WebGl.context.getActiveAttrib(this.program, i);
@@ -142,7 +142,7 @@ class gltfShader
         if(uniform !== undefined)
         {
             switch (uniform.type) {
-            case WebGl.context.FLOAT:
+            case WebGL2RenderingContext.FLOAT:
             {
                 if(Array.isArray(value) || value instanceof Float32Array)
                 {
@@ -152,11 +152,11 @@ class gltfShader
                 }
                 break;
             }
-            case WebGl.context.FLOAT_VEC2: WebGl.context.uniform2fv(uniform.loc, value); break;
-            case WebGl.context.FLOAT_VEC3: WebGl.context.uniform3fv(uniform.loc, value); break;
-            case WebGl.context.FLOAT_VEC4: WebGl.context.uniform4fv(uniform.loc, value); break;
+            case WebGL2RenderingContext.FLOAT_VEC2: WebGl.context.uniform2fv(uniform.loc, value); break;
+            case WebGL2RenderingContext.FLOAT_VEC3: WebGl.context.uniform3fv(uniform.loc, value); break;
+            case WebGL2RenderingContext.FLOAT_VEC4: WebGl.context.uniform4fv(uniform.loc, value); break;
 
-            case WebGl.context.INT:
+            case WebGL2RenderingContext.INT:
             {
                 if(Array.isArray(value) || value instanceof Uint32Array || value instanceof Int32Array)
                 {
@@ -166,13 +166,13 @@ class gltfShader
                 }
                 break;
             }
-            case WebGl.context.INT_VEC2: WebGl.context.uniform2iv(uniform.loc, value); break;
-            case WebGl.context.INT_VEC3: WebGl.context.uniform3iv(uniform.loc, value); break;
-            case WebGl.context.INT_VEC4: WebGl.context.uniform4iv(uniform.loc, value); break;
+            case WebGL2RenderingContext.INT_VEC2: WebGl.context.uniform2iv(uniform.loc, value); break;
+            case WebGL2RenderingContext.INT_VEC3: WebGl.context.uniform3iv(uniform.loc, value); break;
+            case WebGL2RenderingContext.INT_VEC4: WebGl.context.uniform4iv(uniform.loc, value); break;
 
-            case WebGl.context.FLOAT_MAT2: WebGl.context.uniformMatrix2fv(uniform.loc, false, value); break;
-            case WebGl.context.FLOAT_MAT3: WebGl.context.uniformMatrix3fv(uniform.loc, false, value); break;
-            case WebGl.context.FLOAT_MAT4: WebGl.context.uniformMatrix4fv(uniform.loc, false, value); break;
+            case WebGL2RenderingContext.FLOAT_MAT2: WebGl.context.uniformMatrix2fv(uniform.loc, false, value); break;
+            case WebGL2RenderingContext.FLOAT_MAT3: WebGl.context.uniformMatrix3fv(uniform.loc, false, value); break;
+            case WebGL2RenderingContext.FLOAT_MAT4: WebGl.context.uniformMatrix4fv(uniform.loc, false, value); break;
             }
         }
         else if(log)

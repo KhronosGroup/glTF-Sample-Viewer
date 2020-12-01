@@ -50,7 +50,7 @@ class gltfWebGl
             gltfTex.glTexture = WebGl.context.createTexture();
         }
 
-        WebGl.context.activeTexture(WebGl.context.TEXTURE0 + texSlot);
+        WebGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + texSlot);
         WebGl.context.bindTexture(gltfTex.type, gltfTex.glTexture);
 
         WebGl.context.uniform1i(loc, texSlot);
@@ -65,7 +65,7 @@ class gltfWebGl
                 return false;
             }
 
-            WebGl.context.pixelStorei(WebGl.context.UNPACK_FLIP_Y_WEBGL, false);
+            WebGl.context.pixelStorei(WebGL2RenderingContext.UNPACK_FLIP_Y_WEBGL, false);
 
             let images = [];
 
@@ -91,13 +91,13 @@ class gltfWebGl
                     return false;
                 }
 
-                if (image.type === WebGl.context.TEXTURE_CUBE_MAP)
+                if (image.type === WebGL2RenderingContext.TEXTURE_CUBE_MAP)
                 {
                     const ktxImage = image.image;
 
                     for (const level of ktxImage.levels)
                     {
-                        let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
+                        let faceType = WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X;
                         for (const face of level.faces)
                         {
                             WebGl.context.texImage2D(faceType, level.miplevel, ktxImage.glInternalFormat, level.width, level.height, 0, ktxImage.glFormat, ktxImage.glType, face.data);
@@ -108,7 +108,7 @@ class gltfWebGl
                 }
                 else
                 {
-                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
+                    WebGl.context.texImage2D(image.type, image.miplevel, WebGL2RenderingContext.RGBA, WebGL2RenderingContext.RGBA, WebGL2RenderingContext.UNSIGNED_BYTE, image.image);
                 }
 
                 generateMips = image.shouldGenerateMips();
@@ -121,10 +121,10 @@ class gltfWebGl
                 // Until this point, images can be assumed to be power of two.
                 switch (gltfSampler.minFilter)
                 {
-                case WebGl.context.NEAREST_MIPMAP_NEAREST:
-                case WebGl.context.NEAREST_MIPMAP_LINEAR:
-                case WebGl.context.LINEAR_MIPMAP_NEAREST:
-                case WebGl.context.LINEAR_MIPMAP_LINEAR:
+                case WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST:
+                case WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR:
+                case WebGL2RenderingContext.LINEAR_MIPMAP_NEAREST:
+                case WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR:
                     WebGl.context.generateMipmap(gltfTex.type);
                     break;
                 default:
@@ -153,12 +153,12 @@ class gltfWebGl
                 return false;
             }
 
-            WebGl.context.bindBuffer(WebGl.context.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
-            WebGl.context.bufferData(WebGl.context.ELEMENT_ARRAY_BUFFER, data, WebGl.context.STATIC_DRAW);
+            WebGl.context.bindBuffer(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+            WebGl.context.bufferData(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, data, WebGL2RenderingContext.STATIC_DRAW);
         }
         else
         {
-            WebGl.context.bindBuffer(WebGl.context.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+            WebGl.context.bindBuffer(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
         }
 
         return true;
@@ -191,12 +191,12 @@ class gltfWebGl
                 return false;
             }
 
-            WebGl.context.bindBuffer(WebGl.context.ARRAY_BUFFER, gltfAccessor.glBuffer);
-            WebGl.context.bufferData(WebGl.context.ARRAY_BUFFER, data, WebGl.context.STATIC_DRAW);
+            WebGl.context.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, gltfAccessor.glBuffer);
+            WebGl.context.bufferData(WebGL2RenderingContext.ARRAY_BUFFER, data, WebGL2RenderingContext.STATIC_DRAW);
         }
         else
         {
-            WebGl.context.bindBuffer(WebGl.context.ARRAY_BUFFER, gltfAccessor.glBuffer);
+            WebGl.context.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, gltfAccessor.glBuffer);
         }
 
         WebGl.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
@@ -207,10 +207,10 @@ class gltfWebGl
 
     compileShader(shaderIdentifier, isVert, shaderSource)
     {
-        const shader = WebGl.context.createShader(isVert ? WebGl.context.VERTEX_SHADER : WebGl.context.FRAGMENT_SHADER);
+        const shader = WebGl.context.createShader(isVert ? WebGL2RenderingContext.VERTEX_SHADER : WebGL2RenderingContext.FRAGMENT_SHADER);
         WebGl.context.shaderSource(shader, shaderSource);
         WebGl.context.compileShader(shader);
-        const compiled = WebGl.context.getShaderParameter(shader, WebGl.context.COMPILE_STATUS);
+        const compiled = WebGl.context.getShaderParameter(shader, WebGL2RenderingContext.COMPILE_STATUS);
 
         if (!compiled)
         {
@@ -250,7 +250,7 @@ class gltfWebGl
         WebGl.context.attachShader(program, fragment);
         WebGl.context.linkProgram(program);
 
-        if (!WebGl.context.getProgramParameter(program, WebGl.context.LINK_STATUS))
+        if (!WebGl.context.getProgramParameter(program, WebGL2RenderingContext.LINK_STATUS))
         {
             var info = WebGl.context.getProgramInfoLog(program);
             throw new Error('Could not link WebGL program. \n\n' + info);
@@ -264,32 +264,32 @@ class gltfWebGl
     {
         if (generateMipmaps)
         {
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
+            WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
+            WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
         }
         else
         {
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_S, WebGl.context.CLAMP_TO_EDGE);
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_WRAP_T, WebGl.context.CLAMP_TO_EDGE);
+            WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_S, WebGL2RenderingContext.CLAMP_TO_EDGE);
+            WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_T, WebGL2RenderingContext.CLAMP_TO_EDGE);
         }
 
         // If not mip-mapped, force to non-mip-mapped sampler.
-        if (!generateMipmaps && (gltfSamplerObj.minFilter != WebGl.context.NEAREST) && (gltfSamplerObj.minFilter != WebGl.context.LINEAR))
+        if (!generateMipmaps && (gltfSamplerObj.minFilter != WebGL2RenderingContext.NEAREST) && (gltfSamplerObj.minFilter != WebGL2RenderingContext.LINEAR))
         {
-            if ((gltfSamplerObj.minFilter == WebGl.context.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == WebGl.context.NEAREST_MIPMAP_LINEAR))
+            if ((gltfSamplerObj.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR))
             {
-                WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.NEAREST);
+                WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MIN_FILTER, WebGL2RenderingContext.NEAREST);
             }
             else
             {
-                WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MIN_FILTER, WebGl.context.LINEAR);
+                WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MIN_FILTER, WebGL2RenderingContext.LINEAR);
             }
         }
         else
         {
-            WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
+            WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
         }
-        WebGl.context.texParameteri(type, WebGl.context.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
+        WebGl.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
 
         if (WebGl.context.supports_EXT_texture_filter_anisotropic)
         {

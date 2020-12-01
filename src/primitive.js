@@ -387,19 +387,19 @@ class gltfPrimitive extends GltfObject
     {
         switch (componentType)
         {
-        case WebGl.context.BYTE:
+        case WebGL2RenderingContext.BYTE:
             return "Int8Array";
-        case WebGl.context.UNSIGNED_BYTE:
+        case WebGL2RenderingContext.UNSIGNED_BYTE:
             return "Uint8Array";
-        case WebGl.context.SHORT:
+        case WebGL2RenderingContext.SHORT:
             return "Int16Array";
-        case WebGl.context.UNSIGNED_SHORT:
+        case WebGL2RenderingContext.UNSIGNED_SHORT:
             return "Uint16Array";
-        case WebGl.context.INT:
+        case WebGL2RenderingContext.INT:
             return "Int32Array";
-        case WebGl.context.UNSIGNED_INT:
+        case WebGL2RenderingContext.UNSIGNED_INT:
             return "Uint32Array";
-        case WebGl.context.FLOAT:
+        case WebGL2RenderingContext.FLOAT:
             return "Float32Array";
         default:
             return "Float32Array";
@@ -431,7 +431,7 @@ class gltfPrimitive extends GltfObject
         // Gather all vertex attributes.
         for(let dracoAttr in gltfDracoAttributes)
         {
-            let componentType = WebGl.context.BYTE;
+            let componentType = WebGL2RenderingContext.BYTE;
             let accessotVertexCount;
             // find gltf accessor for this draco attribute
             for (const [key, value] of Object.entries(this.attributes))
