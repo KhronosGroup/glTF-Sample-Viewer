@@ -2,7 +2,6 @@ import { mat4, vec3 } from 'gl-matrix';
 import { gltfLight } from './light.js';
 import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
-import { WebGl } from './webgl.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
 import pbrShader from './shaders/pbr.frag';
@@ -17,7 +16,7 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(canvas, parameters, basePath)
+    constructor(canvas, parameters, basePath, webGl)
     {
         this.canvas = canvas;
         this.parameters = parameters;
@@ -26,6 +25,8 @@ class gltfRenderer
 
         this.currentWidth = 0;
         this.currentHeight = 0;
+
+        this.webGl = webGl;
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
@@ -45,7 +46,7 @@ class gltfRenderer
             "OES_texture_float_linear"
         ];
 
-        WebGl.loadWebGlExtensions(requiredWebglExtensions);
+        this.webGl.loadWebGlExtensions(requiredWebglExtensions);
 
         this.visibleLights = [];
 
@@ -67,10 +68,10 @@ class gltfRenderer
     init()
     {
         //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
-        WebGl.context.enable(WebGL2RenderingContext.DEPTH_TEST);
-        WebGl.context.depthFunc(WebGL2RenderingContext.LEQUAL);
-        WebGl.context.colorMask(true, true, true, true);
-        WebGl.context.clearDepth(1.0);
+        this.webGl.context.enable(WebGL2RenderingContext.DEPTH_TEST);
+        this.webGl.context.depthFunc(WebGL2RenderingContext.LEQUAL);
+        this.webGl.context.colorMask(true, true, true, true);
+        this.webGl.context.clearDepth(1.0);
     }
 
     resize(width, height)
@@ -81,15 +82,15 @@ class gltfRenderer
             this.canvas.height = height;
             this.currentHeight = height;
             this.currentWidth = width;
-            WebGl.context.viewport(0, 0, width, height);
+            this.webGl.context.viewport(0, 0, width, height);
         }
     }
 
     // frame state
     newFrame()
     {
-        WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2] / 255.0, 1.0);
-        WebGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
+        this.webGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2] / 255.0, 1.0);
+        this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
     }
 
     // render complete gltf scene with given camera
@@ -210,7 +211,7 @@ class gltfRenderer
             return;
         }
 
-        WebGl.context.useProgram(this.shader.program);
+        this.webGl.context.useProgram(this.shader.program);
 
         if (this.parameters.usePunctual)
         {
@@ -228,37 +229,37 @@ class gltfRenderer
 
         if (mat4.determinant(node.worldTransform) < 0.0)
         {
-            WebGl.context.frontFace(WebGL2RenderingContext.CW);
+            this.webGl.context.frontFace(WebGL2RenderingContext.CW);
         }
         else
         {
-            WebGl.context.frontFace(WebGL2RenderingContext.CCW);
+            this.webGl.context.frontFace(WebGL2RenderingContext.CCW);
         }
 
         if (material.doubleSided)
         {
-            WebGl.context.disable(WebGL2RenderingContext.CULL_FACE);
+            this.webGl.context.disable(WebGL2RenderingContext.CULL_FACE);
         }
         else
         {
-            WebGl.context.enable(WebGL2RenderingContext.CULL_FACE);
+            this.webGl.context.enable(WebGL2RenderingContext.CULL_FACE);
         }
 
         if (material.alphaMode === 'BLEND')
         {
-            WebGl.context.enable(WebGL2RenderingContext.BLEND);
-            WebGl.context.blendFuncSeparate(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA, WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
-            WebGl.context.blendEquation(WebGL2RenderingContext.FUNC_ADD);
+            this.webGl.context.enable(WebGL2RenderingContext.BLEND);
+            this.webGl.context.blendFuncSeparate(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA, WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
+            this.webGl.context.blendEquation(WebGL2RenderingContext.FUNC_ADD);
         }
         else
         {
-            WebGl.context.disable(WebGL2RenderingContext.BLEND);
+            this.webGl.context.disable(WebGL2RenderingContext.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;
         if (drawIndexed)
         {
-            if (!WebGl.setIndices(gltf, primitive.indices))
+            if (!this.webGl.setIndices(gltf, primitive.indices))
             {
                 return;
             }
@@ -275,7 +276,7 @@ class gltfRenderer
             {
                 continue; // only skip this attribute
             }
-            if (!WebGl.enableAttribute(gltf, location, gltfAccessor))
+            if (!this.webGl.enableAttribute(gltf, location, gltfAccessor))
             {
                 return; // skip this primitive
             }
@@ -294,7 +295,7 @@ class gltfRenderer
             {
                 continue; // only skip this texture
             }
-            if (!WebGl.setTexture(location, gltf, info, i)) // binds texture and sampler
+            if (!this.webGl.setTexture(location, gltf, info, i)) // binds texture and sampler
             {
                 return; // skip this material
             }
@@ -308,17 +309,17 @@ class gltfRenderer
 
         if (this.parameters.usePunctual)
         {
-            WebGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), gltf, envData.sheenELUT, textureCount++);
+            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), gltf, envData.sheenELUT, textureCount++);
         }
 
         if (drawIndexed)
         {
             const indexAccessor = gltf.accessors[primitive.indices];
-            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
+            this.webGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
         }
         else
         {
-            WebGl.context.drawArrays(primitive.mode, 0, vertexCount);
+            this.webGl.context.drawArrays(primitive.mode, 0, vertexCount);
         }
 
         for (const attribute of primitive.glAttributes)
@@ -328,7 +329,7 @@ class gltfRenderer
             {
                 continue; // skip this attribute
             }
-            WebGl.context.disableVertexAttribArray(location);
+            this.webGl.context.disableVertexAttribArray(location);
         }
     }
 
@@ -561,13 +562,13 @@ class gltfRenderer
 
     applyEnvironmentMap(gltf, envData, texSlotOffset)
     {
-        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset++);
 
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset++);
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset++);
 
-        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset++);
-        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset++);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
 

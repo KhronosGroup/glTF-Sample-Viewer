@@ -48,7 +48,7 @@ class gltfViewer
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.renderingParameters, this.basePath);
+        this.renderer = new gltfRenderer(canvas, this.renderingParameters, this.basePath, WebGl);
 
         this.gltfLoadedCallback = function(){};
 
@@ -368,4 +368,4 @@ class gltfViewer
     }
 }
 
-export { gltfViewer };
+export { gltfViewer, WebGl };
