@@ -13,11 +13,22 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="assets/images/gltf.png">
 
+    <!-- buefy styles -->
+    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <!-- vue.js-->
+    <script src="https://unpkg.com/vue"></script>
+    <!-- buefy full -->
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/stats.min.js"></script>
 
 	<script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
     <script src="dist/gltf-sample-viewer.umd.js"></script>
+
 </head>
 <script>
 function getUrlVars() {
@@ -36,8 +47,91 @@ function getUrlParam(parameter, defaultvalue){
     return urlparameter;
 }
 </script>
+
+<!-- vue js templates -->
+<!-- general templates -->
+<script id="dropDownTemplate" type="text/x-template">
+    <b-field v-bind:label="name">
+        <b-select placeholder="Select">
+            <option v-for="item in dropdowncontent" :key="item.title">
+                {{ item.title }}
+            </option>
+        </b-select>
+    </b-field>
+</script>
+<script id="radioButtonTemplate" type="text/x-template">
+    <div>
+        <b-radio v-model="radio" v-for="item in radiobuttoncontent" :key="item.title"
+                v-bind:name="name"
+                native-value="">
+                {{ item.title }}
+        </b-radio>
+    </div>
+</script>
+
+<!-- templates for different menu tabs-->
+<script id="modelsTemplate" type="text/x-template">
+    <b-menu>
+        <b-menu-list label="Model">
+            <drop-down-element name="Model" v-bind:dropdowncontent="models"></drop-down-element>
+            <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
+            <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
+            <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
+            <radio-button-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-element>
+        </b-menu-list>
+    </b-menu>
+</script>
+<script id="displayTemplate" type="text/x-template">
+    <b-menu>
+        <b-menu-list label="Display">
+            <h2>Lighting</h2>
+            <b-switch>Image Based</b-switch>
+            <br>
+            <b-switch>Punctual Lighting</b-switch>
+            <h2>Background</h2>
+            <b-switch>Environment Background</b-switch>
+            <p>TODO MAKE COLORPICKER</p>
+            <h2>Image Based Lighting</h2>
+            <b-button @click="">Add new HDR</b-button>
+            <drop-down-element name="Active Environment" ></drop-down-element>
+        </b-menu-list>
+    </b-menu>
+</script>
+<script id="animationTemplate" type="text/x-template">
+    <b-menu>
+        <b-menu-list label="Animation">
+            <drop-down-element name="Animation"></drop-down-element>
+        </b-menu-list>
+    </b-menu>
+</script>
+
+
 <body onload="gltfSampleViewer.gltfSampleViewer('canvas', 'assets/models/2.0/model-index.json', 'Courtyard of the Doge\'s palace', undefined, '', getUrlParam('model','BoomBox'));">
     <div id="gltf-sample-viewer-model-spinner"> </div>
     <canvas id="canvas">No Canvas!</canvas>
+
+    <!-- UI -->
+    <div id="app">
+        <template>
+            <b-tabs vertical expanded>
+                <b-tab-item label="Models" label="Modles" icon="google-photos">
+                    <tab-models v-bind:models="models"
+                                v-bind:flavors="flavors"
+                                v-bind:scenes="scenes"
+                                v-bind:cameras="cameras"
+                                v-bind:materialvariants="materialVariants"></tab-models>
+                </b-tab-item>
+
+                <b-tab-item label="Display" label="Display" icon="library-music">
+                    <tab-display ></tab-display>
+                            </b-tab-item>
+
+                            <b-tab-item label="Animation" label="Animation" icon="video">
+                    <tab-animation ></tab-animation>
+                </b-tab-item>
+            </b-tabs>
+        </template>
+    </div>
+    <script src="src/ui/ui.js"></script>
 </body>
 </html>
