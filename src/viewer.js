@@ -39,7 +39,6 @@ class gltfViewer
         this.canvas = canvas;
         this.canvas.style.cursor = "grab";
 
-        this.loadingTimer = new Timer();
         this.lastDropped = undefined;
 
         this.state = new GltfState();
@@ -57,6 +56,7 @@ class gltfViewer
         if (this.initialModel.includes("/"))
         {
             // no UI if a path is provided (e.g. in the vscode plugin)
+            this.showSpinner();
             this.loadFromPath(this.initialModel).then( (gltf) => this.startRendering(gltf) );
         }
         else
@@ -67,6 +67,7 @@ class gltfViewer
             this.pathProvider.initialize().then(() =>
             {
                 self.initializeGui();
+                this.showSpinner();
                 self.loadFromPath(self.pathProvider.resolve(self.initialModel)).then( (gltf) => this.startRendering(gltf) );
             });
         }
@@ -112,6 +113,7 @@ class gltfViewer
             }
         };
         input.onDropFiles = (mainFile, additionalFiles) => {
+            this.showSpinner();
             this.loadFromFileObject(mainFile, additionalFiles).then( (gltf) => {
                 this.startRendering(gltf);
             });
@@ -121,9 +123,6 @@ class gltfViewer
     async loadFromFileObject(mainFile, additionalFiles)
     {
         this.lastDropped = { mainFile: mainFile, additionalFiles: additionalFiles };
-
-        const gltfFile = mainFile.name;
-        this.notifyLoadingStarted(gltfFile);
 
         const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
 
@@ -143,13 +142,8 @@ class gltfViewer
         this.lastDropped = undefined;
 
         gltfFile = basePath + gltfFile;
-        this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromPath(gltfFile).catch(function(error)
-        {
-            console.error(error.stack);
-            self.hideSpinner();
-        });
+        const gltf = await loadGltfFromPath(gltfFile);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
@@ -166,6 +160,7 @@ class gltfViewer
     {
         this.currentlyRendering = false;
 
+
         // unload previous scene
         if (this.state.gltf !== undefined)
         {
@@ -174,7 +169,6 @@ class gltfViewer
         }
 
         this.state.gltf = gltf;
-        this.notifyLoadingEnded(gltf.path);
         if(this.gltfLoadedCallback !== undefined)
         {
             this.gltfLoadedCallback(gltf);
@@ -196,6 +190,9 @@ class gltfViewer
         }
 
         this.state.gltf = gltf;
+
+        this.hideSpinner();
+
         this.currentlyRendering = true;
 
         this.prepareSceneForRendering(gltf);
@@ -327,34 +324,25 @@ class gltfViewer
             this.stats);
 
         const self = this;
-        gui.onModelChanged = () => self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
+        gui.onModelChanged = () => {
+            this.showSpinner();
+            self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
+        };
         gui.onEnvironmentChanged = () =>
         {
-            if (this.lastDropped === undefined)
+            if (self.lastDropped === undefined)
             {
+                self.showSpinner();
                 self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
             }
             else
             {
+                self.showSpinner();
                 self.loadFromFileObject(this.lastDropped.mainFile, this.lastDropped.additionalFiles);
             }
         };
         gui.initialize();
         this.gui = gui;
-    }
-
-    notifyLoadingStarted(path)
-    {
-        this.loadingTimer.start();
-        console.log("Loading '" + path + "' with environment '" + this.renderingParameters.environmentName + "'");
-        this.showSpinner();
-    }
-
-    notifyLoadingEnded(path)
-    {
-        this.loadingTimer.stop();
-        console.log("Loading '" + path + "' took " + this.loadingTimer.seconds + " seconds");
-        this.hideSpinner();
     }
 
     showSpinner()
