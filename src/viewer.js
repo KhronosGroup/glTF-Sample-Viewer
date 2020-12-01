@@ -8,6 +8,8 @@ import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 import { gltfLoader } from "./loader";
 import { GltfState } from './GltfState/gltf_state.js';
+import { GltfView } from './GltfView/gltf_view.js';
+import { WebGl } from './webgl.js';
 
 class gltfViewer
 {
@@ -40,6 +42,10 @@ class gltfViewer
         this.lastDropped = undefined;
 
         this.state = new GltfState();
+        // for now just provide a dummy view
+        this.view = {};
+        this.view.context = WebGl.context;
+
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.currentlyRendering = false;
         this.renderer = new gltfRenderer(canvas, this.renderingParameters, this.basePath);
@@ -122,10 +128,10 @@ class gltfViewer
     {
         this.lastDropped = { mainFile: mainFile, additionalFiles: additionalFiles };
 
-        const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.view);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.view);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
@@ -141,10 +147,10 @@ class gltfViewer
 
         gltfFile = basePath + gltfFile;
 
-        const gltf = await loadGltfFromPath(gltfFile);
+        const gltf = await loadGltfFromPath(gltfFile, this.view);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.view);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
