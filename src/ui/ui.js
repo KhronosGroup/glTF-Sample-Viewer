@@ -40,7 +40,7 @@ const app = new Vue({
       currentTab: 'Models',
       tabs: ['Models', 'Display', 'Animation'],
       models: [{title: "Avocado"}, {title: "Boombox"}, {title: "Duck"}],
-      flavors: [{title: "gltf"}, {title: "binery"}, {title: "draco"}],
+      flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
       scenes: [{title: "1"}, {title: "2"}],
       cameras: [{title: "front"}, {title: "left"}, {title: "right"}, {title: "top"}],
       materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
