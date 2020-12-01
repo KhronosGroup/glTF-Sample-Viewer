@@ -3,6 +3,9 @@ import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
 
+import { GltfView } from './GltfView/gltf_view.js';
+import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
+
 async function gltfSampleViewer(
     canvasId,
     index,
@@ -53,4 +56,15 @@ function getWebGlContext(canvas)
     return context;
 }
 
-export { gltfSampleViewer };
+async function main()
+{
+    const canvas = document.getElementById("canvas");
+    const view = new GltfView(canvas);
+    const state = view.createState();
+
+    state.gltf = await loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf");
+
+    await view.startRendering(state);
+}
+
+export { gltfSampleViewer, main };

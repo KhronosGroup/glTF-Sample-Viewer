@@ -4,8 +4,6 @@ import { gltfRenderer } from './renderer.js';
 import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
 import { gltfUserInterface } from './user_interface.js';
 
-import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
-import { GlbParser } from './glb_parser.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 import { gltfLoader } from "./loader";
@@ -72,7 +70,7 @@ class gltfViewer
             });
         }
 
-        this.render();
+        this.render(this.state);
     }
 
     // callback = function(gltf) {}
@@ -201,7 +199,7 @@ class gltfViewer
         computePrimitiveCentroids(gltf);
     }
 
-    render()
+    render(state)
     {
         const self = this;
         function renderFrame()
@@ -213,26 +211,26 @@ class gltfViewer
 
             if (self.currentlyRendering)
             {
-                self.prepareSceneForRendering(self.state.gltf);
-                self.state.userCamera.fitCameraPlanesToScene(self.state.gltf, self.renderingParameters.sceneIndex);
+                self.prepareSceneForRendering(state.gltf);
+                state.userCamera.fitCameraPlanesToScene(state.gltf, self.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
 
-                if (self.state.gltf .scenes.length !== 0)
+                if (state.gltf .scenes.length !== 0)
                 {
-                    self.state.userCamera.updatePosition();
+                    state.userCamera.updatePosition();
 
-                    const scene = self.state.gltf .scenes[self.renderingParameters.sceneIndex];
+                    const scene = state.gltf .scenes[self.renderingParameters.sceneIndex];
 
                     // Check if scene contains transparent primitives.
 
-                    const nodes = scene.gatherNodes(self.state.gltf);
+                    const nodes = scene.gatherNodes(state.gltf);
 
                     const alphaModes = nodes
                         .filter(n => n.mesh !== undefined)
-                        .reduce((acc, n) => acc.concat(self.state.gltf .meshes[n.mesh].primitives), [])
-                        .map(p => self.state.gltf .materials[p.material].alphaMode);
+                        .reduce((acc, n) => acc.concat(state.gltf .meshes[n.mesh].primitives), [])
+                        .map(p => state.gltf .materials[p.material].alphaMode);
 
                     let hasBlendPrimitives = false;
                     for(const alphaMode of alphaModes)
@@ -247,15 +245,15 @@ class gltfViewer
                     if(hasBlendPrimitives)
                     {
                         // Draw all opaque and masked primitives. Depth sort is not yet required.
-                        self.renderer.drawScene(self.state, scene, false, primitive => self.state.gltf .materials[primitive.material].alphaMode !== "BLEND");
+                        self.renderer.drawScene(state, scene, false, primitive => state.gltf .materials[primitive.material].alphaMode !== "BLEND");
 
                         // Draw all transparent primitives. Depth sort is required.
-                        self.renderer.drawScene(self.state, scene, true, primitive => self.state.gltf .materials[primitive.material].alphaMode === "BLEND");
+                        self.renderer.drawScene(state, scene, true, primitive => state.gltf .materials[primitive.material].alphaMode === "BLEND");
                     }
                     else
                     {
                         // Simply draw all primitives.
-                        self.renderer.drawScene(self.state, scene, false);
+                        self.renderer.drawScene(state, scene, false);
                     }
                 }
 
