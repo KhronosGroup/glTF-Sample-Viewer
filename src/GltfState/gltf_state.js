@@ -1,4 +1,5 @@
-import { UserCamera } from './user_camera.js';
+import { UserCamera } from '../user_camera.js';
+
 
 class GltfState
 {

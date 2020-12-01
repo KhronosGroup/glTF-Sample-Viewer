@@ -76,39 +76,6 @@ class gltfViewer
         this.render();
     }
 
-    setCamera(eye = [0.0, 0.0, 0.05], target = [0.0, 0.0, 0.0], up = [0.0, 1.0, 0.0],
-        type = "perspective",
-        znear = 0.01, zfar = 10000.0,
-        yfov = 45.0 * Math.PI / 180.0, aspectRatio = 16.0 / 9.0,
-        xmag = 1.0, ymag = 1.0)
-    {
-        this.state.renderingParameters.cameraIndex = UserCameraIndex; // force use default camera
-
-        this.state.userCamera.target = jsToGl(target);
-        this.state.userCamera.up = jsToGl(up);
-        this.state.userCamera.position = jsToGl(eye);
-        this.state.userCamera.type = type;
-        this.state.userCamera.znear = znear;
-        this.state.userCamera.zfar = zfar;
-        this.state.userCamera.yfov = yfov;
-        this.state.userCamera.aspectRatio = aspectRatio;
-        this.state.userCamera.xmag = xmag;
-        this.state.userCamera.ymag = ymag;
-    }
-
-    setAnimation(animationIndex = 'all', play = false, timeInSec = undefined)
-    {
-        this.state.renderingParameters.animationIndex = animationIndex;
-        if(timeInSec !== undefined)
-        {
-            this.state.renderingParameters.animationTimer.setFixedTime(timeInSec);
-        }
-        else if(play)
-        {
-            this.state.renderingParameters.animationTimer.start();
-        }
-    }
-
     // callback = function(gltf) {}
     setGltfLoadedCallback(callback)
     {
