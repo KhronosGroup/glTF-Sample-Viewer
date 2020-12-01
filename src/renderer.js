@@ -17,10 +17,9 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(canvas, defaultCamera, parameters, basePath)
+    constructor(canvas, parameters, basePath)
     {
         this.canvas = canvas;
-        this.defaultCamera = defaultCamera;
         this.parameters = parameters;
         this.basePath = basePath;
         this.shader = undefined; // current shader
@@ -94,42 +93,43 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, sortByDepth, predicateDrawPrimivitve)
+    drawScene(state, scene, sortByDepth, predicateDrawPrimivitve)
     {
+
         if (scene.envData === undefined)
         {
-            this.initializeEnvironment(gltf, scene);
+            this.initializeEnvironment(state.gltf, scene);
         }
 
         let currentCamera = undefined;
 
         if (this.parameters.userCameraActive())
         {
-            currentCamera = this.defaultCamera;
+            currentCamera = state.userCamera;
         }
         else
         {
-            currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
+            currentCamera = state.gltf.cameras[this.parameters.cameraIndex].clone();
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
-        this.viewMatrix = currentCamera.getViewMatrix(gltf);
-        this.currentCameraPosition = currentCamera.getPosition(gltf);
+        this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
+        this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
-        this.visibleLights = this.getVisibleLights(gltf, scene);
+        this.visibleLights = this.getVisibleLights(state.gltf, scene);
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        const nodes = scene.gatherNodes(gltf);
+        const nodes = scene.gatherNodes(state.gltf);
 
         // Update skins.
         for (const node of nodes)
         {
             if (node.mesh !== undefined && node.skin !== undefined)
             {
-                this.updateSkin(gltf, node);
+                this.updateSkin(state.gltf, node);
             }
         }
 
@@ -137,14 +137,14 @@ class gltfRenderer
         {
             for (const node of nodes)
             {
-                let mesh = gltf.meshes[node.mesh];
+                let mesh = state.gltf.meshes[node.mesh];
                 if (mesh !== undefined)
                 {
                     for (let primitive of mesh.primitives)
                     {
                         if (predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
                         {
-                            this.drawPrimitive(gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
+                            this.drawPrimitive(state.gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
                         }
                     }
                 }
@@ -152,13 +152,13 @@ class gltfRenderer
         }
         else
         {
-            const sortedPrimitives = currentCamera.sortPrimitivesByDepth(gltf, nodes);
+            const sortedPrimitives = currentCamera.sortPrimitivesByDepth(state.gltf, nodes);
 
             for (const sortedPrimitive of sortedPrimitives)
             {
                 if (predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
                 {
-                    this.drawPrimitive(gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+                    this.drawPrimitive(state.gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
                 }
             }
         }

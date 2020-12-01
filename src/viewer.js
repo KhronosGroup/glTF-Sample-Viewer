@@ -45,9 +45,7 @@ class gltfViewer
         this.state = new GltfState();
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.state.userCamera, this.renderingParameters, this.basePath);
-
-
+        this.renderer = new gltfRenderer(canvas, this.renderingParameters, this.basePath);
 
         this.gltfLoadedCallback = function(){};
 
@@ -252,15 +250,15 @@ class gltfViewer
                     if(hasBlendPrimitives)
                     {
                         // Draw all opaque and masked primitives. Depth sort is not yet required.
-                        self.renderer.drawScene(self.state.gltf , scene, false, primitive => self.state.gltf .materials[primitive.material].alphaMode !== "BLEND");
+                        self.renderer.drawScene(self.state, scene, false, primitive => self.state.gltf .materials[primitive.material].alphaMode !== "BLEND");
 
                         // Draw all transparent primitives. Depth sort is required.
-                        self.renderer.drawScene(self.state.gltf , scene, true, primitive => self.state.gltf .materials[primitive.material].alphaMode === "BLEND");
+                        self.renderer.drawScene(self.state, scene, true, primitive => self.state.gltf .materials[primitive.material].alphaMode === "BLEND");
                     }
                     else
                     {
                         // Simply draw all primitives.
-                        self.renderer.drawScene(self.state.gltf , scene, false);
+                        self.renderer.drawScene(self.state, scene, false);
                     }
                 }
 
