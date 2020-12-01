@@ -43,9 +43,9 @@ class gltfViewer
         this.lastDropped = undefined;
 
         this.state = new GltfState();
-        this.state.renderingParameters = new gltfRenderingParameters(environmentMap);
+        this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, this.state.userCamera, this.state.renderingParameters, this.basePath);
+        this.renderer = new gltfRenderer(canvas, this.state.userCamera, this.renderingParameters, this.basePath);
 
 
 
@@ -87,30 +87,30 @@ class gltfViewer
         const self = this;
         input.onRotate = (deltaX, deltaY) =>
         {
-            if (this.state.renderingParameters.userCameraActive())
+            if (this.renderingParameters.userCameraActive())
             {
                 this.state.userCamera.rotate(deltaX, deltaY);
             }
         };
         input.onPan = (deltaX, deltaY) =>
         {
-            if (this.state.renderingParameters.userCameraActive())
+            if (this.renderingParameters.userCameraActive())
             {
                 this.state.userCamera.pan(deltaX, deltaY);
             }
         };
         input.onZoom = (delta) =>
         {
-            if (this.state.renderingParameters.userCameraActive())
+            if (this.renderingParameters.userCameraActive())
             {
                 this.state.userCamera.zoomIn(delta);
             }
         };
         input.onResetCamera = () =>
         {
-            if (this.state.renderingParameters.userCameraActive())
+            if (this.renderingParameters.userCameraActive())
             {
-                self.state.userCamera.reset(self.state.gltf , this.state.renderingParameters.sceneIndex);
+                self.state.userCamera.reset(self.state.gltf , this.renderingParameters.sceneIndex);
             }
         };
         input.onDropFiles = (mainFile, additionalFiles) => {
@@ -129,7 +129,7 @@ class gltfViewer
 
         const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
 
-        const environmentDesc = Environments[this.state.renderingParameters.environmentName];
+        const environmentDesc = Environments[this.renderingParameters.environmentName];
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
 
         // inject environment into gltf
@@ -153,7 +153,7 @@ class gltfViewer
             self.hideSpinner();
         });
 
-        const environmentDesc = Environments[this.state.renderingParameters.environmentName];
+        const environmentDesc = Environments[this.renderingParameters.environmentName];
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
 
         // inject environment into gltf
@@ -187,10 +187,10 @@ class gltfViewer
             throw "No scenes in the gltf";
         }
 
-        this.state.renderingParameters.cameraIndex = UserCameraIndex;
-        this.state.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
-        this.state.renderingParameters.animationTimer.reset();
-        this.state.renderingParameters.animationIndex = "all";
+        this.renderingParameters.cameraIndex = UserCameraIndex;
+        this.renderingParameters.sceneIndex = gltf.scene ? gltf.scene : 0;
+        this.renderingParameters.animationTimer.reset();
+        this.renderingParameters.animationIndex = "all";
 
         if (this.gui !== undefined)
         {
@@ -201,7 +201,7 @@ class gltfViewer
         this.currentlyRendering = true;
 
         this.prepareSceneForRendering(gltf);
-        this.state.userCamera.fitViewToScene(gltf, this.state.renderingParameters.sceneIndex);
+        this.state.userCamera.fitViewToScene(gltf, this.renderingParameters.sceneIndex);
 
         computePrimitiveCentroids(gltf);
     }
@@ -219,7 +219,7 @@ class gltfViewer
             if (self.currentlyRendering)
             {
                 self.prepareSceneForRendering(self.state.gltf);
-                self.state.userCamera.fitCameraPlanesToScene(self.state.gltf, self.state.renderingParameters.sceneIndex);
+                self.state.userCamera.fitCameraPlanesToScene(self.state.gltf, self.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
                 self.renderer.newFrame();
@@ -228,7 +228,7 @@ class gltfViewer
                 {
                     self.state.userCamera.updatePosition();
 
-                    const scene = self.state.gltf .scenes[self.state.renderingParameters.sceneIndex];
+                    const scene = self.state.gltf .scenes[self.renderingParameters.sceneIndex];
 
                     // Check if scene contains transparent primitives.
 
@@ -284,7 +284,7 @@ class gltfViewer
 
     prepareSceneForRendering(gltf)
     {
-        const scene = gltf.scenes[this.state.renderingParameters.sceneIndex];
+        const scene = gltf.scenes[this.renderingParameters.sceneIndex];
 
         this.animateNode(gltf);
 
@@ -293,11 +293,11 @@ class gltfViewer
 
     animateNode(gltf)
     {
-        if(gltf.animations !== undefined && !this.state.renderingParameters.animationTimer.paused)
+        if(gltf.animations !== undefined && !this.renderingParameters.animationTimer.paused)
         {
-            const t = this.state.renderingParameters.animationTimer.elapsedSec();
+            const t = this.renderingParameters.animationTimer.elapsedSec();
 
-            if(this.state.renderingParameters.animationIndex === "all")
+            if(this.renderingParameters.animationIndex === "all")
             {
                 // Special index, step all animations.
                 for(const anim of gltf.animations)
@@ -311,7 +311,7 @@ class gltfViewer
             else
             {
                 // Step selected animation.
-                const anim = gltf.animations[this.state.renderingParameters.animationIndex];
+                const anim = gltf.animations[this.renderingParameters.animationIndex];
                 if(anim)
                 {
                     anim.advance(gltf, t);
@@ -325,7 +325,7 @@ class gltfViewer
         const gui = new gltfUserInterface(
             this.pathProvider,
             this.initialModel,
-            this.state.renderingParameters,
+            this.renderingParameters,
             this.stats);
 
         const self = this;
@@ -348,7 +348,7 @@ class gltfViewer
     notifyLoadingStarted(path)
     {
         this.loadingTimer.start();
-        console.log("Loading '" + path + "' with environment '" + this.state.renderingParameters.environmentName + "'");
+        console.log("Loading '" + path + "' with environment '" + this.renderingParameters.environmentName + "'");
         this.showSpinner();
     }
 
