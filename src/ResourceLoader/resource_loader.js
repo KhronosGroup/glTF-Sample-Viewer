@@ -10,7 +10,7 @@ import { WebGl } from '../webgl.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers)
+async function loadGltf(path, json, buffers, view)
 {
     const gltf = new glTF(path);
     gltf.fromJson(json);
@@ -22,12 +22,12 @@ async function loadGltf(path, json, buffers)
         image.resolveRelativePath(getContainingFolder(gltf.path));
     }
 
-    await gltfLoader.load(gltf, buffers);
+    await gltfLoader.load(gltf, view.context, buffers);
 
     return gltf;
 }
 
-async function loadGltfFromDrop(mainFile, additionalFiles)
+async function loadGltfFromDrop(mainFile, additionalFiles, view)
 {
     const gltfFile = mainFile.name;
 
@@ -36,17 +36,17 @@ async function loadGltfFromDrop(mainFile, additionalFiles)
         const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers);
+        return await loadGltf(gltfFile, glb.json, glb.buffers, view);
     }
     else
     {
         const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles);
+        return await loadGltf(gltfFile, json, additionalFiles, view);
     }
 }
 
-async function loadGltfFromPath(path)
+async function loadGltfFromPath(path, view)
 {
     const isGlb = getIsGlb(path);
 
@@ -63,10 +63,10 @@ async function loadGltfFromPath(path)
         buffers = glb.buffers;
     }
 
-    return await loadGltf(path, json, buffers);
+    return await loadGltf(path, json, buffers, view);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf, view)
 {
     // TODO: create class for environment
     const environment = new glTF();
@@ -135,7 +135,7 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
 
     await gltfLoader.loadImages(environment).then(() => gltfLoader.processImages(environment));
 
-    environment.initGl();
+    environment.initGl(view.context);
 
     return environment;
 }

@@ -4,7 +4,7 @@ import { GltfObject } from './gltf_object.js';
 
 class gltfTexture extends GltfObject
 {
-    constructor(sampler = undefined, source = undefined, type = WebGl.context.TEXTURE_2D, texture = undefined)
+    constructor(sampler = undefined, source = undefined, type = WebGLRenderingContext.TEXTURE_2D, texture = undefined)
     {
         super();
         this.sampler = sampler; // index to gltfSampler, default sampler ?
@@ -16,14 +16,14 @@ class gltfTexture extends GltfObject
         this.initialized = false;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
         if (this.sampler === undefined)
         {
             this.sampler = gltf.samplers.length - 1;
         }
 
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, gltf, webGlContext);
     }
 
     fromJson(jsonTexture)
@@ -63,9 +63,9 @@ class gltfTextureInfo
         this.extensions = undefined;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, gltf, webGlContext);
     }
 
     fromJson(jsonTextureInfo)

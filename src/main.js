@@ -62,7 +62,7 @@ async function main()
     const view = new GltfView(canvas);
     const state = view.createState();
 
-    state.gltf = await loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf");
+    state.gltf = await loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view);
 
     await view.startRendering(state);
 }

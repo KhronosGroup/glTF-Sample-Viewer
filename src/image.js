@@ -13,7 +13,8 @@ class gltfImage extends GltfObject
 {
     constructor(
         uri = undefined,
-        type = WebGl.context.TEXTURE_2D, miplevel = 0,
+        type = WebGLRenderingContext.TEXTURE_2D,
+        miplevel = 0,
         bufferView = undefined,
         name = undefined,
         mimeType = ImageMimeType.JPEG,

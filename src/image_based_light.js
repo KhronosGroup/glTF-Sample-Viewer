@@ -38,17 +38,17 @@ class ImageBasedLight extends GltfObject
         }
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
         if (this.diffuseEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.diffuseEnvironmentTexture];
-            textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
+            textureObject.type = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
         }
         if (this.specularEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.specularEnvironmentTexture];
-            textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
+            textureObject.type = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
 
             const imageObject = gltf.images[textureObject.source];
             this.levelCount = imageObject.image.levelCount;
@@ -56,7 +56,7 @@ class ImageBasedLight extends GltfObject
         if(this.sheenEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.sheenEnvironmentTexture];
-            textureObject.type = WebGl.context.TEXTURE_CUBE_MAP;
+            textureObject.type = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
 
             const imageObject = gltf.images[textureObject.source];
             if (this.levelCount !== imageObject.image.levelCount)

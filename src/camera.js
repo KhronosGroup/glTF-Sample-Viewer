@@ -27,9 +27,9 @@ class gltfCamera extends GltfObject
         this.node = nodeIndex;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
-        super.initGl(gltf);
+        super.initGl(gltf, webGlContext);
 
         let cameraIndex = undefined;
         for (let i = 0; i < gltf.nodes.length; i++)

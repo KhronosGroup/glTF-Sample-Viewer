@@ -14,7 +14,7 @@ class gltfPrimitive extends GltfObject
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
-        this.mode = WebGl.context.TRIANGLES;
+        this.mode = WebGLRenderingContext.TRIANGLES;
 
         // non gltf
         this.glAttributes = [];
@@ -27,7 +27,7 @@ class gltfPrimitive extends GltfObject
         this.centroid = undefined;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
         // Use the default glTF material.
         if (this.material === undefined)
@@ -35,9 +35,9 @@ class gltfPrimitive extends GltfObject
             this.material = gltf.materials.length - 1;
         }
 
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, gltf, webGlContext);
 
-        const maxAttributes = WebGl.context.getParameter(WebGl.context.MAX_VERTEX_ATTRIBS);
+        const maxAttributes = webGlContext.getParameter(WebGLRenderingContext.MAX_VERTEX_ATTRIBS);
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
 

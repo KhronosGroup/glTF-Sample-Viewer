@@ -13,9 +13,9 @@ class gltfScene extends GltfObject
         this.imageBasedLight = undefined;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
-        super.initGl(gltf);
+        super.initGl(gltf, webGlContext);
 
         if (this.extensions !== undefined &&
             this.extensions.KHR_lights_image_based !== undefined)
