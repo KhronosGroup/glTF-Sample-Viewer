@@ -11,6 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ui.css">
     <link rel="icon" href="assets/images/gltf.png">
 
     <!-- buefy styles -->
@@ -59,50 +60,83 @@ function getUrlParam(parameter, defaultvalue){
         </b-select>
     </b-field>
 </script>
-<script id="radioButtonTemplate" type="text/x-template">
+<script id="radioButtonListTemplate" type="text/x-template">
     <div>
         <b-radio v-model="radio" v-for="item in radiobuttoncontent" :key="item.title"
                 v-bind:name="name"
-                native-value="">
+                v-bind:native-value="item.title">
                 {{ item.title }}
         </b-radio>
     </div>
 </script>
+<script id="checkBoxTemplate" type="text/x-template">
+    <div>
+        <label class="label">{{ name }}</label>
+        <b-checkbox v-model="checkboxGroup" v-for="item in checkboxcontent" :key="item.title"
+                v-bind:native-value="item.title">
+            {{ item.title }}
+        </b-checkbox>
+    </div>
+</script>
+<script id="sliderTemplate" type="text/x-template">
+    <div>
+        <label class="label">{{ name }}</label>
+        <b-numberinput  v-model="value" min="0" max="100" :exponential=".5"></b-numberinput >
+        <b-slider v-model="value"></b-slider>
+    </div>
+</script>
 
 <!-- templates for different menu tabs-->
+<!-- TODO check if we can ge rid of the b-menu tag -->
 <script id="modelsTemplate" type="text/x-template">
-    <b-menu>
-        <b-menu-list label="Model">
-            <drop-down-element name="Model" v-bind:dropdowncontent="models"></drop-down-element>
-            <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
-            <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
-            <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
-            <radio-button-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-element>
-        </b-menu-list>
-    </b-menu>
+    <div>
+        <h2>Models</h2>
+
+        <drop-down-element name="Model" v-bind:dropdowncontent="models"></drop-down-element>
+        <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
+        <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
+        <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
+        <radio-button-list-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
+    </div>
 </script>
 <script id="displayTemplate" type="text/x-template">
-    <b-menu>
-        <b-menu-list label="Display">
-            <h2>Lighting</h2>
-            <b-switch>Image Based</b-switch>
-            <br>
-            <b-switch>Punctual Lighting</b-switch>
-            <h2>Background</h2>
-            <b-switch>Environment Background</b-switch>
-            <p>TODO MAKE COLORPICKER</p>
-            <h2>Image Based Lighting</h2>
-            <b-button @click="">Add new HDR</b-button>
-            <drop-down-element name="Active Environment" ></drop-down-element>
-        </b-menu-list>
-    </b-menu>
+    <div>
+        <h2>Display</h2>
+        <label class="label">Lighting</label>
+        <b-switch>Image Based</b-switch>
+        <br>
+        <b-switch>Punctual Lighting</b-switch>
+        <label class="label">Background</label>
+        <b-switch>Environment Background</b-switch>
+        <p>TODO MAKE COLORPICKER</p>
+        <label class="label">Image Based Lighting</label>
+        <b-button @click="">Add new HDR</b-button>
+        <drop-down-element name="Active Environment" ></drop-down-element>
+    </div>
 </script>
 <script id="animationTemplate" type="text/x-template">
-    <b-menu>
-        <b-menu-list label="Animation">
-            <drop-down-element name="Animation"></drop-down-element>
-        </b-menu-list>
-    </b-menu>
+    <div>
+        <h2>Animation</h2>
+        <label  class="label">Animation Controls</label>
+        <b-button>Play</b-button>
+        <check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>
+    </div>
+</script>
+<script id="xmpTemplate" type="text/x-template">
+    <div>
+        <h2>XMP</h2>
+        <p>TODO: GENERATE AWESOME CONTENT HERE</p>
+    </div>
+</script>
+<script id="advancedControlsTemplate" type="text/x-template">
+    <div>
+        <h2>Advanced Controls</h2>
+        <drop-down-element name="Debug Channels" v-bind:dropdowncontent="debugchannels"></drop-down-element>
+        <slider-element name="Exposure"></slider-element>
+        <drop-down-element name="Tone Map" v-bind:dropdowncontent="tonemaps"></drop-down-element>
+        <b-switch v-model="skinning">Skinning</b-switch>
+        <b-switch v-model="morphing">Morphing</b-switch>
+    </div>
 </script>
 
 
@@ -113,8 +147,8 @@ function getUrlParam(parameter, defaultvalue){
     <!-- UI -->
     <div id="app" style="position: absolute; top: 0;">
         <template>
-            <b-tabs vertical expanded>
-                <b-tab-item label="Models" label="Modles" icon="google-photos">
+            <b-tabs vertical>
+                <b-tab-item label="Models" icon="google-photos">
                     <tab-models v-bind:models="models"
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"
@@ -122,12 +156,21 @@ function getUrlParam(parameter, defaultvalue){
                                 v-bind:materialvariants="materialVariants"></tab-models>
                 </b-tab-item>
 
-                <b-tab-item label="Display" label="Display" icon="library-music">
+                <b-tab-item label="Display" icon="library-music">
                     <tab-display ></tab-display>
-                            </b-tab-item>
+                </b-tab-item>
 
-                            <b-tab-item label="Animation" label="Animation" icon="video">
-                    <tab-animation ></tab-animation>
+                <b-tab-item label="Animation" icon="video">
+                    <tab-animation v-bind:animations="animations"></tab-animation>
+                </b-tab-item>
+                <b-tab-item label="XMP" icon="video">
+                    <tab-xmp ></tab-xmp>
+                </b-tab-item>
+                <b-tab-item label="Capture" icon="video">
+                </b-tab-item>
+                <b-tab-item label="Advanced Controls" icon="video">
+                    <tab-advanced-controls v-bind:tonemaps="tonemaps"
+                                            v-bind:debugchannels="debugchannels"></tab-advanced-controls>
                 </b-tab-item>
             </b-tabs>
         </template>

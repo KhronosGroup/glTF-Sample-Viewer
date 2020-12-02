@@ -1,0 +1,65 @@
+/* only contains styles for the ui */
+
+/* general styles */
+h2, label, label.label, p, a
+{
+    color: #f2f2f2;
+}
+
+/* tabs */
+.b-tabs.is-vertical
+{
+    height: 100vh;
+}
+
+nav.tabs
+{
+    background-color: #1b1b1b;
+    width: 100px;
+    overflow: hidden;
+}
+
+nav.tabs ul
+{
+    flex-shrink: unset;
+}
+
+section.tab-content
+{
+    background-color: #333333;
+    width: 300px;
+}
+
+.tabs li.is-active {
+    border-right: 7.5px solid #87c540 !important;
+    color: #87c540 !important;
+    background-color: #373737;
+}
+.tabs li.is-active a{
+    color: #87c540 !important;
+}
+
+.tabs li
+{
+    height: 100px;
+    display: table;
+}
+
+.tabs li a
+{
+    display: table-cell;
+    vertical-align: middle;
+    white-space: normal;
+    border-bottom: unset;
+    padding-left: unset;
+    padding-right: unset;
+    width: 100%;
+    color: #f5f5f5;
+}
+.tabs li a span
+{
+    display: block;
+    margin-left: auto;
+    margin-right: auto !important;
+    text-align: center;
+}
