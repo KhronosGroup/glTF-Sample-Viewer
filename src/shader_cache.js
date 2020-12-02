@@ -1,17 +1,17 @@
 import { gltfShader } from './shader.js';
 import { stringHash, combineHashes } from './utils.js';
-import { WebGl } from './webgl.js';
 
 // THis class generates and caches the shader source text for a given permutation
 class ShaderCache
 {
-    constructor(sources)
+    constructor(sources, gl)
     {
         this.sources  = sources; // shader name -> source code
         this.shaders  = new Map(); // name & permutations hashed -> compiled shader
         this.programs = new Map(); // (vertex shader, fragment shader) -> program
 
-        // TODO: remove any // or /* style comments
+        // TODO: find a way to pass this without storing a member
+        this.gl = gl;
 
         // resovle / expande sources (TODO: break include cycles)
         for (let [key, src] of this.sources)
@@ -48,7 +48,7 @@ class ShaderCache
     {
         for (let [, shader] of this.shaders.entries())
         {
-            WebGl.context.deleteShader(shader);
+            this.gl.context.deleteShader(shader);
             shader = undefined;
         }
 
@@ -95,7 +95,7 @@ class ShaderCache
         {
             // console.log(defines);
             // compile this variant
-            shader = WebGl.compileShader(shaderIdentifier, isVert, defines + src);
+            shader = this.gl.compileShader(shaderIdentifier, isVert, defines + src);
             this.shaders.set(hash, shader);
         }
 
@@ -114,10 +114,10 @@ class ShaderCache
         }
         else // link this shader program type!
         {
-            let linkedProg = WebGl.linkProgram(this.shaders.get(vertexShaderHash), this.shaders.get(fragmentShaderHash));
+            let linkedProg = this.gl.linkProgram(this.shaders.get(vertexShaderHash), this.shaders.get(fragmentShaderHash));
             if(linkedProg)
             {
-                let program = new gltfShader(linkedProg, hash);
+                let program = new gltfShader(linkedProg, hash, this.gl);
                 this.programs.set(hash, program);
                 return program;
             }

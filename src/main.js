@@ -63,6 +63,12 @@ async function main()
     const state = view.createState();
 
     state.gltf = await loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view);
+    state.environment = await loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", state.gltf, view);
+
+    // inject environment into gltf
+    state.gltf.samplers.push(...state.environment.samplers);
+    state.gltf.images.push(...state.environment.images);
+    state.gltf.textures.push(...state.environment.textures);
 
     await view.startRendering(state);
 }

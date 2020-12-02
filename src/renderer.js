@@ -26,6 +26,7 @@ class gltfRenderer
         this.currentWidth = 0;
         this.currentHeight = 0;
 
+        // TODO: this should not be a member
         this.webGl = webGl;
 
         const shaderSources = new Map();
@@ -39,7 +40,7 @@ class gltfRenderer
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
 
-        this.shaderCache = new ShaderCache(shaderSources);
+        this.shaderCache = new ShaderCache(shaderSources, webGl);
 
         let requiredWebglExtensions = [
             "EXT_texture_filter_anisotropic",
@@ -87,9 +88,9 @@ class gltfRenderer
     }
 
     // frame state
-    newFrame()
+    clearFrame(clearColor)
     {
-        this.webGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2] / 255.0, 1.0);
+        this.webGl.context.clearColor(clearColor[0] / 255.0, clearColor[1] / 255.0, clearColor[2] / 255.0, 1.0);
         this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
     }
 
@@ -104,13 +105,13 @@ class gltfRenderer
 
         let currentCamera = undefined;
 
-        if (this.parameters.userCameraActive())
+        if (state.cameraIndex === undefined)
         {
             currentCamera = state.userCamera;
         }
         else
         {
-            currentCamera = state.gltf.cameras[this.parameters.cameraIndex].clone();
+            currentCamera = state.gltf.cameras[state.cameraIndex].clone();
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
@@ -145,7 +146,7 @@ class gltfRenderer
                     {
                         if (predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
                         {
-                            this.drawPrimitive(state.gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
+                            this.drawPrimitive(state, scene.envData, primitive, node, this.viewProjectionMatrix);
                         }
                     }
                 }
@@ -159,21 +160,21 @@ class gltfRenderer
             {
                 if (predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
                 {
-                    this.drawPrimitive(state.gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
+                    this.drawPrimitive(state, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
                 }
             }
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, envData, primitive, node, viewProjectionMatrix)
+    drawPrimitive(state, envData, primitive, node, viewProjectionMatrix)
     {
         if (primitive.skip) return;
 
         let material;
         if(primitive.mappings !== undefined && this.parameters.variant != "default")
         {
-            const names = gltf.variants.map(obj => obj.name);
+            const names = state.gltf.variants.map(obj => obj.name);
             const idx = names.indexOf(this.parameters.variant);
             let materialIdx = primitive.material;
             primitive.mappings.forEach(element => {
@@ -182,21 +183,21 @@ class gltfRenderer
                     materialIdx = element.material;
                 }
             });
-            material = gltf.materials[materialIdx];
+            material = state.gltf.materials[materialIdx];
         }
         else
         {
-            material = gltf.materials[primitive.material];
+            material = state.gltf.materials[primitive.material];
         }
 
         //select shader permutation, compile and link program.
 
         let vertDefines = [];
-        this.pushVertParameterDefines(vertDefines, gltf, node, primitive);
+        this.pushVertParameterDefines(vertDefines, state.gltf, node, primitive);
         vertDefines = primitive.getDefines().concat(vertDefines);
 
         let fragDefines = material.getDefines().concat(vertDefines);
-        this.pushFragParameterDefines(fragDefines);
+        this.pushFragParameterDefines(fragDefines, state.renderingParameters);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
@@ -215,7 +216,7 @@ class gltfRenderer
 
         if (this.parameters.usePunctual)
         {
-            this.applyLights(gltf);
+            this.applyLights(state.gltf);
         }
 
         // update model dependant matrices once per node
@@ -225,7 +226,7 @@ class gltfRenderer
         this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
-        this.updateAnimationUniforms(gltf, node, primitive);
+        this.updateAnimationUniforms(state.gltf, node, primitive);
 
         if (mat4.determinant(node.worldTransform) < 0.0)
         {
@@ -259,7 +260,7 @@ class gltfRenderer
         const drawIndexed = primitive.indices !== undefined;
         if (drawIndexed)
         {
-            if (!this.webGl.setIndices(gltf, primitive.indices))
+            if (!this.webGl.setIndices(state.gltf, primitive.indices))
             {
                 return;
             }
@@ -268,7 +269,7 @@ class gltfRenderer
         let vertexCount = 0;
         for (const attribute of primitive.glAttributes)
         {
-            const gltfAccessor = gltf.accessors[attribute.accessor];
+            const gltfAccessor = state.gltf.accessors[attribute.accessor];
             vertexCount = gltfAccessor.count;
 
             const location = this.shader.getAttributeLocation(attribute.name);
@@ -276,7 +277,7 @@ class gltfRenderer
             {
                 continue; // only skip this attribute
             }
-            if (!this.webGl.enableAttribute(gltf, location, gltfAccessor))
+            if (!this.webGl.enableAttribute(state.gltf, location, gltfAccessor))
             {
                 return; // skip this primitive
             }
@@ -295,7 +296,7 @@ class gltfRenderer
             {
                 continue; // only skip this texture
             }
-            if (!this.webGl.setTexture(location, gltf, info, i)) // binds texture and sampler
+            if (!this.webGl.setTexture(location, state.gltf, info, i)) // binds texture and sampler
             {
                 return; // skip this material
             }
@@ -304,17 +305,17 @@ class gltfRenderer
         let textureCount = material.textures.length;
         if (this.parameters.useIBL)
         {
-            textureCount = this.applyEnvironmentMap(gltf, envData, textureCount);
+            textureCount = this.applyEnvironmentMap(state.gltf, envData, textureCount);
         }
 
         if (this.parameters.usePunctual)
         {
-            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), gltf, envData.sheenELUT, textureCount++);
+            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, envData.sheenELUT, textureCount++);
         }
 
         if (drawIndexed)
         {
-            const indexAccessor = gltf.accessors[primitive.indices];
+            const indexAccessor = state.gltf.accessors[primitive.indices];
             this.webGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
         }
         else
@@ -402,25 +403,21 @@ class gltfRenderer
         }
     }
 
-    pushFragParameterDefines(fragDefines)
+    pushFragParameterDefines(fragDefines, parameters)
     {
-        if (this.parameters.usePunctual)
+        if (parameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");
             fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
         }
 
-        if (this.parameters.useIBL)
+        if (parameters.useIBL)
         {
             fragDefines.push("USE_IBL 1");
-        }
-
-        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR || Environments[this.parameters.environmentName].type === ImageMimeType.KTX2)
-        {
             fragDefines.push("USE_HDR 1");
         }
 
-        switch (this.parameters.toneMap)
+        switch (parameters.toneMap)
         {
         case (ToneMaps.UNCHARTED):
             fragDefines.push("TONEMAP_UNCHARTED 1");
@@ -436,12 +433,12 @@ class gltfRenderer
             break;
         }
 
-        if (this.parameters.debugOutput !== DebugOutput.NONE)
+        if (parameters.debugOutput !== DebugOutput.NONE)
         {
             fragDefines.push("DEBUG_OUTPUT 1");
         }
 
-        switch (this.parameters.debugOutput)
+        switch (parameters.debugOutput)
         {
         case (DebugOutput.METALLIC):
             fragDefines.push("DEBUG_METALLIC 1");
@@ -521,30 +518,16 @@ class gltfRenderer
     {
         scene.envData = {};
 
-        if (scene !== undefined && scene.imageBasedLight !== undefined)
-        {
-            const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
-            const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
-            const sheenCubeMapIndex = scene.imageBasedLight.sheenEnvironmentTexture;
+        const diffuseTextureIndex = gltf.textures.length - 6;
+        const specularTextureIndex = gltf.textures.length - 5;
+        const sheenTextureIndex = gltf.textures.length - 4;
 
-            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
-            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
-            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
+        scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
+        scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
+        scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
 
-            scene.envData.mipCount = scene.imageBasedLight.levelCount;
-        }
-        else
-        {
-            const diffuseTextureIndex = gltf.textures.length - 6;
-            const specularTextureIndex = gltf.textures.length - 5;
-            const sheenTextureIndex = gltf.textures.length - 4;
-
-            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
-            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
-            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
-
-            scene.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
-        }
+        const specularImage = gltf.images[gltf.textures[specularTextureIndex].source];
+        scene.envData.mipCount = specularImage.image.levels;
 
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;

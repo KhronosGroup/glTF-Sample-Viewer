@@ -14,6 +14,7 @@ class gltfTexture extends GltfObject
         this.glTexture = texture;
         this.type = type;
         this.initialized = false;
+        this.mipLevelCount = 0;
     }
 
     initGl(gltf, webGlContext)

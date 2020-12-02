@@ -1,5 +1,5 @@
 import { UserCamera } from '../user_camera.js';
-
+import { ToneMaps, DebugOutput, Environments } from '../rendering_parameters.js';
 
 class GltfState
 {
@@ -7,8 +7,16 @@ class GltfState
     {
         this.gltf = undefined;
         this.environment = undefined;
-        this.renderingParameters = {};
+        this.renderingParameters = {
+            clearColor: [10, 50, 50],
+            usePunctual: false,
+            useIBL: true,
+            toneMap: ToneMaps.LINEAR,
+            debugOutput: DebugOutput.NONE,
+        };
         this.userCamera = new UserCamera();
+        this.sceneIndex = 0;
+        this.cameraIndex = undefined;
     }
 }
 

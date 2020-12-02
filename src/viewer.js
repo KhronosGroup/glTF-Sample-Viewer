@@ -221,13 +221,13 @@ class gltfViewer
                 state.userCamera.fitCameraPlanesToScene(state.gltf, self.renderingParameters.sceneIndex);
 
                 self.renderer.resize(self.canvas.clientWidth, self.canvas.clientHeight);
-                self.renderer.newFrame();
+                self.renderer.clearFrame(self.renderingParameters.clearColor);
 
                 if (state.gltf .scenes.length !== 0)
                 {
                     state.userCamera.updatePosition();
 
-                    const scene = state.gltf .scenes[self.renderingParameters.sceneIndex];
+                    const scene = state.gltf.scenes[self.renderingParameters.sceneIndex];
 
                     // Check if scene contains transparent primitives.
 
