@@ -16,10 +16,9 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(canvas, basePath, webGl)
+    constructor(canvas, webGl)
     {
         this.canvas = canvas;
-        this.basePath = basePath;
         this.shader = undefined; // current shader
 
         this.currentWidth = 0;
