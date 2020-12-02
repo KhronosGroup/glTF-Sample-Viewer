@@ -9,8 +9,9 @@ class GltfState
         this.environment = undefined;
         this.renderingParameters = {
             clearColor: [58, 64, 74],
+            exposure: 1.0,
             usePunctual: false,
-            useIBL: false,
+            useIBL: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
         };

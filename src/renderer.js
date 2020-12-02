@@ -172,10 +172,10 @@ class gltfRenderer
         if (primitive.skip) return;
 
         let material;
-        if(primitive.mappings !== undefined && this.parameters.variant != "default")
+        if(primitive.mappings !== undefined && state.variant != "default")
         {
             const names = state.gltf.variants.map(obj => obj.name);
-            const idx = names.indexOf(this.parameters.variant);
+            const idx = names.indexOf(state.variant);
             let materialIdx = primitive.material;
             primitive.mappings.forEach(element => {
                 if(element.variants.indexOf(idx) >= 0)
@@ -214,7 +214,7 @@ class gltfRenderer
 
         this.webGl.context.useProgram(this.shader.program);
 
-        if (this.parameters.usePunctual)
+        if (state.renderingParameters.usePunctual)
         {
             this.applyLights(state.gltf);
         }
@@ -223,7 +223,7 @@ class gltfRenderer
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         this.shader.updateUniform("u_ModelMatrix", node.worldTransform);
         this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
-        this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
+        this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
         this.updateAnimationUniforms(state.gltf, node, primitive);
@@ -303,12 +303,12 @@ class gltfRenderer
         }
 
         let textureCount = material.textures.length;
-        if (this.parameters.useIBL)
+        if (state.renderingParameters.useIBL)
         {
             textureCount = this.applyEnvironmentMap(state.gltf, envData, textureCount);
         }
 
-        if (this.parameters.usePunctual)
+        if (state.renderingParameters.usePunctual)
         {
             this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, envData.sheenELUT, textureCount++);
         }
@@ -527,7 +527,7 @@ class gltfRenderer
         scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
 
         const specularImage = gltf.images[gltf.textures[specularTextureIndex].source];
-        scene.envData.mipCount = specularImage.image.levels;
+        scene.envData.mipCount = specularImage.image.levels.length;
 
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;
