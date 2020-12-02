@@ -16,10 +16,9 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(canvas, parameters, basePath, webGl)
+    constructor(canvas, basePath, webGl)
     {
         this.canvas = canvas;
-        this.parameters = parameters;
         this.basePath = basePath;
         this.shader = undefined; // current shader
 
@@ -131,7 +130,7 @@ class gltfRenderer
         {
             if (node.mesh !== undefined && node.skin !== undefined)
             {
-                this.updateSkin(state.gltf, node);
+                this.updateSkin(state, node);
             }
         }
 
@@ -193,7 +192,7 @@ class gltfRenderer
         //select shader permutation, compile and link program.
 
         let vertDefines = [];
-        this.pushVertParameterDefines(vertDefines, state.gltf, node, primitive);
+        this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
         vertDefines = primitive.getDefines().concat(vertDefines);
 
         let fragDefines = material.getDefines().concat(vertDefines);
@@ -226,7 +225,7 @@ class gltfRenderer
         this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
-        this.updateAnimationUniforms(state.gltf, node, primitive);
+        this.updateAnimationUniforms(state, node, primitive);
 
         if (mat4.determinant(node.worldTransform) < 0.0)
         {
@@ -351,19 +350,19 @@ class gltfRenderer
         return lights;
     }
 
-    updateSkin(gltf, node)
+    static updateSkin(state, node)
     {
-        if (this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
+        if (state.renderingParameters.skinning && state.gltf.skins !== undefined)
         {
-            const skin = gltf.skins[node.skin];
-            skin.computeJoints(gltf, node);
+            const skin = state.gltf.skins[node.skin];
+            skin.computeJoints(state.gltf, node);
         }
     }
 
-    pushVertParameterDefines(vertDefines, gltf, node, primitive)
+    pushVertParameterDefines(vertDefines, parameters, gltf, node, primitive)
     {
         // skinning
-        if (this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+        if (parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
             const skin = gltf.skins[node.skin];
 
@@ -372,7 +371,7 @@ class gltfRenderer
         }
 
         // morphing
-        if (this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
             if (mesh.weights !== undefined && mesh.weights.length > 0)
@@ -383,19 +382,19 @@ class gltfRenderer
         }
     }
 
-    updateAnimationUniforms(gltf, node, primitive)
+    updateAnimationUniforms(state, node, primitive)
     {
-        if (this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+        if (state.renderingParameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
-            const skin = gltf.skins[node.skin];
+            const skin = state.gltf.skins[node.skin];
 
             this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
             this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
         }
 
-        if (this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
-            const mesh = gltf.meshes[node.mesh];
+            const mesh = state.gltf.meshes[node.mesh];
             if (mesh.weights !== undefined && mesh.weights.length > 0)
             {
                 this.shader.updateUniformArray("u_morphWeights", mesh.weights);

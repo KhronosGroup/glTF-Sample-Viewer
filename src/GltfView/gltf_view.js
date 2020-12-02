@@ -11,7 +11,7 @@ class GltfView
         this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
         this.webGl = new gltfWebGl();
         this.webGl.context = this.context;
-        this.renderer = new gltfRenderer(canvas, {}, "", this.webGl);
+        this.renderer = new gltfRenderer(canvas, "", this.webGl);
     }
 
     createState()
