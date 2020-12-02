@@ -2,8 +2,8 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
-
 import { GltfView } from './GltfView/gltf_view.js';
+import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 
 async function gltfSampleViewer(
@@ -63,7 +63,30 @@ async function main()
     const state = view.createState();
 
     state.gltf = await loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view);
+    computePrimitiveCentroids(state.gltf);
     state.environment = await loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", state.gltf, view);
+
+    state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+    state.userCamera.updatePosition();
+
+    const input = new gltfInput(canvas);
+    input.setupGlobalInputBindings(document);
+    input.setupCanvasInputBindings(canvas);
+    input.onRotate = (deltaX, deltaY) =>
+    {
+        state.userCamera.rotate(deltaX, deltaY);
+        state.userCamera.updatePosition();
+    };
+    input.onPan = (deltaX, deltaY) =>
+    {
+        state.userCamera.pan(deltaX, deltaY);
+        state.userCamera.updatePosition();
+    };
+    input.onZoom = (delta) =>
+    {
+        state.userCamera.zoomIn(delta);
+        state.userCamera.updatePosition();
+    };
 
     // inject environment into gltf
     state.gltf.samplers.push(...state.environment.samplers);
