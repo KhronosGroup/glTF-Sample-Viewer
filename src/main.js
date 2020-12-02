@@ -62,12 +62,16 @@ async function main()
     const view = new GltfView(canvas);
     const state = view.createState();
 
-    state.gltf = await loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view);
-    computePrimitiveCentroids(state.gltf);
-    state.environment = await loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", state.gltf, view);
+    loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
+        state.gltf = gltf;
+        computePrimitiveCentroids(state.gltf);
+        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+        state.userCamera.updatePosition();
+    });
 
-    state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-    state.userCamera.updatePosition();
+    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view).then( (environment) => {
+        state.environment = environment;
+    });
 
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);

@@ -1,5 +1,4 @@
 import { GltfState } from '../GltfState/gltf_state.js';
-import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from '../ResourceLoader/resource_loader.js';
 import { gltfRenderer } from '../renderer';
 import { gltfWebGl } from '../webgl';
 

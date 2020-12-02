@@ -91,8 +91,7 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(state, scene, sortByDepth, predicateDrawPrimivitve)
     {
-
-        if (scene.envData === undefined)
+        if (scene.envData === undefined && state.environment !== undefined)
         {
             this.initializeEnvironment(state.environment, scene);
         }
@@ -191,7 +190,7 @@ class gltfRenderer
         vertDefines = primitive.getDefines().concat(vertDefines);
 
         let fragDefines = material.getDefines().concat(vertDefines);
-        this.pushFragParameterDefines(fragDefines, state.renderingParameters);
+        this.pushFragParameterDefines(fragDefines, state);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
@@ -397,21 +396,21 @@ class gltfRenderer
         }
     }
 
-    pushFragParameterDefines(fragDefines, parameters)
+    pushFragParameterDefines(fragDefines, state)
     {
-        if (parameters.usePunctual)
+        if (state.renderingParameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");
             fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
         }
 
-        if (parameters.useIBL)
+        if (state.renderingParameters.useIBL && state.environment)
         {
             fragDefines.push("USE_IBL 1");
             fragDefines.push("USE_HDR 1");
         }
 
-        switch (parameters.toneMap)
+        switch (state.renderingParameters.toneMap)
         {
         case (ToneMaps.UNCHARTED):
             fragDefines.push("TONEMAP_UNCHARTED 1");
@@ -427,12 +426,12 @@ class gltfRenderer
             break;
         }
 
-        if (parameters.debugOutput !== DebugOutput.NONE)
+        if (state.renderingParameters.debugOutput !== DebugOutput.NONE)
         {
             fragDefines.push("DEBUG_OUTPUT 1");
         }
 
-        switch (parameters.debugOutput)
+        switch (state.renderingParameters.debugOutput)
         {
         case (DebugOutput.METALLIC):
             fragDefines.push("DEBUG_METALLIC 1");

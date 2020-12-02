@@ -66,7 +66,7 @@ async function loadGltfFromPath(path, view)
     return await loadGltf(path, json, buffers, view);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf, view)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
