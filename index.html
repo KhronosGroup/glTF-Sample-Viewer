@@ -61,13 +61,14 @@ function getUrlParam(parameter, defaultvalue){
     </b-field>
 </script>
 <script id="radioButtonListTemplate" type="text/x-template">
-    <div>
-        <b-radio v-model="radio" v-for="item in radiobuttoncontent" :key="item.title"
+    <section>
+        <div class="field" v-for="item in radiobuttoncontent" :key="item.title">
+        <b-radio v-model="radio"
                 v-bind:name="name"
                 v-bind:native-value="item.title">
                 {{ item.title }}
         </b-radio>
-    </div>
+    </section>
 </script>
 <script id="checkBoxTemplate" type="text/x-template">
     <div>
@@ -96,6 +97,7 @@ function getUrlParam(parameter, defaultvalue){
         <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
         <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
         <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
+        <label class="label">Variants</label>
         <radio-button-list-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
     </div>
 </script>
