@@ -11,7 +11,7 @@ class GltfView
         this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
         this.webGl = new gltfWebGl();
         this.webGl.context = this.context;
-        this.renderer = new gltfRenderer(canvas, this.webGl);
+        this.renderer = new gltfRenderer(this.webGl);
     }
 
     createState()
@@ -23,7 +23,11 @@ class GltfView
     {
         this.renderer.clearFrame(state.renderingParameters.clearColor);
 
-        this.renderer.resize(this.canvas.clientWidth, this.canvas.clientHeight);
+        // TODO: this should probably not be done here
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
+
+        this.renderer.resize(this.canvas.width, this.canvas.height);
 
         if(state.gltf === undefined)
         {

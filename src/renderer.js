@@ -16,9 +16,8 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(canvas, webGl)
+    constructor(webGl)
     {
-        this.canvas = canvas;
         this.shader = undefined; // current shader
 
         this.currentWidth = 0;
@@ -56,7 +55,6 @@ class gltfRenderer
         this.currentCameraPosition = vec3.create();
 
         this.init();
-        this.resize(canvas.clientWidth, canvas.clientHeight);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -77,8 +75,6 @@ class gltfRenderer
     {
         if (this.currentWidth !== width || this.currentHeight !== height)
         {
-            this.canvas.width = width;
-            this.canvas.height = height;
             this.currentHeight = height;
             this.currentWidth = width;
             this.webGl.context.viewport(0, 0, width, height);

@@ -48,7 +48,7 @@ class gltfViewer
 
         this.renderingParameters = new gltfRenderingParameters(environmentMap);
         this.currentlyRendering = false;
-        this.renderer = new gltfRenderer(canvas, WebGl);
+        this.renderer = new gltfRenderer(WebGl);
 
         this.gltfLoadedCallback = function(){};
 
