@@ -36,7 +36,7 @@ async function gltfSampleViewer(
     const ktxDecoder = new KtxDecoder();
     await ktxDecoder.init();
 
-    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap, dracoDecoder);
+    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap, dracoDecoder, ktxDecoder);
 }
 
 function getWebGlContext(canvas)
