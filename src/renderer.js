@@ -94,7 +94,7 @@ class gltfRenderer
 
         if (scene.envData === undefined)
         {
-            this.initializeEnvironment(state.gltf, scene);
+            this.initializeEnvironment(state.environment, scene);
         }
 
         let currentCamera = undefined;
@@ -297,9 +297,9 @@ class gltfRenderer
         }
 
         let textureCount = material.textures.length;
-        if (state.renderingParameters.useIBL)
+        if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
-            textureCount = this.applyEnvironmentMap(state.gltf, envData, textureCount);
+            textureCount = this.applyEnvironmentMap(state.environment, envData, textureCount);
         }
 
         if (state.renderingParameters.usePunctual)
@@ -508,44 +508,44 @@ class gltfRenderer
         }
     }
 
-    initializeEnvironment(gltf, scene)
+    initializeEnvironment(environment, scene)
     {
         scene.envData = {};
 
-        const diffuseTextureIndex = gltf.textures.length - 6;
-        const specularTextureIndex = gltf.textures.length - 5;
-        const sheenTextureIndex = gltf.textures.length - 4;
+        const diffuseTextureIndex = environment.textures.length - 6;
+        const specularTextureIndex = environment.textures.length - 5;
+        const sheenTextureIndex = environment.textures.length - 4;
 
         scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
         scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
         scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
 
-        const specularImage = gltf.images[gltf.textures[specularTextureIndex].source];
+        const specularImage = environment.images[environment.textures[specularTextureIndex].source];
         scene.envData.mipCount = specularImage.image.levels.length;
 
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;
         scene.envData.sheenEnvMap.generateMips = false;
 
-        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
+        scene.envData.lut = new gltfTextureInfo(environment.textures.length - 3);
         scene.envData.lut.generateMips = false;
 
-        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
+        scene.envData.sheenLUT = new gltfTextureInfo(environment.textures.length - 2);
         scene.envData.sheenLUT.generateMips = false;
 
-        scene.envData.sheenELUT = new gltfTextureInfo(gltf.textures.length - 1);
+        scene.envData.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
         scene.envData.sheenELUT.generateMips = false;
     }
 
-    applyEnvironmentMap(gltf, envData, texSlotOffset)
+    applyEnvironmentMap(environment, envData, texSlotOffset)
     {
-        this.webGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), environment, envData.diffuseEnvMap, texSlotOffset++);
 
-        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset++);
-        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), environment, envData.specularEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), environment, envData.lut, texSlotOffset++);
 
-        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset++);
-        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), environment, envData.sheenEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), environment, envData.sheenLUT, texSlotOffset++);
 
         this.shader.updateUniform("u_MipCount", envData.mipCount);
 

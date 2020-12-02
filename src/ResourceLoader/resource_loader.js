@@ -68,14 +68,16 @@ async function loadGltfFromPath(path, view)
 
 async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf, view)
 {
-    // TODO: create class for environment
+    // The environment uses the same type of samplers, textures and images as used in the glTF class
+    // so we just use it as a template
+    // TODO: replace this with a custom environment map type
     const environment = new glTF();
 
     //
     // Prepare samplers.
     //
 
-    let samplerIdx = gltf.samplers.length;
+    let samplerIdx = environment.samplers.length;
 
     environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
     const diffuseCubeSamplerIdx = samplerIdx++;
@@ -93,7 +95,7 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     // Prepare images and textures.
     //
 
-    let textureIdx = gltf.images.length;
+    let textureIdx = environment.images.length;
 
     // Diffuse
 

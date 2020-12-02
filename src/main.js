@@ -88,11 +88,6 @@ async function main()
         state.userCamera.updatePosition();
     };
 
-    // inject environment into gltf
-    state.gltf.samplers.push(...state.environment.samplers);
-    state.gltf.images.push(...state.environment.images);
-    state.gltf.textures.push(...state.environment.textures);
-
     await view.startRendering(state);
 }
 
