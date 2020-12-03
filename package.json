@@ -24,7 +24,9 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "gl-matrix": "^3.2.1"
+    "gl-matrix": "^3.2.1",
+    "rxjs": "^6.6.3",
+    "vue-rx": "^6.2.0"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",

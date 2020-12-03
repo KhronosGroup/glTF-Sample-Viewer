@@ -1,3 +1,9 @@
+import VueRx from 'vue-rx';
+import { Observable } from 'rxjs';
+
+Vue.use(VueRx, { Observable });
+
+
 // general components
 Vue.component('drop-down-element', {
   props: ['name', 'dropdowncontent'],
@@ -61,24 +67,27 @@ Vue.component('tab-advanced-controls', {
   template:'#advancedControlsTemplate'
 });
 
-const app = new Vue({
-  data() {
-    return {
-      open: false,
-      overlay: false,
-      fullheight: true,
-      right: true,
-      currentTab: 'Models',
-      tabs: ['Models', 'Display', 'Animation'],
-      models: [{title: "Avocado"}, {title: "Boombox"}, {title: "Duck"}],
-      flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
-      scenes: [{title: "1"}, {title: "2"}],
-      cameras: [{title: "front"}, {title: "left"}, {title: "right"}, {title: "top"}],
-      materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
-      environments: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
-      animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
-      tonemaps: [{title: "ACES"}, {title: "Linear"}],
-      debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metalic"}, {title: "Sheen"}],
-    };
-  }
-}).$mount('#app')
+window.addEventListener('load', () =>
+{
+  const app = new Vue({
+    data() {
+      return {
+        open: false,
+        overlay: false,
+        fullheight: true,
+        right: true,
+        currentTab: 'Models',
+        tabs: ['Models', 'Display', 'Animation'],
+        models: [{title: "Avocado"}, {title: "Boombox"}, {title: "Duck"}],
+        flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
+        scenes: [{title: "1"}, {title: "2"}],
+        cameras: [{title: "front"}, {title: "left"}, {title: "right"}, {title: "top"}],
+        materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
+        environments: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
+        animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
+        tonemaps: [{title: "ACES"}, {title: "Linear"}],
+        debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metalic"}, {title: "Sheen"}],
+      };
+    }
+  }).$mount('#app')
+});
