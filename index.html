@@ -12,10 +12,10 @@
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="ui.css">
+    <link rel="stylesheet" href="dist/gltf-sample-viewer.css">
     <link rel="icon" href="assets/images/gltf.png">
 
     <!-- buefy styles -->
-    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
     <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
 
@@ -63,27 +63,40 @@ function getUrlParam(parameter, defaultvalue){
 <script id="radioButtonListTemplate" type="text/x-template">
     <section>
         <div class="field" v-for="item in radiobuttoncontent" :key="item.title">
-        <b-radio v-model="radio"
-                v-bind:name="name"
-                v-bind:native-value="item.title">
-                {{ item.title }}
-        </b-radio>
+            <b-radio v-model="radio"
+                    v-bind:name="name"
+                    v-bind:native-value="item.title">
+                    {{ item.title }}
+            </b-radio>
+        </div>
     </section>
 </script>
 <script id="checkBoxTemplate" type="text/x-template">
-    <div>
+    <section>
         <label class="label">{{ name }}</label>
-        <b-checkbox v-model="checkboxGroup" v-for="item in checkboxcontent" :key="item.title"
-                v-bind:native-value="item.title">
-            {{ item.title }}
-        </b-checkbox>
-    </div>
+        <div v-for="item in checkboxcontent" :key="item.title">
+            <b-checkbox v-model="checkboxGroup"
+                    v-bind:native-value="item.title">
+                {{ item.title }}
+            </b-checkbox>
+        </div>
+    </section>
 </script>
 <script id="sliderTemplate" type="text/x-template">
     <div>
         <label class="label">{{ name }}</label>
         <b-numberinput  v-model="value" min="0" max="100" :exponential=".5"></b-numberinput >
         <b-slider v-model="value"></b-slider>
+    </div>
+</script>
+<script id="colorPickerTemplate" type="text/x-template">
+    <div>
+        <label class="label">{{ name }}</label>
+        <div class="flexContainer">
+            <input type="color" id="head" class="colorInput" v-model="color">
+            <label>Hex</label>
+            <b-input v-model="color" class="colorInputText"></b-input>
+        </div>
     </div>
 </script>
 
@@ -104,13 +117,17 @@ function getUrlParam(parameter, defaultvalue){
 <script id="displayTemplate" type="text/x-template">
     <div>
         <h2>Display</h2>
-        <label class="label">Lighting</label>
-        <b-switch>Image Based</b-switch>
-        <br>
-        <b-switch>Punctual Lighting</b-switch>
-        <label class="label">Background</label>
-        <b-switch>Environment Background</b-switch>
-        <p>TODO MAKE COLORPICKER</p>
+        <section>
+            <label class="label">Lighting</label>
+            <b-switch>Image Based</b-switch>
+            <br>
+            <b-switch>Punctual Lighting</b-switch>
+        </section>
+        <section>
+            <label class="label">Background</label>
+            <b-switch>Environment Background</b-switch>
+            <color-picker-element name="Color"></color-picker-element>
+        </section>
         <label class="label">Image Based Lighting</label>
         <b-button @click="">Add new HDR</b-button>
         <drop-down-element name="Active Environment" ></drop-down-element>
@@ -151,6 +168,11 @@ function getUrlParam(parameter, defaultvalue){
         <template>
             <b-tabs vertical>
                 <b-tab-item label="Models" icon="google-photos">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Model 30X30.svg" width="30px" height="30px">
+                        <span>Models</span>
+                    </template>
                     <tab-models v-bind:models="models"
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"

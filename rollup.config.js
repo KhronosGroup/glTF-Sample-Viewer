@@ -1,6 +1,7 @@
 import commonjs from 'rollup-plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
+import scss from 'rollup-plugin-scss'
 
 export default {
   input: 'src/main.js',
@@ -23,6 +24,7 @@ export default {
   plugins: [
     glslify(),
     resolve(),
-    commonjs()
+    commonjs(),
+    scss() // will output compiled styles to output.css
   ]
 };

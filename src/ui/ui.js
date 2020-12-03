@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 
 Vue.use(VueRx, { Observable });
 
-
 // general components
 Vue.component('drop-down-element', {
   props: ['name', 'dropdowncontent'],
@@ -35,6 +34,15 @@ Vue.component('slider-element', {
     };
   },
   template:'#sliderTemplate'
+});
+Vue.component('color-picker-element', {
+  props: ['name'],
+  data() {
+    return {
+      color: '#1CA085'
+    }
+  },
+  template:'#colorPickerTemplate'
 });
 
 

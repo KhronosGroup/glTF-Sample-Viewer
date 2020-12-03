@@ -4,6 +4,9 @@ import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
 import {} from './logic/logic.js';
 
+// entry.js
+import './ui/sass.scss';
+
 async function gltfSampleViewer(
     canvasId,
     index,

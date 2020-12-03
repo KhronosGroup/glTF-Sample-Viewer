@@ -1,6 +1,11 @@
 /* only contains styles for the ui */
 
+/******************/
+/******************/
 /* general styles */
+/******************/
+/******************/
+
 h2, label, label.label, p, a
 {
     color: #f2f2f2;
@@ -36,11 +41,16 @@ section.tab-content
 
 .tabs li.is-active {
     border-right: 7.5px solid #87c540 !important;
-    color: #87c540 !important;
     background-color: #373737;
 }
-.tabs li.is-active a{
-    color: #87c540 !important;
+
+.tabs li:hover
+{
+    background-color: #2c2c2c;
+}
+.tabs li a:hover
+{
+    color: #f5f5f5;
 }
 
 .tabs li
@@ -73,7 +83,7 @@ section.tab-content
     width: 100%;
     color: #f5f5f5;
 }
-.tabs li a span
+.tabs li a span, .tabs li a img
 {
     display: block;
     margin-left: auto;
@@ -81,8 +91,23 @@ section.tab-content
     text-align: center;
 }
 
+/* spacing */
+.label:not(:last-child)
+{
+    margin-top: 1em;
+}
+label.switch
+{
+    margin-top: 0.5em;
+}
 
+/**********************************/
+/**********************************/
 /* Styles for individual elements */
+/**********************************/
+/**********************************/
+
+
 .tab-item h2
 {
     margin-bottom: 70px;
@@ -93,6 +118,27 @@ section.tab-content
 .select, .select select
 {
     width: 100%;
+}
+
+.flexContainer
+{
+    display: flex;
+}
+.colorInput
+{
+    -webkit-appearance: none;
+    border: none;
+    padding: 0;
+}
+.colorInput::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+.colorInput::-webkit-color-swatch {
+	border: none;
+}
+.colorInputText, .colorInputText input
+{
+    width: auto;
 }
 
 /* arrow button on drop down */
@@ -112,13 +158,8 @@ section.tab-content
     color: #f5f5f5 !important;
 }
 
-.b-radio.radio .check
-{
-    border-color: #87c540 !important;
-}
 .b-radio.radio input[type=radio]+.check:before
 {
-    background-color: #87c540 !important;
     box-shadow: unset !important;
 }
 .b-radio.radio input[type=radio]+.check:focus
@@ -131,6 +172,5 @@ section.tab-content
 .taginput .is-focused.taginput-container.is-focusable, .taginput .taginput-container.is-focusable:active,
 .taginput .taginput-container.is-focusable:focus, .textarea:active, .textarea:focus
 {
-    border-color: #87c540 !important;
     box-shadow: unset !important;
 }
