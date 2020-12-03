@@ -9,10 +9,11 @@
 h2, label, label.label, p, a
 {
     color: #f2f2f2;
+    font-size: 18px;
 }
 body, button, input, optgroup, select, textarea
 {
-    font-family: Helvetica, sans-serif !important;
+    font-family: 'Roboto', sans-serif;
 }
 
 /* tabs */
@@ -94,11 +95,12 @@ section.tab-content
 /* spacing */
 .label:not(:last-child)
 {
-    margin-top: 1em;
+    margin-top: 2em;
 }
 label.switch
 {
     margin-top: 0.5em;
+    white-space: nowrap;
 }
 
 /**********************************/
@@ -113,6 +115,13 @@ label.switch
     margin-bottom: 70px;
     margin-top: 70px;
     font-size: 22pt;
+}
+
+.smallerLabel .label
+{
+    font-weight: 400;
+    margin-bottom: unset !important;
+    margin-top: 0.5em !important;
 }
 
 .select, .select select
@@ -156,6 +165,13 @@ label.switch
 .select select option
 {
     color: #f5f5f5 !important;
+    background-color: #212121 !important;
+}
+
+.checkbox span.check, .radio span.check
+{
+    width: 24px !important;
+    height: 24px !important;
 }
 
 .b-radio.radio input[type=radio]+.check:before
@@ -166,6 +182,7 @@ label.switch
 {
     box-shadow: unset !important;
 }
+
 .input:active, .input:focus, .is-active.input, .is-active.textarea, .is-focused.input,
 .is-focused.textarea, .select select.is-active, .select select.is-focused,
 .select select:active, .select select:focus, .taginput .is-active.taginput-container.is-focusable,
@@ -173,4 +190,14 @@ label.switch
 .taginput .taginput-container.is-focusable:focus, .textarea:active, .textarea:focus
 {
     box-shadow: unset !important;
+}
+
+.button, .input, .textarea, .taginput .taginput-container.is-focusable, .select select,
+.file-cta, .file-name, .pagination-previous, .pagination-next, .pagination-link, .pagination-ellipsis
+{
+    height: 30px !important;
+    line-height: 1 !important;
+    font-size: 18px !important;
+    padding-top: unset !important;
+    padding-bottom: unset !important;
 }

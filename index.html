@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
 
+    <!-- load fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
     <!-- vue.js-->
     <script src="https://unpkg.com/vue"></script>
     <!-- buefy full -->
@@ -126,11 +130,11 @@ function getUrlParam(parameter, defaultvalue){
         <section>
             <label class="label">Background</label>
             <b-switch>Environment Background</b-switch>
-            <color-picker-element name="Color"></color-picker-element>
+            <color-picker-element class="smallerLabel" name="Background Color"></color-picker-element>
         </section>
         <label class="label">Image Based Lighting</label>
         <b-button @click="">Add new HDR</b-button>
-        <drop-down-element name="Active Environment" ></drop-down-element>
+        <drop-down-element class="smallerLabel" name="Active Environment" ></drop-down-element>
     </div>
 </script>
 <script id="animationTemplate" type="text/x-template">
@@ -151,9 +155,10 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Advanced Controls</h2>
         <drop-down-element name="Debug Channels" v-bind:dropdowncontent="debugchannels"></drop-down-element>
-        <slider-element name="Exposure"></slider-element>
-        <drop-down-element name="Tone Map" v-bind:dropdowncontent="tonemaps"></drop-down-element>
+        <slider-element class="smallerLabel" name="Exposure"></slider-element>
+        <drop-down-element class="smallerLabel" name="Tone Map" v-bind:dropdowncontent="tonemaps"></drop-down-element>
         <b-switch v-model="skinning">Skinning</b-switch>
+        <br>
         <b-switch v-model="morphing">Morphing</b-switch>
     </div>
 </script>
