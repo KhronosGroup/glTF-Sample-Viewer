@@ -10,11 +10,11 @@ import { WebGl } from '../webgl.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers, ktxLoader)
+async function loadGltf(path, json, buffers, ktxDecoder)
 {
     const gltf = new glTF(path);
+    gltf.ktxDecoder = ktxDecoder;
     gltf.fromJson(json);
-    gltf.ktxLoader = ktxLoader;
 
     // because the gltf image paths are not relative
     // to the gltf, we have to resolve all image paths before that
@@ -28,7 +28,7 @@ async function loadGltf(path, json, buffers, ktxLoader)
     return gltf;
 }
 
-async function loadGltfFromDrop(mainFile, additionalFiles)
+async function loadGltfFromDrop(mainFile, additionalFiles, ktxDecoder)
 {
     const gltfFile = mainFile.name;
 
@@ -37,13 +37,13 @@ async function loadGltfFromDrop(mainFile, additionalFiles)
         const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers);
+        return await loadGltf(gltfFile, glb.json, glb.buffers, ktxDecoder);
     }
     else
     {
         const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles);
+        return await loadGltf(gltfFile, json, additionalFiles, ktxDecoder);
     }
 }
 

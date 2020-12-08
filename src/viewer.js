@@ -160,10 +160,10 @@ class gltfViewer
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.ktxDecoder);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.ktxDecoder);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
