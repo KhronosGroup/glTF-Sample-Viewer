@@ -169,7 +169,24 @@ class gltfRenderer
     {
         if (primitive.skip) return;
 
-        const material = gltf.materials[primitive.material];
+        let material;
+        if(primitive.mappings !== undefined && this.parameters.variant != "default")
+        {
+            const names = gltf.variants.map(obj => obj.name);
+            const idx = names.indexOf(this.parameters.variant);
+            let materialIdx = primitive.material;
+            primitive.mappings.forEach(element => {
+                if(element.variants.indexOf(idx) >= 0)
+                {
+                    materialIdx = element.material;
+                }
+            });
+            material = gltf.materials[materialIdx];
+        }
+        else
+        {
+            material = gltf.materials[primitive.material];
+        }
 
         //select shader permutation, compile and link program.
 

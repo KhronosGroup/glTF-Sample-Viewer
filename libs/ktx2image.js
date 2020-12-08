@@ -41,7 +41,7 @@ class Ktx2Image
         this.onerror = () => { };
     }
 
-    initialize(arrayBuffer)
+    async initialize(arrayBuffer)
     {
         const version = new DataView(arrayBuffer, VERSION_OFFSET, VERSION_LENGTH);
         if (! this.checkVersion(version))
@@ -64,6 +64,8 @@ class Ktx2Image
         this.parseLevelData(arrayBuffer);
 
         this.onload();
+
+        return;
     }
 
     checkVersion(version)

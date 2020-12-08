@@ -168,6 +168,32 @@ class gltfPrimitive extends GltfObject
         this.centroid = centroid;
     }
 
+    fromJson(jsonPrimitive)
+    {
+        super.fromJson(jsonPrimitive);
+
+        if(jsonPrimitive.extensions !== undefined)
+        {
+            this.fromJsonPrimitiveExtensions(jsonPrimitive.extensions);
+        }
+    }
+
+    fromJsonPrimitiveExtensions(jsonExtensions)
+    {
+        if(jsonExtensions.KHR_materials_variants !== undefined)
+        {
+            this.fromJsonVariants(jsonExtensions.KHR_materials_variants);
+        }
+    }
+
+    fromJsonVariants(jsonVariants)
+    {
+        if(jsonVariants.mappings !== undefined)
+        {
+            this.mappings = jsonVariants.mappings;
+        }
+    }
+
     copyDataFromDecodedGeometry(gltf, dracoGeometry, primitiveAttributes)
     {
         // indices
