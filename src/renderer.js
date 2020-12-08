@@ -269,7 +269,7 @@ class gltfRenderer
             this.shader.updateUniform(uniform, val);
         }
 
-        for (let i = 0; i < material.textures.length; ++i)
+        for (let i = 0; i < material.getTextures().length; ++i)
         {
             let info = material.textures[i];
             const location = this.shader.getUniformLocation(info.samplerName);
