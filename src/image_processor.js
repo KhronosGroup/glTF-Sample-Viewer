@@ -14,7 +14,7 @@ class gltfImageProcessor
             {
                 continue;
             }
-            if (image instanceof Ktx2Image)
+            if (image instanceof WebGLTexture) // aka KTX
             {
                 continue;
             }
