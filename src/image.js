@@ -72,7 +72,7 @@ class gltfImage extends GltfObject
 
         if (!await self.setImageFromBufferView(gltf) &&
             !await self.setImageFromFiles(additionalFiles) &&
-            !await self.setImageFromUri())
+            !await self.setImageFromUri(gltf))
         {
             console.error("Was not able to resolve image with uri '%s'", self.uri);
             return;
@@ -91,7 +91,7 @@ class gltfImage extends GltfObject
         });
     }
 
-    async setImageFromUri()
+    async setImageFromUri(gltf)
     {
         if (this.uri === undefined)
         {
@@ -104,12 +104,9 @@ class gltfImage extends GltfObject
                 console.error(error);
             });
         }
-        else if (this.image instanceof Ktx2Image)
+        else
         {
-            let response = await axios.get(this.uri, { responseType: 'arraybuffer'}).catch( (error) => {
-                console.error("Could not get image: " + error);
-            });
-            await this.image.initialize(response.data);
+            this.image = await gltf.ktxDecoder.loadKtx(this.uri);
         }
 
         return true;

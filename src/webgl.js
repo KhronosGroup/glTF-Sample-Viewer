@@ -47,7 +47,18 @@ class gltfWebGl
 
         if (gltfTex.glTexture === undefined)
         {
-            gltfTex.glTexture = WebGl.context.createTexture();
+            if (jsonTexture.extensions !== undefined &&
+                jsonTexture.extensions.KHR_texture_basisu !== undefined &&
+                jsonTexture.extensions.KHR_texture_basisu.source !== undefined)
+            {
+                gltfTex.glTexture = gltf.images[gltfTex.source];
+                gltfTex.initialized = true;
+                return gltfTex.initialized;
+            }
+            else
+            {
+                gltfTex.glTexture = WebGl.context.createTexture();
+            }
         }
 
         WebGl.context.activeTexture(WebGl.context.TEXTURE0 + texSlot);
@@ -91,25 +102,7 @@ class gltfWebGl
                     return false;
                 }
 
-                if (image.type === WebGl.context.TEXTURE_CUBE_MAP)
-                {
-                    const ktxImage = image.image;
-
-                    for (const level of ktxImage.levels)
-                    {
-                        let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
-                        for (const face of level.faces)
-                        {
-                            WebGl.context.texImage2D(faceType, level.miplevel, ktxImage.glInternalFormat, level.width, level.height, 0, ktxImage.glFormat, ktxImage.glType, face.data);
-
-                            faceType++;
-                        }
-                    }
-                }
-                else
-                {
-                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
-                }
+                WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
 
                 generateMips = image.shouldGenerateMips();
             }

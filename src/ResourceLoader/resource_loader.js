@@ -10,10 +10,11 @@ import { WebGl } from '../webgl.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers)
+async function loadGltf(path, json, buffers, ktxLoader)
 {
     const gltf = new glTF(path);
     gltf.fromJson(json);
+    gltf.ktxLoader = ktxLoader;
 
     // because the gltf image paths are not relative
     // to the gltf, we have to resolve all image paths before that
@@ -46,7 +47,7 @@ async function loadGltfFromDrop(mainFile, additionalFiles)
     }
 }
 
-async function loadGltfFromPath(path)
+async function loadGltfFromPath(path, ktxDecoder)
 {
     const isGlb = getIsGlb(path);
 
@@ -63,13 +64,14 @@ async function loadGltfFromPath(path)
         buffers = glb.buffers;
     }
 
-    return await loadGltf(path, json, buffers);
+    return await loadGltf(path, json, buffers, ktxDecoder);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf, ktxDecoder)
 {
     // TODO: create class for environment
     const environment = new glTF();
+    environment.ktxDecoder = ktxDecoder;
 
     //
     // Prepare samplers.

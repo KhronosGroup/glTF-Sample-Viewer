@@ -18,6 +18,7 @@ class KtxDecoder {
         const data = new Uint8Array(await response.arrayBuffer());
         const texture = new this.libktx.ktxTexture(data);
         const uploadResult = texture.glUpload();
+        console.log('Loading KTX done: ' + url)
         return uploadResult.texture;
     }
 

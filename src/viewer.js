@@ -180,14 +180,14 @@ class gltfViewer
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromPath(gltfFile).catch(function(error)
+        const gltf = await loadGltfFromPath(gltfFile, this.ktxDecoder).catch(function(error)
         {
             console.error(error.stack);
             self.hideSpinner();
         });
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.ktxDecoder);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
