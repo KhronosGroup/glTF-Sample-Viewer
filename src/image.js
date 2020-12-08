@@ -122,11 +122,18 @@ class gltfImage extends GltfObject
 
         const buffer = gltf.buffers[view.buffer].buffer;
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
-        const blob = new Blob([array], { "type": this.mimeType });
-        const objectURL = URL.createObjectURL(blob);
-        this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
-            console.error("Could not load image from buffer view");
-        });
+        if (this.mimeType === ImageMimeType.KTX2)
+        {
+            this.image = await gltf.ktxDecoder.loadKtxFromBuffer(array);
+        }
+        else
+        {
+            const blob = new Blob([array], { "type": this.mimeType });
+            const objectURL = URL.createObjectURL(blob);
+            this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
+                console.error("Could not load image from buffer view");
+            });
+        }
         return true;
     }
 
@@ -161,7 +168,8 @@ class gltfImage extends GltfObject
         }
         else
         {
-            this.image = await gltf.ktxDecoder.loadKtxFromFile(foundFile);
+            const data = new Uint8Array(await foundFile.arrayBuffer());
+            this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
         }
 
         return true;
