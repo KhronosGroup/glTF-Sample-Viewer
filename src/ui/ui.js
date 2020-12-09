@@ -1,12 +1,19 @@
 import VueRx from 'vue-rx';
-import { Observable } from 'rxjs';
+import Rx from 'rxjs/Rx';
 
-Vue.use(VueRx, { Observable });
+Vue.use(VueRx, Rx);
 
 // general components
 Vue.component('drop-down-element', {
   props: ['name', 'dropdowncontent'],
-  template:'#dropDownTemplate'
+  template:'#dropDownTemplate',
+  methods:
+    {
+        selectionchanged: function(value)
+        {
+            this.$emit('selectionchanged', value)
+        }
+    }
 });
 Vue.component('radio-button-list-element', {
   props: ['name', 'radiobuttoncontent'],
@@ -50,7 +57,13 @@ Vue.component('color-picker-element', {
 // create components for menu tabs
 Vue.component('tab-models', {
   props: ["materialvariants", "models", "flavors", "scenes", "cameras"],
-  template:'#modelsTemplate'
+  template:'#modelsTemplate',
+  methods:
+  {
+    modelchanged: function(value) {
+        this.$emit('modelchanged', value)
+    }
+  }
 });
 Vue.component('tab-display', {
   props: [],
@@ -75,17 +88,20 @@ Vue.component('tab-advanced-controls', {
   template:'#advancedControlsTemplate'
 });
 
+let app;
+
 window.addEventListener('load', () =>
 {
-  const app = new Vue({
+  app = new Vue({
+    domStreams: ['gunther$'],
+
+      subscriptions()
+      {
+      },
     data() {
       return {
-        open: false,
-        overlay: false,
         fullheight: true,
         right: true,
-        currentTab: 'Models',
-        tabs: ['Models', 'Display', 'Animation'],
         models: [{title: "Avocado"}, {title: "Boombox"}, {title: "Duck"}],
         flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
         scenes: [{title: "1"}, {title: "2"}],
@@ -94,8 +110,19 @@ window.addEventListener('load', () =>
         environments: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "ACES"}, {title: "Linear"}],
-        debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metalic"}, {title: "Sheen"}],
+        debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metallic"}, {title: "Sheen"}],
       };
+    },
+    methods:
+    {
+        modelchanged: function(value)
+        {
+
+        }
     }
   }).$mount('#app')
+
+  //app.gunther$.subscribe(value => console.log(value));
 });
+
+export {app};

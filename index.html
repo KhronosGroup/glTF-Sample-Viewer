@@ -57,7 +57,7 @@ function getUrlParam(parameter, defaultvalue){
 <!-- general templates -->
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
-        <b-select placeholder="Select">
+        <b-select v-on:input="selectionchanged" placeholder="Select">
             <option v-for="item in dropdowncontent" :key="item.title">
                 {{ item.title }}
             </option>
@@ -110,7 +110,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Models</h2>
 
-        <drop-down-element name="Model" v-bind:dropdowncontent="models"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models"></drop-down-element>
         <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
         <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
         <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
@@ -178,7 +178,8 @@ function getUrlParam(parameter, defaultvalue){
                         <img src="assets/ui/Model 30X30.svg" width="30px" height="30px">
                         <span>Models</span>
                     </template>
-                    <tab-models v-bind:models="models"
+                    <tab-models v-stream:modelchanged="gunther$"
+                                v-bind:models="models"
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"
                                 v-bind:cameras="cameras"
