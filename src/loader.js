@@ -8,6 +8,7 @@ class gltfLoader
         const additionalFiles = gltfLoader.getAdditionalFiles(appendix);
 
         const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
+        await buffersPromise;
         const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles)
             .then(() => gltfLoader.processImages(gltf));
 
