@@ -4,6 +4,8 @@ import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
 import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
 import { ImageMimeType } from './image.js';
+import { gltfWebGl } from './webgl';
+
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
 import iblShader from './shaders/ibl.glsl';
@@ -16,15 +18,15 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(webGl)
+    constructor(context)
     {
         this.shader = undefined; // current shader
 
         this.currentWidth = 0;
         this.currentHeight = 0;
 
-        // TODO: this should not be a member
-        this.webGl = webGl;
+        this.webGl = new gltfWebGl();
+        this.webGl.context = context;
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
@@ -37,7 +39,7 @@ class gltfRenderer
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
 
-        this.shaderCache = new ShaderCache(shaderSources, webGl);
+        this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
         let requiredWebglExtensions = [
             "EXT_texture_filter_anisotropic",

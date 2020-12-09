@@ -1,6 +1,5 @@
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfRenderer } from '../renderer';
-import { gltfWebGl } from '../webgl';
 
 class GltfView
 {
@@ -8,9 +7,7 @@ class GltfView
     {
         this.canvas = canvas;
         this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
-        this.webGl = new gltfWebGl();
-        this.webGl.context = this.context;
-        this.renderer = new gltfRenderer(this.webGl);
+        this.renderer = new gltfRenderer(this.context);
     }
 
     createState()
