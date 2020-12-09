@@ -160,7 +160,7 @@ class gltfViewer
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.ktxDecoder);
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.ktxDecoder, this.dracoDecoder);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
         const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.ktxDecoder);
@@ -180,7 +180,7 @@ class gltfViewer
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromPath(gltfFile, this.ktxDecoder).catch(function(error)
+        const gltf = await loadGltfFromPath(gltfFile, this.ktxDecoder, this.dracoDecoder).catch(function(error)
         {
             console.error(error.stack);
             self.hideSpinner();
@@ -209,7 +209,8 @@ class gltfViewer
         }
 
         this.gltf = gltf;
-		this.gltf.ktxDecoder = this.ktxDecoder;
+        this.gltf.ktxDecoder = this.ktxDecoder;
+        this.gltf.dracoDecoder = this.dracoDecoder;
         this.notifyLoadingEnded(gltf.path);
         if(this.gltfLoadedCallback !== undefined)
         {
