@@ -12,6 +12,7 @@ Vue.component('drop-down-element', {
             selectedOption: ""
         }
     },
+    // this is used to init the dropdown (so it is not empty on UI bootup)
     mounted(){
         if(this.dropdowncontent === undefined)
         {
@@ -131,6 +132,7 @@ let app = new Vue({
     },
     methods:
     {
+        // these methods cann be called from outside simply by calling app.methodName()
         setSelectedModel: function(value)
         {
             this.$refs.models.setSelectedModel(value);
