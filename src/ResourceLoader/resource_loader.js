@@ -4,7 +4,7 @@ import { getIsGlb, getContainingFolder } from '../utils.js';
 import { GlbParser } from '../glb_parser.js';
 import { gltfLoader } from "../loader";
 import { gltfImage, ImageMimeType } from "../image";
-import { gltfTexture } from '../texture.js';
+import { gltfTexture, gltfTextureInfo } from '../texture.js';
 import { gltfSampler } from '../sampler.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
@@ -105,13 +105,18 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     lambertian.mimeType = ImageMimeType.KTX2;
     environment.images.push(lambertian);
     environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
-
+    environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+    environment.diffuseEnvMap.generateMips = false;
     // Specular
 
     const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
     specular.mimeType = ImageMimeType.KTX2;
     environment.images.push(specular);
     environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+    environment.specularEnvMap.generateMips = false;
+
+    const specularImage = environment.images[environment.textures[environment.textures.length - 1].source];
 
     // Sheen
 
@@ -119,27 +124,37 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     sheen.mimeType = ImageMimeType.KTX2;
     environment.images.push(sheen);
     environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+    environment.sheenEnvMap.generateMips = false;
 
     //
     // Look Up Tables.
     //
 
     // GGX
-
     environment.images.push(new gltfImage("assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.lut = new gltfTextureInfo(environment.textures.length - 1);
+    environment.lut.generateMips = false;
 
     // Sheen
     // Charlie
     environment.images.push(new gltfImage("assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
+    environment.sheenLUT.generateMips = false;
+
     // Sheen E LUT
     environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
+    environment.sheenELUT.generateMips = false;
 
     await gltfLoader.loadImages(environment).then(() => gltfLoader.processImages(environment));
 
     environment.initGl(view.context);
+
+    environment.mipCount = specularImage.image.levels;
 
     return environment;
 }
