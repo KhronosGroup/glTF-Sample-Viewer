@@ -1,4 +1,3 @@
-import { Ktx2Image } from '../libs/ktx2image.js';
 import { HDRImage } from '../libs/hdrpng.js';
 import { nearestPowerOf2, makeEven } from './math_utils.js';
 
@@ -14,7 +13,7 @@ class gltfImageProcessor
             {
                 continue;
             }
-            if (image instanceof Ktx2Image)
+            if (image instanceof WebGLTexture) // aka KTX
             {
                 continue;
             }

@@ -21,12 +21,14 @@ class gltfViewer
         basePath = "",
         initialModel = "",
         environmentMap = undefined,
-        dracoDecoder)
+        dracoDecoder,
+        ktxDecoder)
     {
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.initialModel = initialModel;
         this.dracoDecoder = dracoDecoder;
+        this.ktxDecoder = ktxDecoder;
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -128,10 +130,10 @@ class gltfViewer
     {
         this.lastDropped = { mainFile: mainFile, additionalFiles: additionalFiles };
 
-        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.view);
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.view, this.ktxDecoder, this.dracoDecoder);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.view);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.view, this.ktxDecoder);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
@@ -147,10 +149,10 @@ class gltfViewer
 
         gltfFile = basePath + gltfFile;
 
-        const gltf = await loadGltfFromPath(gltfFile, this.view);
+        const gltf = await loadGltfFromPath(gltfFile, this.view, this.ktxDecoder, this.dracoDecoder);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.view);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.view, this.ktxDecoder);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);

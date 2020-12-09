@@ -10,9 +10,11 @@ import { WebGl } from '../webgl.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers, view)
+async function loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder)
 {
     const gltf = new glTF(path);
+    gltf.ktxDecoder = ktxDecoder;
+    gltf.dracoDecoder = dracoDecoder;
     gltf.fromJson(json);
 
     // because the gltf image paths are not relative
@@ -27,7 +29,7 @@ async function loadGltf(path, json, buffers, view)
     return gltf;
 }
 
-async function loadGltfFromDrop(mainFile, additionalFiles, view)
+async function loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder)
 {
     const gltfFile = mainFile.name;
 
@@ -36,17 +38,17 @@ async function loadGltfFromDrop(mainFile, additionalFiles, view)
         const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers, view);
+        return await loadGltf(gltfFile, glb.json, glb.buffers, view, ktxDecoder, dracoDecoder);
     }
     else
     {
         const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles, view);
+        return await loadGltf(gltfFile, json, additionalFiles, view, ktxDecoder, dracoDecoder);
     }
 }
 
-async function loadGltfFromPath(path, view)
+async function loadGltfFromPath(path, view, ktxDecoder, dracoDecoder)
 {
     const isGlb = getIsGlb(path);
 
@@ -63,15 +65,16 @@ async function loadGltfFromPath(path, view)
         buffers = glb.buffers;
     }
 
-    return await loadGltf(path, json, buffers, view);
+    return await loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view, ktxDecoder)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
     // TODO: replace this with a custom environment map type
     const environment = new glTF();
+    environment.ktxDecoder = ktxDecoder;
 
     //
     // Prepare samplers.

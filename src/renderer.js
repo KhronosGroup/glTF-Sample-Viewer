@@ -281,7 +281,7 @@ class gltfRenderer
             this.shader.updateUniform(uniform, val);
         }
 
-        for (let i = 0; i < material.textures.length; ++i)
+        for (let i = 0; i < material.getTextures().length; ++i)
         {
             let info = material.textures[i];
             const location = this.shader.getUniformLocation(info.samplerName);
@@ -520,7 +520,7 @@ class gltfRenderer
         scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
 
         const specularImage = environment.images[environment.textures[specularTextureIndex].source];
-        scene.envData.mipCount = specularImage.image.levels.length;
+        scene.envData.mipCount = specularImage.image.levels;
 
         scene.envData.diffuseEnvMap.generateMips = false;
         scene.envData.specularEnvMap.generateMips = false;

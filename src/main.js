@@ -2,6 +2,7 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
+import { KtxDecoder } from './ktx.js';
 import { GltfView } from './GltfView/gltf_view.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
@@ -35,7 +36,10 @@ async function gltfSampleViewer(
     const dracoDecoder = new DracoDecoder();
     await dracoDecoder.ready();
 
-    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap, dracoDecoder);
+    const ktxDecoder = new KtxDecoder();
+    await ktxDecoder.init();
+
+    new gltfViewer(canvas, index, input, onRendererReady, basePath, initialModel, envMap, dracoDecoder, ktxDecoder);
 }
 
 function getWebGlContext(canvas)
@@ -59,17 +63,23 @@ function getWebGlContext(canvas)
 async function main()
 {
     const canvas = document.getElementById("canvas");
+    WebGl.context = getWebGlContext(canvas);
     const view = new GltfView(canvas);
     const state = view.createState();
 
-    loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
+    const dracoDecoder = new DracoDecoder();
+    const ktxDecoder = new KtxDecoder();
+    await dracoDecoder.ready();
+    await ktxDecoder.init();
+
+    loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view, ktxDecoder, dracoDecoder).then( (gltf) => {
         state.gltf = gltf;
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
         state.userCamera.updatePosition();
     });
 
-    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view).then( (environment) => {
+    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
         state.environment = environment;
     });
 
