@@ -1,10 +1,6 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { KtxDecoder } from './ktx.js';
-import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
-import axios from '../libs/axios.min.js';
-
 import { AsyncFileReader } from './ResourceLoader/async_file_reader.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};

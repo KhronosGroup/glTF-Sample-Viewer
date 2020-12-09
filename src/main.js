@@ -1,5 +1,4 @@
 import { gltfInput } from './input.js';
-import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 import { GltfView } from './GltfView/gltf_view.js';

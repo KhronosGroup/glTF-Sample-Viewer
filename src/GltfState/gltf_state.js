@@ -1,5 +1,5 @@
 import { UserCamera } from '../user_camera.js';
-import { ToneMaps, DebugOutput, Environments } from '../rendering_parameters.js';
+import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters.js';
 
 class GltfState
 {

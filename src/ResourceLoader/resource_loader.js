@@ -6,7 +6,6 @@ import { gltfLoader } from "../loader";
 import { gltfImage, ImageMimeType } from "../image";
 import { gltfTexture } from '../texture.js';
 import { gltfSampler } from '../sampler.js';
-import { WebGl } from '../webgl.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 

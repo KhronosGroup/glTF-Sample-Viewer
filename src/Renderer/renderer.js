@@ -1,9 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { gltfLight } from './light.js';
-import { gltfTextureInfo } from './texture.js';
+import { gltfTextureInfo } from '../texture.js';
 import { ShaderCache } from './shader_cache.js';
-import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
-import { ImageMimeType } from './image.js';
+import { ToneMaps, DebugOutput } from './rendering_parameters.js';
 import { gltfWebGl } from './webgl';
 
 import pbrShader from './shaders/pbr.frag';

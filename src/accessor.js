@@ -1,6 +1,5 @@
-import { WebGl } from './webgl.js';
+import { WebGl } from './Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
-
 
 class gltfAccessor extends GltfObject
 {

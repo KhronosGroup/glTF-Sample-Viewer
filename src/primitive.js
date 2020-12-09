@@ -1,8 +1,6 @@
 import { initGlForMembers } from './utils.js';
-import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
-import { DracoDecoder } from './draco.js';
 import { gltfBufferView } from './buffer_view.js';
 
 class gltfPrimitive extends GltfObject

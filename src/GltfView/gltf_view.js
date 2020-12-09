@@ -1,5 +1,5 @@
 import { GltfState } from '../GltfState/gltf_state.js';
-import { gltfRenderer } from '../renderer';
+import { gltfRenderer } from '../Renderer/renderer';
 
 class GltfView
 {

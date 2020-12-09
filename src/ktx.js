@@ -1,4 +1,3 @@
-import { WebGl } from './webgl.js';
 
 class KtxDecoder {
 
