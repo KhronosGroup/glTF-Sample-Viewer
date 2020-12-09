@@ -1,7 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
-import axios from '../libs/axios.min.js';
-import { glTF } from './gltf.js';
-import { gltfLoader } from './loader.js';
+
 import { gltfModelPathProvider } from './model_path_provider.js';
 import { gltfRenderer } from './renderer.js';
 import { gltfRenderingParameters, Environments, UserCameraIndex } from './rendering_parameters.js';
@@ -9,8 +6,9 @@ import { gltfUserInterface } from './user_interface.js';
 import { UserCamera } from './user_camera.js';
 import { jsToGl, getIsGlb, Timer, getContainingFolder } from './utils.js';
 import { GlbParser } from './glb_parser.js';
-import { gltfEnvironmentLoader } from './environment.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
+import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
+import { gltfLoader } from "./loader";
 
 class gltfViewer
 {
@@ -59,7 +57,7 @@ class gltfViewer
         if (this.initialModel.includes("/"))
         {
             // no UI if a path is provided (e.g. in the vscode plugin)
-            this.loadFromPath(this.initialModel);
+            this.loadFromPath(this.initialModel).then( (gltf) => this.startRendering(gltf) );
         }
         else
         {
@@ -69,7 +67,7 @@ class gltfViewer
             this.pathProvider.initialize().then(() =>
             {
                 self.initializeGui();
-                self.loadFromPath(self.pathProvider.resolve(self.initialModel));
+                self.loadFromPath(self.pathProvider.resolve(self.initialModel)).then( (gltf) => this.startRendering(gltf) );
             });
         }
 
@@ -146,71 +144,58 @@ class gltfViewer
                 self.userCamera.reset(self.gltf, self.renderingParameters.sceneIndex);
             }
         };
-        input.onDropFiles = this.loadFromFileObject.bind(this);
+        input.onDropFiles = (mainFile, additionalFiles) => {
+            this.loadFromFileObject(mainFile, additionalFiles).then( (gltf) => {
+                this.startRendering(gltf);
+            });
+        };
     }
 
-    loadFromFileObject(mainFile, additionalFiles)
+    async loadFromFileObject(mainFile, additionalFiles)
     {
         this.lastDropped = { mainFile: mainFile, additionalFiles: additionalFiles };
 
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
-        const reader = new FileReader();
-        const self = this;
-        if (getIsGlb(gltfFile))
-        {
-            reader.onloadend = function(event)
-            {
-                const data = event.target.result;
-                const glbParser = new GlbParser(data);
-                const glb = glbParser.extractGlbData();
-                self.createGltf(gltfFile, glb.json, glb.buffers);
-            };
-            reader.readAsArrayBuffer(mainFile);
-        }
-        else
-        {
-            reader.onloadend = function(event)
-            {
-                const data = event.target.result;
-                const json = JSON.parse(data);
-                self.createGltf(gltfFile, json, additionalFiles);
-            };
-            reader.readAsText(mainFile);
-        }
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
+
+        const environmentDesc = Environments[this.renderingParameters.environmentName];
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+
+        // inject environment into gltf
+        gltf.samplers.push(...(await environment).samplers);
+        gltf.images.push(...(await environment).images);
+        gltf.textures.push(...(await environment).textures);
+
+        return gltf;
     }
 
-    loadFromPath(gltfFile, basePath = "")
+    async loadFromPath(gltfFile, basePath = "")
     {
         this.lastDropped = undefined;
 
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-        const isGlb = getIsGlb(gltfFile);
-
-        const self = this;
-        return axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" }).then(function(response)
-        {
-            let json = response.data;
-            let buffers = undefined;
-            if (isGlb)
-            {
-                const glbParser = new GlbParser(response.data);
-                const glb = glbParser.extractGlbData();
-                json = glb.json;
-                buffers = glb.buffers;
-            }
-            return self.createGltf(gltfFile, json, buffers);
-        }).catch(function(error)
+        const gltf = await loadGltfFromPath(gltfFile).catch(function(error)
         {
             console.error(error.stack);
             self.hideSpinner();
         });
+
+        const environmentDesc = Environments[this.renderingParameters.environmentName];
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+
+        // inject environment into gltf
+        gltf.samplers.push(...(await environment).samplers);
+        gltf.images.push(...(await environment).images);
+        gltf.textures.push(...(await environment).textures);
+
+        return gltf;
     }
 
-    createGltf(path, json, buffers)
+    startRendering(gltf)
     {
         this.currentlyRendering = false;
 
@@ -221,34 +206,7 @@ class gltfViewer
             this.gltf = undefined;
         }
 
-        const gltf = new glTF(path);
-        gltf.fromJson(json);
-        gltf.dracoDecoder = this.dracoDecoder;
-
-        this.injectEnvironment(gltf);
-
-        const self = this;
-        return gltfLoader.load(gltf, buffers)
-            .then(() => self.startRendering(gltf));
-    }
-
-    injectEnvironment(gltf)
-    {
-        // this is hacky, because we inject stuff into the gltf
-
-        // because the environment loader adds images with paths that are not relative
-        // to the gltf, we have to resolve all image paths before that
-        for (const image of gltf.images)
-        {
-            image.resolveRelativePath(getContainingFolder(gltf.path));
-        }
-
-        const environment = Environments[this.renderingParameters.environmentName];
-        new gltfEnvironmentLoader(this.basePath).addEnvironmentMap(gltf, environment);
-    }
-
-    startRendering(gltf)
-    {
+        this.gltf = gltf;
         this.notifyLoadingEnded(gltf.path);
         if(this.gltfLoadedCallback !== undefined)
         {
@@ -402,12 +360,12 @@ class gltfViewer
             this.stats);
 
         const self = this;
-        gui.onModelChanged = () => self.loadFromPath(this.pathProvider.resolve(gui.selectedModel));
+        gui.onModelChanged = () => self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
         gui.onEnvironmentChanged = () =>
         {
             if (this.lastDropped === undefined)
             {
-                self.loadFromPath(this.pathProvider.resolve(gui.selectedModel));
+                self.loadFromPath(this.pathProvider.resolve(gui.selectedModel)).then( (gltf) => this.startRendering(gltf) );
             }
             else
             {
