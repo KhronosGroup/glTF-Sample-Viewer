@@ -6,8 +6,8 @@ class KtxDecoder {
         this.libktx = null;
     }
 
-    async init() {
-        this.libktx = await LIBKTX({preinitializedWebGLContext: WebGl.context});
+    async init(context) {
+        this.libktx = await LIBKTX({preinitializedWebGLContext: context});
         this.libktx.GL.makeContextCurrent(this.libktx.GL.createContext(null, { majorVersion: 2.0 }));
     }
 

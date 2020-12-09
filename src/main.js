@@ -1,4 +1,3 @@
-import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
@@ -11,14 +10,13 @@ import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './Resource
 async function main()
 {
     const canvas = document.getElementById("canvas");
-    WebGl.context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const view = new GltfView(canvas);
     const state = view.createState();
 
     const dracoDecoder = new DracoDecoder();
     const ktxDecoder = new KtxDecoder();
     await dracoDecoder.ready();
-    await ktxDecoder.init();
+    await ktxDecoder.init(view.context);
 
     loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view, ktxDecoder, dracoDecoder).then( (gltf) => {
         state.gltf = gltf;
