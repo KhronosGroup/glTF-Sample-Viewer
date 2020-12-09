@@ -80,8 +80,16 @@ Vue.component('tab-models', {
     modelchanged: function(value) {
         this.$emit('modelchanged', value)
     },
-    setSelectedModel:function(value)
-    {
+    flavourchanged: function(value) {
+        this.$emit('flavourchanged', value)
+    },
+    scenechanged: function(value) {
+        this.$emit('scenechanged', value)
+    },
+    camerachanged: function(value) {
+        this.$emit('camerachanged', value)
+    },
+    setSelectedModel: function(value) {
         this.$refs.models.setSelection(value);
     }
   }
@@ -109,12 +117,8 @@ Vue.component('tab-advanced-controls', {
   template:'#advancedControlsTemplate'
 });
 
-let app = new Vue({
-    domStreams: ['gunther$'],
-
-      subscriptions()
-      {
-      },
+const app = new Vue({
+    domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$'],
     data() {
       return {
         fullheight: true,
@@ -132,7 +136,7 @@ let app = new Vue({
     },
     methods:
     {
-        // these methods cann be called from outside simply by calling app.methodName()
+        // these methods can be called from outside simply by calling app.methodName()
         setSelectedModel: function(value)
         {
             this.$refs.models.setSelectedModel(value);
@@ -140,4 +144,4 @@ let app = new Vue({
     }
 }).$mount('#app')
 
-export {app};
+export { app };

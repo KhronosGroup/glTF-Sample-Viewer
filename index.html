@@ -110,9 +110,9 @@ function getUrlParam(parameter, defaultvalue){
         <h2>Models</h2>
 
         <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="models"></drop-down-element>
-        <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
-        <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
-        <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
         <radio-button-list-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
     </div>
@@ -177,7 +177,10 @@ function getUrlParam(parameter, defaultvalue){
                         <img src="assets/ui/Model 30X30.svg" width="30px" height="30px">
                         <span>Models</span>
                     </template>
-                    <tab-models v-stream:modelchanged="gunther$"
+                    <tab-models v-stream:modelchanged="modelChanged$"
+                                v-stream:flavourchanged="flavourChanged$"
+                                v-stream:scenechanged="sceneChanged$"
+                                v-stream:camerachanged="cameraChanged$"
                                 v-bind:models="models"
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"
