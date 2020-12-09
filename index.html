@@ -13,10 +13,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="assets/images/gltf.png">
 
-    <script src="libs/dat.gui.min.js"></script>
-    <script src="libs/stats.min.js"></script>
-
-    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+	<script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
     <script src="libs/libktx.js"></script>
     <script src="dist/gltf-sample-viewer.umd.js"></script>
 </head>
@@ -37,8 +34,7 @@ function getUrlParam(parameter, defaultvalue){
     return urlparameter;
 }
 </script>
-<body onload="gltfSampleViewer.gltfSampleViewer('canvas', 'assets/models/2.0/model-index.json', 'Courtyard of the Doge\'s palace', undefined, '', getUrlParam('model','BoomBox'));">
-    <div id="gltf-sample-viewer-model-spinner"> </div>
+<body onload="gltfSampleViewer.main()">
     <canvas id="canvas">No Canvas!</canvas>
 </body>
 </html>
