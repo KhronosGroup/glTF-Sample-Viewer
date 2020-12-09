@@ -5,13 +5,29 @@ Vue.use(VueRx, Rx);
 
 // general components
 Vue.component('drop-down-element', {
-  props: ['name', 'dropdowncontent'],
-  template:'#dropDownTemplate',
-  methods:
+    props: ['name', 'dropdowncontent'],
+    template:'#dropDownTemplate',
+    data() {
+        return {
+            selectedOption: ""
+        }
+    },
+    mounted(){
+        if(this.dropdowncontent === undefined)
+        {
+            return;
+        }
+        this.selectedOption = this.dropdowncontent[0].title
+    },
+    methods:
     {
         selectionchanged: function(value)
         {
             this.$emit('selectionchanged', value)
+        },
+        setSelection: function(value)
+        {
+            this.selectedOption = value;
         }
     }
 });
@@ -62,6 +78,10 @@ Vue.component('tab-models', {
   {
     modelchanged: function(value) {
         this.$emit('modelchanged', value)
+    },
+    setSelectedModel:function(value)
+    {
+        this.$refs.models.setSelection(value);
     }
   }
 });
@@ -88,11 +108,7 @@ Vue.component('tab-advanced-controls', {
   template:'#advancedControlsTemplate'
 });
 
-let app;
-
-window.addEventListener('load', () =>
-{
-  app = new Vue({
+let app = new Vue({
     domStreams: ['gunther$'],
 
       subscriptions()
@@ -115,14 +131,11 @@ window.addEventListener('load', () =>
     },
     methods:
     {
-        modelchanged: function(value)
+        setSelectedModel: function(value)
         {
-
+            this.$refs.models.setSelectedModel(value);
         }
     }
-  }).$mount('#app')
-
-  //app.gunther$.subscribe(value => console.log(value));
-});
+}).$mount('#app')
 
 export {app};

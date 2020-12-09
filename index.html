@@ -32,7 +32,6 @@
     <script src="libs/stats.min.js"></script>
 
 	<script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
-    <script src="dist/gltf-sample-viewer.umd.js"></script>
 
 </head>
 <script>
@@ -57,7 +56,7 @@ function getUrlParam(parameter, defaultvalue){
 <!-- general templates -->
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
-        <b-select v-on:input="selectionchanged" placeholder="Select">
+        <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
             <option v-for="item in dropdowncontent" :key="item.title">
                 {{ item.title }}
             </option>
@@ -110,7 +109,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Models</h2>
 
-        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="models"></drop-down-element>
         <drop-down-element name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
         <drop-down-element name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
         <drop-down-element name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
@@ -183,7 +182,8 @@ function getUrlParam(parameter, defaultvalue){
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"
                                 v-bind:cameras="cameras"
-                                v-bind:materialvariants="materialVariants"></tab-models>
+                                v-bind:materialvariants="materialVariants"
+                                ref="models"></tab-models>
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
@@ -206,4 +206,5 @@ function getUrlParam(parameter, defaultvalue){
         </template>
     </div>
 </body>
+<script src="dist/gltf-sample-viewer.umd.js"></script>
 </html>
