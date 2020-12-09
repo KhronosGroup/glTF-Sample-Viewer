@@ -1,4 +1,3 @@
-import { Ktx2Image } from '../libs/ktx2image.js';
 import { HDRImage } from '../libs/hdrpng.js';
 import { nearestPowerOf2, makeEven } from './math_utils.js';
 

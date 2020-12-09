@@ -12,7 +12,6 @@ class KtxDecoder {
     }
 
     async loadKtxFromUri(uri) {
-        console.log('Loading KTX file: ' + uri);
         const response = await fetch(uri);
         const data = new Uint8Array(await response.arrayBuffer());
         const texture = new this.libktx.ktxTexture(data);
@@ -21,7 +20,6 @@ class KtxDecoder {
     }
 
     async loadKtxFromBuffer(data) {
-        console.log('Loading KTX file: ');
         const texture = new this.libktx.ktxTexture(data);
         const uploadResult = texture.glUpload();
         return uploadResult.texture;
