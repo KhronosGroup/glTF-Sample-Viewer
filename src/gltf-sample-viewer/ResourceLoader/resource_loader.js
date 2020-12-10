@@ -1,11 +1,11 @@
-import axios from '../../libs/axios.min.js';
-import { glTF } from '../gltf.js';
-import { getIsGlb, getContainingFolder } from '../utils.js';
-import { GlbParser } from '../glb_parser.js';
-import { gltfLoader } from "../loader";
-import { gltfImage, ImageMimeType } from "../image";
-import { gltfTexture, gltfTextureInfo } from '../texture.js';
-import { gltfSampler } from '../sampler.js';
+import axios from '../../../libs/axios.min.js';
+import { glTF } from '../../gltf.js';
+import { getIsGlb, getContainingFolder } from '../../utils.js';
+import { GlbParser } from '../../glb_parser.js';
+import { gltfLoader } from "../../loader";
+import { gltfImage, ImageMimeType } from "../../image";
+import { gltfTexture, gltfTextureInfo } from '../../texture.js';
+import { gltfSampler } from '../../sampler.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 

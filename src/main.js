@@ -1,9 +1,9 @@
 import { gltfInput } from './input.js';
 import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
-import { GltfView } from './GltfView/gltf_view.js';
+import { GltfView } from './gltf-sample-viewer/GltfView/gltf_view.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
-import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
+import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './gltf-sample-viewer/ResourceLoader/resource_loader.js';
 
 
 async function main()

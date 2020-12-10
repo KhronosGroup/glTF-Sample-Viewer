@@ -1,4 +1,4 @@
-import { ImageMimeType } from "../image";
+import { ImageMimeType } from "../../image";
 
 class gltfWebGl
 {
