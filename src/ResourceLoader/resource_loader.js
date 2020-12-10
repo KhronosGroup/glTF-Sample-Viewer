@@ -71,7 +71,6 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
-    // TODO: replace this with a custom environment map type
     const environment = new glTF();
     environment.ktxDecoder = ktxDecoder;
 

@@ -9,8 +9,6 @@ class ShaderCache
         this.sources  = sources; // shader name -> source code
         this.shaders  = new Map(); // name & permutations hashed -> compiled shader
         this.programs = new Map(); // (vertex shader, fragment shader) -> program
-
-        // TODO: find a way to pass this without storing a member
         this.gl = gl;
 
         // resovle / expande sources (TODO: break include cycles)
