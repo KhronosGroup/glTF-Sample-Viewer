@@ -63,7 +63,7 @@ class gltfRenderer
     // app state
     init()
     {
-        //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
+        this.webGl.context.pixelStorei(WebGL2RenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGL2RenderingContext.NONE);
         this.webGl.context.enable(WebGL2RenderingContext.DEPTH_TEST);
         this.webGl.context.depthFunc(WebGL2RenderingContext.LEQUAL);
         this.webGl.context.colorMask(true, true, true, true);
