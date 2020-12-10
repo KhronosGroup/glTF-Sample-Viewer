@@ -1,7 +1,7 @@
 import VueRx from 'vue-rx';
-import Rx from 'rxjs/Rx';
+import { Observable } from 'rxjs';
 
-Vue.use(VueRx, Rx);
+Vue.use(VueRx, { Observable });
 
 // general components
 Vue.component('drop-down-element', {
