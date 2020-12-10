@@ -1,5 +1,6 @@
 import { HDRImage } from '../libs/hdrpng.js';
 import { nearestPowerOf2, makeEven } from './math_utils.js';
+import { ImageMimeType } from "./image";
 
 class gltfImageProcessor
 {
@@ -13,7 +14,7 @@ class gltfImageProcessor
             {
                 continue;
             }
-            if (image instanceof WebGLTexture) // aka KTX
+            if (gltfImage.mimeType == ImageMimeType.KTX2)
             {
                 continue;
             }
