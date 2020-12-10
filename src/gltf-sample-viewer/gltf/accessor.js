@@ -1,4 +1,4 @@
-import { WebGl } from './gltf-sample-viewer/Renderer/webgl.js';
+import { WebGl } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfAccessor extends GltfObject
@@ -258,6 +258,7 @@ class gltfAccessor extends GltfObject
     {
         if (this.glBuffer !== undefined)
         {
+            // TODO: this breaks the dependency direction
             WebGl.context.deleteBuffer(this.glBuffer);
         }
 

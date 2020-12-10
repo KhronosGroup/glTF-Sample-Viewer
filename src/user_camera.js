@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
-import { gltfCamera } from './camera.js';
-import { jsToGl, clamp } from './utils.js';
-import { getSceneExtents } from './gltf_utils.js';
+import { gltfCamera } from './gltf-sample-viewer/gltf/camera.js';
+import { jsToGl, clamp } from './gltf-sample-viewer/gltf/utils.js';
+import { getSceneExtents } from './gltf-sample-viewer/gltf/gltf_utils.js';
 
 const VecZero = vec3.create();
 const PanSpeedDenominator = 1200;

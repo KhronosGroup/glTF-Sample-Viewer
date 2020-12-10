@@ -1,7 +1,6 @@
-import { HDRImage } from '../libs/hdrpng.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
-import { AsyncFileReader } from './gltf-sample-viewer/ResourceLoader/async_file_reader.js';
+import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};
 
@@ -51,11 +50,7 @@ class gltfImage extends GltfObject
             return;
         }
 
-        if (this.mimeType === ImageMimeType.HDR)
-        {
-            this.image = new HDRImage();
-        }
-        else if (this.mimeType === ImageMimeType.KTX2)
+        if (this.mimeType === ImageMimeType.KTX2)
         {
             this.image = {};
         }
