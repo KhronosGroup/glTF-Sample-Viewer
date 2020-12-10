@@ -1,3 +1,4 @@
+import { ImageMimeType } from "./image";
 
 class gltfWebGl
 {
@@ -46,7 +47,7 @@ class gltfWebGl
         }
 
         const image = gltf.images[gltfTex.source];
-        if (image.image instanceof WebGLTexture) // aka if KTX
+        if (image.mimeType === ImageMimeType.KTX2)
         {
             gltfTex.glTexture = image.image;
             gltfTex.initialized = true;

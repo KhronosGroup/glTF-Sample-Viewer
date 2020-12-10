@@ -14,7 +14,7 @@ class gltfImageProcessor
             {
                 continue;
             }
-            if (gltfImage.mimeType == ImageMimeType.KTX2)
+            if (gltfImage.mimeType === ImageMimeType.KTX2)
             {
                 continue;
             }
