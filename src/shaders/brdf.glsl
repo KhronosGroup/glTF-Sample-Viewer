@@ -18,15 +18,6 @@ vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
     return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
-vec3 F_CookTorrance(vec3 f0, vec3 f90, float VdotH)
-{
-    vec3 f0_sqrt = sqrt(f0);
-    vec3 ior = (1.0 + f0_sqrt) / (1.0 - f0_sqrt);
-    vec3 c = vec3(VdotH);
-    vec3 g = sqrt(ior * ior + c*c - 1.0);
-    return 0.5 * pow(g-c, vec3(2.0)) / pow(g+c, vec3(2.0)) * (1.0 + pow(c*(g+c) - 1.0, vec3(2.0)) / pow(c*(g-c) + 1.0, vec3(2.0)));
-}
-
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
 // see Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. Journal of Computer Graphics Techniques, 3
@@ -47,13 +38,6 @@ float V_GGX(float NdotL, float NdotV, float alphaRoughness)
     return 0.0;
 }
 
-// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L131
-float V_Kelemen(float LdotH)
-{
-    // Kelemen 2001, "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
-    return 0.25 / (LdotH * LdotH);
-}
-
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
 // Implementation from "Average Irregularity Representation of a Roughened Surface for Ray Reflection" by T. S. Trowbridge, and K. P. Reitz
 // Follows the distribution function recommended in the SIGGRAPH 2013 course notes from EPIC Games [1], Equation 3.
@@ -62,17 +46,6 @@ float D_GGX(float NdotH, float alphaRoughness)
     float alphaRoughnessSq = alphaRoughness * alphaRoughness;
     float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
     return alphaRoughnessSq / (M_PI * f * f);
-}
-
-float D_Ashikhmin(float NdotH, float alphaRoughness)
-{
-    // Ashikhmin 2007, "Distribution-based BRDFs"
-    float a2 = alphaRoughness * alphaRoughness;
-    float cos2h = NdotH * NdotH;
-    float sin2h = 1.0 - cos2h;
-    float sin4h = sin2h * sin2h;
-    float cot2 = -cos2h / (a2 * sin2h);
-    return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
 }
 
 float lambdaSheenNumericHelper(float x, float alphaG)
