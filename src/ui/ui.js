@@ -91,6 +91,9 @@ Vue.component('tab-models', {
     },
     setSelectedModel: function(value) {
         this.$refs.models.setSelection(value);
+    },
+    setSelectedScene: function(value) {
+        this.$refs.scenes.setSelection(value);
     }
   }
 });
@@ -136,10 +139,13 @@ const app = new Vue({
     },
     methods:
     {
-        // these methods can be called from outside simply by calling app.methodName()
         setSelectedModel: function(value)
         {
             this.$refs.models.setSelectedModel(value);
+        },
+        setSelectedScene: function(value)
+        {
+            this.$refs.scenes.setSelectedScene(value);
         }
     }
 }).$mount('#app')

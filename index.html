@@ -111,7 +111,7 @@ function getUrlParam(parameter, defaultvalue){
 
         <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="models"></drop-down-element>
         <drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
-        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="scenes"></drop-down-element>
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
         <radio-button-list-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
@@ -186,7 +186,8 @@ function getUrlParam(parameter, defaultvalue){
                                 v-bind:scenes="scenes"
                                 v-bind:cameras="cameras"
                                 v-bind:materialvariants="materialVariants"
-                                ref="models"></tab-models>
+                                ref="models"
+                                ref="scenes"></tab-models>
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
