@@ -10,9 +10,10 @@ import { WebGl } from '../webgl.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers)
+async function loadGltf(path, json, buffers, ktxDecoder)
 {
     const gltf = new glTF(path);
+    gltf.ktxDecoder = ktxDecoder;
     gltf.fromJson(json);
 
     // because the gltf image paths are not relative
@@ -27,7 +28,7 @@ async function loadGltf(path, json, buffers)
     return gltf;
 }
 
-async function loadGltfFromDrop(mainFile, additionalFiles)
+async function loadGltfFromDrop(mainFile, additionalFiles, ktxDecoder)
 {
     const gltfFile = mainFile.name;
 
@@ -36,17 +37,17 @@ async function loadGltfFromDrop(mainFile, additionalFiles)
         const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers);
+        return await loadGltf(gltfFile, glb.json, glb.buffers, ktxDecoder);
     }
     else
     {
         const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles);
+        return await loadGltf(gltfFile, json, additionalFiles, ktxDecoder);
     }
 }
 
-async function loadGltfFromPath(path)
+async function loadGltfFromPath(path, ktxDecoder)
 {
     const isGlb = getIsGlb(path);
 
@@ -63,13 +64,14 @@ async function loadGltfFromPath(path)
         buffers = glb.buffers;
     }
 
-    return await loadGltf(path, json, buffers);
+    return await loadGltf(path, json, buffers, ktxDecoder);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, gltf, ktxDecoder)
 {
     // TODO: create class for environment
     const environment = new glTF();
+    environment.ktxDecoder = ktxDecoder;
 
     //
     // Prepare samplers.

@@ -1,3 +1,4 @@
+import { ImageMimeType } from "./image";
 
 class gltfWebGl
 {
@@ -45,6 +46,13 @@ class gltfWebGl
             return false;
         }
 
+        const image = gltf.images[gltfTex.source];
+        if (image.mimeType === ImageMimeType.KTX2)
+        {
+            gltfTex.glTexture = image.image;
+            gltfTex.initialized = true;
+        }
+
         if (gltfTex.glTexture === undefined)
         {
             gltfTex.glTexture = WebGl.context.createTexture();
@@ -67,52 +75,13 @@ class gltfWebGl
 
             WebGl.context.pixelStorei(WebGl.context.UNPACK_FLIP_Y_WEBGL, false);
 
-            let images = [];
-
-            if (gltfTex.source.length !== undefined)
+            if (image === undefined)
             {
-                // assume we have an array of images (this is an unofficial extension to what glTF json can represent)
-                images = gltfTex.source;
+                console.warn("Image is undefined for texture: " + gltfTex.source);
+                return false;
             }
-            else
-            {
-                images = [gltfTex.source];
-            }
-
-            let generateMips = true;
-
-            for (const src of images)
-            {
-                const image = gltf.images[src];
-
-                if (image === undefined)
-                {
-                    console.warn("Image is undefined for texture: " + gltfTex.source);
-                    return false;
-                }
-
-                if (image.type === WebGl.context.TEXTURE_CUBE_MAP)
-                {
-                    const ktxImage = image.image;
-
-                    for (const level of ktxImage.levels)
-                    {
-                        let faceType = WebGl.context.TEXTURE_CUBE_MAP_POSITIVE_X;
-                        for (const face of level.faces)
-                        {
-                            WebGl.context.texImage2D(faceType, level.miplevel, ktxImage.glInternalFormat, level.width, level.height, 0, ktxImage.glFormat, ktxImage.glType, face.data);
-
-                            faceType++;
-                        }
-                    }
-                }
-                else
-                {
-                    WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
-                }
-
-                generateMips = image.shouldGenerateMips();
-            }
+            WebGl.context.texImage2D(image.type, image.miplevel, WebGl.context.RGBA, WebGl.context.RGBA, WebGl.context.UNSIGNED_BYTE, image.image);
+            const generateMips = image.shouldGenerateMips();
 
             this.setSampler(gltfSampler, gltfTex.type, generateMips);
 

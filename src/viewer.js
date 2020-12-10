@@ -20,12 +20,14 @@ class gltfViewer
         basePath = "",
         initialModel = "",
         environmentMap = undefined,
-        dracoDecoder)
+        dracoDecoder,
+        ktxDecoder)
     {
         this.onRendererReady = onRendererReady;
         this.basePath = basePath;
         this.initialModel = initialModel;
         this.dracoDecoder = dracoDecoder;
+        this.ktxDecoder = ktxDecoder;
 
         this.lastMouseX = 0.00;
         this.lastMouseY = 0.00;
@@ -158,10 +160,10 @@ class gltfViewer
         const gltfFile = mainFile.name;
         this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromDrop(mainFile, additionalFiles);
+        const gltf = await loadGltfFromDrop(mainFile, additionalFiles, this.ktxDecoder);
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.ktxDecoder);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
@@ -178,14 +180,14 @@ class gltfViewer
         gltfFile = basePath + gltfFile;
         this.notifyLoadingStarted(gltfFile);
 
-        const gltf = await loadGltfFromPath(gltfFile).catch(function(error)
+        const gltf = await loadGltfFromPath(gltfFile, this.ktxDecoder).catch(function(error)
         {
             console.error(error.stack);
             self.hideSpinner();
         });
 
         const environmentDesc = Environments[this.renderingParameters.environmentName];
-        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf);
+        const environment = loadPrefilteredEnvironmentFromPath("assets/environments/" + environmentDesc.folder, gltf, this.ktxDecoder);
 
         // inject environment into gltf
         gltf.samplers.push(...(await environment).samplers);
@@ -207,6 +209,7 @@ class gltfViewer
         }
 
         this.gltf = gltf;
+		this.gltf.ktxDecoder = this.ktxDecoder;
         this.notifyLoadingEnded(gltf.path);
         if(this.gltfLoadedCallback !== undefined)
         {
