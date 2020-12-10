@@ -271,7 +271,7 @@ class gltfMaterial extends GltfObject
                 {
                     clearcoatFactor = this.extensions.KHR_materials_clearcoat.clearcoatFactor;
                 }
-                if(this.extensions.KHR_materials_clearcoat !== undefined)
+                if(this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor !== undefined)
                 {
                     clearcoatRoughnessFactor = this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor;
                 }
