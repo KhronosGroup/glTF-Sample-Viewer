@@ -122,18 +122,18 @@ function getUrlParam(parameter, defaultvalue){
         <h2>Display</h2>
         <section>
             <label class="label">Lighting</label>
-            <b-switch>Image Based</b-switch>
+            <b-switch v-model="ibl" v-on:input="iblchanged">Image Based</b-switch>
             <br>
-            <b-switch>Punctual Lighting</b-switch>
+            <b-switch v-model="punctuallights" v-on:input="punctuallightschanged">Punctual Lighting</b-switch>
         </section>
         <section>
             <label class="label">Background</label>
-            <b-switch>Environment Background</b-switch>
+            <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
             <color-picker-element class="smallerLabel" name="Background Color"></color-picker-element>
         </section>
         <label class="label">Image Based Lighting</label>
         <b-button @click="">Add new HDR</b-button>
-        <drop-down-element class="smallerLabel" name="Active Environment" ></drop-down-element>
+        <drop-down-element v-on:selectionchanged="environmentchanged" v-bind:dropdowncontent="environments" class="smallerLabel" name="Active Environment" ></drop-down-element>
     </div>
 </script>
 <script id="animationTemplate" type="text/x-template">
@@ -153,12 +153,12 @@ function getUrlParam(parameter, defaultvalue){
 <script id="advancedControlsTemplate" type="text/x-template">
     <div>
         <h2>Advanced Controls</h2>
-        <drop-down-element name="Debug Channels" v-bind:dropdowncontent="debugchannels"></drop-down-element>
+        <drop-down-element name="Debug Channels" v-on:selectionchanged="debugchannelchanged" v-bind:dropdowncontent="debugchannels"></drop-down-element>
         <slider-element class="smallerLabel" name="Exposure"></slider-element>
-        <drop-down-element class="smallerLabel" name="Tone Map" v-bind:dropdowncontent="tonemaps"></drop-down-element>
-        <b-switch v-model="skinning">Skinning</b-switch>
+        <drop-down-element class="smallerLabel" name="Tone Map" v-on:selectionchanged="tonemapchanged" v-bind:dropdowncontent="tonemaps"></drop-down-element>
+        <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
         <br>
-        <b-switch v-model="morphing">Morphing</b-switch>
+        <b-switch v-model="morphing" v-on:input="morphingchanged">Morphing</b-switch>
     </div>
 </script>
 
@@ -191,7 +191,11 @@ function getUrlParam(parameter, defaultvalue){
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
-                    <tab-display ></tab-display>
+                    <tab-display v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
+                                  v-stream:iblchanged="iblChanged$"
+                                  v-stream:punctuallightschanged="punctualLightsChanged$"
+                                  v-stream:environmentchanged="environmentChanged$"
+                                  v-bind:environments="environments" ></tab-display>
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
@@ -203,8 +207,10 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Capture" icon="video">
                 </b-tab-item>
                 <b-tab-item label="Advanced Controls" icon="video">
-                    <tab-advanced-controls v-bind:tonemaps="tonemaps"
-                                            v-bind:debugchannels="debugchannels"></tab-advanced-controls>
+                    <tab-advanced-controls v-stream:skinningchanged="skinningChanged$"
+                                            v-stream:morphingchanged="morphingChanged$"
+                                            v-stream:tonemapchanged="tonemapChanged$" v-bind:tonemaps="tonemaps"
+                                            v-stream:debugchannelchanged="debugchannelChanged$" v-bind:debugchannels="debugchannels"></tab-advanced-controls>
                 </b-tab-item>
             </b-tabs>
         </template>

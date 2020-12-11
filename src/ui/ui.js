@@ -1,7 +1,7 @@
 import VueRx from 'vue-rx';
-import { Observable } from 'rxjs';
+import { Subject } from 'rxjs';
 
-Vue.use(VueRx, { Observable });
+Vue.use(VueRx, { Subject });
 
 // general components
 Vue.component('drop-down-element', {
@@ -98,8 +98,30 @@ Vue.component('tab-models', {
   }
 });
 Vue.component('tab-display', {
-  props: [],
-  template:'#displayTemplate'
+  props: ["environments"],
+  template:'#displayTemplate',
+  data() {
+    return {
+        environmentvisibility: true,
+        punctuallights: true,
+        ibl: true
+    };
+  },
+  methods:
+  {
+    environmentvisibilitychanged: function(value) {
+      this.$emit('environmentvisibilitychanged', value)
+    },
+    punctuallightschanged: function(value) {
+      this.$emit('punctuallightschanged', value)
+    },
+    iblchanged: function(value) {
+      this.$emit('iblchanged', value)
+    },
+    environmentchanged: function(value) {
+      this.$emit('environmentchanged', value)
+    }
+  }
 });
 Vue.component('tab-animation', {
   props: ["animations"],
@@ -111,17 +133,34 @@ Vue.component('tab-xmp', {
 });
 Vue.component('tab-advanced-controls', {
   props: ["debugchannels", "tonemaps"],
+  template:'#advancedControlsTemplate',
   data() {
     return {
         skinning: false,
         morphing: false,
     };
   },
-  template:'#advancedControlsTemplate'
+  methods:
+  {
+    skinningchanged: function(value) {
+      this.$emit('skinningchanged', value)
+    },
+    morphingchanged: function(value) {
+      this.$emit('morphingchanged', value)
+    },
+    debugchannelchanged: function(value) {
+      this.$emit('debugchannelchanged', value)
+    },
+    tonemapchanged: function(value) {
+      this.$emit('tonemapchanged', value)
+    }
+  }
 });
 
 const app = new Vue({
-    domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$'],
+    domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
+                'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
+                'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$'],
     data() {
       return {
         fullheight: true,
@@ -131,7 +170,7 @@ const app = new Vue({
         scenes: [{title: "1"}, {title: "2"}],
         cameras: [{title: "front"}, {title: "left"}, {title: "right"}, {title: "top"}],
         materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
-        environments: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
+        environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "ACES"}, {title: "Linear"}],
         debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metallic"}, {title: "Sheen"}],

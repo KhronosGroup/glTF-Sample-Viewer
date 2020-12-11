@@ -19,16 +19,18 @@ function setModelSelection(value)
 
 function setModelsArray(values)
 {
-    const observable = new Observable(subscriber =>
-        {
-            subscriber.next(values)
-            // debug
-            console.log("model list has been updated!")
-            subscriber.complete()
-        });
+    app.$data.models = values;
 
-    const subscriber = observable.subscribe(x => app.$data.models = x);
-    subscriber.unsubscribe()
+    // const observable = new Observable(subscriber =>
+    //     {
+    //         subscriber.next(values)
+    //         // debug
+    //         console.log("model list has been updated!")
+    //         subscriber.complete()
+    //     });
+
+    // const subscriber = observable.subscribe(x => app.$data.models = x);
+    // subscriber.unsubscribe()
 }
     // scenes
 function setSceneSelection(value)
@@ -64,9 +66,10 @@ function setScenesArray(values)
 const newScenes = [{title: "A"}, {title: "B"}, {title: "C"}];
 
 const modelObserver = {
-    next: () => {
+    next: (value) => {
+        console.log(value)
         setScenesArray(newScenes)
-        setSceneSelection(newScenes[0].title)
+        //setSceneSelection(newScenes[0].title)
     }
 }
 
@@ -79,6 +82,14 @@ app.modelChanged$.subscribe(modelObserver);
 app.flavourChanged$.subscribe(observer);
 app.sceneChanged$.subscribe(observer);
 app.cameraChanged$.subscribe(observer);
+app.environmentChanged$.subscribe(observer);
+app.tonemapChanged$.subscribe(observer);
+app.debugchannelChanged$.subscribe(observer);
+app.skinningChanged$.subscribe(observer);
+app.morphingChanged$.subscribe(observer);
+app.iblChanged$.subscribe(observer);
+app.punctualLightsChanged$.subscribe(observer);
+app.environmentVisibilityChanged$.subscribe(observer);
 
 
 // test input
@@ -89,5 +100,5 @@ setTimeout(() => {
     setModelsArray(newModels)
     setModelSelection(newModels[0].title)
     setScenesArray(newScenes)
-    setSceneSelection(newScenes[0].title)
+    //setSceneSelection(newScenes[0].title)
 }, 4000)
