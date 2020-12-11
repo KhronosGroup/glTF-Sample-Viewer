@@ -96,9 +96,9 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <label class="label">{{ name }}</label>
         <div class="flexContainer">
-            <input type="color" id="head" class="colorInput" v-model="color">
+            <input type="color" id="head" class="colorInput" v-on:input="colorchanged" v-model="color">
             <label>Hex</label>
-            <b-input v-model="color" class="colorInputText"></b-input>
+            <b-input v-model="color" v-on:input="colorchanged" class="colorInputText"></b-input>
         </div>
     </div>
 </script>
@@ -129,10 +129,10 @@ function getUrlParam(parameter, defaultvalue){
         <section>
             <label class="label">Background</label>
             <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
-            <color-picker-element class="smallerLabel" name="Background Color"></color-picker-element>
+            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color"></color-picker-element>
         </section>
         <label class="label">Image Based Lighting</label>
-        <b-button @click="">Add new HDR</b-button>
+        <b-button v-on:click="addenvironment">Add new HDR</b-button>
         <drop-down-element v-on:selectionchanged="environmentchanged" v-bind:dropdowncontent="environments" class="smallerLabel" name="Active Environment" ></drop-down-element>
     </div>
 </script>
@@ -191,10 +191,12 @@ function getUrlParam(parameter, defaultvalue){
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
-                    <tab-display v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
+                    <tab-display v-stream:addenvironment="addEnvironment$"
+                                  v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
                                   v-stream:iblchanged="iblChanged$"
                                   v-stream:punctuallightschanged="punctualLightsChanged$"
                                   v-stream:environmentchanged="environmentChanged$"
+                                  v-stream:colorchanged="colorChanged$"
                                   v-bind:environments="environments" ></tab-display>
                 </b-tab-item>
 

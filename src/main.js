@@ -2,7 +2,7 @@ import { gltfViewer } from './viewer.js';
 import { gltfInput } from './input.js';
 import { WebGl } from './webgl.js';
 import { DracoDecoder } from './draco.js';
-import {} from './logic/logic.js';
+import {} from './logic/uimodel.js';
 
 // entry.js
 import './ui/sass.scss';

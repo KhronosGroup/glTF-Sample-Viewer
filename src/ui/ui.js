@@ -66,6 +66,13 @@ Vue.component('color-picker-element', {
       color: '#1CA085'
     }
   },
+  methods:
+  {
+      colorchanged: function(value)
+      {
+          this.$emit('colorchanged', value)
+      }
+  },
   template:'#colorPickerTemplate'
 });
 
@@ -120,7 +127,13 @@ Vue.component('tab-display', {
     },
     environmentchanged: function(value) {
       this.$emit('environmentchanged', value)
-    }
+    },
+    addenvironment: function(value) {
+      this.$emit('addenvironment', value)
+    },
+    colorchanged: function(value) {
+      this.$emit('colorchanged', value)
+    },
   }
 });
 Vue.component('tab-animation', {
@@ -136,8 +149,8 @@ Vue.component('tab-advanced-controls', {
   template:'#advancedControlsTemplate',
   data() {
     return {
-        skinning: false,
-        morphing: false,
+        skinning: true,
+        morphing: true,
     };
   },
   methods:
@@ -160,19 +173,20 @@ Vue.component('tab-advanced-controls', {
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-                'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$'],
+                'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
+                'addEnvironment$', 'colorChanged$'],
     data() {
       return {
         fullheight: true,
         right: true,
-        models: [{title: "Avocado"}, {title: "Boombox"}, {title: "Duck"}],
+        models: [{title: "Avocado"}, {title: "BoomBox"}, {title: "Duck"}],
         flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
-        scenes: [{title: "1"}, {title: "2"}],
+        scenes: [{title: "0"}, {title: "1"}],
         cameras: [{title: "front"}, {title: "left"}, {title: "right"}, {title: "top"}],
         materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
         environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
-        tonemaps: [{title: "ACES"}, {title: "Linear"}],
+        tonemaps: [{title: "ACES"}, {title: "None"}],
         debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metallic"}, {title: "Sheen"}],
       };
     },
