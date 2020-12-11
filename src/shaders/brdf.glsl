@@ -6,11 +6,6 @@
 // https://google.github.io/filament/Filament.md.html
 //
 
-vec3 F_None(vec3 f0, vec3 f90, float VdotH)
-{
-    return f0;
-}
-
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
 // Implementation of fresnel from [4], Equation 15
 vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
