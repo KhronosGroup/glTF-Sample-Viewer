@@ -1,5 +1,6 @@
 import { UserCamera } from '../user_camera.js';
 import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters.js';
+import { AnimationTimer } from '../utils.js';
 
 class GltfState
 {
@@ -18,6 +19,8 @@ class GltfState
         this.userCamera = new UserCamera();
         this.sceneIndex = 0;
         this.cameraIndex = undefined;
+        this.animationIndices = [];
+        this.animationTimer = new AnimationTimer();
     }
 }
 

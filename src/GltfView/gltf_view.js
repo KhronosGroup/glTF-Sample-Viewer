@@ -34,36 +34,22 @@ class GltfView
         this.animateNode(state);
         scene.applyTransformHierarchy(state.gltf);
 
-        // Draw all opaque and masked primitives. Depth sort is not yet required.
         this.renderer.drawScene(state, scene);
     }
 
-    // TODO: remove
     animateNode(state)
     {
-        if(state.gltf.animations !== undefined && state.animationIndex !== undefined && !state.animationTimer.paused)
+        if(state.gltf.animations !== undefined && state.animationIndices !== undefined && !state.animationTimer.paused)
         {
-            const t = this.renderingParameters.animationTimer.elapsedSec();
+            const t = state.animationTimer.elapsedSec();
 
-            if(this.renderingParameters.animationIndex === "all")
+            const animations = state.animationIndices.map(index => {
+                return state.gltf.animations[index];
+            }).filter(animation => animation !== undefined);
+
+            for(const animation of animations)
             {
-                // Special index, step all animations.
-                for(const anim of state.gltf.animations)
-                {
-                    if(anim)
-                    {
-                        anim.advance(state.gltf, t);
-                    }
-                }
-            }
-            else
-            {
-                // Step selected animation.
-                const anim = state.gltf.animations[this.renderingParameters.animationIndex];
-                if(anim)
-                {
-                    anim.advance(state.gltf, t);
-                }
+                animation.advance(state.gltf, t);
             }
         }
     }

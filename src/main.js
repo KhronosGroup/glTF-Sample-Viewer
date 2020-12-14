@@ -24,6 +24,8 @@ async function main()
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
         state.userCamera.updatePosition();
+        state.animationIndices = [0];
+        state.animationTimer.start();
     });
 
     loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
@@ -54,6 +56,8 @@ async function main()
             computePrimitiveCentroids(state.gltf);
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
             state.userCamera.updatePosition();
+            state.animationIndices = [0];
+            state.animationTimer.start();
         });
     };
 
