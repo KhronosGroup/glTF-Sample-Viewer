@@ -1,5 +1,6 @@
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfRenderer } from '../Renderer/renderer';
+import { KtxDecoder } from '../ResourceLoader/ktx.js';
 
 class GltfView
 {
@@ -8,6 +9,7 @@ class GltfView
         this.canvas = canvas;
         this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
         this.renderer = new gltfRenderer(this.context);
+        this.ktxDecoder = new KtxDecoder(this.context);
     }
 
     createState()

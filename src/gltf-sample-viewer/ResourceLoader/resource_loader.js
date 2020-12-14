@@ -9,11 +9,14 @@ import { gltfSampler } from '../gltf/sampler.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder)
+import dracoDecoder from './draco.js';
+
+async function loadGltf(path, json, buffers, view)
 {
     const gltf = new glTF(path);
-    gltf.ktxDecoder = ktxDecoder;
-    gltf.dracoDecoder = dracoDecoder;
+    gltf.ktxDecoder = view.ktxDecoder;
+    //Make sure draco decoder instance is ready
+    await dracoDecoder.ready();
     gltf.fromJson(json);
 
     // because the gltf image paths are not relative
@@ -28,7 +31,7 @@ async function loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder)
     return gltf;
 }
 
-async function loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder)
+async function loadGltfFromDrop(mainFile, additionalFiles, view)
 {
     const gltfFile = mainFile.name;
 
@@ -37,18 +40,19 @@ async function loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dra
         const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers, view, ktxDecoder, dracoDecoder);
+        return await loadGltf(gltfFile, glb.json, glb.buffers, view);
     }
     else
     {
         const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles, view, ktxDecoder, dracoDecoder);
+        return await loadGltf(gltfFile, json, additionalFiles, view);
     }
 }
 
-async function loadGltfFromPath(path, view, ktxDecoder, dracoDecoder)
+async function loadGltfFromPath(path, view)
 {
+
     const isGlb = getIsGlb(path);
 
     let response = await axios.get(path, { responseType: isGlb ? "arraybuffer" : "json" });
@@ -64,15 +68,15 @@ async function loadGltfFromPath(path, view, ktxDecoder, dracoDecoder)
         buffers = glb.buffers;
     }
 
-    return await loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder);
+    return await loadGltf(path, json, buffers, view);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view, ktxDecoder)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
     const environment = new glTF();
-    environment.ktxDecoder = ktxDecoder;
+    environment.ktxDecoder = view.ktxDecoder;
 
     //
     // Prepare samplers.

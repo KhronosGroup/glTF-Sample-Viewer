@@ -1,8 +1,9 @@
 
 class KtxDecoder {
 
-    constructor () {
+    constructor (context) {
         this.libktx = null;
+        this.initializied = this.init(context);
     }
 
     async init(context) {
@@ -11,6 +12,7 @@ class KtxDecoder {
     }
 
     async loadKtxFromUri(uri) {
+        await this.initializied;
         const response = await fetch(uri);
         const data = new Uint8Array(await response.arrayBuffer());
         const texture = new this.libktx.ktxTexture(data);
@@ -20,6 +22,7 @@ class KtxDecoder {
     }
 
     async loadKtxFromBuffer(data) {
+        await this.initializied;
         const texture = new this.libktx.ktxTexture(data);
         const uploadResult = texture.glUpload();
         return uploadResult.texture;
