@@ -60,7 +60,7 @@ class gltfNode extends GltfObject
         this.matrix = jsToGl(matrixData);
 
         mat4.getScaling(this.scale, this.matrix);
-        
+
         // To extract a correct rotation, the scaling component must be eliminated.
         const mn = mat4.create();
         for(const col of [0, 1, 2])
@@ -71,9 +71,9 @@ class gltfNode extends GltfObject
         }
         mat4.getRotation(this.rotation, mn);
         quat.normalize(this.rotation, this.rotation);
-        
+
         mat4.getTranslation(this.translation, this.matrix);
-        
+
         this.changed = true;
     }
 

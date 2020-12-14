@@ -43,9 +43,9 @@ class glTF extends GltfObject
         this.path = file;
     }
 
-    initGl()
+    initGl(webGlContext)
     {
-        initGlForMembers(this, this);
+        initGlForMembers(this, this, webGlContext);
     }
 
     fromJson(json)
