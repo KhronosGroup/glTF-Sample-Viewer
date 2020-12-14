@@ -1,4 +1,3 @@
-import { WebGl } from './webgl.js';
 
 class KtxDecoder {
 
@@ -6,8 +5,8 @@ class KtxDecoder {
         this.libktx = null;
     }
 
-    async init() {
-        this.libktx = await LIBKTX({preinitializedWebGLContext: WebGl.context});
+    async init(context) {
+        this.libktx = await LIBKTX({preinitializedWebGLContext: context});
         this.libktx.GL.makeContextCurrent(this.libktx.GL.createContext(null, { majorVersion: 2.0 }));
     }
 
@@ -15,7 +14,8 @@ class KtxDecoder {
         const response = await fetch(uri);
         const data = new Uint8Array(await response.arrayBuffer());
         const texture = new this.libktx.ktxTexture(data);
-        const uploadResult = texture.glUpload();
+        let uploadResult = texture.glUpload();
+        uploadResult.texture.levels = Math.log2(texture.baseWidth);
         return uploadResult.texture;
     }
 

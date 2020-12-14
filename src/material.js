@@ -118,7 +118,7 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
         if (this.normalTexture !== undefined)
         {
@@ -366,7 +366,7 @@ class gltfMaterial extends GltfObject
             }
         }
 
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, gltf, webGlContext);
     }
 
     fromJson(jsonMaterial)
