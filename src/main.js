@@ -3,7 +3,7 @@ import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 import { GltfView } from './GltfView/gltf_view.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
-import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
+import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 
 
 async function main()
@@ -45,6 +45,14 @@ async function main()
     {
         state.userCamera.zoomIn(delta);
         state.userCamera.updatePosition();
+    };
+    input.onDropFiles = (mainFile, additionalFiles) => {
+        loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder).then( gltf => {
+            state.gltf = gltf;
+            computePrimitiveCentroids(state.gltf);
+            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+            state.userCamera.updatePosition();
+        });
     };
 
     await view.startRendering(state);
