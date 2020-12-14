@@ -1,0 +1,30 @@
+{
+  "name": "gltf-sample-viewer",
+  "version": "1.0.0",
+  "type" : "module",
+  "description": "The official glTF sample viewer.",
+  "main": "dist/gltf-sample-viewer.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
+  },
+  "keywords": [
+    "gltf",
+    "webgl",
+    "pbr"
+  ],
+  "author": "Khronos Group Inc.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "gl-matrix": "^3.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "eslint": "^6.8.0",
+    "serve": "^11.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"
+  },
+  "homepage": "https://github.com/KhronosGroup/glTF-Sample-Viewer/#readme"
+}

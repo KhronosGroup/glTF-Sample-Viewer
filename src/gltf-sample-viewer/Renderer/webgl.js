@@ -1,4 +1,4 @@
-import { ImageMimeType } from "../gltf/image";
+import { ImageMimeType } from "../gltf/image.js";
 
 class gltfWebGl
 {

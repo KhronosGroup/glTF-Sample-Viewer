@@ -1,7 +1,7 @@
 {
-  "name": "gltf-sample-viewer",
+  "name": "gltf-sample-viewer-example",
   "version": "1.0.0",
-  "description": "The official glTF sample viewer.",
+  "description": "The official glTF sample viewer example.",
   "main": "dist/gltf-sample-viewer.js",
   "module": "dist/gltf-sample-viewer.module.js",
   "scripts": {
@@ -24,7 +24,8 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "gl-matrix": "^3.2.1"
+    "gl-matrix": "^3.2.1",
+    "gltf-sample-viewer": "file:src/gltf-sample-viewer"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",

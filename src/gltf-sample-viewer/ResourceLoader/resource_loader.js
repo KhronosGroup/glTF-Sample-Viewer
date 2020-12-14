@@ -2,8 +2,8 @@ import axios from '../../../libs/axios.min.js';
 import { glTF } from '../gltf/gltf.js';
 import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
-import { gltfLoader } from "./loader";
-import { gltfImage, ImageMimeType } from "../gltf/image";
+import { gltfLoader } from "./loader.js";
+import { gltfImage, ImageMimeType } from "../gltf/image.js";
 import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
 

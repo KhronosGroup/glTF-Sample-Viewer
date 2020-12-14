@@ -1,7 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { ToneMaps, DebugOutput } from './rendering_parameters.js';
-import { gltfWebGl } from './webgl';
+import { gltfWebGl } from './webgl.js';
 
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
