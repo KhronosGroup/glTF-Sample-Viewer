@@ -68,29 +68,25 @@ class gltfCamera extends GltfObject
         }
     }
 
-    sortPrimitivesByDepth(gltf, nodes)
+    sortPrimitivesByDepth(gltf, drawables)
     {
         // Precompute the distances to avoid their computation during sorting.
-        const sortedPrimitives = [];
-        for (const node of nodes.filter(node => node.mesh !== undefined))
+        for (const drawable of drawables)
         {
             const modelView = mat4.create();
-            mat4.multiply(modelView, this.getViewMatrix(gltf), node.worldTransform);
+            mat4.multiply(modelView, this.getViewMatrix(gltf), drawable.node.worldTransform);
 
-            for(const primitive of gltf.meshes[node.mesh].primitives)
-            {
-                // Transform primitive centroid to find the primitive's depth.
-                const pos = vec3.transformMat4(vec3.create(), vec3.clone(primitive.centroid), modelView);
+            // Transform primitive centroid to find the primitive's depth.
+            const pos = vec3.transformMat4(vec3.create(), vec3.clone(drawable.primitive.centroid), modelView);
 
-                sortedPrimitives.push({depth: pos[2], primitive, node});
-            }
+            drawable.depth = pos[2];
         }
 
         // 1. Remove primitives that are behind the camera.
         //    --> They will never be visible and it is cheap to discard them here.
         // 2. Sort primitives so that the furthest nodes are rendered first.
         //    This is required for correct transparency rendering.
-        return sortedPrimitives
+        return drawables
             .filter((a) => a.depth <= 0)
             .sort((a, b) => a.depth - b.depth);
     }
