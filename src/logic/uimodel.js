@@ -1,5 +1,4 @@
 import { gltfModelPathProvider } from '../model_path_provider.js'
-import { app } from '../ui/ui.js';
 import { map } from 'rxjs/operators';
 
 class UIModel
@@ -26,14 +25,4 @@ class UIModel
     }
 }
 
-const uiModel = new UIModel(app);
-
-// test output
-
-const modelObserver = {
-    next: x => console.log('Observer got a value: ' + x),
-    error: err => console.error('Observer got an error: ' + err)
-};
-
-uiModel.model.subscribe(modelObserver);
-uiModel.clearColor.subscribe(modelObserver);
+export { UIModel };

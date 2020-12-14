@@ -4,7 +4,8 @@ import { KtxDecoder } from './ktx.js';
 import { GltfView } from './GltfView/gltf_view.js';
 import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
-import {} from './logic/uimodel.js';
+import { UIModel } from './logic/uimodel.js';
+import { app } from './ui/ui.js';
 
 async function main()
 {
@@ -31,6 +32,20 @@ async function main()
     loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
         state.environment = environment;
     });
+
+
+    const uiModel = new UIModel(app);
+
+    // test output
+
+    const modelObserver = {
+        next: x => console.log('Observer got a value: ' + x),
+        error: err => console.error('Observer got an error: ' + err)
+    };
+
+    uiModel.model.subscribe(modelObserver);
+    uiModel.clearColor.subscribe(modelObserver);
+
 
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);
