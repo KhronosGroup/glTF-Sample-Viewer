@@ -31,14 +31,19 @@ class GltfView
         }
 
         const scene = state.gltf.scenes[state.sceneIndex];
-        this.animateNode(state);
+
         scene.applyTransformHierarchy(state.gltf);
 
         this.renderer.drawScene(state, scene);
     }
 
-    animateNode(state)
+    animate(state)
     {
+        if(state.gltf === undefined)
+        {
+            return;
+        }
+
         if(state.gltf.animations !== undefined && state.animationIndices !== undefined && !state.animationTimer.paused)
         {
             const t = state.animationTimer.elapsedSec();
@@ -56,14 +61,15 @@ class GltfView
 
     async startRendering(state)
     {
-        const renderFrame = () =>
+        const update = () =>
         {
+            this.animate(state);
             this.renderFrameToCanvas(state);
-            window.requestAnimationFrame(renderFrame);
+            window.requestAnimationFrame(update);
         };
 
         // After this start executing render loop.
-        window.requestAnimationFrame(renderFrame);
+        window.requestAnimationFrame(update);
     }
 }
 
