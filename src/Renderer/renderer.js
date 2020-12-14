@@ -131,7 +131,7 @@ class gltfRenderer
                 {
                     for (let primitive of mesh.primitives)
                     {
-                        if (predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
+                        if (predicateDrawPrimivitve(primitive))
                         {
                             this.drawPrimitive(state, primitive, node, this.viewProjectionMatrix);
                         }
@@ -145,7 +145,7 @@ class gltfRenderer
 
             for (const sortedPrimitive of sortedPrimitives)
             {
-                if (predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
+                if (predicateDrawPrimivitve(sortedPrimitive.primitive))
                 {
                     this.drawPrimitive(state, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
                 }

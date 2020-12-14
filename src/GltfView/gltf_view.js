@@ -31,36 +31,12 @@ class GltfView
         }
 
         const scene = state.gltf.scenes[state.sceneIndex];
-        const nodes = scene.gatherNodes(state.gltf);
 
-        const alphaModes = nodes
-            .filter(n => n.mesh !== undefined)
-            .reduce((acc, n) => acc.concat(state.gltf .meshes[n.mesh].primitives), [])
-            .map(p => state.gltf .materials[p.material].alphaMode);
+        // Draw all opaque and masked primitives. Depth sort is not yet required.
+        this.renderer.drawScene(state, scene, false, primitive => state.gltf .materials[primitive.material].alphaMode !== "BLEND");
 
-        let hasBlendPrimitives = false;
-        for(const alphaMode of alphaModes)
-        {
-            if(alphaMode === "BLEND")
-            {
-                hasBlendPrimitives = true;
-                break;
-            }
-        }
-
-        if(hasBlendPrimitives)
-        {
-            // Draw all opaque and masked primitives. Depth sort is not yet required.
-            this.renderer.drawScene(state, scene, false, primitive => state.gltf .materials[primitive.material].alphaMode !== "BLEND");
-
-            // Draw all transparent primitives. Depth sort is required.
-            this.renderer.drawScene(state, scene, true, primitive => state.gltf .materials[primitive.material].alphaMode === "BLEND");
-        }
-        else
-        {
-            // Simply draw all primitives.
-            this.renderer.drawScene(state, scene, false);
-        }
+        // Draw all transparent primitives. Depth sort is required.
+        this.renderer.drawScene(state, scene, true, primitive => state.gltf .materials[primitive.material].alphaMode === "BLEND");
     }
 
     async startRendering(state)
