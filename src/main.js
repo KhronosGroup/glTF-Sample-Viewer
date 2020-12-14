@@ -17,8 +17,10 @@ async function main()
     await dracoDecoder.ready();
     await ktxDecoder.init(view.context);
 
-    loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view, ktxDecoder, dracoDecoder).then( (gltf) => {
+    loadGltfFromPath("assets/models/2.0/AlphaBlendModeTest/glTF/AlphaBlendModeTest.gltf", view, ktxDecoder, dracoDecoder).then( (gltf) => {
         state.gltf = gltf;
+        const scene = state.gltf.scenes[state.sceneIndex];
+        scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
         state.userCamera.updatePosition();

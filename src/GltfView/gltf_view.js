@@ -31,12 +31,41 @@ class GltfView
         }
 
         const scene = state.gltf.scenes[state.sceneIndex];
+        this.animateNode(state);
+        scene.applyTransformHierarchy(state.gltf);
 
         // Draw all opaque and masked primitives. Depth sort is not yet required.
-        this.renderer.drawScene(state, scene, false, primitive => state.gltf .materials[primitive.material].alphaMode !== "BLEND");
+        this.renderer.drawScene(state, scene);
+    }
 
-        // Draw all transparent primitives. Depth sort is required.
-        this.renderer.drawScene(state, scene, true, primitive => state.gltf .materials[primitive.material].alphaMode === "BLEND");
+    // TODO: remove
+    animateNode(state)
+    {
+        if(state.gltf.animations !== undefined && state.animationIndex !== undefined && !state.animationTimer.paused)
+        {
+            const t = this.renderingParameters.animationTimer.elapsedSec();
+
+            if(this.renderingParameters.animationIndex === "all")
+            {
+                // Special index, step all animations.
+                for(const anim of state.gltf.animations)
+                {
+                    if(anim)
+                    {
+                        anim.advance(state.gltf, t);
+                    }
+                }
+            }
+            else
+            {
+                // Step selected animation.
+                const anim = state.gltf.animations[this.renderingParameters.animationIndex];
+                if(anim)
+                {
+                    anim.advance(state.gltf, t);
+                }
+            }
+        }
     }
 
     async startRendering(state)

@@ -88,7 +88,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(state, scene, sortByDepth, predicateDrawPrimivitve)
+    drawScene(state, scene)
     {
         let currentCamera = undefined;
 
@@ -122,33 +122,29 @@ class gltfRenderer
             }
         }
 
-        if (!sortByDepth)
+        for (const node of nodes)
         {
-            for (const node of nodes)
+            let mesh = state.gltf.meshes[node.mesh];
+            if (mesh !== undefined)
             {
-                let mesh = state.gltf.meshes[node.mesh];
-                if (mesh !== undefined)
+                for (let primitive of mesh.primitives)
                 {
-                    for (let primitive of mesh.primitives)
+                    const predicateDrawPrimivitve = primitive => state.gltf .materials[primitive.material].alphaMode !== "BLEND";
+                    if (predicateDrawPrimivitve(primitive))
                     {
-                        if (predicateDrawPrimivitve(primitive))
-                        {
-                            this.drawPrimitive(state, primitive, node, this.viewProjectionMatrix);
-                        }
+                        this.drawPrimitive(state, primitive, node, this.viewProjectionMatrix);
                     }
                 }
             }
         }
-        else
-        {
-            const sortedPrimitives = currentCamera.sortPrimitivesByDepth(state.gltf, nodes);
 
-            for (const sortedPrimitive of sortedPrimitives)
+        const sortedPrimitives = currentCamera.sortPrimitivesByDepth(state.gltf, nodes);
+        for (const sortedPrimitive of sortedPrimitives)
+        {
+            const predicateDrawPrimivitve = primitive => state.gltf .materials[primitive.material].alphaMode === "BLEND";
+            if (predicateDrawPrimivitve(sortedPrimitive.primitive))
             {
-                if (predicateDrawPrimivitve(sortedPrimitive.primitive))
-                {
-                    this.drawPrimitive(state, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
-                }
+                this.drawPrimitive(state, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
             }
         }
     }
