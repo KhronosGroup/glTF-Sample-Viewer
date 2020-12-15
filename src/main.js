@@ -1,8 +1,6 @@
 import { gltfInput } from './input.js';
-import { GltfView } from './gltf-sample-viewer/GltfView/gltf_view.js';
-import { computePrimitiveCentroids } from './gltf-sample-viewer/gltf/gltf_utils.js';
-import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './gltf-sample-viewer/ResourceLoader/resource_loader.js';
 
+import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from "gltf-sample-viewer";
 
 async function main()
 {

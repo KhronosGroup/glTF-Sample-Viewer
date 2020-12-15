@@ -5,7 +5,8 @@
   "main": "dist/gltf-sample-viewer.js",
   "module": "dist/gltf-sample-viewer.module.js",
   "files": [
-    "dist/gltf-sample-viewer.js"
+    "dist/gltf-sample-viewer.js",
+    "dist/libktx.wasm"
   ],
   "repository": {
     "type": "git",

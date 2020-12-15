@@ -25,7 +25,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "gl-matrix": "^3.2.1",
-    "gltf-sample-viewer": "D:/reps/glTF-Sample-Viewer/src/gltf-sample-viewer"
+    "gltf-sample-viewer": "./src/gltf-sample-viewer"
   },
   "devDependencies": {
     "@rollup/plugin-wasm": "^5.1.2",
