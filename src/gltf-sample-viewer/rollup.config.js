@@ -1,32 +1,31 @@
 import commonjs from 'rollup-plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
-import builtins from 'rollup-plugin-node-builtins';
-import { wasm } from '@rollup/plugin-wasm';
+import copy from 'rollup-plugin-copy'
 
 export default {
-  input: 'src/main.js',
+  input: ['gltf-sample-viewer.js'],
+  external:['gl-matrix', 'draco3d'],
   output: [
     {
       file: 'dist/gltf-sample-viewer.js',
-      format: 'cjs'
+      format: 'cjs',
+      external: [ 'gl-matrix',  'draco3d']
     },
     {
       file: 'dist/gltf-sample-viewer.module.js',
-      format: 'esm'
-    },
-    {
-      name: 'gltfSampleViewer',
-      file: 'dist/gltf-sample-viewer.umd.js',
-      format: 'umd',
-      sourcemap: true
+      format: 'esm',
+      external: [ 'gl-matrix',  'draco3d']
     }
   ],
   plugins: [
     glslify(),
     resolve(),
     commonjs(),
-    builtins(),
-    wasm()
+    copy({
+        targets: [
+          { src: 'libs/libktx.wasm', dest: 'dist' }
+        ]
+      })
   ]
 };

@@ -1,4 +1,4 @@
-
+import LIBKTX from '../libs/libktx.js';
 class KtxDecoder {
 
     constructor (context) {

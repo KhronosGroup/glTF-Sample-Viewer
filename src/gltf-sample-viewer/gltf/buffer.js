@@ -1,4 +1,4 @@
-import axios from '../../../libs/axios.min.js';
+import axios from '../libs/axios.min.js';
 import { getContainingFolder } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 

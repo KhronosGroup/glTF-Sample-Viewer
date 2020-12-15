@@ -1,4 +1,4 @@
-
+import { createDecoderModule } from 'draco3d';
 class DracoDecoder {
 
     constructor() {
@@ -7,13 +7,11 @@ class DracoDecoder {
             DracoDecoder.instance = this;
             this.module = null;
 
-            this.initializingPromise = new Promise(resolve => {
-                let dracoDecoderType = {};
-                dracoDecoderType['onModuleLoaded'] = dracoDecoderModule => {
-                    this.module = dracoDecoderModule;
-                    resolve();
-                };
-                DracoDecoderModule(dracoDecoderType);
+            this.initializingPromise = createDecoderModule({}).then((module) => {
+                // This is reached when everything is ready, and you can call methods on
+                // Module.
+                this.module = module;
+                console.log('Decoder Module Initialized!');
             });
         }
         return DracoDecoder.instance;
