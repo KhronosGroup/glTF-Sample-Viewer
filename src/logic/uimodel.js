@@ -1,6 +1,9 @@
 import { gltfModelPathProvider } from '../model_path_provider.js'
 import { map } from 'rxjs/operators';
 
+// this class wraps all the observables for the gltf sample viewer state
+// the data streams coming out of this should match the data required in GltfState
+// as close as possible
 class UIModel
 {
     constructor(app)
@@ -21,7 +24,7 @@ class UIModel
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(map(value => value.event.msg));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(map(value => value.event.msg));
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
-        this.clearColor = app.colorChanged$.pipe(map(value => value.event.msg)); // TODO find correct way of returning a color value string
+        this.clearColor = app.colorChanged$.pipe(map(value => value)); // TODO find correct way of returning a color value string
     }
 }
 

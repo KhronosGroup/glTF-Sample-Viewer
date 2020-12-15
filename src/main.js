@@ -18,34 +18,65 @@ async function main()
     await dracoDecoder.ready();
     await ktxDecoder.init(view.context);
 
-    loadGltfFromPath("assets/models/2.0/AlphaBlendModeTest/glTF/AlphaBlendModeTest.gltf", view, ktxDecoder, dracoDecoder).then( (gltf) => {
-        state.gltf = gltf;
-        const scene = state.gltf.scenes[state.sceneIndex];
-        scene.applyTransformHierarchy(state.gltf);
-        computePrimitiveCentroids(state.gltf);
-        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-        state.userCamera.updatePosition();
-        state.animationIndices = [0];
-        state.animationTimer.start();
-    });
-
-    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
-        state.environment = environment;
-    });
-
+    // loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
+    //     state.environment = environment;
+    // });
 
     const uiModel = new UIModel(app);
+    uiModel.model.subscribe( gltf_path =>
+    {
+        loadGltfFromPath(gltf_path, view, ktxDecoder, dracoDecoder).then( (gltf) => {
+            state.gltf = gltf;
+            const scene = state.gltf.scenes[state.sceneIndex];
+            scene.applyTransformHierarchy(state.gltf);
+            computePrimitiveCentroids(state.gltf);
+            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+            state.userCamera.updatePosition();
+            state.animationIndices = [0];
+            state.animationTimer.start();
+        });
+    });
 
-    // test output
+    uiModel.scene.subscribe( scene => {
+        state.sceneIndex = scene;
+    });
 
-    const modelObserver = {
-        next: x => console.log('Observer got a value: ' + x),
-        error: err => console.error('Observer got an error: ' + err)
-    };
+    uiModel.camera.subscribe( camera => {
+        state.cameraIndex = camera;
+    });
 
-    uiModel.model.subscribe(modelObserver);
-    uiModel.clearColor.subscribe(modelObserver);
+    uiModel.tonemap.subscribe( tonemap => {
+        state.renderingParameters.toneMap = tonemap;
+    });
 
+    uiModel.debugchannel.subscribe( debugchannel => {
+        state.renderingParameters.debugOutput = debugchannel;
+    });
+
+    uiModel.skinningEnabled.subscribe( skinningEnabled => {
+        state.skinningEnabled = skinningEnabled;
+    });
+
+    uiModel.morphingEnabled.subscribe( morphingEnabled => {
+        state.morphingEnabled = morphingEnabled;
+    });
+
+    uiModel.iblEnabled.subscribe( iblEnabled => {
+        state.renderingParameters.useIBL = iblEnabled;
+    });
+
+    uiModel.punctualLightsEnabled.subscribe( punctualLightsEnabled => {
+        state.renderingParameters.usePunctual = punctualLightsEnabled;
+    });
+
+    uiModel.environmentEnabled.subscribe( environmentEnabled => {
+        state.renderingParameters.environmentBackground = environmentEnabled;
+    });
+
+    uiModel.clearColor.subscribe( clearColor => {
+        console.log(clearColor);
+        state.renderingParameters.clearColor = clearColor;
+    });
 
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);
