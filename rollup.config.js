@@ -1,16 +1,12 @@
-import commonjs from 'rollup-plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
+import copy from 'rollup-plugin-copy';
 import wasm from '@rollup/plugin-wasm';
 
 export default {
   input: 'src/main.js',
   output: [
-    {
-      file: 'dist/GltfSVApp.module.js',
-      format: 'esm'
-    },
     {
       name: 'SampleViewerApp',
       file: 'dist/GltfSVApp.umd.js',
@@ -22,11 +18,14 @@ export default {
     glslify(),
     resolve({
         browser: true,
-        include: 'node_modules/gltf-sample-viewer/dist/*.wasm',
-        extensions: [".js", ".wasm"],
         preferBuiltins: true
     }),
     builtins(),
+    copy({
+        targets: [
+          { src: 'node_modules/gltf-sample-viewer/dist/*.wasm', dest: 'dist' }
+        ]
+      }),
     wasm()
   ]
 };
