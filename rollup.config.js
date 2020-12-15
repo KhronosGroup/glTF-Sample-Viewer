@@ -23,7 +23,7 @@ export default {
     builtins(),
     copy({
         targets: [
-          { src: 'node_modules/gltf-sample-viewer/dist/*.wasm', dest: 'dist' }
+          { src: 'node_modules/gltf-sample-viewer/libs/libktx.wasm', dest: 'dist' }
         ]
       }),
     wasm()
