@@ -24,6 +24,7 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
+    "@bundled-es-modules/axios": "^0.18.1",
     "gl-matrix": "^3.2.1",
     "gltf-sample-viewer": "./src/gltf-sample-viewer"
   },

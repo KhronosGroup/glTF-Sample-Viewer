@@ -28,8 +28,8 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "gl-matrix": "^3.2.1",
-    "draco3d": "^1.4.1"
+    "@bundled-es-modules/axios": "^0.18.1",
+    "gl-matrix": "^3.2.1"
   },
   "devDependencies": {
     "@rollup/plugin-wasm": "^5.1.2",
