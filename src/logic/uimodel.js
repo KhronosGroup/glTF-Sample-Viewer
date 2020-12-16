@@ -1,4 +1,4 @@
-import { map, filter, startWith } from 'rxjs/operators';
+import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF } from '../gltf.js';
 import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters';
 
@@ -21,16 +21,16 @@ class UIModel
             startWith("Avocado"),
             map(value => this.pathProvider.resolve(value)),
         );
-        this.flavour = app.flavourChanged$.pipe(map(value => value.event.msg)); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
-        this.scene = app.sceneChanged$.pipe(map(value => value.event.msg));
-        this.camera = app.cameraChanged$.pipe(map(value => value.event.msg));
-        this.environment = app.environmentChanged$.pipe(map(value => value.event.msg));
+        this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
+        this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
+        this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
+        this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
 
         this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
             return {title: ToneMaps[key]};
         });
         this.tonemap = app.tonemapChanged$.pipe(
-            map(value => value.event.msg),
+            pluck("event", "msg"),
             startWith(ToneMaps.LINEAR)
         );
 
@@ -38,22 +38,23 @@ class UIModel
             return {title: DebugOutput[key]};
         });
         this.debugchannel = app.debugchannelChanged$.pipe(
-            map(value => value.event.msg),
+            pluck("event", "msg"),
             startWith(DebugOutput.NONE)
         );
 
-        this.skinningEnabled = app.skinningChanged$.pipe(map(value => value.event.msg));
-        this.morphingEnabled = app.morphingChanged$.pipe(map(value => value.event.msg));
-        this.iblEnabled = app.iblChanged$.pipe(map(value => value.event.msg));
-        this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(map(value => value.event.msg));
-        this.environmentEnabled = app.environmentVisibilityChanged$.pipe(map(value => value.event.msg));
+        this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
+        this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
+        this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
+        this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
+        this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
-            map(value => value.event.msg),
+            pluck("event", "msg"),
             map(msg => msg.target.value ),
             startWith("#303542"),
             map(hex => {
+                // convert hex string to rgb values
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 return result ? [
                     parseInt(result[1], 16),
