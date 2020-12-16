@@ -1,5 +1,5 @@
 import VueRx from 'vue-rx';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import './sass.scss';
 
 Vue.use(VueRx, { Subject });

@@ -6,6 +6,8 @@ import { computePrimitiveCentroids } from './gltf_utils.js';
 import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
+import { Observable, from } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 
 async function main()
 {
@@ -23,19 +25,23 @@ async function main()
     // });
 
     const uiModel = new UIModel(app);
-    uiModel.model.subscribe( gltf_path =>
-    {
-        loadGltfFromPath(gltf_path, view, ktxDecoder, dracoDecoder).then( (gltf) => {
-            state.gltf = gltf;
-            const scene = state.gltf.scenes[state.sceneIndex];
-            scene.applyTransformHierarchy(state.gltf);
-            computePrimitiveCentroids(state.gltf);
-            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-            state.userCamera.updatePosition();
-            state.animationIndices = [0];
-            state.animationTimer.start();
-        });
-    });
+    uiModel.attachGltfLoaded(uiModel.model.pipe(
+        mergeMap( gltf_path =>
+        {
+            return from(loadGltfFromPath(gltf_path, view, ktxDecoder, dracoDecoder).then( (gltf) => {
+                state.gltf = gltf;
+                const scene = state.gltf.scenes[state.sceneIndex];
+                scene.applyTransformHierarchy(state.gltf);
+                computePrimitiveCentroids(state.gltf);
+                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+                state.userCamera.updatePosition();
+                state.animationIndices = [0];
+                state.animationTimer.start();
+                return state.gltf;
+            })
+            );
+        })
+    ));
 
     uiModel.scene.subscribe( scene => {
         state.sceneIndex = scene;
