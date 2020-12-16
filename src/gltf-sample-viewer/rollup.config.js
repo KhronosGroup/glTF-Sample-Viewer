@@ -22,6 +22,11 @@ export default {
     glslify(),
     resolve(),
     commonjs(),
+    copy({
+        targets: [
+          { src: 'libs/libktx.wasm', dest: 'dist' }
+        ]
+      }),
     wasm()
   ]
 };
