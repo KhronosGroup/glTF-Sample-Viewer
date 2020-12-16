@@ -92,7 +92,6 @@ async function main()
     });
 
     uiModel.clearColor.subscribe( clearColor => {
-        console.log(clearColor);
         state.renderingParameters.clearColor = clearColor;
     });
 

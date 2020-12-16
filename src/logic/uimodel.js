@@ -1,4 +1,4 @@
-import { map, startWith } from 'rxjs/operators';
+import { map, filter, startWith } from 'rxjs/operators';
 import { glTF } from '../gltf.js';
 import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters';
 
@@ -48,7 +48,19 @@ class UIModel
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(map(value => value.event.msg));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(map(value => value.event.msg));
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
-        this.clearColor = app.colorChanged$.pipe(map(value => value)); // TODO find correct way of returning a color value string
+        this.clearColor = app.colorChanged$.pipe(
+            filter(value => value.event !== undefined),
+            map(value => value.event.msg),
+            map(msg => msg.target.value ),
+            map(hex => {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? [
+                    parseInt(result[1], 16),
+                    parseInt(result[2], 16),
+                    parseInt(result[3], 16)
+                ] : null;
+            })
+        );
     }
 
     attachGltfLoaded(gltfLoadedObservable)
