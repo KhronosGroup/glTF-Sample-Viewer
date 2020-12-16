@@ -183,7 +183,7 @@ const app = new Vue({
         models: [{title: "Avocado"}, {title: "BoomBox"}, {title: "Duck"}],
         flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
         scenes: [{title: "0"}, {title: "1"}],
-        cameras: [{title: "front"}, {title: "left"}, {title: "right"}, {title: "top"}],
+        cameras: [{title: "User Camera"}],
         materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
         environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],

@@ -14,7 +14,7 @@ class gltfModelPathProvider
         this.modelsDictionary = undefined;
     }
 
-    initialize()
+    async initialize()
     {
         const self = this;
         return axios.get(this.modelIndexerPath).then(response =>

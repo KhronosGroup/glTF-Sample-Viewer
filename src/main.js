@@ -8,6 +8,7 @@ import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
 import { Observable, from } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { gltfModelPathProvider } from './model_path_provider.js';
 
 async function main()
 {
@@ -24,7 +25,10 @@ async function main()
     //     state.environment = environment;
     // });
 
-    const uiModel = new UIModel(app);
+    const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
+    await pathProvider.initialize();
+
+    const uiModel = await new UIModel(app, pathProvider);
     uiModel.attachGltfLoaded(uiModel.model.pipe(
         mergeMap( gltf_path =>
         {
@@ -48,7 +52,14 @@ async function main()
     });
 
     uiModel.camera.subscribe( camera => {
-        state.cameraIndex = camera;
+        if(camera === "User Camera")
+        {
+            state.cameraIndex = undefined;
+        }
+        else
+        {
+            state.cameraIndex = camera;
+        }
     });
 
     uiModel.tonemap.subscribe( tonemap => {

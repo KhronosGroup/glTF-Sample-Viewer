@@ -1,4 +1,3 @@
-import { gltfModelPathProvider } from '../model_path_provider.js'
 import { map, startWith } from 'rxjs/operators';
 import { glTF } from '../gltf.js';
 
@@ -7,14 +6,20 @@ import { glTF } from '../gltf.js';
 // as close as possible
 class UIModel
 {
-    constructor(app)
+    constructor(app, modelPathProvider)
     {
         this.app = app;
+        this.pathProvider = modelPathProvider;
 
-        this.pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
-        this.pathProvider.initialize();
+        this.app.models = this.pathProvider.getAllKeys().map(key => {
+            return {title: key};
+        });
 
-        this.model = app.modelChanged$.pipe(map(value => this.pathProvider.resolve(value.event.msg)));
+        this.model = app.modelChanged$.pipe(
+            map(event => event.event.msg),
+            startWith("Avocado"),
+            map(value => this.pathProvider.resolve(value)),
+        );
         this.flavour = app.flavourChanged$.pipe(map(value => value.event.msg)); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
         this.scene = app.sceneChanged$.pipe(map(value => value.event.msg));
         this.camera = app.cameraChanged$.pipe(map(value => value.event.msg));
@@ -47,7 +52,18 @@ class UIModel
             this.app.scenes = scenes;
         });
 
-
+        const cameraIndices = gltfLoadedAndInit.pipe(
+            map( (gltf) => {
+                const cameraIndices = [{title: "User Camera"}];
+                cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+                    return {title: index};
+                }));
+                return cameraIndices;
+            })
+        );
+        cameraIndices.subscribe( (cameras) => {
+            this.app.cameras = cameras;
+        });
     }
 }
 
