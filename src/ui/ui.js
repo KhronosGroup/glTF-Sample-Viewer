@@ -188,7 +188,7 @@ const app = new Vue({
         environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "Linear"}],
-        debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metallic"}, {title: "Sheen"}],
+        debugchannels: [{title: "None"}],
       };
     },
     methods:

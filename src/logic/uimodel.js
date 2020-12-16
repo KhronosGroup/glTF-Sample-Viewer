@@ -31,13 +31,17 @@ class UIModel
         });
         this.tonemap = app.tonemapChanged$.pipe(
             map(value => value.event.msg),
-            map(value => {
-                return Object.keys(ToneMaps).find(key => ToneMaps[key] === value);
-            }),
             startWith(ToneMaps.LINEAR)
         );
 
-        this.debugchannel = app.debugchannelChanged$.pipe(map(value => value.event.msg));
+        this.app.debugchannels = Object.keys(DebugOutput).map((key) => {
+            return {title: DebugOutput[key]};
+        });
+        this.debugchannel = app.debugchannelChanged$.pipe(
+            map(value => value.event.msg),
+            startWith(DebugOutput.NONE)
+        );
+
         this.skinningEnabled = app.skinningChanged$.pipe(map(value => value.event.msg));
         this.morphingEnabled = app.morphingChanged$.pipe(map(value => value.event.msg));
         this.iblEnabled = app.iblChanged$.pipe(map(value => value.event.msg));
