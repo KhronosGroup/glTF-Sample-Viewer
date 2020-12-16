@@ -180,8 +180,8 @@ const app = new Vue({
       return {
         fullheight: true,
         right: true,
-        models: [{title: "Avocado"}, {title: "BoomBox"}, {title: "Duck"}],
-        flavors: [{title: "gltf"}, {title: "binary"}, {title: "draco"}],
+        models: [{title: "Avocado"}],
+        flavors: [],
         scenes: [{title: "0"}, {title: "1"}],
         cameras: [{title: "User Camera"}],
         materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],

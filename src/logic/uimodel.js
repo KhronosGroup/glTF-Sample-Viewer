@@ -64,6 +64,22 @@ class UIModel
         cameraIndices.subscribe( (cameras) => {
             this.app.cameras = cameras;
         });
+
+        const variants = gltfLoadedAndInit.pipe(
+            map( (gltf) => {
+                if(gltf.variants !== undefined)
+                {
+                    return gltf.variants.map( (variant, index) => {
+                        return {title: index};
+                    });
+                }
+                return [];
+            })
+        );
+        variants.subscribe( (variants) => {
+            this.app.materialVariants = variants;
+        });
+
     }
 }
 
