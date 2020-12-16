@@ -103,7 +103,9 @@ class iblSampler
         return targetTexture;
     }
     
-    createCubemapMipmapTexture()
+ 
+
+    createCubemapTexture(withMipmaps)
     {
         var targetTexture =  this.gl.createTexture();
         this.gl.bindTexture( this.gl.TEXTURE_CUBE_MAP, targetTexture);
@@ -116,58 +118,25 @@ class iblSampler
         const format = this.gl.RGBA;
         const type =  this.gl.UNSIGNED_BYTE;
         const data = null;
-        
 
         for(var i = 0; i < 6; ++i)
         {
             this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, internalFormat,
-                this.textureSize,  this.textureSize, border,
-                format, type, data);
-        }
-   
-
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MAG_FILTER,  this.gl.LINEAR);
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR_MIPMAP_LINEAR);
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_S,  this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_T,  this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_R,  this.gl.CLAMP_TO_EDGE);      
-
-
-
-        return targetTexture;
-    }
-
-    createCubemapTexture()
-    {
-    
-        const targetTextureWidth =  this.textureSize;
-        const targetTextureHeight =  this.textureSize;
-
-        var targetTexture =  this.gl.createTexture();
-        this.gl.bindTexture( this.gl.TEXTURE_CUBE_MAP, targetTexture);
-        
-
-        // define size and format of level 0
-        const level = 0;
-        const internalFormat =  this.gl.RGBA;
-        const border = 0;
-        const format = this.gl.RGBA;
-        const type =  this.gl.UNSIGNED_BYTE;
-        const data = null;
-        //  this.gl.texImage2D( this.gl.TEXTURE_2D, level, internalFormat,
-        //     targetTextureWidth, targetTextureHeight, border,
-        //    format, type, data);
-        
-        for(var i = 0; i < 6; ++i)
-        {
-            this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, internalFormat,
-                targetTextureWidth, targetTextureHeight, border,
+                this.textureSize, this.textureSize, border,
                 format, type, data);
 
         } 
 
+        
+        if(withMipmaps)
+        {
+            this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR_MIPMAP_LINEAR);
+        }
+        else
+        {
+            this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR);
+        }
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MAG_FILTER,  this.gl.LINEAR);
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_S,  this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_T,  this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_R,  this.gl.CLAMP_TO_EDGE);
@@ -186,13 +155,13 @@ class iblSampler
 
         this.inputTextureID = this.loadTexture("assets/environments/helipad.jpg");
 
-        this.cubemapTextureID = this.createCubemapMipmapTexture(); 
+        this.cubemapTextureID = this.createCubemapTexture(true); 
 
         this.framebuffer = this.gl.createFramebuffer();
 
-        this.lambertianTextureID = this.createCubemapTexture(); 
-        this.ggxTextureID = this.createCubemapMipmapTexture();
-        this.sheenTextureID = this.createCubemapMipmapTexture();
+        this.lambertianTextureID = this.createCubemapTexture(false); 
+        this.ggxTextureID = this.createCubemapTexture(true); 
+        this.sheenTextureID = this.createCubemapTexture(true); 
 
 
         this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
@@ -215,21 +184,6 @@ class iblSampler
     }
 
 
-    clearFrame()
-    {
-        this.gl.clearColor( 1.0,0.0,0.0, 1.0);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-    }
-
-
-
-    preDrawScene()
-    {
-        this.gl.disable(this.gl.CULL_FACE);
-        this.gl.disable(this.gl.BLEND);
-    }
-
-
     panoramaToCubeMap() 
     {
         var gl = this.gl;
@@ -242,24 +196,16 @@ class iblSampler
   
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
 
-  
-            gl.viewport(0, 0,  this.textureSize,  this.textureSize);
-        
+            gl.viewport(0, 0,  this.textureSize,  this.textureSize);  
 
-            gl.clearColor(0, 0.8, 0.1, 1);   
+            gl.clearColor(0, 0.0, 0.0, 0.0);   
             gl.clear(gl.COLOR_BUFFER_BIT| gl.DEPTH_BUFFER_BIT);
-
-           
-
 
             const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
             const fragmentHash = this.shaderCache.selectShader("panorama_to_cubemap.frag", []);
 
             this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
             this.gl.useProgram(this.shader.program);
-
-
-    
 
             //  TEXTURE0 = active.
             this.gl.activeTexture(this.gl.TEXTURE0+0);
@@ -270,8 +216,6 @@ class iblSampler
             // map shader uniform to texture unit (TEXTURE0)  
             const location = this.gl.getUniformLocation(this.shader.program,"u_panorama");
             this.gl.uniform1i(location, 0); // texture unit 0 (TEXTURE0)  
-
-
 
             this.shader.updateUniform("u_currentFace", i);
 
@@ -285,28 +229,28 @@ class iblSampler
     }
 
 
-    
-
-    cubeMapToLambertian() 
+    applyFilter(
+        distribution,
+        roughness,
+        targetMipLevel,
+        targetTexture)
     {
         var gl = this.gl;
+        var currentTextureSize =  this.textureSize>>(targetMipLevel);
 
         for(var i = 0; i < 6; ++i)
         {
+
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
             var side = i;
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, this.lambertianTextureID, 0);       
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, targetTexture, targetMipLevel);       
         
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.lambertianTextureID);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, targetTexture);
 
-  
-            gl.viewport(0, 0,  this.textureSize,  this.textureSize);
-        
+            gl.viewport(0, 0, currentTextureSize, currentTextureSize);   
 
-            gl.clearColor(0, 0.8, 0.1, 1);   
+            gl.clearColor(0, 0.0, 0.0, 0.0);   
             gl.clear(gl.COLOR_BUFFER_BIT| gl.DEPTH_BUFFER_BIT);
-
-           
 
 
             const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
@@ -314,7 +258,6 @@ class iblSampler
 
             this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
             this.gl.useProgram(this.shader.program);
-
 
     
             //  TEXTURE0 = active.
@@ -327,16 +270,17 @@ class iblSampler
             const location = this.gl.getUniformLocation(this.shader.program,"u_cubemapTexture");
             this.gl.uniform1i(location, 0); // texture unit 0
 
-            const roughness = 1.0;
+            //const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
             const sampleCount = 1024;
-            const currentMipLevel = 0;
+            //const currentMipLevel = 0;
+            
             const width = this.textureSize;
             const lodBias = 0.0;
-            const distribution = 0;
+            //const distribution = 1;
 
             this.shader.updateUniform("u_roughness", roughness);
             this.shader.updateUniform("u_sampleCount", sampleCount);
-            this.shader.updateUniform("u_currentMipLevel", currentMipLevel);
+            this.shader.updateUniform("u_currentMipLevel", targetMipLevel);
             this.shader.updateUniform("u_width", width);
             this.shader.updateUniform("u_lodBias", lodBias);
             this.shader.updateUniform("u_distribution", distribution);
@@ -345,85 +289,36 @@ class iblSampler
 
             //fullscreen triangle
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+            
         }
 
-
-
-
     }
+
+    cubeMapToLambertian() 
+    {
+        this.applyFilter(
+            0,
+            0.0,
+            0,
+            this.lambertianTextureID);
+    }
+
 
     cubeMapToGGX() 
     {
-        var gl = this.gl;
-        var currentTextureSize =  this.textureSize;
-        //var currentMipLevel=0;
         var outputMipLevels = 11;
         for(var currentMipLevel = 0; currentMipLevel < 6; ++currentMipLevel)
         {
-            for(var i = 0; i < 6; ++i)
-            {
-
-                gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-                var side = i;
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, this.ggxTextureID, currentMipLevel);       
-            
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
-
-    
-                gl.viewport(0, 0, currentTextureSize, currentTextureSize);
-            
-
-                gl.clearColor(0, 0.8, 0.1, 1);   
-                gl.clear(gl.COLOR_BUFFER_BIT| gl.DEPTH_BUFFER_BIT);
-
-            
-
-
-                const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
-                const fragmentHash = this.shaderCache.selectShader("ibl_filtering.frag", []);
-
-                this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
-                this.gl.useProgram(this.shader.program);
-
-
-        
-                //  TEXTURE0 = active.
-                this.gl.activeTexture(this.gl.TEXTURE0+0);
-
-                // Bind texture ID to active texture
-                this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
-                
-                // map shader uniform to texture unit (TEXTURE0)  
-                const location = this.gl.getUniformLocation(this.shader.program,"u_cubemapTexture");
-                this.gl.uniform1i(location, 0); // texture unit 0
-
-                const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
-                const sampleCount = 1024;
-                //const currentMipLevel = 0;
-                
-                const width = this.textureSize;
-                const lodBias = 0.0;
-                const distribution = 1;
-
-                this.shader.updateUniform("u_roughness", roughness);
-                this.shader.updateUniform("u_sampleCount", sampleCount);
-                this.shader.updateUniform("u_currentMipLevel", currentMipLevel);
-                this.shader.updateUniform("u_width", width);
-                this.shader.updateUniform("u_lodBias", lodBias);
-                this.shader.updateUniform("u_distribution", distribution);
-                this.shader.updateUniform("u_currentFace", i);
-
-
-                //fullscreen triangle
-                this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-
-                
-            }
-            // prepare next level:
-            currentTextureSize = currentTextureSize/2;
+            const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
+            this.applyFilter(
+                1,
+                roughness,
+                currentMipLevel,
+                this.ggxTextureID);
         }
-
     }
+
 
     drawDebugOutput()
     {
@@ -441,16 +336,9 @@ class iblSampler
             return;
         }
 
-        //select shader permutation, compile and link program.
-
-        let vertDefines = [];
-        //  this.pushVertParameterDefines(vertDefines);
-    
-        let fragDefines= [];
-        // this.pushFragParameterDefines(fragDefines);
-
-        const vertexHash = this.shaderCache.selectShader("fullscreen.vert", vertDefines);
-        const fragmentHash = this.shaderCache.selectShader("debug.frag", fragDefines);
+     
+        const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
+        const fragmentHash = this.shaderCache.selectShader("debug.frag", []);
 
         if (fragmentHash && vertexHash)
         {
@@ -472,7 +360,7 @@ class iblSampler
         // Bind texture ID to active texture
         // this.gl.bindTexture(this.gl.TEXTURE_2D, this.inputTextureID);
         // this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
-        // this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.lambertianTextureID);
+        //this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.lambertianTextureID);
         this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
         // this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
         
@@ -488,16 +376,22 @@ class iblSampler
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     }
 
+
+    filter()
+    {
+        
+        this.panoramaToCubeMap();
+        this.cubeMapToLambertian();
+        this.cubeMapToGGX();
+        //this.cubeMapToSheen();
+    }
+
     drawScene()
     {
-        this.preDrawScene();
 
         if(this.status == 0) // filtering is done once 
         {
-            this.panoramaToCubeMap();
-
-            this.cubeMapToLambertian();
-            this.cubeMapToGGX();
+            this.filter();
             this.status = 1;
         }
 
@@ -506,12 +400,6 @@ class iblSampler
     }
 
    
-
-    pushVertParameterDefines(vertDefines)
-    {
-        vertDefines.push("TEST 1");
-    }
-
 
     destroy()
     {
