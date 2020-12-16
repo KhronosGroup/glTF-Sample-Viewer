@@ -46,7 +46,7 @@ void main(void)
 
 	vec3 direction = normalize(uvToXYZ(u_currentFace, newUV.xy));
  
-    textureColor = texture(u_inputTexture, direction);
+    textureColor = textureLod(u_inputTexture, direction,1.0);
 	//textureColor = texture(u_inputTexture, texCoord);
 	
 	if(texCoord.x>0.1)

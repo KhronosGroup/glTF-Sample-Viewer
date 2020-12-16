@@ -64,18 +64,17 @@ float saturate(float v)
 	return clamp(v, 0.0f, 1.0f);
 }
 
-float bitfieldReverse(int i)
+float bitfieldReverse(uint bits)
 {
-	int b =  ( int(i) << 16u) | (int(i) >> 16u );
-	b = (b & 0x55555555) << 1u | (b & 0xAAAAAAAA) >> 1u;
-	b = (b & 0x33333333) << 2u | (b & 0xCCCCCCCC) >> 2u;
-	b = (b & 0x0F0F0F0F) << 4u | (b & 0xF0F0F0F0) >> 4u;    
-	b = (b & 0x00FF00FF) << 8u | (b & 0xFF00FF00) >> 8u;
-
-	return float(b); 
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+	return float(bits); 
 }
 
-float Hammersley(int i)
+float Hammersley(uint i)
 {
     return bitfieldReverse(i) * 2.3283064365386963e-10;
 }
@@ -154,7 +153,7 @@ float D_Charlie(float sheenRoughness, float NdotH)
 vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
 {
 	float X = float(sampleIndex) / float(u_sampleCount);
-	float Y = Hammersley(sampleIndex);
+	float Y = Hammersley(uint(sampleIndex));
 
 	float phi = 2.0 * UX3D_MATH_PI * X;
     float cosTheta = 0.f;
@@ -210,6 +209,7 @@ float PDF(vec3 V, vec3 H, vec3 N, vec3 L, float roughness)
 
 vec3 filterColor(vec3 N)
 {
+	//return  textureLod(uCubeMap, N, 3.0).rgb;	
 	vec4 color = vec4(0.f);
 	float solidAngleTexel = 4.0 * UX3D_MATH_PI / (6.0 * float(u_width) * float(u_width));	
 	
@@ -244,7 +244,7 @@ vec3 filterColor(vec3 N)
 						
 			if(u_distribution == cLambertian)
 			{
-				color += vec4(texture(uCubeMap, H, lod).rgb, 1.0);						
+				color += vec4(textureLod(uCubeMap, H, lod).rgb, 1.0);						
 			}
 			else
 			{				
@@ -339,7 +339,7 @@ vec3 LUT(float NdotV, float roughness)
 // entry point
 void main() 
 {
-	vec2 newUV = texCoord * float(1 << (u_currentMipLevel));
+	vec2 newUV = texCoord ;//* float(1 << (u_currentMipLevel));
 	 
 	newUV = newUV*2.0-1.0;
 	
@@ -358,7 +358,8 @@ void main()
 		//writeFace(face,  texture(uCubeMap, direction).rgb);
 		//writeFace(face,   direction);
 	}
-	//fragmentColor.r = 1.0;
+	//fragmentColor.r = u_roughness;
+	
 	//fragmentColor = vec4(1.0,1.0,0.0,1.0);
 	// Write LUT:
 	// x-coordinate: NdotV
