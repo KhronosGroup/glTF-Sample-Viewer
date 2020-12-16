@@ -167,6 +167,9 @@ class iblSampler
         this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
         this.gl.generateMipmap(this.gl.TEXTURE_CUBE_MAP);
 
+        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
+        this.gl.generateMipmap(this.gl.TEXTURE_CUBE_MAP);
+
     }
 
 
@@ -319,6 +322,21 @@ class iblSampler
         }
     }
 
+    cubeMapToSheen() 
+    {
+        var outputMipLevels = 11;
+        for(var currentMipLevel = 0; currentMipLevel < 6; ++currentMipLevel)
+        {
+            const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
+            this.applyFilter(
+                2,
+                roughness,
+                currentMipLevel,
+                this.sheenTextureID);
+        }
+    }
+
+
 
     drawDebugOutput()
     {
@@ -361,8 +379,8 @@ class iblSampler
         // this.gl.bindTexture(this.gl.TEXTURE_2D, this.inputTextureID);
         // this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
         //this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.lambertianTextureID);
-        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
-        // this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
+        //this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
+        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
         
         // map shader uniform to texture unit (TEXTURE0)  
         const location = this.gl.getUniformLocation(this.shader.program,"u_inputTexture");
@@ -383,7 +401,7 @@ class iblSampler
         this.panoramaToCubeMap();
         this.cubeMapToLambertian();
         this.cubeMapToGGX();
-        //this.cubeMapToSheen();
+        this.cubeMapToSheen();
     }
 
     drawScene()
