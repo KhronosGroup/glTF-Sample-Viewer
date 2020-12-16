@@ -17,7 +17,7 @@ class UIModel
         });
 
         this.model = app.modelChanged$.pipe(
-            map(event => event.event.msg),
+            pluck("event", "msg"),
             startWith("Avocado"),
             map(value => this.pathProvider.resolve(value)),
         );
@@ -51,7 +51,7 @@ class UIModel
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
-            map(msg => msg.target.value ),
+            pluck("target", "value"),
             startWith("#303542"),
             map(hex => {
                 // convert hex string to rgb values
