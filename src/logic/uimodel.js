@@ -52,6 +52,7 @@ class UIModel
             filter(value => value.event !== undefined),
             map(value => value.event.msg),
             map(msg => msg.target.value ),
+            startWith("#303542"),
             map(hex => {
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 return result ? [
