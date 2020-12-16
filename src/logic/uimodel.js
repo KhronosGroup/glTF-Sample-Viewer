@@ -1,5 +1,6 @@
 import { map, startWith } from 'rxjs/operators';
 import { glTF } from '../gltf.js';
+import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -24,7 +25,18 @@ class UIModel
         this.scene = app.sceneChanged$.pipe(map(value => value.event.msg));
         this.camera = app.cameraChanged$.pipe(map(value => value.event.msg));
         this.environment = app.environmentChanged$.pipe(map(value => value.event.msg));
-        this.tonemap = app.tonemapChanged$.pipe(map(value => value.event.msg));
+
+        this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
+            return {title: ToneMaps[key]};
+        });
+        this.tonemap = app.tonemapChanged$.pipe(
+            map(value => value.event.msg),
+            map(value => {
+                return Object.keys(ToneMaps).find(key => ToneMaps[key] === value);
+            }),
+            startWith(ToneMaps.LINEAR)
+        );
+
         this.debugchannel = app.debugchannelChanged$.pipe(map(value => value.event.msg));
         this.skinningEnabled = app.skinningChanged$.pipe(map(value => value.event.msg));
         this.morphingEnabled = app.morphingChanged$.pipe(map(value => value.event.msg));

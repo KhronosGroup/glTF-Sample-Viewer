@@ -11,7 +11,7 @@ Vue.component('drop-down-element', {
     data() {
         return {
             selectedOption: ""
-        }
+        };
     },
     // this is used to init the dropdown (so it is not empty on UI bootup)
     mounted(){
@@ -19,13 +19,13 @@ Vue.component('drop-down-element', {
         {
             return;
         }
-        this.selectedOption = this.dropdowncontent[0].title
+        this.selectedOption = this.dropdowncontent[0].title;
     },
     methods:
     {
         selectionchanged: function(value)
         {
-            this.$emit('selectionchanged', value)
+            this.$emit('selectionchanged', value);
         },
         setSelection: function(value)
         {
@@ -187,7 +187,7 @@ const app = new Vue({
         materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
         environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
-        tonemaps: [{title: "ACES"}, {title: "None"}],
+        tonemaps: [{title: "Linear"}],
         debugchannels: [{title: "Wireframe"}, {title: "Color"}, {title: "Specular"}, {title: "Metallic"}, {title: "Sheen"}],
       };
     },
@@ -202,6 +202,6 @@ const app = new Vue({
             this.$refs.scenes.setSelectedScene(value);
         }
     }
-}).$mount('#app')
+}).$mount('#app');
 
 export { app };

@@ -7,7 +7,7 @@ import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
 import { Observable, from } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, filter } from 'rxjs/operators';
 import { gltfModelPathProvider } from './model_path_provider.js';
 
 async function main()
@@ -21,15 +21,18 @@ async function main()
     await dracoDecoder.ready();
     await ktxDecoder.init(view.context);
 
-    // loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
-    //     state.environment = environment;
-    // });
+    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
+        state.environment = environment;
+    });
 
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
     const uiModel = await new UIModel(app, pathProvider);
-    uiModel.attachGltfLoaded(uiModel.model.pipe(
+
+    // whenever a new model is selected, load it and when complete pass the loaded gltf
+    // into a stream back into the UI
+    const gltfLoadedObservable = uiModel.model.pipe(
         mergeMap( gltf_path =>
         {
             return from(loadGltfFromPath(gltf_path, view, ktxDecoder, dracoDecoder).then( (gltf) => {
@@ -45,21 +48,19 @@ async function main()
             })
             );
         })
-    ));
+    );
+
+    uiModel.attachGltfLoaded(gltfLoadedObservable);
 
     uiModel.scene.subscribe( scene => {
         state.sceneIndex = scene;
     });
 
-    uiModel.camera.subscribe( camera => {
-        if(camera === "User Camera")
-        {
-            state.cameraIndex = undefined;
-        }
-        else
-        {
-            state.cameraIndex = camera;
-        }
+    uiModel.camera.pipe(filter(camera => camera === "User Camera")).subscribe( () => {
+        state.cameraIndex = undefined;
+    });
+    uiModel.camera.pipe(filter(camera => camera !== "User Camera")).subscribe( camera => {
+        state.cameraIndex = camera;
     });
 
     uiModel.tonemap.subscribe( tonemap => {
