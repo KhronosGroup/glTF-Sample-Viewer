@@ -1,8 +1,6 @@
 import { initGlForMembers } from './utils.js';
-import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
-import { DracoDecoder } from './draco.js';
 import { gltfBufferView } from './buffer_view.js';
 
 class gltfPrimitive extends GltfObject
@@ -14,7 +12,7 @@ class gltfPrimitive extends GltfObject
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
-        this.mode = WebGl.context.TRIANGLES;
+        this.mode = WebGLRenderingContext.TRIANGLES;
 
         // non gltf
         this.glAttributes = [];
@@ -27,7 +25,7 @@ class gltfPrimitive extends GltfObject
         this.centroid = undefined;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
         // Use the default glTF material.
         if (this.material === undefined)
@@ -35,9 +33,9 @@ class gltfPrimitive extends GltfObject
             this.material = gltf.materials.length - 1;
         }
 
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, gltf, webGlContext);
 
-        const maxAttributes = WebGl.context.getParameter(WebGl.context.MAX_VERTEX_ATTRIBS);
+        const maxAttributes = webGlContext.getParameter(WebGLRenderingContext.MAX_VERTEX_ATTRIBS);
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
 
@@ -166,6 +164,32 @@ class gltfPrimitive extends GltfObject
     setCentroid(centroid)
     {
         this.centroid = centroid;
+    }
+
+    fromJson(jsonPrimitive)
+    {
+        super.fromJson(jsonPrimitive);
+
+        if(jsonPrimitive.extensions !== undefined)
+        {
+            this.fromJsonPrimitiveExtensions(jsonPrimitive.extensions);
+        }
+    }
+
+    fromJsonPrimitiveExtensions(jsonExtensions)
+    {
+        if(jsonExtensions.KHR_materials_variants !== undefined)
+        {
+            this.fromJsonVariants(jsonExtensions.KHR_materials_variants);
+        }
+    }
+
+    fromJsonVariants(jsonVariants)
+    {
+        if(jsonVariants.mappings !== undefined)
+        {
+            this.mappings = jsonVariants.mappings;
+        }
     }
 
     copyDataFromDecodedGeometry(gltf, dracoGeometry, primitiveAttributes)
@@ -361,19 +385,19 @@ class gltfPrimitive extends GltfObject
     {
         switch (componentType)
         {
-        case WebGl.context.BYTE:
+        case WebGL2RenderingContext.BYTE:
             return "Int8Array";
-        case WebGl.context.UNSIGNED_BYTE:
+        case WebGL2RenderingContext.UNSIGNED_BYTE:
             return "Uint8Array";
-        case WebGl.context.SHORT:
+        case WebGL2RenderingContext.SHORT:
             return "Int16Array";
-        case WebGl.context.UNSIGNED_SHORT:
+        case WebGL2RenderingContext.UNSIGNED_SHORT:
             return "Uint16Array";
-        case WebGl.context.INT:
+        case WebGL2RenderingContext.INT:
             return "Int32Array";
-        case WebGl.context.UNSIGNED_INT:
+        case WebGL2RenderingContext.UNSIGNED_INT:
             return "Uint32Array";
-        case WebGl.context.FLOAT:
+        case WebGL2RenderingContext.FLOAT:
             return "Float32Array";
         default:
             return "Float32Array";
@@ -405,7 +429,7 @@ class gltfPrimitive extends GltfObject
         // Gather all vertex attributes.
         for(let dracoAttr in gltfDracoAttributes)
         {
-            let componentType = WebGl.context.BYTE;
+            let componentType = WebGL2RenderingContext.BYTE;
             let accessotVertexCount;
             // find gltf accessor for this draco attribute
             for (const [key, value] of Object.entries(this.attributes))

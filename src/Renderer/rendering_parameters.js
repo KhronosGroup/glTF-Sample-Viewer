@@ -1,5 +1,5 @@
-import { ImageMimeType } from "./image";
-import { AnimationTimer } from "./utils";
+import { ImageMimeType } from "../image";
+import { AnimationTimer } from "../utils";
 
 const UserCameraIndex = "orbit camera";
 
@@ -27,6 +27,7 @@ class gltfRenderingParameters
         this.animationIndex = "all";
         this.skinning = true;
         this.morphing = true;
+        this.variant = "default";
     }
 
     userCameraActive()

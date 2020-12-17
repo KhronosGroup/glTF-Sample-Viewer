@@ -27,9 +27,9 @@ class gltfLight extends GltfObject
         this.node = node;
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
-        super.initGl(gltf);
+        super.initGl(gltf, webGlContext);
 
         for (let i = 0; i < gltf.nodes.length; i++)
         {

@@ -1,10 +1,8 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { gltfLight } from './light.js';
-import { gltfTextureInfo } from './texture.js';
 import { ShaderCache } from './shader_cache.js';
-import { WebGl } from './webgl.js';
-import { ToneMaps, DebugOutput, Environments } from './rendering_parameters.js';
-import { ImageMimeType } from './image.js';
+import { ToneMaps, DebugOutput } from './rendering_parameters.js';
+import { gltfWebGl } from './webgl';
+
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
 import iblShader from './shaders/ibl.glsl';
@@ -17,16 +15,15 @@ import animationShader from './shaders/animation.glsl';
 
 class gltfRenderer
 {
-    constructor(canvas, defaultCamera, parameters, basePath)
+    constructor(context)
     {
-        this.canvas = canvas;
-        this.defaultCamera = defaultCamera;
-        this.parameters = parameters;
-        this.basePath = basePath;
         this.shader = undefined; // current shader
 
         this.currentWidth = 0;
         this.currentHeight = 0;
+
+        this.webGl = new gltfWebGl();
+        this.webGl.context = context;
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
@@ -39,14 +36,14 @@ class gltfRenderer
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
 
-        this.shaderCache = new ShaderCache(shaderSources);
+        this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
         let requiredWebglExtensions = [
             "EXT_texture_filter_anisotropic",
             "OES_texture_float_linear"
         ];
 
-        WebGl.loadWebGlExtensions(requiredWebglExtensions);
+        this.webGl.loadWebGlExtensions(requiredWebglExtensions);
 
         this.visibleLights = [];
 
@@ -57,7 +54,6 @@ class gltfRenderer
         this.currentCameraPosition = vec3.create();
 
         this.init();
-        this.resize(canvas.clientWidth, canvas.clientHeight);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -67,118 +63,124 @@ class gltfRenderer
     // app state
     init()
     {
-        //TODO: To achieve correct rendering, WebGL runtimes must disable such conversions by setting UNPACK_COLORSPACE_CONVERSION_WEBGL flag to NONE
-        WebGl.context.enable(WebGl.context.DEPTH_TEST);
-        WebGl.context.depthFunc(WebGl.context.LEQUAL);
-        WebGl.context.colorMask(true, true, true, true);
-        WebGl.context.clearDepth(1.0);
+        this.webGl.context.pixelStorei(WebGL2RenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGL2RenderingContext.NONE);
+        this.webGl.context.enable(WebGL2RenderingContext.DEPTH_TEST);
+        this.webGl.context.depthFunc(WebGL2RenderingContext.LEQUAL);
+        this.webGl.context.colorMask(true, true, true, true);
+        this.webGl.context.clearDepth(1.0);
     }
 
     resize(width, height)
     {
         if (this.currentWidth !== width || this.currentHeight !== height)
         {
-            this.canvas.width = width;
-            this.canvas.height = height;
             this.currentHeight = height;
             this.currentWidth = width;
-            WebGl.context.viewport(0, 0, width, height);
+            this.webGl.context.viewport(0, 0, width, height);
         }
     }
 
     // frame state
-    newFrame()
+    clearFrame(clearColor)
     {
-        WebGl.context.clearColor(this.parameters.clearColor[0] / 255.0, this.parameters.clearColor[1] / 255.0, this.parameters.clearColor[2] / 255.0, 1.0);
-        WebGl.context.clear(WebGl.context.COLOR_BUFFER_BIT | WebGl.context.DEPTH_BUFFER_BIT);
+        this.webGl.context.clearColor(clearColor[0] / 255.0, clearColor[1] / 255.0, clearColor[2] / 255.0, 1.0);
+        this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
     }
 
     // render complete gltf scene with given camera
-    drawScene(gltf, scene, sortByDepth, predicateDrawPrimivitve)
+    drawScene(state, scene)
     {
-        if (scene.envData === undefined)
-        {
-            this.initializeEnvironment(gltf, scene);
-        }
-
         let currentCamera = undefined;
 
-        if (this.parameters.userCameraActive())
+        if (state.cameraIndex === undefined)
         {
-            currentCamera = this.defaultCamera;
+            currentCamera = state.userCamera;
         }
         else
         {
-            currentCamera = gltf.cameras[this.parameters.cameraIndex].clone();
+            currentCamera = state.gltf.cameras[state.cameraIndex].clone();
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
-        this.viewMatrix = currentCamera.getViewMatrix(gltf);
-        this.currentCameraPosition = currentCamera.getPosition(gltf);
+        this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
+        this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
-        this.visibleLights = this.getVisibleLights(gltf, scene);
+        this.visibleLights = this.getVisibleLights(state.gltf, scene);
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        const nodes = scene.gatherNodes(gltf);
+        const nodes = scene.gatherNodes(state.gltf);
 
         // Update skins.
         for (const node of nodes)
         {
             if (node.mesh !== undefined && node.skin !== undefined)
             {
-                this.updateSkin(gltf, node);
+                this.updateSkin(state, node);
             }
         }
 
-        if (!sortByDepth)
-        {
-            for (const node of nodes)
-            {
-                let mesh = gltf.meshes[node.mesh];
-                if (mesh !== undefined)
-                {
-                    for (let primitive of mesh.primitives)
-                    {
-                        if (predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
-                        {
-                            this.drawPrimitive(gltf, scene.envData, primitive, node, this.viewProjectionMatrix);
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            const sortedPrimitives = currentCamera.sortPrimitivesByDepth(gltf, nodes);
+        // collect drawables by essentially zipping primitives (for geometry and material)
+        // and nodes for the transform
+        const drawables = nodes
+            .filter(node => node.mesh !== undefined)
+            .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
+                return  {node: node, primitive: primitive};
+            })), [])
+            .filter(({node, primitive}) => primitive.material !== undefined);
 
-            for (const sortedPrimitive of sortedPrimitives)
-            {
-                if (predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
-                {
-                    this.drawPrimitive(gltf, scene.envData, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
-                }
-            }
+        // opaque drawables don't need sorting
+        const opaqueDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND");
+        for (const drawable of opaqueDrawables)
+        {
+            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+        }
+
+        // transparent drawables need sorting before they can be drawn
+        let transparentDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode === "BLEND");
+        transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, transparentDrawables);
+        for (const drawable of transparentDrawables)
+        {
+            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
     }
 
     // vertices with given material
-    drawPrimitive(gltf, envData, primitive, node, viewProjectionMatrix)
+    drawPrimitive(state, primitive, node, viewProjectionMatrix)
     {
         if (primitive.skip) return;
 
-        const material = gltf.materials[primitive.material];
+        let material;
+        if(primitive.mappings !== undefined && state.variant != "default")
+        {
+            const names = state.gltf.variants.map(obj => obj.name);
+            const idx = names.indexOf(state.variant);
+            let materialIdx = primitive.material;
+            primitive.mappings.forEach(element => {
+                if(element.variants.indexOf(idx) >= 0)
+                {
+                    materialIdx = element.material;
+                }
+            });
+            material = state.gltf.materials[materialIdx];
+        }
+        else
+        {
+            material = state.gltf.materials[primitive.material];
+        }
 
         //select shader permutation, compile and link program.
 
         let vertDefines = [];
-        this.pushVertParameterDefines(vertDefines, gltf, node, primitive);
+        this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
         vertDefines = primitive.getDefines().concat(vertDefines);
 
         let fragDefines = material.getDefines().concat(vertDefines);
-        this.pushFragParameterDefines(fragDefines);
+        this.pushFragParameterDefines(fragDefines, state);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
@@ -193,55 +195,55 @@ class gltfRenderer
             return;
         }
 
-        WebGl.context.useProgram(this.shader.program);
+        this.webGl.context.useProgram(this.shader.program);
 
-        if (this.parameters.usePunctual)
+        if (state.renderingParameters.usePunctual)
         {
-            this.applyLights(gltf);
+            this.applyLights(state.gltf);
         }
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         this.shader.updateUniform("u_ModelMatrix", node.worldTransform);
         this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
-        this.shader.updateUniform("u_Exposure", this.parameters.exposure, false);
+        this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
 
-        this.updateAnimationUniforms(gltf, node, primitive);
+        this.updateAnimationUniforms(state, node, primitive);
 
         if (mat4.determinant(node.worldTransform) < 0.0)
         {
-            WebGl.context.frontFace(WebGl.context.CW);
+            this.webGl.context.frontFace(WebGL2RenderingContext.CW);
         }
         else
         {
-            WebGl.context.frontFace(WebGl.context.CCW);
+            this.webGl.context.frontFace(WebGL2RenderingContext.CCW);
         }
 
         if (material.doubleSided)
         {
-            WebGl.context.disable(WebGl.context.CULL_FACE);
+            this.webGl.context.disable(WebGL2RenderingContext.CULL_FACE);
         }
         else
         {
-            WebGl.context.enable(WebGl.context.CULL_FACE);
+            this.webGl.context.enable(WebGL2RenderingContext.CULL_FACE);
         }
 
         if (material.alphaMode === 'BLEND')
         {
-            WebGl.context.enable(WebGl.context.BLEND);
-            WebGl.context.blendFuncSeparate(WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA, WebGl.context.SRC_ALPHA, WebGl.context.ONE_MINUS_SRC_ALPHA);
-            WebGl.context.blendEquation(WebGl.context.FUNC_ADD);
+            this.webGl.context.enable(WebGL2RenderingContext.BLEND);
+            this.webGl.context.blendFuncSeparate(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA, WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
+            this.webGl.context.blendEquation(WebGL2RenderingContext.FUNC_ADD);
         }
         else
         {
-            WebGl.context.disable(WebGl.context.BLEND);
+            this.webGl.context.disable(WebGL2RenderingContext.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;
         if (drawIndexed)
         {
-            if (!WebGl.setIndices(gltf, primitive.indices))
+            if (!this.webGl.setIndices(state.gltf, primitive.indices))
             {
                 return;
             }
@@ -250,7 +252,7 @@ class gltfRenderer
         let vertexCount = 0;
         for (const attribute of primitive.glAttributes)
         {
-            const gltfAccessor = gltf.accessors[attribute.accessor];
+            const gltfAccessor = state.gltf.accessors[attribute.accessor];
             vertexCount = gltfAccessor.count;
 
             const location = this.shader.getAttributeLocation(attribute.name);
@@ -258,7 +260,7 @@ class gltfRenderer
             {
                 continue; // only skip this attribute
             }
-            if (!WebGl.enableAttribute(gltf, location, gltfAccessor))
+            if (!this.webGl.enableAttribute(state.gltf, location, gltfAccessor))
             {
                 return; // skip this primitive
             }
@@ -277,31 +279,31 @@ class gltfRenderer
             {
                 continue; // only skip this texture
             }
-            if (!WebGl.setTexture(location, gltf, info, i)) // binds texture and sampler
+            if (!this.webGl.setTexture(location, state.gltf, info, i)) // binds texture and sampler
             {
                 return; // skip this material
             }
         }
 
         let textureCount = material.textures.length;
-        if (this.parameters.useIBL)
+        if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
-            textureCount = this.applyEnvironmentMap(gltf, envData, textureCount);
+            textureCount = this.applyEnvironmentMap(state.environment, textureCount);
         }
 
-        if (this.parameters.usePunctual)
+        if (state.renderingParameters.usePunctual)
         {
-            WebGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), gltf, envData.sheenELUT, textureCount++);
+            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, state.environment.sheenELUT, textureCount++);
         }
 
         if (drawIndexed)
         {
-            const indexAccessor = gltf.accessors[primitive.indices];
-            WebGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
+            const indexAccessor = state.gltf.accessors[primitive.indices];
+            this.webGl.context.drawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType, 0);
         }
         else
         {
-            WebGl.context.drawArrays(primitive.mode, 0, vertexCount);
+            this.webGl.context.drawArrays(primitive.mode, 0, vertexCount);
         }
 
         for (const attribute of primitive.glAttributes)
@@ -311,7 +313,7 @@ class gltfRenderer
             {
                 continue; // skip this attribute
             }
-            WebGl.context.disableVertexAttribArray(location);
+            this.webGl.context.disableVertexAttribArray(location);
         }
     }
 
@@ -332,19 +334,19 @@ class gltfRenderer
         return lights;
     }
 
-    updateSkin(gltf, node)
+    static updateSkin(state, node)
     {
-        if (this.parameters.skinning && gltf.skins !== undefined) // && !this.parameters.animationTimer.paused
+        if (state.renderingParameters.skinning && state.gltf.skins !== undefined)
         {
-            const skin = gltf.skins[node.skin];
-            skin.computeJoints(gltf, node);
+            const skin = state.gltf.skins[node.skin];
+            skin.computeJoints(state.gltf, node);
         }
     }
 
-    pushVertParameterDefines(vertDefines, gltf, node, primitive)
+    pushVertParameterDefines(vertDefines, parameters, gltf, node, primitive)
     {
         // skinning
-        if (this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+        if (parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
             const skin = gltf.skins[node.skin];
 
@@ -353,7 +355,7 @@ class gltfRenderer
         }
 
         // morphing
-        if (this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
             if (mesh.weights !== undefined && mesh.weights.length > 0)
@@ -364,19 +366,19 @@ class gltfRenderer
         }
     }
 
-    updateAnimationUniforms(gltf, node, primitive)
+    updateAnimationUniforms(state, node, primitive)
     {
-        if (this.parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
+        if (state.renderingParameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
-            const skin = gltf.skins[node.skin];
+            const skin = state.gltf.skins[node.skin];
 
             this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
             this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
         }
 
-        if (this.parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
+        if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
-            const mesh = gltf.meshes[node.mesh];
+            const mesh = state.gltf.meshes[node.mesh];
             if (mesh.weights !== undefined && mesh.weights.length > 0)
             {
                 this.shader.updateUniformArray("u_morphWeights", mesh.weights);
@@ -384,25 +386,21 @@ class gltfRenderer
         }
     }
 
-    pushFragParameterDefines(fragDefines)
+    pushFragParameterDefines(fragDefines, state)
     {
-        if (this.parameters.usePunctual)
+        if (state.renderingParameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");
             fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
         }
 
-        if (this.parameters.useIBL)
+        if (state.renderingParameters.useIBL && state.environment)
         {
             fragDefines.push("USE_IBL 1");
-        }
-
-        if (Environments[this.parameters.environmentName].type === ImageMimeType.HDR || Environments[this.parameters.environmentName].type === ImageMimeType.KTX2)
-        {
             fragDefines.push("USE_HDR 1");
         }
 
-        switch (this.parameters.toneMap)
+        switch (state.renderingParameters.toneMap)
         {
         case (ToneMaps.UNCHARTED):
             fragDefines.push("TONEMAP_UNCHARTED 1");
@@ -418,12 +416,12 @@ class gltfRenderer
             break;
         }
 
-        if (this.parameters.debugOutput !== DebugOutput.NONE)
+        if (state.renderingParameters.debugOutput !== DebugOutput.NONE)
         {
             fragDefines.push("DEBUG_OUTPUT 1");
         }
 
-        switch (this.parameters.debugOutput)
+        switch (state.renderingParameters.debugOutput)
         {
         case (DebugOutput.METALLIC):
             fragDefines.push("DEBUG_METALLIC 1");
@@ -499,60 +497,17 @@ class gltfRenderer
         }
     }
 
-    initializeEnvironment(gltf, scene)
+    applyEnvironmentMap(environment, texSlotOffset)
     {
-        scene.envData = {};
+        this.webGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), environment, environment.diffuseEnvMap, texSlotOffset++);
 
-        if (scene !== undefined && scene.imageBasedLight !== undefined)
-        {
-            const diffuseTextureIndex = scene.imageBasedLight.diffuseEnvironmentTexture;
-            const specularTextureIndex = scene.imageBasedLight.specularEnvironmentTexture;
-            const sheenCubeMapIndex = scene.imageBasedLight.sheenEnvironmentTexture;
+        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), environment, environment.specularEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), environment, environment.lut, texSlotOffset++);
 
-            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex);
-            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex);
-            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenCubeMapIndex);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), environment, environment.sheenEnvMap, texSlotOffset++);
+        this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), environment, environment.sheenLUT, texSlotOffset++);
 
-            scene.envData.mipCount = scene.imageBasedLight.levelCount;
-        }
-        else
-        {
-            const diffuseTextureIndex = gltf.textures.length - 6;
-            const specularTextureIndex = gltf.textures.length - 5;
-            const sheenTextureIndex = gltf.textures.length - 4;
-
-            scene.envData.diffuseEnvMap = new gltfTextureInfo(diffuseTextureIndex, 0, true);
-            scene.envData.specularEnvMap = new gltfTextureInfo(specularTextureIndex, 0, true);
-            scene.envData.sheenEnvMap = new gltfTextureInfo(sheenTextureIndex, 0, true);
-
-            scene.envData.mipCount = Environments[this.parameters.environmentName].mipLevel;
-        }
-
-        scene.envData.diffuseEnvMap.generateMips = false;
-        scene.envData.specularEnvMap.generateMips = false;
-        scene.envData.sheenEnvMap.generateMips = false;
-
-        scene.envData.lut = new gltfTextureInfo(gltf.textures.length - 3);
-        scene.envData.lut.generateMips = false;
-
-        scene.envData.sheenLUT = new gltfTextureInfo(gltf.textures.length - 2);
-        scene.envData.sheenLUT.generateMips = false;
-
-        scene.envData.sheenELUT = new gltfTextureInfo(gltf.textures.length - 1);
-        scene.envData.sheenELUT.generateMips = false;
-    }
-
-    applyEnvironmentMap(gltf, envData, texSlotOffset)
-    {
-        WebGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), gltf, envData.diffuseEnvMap, texSlotOffset++);
-
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), gltf, envData.specularEnvMap, texSlotOffset++);
-        WebGl.setTexture(this.shader.getUniformLocation("u_GGXLUT"), gltf, envData.lut, texSlotOffset++);
-
-        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieEnvSampler"), gltf, envData.sheenEnvMap, texSlotOffset++);
-        WebGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), gltf, envData.sheenLUT, texSlotOffset++);
-
-        this.shader.updateUniform("u_MipCount", envData.mipCount);
+        this.shader.updateUniform("u_MipCount", environment.mipCount);
 
         return texSlotOffset;
     }

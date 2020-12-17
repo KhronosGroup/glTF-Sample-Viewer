@@ -1,13 +1,12 @@
-import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfSampler extends GltfObject
 {
     constructor(
-        magFilter = WebGl.context.LINEAR,
-        minFilter = WebGl.context.LINEAR_MIPMAP_LINEAR,
-        wrapS = WebGl.context.REPEAT,
-        wrapT = WebGl.context.REPEAT)
+        magFilter = WebGLRenderingContext.LINEAR,
+        minFilter = WebGLRenderingContext.LINEAR_MIPMAP_LINEAR,
+        wrapS = WebGLRenderingContext.REPEAT,
+        wrapT = WebGLRenderingContext.REPEAT)
     {
         super();
         this.magFilter = magFilter;

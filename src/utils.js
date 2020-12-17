@@ -24,7 +24,7 @@ function jsToGlSlice(array, offset, stride)
     return tensor;
 }
 
-function initGlForMembers(gltfObj, gltf)
+function initGlForMembers(gltfObj, gltf, webGlContext)
 {
     for (const name of Object.keys(gltfObj))
     {
@@ -36,7 +36,7 @@ function initGlForMembers(gltfObj, gltf)
         }
         if (member.initGl !== undefined)
         {
-            member.initGl(gltf);
+            member.initGl(gltf, webGlContext);
         }
         if (Array.isArray(member))
         {
@@ -44,7 +44,7 @@ function initGlForMembers(gltfObj, gltf)
             {
                 if (element !== null && element !== undefined && element.initGl !== undefined)
                 {
-                    element.initGl(gltf);
+                    element.initGl(gltf, webGlContext);
                 }
             }
         }

@@ -16,6 +16,7 @@ import { gltfAsset } from './asset.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfAnimation } from './animation.js';
 import { gltfSkin } from './skin.js';
+import { gltfVariant } from './variant.js';
 
 class glTF extends GltfObject
 {
@@ -42,9 +43,9 @@ class glTF extends GltfObject
         this.path = file;
     }
 
-    initGl()
+    initGl(webGlContext)
     {
-        initGlForMembers(this, this);
+        initGlForMembers(this, this, webGlContext);
     }
 
     fromJson(json)
@@ -67,6 +68,8 @@ class glTF extends GltfObject
         this.images = objectsFromJsons(json.images, gltfImage);
         this.animations = objectsFromJsons(json.animations, gltfAnimation);
         this.skins = objectsFromJsons(json.skins, gltfSkin);
+        this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
+        this.variants = enforceVariantsUniqueness(this.variants);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -109,6 +112,37 @@ function getJsonIBLsFromExtensions(extensions)
         return [];
     }
     return extensions.KHR_lights_image_based.imageBasedLights;
+}
+
+function getJsonVariantsFromExtension(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_materials_variants === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_materials_variants.variants;
+}
+
+function enforceVariantsUniqueness(variants)
+{
+    for(let i=0;i<variants.length;i++)
+    {
+        const name = variants[i].name;
+        for(let j=i+1;j<variants.length;j++)
+        {
+            if(variants[j].name == name)
+            {
+                variants[j].name += "0";  // Add random character to duplicates
+            }
+        }
+    }
+
+
+    return variants;
 }
 
 export { glTF };
