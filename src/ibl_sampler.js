@@ -9,22 +9,27 @@ import debugOutput from './shaders/debug.frag';
 import fullscreenShader from './shaders/fullscreen.vert';
 
 
+// How to use:
+// set canvas/context in constructor
+// init()  (set panorama image)
+// filterAll()
+// fetch texture IDs 
+
 class iblSampler
 {
-    constructor(canvas, basePath)
+    constructor(canvas)
     {
         this.canvas = canvas;
-        this.basePath = basePath;
-
         this.gl = canvas.getContext('webgl2');
         this.shader = undefined; // current shader
         this.currentWidth = 0;
         this.currentHeight = 0;
+
         this.textureSize = 1024;
 
-        this.inputTextureID = undefined;
         this.inputImage = undefined;
 
+        this.inputTextureID = undefined;
         this.cubemapTextureID = undefined;
         this.lambertianTextureID = undefined;
         this.ggxTextureID = undefined;
@@ -126,7 +131,6 @@ class iblSampler
                 format, type, data);
 
         } 
-
         
         if(withMipmaps)
         {
@@ -136,6 +140,7 @@ class iblSampler
         {
             this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR);
         }
+
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MAG_FILTER,  this.gl.LINEAR);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_S,  this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_T,  this.gl.CLAMP_TO_EDGE);
@@ -149,10 +154,6 @@ class iblSampler
 
     init()
     {
-        this.gl.disable(this.gl.DEPTH_TEST);
-        this.gl.clearDepth(1.0);
- 
-
         this.inputTextureID = this.loadTexture("assets/environments/helipad.jpg");
 
         this.cubemapTextureID = this.createCubemapTexture(true); 
@@ -172,37 +173,31 @@ class iblSampler
 
     }
 
-
-
-    resize(width, height)
+    filterAll()
     {
-        if (this.currentWidth !== width || this.currentHeight !== height)
-        {
-            this.canvas.width = width;
-            this.canvas.height = height;
-            this.currentHeight = height;
-            this.currentWidth = width;
-            this.gl.viewport(0, 0, width, height);
-        }
+        this.panoramaToCubeMap();
+        this.cubeMapToLambertian();
+        this.cubeMapToGGX();
+        this.cubeMapToSheen();
     }
+
+
 
 
     panoramaToCubeMap() 
     {
-        var gl = this.gl;
-
         for(var i = 0; i < 6; ++i)
         {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
             var side = i;
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, this.cubemapTextureID, 0);
+            this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, this.cubemapTextureID, 0);
   
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
+            this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
 
-            gl.viewport(0, 0,  this.textureSize,  this.textureSize);  
+            this.gl.viewport(0, 0,  this.textureSize,  this.textureSize);  
 
-            gl.clearColor(0, 0.0, 0.0, 0.0);   
-            gl.clear(gl.COLOR_BUFFER_BIT| gl.DEPTH_BUFFER_BIT);
+            this.gl.clearColor(0, 0.0, 0.0, 0.0);   
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT| this.gl.DEPTH_BUFFER_BIT);
 
             const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
             const fragmentHash = this.shaderCache.selectShader("panorama_to_cubemap.frag", []);
@@ -226,7 +221,7 @@ class iblSampler
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
         }
 
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
+        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
         this.gl.generateMipmap(this.gl.TEXTURE_CUBE_MAP);
 
     }
@@ -238,22 +233,21 @@ class iblSampler
         targetMipLevel,
         targetTexture)
     {
-        var gl = this.gl;
-        var currentTextureSize =  this.textureSize>>(targetMipLevel);
+         var currentTextureSize =  this.textureSize>>(targetMipLevel);
 
         for(var i = 0; i < 6; ++i)
         {
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
             var side = i;
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, targetTexture, targetMipLevel);       
+            this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_CUBE_MAP_POSITIVE_X+side, targetTexture, targetMipLevel);       
         
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, targetTexture);
+            this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, targetTexture);
 
-            gl.viewport(0, 0, currentTextureSize, currentTextureSize);   
+            this.gl.viewport(0, 0, currentTextureSize, currentTextureSize);   
 
-            gl.clearColor(0, 0.0, 0.0, 0.0);   
-            gl.clear(gl.COLOR_BUFFER_BIT| gl.DEPTH_BUFFER_BIT);
+            this.gl.clearColor(0, 0.0, 0.0, 0.0);   
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT| this.gl.DEPTH_BUFFER_BIT);
 
 
             const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
@@ -292,7 +286,6 @@ class iblSampler
 
             //fullscreen triangle
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-
             
         }
 
@@ -336,6 +329,18 @@ class iblSampler
         }
     }
 
+
+    resize(width, height)
+    {
+        if (this.currentWidth !== width || this.currentHeight !== height)
+        {
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.currentHeight = height;
+            this.currentWidth = width;
+            this.gl.viewport(0, 0, width, height);
+        }
+    }
 
 
     drawDebugOutput()
@@ -395,21 +400,13 @@ class iblSampler
     }
 
 
-    filter()
-    {
-        
-        this.panoramaToCubeMap();
-        this.cubeMapToLambertian();
-        this.cubeMapToGGX();
-        this.cubeMapToSheen();
-    }
 
     drawScene()
     {
 
         if(this.status == 0) // filtering is done once 
         {
-            this.filter();
+            this.filterAll();
             this.status = 1;
         }
 

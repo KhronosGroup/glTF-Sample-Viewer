@@ -41,13 +41,6 @@ vec2 dirToUV(vec3 dir)
 		1.f - acos(dir.y) / UX3D_MATH_PI);
 }
 
-float saturate(float v)
-{
-	return clamp(v, 0.0f, 1.0f);
-}
-
-
-// 
 vec3 panoramaToCubeMap(int face, vec2 texCoord) 
 {
 	vec2 texCoordNew= 	texCoord*2.0-1.0;
@@ -55,10 +48,8 @@ vec3 panoramaToCubeMap(int face, vec2 texCoord)
 		
 	vec3 direction = normalize(scan);		
 
-
 	vec2 src = dirToUV(direction);		
 
-	
 
 	return  texture(u_panorama, src).rgb;
 
@@ -71,11 +62,7 @@ vec3 panoramaToCubeMap(int face, vec2 texCoord)
 
 void main(void)   
 {
-	 vec4 textureColor = texture(u_inputTexture, texCoord);
-
-    fragmentColor = vec4(texCoord.x, 0.0, texCoord.y, 1.0);
-
+    fragmentColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 	fragmentColor.rgb = panoramaToCubeMap(u_currentFace, texCoord);
-	
 }

@@ -339,37 +339,18 @@ vec3 LUT(float NdotV, float roughness)
 // entry point
 void main() 
 {
-	vec2 newUV = texCoord ;//* float(1 << (u_currentMipLevel));
+	vec2 newUV = texCoord ;
 	 
 	newUV = newUV*2.0-1.0;
-	
-	//for(int face = 0; face < 6; ++face)
-	{
-		vec3 scan = uvToXYZ(u_currentFace, newUV);		
-			
-		vec3 direction = normalize(scan);	
-		direction.y = -direction.y;
 
-		//writeFace(face, filterColor(direction));
-		vec3 color = filterColor(direction);
+	vec3 scan = uvToXYZ(u_currentFace, newUV);		
 		
-		fragmentColor = vec4(color,1.0);
-		//Debug output:
-		//writeFace(face,  texture(uCubeMap, direction).rgb);
-		//writeFace(face,   direction);
-	}
-	//fragmentColor.r = u_roughness;
+	vec3 direction = normalize(scan);	
+	direction.y = -direction.y;
+
+	vec3 color = filterColor(direction);
 	
-	//fragmentColor = vec4(1.0,1.0,0.0,1.0);
-	// Write LUT:
-	// x-coordinate: NdotV
-	// y-coordinate: roughness
-	/* 
-	if (pFilterParameters.currentMipLevel == 0)
-	{
-		
-		outLUT = LUT(texCoord.x, texCoord.y);
-	
-	}*/
+	fragmentColor = vec4(color,1.0);
+
 }
 
