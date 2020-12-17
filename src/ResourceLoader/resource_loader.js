@@ -146,20 +146,20 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     //
 
     // GGX
-    environment.images.push(new gltfImage("assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("../assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
     environment.lut = new gltfTextureInfo(environment.textures.length - 1);
     environment.lut.generateMips = false;
 
     // Sheen
     // Charlie
-    environment.images.push(new gltfImage("assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("../assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
     environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenLUT.generateMips = false;
 
     // Sheen E LUT
-    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("../assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenELUT.generateMips = false;

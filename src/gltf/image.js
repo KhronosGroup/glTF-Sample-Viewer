@@ -50,7 +50,7 @@ class gltfImage extends GltfObject
             return;
         }
 
-        if (this.mimeType === ImageMimeType.KTX2)
+        if (this.mimeType === ImageMimeType.KTX2 && gltf.ktxDecoder !== undefined)
         {
             this.image = {};
         }
