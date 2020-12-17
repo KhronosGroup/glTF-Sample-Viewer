@@ -1,13 +1,17 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
 
+import { LIBKTX } from './libs/libktx.js';
 
 async function main()
 {
     const canvas = document.getElementById("canvas");
     const view = new GltfView(canvas);
     const state = view.createState();
+
+    //initDracoLib();
+    initKtxLib(LIBKTX,view);
 
     loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
         state.gltf = gltf;
