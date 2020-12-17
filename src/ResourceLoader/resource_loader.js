@@ -9,14 +9,25 @@ import { gltfSampler } from '../gltf/sampler.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-import dracoDecoder from './draco.js';
+import { DracoDecoder } from './draco.js';
+import { KtxDecoder } from './ktx.js';
+
+function initKtxLib(ktxlib, view)
+{
+    view.ktxDecoder = new KtxDecoder(ktxlib, view.context);
+}
+
+async function initDracoLib(dracolib)
+{
+    const dracoDecoder = new DracoDecoder(dracolib);
+    await dracoDecoder.ready();
+}
 
 async function loadGltf(path, json, buffers, view)
 {
     const gltf = new glTF(path);
     gltf.ktxDecoder = view.ktxDecoder;
     //Make sure draco decoder instance is ready
-    await dracoDecoder.ready();
     gltf.fromJson(json);
 
     // because the gltf image paths are not relative
@@ -162,4 +173,4 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     return environment;
 }
 
-export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath };
+export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib};

@@ -1,13 +1,16 @@
-import DracoDecoderModule from '../libs/draco_decoder_gltf.wasm';
 class DracoDecoder {
 
-    constructor() {
+    constructor(dracoLib) {
+        if (!DracoDecoder.instance && dracoLib === undefined)
+        {
+            return undefined;
+        }
         if (!DracoDecoder.instance)
         {
             DracoDecoder.instance = this;
             this.module = null;
 
-            this.initializingPromise = DracoDecoderModule().then((module) => {
+            this.initializingPromise = dracoLib.createDecoderModule({}).then((module) => {
                 // This is reached when everything is ready, and you can call methods on
                 // Module.
                 this.module = module;
@@ -24,6 +27,4 @@ class DracoDecoder {
 
 }
 
-const instance = new DracoDecoder();
-
-export  default instance;
+export { DracoDecoder };
