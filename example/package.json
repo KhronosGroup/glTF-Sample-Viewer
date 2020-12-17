@@ -1,24 +1,20 @@
 {
-  "name": "gltf-sample-viewer",
+  "name": "gltf-sample-viewer-example",
   "version": "1.0.0",
-  "description": "The official glTF sample viewer.",
-  "main": "dist/gltf-sample-viewer.js",
-  "module": "dist/gltf-sample-viewer.module.js",
-  "files": [
-    "dist/gltf-sample-viewer.js",
-    "dist/libktx.wasm",
-    "dist/draco_decoder_gltf.wasm"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
-  },
+  "description": "The official glTF sample viewer example.",
+  "main": "src/main.js",
+  "module": "src/main.js",
   "scripts": {
     "build": "rollup -c",
+    "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 .\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js",
     "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
   },
   "keywords": [
     "gltf",
@@ -29,15 +25,17 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@bundled-es-modules/axios": "^0.18.1",
-    "gl-matrix": "^3.2.1"
+    "gl-matrix": "^3.2.1",
+    "gltf-sample-viewer": "../npm_package"
   },
   "devDependencies": {
     "@rollup/plugin-wasm": "^5.1.2",
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
     "rollup": "^1.31.1",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-glslify": "^1.2.0",
+    "rollup-plugin-glslify": "^1.1.3",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "serve": "^11.3.0"
   },

@@ -4,4 +4,5 @@ import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath } from './Resource
 
 import { getIsGltf, getIsGlb } from './gltf/utils.js';
 
+
 export {GltfView, getIsGltf, getIsGlb, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath };

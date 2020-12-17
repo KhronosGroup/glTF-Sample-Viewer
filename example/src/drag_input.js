@@ -1,4 +1,4 @@
-import { getIsGltf, getIsGlb } from './gltf-sample-viewer/gltf-sample-viewer';
+import { getIsGltf, getIsGlb } from 'gltf-sample-viewer';
 
 class gltfDragInput
 {
