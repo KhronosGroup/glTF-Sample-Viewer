@@ -9,7 +9,8 @@ class gltfImageProcessor
         {
             const image = gltfImage.image;
 
-            if (gltfImage.mimeType === ImageMimeType.KTX2)
+            if (gltfImage.mimeType === ImageMimeType.KTX2 ||
+                gltfImage.mimeType === ImageMimeType.GLTEXTURE)
             {
                 continue;
             }
