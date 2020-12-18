@@ -10,11 +10,13 @@ class DracoDecoder {
             DracoDecoder.instance = this;
             this.module = null;
 
-            this.initializingPromise = dracoLib.createDecoderModule({}).then((module) => {
-                // This is reached when everything is ready, and you can call methods on
-                // Module.
-                this.module = module;
-                console.log('Decoder Module Initialized!');
+            this.initializingPromise = new Promise(resolve => {
+                let dracoDecoderType = {};
+                dracoDecoderType['onModuleLoaded'] = dracoDecoderModule => {
+                    this.module = dracoDecoderModule;
+                    resolve();
+                };
+                dracoLib(dracoDecoderType);
             });
         }
         return DracoDecoder.instance;

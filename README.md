@@ -1,7 +1,7 @@
 Khronos glTF 2.0 Sample Viewer
 ==============================
 
-[![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
+[![](examples/assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
 
 This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
@@ -31,7 +31,7 @@ Development for PBR next phase one
 Credits
 -------
 
-Refactored and developed by [UX3D](https://www.ux3d.io/). Supported by the [Khronos Group](https://www.khronos.org/) and by [Google](https://www.google.com/) for the glTF Draco mesh compression import.  
+Refactored and developed by [UX3D](https://www.ux3d.io/). Supported by the [Khronos Group](https://www.khronos.org/) and by [Google](https://www.google.com/) for the glTF Draco mesh compression import.
 Original code based on the former [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-Sample-Viewer/tree/glTF-WebGL-PBR) project. Previously supported by [Facebook](https://www.facebook.com/) for animations, skinning and morphing.
 
 Features
