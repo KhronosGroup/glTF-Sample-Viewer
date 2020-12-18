@@ -1,5 +1,5 @@
 import { fromKeys, initGlForMembers } from './utils.js';
-import { WebGl } from './Renderer/webgl.js';
+import { WebGl } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfTexture extends GltfObject
@@ -42,6 +42,7 @@ class gltfTexture extends GltfObject
     {
         if (this.glTexture !== undefined)
         {
+            // TODO: this breaks the dependency direction
             WebGl.context.deleteTexture(this.glTexture);
         }
 

@@ -1,19 +1,33 @@
-import axios from '../../libs/axios.min.js';
-import { glTF } from '../gltf.js';
-import { getIsGlb, getContainingFolder } from '../utils.js';
-import { GlbParser } from '../glb_parser.js';
-import { gltfLoader } from "../loader";
-import { gltfImage, ImageMimeType } from "../image";
-import { gltfTexture, gltfTextureInfo } from '../texture.js';
-import { gltfSampler } from '../sampler.js';
+import { axios } from '@bundled-es-modules/axios';
+import { glTF } from '../gltf/gltf.js';
+import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
+import { GlbParser } from './glb_parser.js';
+import { gltfLoader } from "./loader.js";
+import { gltfImage, ImageMimeType } from "../gltf/image.js";
+import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
+import { gltfSampler } from '../gltf/sampler.js';
 
 import { AsyncFileReader } from './async_file_reader.js';
 
-async function loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder)
+import { DracoDecoder } from './draco.js';
+import { KtxDecoder } from './ktx.js';
+
+function initKtxLib(ktxlib, view)
+{
+    view.ktxDecoder = new KtxDecoder(ktxlib, view.context);
+}
+
+async function initDracoLib(dracolib)
+{
+    const dracoDecoder = new DracoDecoder(dracolib);
+    await dracoDecoder.ready();
+}
+
+async function loadGltf(path, json, buffers, view)
 {
     const gltf = new glTF(path);
-    gltf.ktxDecoder = ktxDecoder;
-    gltf.dracoDecoder = dracoDecoder;
+    gltf.ktxDecoder = view.ktxDecoder;
+    //Make sure draco decoder instance is ready
     gltf.fromJson(json);
 
     // because the gltf image paths are not relative
@@ -28,7 +42,7 @@ async function loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder)
     return gltf;
 }
 
-async function loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder)
+async function loadGltfFromDrop(mainFile, additionalFiles, view)
 {
     const gltfFile = mainFile.name;
 
@@ -37,18 +51,19 @@ async function loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dra
         const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
         const glbParser = new GlbParser(data);
         const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers, view, ktxDecoder, dracoDecoder);
+        return await loadGltf(gltfFile, glb.json, glb.buffers, view);
     }
     else
     {
         const data = await AsyncFileReader.readAsText(mainFile);
         const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles, view, ktxDecoder, dracoDecoder);
+        return await loadGltf(gltfFile, json, additionalFiles, view);
     }
 }
 
-async function loadGltfFromPath(path, view, ktxDecoder, dracoDecoder)
+async function loadGltfFromPath(path, view)
 {
+
     const isGlb = getIsGlb(path);
 
     let response = await axios.get(path, { responseType: isGlb ? "arraybuffer" : "json" });
@@ -64,15 +79,15 @@ async function loadGltfFromPath(path, view, ktxDecoder, dracoDecoder)
         buffers = glb.buffers;
     }
 
-    return await loadGltf(path, json, buffers, view, ktxDecoder, dracoDecoder);
+    return await loadGltf(path, json, buffers, view);
 }
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view, ktxDecoder)
+async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
     const environment = new glTF();
-    environment.ktxDecoder = ktxDecoder;
+    environment.ktxDecoder = view.ktxDecoder;
 
     //
     // Prepare samplers.
@@ -131,20 +146,20 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     //
 
     // GGX
-    environment.images.push(new gltfImage("assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("../assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
     environment.lut = new gltfTextureInfo(environment.textures.length - 1);
     environment.lut.generateMips = false;
 
     // Sheen
     // Charlie
-    environment.images.push(new gltfImage("assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("../assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
     environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenLUT.generateMips = false;
 
     // Sheen E LUT
-    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("../assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [textureIdx++], WebGL2RenderingContext.TEXTURE_2D));
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenELUT.generateMips = false;
@@ -158,4 +173,4 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     return environment;
 }
 
-export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath };
+export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib};

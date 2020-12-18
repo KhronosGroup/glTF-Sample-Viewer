@@ -1,4 +1,4 @@
-import { UniformStruct } from './utils.js';
+import { UniformStruct } from '../gltf/utils.js';
 
 class gltfShader
 {

@@ -1,5 +1,5 @@
-import { ImageMimeType } from "../image";
-import { AnimationTimer } from "../utils";
+import { ImageMimeType } from "../gltf/image";
+import { AnimationTimer } from "../gltf/utils";
 
 const UserCameraIndex = "orbit camera";
 

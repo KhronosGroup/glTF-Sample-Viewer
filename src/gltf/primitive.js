@@ -2,6 +2,7 @@ import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
 import { gltfBufferView } from './buffer_view.js';
+import { DracoDecoder } from '../ResourceLoader/draco.js';
 
 class gltfPrimitive extends GltfObject
 {
@@ -43,9 +44,16 @@ class gltfPrimitive extends GltfObject
         {
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
-                let dracoGeometry = this.decodeDracoBufferToIntermediate(
-                    this.extensions.KHR_draco_mesh_compression, gltf);
-                this.copyDataFromDecodedGeometry(gltf, dracoGeometry, this.attributes);
+                if (new DracoDecoder() !== undefined)
+                {
+                    let dracoGeometry = this.decodeDracoBufferToIntermediate(
+                        this.extensions.KHR_draco_mesh_compression, gltf);
+                    this.copyDataFromDecodedGeometry(gltf, dracoGeometry, this.attributes);
+                }
+                else
+                {
+                    console.warn('Failed to load draco compressed mesh: DracoDecoder not initialized');
+                }
             }
         }
 
@@ -370,7 +378,8 @@ class gltfPrimitive extends GltfObject
             origGltfDrBufViewObj.byteOffset + origGltfDrBufViewObj.byteLength);
 
         // decode draco buffer to geometry intermediate
-        let draco = gltf.dracoDecoder.module;
+        let dracoDecoder = new DracoDecoder();
+        let draco = dracoDecoder.module;
         let decoder = new draco.Decoder();
         let decoderBuffer = new draco.DecoderBuffer();
         decoderBuffer.Init(actualBuffer, origGltfDrBufViewObj.byteLength);
