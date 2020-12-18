@@ -31,48 +31,45 @@ class GltfView
         }
 
         const scene = state.gltf.scenes[state.sceneIndex];
-        const nodes = scene.gatherNodes(state.gltf);
 
-        const alphaModes = nodes
-            .filter(n => n.mesh !== undefined)
-            .reduce((acc, n) => acc.concat(state.gltf .meshes[n.mesh].primitives), [])
-            .map(p => state.gltf .materials[p.material].alphaMode);
+        scene.applyTransformHierarchy(state.gltf);
 
-        let hasBlendPrimitives = false;
-        for(const alphaMode of alphaModes)
+        this.renderer.drawScene(state, scene);
+    }
+
+    animate(state)
+    {
+        if(state.gltf === undefined)
         {
-            if(alphaMode === "BLEND")
+            return;
+        }
+
+        if(state.gltf.animations !== undefined && state.animationIndices !== undefined && !state.animationTimer.paused)
+        {
+            const t = state.animationTimer.elapsedSec();
+
+            const animations = state.animationIndices.map(index => {
+                return state.gltf.animations[index];
+            }).filter(animation => animation !== undefined);
+
+            for(const animation of animations)
             {
-                hasBlendPrimitives = true;
-                break;
+                animation.advance(state.gltf, t);
             }
-        }
-
-        if(hasBlendPrimitives)
-        {
-            // Draw all opaque and masked primitives. Depth sort is not yet required.
-            this.renderer.drawScene(state, scene, false, primitive => state.gltf .materials[primitive.material].alphaMode !== "BLEND");
-
-            // Draw all transparent primitives. Depth sort is required.
-            this.renderer.drawScene(state, scene, true, primitive => state.gltf .materials[primitive.material].alphaMode === "BLEND");
-        }
-        else
-        {
-            // Simply draw all primitives.
-            this.renderer.drawScene(state, scene, false);
         }
     }
 
     async startRendering(state)
     {
-        const renderFrame = () =>
+        const update = () =>
         {
+            this.animate(state);
             this.renderFrameToCanvas(state);
-            window.requestAnimationFrame(renderFrame);
+            window.requestAnimationFrame(update);
         };
 
         // After this start executing render loop.
-        window.requestAnimationFrame(renderFrame);
+        window.requestAnimationFrame(update);
     }
 }
 

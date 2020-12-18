@@ -88,7 +88,7 @@ class gltfRenderer
     }
 
     // render complete gltf scene with given camera
-    drawScene(state, scene, sortByDepth, predicateDrawPrimivitve)
+    drawScene(state, scene)
     {
         let currentCamera = undefined;
 
@@ -122,34 +122,30 @@ class gltfRenderer
             }
         }
 
-        if (!sortByDepth)
-        {
-            for (const node of nodes)
-            {
-                let mesh = state.gltf.meshes[node.mesh];
-                if (mesh !== undefined)
-                {
-                    for (let primitive of mesh.primitives)
-                    {
-                        if (predicateDrawPrimivitve ? predicateDrawPrimivitve(primitive) : true)
-                        {
-                            this.drawPrimitive(state, primitive, node, this.viewProjectionMatrix);
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            const sortedPrimitives = currentCamera.sortPrimitivesByDepth(state.gltf, nodes);
+        // collect drawables by essentially zipping primitives (for geometry and material)
+        // and nodes for the transform
+        const drawables = nodes
+            .filter(node => node.mesh !== undefined)
+            .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
+                return  {node: node, primitive: primitive};
+            })), [])
+            .filter(({node, primitive}) => primitive.material !== undefined);
 
-            for (const sortedPrimitive of sortedPrimitives)
-            {
-                if (predicateDrawPrimivitve ? predicateDrawPrimivitve(sortedPrimitive.primitive) : true)
-                {
-                    this.drawPrimitive(state, sortedPrimitive.primitive, sortedPrimitive.node, this.viewProjectionMatrix);
-                }
-            }
+        // opaque drawables don't need sorting
+        const opaqueDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND");
+        for (const drawable of opaqueDrawables)
+        {
+            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+        }
+
+        // transparent drawables need sorting before they can be drawn
+        let transparentDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode === "BLEND");
+        transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, transparentDrawables);
+        for (const drawable of transparentDrawables)
+        {
+            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
     }
 

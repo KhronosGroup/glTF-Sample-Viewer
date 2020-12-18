@@ -14,9 +14,13 @@ async function main()
 
     loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
         state.gltf = gltf;
+        const scene = state.gltf.scenes[state.sceneIndex];
+        scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
         state.userCamera.updatePosition();
+        state.animationIndices = [0];
+        state.animationTimer.start();
     });
 
     loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view).then( (environment) => {
@@ -40,6 +44,16 @@ async function main()
     {
         state.userCamera.zoomIn(delta);
         state.userCamera.updatePosition();
+    };
+    input.onDropFiles = (mainFile, additionalFiles) => {
+        loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder).then( gltf => {
+            state.gltf = gltf;
+            computePrimitiveCentroids(state.gltf);
+            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+            state.userCamera.updatePosition();
+            state.animationIndices = [0];
+            state.animationTimer.start();
+        });
     };
 
     await view.startRendering(state);
