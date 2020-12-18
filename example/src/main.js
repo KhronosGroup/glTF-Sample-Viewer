@@ -2,8 +2,6 @@ import { gltfInput } from './input.js';
 
 import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
 
-import { LIBKTX } from './libs/libktx.js';
-
 async function main()
 {
     const canvas = document.getElementById("canvas");

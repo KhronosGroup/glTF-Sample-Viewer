@@ -1,3 +1,4 @@
+
 var LIBKTX = (function() {
   var _scriptDir = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : undefined;
   if (typeof __filename !== 'undefined') _scriptDir = _scriptDir || __filename;
@@ -1458,7 +1459,7 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-
+  
 };
 
 
@@ -1559,45 +1560,45 @@ var ASM_CONSTS = {
   function ExceptionInfo(excPtr) {
       this.excPtr = excPtr;
       this.ptr = excPtr - ExceptionInfoAttrs.SIZE;
-
+  
       this.set_type = function(type) {
         HEAP32[(((this.ptr)+(ExceptionInfoAttrs.TYPE_OFFSET))>>2)]=type;
       };
-
+  
       this.get_type = function() {
         return HEAP32[(((this.ptr)+(ExceptionInfoAttrs.TYPE_OFFSET))>>2)];
       };
-
+  
       this.set_destructor = function(destructor) {
         HEAP32[(((this.ptr)+(ExceptionInfoAttrs.DESTRUCTOR_OFFSET))>>2)]=destructor;
       };
-
+  
       this.get_destructor = function() {
         return HEAP32[(((this.ptr)+(ExceptionInfoAttrs.DESTRUCTOR_OFFSET))>>2)];
       };
-
+  
       this.set_refcount = function(refcount) {
         HEAP32[(((this.ptr)+(ExceptionInfoAttrs.REFCOUNT_OFFSET))>>2)]=refcount;
       };
-
+  
       this.set_caught = function (caught) {
         caught = caught ? 1 : 0;
         HEAP8[(((this.ptr)+(ExceptionInfoAttrs.CAUGHT_OFFSET))>>0)]=caught;
       };
-
+  
       this.get_caught = function () {
         return HEAP8[(((this.ptr)+(ExceptionInfoAttrs.CAUGHT_OFFSET))>>0)] != 0;
       };
-
+  
       this.set_rethrown = function (rethrown) {
         rethrown = rethrown ? 1 : 0;
         HEAP8[(((this.ptr)+(ExceptionInfoAttrs.RETHROWN_OFFSET))>>0)]=rethrown;
       };
-
+  
       this.get_rethrown = function () {
         return HEAP8[(((this.ptr)+(ExceptionInfoAttrs.RETHROWN_OFFSET))>>0)] != 0;
       };
-
+  
       // Initialize native structure fields. Should be called once after allocated.
       this.init = function(type, destructor) {
         this.set_type(type);
@@ -1606,12 +1607,12 @@ var ASM_CONSTS = {
         this.set_caught(false);
         this.set_rethrown(false);
       }
-
+  
       this.add_ref = function() {
         var value = HEAP32[(((this.ptr)+(ExceptionInfoAttrs.REFCOUNT_OFFSET))>>2)];
         HEAP32[(((this.ptr)+(ExceptionInfoAttrs.REFCOUNT_OFFSET))>>2)]=value + 1;
       };
-
+  
       // Returns true if last reference released.
       this.release_ref = function() {
         var prev = HEAP32[(((this.ptr)+(ExceptionInfoAttrs.REFCOUNT_OFFSET))>>2)];
@@ -1619,9 +1620,9 @@ var ASM_CONSTS = {
         return prev === 1;
       };
     }
-
+  
   var exceptionLast=0;
-
+  
   var uncaughtExceptionCount=0;
   function ___cxa_throw(ptr, type, destructor) {
       var info = new ExceptionInfo(ptr);
@@ -1633,7 +1634,7 @@ var ASM_CONSTS = {
     }
 
   var structRegistrations={};
-
+  
   function runDestructors(destructors) {
       while (destructors.length) {
           var ptr = destructors.pop();
@@ -1641,19 +1642,19 @@ var ASM_CONSTS = {
           del(ptr);
       }
     }
-
+  
   function simpleReadValueFromPointer(pointer) {
       return this['fromWireType'](HEAPU32[pointer >> 2]);
     }
-
+  
   var awaitingDependencies={};
-
+  
   var registeredTypes={};
-
+  
   var typeDependencies={};
-
+  
   var char_0=48;
-
+  
   var char_9=57;
   function makeLegalFunctionName(name) {
       if (undefined === name) {
@@ -1682,7 +1683,7 @@ var ASM_CONSTS = {
       var errorClass = createNamedFunction(errorName, function(message) {
           this.name = errorName;
           this.message = message;
-
+  
           var stack = (new Error(message)).stack;
           if (stack !== undefined) {
               this.stack = this.toString() + '\n' +
@@ -1698,7 +1699,7 @@ var ASM_CONSTS = {
               return this.name + ': ' + this.message;
           }
       };
-
+  
       return errorClass;
     }
   var InternalError=undefined;
@@ -1709,7 +1710,7 @@ var ASM_CONSTS = {
       myTypes.forEach(function(type) {
           typeDependencies[type] = dependentTypes;
       });
-
+  
       function onComplete(typeConverters) {
           var myTypeConverters = getTypeConverters(typeConverters);
           if (myTypeConverters.length !== myTypes.length) {
@@ -1719,7 +1720,7 @@ var ASM_CONSTS = {
               registerType(myTypes[i], myTypeConverters[i]);
           }
       }
-
+  
       var typeConverters = new Array(dependentTypes.length);
       var unregisteredTypes = [];
       var registered = 0;
@@ -1747,7 +1748,7 @@ var ASM_CONSTS = {
   function __embind_finalize_value_object(structType) {
       var reg = structRegistrations[structType];
       delete structRegistrations[structType];
-
+  
       var rawConstructor = reg.rawConstructor;
       var rawDestructor = reg.rawDestructor;
       var fieldRecords = reg.fields;
@@ -1775,7 +1776,7 @@ var ASM_CONSTS = {
                   }
               };
           });
-
+  
           return [{
               name: reg.name,
               'fromWireType': function(ptr) {
@@ -1820,7 +1821,7 @@ var ASM_CONSTS = {
               throw new TypeError('Unknown type size: ' + size);
       }
     }
-
+  
   function embind_init_charCodes() {
       var codes = new Array(256);
       for (var i = 0; i < 256; ++i) {
@@ -1837,7 +1838,7 @@ var ASM_CONSTS = {
       }
       return ret;
     }
-
+  
   var BindingError=undefined;
   function throwBindingError(message) {
       throw new BindingError(message);
@@ -1845,11 +1846,11 @@ var ASM_CONSTS = {
   /** @param {Object=} options */
   function registerType(rawType, registeredInstance, options) {
       options = options || {};
-
+  
       if (!('argPackAdvance' in registeredInstance)) {
           throw new TypeError('registerType registeredInstance requires argPackAdvance');
       }
-
+  
       var name = registeredInstance.name;
       if (!rawType) {
           throwBindingError('type "' + name + '" must have a positive integer typeid pointer');
@@ -1861,10 +1862,10 @@ var ASM_CONSTS = {
               throwBindingError("Cannot register type '" + name + "' twice");
           }
       }
-
+  
       registeredTypes[rawType] = registeredInstance;
       delete typeDependencies[rawType];
-
+  
       if (awaitingDependencies.hasOwnProperty(rawType)) {
           var callbacks = awaitingDependencies[rawType];
           delete awaitingDependencies[rawType];
@@ -1875,7 +1876,7 @@ var ASM_CONSTS = {
     }
   function __embind_register_bool(rawType, name, size, trueValue, falseValue) {
       var shift = getShiftFromSize(size);
-
+  
       name = readLatin1String(name);
       registerType(rawType, {
           name: name,
@@ -1913,25 +1914,25 @@ var ASM_CONSTS = {
       if (!(other instanceof ClassHandle)) {
           return false;
       }
-
+  
       var leftClass = this.$$.ptrType.registeredClass;
       var left = this.$$.ptr;
       var rightClass = other.$$.ptrType.registeredClass;
       var right = other.$$.ptr;
-
+  
       while (leftClass.baseClass) {
           left = leftClass.upcast(left);
           leftClass = leftClass.baseClass;
       }
-
+  
       while (rightClass.baseClass) {
           right = rightClass.upcast(right);
           rightClass = rightClass.baseClass;
       }
-
+  
       return leftClass === rightClass && left === right;
     }
-
+  
   function shallowCopyInternalPointer(o) {
       return {
           count: o.count,
@@ -1943,18 +1944,18 @@ var ASM_CONSTS = {
           smartPtrType: o.smartPtrType,
       };
     }
-
+  
   function throwInstanceAlreadyDeleted(obj) {
       function getInstanceTypeName(handle) {
         return handle.$$.ptrType.registeredClass.name;
       }
       throwBindingError(getInstanceTypeName(obj) + ' instance already deleted');
     }
-
+  
   var finalizationGroup=false;
-
+  
   function detachFinalizer(handle) {}
-
+  
   function runDestructor($$) {
       if ($$.smartPtr) {
           $$.smartPtrType.rawDestructor($$.smartPtr);
@@ -2001,7 +2002,7 @@ var ASM_CONSTS = {
       if (!this.$$.ptr) {
           throwInstanceAlreadyDeleted(this);
       }
-
+  
       if (this.$$.preservePointerOnDelete) {
           this.$$.count.value += 1;
           return this;
@@ -2011,39 +2012,39 @@ var ASM_CONSTS = {
                   value: shallowCopyInternalPointer(this.$$),
               }
           }));
-
+  
           clone.$$.count.value += 1;
           clone.$$.deleteScheduled = false;
           return clone;
       }
     }
-
+  
   function ClassHandle_delete() {
       if (!this.$$.ptr) {
           throwInstanceAlreadyDeleted(this);
       }
-
+  
       if (this.$$.deleteScheduled && !this.$$.preservePointerOnDelete) {
           throwBindingError('Object already scheduled for deletion');
       }
-
+  
       detachFinalizer(this);
       releaseClassHandle(this.$$);
-
+  
       if (!this.$$.preservePointerOnDelete) {
           this.$$.smartPtr = undefined;
           this.$$.ptr = undefined;
       }
     }
-
+  
   function ClassHandle_isDeleted() {
       return !this.$$.ptr;
     }
-
+  
   var delayFunction=undefined;
-
+  
   var deletionQueue=[];
-
+  
   function flushPendingDeletes() {
       while (deletionQueue.length) {
           var obj = deletionQueue.pop();
@@ -2074,9 +2075,9 @@ var ASM_CONSTS = {
     }
   function ClassHandle() {
     }
-
+  
   var registeredPointers={};
-
+  
   function ensureOverloadTable(proto, methodName, humanName) {
       if (undefined === proto[methodName].overloadTable) {
           var prevFunc = proto[methodName];
@@ -2099,7 +2100,7 @@ var ASM_CONSTS = {
           if (undefined === numArguments || (undefined !== Module[name].overloadTable && undefined !== Module[name].overloadTable[numArguments])) {
               throwBindingError("Cannot register public name '" + name + "' twice");
           }
-
+  
           // We are exposing a function with the same name as an existing function. Create an overload table and a function selector
           // that routes between the two.
           ensureOverloadTable(Module, name, name);
@@ -2116,7 +2117,7 @@ var ASM_CONSTS = {
           }
       }
     }
-
+  
   /** @constructor */
   function RegisteredClass(
       name,
@@ -2138,7 +2139,7 @@ var ASM_CONSTS = {
       this.downcast = downcast;
       this.pureVirtualFunctions = [];
     }
-
+  
   function upcastPointer(ptr, ptrClass, desiredClass) {
       while (ptrClass !== desiredClass) {
           if (!ptrClass.upcast) {
@@ -2156,7 +2157,7 @@ var ASM_CONSTS = {
           }
           return 0;
       }
-
+  
       if (!handle.$$) {
           throwBindingError('Cannot pass "' + _embind_repr(handle) + '" as a ' + this.name);
       }
@@ -2167,14 +2168,14 @@ var ASM_CONSTS = {
       var ptr = upcastPointer(handle.$$.ptr, handleClass, this.registeredClass);
       return ptr;
     }
-
+  
   function genericPointerToWireType(destructors, handle) {
       var ptr;
       if (handle === null) {
           if (this.isReference) {
               throwBindingError('null is not a valid ' + this.name);
           }
-
+  
           if (this.isSmartPointer) {
               ptr = this.rawConstructor();
               if (destructors !== null) {
@@ -2185,7 +2186,7 @@ var ASM_CONSTS = {
               return 0;
           }
       }
-
+  
       if (!handle.$$) {
           throwBindingError('Cannot pass "' + _embind_repr(handle) + '" as a ' + this.name);
       }
@@ -2197,7 +2198,7 @@ var ASM_CONSTS = {
       }
       var handleClass = handle.$$.ptrType.registeredClass;
       ptr = upcastPointer(handle.$$.ptr, handleClass, this.registeredClass);
-
+  
       if (this.isSmartPointer) {
           // TODO: this is not strictly true
           // We could support BY_EMVAL conversions from raw pointers to smart pointers
@@ -2205,7 +2206,7 @@ var ASM_CONSTS = {
           if (undefined === handle.$$.smartPtr) {
               throwBindingError('Passing raw pointer to smart pointer is illegal');
           }
-
+  
           switch (this.sharingPolicy) {
               case 0: // NONE
                   // no upcasting
@@ -2215,11 +2216,11 @@ var ASM_CONSTS = {
                       throwBindingError('Cannot convert argument of type ' + (handle.$$.smartPtrType ? handle.$$.smartPtrType.name : handle.$$.ptrType.name) + ' to parameter type ' + this.name);
                   }
                   break;
-
+  
               case 1: // INTRUSIVE
                   ptr = handle.$$.smartPtr;
                   break;
-
+  
               case 2: // BY_EMVAL
                   if (handle.$$.smartPtrType === this) {
                       ptr = handle.$$.smartPtr;
@@ -2236,14 +2237,14 @@ var ASM_CONSTS = {
                       }
                   }
                   break;
-
+  
               default:
                   throwBindingError('Unsupporting sharing policy');
           }
       }
       return ptr;
     }
-
+  
   function nonConstNoSmartPtrRawPointerToWireType(destructors, handle) {
       if (handle === null) {
           if (this.isReference) {
@@ -2251,7 +2252,7 @@ var ASM_CONSTS = {
           }
           return 0;
       }
-
+  
       if (!handle.$$) {
           throwBindingError('Cannot pass "' + _embind_repr(handle) + '" as a ' + this.name);
       }
@@ -2265,26 +2266,26 @@ var ASM_CONSTS = {
       var ptr = upcastPointer(handle.$$.ptr, handleClass, this.registeredClass);
       return ptr;
     }
-
+  
   function RegisteredPointer_getPointee(ptr) {
       if (this.rawGetPointee) {
           ptr = this.rawGetPointee(ptr);
       }
       return ptr;
     }
-
+  
   function RegisteredPointer_destructor(ptr) {
       if (this.rawDestructor) {
           this.rawDestructor(ptr);
       }
     }
-
+  
   function RegisteredPointer_deleteObject(handle) {
       if (handle !== null) {
           handle['delete']();
       }
     }
-
+  
   function downcastPointer(ptr, ptrClass, desiredClass) {
       if (ptrClass === desiredClass) {
           return ptr;
@@ -2292,18 +2293,18 @@ var ASM_CONSTS = {
       if (undefined === desiredClass.baseClass) {
           return null; // no conversion
       }
-
+  
       var rv = downcastPointer(ptr, ptrClass, desiredClass.baseClass);
       if (rv === null) {
           return null;
       }
       return desiredClass.downcast(rv);
     }
-
+  
   function getInheritedInstanceCount() {
       return Object.keys(registeredInstances).length;
     }
-
+  
   function getLiveInheritedInstances() {
       var rv = [];
       for (var k in registeredInstances) {
@@ -2313,7 +2314,7 @@ var ASM_CONSTS = {
       }
       return rv;
     }
-
+  
   function setDelayFunction(fn) {
       delayFunction = fn;
       if (deletionQueue.length && delayFunction) {
@@ -2327,7 +2328,7 @@ var ASM_CONSTS = {
       Module['setDelayFunction'] = setDelayFunction;
     }
   var registeredInstances={};
-
+  
   function getBasestPointer(class_, ptr) {
       if (ptr === undefined) {
           throwBindingError('ptr should not be undefined');
@@ -2342,7 +2343,7 @@ var ASM_CONSTS = {
       ptr = getBasestPointer(class_, ptr);
       return registeredInstances[ptr];
     }
-
+  
   function makeClassHandle(prototype, record) {
       if (!record.ptrType || !record.ptr) {
           throwInternalError('makeClassHandle requires ptr and ptrType');
@@ -2361,14 +2362,14 @@ var ASM_CONSTS = {
     }
   function RegisteredPointer_fromWireType(ptr) {
       // ptr is a raw pointer (or a raw smartpointer)
-
+  
       // rawPointer is a maybe-null raw pointer
       var rawPointer = this.getPointee(ptr);
       if (!rawPointer) {
           this.destructor(ptr);
           return null;
       }
-
+  
       var registeredInstance = getInheritedInstance(this.registeredClass, rawPointer);
       if (undefined !== registeredInstance) {
           // JS object has been neutered, time to repopulate it
@@ -2384,7 +2385,7 @@ var ASM_CONSTS = {
               return rv;
           }
       }
-
+  
       function makeDefaultHandle() {
           if (this.isSmartPointer) {
               return makeClassHandle(this.registeredClass.instancePrototype, {
@@ -2400,13 +2401,13 @@ var ASM_CONSTS = {
               });
           }
       }
-
+  
       var actualType = this.registeredClass.getActualType(rawPointer);
       var registeredPointerRecord = registeredPointers[actualType];
       if (!registeredPointerRecord) {
           return makeDefaultHandle.call(this);
       }
-
+  
       var toType;
       if (this.isConst) {
           toType = registeredPointerRecord.constPointerType;
@@ -2455,7 +2456,7 @@ var ASM_CONSTS = {
       registeredClass,
       isReference,
       isConst,
-
+  
       // smart pointer properties
       isSmartPointer,
       pointeeType,
@@ -2469,7 +2470,7 @@ var ASM_CONSTS = {
       this.registeredClass = registeredClass;
       this.isReference = isReference;
       this.isConst = isConst;
-
+  
       // smart pointer properties
       this.isSmartPointer = isSmartPointer;
       this.pointeeType = pointeeType;
@@ -2478,7 +2479,7 @@ var ASM_CONSTS = {
       this.rawConstructor = rawConstructor;
       this.rawShare = rawShare;
       this.rawDestructor = rawDestructor;
-
+  
       if (!isSmartPointer && registeredClass.baseClass === undefined) {
           if (isConst) {
               this['toWireType'] = constNoSmartPtrRawPointerToWireType;
@@ -2495,7 +2496,7 @@ var ASM_CONSTS = {
           //       craftInvokerFunction altogether.
       }
     }
-
+  
   /** @param {number=} numArguments */
   function replacePublicSymbol(name, value, numArguments) {
       if (!Module.hasOwnProperty(name)) {
@@ -2510,7 +2511,7 @@ var ASM_CONSTS = {
           Module[name].argCount = numArguments;
       }
     }
-
+  
   function getDynCaller(sig, ptr) {
       assert(sig.indexOf('j') >= 0, 'getDynCaller should only be called with i64 sigs')
       var argCache = [];
@@ -2524,23 +2525,23 @@ var ASM_CONSTS = {
     }
   function embind__requireFunction(signature, rawFunction) {
       signature = readLatin1String(signature);
-
+  
       function makeDynCaller() {
         if (signature.indexOf('j') != -1) {
           return getDynCaller(signature, rawFunction);
         }
         return wasmTable.get(rawFunction);
       }
-
+  
       var fp = makeDynCaller();
       if (typeof fp !== "function") {
           throwBindingError("unknown function pointer with signature " + signature + ": " + rawFunction);
       }
       return fp;
     }
-
+  
   var UnboundTypeError=undefined;
-
+  
   function getTypeName(type) {
       var ptr = ___getTypeName(type);
       var rv = readLatin1String(ptr);
@@ -2565,7 +2566,7 @@ var ASM_CONSTS = {
           seen[type] = true;
       }
       types.forEach(visit);
-
+  
       throw new UnboundTypeError(message + ': ' + unboundTypes.map(getTypeName).join([', ']));
     }
   function __embind_register_class(
@@ -2593,18 +2594,18 @@ var ASM_CONSTS = {
       }
       rawDestructor = embind__requireFunction(destructorSignature, rawDestructor);
       var legalFunctionName = makeLegalFunctionName(name);
-
+  
       exposePublicSymbol(legalFunctionName, function() {
           // this code cannot run if baseClassRawType is zero
           throwUnboundTypeError('Cannot construct ' + name + ' due to unbound types', [baseClassRawType]);
       });
-
+  
       whenDependentTypesAreResolved(
           [rawType, rawPointerType, rawConstPointerType],
           baseClassRawType ? [baseClassRawType] : [],
           function(base) {
               base = base[0];
-
+  
               var baseClass;
               var basePrototype;
               if (baseClassRawType) {
@@ -2613,7 +2614,7 @@ var ASM_CONSTS = {
               } else {
                   basePrototype = ClassHandle.prototype;
               }
-
+  
               var constructor = createNamedFunction(legalFunctionName, function() {
                   if (Object.getPrototypeOf(this) !== instancePrototype) {
                       throw new BindingError("Use 'new' to construct " + name);
@@ -2627,13 +2628,13 @@ var ASM_CONSTS = {
                   }
                   return body.apply(this, arguments);
               });
-
+  
               var instancePrototype = Object.create(basePrototype, {
                   constructor: { value: constructor },
               });
-
+  
               constructor.prototype = instancePrototype;
-
+  
               var registeredClass = new RegisteredClass(
                   name,
                   constructor,
@@ -2643,35 +2644,35 @@ var ASM_CONSTS = {
                   getActualType,
                   upcast,
                   downcast);
-
+  
               var referenceConverter = new RegisteredPointer(
                   name,
                   registeredClass,
                   true,
                   false,
                   false);
-
+  
               var pointerConverter = new RegisteredPointer(
                   name + '*',
                   registeredClass,
                   false,
                   false,
                   false);
-
+  
               var constPointerConverter = new RegisteredPointer(
                   name + ' const*',
                   registeredClass,
                   false,
                   true,
                   false);
-
+  
               registeredPointers[rawType] = {
                   pointerType: pointerConverter,
                   constPointerType: constPointerConverter
               };
-
+  
               replacePublicSymbol(legalFunctionName, constructor);
-
+  
               return [referenceConverter, pointerConverter, constPointerConverter];
           }
       );
@@ -2697,11 +2698,11 @@ var ASM_CONSTS = {
       invoker = embind__requireFunction(invokerSignature, invoker);
       var args = [rawConstructor];
       var destructors = [];
-
+  
       whenDependentTypesAreResolved([], [rawClassType], function(classType) {
           classType = classType[0];
           var humanName = 'constructor ' + classType.name;
-
+  
           if (undefined === classType.registeredClass.constructor_body) {
               classType.registeredClass.constructor_body = [];
           }
@@ -2711,7 +2712,7 @@ var ASM_CONSTS = {
           classType.registeredClass.constructor_body[argCount - 1] = function unboundTypeHandler() {
               throwUnboundTypeError('Cannot construct ' + classType.name + ' due to unbound types', rawArgTypes);
           };
-
+  
           whenDependentTypesAreResolved([], rawArgTypes, function(argTypes) {
               classType.registeredClass.constructor_body[argCount - 1] = function constructor_body() {
                   if (arguments.length !== argCount - 1) {
@@ -2722,10 +2723,10 @@ var ASM_CONSTS = {
                   for (var i = 1; i < argCount; ++i) {
                       args[i] = argTypes[i]['toWireType'](destructors, arguments[i - 1]);
                   }
-
+  
                   var ptr = invoker.apply(null, args);
                   runDestructors(destructors);
-
+  
                   return argTypes[0]['fromWireType'](ptr);
               };
               return [];
@@ -2738,12 +2739,12 @@ var ASM_CONSTS = {
       if (!(constructor instanceof Function)) {
           throw new TypeError('new_ called with constructor type ' + typeof(constructor) + " which is not a function");
       }
-
+  
       /*
        * Previously, the following line was just:
-
+  
        function dummy() {};
-
+  
        * Unfortunately, Chrome was preserving 'dummy' as the object's name, even though at creation, the 'dummy' has the
        * correct constructor name.  Thus, objects created with IMVU.new would show up in the debugger as 'dummy', which
        * isn't very helpful.  Using IMVU.createNamedFunction addresses the issue.  Doublely-unfortunately, there's no way
@@ -2752,7 +2753,7 @@ var ASM_CONSTS = {
       var dummy = createNamedFunction(constructor.name || 'unknownFunctionName', function(){});
       dummy.prototype = constructor.prototype;
       var obj = new dummy;
-
+  
       var r = constructor.apply(obj, argumentList);
       return (r instanceof Object) ? r : obj;
     }
@@ -2766,71 +2767,71 @@ var ASM_CONSTS = {
       // cppInvokerFunc: JS Function object to the C++-side function that interops into C++ code.
       // cppTargetFunc: Function pointer (an integer to FUNCTION_TABLE) to the target C++ function the cppInvokerFunc will end up calling.
       var argCount = argTypes.length;
-
+  
       if (argCount < 2) {
           throwBindingError("argTypes array size mismatch! Must at least get return value and 'this' types!");
       }
-
+  
       var isClassMethodFunc = (argTypes[1] !== null && classType !== null);
-
+  
       // Free functions with signature "void function()" do not need an invoker that marshalls between wire types.
   // TODO: This omits argument count check - enable only at -O3 or similar.
   //    if (ENABLE_UNSAFE_OPTS && argCount == 2 && argTypes[0].name == "void" && !isClassMethodFunc) {
   //       return FUNCTION_TABLE[fn];
   //    }
-
+  
       // Determine if we need to use a dynamic stack to store the destructors for the function parameters.
       // TODO: Remove this completely once all function invokers are being dynamically generated.
       var needsDestructorStack = false;
-
+  
       for(var i = 1; i < argTypes.length; ++i) { // Skip return value at index 0 - it's not deleted here.
           if (argTypes[i] !== null && argTypes[i].destructorFunction === undefined) { // The type does not define a destructor function - must use dynamic stack
               needsDestructorStack = true;
               break;
           }
       }
-
+  
       var returns = (argTypes[0].name !== "void");
-
+  
       var argsList = "";
       var argsListWired = "";
       for(var i = 0; i < argCount - 2; ++i) {
           argsList += (i!==0?", ":"")+"arg"+i;
           argsListWired += (i!==0?", ":"")+"arg"+i+"Wired";
       }
-
+  
       var invokerFnBody =
           "return function "+makeLegalFunctionName(humanName)+"("+argsList+") {\n" +
           "if (arguments.length !== "+(argCount - 2)+") {\n" +
               "throwBindingError('function "+humanName+" called with ' + arguments.length + ' arguments, expected "+(argCount - 2)+" args!');\n" +
           "}\n";
-
+  
       if (needsDestructorStack) {
           invokerFnBody +=
               "var destructors = [];\n";
       }
-
+  
       var dtorStack = needsDestructorStack ? "destructors" : "null";
       var args1 = ["throwBindingError", "invoker", "fn", "runDestructors", "retType", "classParam"];
       var args2 = [throwBindingError, cppInvokerFunc, cppTargetFunc, runDestructors, argTypes[0], argTypes[1]];
-
+  
       if (isClassMethodFunc) {
           invokerFnBody += "var thisWired = classParam.toWireType("+dtorStack+", this);\n";
       }
-
+  
       for(var i = 0; i < argCount - 2; ++i) {
           invokerFnBody += "var arg"+i+"Wired = argType"+i+".toWireType("+dtorStack+", arg"+i+"); // "+argTypes[i+2].name+"\n";
           args1.push("argType"+i);
           args2.push(argTypes[i+2]);
       }
-
+  
       if (isClassMethodFunc) {
           argsListWired = "thisWired" + (argsListWired.length > 0 ? ", " : "") + argsListWired;
       }
-
+  
       invokerFnBody +=
           (returns?"var rv = ":"") + "invoker(fn"+(argsListWired.length>0?", ":"")+argsListWired+");\n";
-
+  
       if (needsDestructorStack) {
           invokerFnBody += "runDestructors(destructors);\n";
       } else {
@@ -2843,16 +2844,16 @@ var ASM_CONSTS = {
               }
           }
       }
-
+  
       if (returns) {
           invokerFnBody += "var ret = retType.fromWireType(rv);\n" +
                            "return ret;\n";
       } else {
       }
       invokerFnBody += "}\n";
-
+  
       args1.push(invokerFnBody);
-
+  
       var invokerFunction = new_(Function, args1).apply(null, args2);
       return invokerFunction;
     }
@@ -2869,19 +2870,19 @@ var ASM_CONSTS = {
       var rawArgTypes = heap32VectorToArray(argCount, rawArgTypesAddr);
       methodName = readLatin1String(methodName);
       rawInvoker = embind__requireFunction(invokerSignature, rawInvoker);
-
+  
       whenDependentTypesAreResolved([], [rawClassType], function(classType) {
           classType = classType[0];
           var humanName = classType.name + '.' + methodName;
-
+  
           if (isPureVirtual) {
               classType.registeredClass.pureVirtualFunctions.push(methodName);
           }
-
+  
           function unboundTypesHandler() {
               throwUnboundTypeError('Cannot call ' + humanName + ' due to unbound types', rawArgTypes);
           }
-
+  
           var proto = classType.registeredClass.instancePrototype;
           var method = proto[methodName];
           if (undefined === method || (undefined === method.overloadTable && method.className !== classType.name && method.argCount === argCount - 2)) {
@@ -2894,11 +2895,11 @@ var ASM_CONSTS = {
               ensureOverloadTable(proto, methodName, humanName);
               proto[methodName].overloadTable[argCount - 2] = unboundTypesHandler;
           }
-
+  
           whenDependentTypesAreResolved([], rawArgTypes, function(argTypes) {
-
+  
               var memberFunction = craftInvokerFunction(humanName, argTypes, classType, rawInvoker, context);
-
+  
               // Replace the initial unbound-handler-stub function with the appropriate member function, now that all types
               // are resolved. If multiple overloads are registered for this function, the function goes into an overload table.
               if (undefined === proto[methodName].overloadTable) {
@@ -2908,7 +2909,7 @@ var ASM_CONSTS = {
               } else {
                   proto[methodName].overloadTable[argCount - 2] = memberFunction;
               }
-
+  
               return [];
           });
           return [];
@@ -2925,7 +2926,7 @@ var ASM_CONSTS = {
       if (!this_.$$.ptr) {
           throwBindingError('cannot call emscripten binding method ' + humanName + ' on deleted object');
       }
-
+  
       // todo: kill this
       return upcastPointer(
           this_.$$.ptr,
@@ -2946,7 +2947,7 @@ var ASM_CONSTS = {
     ) {
       fieldName = readLatin1String(fieldName);
       getter = embind__requireFunction(getterSignature, getter);
-
+  
       whenDependentTypesAreResolved([], [classType], function(classType) {
           classType = classType[0];
           var humanName = classType.name + '.' + fieldName;
@@ -2966,9 +2967,9 @@ var ASM_CONSTS = {
                   throwBindingError(humanName + ' is a read-only property');
               };
           }
-
+  
           Object.defineProperty(classType.registeredClass.instancePrototype, fieldName, desc);
-
+  
           whenDependentTypesAreResolved(
               [],
               (setter ? [getterReturnType, setterArgumentType] : [getterReturnType]),
@@ -2981,7 +2982,7 @@ var ASM_CONSTS = {
                   },
                   enumerable: true
               };
-
+  
               if (setter) {
                   setter = embind__requireFunction(setterSignature, setter);
                   var setterArgumentType = types[1];
@@ -2992,17 +2993,17 @@ var ASM_CONSTS = {
                       runDestructors(destructors);
                   };
               }
-
+  
               Object.defineProperty(classType.registeredClass.instancePrototype, fieldName, desc);
               return [];
           });
-
+  
           return [];
       });
     }
 
   var emval_free_list=[];
-
+  
   var emval_handle_array=[{},{value:undefined},{value:null},{value:true},{value:false}];
   function __emval_decref(handle) {
       if (handle > 4 && 0 === --emval_handle_array[handle].refcount) {
@@ -3010,7 +3011,7 @@ var ASM_CONSTS = {
           emval_free_list.push(handle);
       }
     }
-
+  
   function count_emval_handles() {
       var count = 0;
       for (var i = 5; i < emval_handle_array.length; ++i) {
@@ -3020,7 +3021,7 @@ var ASM_CONSTS = {
       }
       return count;
     }
-
+  
   function get_first_emval() {
       for (var i = 5; i < emval_handle_array.length; ++i) {
           if (emval_handle_array[i] !== undefined) {
@@ -3034,7 +3035,7 @@ var ASM_CONSTS = {
       Module['get_first_emval'] = get_first_emval;
     }
   function __emval_register(value) {
-
+  
       switch(value){
         case undefined :{ return 1; }
         case null :{ return 2; }
@@ -3044,7 +3045,7 @@ var ASM_CONSTS = {
           var handle = emval_free_list.length ?
               emval_free_list.pop() :
               emval_handle_array.length;
-
+  
           emval_handle_array[handle] = {refcount: 1, value: value};
           return handle;
           }
@@ -3065,7 +3066,7 @@ var ASM_CONSTS = {
           'argPackAdvance': 8,
           'readValueFromPointer': simpleReadValueFromPointer,
           destructorFunction: null, // This type does not need a destructor
-
+  
           // TODO: do we need a deleteObject here?  write a test where
           // emval is passed into JS via an interface
       });
@@ -3097,11 +3098,11 @@ var ASM_CONSTS = {
     ) {
       var shift = getShiftFromSize(size);
       name = readLatin1String(name);
-
+  
       function ctor() {
       }
       ctor.values = {};
-
+  
       registerType(rawType, {
           name: name,
           constructor: ctor,
@@ -3132,9 +3133,9 @@ var ASM_CONSTS = {
     ) {
       var enumType = requireRegisteredType(rawEnumType, 'enum');
       name = readLatin1String(name);
-
+  
       var Enum = enumType.constructor;
-
+  
       var Value = Object.create(enumType.constructor.prototype, {
           value: {value: enumValue},
           constructor: {value: createNamedFunction(enumType.name + '_' + name, function() {})},
@@ -3154,7 +3155,7 @@ var ASM_CONSTS = {
           return '' + v;
       }
     }
-
+  
   function floatReadValueFromPointer(name, shift) {
       switch (shift) {
           case 2: return function(pointer) {
@@ -3210,22 +3211,22 @@ var ASM_CONSTS = {
       if (maxRange === -1) { // LLVM doesn't have signed and unsigned 32-bit types, so u32 literals come out as 'i32 -1'. Always treat those as max u32.
           maxRange = 4294967295;
       }
-
+  
       var shift = getShiftFromSize(size);
-
+  
       var fromWireType = function(value) {
           return value;
       };
-
+  
       if (minRange === 0) {
           var bitshift = 32 - 8*size;
           fromWireType = function(value) {
               return (value << bitshift) >>> bitshift;
           };
       }
-
+  
       var isUnsignedType = (name.indexOf('unsigned') != -1);
-
+  
       registerType(primitiveType, {
           name: name,
           'fromWireType': fromWireType,
@@ -3257,9 +3258,9 @@ var ASM_CONSTS = {
           Float32Array,
           Float64Array,
       ];
-
+  
       var TA = typeMapping[dataTypeIndex];
-
+  
       function decodeMemoryView(handle) {
           handle = handle >> 2;
           var heap = HEAPU32;
@@ -3267,7 +3268,7 @@ var ASM_CONSTS = {
           var data = heap[handle + 1]; // byte offset into emscripten heap
           return new TA(buffer, data, size);
       }
-
+  
       name = readLatin1String(name);
       registerType(rawType, {
           name: name,
@@ -3284,12 +3285,12 @@ var ASM_CONSTS = {
       var stdStringIsUTF8
       //process only std::string bindings with UTF8 support, in contrast to e.g. std::basic_string<unsigned char>
       = (name === "std::string");
-
+  
       registerType(rawType, {
           name: name,
           'fromWireType': function(value) {
               var length = HEAPU32[value >> 2];
-
+  
               var str;
               if (stdStringIsUTF8) {
                   var decodeStartPtr = value + 4;
@@ -3315,19 +3316,19 @@ var ASM_CONSTS = {
                   }
                   str = a.join('');
               }
-
+  
               _free(value);
-
+  
               return str;
           },
           'toWireType': function(destructors, value) {
               if (value instanceof ArrayBuffer) {
                   value = new Uint8Array(value);
               }
-
+  
               var getLength;
               var valueIsOfTypeString = (typeof value === 'string');
-
+  
               if (!(valueIsOfTypeString || value instanceof Uint8Array || value instanceof Uint8ClampedArray || value instanceof Int8Array)) {
                   throwBindingError('Cannot pass non-string to std::string');
               }
@@ -3336,7 +3337,7 @@ var ASM_CONSTS = {
               } else {
                   getLength = function() {return value.length;};
               }
-
+  
               // assumes 4-byte alignment
               var length = getLength();
               var ptr = _malloc(4 + length + 1);
@@ -3359,7 +3360,7 @@ var ASM_CONSTS = {
                       }
                   }
               }
-
+  
               if (destructors !== null) {
                   destructors.push(_free, ptr);
               }
@@ -3394,7 +3395,7 @@ var ASM_CONSTS = {
               var length = HEAPU32[value >> 2];
               var HEAP = getHeap();
               var str;
-
+  
               var decodeStartPtr = value + 4;
               // Looping here to support possible embedded '0' bytes
               for (var i = 0; i <= length; ++i) {
@@ -3411,23 +3412,23 @@ var ASM_CONSTS = {
                       decodeStartPtr = currentBytePtr + charSize;
                   }
               }
-
+  
               _free(value);
-
+  
               return str;
           },
           'toWireType': function(destructors, value) {
               if (!(typeof value === 'string')) {
                   throwBindingError('Cannot pass non-string to C++ string type ' + name);
               }
-
+  
               // assumes 4-byte alignment
               var length = lengthBytesUTF(value);
               var ptr = _malloc(4 + length + charSize);
               HEAPU32[ptr >> 2] = length >> shift;
-
+  
               encodeString(value, ptr + 4, length + charSize);
-
+  
               if (destructors !== null) {
                   destructors.push(_free, ptr);
               }
@@ -3514,7 +3515,7 @@ var ASM_CONSTS = {
       HEAP32[destructorsRef >> 2] = __emval_register(destructors);
       return destructors;
     }
-
+  
   var emval_symbols={};
   function getStringOrSymbol(address) {
       var symbol = emval_symbols[address];
@@ -3524,7 +3525,7 @@ var ASM_CONSTS = {
           return symbol;
       }
     }
-
+  
   var emval_methodCallers=[];
   function __emval_call_void_method(caller, handle, methodName, args) {
       caller = emval_methodCallers[caller];
@@ -3539,7 +3540,7 @@ var ASM_CONSTS = {
       emval_methodCallers.push(caller);
       return id;
     }
-
+  
   function __emval_lookupTypes(argCount, argTypes) {
       var a = new Array(argCount);
       for (var i = 0; i < argCount; ++i) {
@@ -3551,24 +3552,24 @@ var ASM_CONSTS = {
     }
   function __emval_get_method_caller(argCount, argTypes) {
       var types = __emval_lookupTypes(argCount, argTypes);
-
+  
       var retType = types[0];
       var signatureName = retType.name + "_$" + types.slice(1).map(function (t) { return t.name; }).join("_") + "$";
-
+  
       var params = ["retType"];
       var args = [retType];
-
+  
       var argsList = ""; // 'arg0, arg1, arg2, ... , argN'
       for (var i = 0; i < argCount - 1; ++i) {
           argsList += (i !== 0 ? ", " : "") + "arg" + i;
           params.push("argType" + i);
           args.push(types[1 + i]);
       }
-
+  
       var functionName = makeLegalFunctionName("methodCaller_" + signatureName);
       var functionBody =
           "return function " + functionName + "(handle, name, destructors, args) {\n";
-
+  
       var offset = 0;
       for (var i = 0; i < argCount - 1; ++i) {
           functionBody +=
@@ -3589,7 +3590,7 @@ var ASM_CONSTS = {
       }
       functionBody +=
           "};\n";
-
+  
       params.push(functionBody);
       var invokerFunction = new_(Function, params).apply(null, args);
       return __emval_addMethodCaller(invokerFunction);
@@ -3628,10 +3629,10 @@ var ASM_CONSTS = {
       for(var i = 0; i < argCount; ++i) {
           argsList += (i!==0?", ":"")+"arg"+i; // 'arg0, arg1, ..., argn'
       }
-
+  
       var functionBody =
           "return function emval_allocator_"+argCount+"(constructor, argTypes, args) {\n";
-
+  
       for(var i = 0; i < argCount; ++i) {
           functionBody +=
               "var argType"+i+" = requireRegisteredType(Module['HEAP32'][(argTypes >>> 2) + "+i+"], \"parameter "+i+"\");\n" +
@@ -3642,22 +3643,22 @@ var ASM_CONSTS = {
           "var obj = new constructor("+argsList+");\n" +
           "return __emval_register(obj);\n" +
           "}\n";
-
+  
       /*jshint evil:true*/
       return (new Function("requireRegisteredType", "Module", "__emval_register", functionBody))(
           requireRegisteredType, Module, __emval_register);
     }
-
+  
   var emval_newers={};
   function __emval_new(handle, argCount, argTypes, args) {
       handle = requireHandle(handle);
-
+  
       var newer = emval_newers[argCount];
       if (!newer) {
           newer = craftEmvalAllocator(argCount);
           emval_newers[argCount] = newer;
       }
-
+  
       return newer(handle, argTypes, args);
     }
 
@@ -3702,7 +3703,7 @@ var ASM_CONSTS = {
         return 1;
       }
     }
-
+  
   function __webgl_enable_OES_vertex_array_object(ctx) {
       // Extension available in WebGL 1 from Firefox 25 and WebKit 536.28/desktop Safari 6.0.3 onwards. Core feature in WebGL 2.
       var ext = ctx.getExtension('OES_vertex_array_object');
@@ -3714,7 +3715,7 @@ var ASM_CONSTS = {
         return 1;
       }
     }
-
+  
   function __webgl_enable_WEBGL_draw_buffers(ctx) {
       // Extension available in WebGL 1 from Firefox 28 onwards. Core feature in WebGL 2.
       var ext = ctx.getExtension('WEBGL_draw_buffers');
@@ -3723,17 +3724,17 @@ var ASM_CONSTS = {
         return 1;
       }
     }
-
+  
   function __webgl_enable_WEBGL_draw_instanced_base_vertex_base_instance(ctx) {
       // Closure is expected to be allowed to minify the '.dibvbi' property, so not accessing it quoted.
       return !!(ctx.dibvbi = ctx.getExtension('WEBGL_draw_instanced_base_vertex_base_instance'));
     }
-
+  
   function __webgl_enable_WEBGL_multi_draw_instanced_base_vertex_base_instance(ctx) {
       // Closure is expected to be allowed to minify the '.mdibvbi' property, so not accessing it quoted.
       return !!(ctx.mdibvbi = ctx.getExtension('WEBGL_multi_draw_instanced_base_vertex_base_instance'));
     }
-
+  
   function __webgl_enable_WEBGL_multi_draw(ctx) {
       // Closure is expected to be allowed to minify the '.multiDrawWebgl' property, so not accessing it quoted.
       return !!(ctx.multiDrawWebgl = ctx.getExtension('WEBGL_multi_draw'));
@@ -3773,7 +3774,7 @@ var ASM_CONSTS = {
             ringbuffer1[j] = ringbuffer2[j] = null; // Created on-demand
           }
         }
-
+  
         if (quads) {
           // GL_QUAD indexes can be precalculated
           context.tempQuadIndexBuffer = GLctx.createBuffer();
@@ -3855,14 +3856,14 @@ var ASM_CONSTS = {
         return size * typeSize * count;
       },usedTempBuffers:[],preDrawHandleClientVertexAttribBindings:function preDrawHandleClientVertexAttribBindings(count) {
         GL.resetBufferBinding = false;
-
+  
         // TODO: initial pass to detect ranges we need to upload, might not need an upload per attrib
         for (var i = 0; i < GL.currentContext.maxVertexAttribs; ++i) {
           var cb = GL.currentContext.clientBuffers[i];
           if (!cb.clientside || !cb.enabled) continue;
-
+  
           GL.resetBufferBinding = true;
-
+  
           var size = GL.calcBufLength(cb.size, cb.type, cb.stride, count);
           var buf = GL.getTempVertexBuffer(size);
           GLctx.bindBuffer(0x8892 /*GL_ARRAY_BUFFER*/, buf);
@@ -3876,7 +3877,7 @@ var ASM_CONSTS = {
           GLctx.bindBuffer(0x8892 /*GL_ARRAY_BUFFER*/, GL.buffers[GLctx.currentArrayBufferBinding]);
         }
       },createContext:function(canvas, webGLContextAttributes) {
-
+  
         // If WebGL context has already been preinitialized for the page on the JS side, reuse that context instead. This is useful for example when
         // the main page precompiles shaders for the application, in which case the WebGL context is created already before any Emscripten compiled
         // code has been downloaded.
@@ -3884,8 +3885,8 @@ var ASM_CONSTS = {
           var ctx = Module['preinitializedWebGLContext'];
           webGLContextAttributes.majorVersion = (typeof WebGL2RenderingContext !== 'undefined' && ctx instanceof WebGL2RenderingContext) ? 2 : 1;
         } else {
-
-        var ctx =
+  
+        var ctx = 
           (webGLContextAttributes.majorVersion > 1)
           ?
             canvas.getContext("webgl2", webGLContextAttributes)
@@ -3893,43 +3894,43 @@ var ASM_CONSTS = {
           (canvas.getContext("webgl", webGLContextAttributes)
             // https://caniuse.com/#feat=webgl
             );
-
+  
         }
-
+  
         if (!ctx) return 0;
-
+  
         var handle = GL.registerContext(ctx, webGLContextAttributes);
-
+  
         return handle;
       },registerContext:function(ctx, webGLContextAttributes) {
         // without pthreads a context is just an integer ID
         var handle = GL.getNewId(GL.contexts);
-
+  
         var context = {
           handle: handle,
           attributes: webGLContextAttributes,
           version: webGLContextAttributes.majorVersion,
           GLctx: ctx
         };
-
+  
         // Store the created context object so that we can access the context given a canvas without having to pass the parameters again.
         if (ctx.canvas) ctx.canvas.GLctxObject = context;
         GL.contexts[handle] = context;
         if (typeof webGLContextAttributes.enableExtensionsByDefault === 'undefined' || webGLContextAttributes.enableExtensionsByDefault) {
           GL.initExtensions(context);
         }
-
+  
         context.maxVertexAttribs = context.GLctx.getParameter(0x8869 /*GL_MAX_VERTEX_ATTRIBS*/);
         context.clientBuffers = [];
         for (var i = 0; i < context.maxVertexAttribs; i++) {
           context.clientBuffers[i] = { enabled: false, clientside: false, size: 0, type: 0, normalized: 0, stride: 0, ptr: 0, vertexAttribPointerAdaptor: null };
         }
-
+  
         GL.generateTempBuffers(false, context);
-
+  
         return handle;
       },makeContextCurrent:function(contextHandle) {
-
+  
         GL.currentContext = GL.contexts[contextHandle]; // Active Emscripten GL layer context object.
         Module.ctx = GLctx = GL.currentContext && GL.currentContext.GLctx; // Active WebGL context object.
         return !(contextHandle && !GLctx);
@@ -3943,14 +3944,14 @@ var ASM_CONSTS = {
       },initExtensions:function(context) {
         // If this function is called without a specific context object, init the extensions of the currently active context.
         if (!context) context = GL.currentContext;
-
+  
         if (context.initExtensionsDone) return;
         context.initExtensionsDone = true;
-
+  
         var GLctx = context.GLctx;
-
+  
         // Detect the presence of a few extensions manually, this GL interop layer itself will need to know if they exist.
-
+  
         // Extensions that are only available in WebGL 1 (the calls will be no-ops if called on a WebGL 2 context active)
         __webgl_enable_ANGLE_instanced_arrays(GLctx);
         __webgl_enable_OES_vertex_array_object(GLctx);
@@ -3958,10 +3959,10 @@ var ASM_CONSTS = {
         // Extensions that are available from WebGL >= 2 (no-op if called on a WebGL 1 context active)
         __webgl_enable_WEBGL_draw_instanced_base_vertex_base_instance(GLctx);
         __webgl_enable_WEBGL_multi_draw_instanced_base_vertex_base_instance(GLctx);
-
+  
         GLctx.disjointTimerQueryExt = GLctx.getExtension("EXT_disjoint_timer_query");
         __webgl_enable_WEBGL_multi_draw(GLctx);
-
+  
         // These are the 'safe' feature-enabling extensions that don't add any performance impact related to e.g. debugging, and
         // should be enabled by default so that client GLES2/GL code will not need to go through extra hoops to get its stuff working.
         // As new extensions are ratified at http://www.khronos.org/registry/webgl/extensions/ , feel free to add your new extensions
@@ -3982,7 +3983,7 @@ var ASM_CONSTS = {
                                                // Old style prefixed forms of extensions (but still currently used on e.g. iPhone Xs as
                                                // tested on iOS 12.4.1):
                                                "WEBKIT_WEBGL_compressed_texture_pvrtc"];
-
+  
         function shouldEnableAutomatically(extension) {
           var ret = false;
           automaticallyEnabledExtensions.forEach(function(include) {
@@ -3992,7 +3993,7 @@ var ASM_CONSTS = {
           });
           return ret;
         }
-
+  
         var exts = GLctx.getSupportedExtensions() || []; // .getSupportedExtensions() can return null if context is lost, so coerce to empty array.
         exts.forEach(function(ext) {
           if (automaticallyEnabledExtensions.indexOf(ext) != -1) {
@@ -4007,23 +4008,23 @@ var ASM_CONSTS = {
           maxAttributeLength: -1, // This is lazily computed and cached, computed when/if first asked, "-1" meaning not computed yet.
           maxUniformBlockNameLength: -1 // Lazily computed as well
         };
-
+  
         var utable = ptable.uniforms;
         // A program's uniform table maps the string name of an uniform to an integer location of that uniform.
         // The global GL.uniforms map maps integer locations to WebGLUniformLocations.
         var numUniforms = GLctx.getProgramParameter(p, 0x8B86/*GL_ACTIVE_UNIFORMS*/);
         for (var i = 0; i < numUniforms; ++i) {
           var u = GLctx.getActiveUniform(p, i);
-
+  
           var name = u.name;
           ptable.maxUniformLength = Math.max(ptable.maxUniformLength, name.length+1);
-
+  
           // If we are dealing with an array, e.g. vec4 foo[3], strip off the array index part to canonicalize that "foo", "foo[]",
           // and "foo[0]" will mean the same. Loop below will populate foo[1] and foo[2].
           if (name.slice(-1) == ']') {
             name = name.slice(0, name.lastIndexOf('['));
           }
-
+  
           // Optimize memory usage slightly: If we have an array of uniforms, e.g. 'vec3 colors[3];', then
           // only store the string 'colors' in utable, and 'colors[0]', 'colors[1]' and 'colors[2]' will be parsed as 'colors'+i.
           // Note that for the GL.uniforms table, we still need to fetch the all WebGLUniformLocations for all the indices.
@@ -4032,12 +4033,12 @@ var ASM_CONSTS = {
             var id = GL.getNewId(GL.uniforms);
             utable[name] = [u.size, id];
             GL.uniforms[id] = loc;
-
+  
             for (var j = 1; j < u.size; ++j) {
               var n = name + '['+j+']';
               loc = GLctx.getUniformLocation(p, n);
               id = GL.getNewId(GL.uniforms);
-
+  
               GL.uniforms[id] = loc;
             }
           }
@@ -4070,7 +4071,7 @@ var ASM_CONSTS = {
       } else if (target == 0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/) {
         GLctx.currentElementArrayBufferBinding = buffer;
       }
-
+  
       if (target == 0x88EB /*GL_PIXEL_PACK_BUFFER*/) {
         // In WebGL 2 glReadPixels entry point, we need to use a different WebGL 2 API function call when a buffer is bound to
         // GL_PIXEL_PACK_BUFFER_BINDING point, so must keep track whether that binding point is non-null to know what is
@@ -4096,9 +4097,9 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glBindFramebuffer(target, framebuffer) {
-
+  
       GLctx.bindFramebuffer(target, GL.framebuffers[framebuffer]);
-
+  
     }
 
   function _emscripten_glBindRenderbuffer(target, renderbuffer) {
@@ -4142,7 +4143,7 @@ var ASM_CONSTS = {
   function _emscripten_glBlitFramebuffer(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) { GLctx['blitFramebuffer'](x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) }
 
   function _emscripten_glBufferData(target, size, data, usage) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         if (data) {
           GLctx.bufferData(target, HEAPU8, usage, data, size);
@@ -4171,17 +4172,17 @@ var ASM_CONSTS = {
   function _emscripten_glClearBufferfi(x0, x1, x2, x3) { GLctx['clearBufferfi'](x0, x1, x2, x3) }
 
   function _emscripten_glClearBufferfv(buffer, drawbuffer, value) {
-
+  
       GLctx['clearBufferfv'](buffer, drawbuffer, HEAPF32, value>>2);
     }
 
   function _emscripten_glClearBufferiv(buffer, drawbuffer, value) {
-
+  
       GLctx['clearBufferiv'](buffer, drawbuffer, HEAP32, value>>2);
     }
 
   function _emscripten_glClearBufferuiv(buffer, drawbuffer, value) {
-
+  
       GLctx['clearBufferuiv'](buffer, drawbuffer, HEAPU32, value>>2);
     }
 
@@ -4278,15 +4279,15 @@ var ASM_CONSTS = {
       for (var i = 0; i < n; i++) {
         var id = HEAP32[(((buffers)+(i*4))>>2)];
         var buffer = GL.buffers[id];
-
+  
         // From spec: "glDeleteBuffers silently ignores 0's and names that do not
         // correspond to existing buffer objects."
         if (!buffer) continue;
-
+  
         GLctx.deleteBuffer(buffer);
         buffer.name = 0;
         GL.buffers[id] = null;
-
+  
         if (id == GLctx.currentArrayBufferBinding) GLctx.currentArrayBufferBinding = 0;
         if (id == GLctx.currentElementArrayBufferBinding) GLctx.currentElementArrayBufferBinding = 0;
         if (id == GLctx.currentPixelPackBufferBinding) GLctx.currentPixelPackBufferBinding = 0;
@@ -4445,9 +4446,9 @@ var ASM_CONSTS = {
   function _emscripten_glDrawArrays(mode, first, count) {
       // bind any client-side buffers
       GL.preDrawHandleClientVertexAttribBindings(first + count);
-
+  
       GLctx.drawArrays(mode, first, count);
-
+  
       GL.postDrawHandleClientVertexAttribBindings();
     }
 
@@ -4473,32 +4474,32 @@ var ASM_CONSTS = {
 
   var tempFixedLengthArray=[];
   function _emscripten_glDrawBuffers(n, bufs) {
-
+  
       var bufArray = tempFixedLengthArray[n];
       for (var i = 0; i < n; i++) {
         bufArray[i] = HEAP32[(((bufs)+(i*4))>>2)];
       }
-
+  
       GLctx['drawBuffers'](bufArray);
     }
 
   function _emscripten_glDrawBuffersEXT(n, bufs) {
-
+  
       var bufArray = tempFixedLengthArray[n];
       for (var i = 0; i < n; i++) {
         bufArray[i] = HEAP32[(((bufs)+(i*4))>>2)];
       }
-
+  
       GLctx['drawBuffers'](bufArray);
     }
 
   function _emscripten_glDrawBuffersWEBGL(n, bufs) {
-
+  
       var bufArray = tempFixedLengthArray[n];
       for (var i = 0; i < n; i++) {
         bufArray[i] = HEAP32[(((bufs)+(i*4))>>2)];
       }
-
+  
       GLctx['drawBuffers'](bufArray);
     }
 
@@ -4514,14 +4515,14 @@ var ASM_CONSTS = {
         // the index is now 0
         indices = 0;
       }
-
+  
       // bind any client-side buffers
       GL.preDrawHandleClientVertexAttribBindings(count);
-
+  
       GLctx.drawElements(mode, count, type, indices);
-
+  
       GL.postDrawHandleClientVertexAttribBindings(count);
-
+  
       if (!GLctx.currentElementArrayBufferBinding) {
         GLctx.bindBuffer(0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/, null);
       }
@@ -4559,14 +4560,14 @@ var ASM_CONSTS = {
         // the index is now 0
         indices = 0;
       }
-
+  
       // bind any client-side buffers
       GL.preDrawHandleClientVertexAttribBindings(count);
-
+  
       GLctx.drawElements(mode, count, type, indices);
-
+  
       GL.postDrawHandleClientVertexAttribBindings(count);
-
+  
       if (!GLctx.currentElementArrayBufferBinding) {
         GLctx.bindBuffer(0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/, null);
       }
@@ -4627,7 +4628,7 @@ var ASM_CONSTS = {
       if (buffer) return buffer.name|0;
       else return 0;
     }
-
+  
   function emscriptenWebGLValidateMapBufferTarget(target) {
       switch (target) {
         case 0x8892: // GL_ARRAY_BUFFER
@@ -4650,14 +4651,14 @@ var ASM_CONSTS = {
         err('GL_INVALID_ENUM in glFlushMappedBufferRange');
         return;
       }
-
+  
       var mapping = GL.mappedBuffers[emscriptenWebGLGetBufferBinding(target)];
       if (!mapping) {
         GL.recordError(0x502 /* GL_INVALID_OPERATION */);
         Module.printError('buffer was never mapped in glFlushMappedBufferRange');
         return;
       }
-
+  
       if (!(mapping.access & 0x10)) {
         GL.recordError(0x502 /* GL_INVALID_OPERATION */);
         Module.printError('buffer was not mapped with GL_MAP_FLUSH_EXPLICIT_BIT in glFlushMappedBufferRange');
@@ -4668,7 +4669,7 @@ var ASM_CONSTS = {
         Module.printError('invalid range in glFlushMappedBufferRange');
         return;
       }
-
+  
       GLctx.bufferSubData(
         target,
         mapping.offset,
@@ -4787,7 +4788,7 @@ var ASM_CONSTS = {
 
   function _emscripten_glGetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, uniformBlockName) {
       program = GL.programs[program];
-
+  
       var result = GLctx['getActiveUniformBlockName'](program, uniformBlockIndex);
       if (!result) return; // If an error occurs, nothing will be written to uniformBlockName or length.
       if (uniformBlockName && bufSize > 0) {
@@ -4806,7 +4807,7 @@ var ASM_CONSTS = {
         return;
       }
       program = GL.programs[program];
-
+  
       switch(pname) {
         case 0x8A41: /* GL_UNIFORM_BLOCK_NAME_LENGTH */
           var name = GLctx['getActiveUniformBlockName'](program, uniformBlockIndex);
@@ -4841,10 +4842,10 @@ var ASM_CONSTS = {
       for (var i = 0; i < uniformCount; i++) {
         ids.push(HEAP32[(((uniformIndices)+(i*4))>>2)]);
       }
-
+  
       var result = GLctx['getActiveUniforms'](program, ids, pname);
       if (!result) return; // GL spec: If an error is generated, nothing is written out to params.
-
+  
       var len = result.length;
       for (var i = 0; i < len; i++) {
         HEAP32[(((params)+(i*4))>>2)]=result[i];
@@ -4919,7 +4920,7 @@ var ASM_CONSTS = {
           ret = name_ == 0x821B ? 3 : 0; // return version 3.0
           break;
       }
-
+  
       if (ret === undefined) {
         var result = GLctx.getParameter(name_);
         switch (typeof(result)) {
@@ -4992,7 +4993,7 @@ var ASM_CONSTS = {
             return;
         }
       }
-
+  
       switch (type) {
         case 1: writeI53ToI64(p, ret); break;
         case 0: HEAP32[((p)>>2)]=ret; break;
@@ -5100,7 +5101,7 @@ var ASM_CONSTS = {
           GL.recordError(0x500); // GL_INVALID_ENUM
           return;
       }
-
+  
       switch (type) {
         case 1: writeI53ToI64(data, ret); break;
         case 0: HEAP32[((data)>>2)]=ret; break;
@@ -5161,18 +5162,18 @@ var ASM_CONSTS = {
         GL.recordError(0x501 /* GL_INVALID_VALUE */);
         return;
       }
-
+  
       if (program >= GL.counter) {
         GL.recordError(0x501 /* GL_INVALID_VALUE */);
         return;
       }
-
+  
       var ptable = GL.programInfos[program];
       if (!ptable) {
         GL.recordError(0x502 /* GL_INVALID_OPERATION */);
         return;
       }
-
+  
       if (pname == 0x8B84) { // GL_INFO_LOG_LENGTH
         var log = GLctx.getProgramInfoLog(GL.programs[program]);
         if (log === null) log = '(unknown error)';
@@ -5421,7 +5422,7 @@ var ASM_CONSTS = {
           }
           ret = stringToNewUTF8(s);
           break;
-
+  
         case 0x1F02 /* GL_VERSION */:
           var glVersion = GLctx.getParameter(0x1F02 /*GL_VERSION*/);
           // return GLES version string corresponding to the version of the WebGL context
@@ -5469,7 +5470,7 @@ var ASM_CONSTS = {
           var exts = GLctx.getSupportedExtensions() || []; // .getSupportedExtensions() can return null if context is lost, so coerce to empty array.
           exts = exts.concat(exts.map(function(e) { return "GL_" + e; }));
           exts = exts.map(function(e) { return stringToNewUTF8(e); });
-
+  
           stringiCache = GL.stringiCache[name] = exts;
           if (index < 0 || index >= stringiCache.length) {
             GL.recordError(0x501/*GL_INVALID_VALUE*/);
@@ -5524,14 +5525,14 @@ var ASM_CONSTS = {
       program = GL.programs[program];
       var info = GLctx['getTransformFeedbackVarying'](program, index);
       if (!info) return; // If an error occurred, the return parameters length, size, type and name will be unmodified.
-
+  
       if (name && bufSize > 0) {
         var numBytesWrittenExclNull = stringToUTF8(info.name, name, bufSize);
         if (length) HEAP32[((length)>>2)]=numBytesWrittenExclNull;
       } else {
         if (length) HEAP32[((length)>>2)]=0;
       }
-
+  
       if (size) HEAP32[((size)>>2)]=info.size;
       if (type) HEAP32[((type)>>2)]=info.type;
     }
@@ -5555,10 +5556,10 @@ var ASM_CONSTS = {
       var names = [];
       for (var i = 0; i < uniformCount; i++)
         names.push(UTF8ToString(HEAP32[(((uniformNames)+(i*4))>>2)]));
-
+  
       var result = GLctx['getUniformIndices'](program, names);
       if (!result) return; // GL spec: If an error is generated, nothing is written out to uniformIndices.
-
+  
       var len = result.length;
       for (var i = 0; i < len; i++) {
         HEAP32[(((uniformIndices)+(i*4))>>2)]=result[i];
@@ -5571,7 +5572,7 @@ var ASM_CONSTS = {
     }
   function _emscripten_glGetUniformLocation(program, name) {
       name = UTF8ToString(name);
-
+  
       var arrayIndex = 0;
       // If user passed an array accessor "[index]", parse the array index off the accessor.
       if (name[name.length - 1] == ']') {
@@ -5579,7 +5580,7 @@ var ASM_CONSTS = {
         arrayIndex = name[leftBrace+1] != ']' ? jstoi_q(name.slice(leftBrace + 1)) : 0; // "index]", parseInt will ignore the ']' at the end; but treat "foo[]" as "foo[0]"
         name = name.slice(0, leftBrace);
       }
-
+  
       var uniformInfo = GL.programInfos[program] && GL.programInfos[program].uniforms[name]; // returns pair [ dimension_of_uniform_array, uniform_location ]
       if (uniformInfo && arrayIndex >= 0 && arrayIndex < uniformInfo[0]) { // Check if user asked for an out-of-bounds element, i.e. for 'vec4 colors[3];' user could ask for 'colors[10]' which should return -1.
         return uniformInfo[1] + arrayIndex;
@@ -5697,7 +5698,7 @@ var ASM_CONSTS = {
       for (var i = 0; i < numAttachments; i++) {
         list[i] = HEAP32[(((attachments)+(i*4))>>2)];
       }
-
+  
       GLctx['invalidateFramebuffer'](target, list);
     }
 
@@ -5706,7 +5707,7 @@ var ASM_CONSTS = {
       for (var i = 0; i < numAttachments; i++) {
         list[i] = HEAP32[(((attachments)+(i*4))>>2)];
       }
-
+  
       GLctx['invalidateSubFramebuffer'](target, list, x, y, width, height);
     }
 
@@ -5775,14 +5776,14 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glIsVertexArray(array) {
-
+  
       var vao = GL.vaos[array];
       if (!vao) return 0;
       return GLctx['isVertexArray'](vao);
     }
 
   function _emscripten_glIsVertexArrayOES(array) {
-
+  
       var vao = GL.vaos[array];
       if (!vao) return 0;
       return GLctx['isVertexArray'](vao);
@@ -5800,16 +5801,16 @@ var ASM_CONSTS = {
         err("glMapBufferRange is only supported when access is MAP_WRITE|INVALIDATE_BUFFER");
         return 0;
       }
-
+  
       if (!emscriptenWebGLValidateMapBufferTarget(target)) {
         GL.recordError(0x500/*GL_INVALID_ENUM*/);
         err('GL_INVALID_ENUM in glMapBufferRange');
         return 0;
       }
-
+  
       var mem = _malloc(length);
       if (!mem) return 0;
-
+  
       GL.mappedBuffers[emscriptenWebGLGetBufferBinding(target)] = {
         offset: offset,
         length: length,
@@ -5852,7 +5853,7 @@ var ASM_CONSTS = {
       var alignedRowSize = roundedToNextMultipleOf(plainRowSize, alignment);
       return height * alignedRowSize;
     }
-
+  
   function __colorChannelsInGlTextureFormat(format) {
       // Micro-optimizations for size: map format to size by subtracting smallest enum value (0x1902) from all values first.
       // Also omit the most common size value (1) from the list, which is assumed by formats not on the list.
@@ -5874,7 +5875,7 @@ var ASM_CONSTS = {
       };
       return colorChannels[format - 0x1902]||1;
     }
-
+  
   function heapObjectForWebGLType(type) {
       // Micro-optimization for size: Subtract lowest GL enum number (0x1400/* GL_BYTE */) from type to compare
       // smaller values for the heap, for shorter generated code size.
@@ -5882,15 +5883,15 @@ var ASM_CONSTS = {
       // (since most types are HEAPU16)
       type -= 0x1400;
       if (type == 0) return HEAP8;
-
+  
       if (type == 1) return HEAPU8;
-
+  
       if (type == 2) return HEAP16;
-
+  
       if (type == 4) return HEAP32;
-
+  
       if (type == 6) return HEAPF32;
-
+  
       if (type == 5
         || type == 28922
         || type == 28520
@@ -5898,10 +5899,10 @@ var ASM_CONSTS = {
         || type == 30782
         )
         return HEAPU32;
-
+  
       return HEAPU16;
     }
-
+  
   function heapAccessShiftForWebGLHeap(heap) {
       return 31 - Math.clz32(heap.BYTES_PER_ELEMENT);
     }
@@ -5971,7 +5972,7 @@ var ASM_CONSTS = {
 
   function _emscripten_glShaderSource(shader, count, string, length) {
       var source = GL.getSource(shader, count, string, length);
-
+  
       GLctx.shaderSource(GL.shaders[shader], source);
     }
 
@@ -6066,7 +6067,7 @@ var ASM_CONSTS = {
       var vars = [];
       for (var i = 0; i < count; i++)
         vars.push(UTF8ToString(HEAP32[(((varyings)+(i*4))>>2)]));
-
+  
       GLctx['transformFeedbackVaryings'](program, vars, bufferMode);
     }
 
@@ -6076,12 +6077,12 @@ var ASM_CONSTS = {
 
   var miniTempWebGLFloatBuffers=[];
   function _emscripten_glUniform1fv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform1fv(GL.uniforms[location], HEAPF32, value>>2, count);
         return;
       }
-
+  
       if (count <= 288) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[count-1];
@@ -6101,12 +6102,12 @@ var ASM_CONSTS = {
 
   var __miniTempWebGLIntBuffers=[];
   function _emscripten_glUniform1iv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform1iv(GL.uniforms[location], HEAP32, value>>2, count);
         return;
       }
-
+  
       if (count <= 288) {
         // avoid allocation when uploading few enough uniforms
         var view = __miniTempWebGLIntBuffers[count-1];
@@ -6133,12 +6134,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniform2fv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform2fv(GL.uniforms[location], HEAPF32, value>>2, count*2);
         return;
       }
-
+  
       if (count <= 144) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[2*count-1];
@@ -6158,12 +6159,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniform2iv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform2iv(GL.uniforms[location], HEAP32, value>>2, count*2);
         return;
       }
-
+  
       if (count <= 144) {
         // avoid allocation when uploading few enough uniforms
         var view = __miniTempWebGLIntBuffers[2*count-1];
@@ -6191,12 +6192,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniform3fv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform3fv(GL.uniforms[location], HEAPF32, value>>2, count*3);
         return;
       }
-
+  
       if (count <= 96) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[3*count-1];
@@ -6217,12 +6218,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniform3iv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform3iv(GL.uniforms[location], HEAP32, value>>2, count*3);
         return;
       }
-
+  
       if (count <= 96) {
         // avoid allocation when uploading few enough uniforms
         var view = __miniTempWebGLIntBuffers[3*count-1];
@@ -6251,12 +6252,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniform4fv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform4fv(GL.uniforms[location], HEAPF32, value>>2, count*4);
         return;
       }
-
+  
       if (count <= 72) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[4*count-1];
@@ -6282,12 +6283,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniform4iv(location, count, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniform4iv(GL.uniforms[location], HEAP32, value>>2, count*4);
         return;
       }
-
+  
       if (count <= 72) {
         // avoid allocation when uploading few enough uniforms
         var view = __miniTempWebGLIntBuffers[4*count-1];
@@ -6314,17 +6315,17 @@ var ASM_CONSTS = {
 
   function _emscripten_glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding) {
       program = GL.programs[program];
-
+  
       GLctx['uniformBlockBinding'](program, uniformBlockIndex, uniformBlockBinding);
     }
 
   function _emscripten_glUniformMatrix2fv(location, count, transpose, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniformMatrix2fv(GL.uniforms[location], !!transpose, HEAPF32, value>>2, count*4);
         return;
       }
-
+  
       if (count <= 72) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[4*count-1];
@@ -6350,12 +6351,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniformMatrix3fv(location, count, transpose, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniformMatrix3fv(GL.uniforms[location], !!transpose, HEAPF32, value>>2, count*9);
         return;
       }
-
+  
       if (count <= 32) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[9*count-1];
@@ -6386,12 +6387,12 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_glUniformMatrix4fv(location, count, transpose, value) {
-
+  
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
         GLctx.uniformMatrix4fv(GL.uniforms[location], !!transpose, HEAPF32, value>>2, count*16);
         return;
       }
-
+  
       if (count <= 18) {
         // avoid allocation when uploading few enough uniforms
         var view = miniTempWebGLFloatBuffers[16*count-1];
@@ -6438,7 +6439,7 @@ var ASM_CONSTS = {
         err('GL_INVALID_ENUM in glUnmapBuffer');
         return 0;
       }
-
+  
       var buffer = emscriptenWebGLGetBufferBinding(target);
       var mapping = GL.mappedBuffers[buffer];
       if (!mapping) {
@@ -6447,7 +6448,7 @@ var ASM_CONSTS = {
         return 0;
       }
       GL.mappedBuffers[buffer] = null;
-
+  
       if (!(mapping.access & 0x10)) /* GL_MAP_FLUSH_EXPLICIT_BIT */
         if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
           GLctx.bufferSubData(target, mapping.offset, HEAPU8, mapping.mem, mapping.length);
@@ -6469,28 +6470,28 @@ var ASM_CONSTS = {
   function _emscripten_glVertexAttrib1f(x0, x1) { GLctx['vertexAttrib1f'](x0, x1) }
 
   function _emscripten_glVertexAttrib1fv(index, v) {
-
+  
       GLctx.vertexAttrib1f(index, HEAPF32[v>>2]);
     }
 
   function _emscripten_glVertexAttrib2f(x0, x1, x2) { GLctx['vertexAttrib2f'](x0, x1, x2) }
 
   function _emscripten_glVertexAttrib2fv(index, v) {
-
+  
       GLctx.vertexAttrib2f(index, HEAPF32[v>>2], HEAPF32[v+4>>2]);
     }
 
   function _emscripten_glVertexAttrib3f(x0, x1, x2, x3) { GLctx['vertexAttrib3f'](x0, x1, x2, x3) }
 
   function _emscripten_glVertexAttrib3fv(index, v) {
-
+  
       GLctx.vertexAttrib3f(index, HEAPF32[v>>2], HEAPF32[v+4>>2], HEAPF32[v+8>>2]);
     }
 
   function _emscripten_glVertexAttrib4f(x0, x1, x2, x3, x4) { GLctx['vertexAttrib4f'](x0, x1, x2, x3, x4) }
 
   function _emscripten_glVertexAttrib4fv(index, v) {
-
+  
       GLctx.vertexAttrib4f(index, HEAPF32[v>>2], HEAPF32[v+4>>2], HEAPF32[v+8>>2], HEAPF32[v+12>>2]);
     }
 
@@ -6576,7 +6577,7 @@ var ASM_CONSTS = {
   function _emscripten_get_heap_size() {
       return HEAPU8.length;
     }
-
+  
   function emscripten_realloc_buffer(size) {
       try {
         // round size grow request up to wasm page size (fixed 64KB per spec)
@@ -6592,39 +6593,39 @@ var ASM_CONSTS = {
       requestedSize = requestedSize >>> 0;
       var oldSize = _emscripten_get_heap_size();
       // With pthreads, races can happen (another thread might increase the size in between), so return a failure, and let the caller retry.
-
+  
       // Memory resize rules:
       // 1. When resizing, always produce a resized heap that is at least 16MB (to avoid tiny heap sizes receiving lots of repeated resizes at startup)
       // 2. Always increase heap size to at least the requested size, rounded up to next page multiple.
-      // 3a. If MEMORY_GROWTH_LINEAR_STEP == -1, excessively resize the heap geometrically: increase the heap size according to
+      // 3a. If MEMORY_GROWTH_LINEAR_STEP == -1, excessively resize the heap geometrically: increase the heap size according to 
       //                                         MEMORY_GROWTH_GEOMETRIC_STEP factor (default +20%),
       //                                         At most overreserve by MEMORY_GROWTH_GEOMETRIC_CAP bytes (default 96MB).
       // 3b. If MEMORY_GROWTH_LINEAR_STEP != -1, excessively resize the heap linearly: increase the heap size by at least MEMORY_GROWTH_LINEAR_STEP bytes.
       // 4. Max size for the heap is capped at 2048MB-WASM_PAGE_SIZE, or by MAXIMUM_MEMORY, or by ASAN limit, depending on which is smallest
       // 5. If we were unable to allocate as much memory, it may be due to over-eager decision to excessively reserve due to (3) above.
       //    Hence if an allocation fails, cut down on the amount of excess growth, in an attempt to succeed to perform a smaller allocation.
-
+  
       // A limit was set for how much we can grow. We should not exceed that
       // (the wasm binary specifies it, so if we tried, we'd fail anyhow).
       var maxHeapSize = 2147483648;
       if (requestedSize > maxHeapSize) {
         return false;
       }
-
+  
       var minHeapSize = 16777216;
-
+  
       // Loop through potential heap size increases. If we attempt a too eager reservation that fails, cut down on the
       // attempted size and reserve a smaller bump instead. (max 3 times, chosen somewhat arbitrarily)
       for(var cutDown = 1; cutDown <= 4; cutDown *= 2) {
         var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown); // ensure geometric growth
         // but limit overreserving (default to capping at +96MB overgrowth at most)
         overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296 );
-
+  
         var newSize = Math.min(maxHeapSize, alignUp(Math.max(minHeapSize, requestedSize, overGrownHeapSize), 65536));
-
+  
         var replacement = emscripten_realloc_buffer(newSize);
         if (replacement) {
-
+  
           return true;
         }
       }
@@ -6632,7 +6633,7 @@ var ASM_CONSTS = {
     }
 
   var ENV={};
-
+  
   function getExecutableName() {
       return thisProgram || './this.program';
     }
@@ -6662,7 +6663,7 @@ var ASM_CONSTS = {
       }
       return getEnvStrings.strings;
     }
-
+  
   var PATH={splitPath:function(filename) {
         var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
         return splitPathRe.exec(filename).slice(1);
@@ -6731,7 +6732,7 @@ var ASM_CONSTS = {
       },join2:function(l, r) {
         return PATH.normalize(l + '/' + r);
       }};
-
+  
   function getRandomDevice() {
       if (typeof crypto === 'object' && typeof crypto['getRandomValues'] === 'function') {
         // for modern web browsers
@@ -6751,7 +6752,7 @@ var ASM_CONSTS = {
       // we couldn't find a proper implementation, as Math.random() is not suitable for /dev/random, see emscripten-core/emscripten/pull/7096
       return function() { abort("randomDevice"); };
     }
-
+  
   var PATH_FS={resolve:function() {
         var resolvedPath = '',
           resolvedAbsolute = false;
@@ -6804,7 +6805,7 @@ var ASM_CONSTS = {
         outputParts = outputParts.concat(toParts.slice(samePartsLength));
         return outputParts.join('/');
       }};
-
+  
   var TTY={ttys:[],init:function () {
         // https://github.com/emscripten-core/emscripten/pull/1555
         // if (ENVIRONMENT_IS_NODE) {
@@ -6885,7 +6886,7 @@ var ASM_CONSTS = {
               var BUFSIZE = 256;
               var buf = Buffer.alloc ? Buffer.alloc(BUFSIZE) : new Buffer(BUFSIZE);
               var bytesRead = 0;
-
+  
               try {
                 bytesRead = nodeFS.readSync(process.stdin.fd, buf, 0, BUFSIZE, null);
               } catch(e) {
@@ -6894,7 +6895,7 @@ var ASM_CONSTS = {
                 if (e.toString().indexOf('EOF') != -1) bytesRead = 0;
                 else throw e;
               }
-
+  
               if (bytesRead > 0) {
                 result = buf.slice(0, bytesRead).toString('utf-8');
               } else {
@@ -6946,7 +6947,7 @@ var ASM_CONSTS = {
             tty.output = [];
           }
         }}};
-
+  
   function mmapAlloc(size) {
       var alignedSize = alignMemory(size, 16384);
       var ptr = _malloc(alignedSize);
@@ -7021,7 +7022,7 @@ var ASM_CONSTS = {
           // When the byte data of the file is populated, this will point to either a typed array, or a normal JS array. Typed arrays are preferred
           // for performance, and used by default. However, typed arrays are not resizable like normal JS arrays are, so there is a small disk size
           // penalty involved for appending file writes that continuously grow a file similar to std::vector capacity vs used -scheme.
-          node.contents = null;
+          node.contents = null; 
         } else if (FS.isLink(node.mode)) {
           node.node_ops = MEMFS.ops_table.link.node;
           node.stream_ops = MEMFS.ops_table.link.stream;
@@ -7184,11 +7185,11 @@ var ASM_CONSTS = {
           if (buffer.buffer === HEAP8.buffer) {
             canOwn = false;
           }
-
+  
           if (!length) return 0;
           var node = stream.node;
           node.timestamp = Date.now();
-
+  
           if (buffer.subarray && (!node.contents || node.contents.subarray)) { // This write is from a typed array to a typed array?
             if (canOwn) {
               node.contents = buffer.subarray(offset, offset + length);
@@ -7203,7 +7204,7 @@ var ASM_CONSTS = {
               return length;
             }
           }
-
+  
           // Appending to an existing file and we need to reallocate, or source data did not come as a typed array.
           MEMFS.expandFileStorage(node, position+length);
           if (node.contents.subarray && buffer.subarray) {
@@ -7235,7 +7236,7 @@ var ASM_CONSTS = {
         },mmap:function(stream, address, length, position, prot, flags) {
           // We don't currently support location hints for the address of the mapping
           assert(address === 0);
-
+  
           if (!FS.isFile(stream.node.mode)) {
             throw new FS.ErrnoError(43);
           }
@@ -7273,7 +7274,7 @@ var ASM_CONSTS = {
             // MAP_PRIVATE calls need not to be synced back to underlying fs
             return 0;
           }
-
+  
           var bytesWritten = MEMFS.stream_ops.write(stream, buffer, 0, length, offset, false);
           // should we check if bytesWritten and length are the same?
           return 0;
@@ -7281,9 +7282,9 @@ var ASM_CONSTS = {
   var FS={root:null,mounts:[],devices:{},streams:[],nextInode:1,nameTable:null,currentPath:"/",initialized:false,ignorePermissions:true,trackingDelegate:{},tracking:{openFlags:{READ:1,WRITE:2}},ErrnoError:null,genericErrors:{},filesystems:null,syncFSRequests:0,lookupPath:function(path, opts) {
         path = PATH_FS.resolve(FS.cwd(), path);
         opts = opts || {};
-
+  
         if (!path) return { path: '', node: null };
-
+  
         var defaults = {
           follow_mount: true,
           recurse_count: 0
@@ -7293,37 +7294,37 @@ var ASM_CONSTS = {
             opts[key] = defaults[key];
           }
         }
-
+  
         if (opts.recurse_count > 8) {  // max recursive lookup of 8
           throw new FS.ErrnoError(32);
         }
-
+  
         // split the path
         var parts = PATH.normalizeArray(path.split('/').filter(function(p) {
           return !!p;
         }), false);
-
+  
         // start at the root
         var current = FS.root;
         var current_path = '/';
-
+  
         for (var i = 0; i < parts.length; i++) {
           var islast = (i === parts.length-1);
           if (islast && opts.parent) {
             // stop resolving
             break;
           }
-
+  
           current = FS.lookupNode(current, parts[i]);
           current_path = PATH.join2(current_path, parts[i]);
-
+  
           // jump to the mount's root node if this is a mountpoint
           if (FS.isMountpoint(current)) {
             if (!islast || (islast && opts.follow_mount)) {
               current = current.mounted.root;
             }
           }
-
+  
           // by default, lookupPath will not follow a symlink if it is the final path component.
           // setting opts.follow = true will override this behavior.
           if (!islast || opts.follow) {
@@ -7331,17 +7332,17 @@ var ASM_CONSTS = {
             while (FS.isLink(current.mode)) {
               var link = FS.readlink(current_path);
               current_path = PATH_FS.resolve(PATH.dirname(current_path), link);
-
+  
               var lookup = FS.lookupPath(current_path, { recurse_count: opts.recurse_count });
               current = lookup.node;
-
+  
               if (count++ > 40) {  // limit max consecutive symlinks to 40 (SYMLOOP_MAX).
                 throw new FS.ErrnoError(32);
               }
             }
           }
         }
-
+  
         return { path: current_path, node: current };
       },getPath:function(node) {
         var path;
@@ -7356,7 +7357,7 @@ var ASM_CONSTS = {
         }
       },hashName:function(parentid, name) {
         var hash = 0;
-
+  
         for (var i = 0; i < name.length; i++) {
           hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
         }
@@ -7395,9 +7396,9 @@ var ASM_CONSTS = {
         return FS.lookup(parent, name);
       },createNode:function(parent, name, mode, rdev) {
         var node = new FS.FSNode(parent, name, mode, rdev);
-
+  
         FS.hashAddNode(node);
-
+  
         return node;
       },destroyNode:function(node) {
         FS.hashRemoveNode(node);
@@ -7558,36 +7559,36 @@ var ASM_CONSTS = {
       },getMounts:function(mount) {
         var mounts = [];
         var check = [mount];
-
+  
         while (check.length) {
           var m = check.pop();
-
+  
           mounts.push(m);
-
+  
           check.push.apply(check, m.mounts);
         }
-
+  
         return mounts;
       },syncfs:function(populate, callback) {
         if (typeof(populate) === 'function') {
           callback = populate;
           populate = false;
         }
-
+  
         FS.syncFSRequests++;
-
+  
         if (FS.syncFSRequests > 1) {
           err('warning: ' + FS.syncFSRequests + ' FS.syncfs operations in flight at once, probably just doing extra work');
         }
-
+  
         var mounts = FS.getMounts(FS.root.mount);
         var completed = 0;
-
+  
         function doCallback(errCode) {
           FS.syncFSRequests--;
           return callback(errCode);
         }
-
+  
         function done(errCode) {
           if (errCode) {
             if (!done.errored) {
@@ -7600,7 +7601,7 @@ var ASM_CONSTS = {
             doCallback(null);
           }
         };
-
+  
         // sync all mounts
         mounts.forEach(function (mount) {
           if (!mount.type.syncfs) {
@@ -7612,78 +7613,78 @@ var ASM_CONSTS = {
         var root = mountpoint === '/';
         var pseudo = !mountpoint;
         var node;
-
+  
         if (root && FS.root) {
           throw new FS.ErrnoError(10);
         } else if (!root && !pseudo) {
           var lookup = FS.lookupPath(mountpoint, { follow_mount: false });
-
+  
           mountpoint = lookup.path;  // use the absolute path
           node = lookup.node;
-
+  
           if (FS.isMountpoint(node)) {
             throw new FS.ErrnoError(10);
           }
-
+  
           if (!FS.isDir(node.mode)) {
             throw new FS.ErrnoError(54);
           }
         }
-
+  
         var mount = {
           type: type,
           opts: opts,
           mountpoint: mountpoint,
           mounts: []
         };
-
+  
         // create a root node for the fs
         var mountRoot = type.mount(mount);
         mountRoot.mount = mount;
         mount.root = mountRoot;
-
+  
         if (root) {
           FS.root = mountRoot;
         } else if (node) {
           // set as a mountpoint
           node.mounted = mount;
-
+  
           // add the new mount to the current mount's children
           if (node.mount) {
             node.mount.mounts.push(mount);
           }
         }
-
+  
         return mountRoot;
       },unmount:function (mountpoint) {
         var lookup = FS.lookupPath(mountpoint, { follow_mount: false });
-
+  
         if (!FS.isMountpoint(lookup.node)) {
           throw new FS.ErrnoError(28);
         }
-
+  
         // destroy the nodes for this mount, and all its child mounts
         var node = lookup.node;
         var mount = node.mounted;
         var mounts = FS.getMounts(mount);
-
+  
         Object.keys(FS.nameTable).forEach(function (hash) {
           var current = FS.nameTable[hash];
-
+  
           while (current) {
             var next = current.name_next;
-
+  
             if (mounts.indexOf(current.mount) !== -1) {
               FS.destroyNode(current);
             }
-
+  
             current = next;
           }
         });
-
+  
         // no longer a mountpoint
         node.mounted = null;
-
+  
         // remove this mount from the child mounts
         var idx = node.mount.mounts.indexOf(mount);
         node.mount.mounts.splice(idx, 1);
@@ -7758,13 +7759,13 @@ var ASM_CONSTS = {
         var new_name = PATH.basename(new_path);
         // parents must exist
         var lookup, old_dir, new_dir;
-
+  
         // let the errors from non existant directories percolate up
         lookup = FS.lookupPath(old_path, { parent: true });
         old_dir = lookup.node;
         lookup = FS.lookupPath(new_path, { parent: true });
         new_dir = lookup.node;
-
+  
         if (!old_dir || !new_dir) throw new FS.ErrnoError(44);
         // need to be part of the same mount
         if (old_dir.mount !== new_dir.mount) {
@@ -8088,7 +8089,7 @@ var ASM_CONSTS = {
         }
         // we've already handled these, don't pass down to the underlying vfs
         flags &= ~(128 | 512 | 131072);
-
+  
         // register the stream with the filesystem
         var stream = FS.createStream({
           node: node,
@@ -8370,7 +8371,7 @@ var ASM_CONSTS = {
         // TODO deprecate the old functionality of a single
         // input / output callback and that utilizes FS.createDevice
         // and instead require a unique set of stream ops
-
+  
         // by default, we symlink the standard streams to the
         // default tty devices. however, if the standard streams
         // have been overwritten we create a unique device for
@@ -8390,7 +8391,7 @@ var ASM_CONSTS = {
         } else {
           FS.symlink('/dev/tty1', '/dev/stderr');
         }
-
+  
         // open default streams for the stdin, stdout and stderr devices
         var stdin = FS.open('/dev/stdin', 0);
         var stdout = FS.open('/dev/stdout', 1);
@@ -8404,7 +8405,7 @@ var ASM_CONSTS = {
           };
           this.setErrno(errno);
           this.message = 'FS error';
-
+  
         };
         FS.ErrnoError.prototype = new Error();
         FS.ErrnoError.prototype.constructor = FS.ErrnoError;
@@ -8415,28 +8416,28 @@ var ASM_CONSTS = {
         });
       },staticInit:function() {
         FS.ensureErrnoError();
-
+  
         FS.nameTable = new Array(4096);
-
+  
         FS.mount(MEMFS, {}, '/');
-
+  
         FS.createDefaultDirectories();
         FS.createDefaultDevices();
         FS.createSpecialDirectories();
-
+  
         FS.filesystems = {
           'MEMFS': MEMFS,
         };
       },init:function(input, output, error) {
         FS.init.initialized = true;
-
+  
         FS.ensureErrnoError();
-
+  
         // Allow Module.stdin etc. to provide defaults, if none explicitly passed to us here
         Module['stdin'] = input || Module['stdin'];
         Module['stdout'] = output || Module['stdout'];
         Module['stderr'] = error || Module['stderr'];
-
+  
         FS.createStandardStreams();
       },quit:function() {
         FS.init.initialized = false;
@@ -8625,27 +8626,27 @@ var ASM_CONSTS = {
           var header;
           var hasByteServing = (header = xhr.getResponseHeader("Accept-Ranges")) && header === "bytes";
           var usesGzip = (header = xhr.getResponseHeader("Content-Encoding")) && header === "gzip";
-
+  
           var chunkSize = 1024*1024; // Chunk size in bytes
-
+  
           if (!hasByteServing) chunkSize = datalength;
-
+  
           // Function to get a range from the remote URL.
           var doXHR = (function(from, to) {
             if (from > to) throw new Error("invalid range (" + from + ", " + to + ") or no bytes requested!");
             if (to > datalength-1) throw new Error("only " + datalength + " bytes available! programmer error!");
-
+  
             // TODO: Use mozResponseArrayBuffer, responseStream, etc. if available.
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, false);
             if (datalength !== chunkSize) xhr.setRequestHeader("Range", "bytes=" + from + "-" + to);
-
+  
             // Some hints to the browser that we want binary data.
             if (typeof Uint8Array != 'undefined') xhr.responseType = 'arraybuffer';
             if (xhr.overrideMimeType) {
               xhr.overrideMimeType('text/plain; charset=x-user-defined');
             }
-
+  
             xhr.send(null);
             if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) throw new Error("Couldn't load " + url + ". Status: " + xhr.status);
             if (xhr.response !== undefined) {
@@ -8665,7 +8666,7 @@ var ASM_CONSTS = {
             if (typeof(lazyArray.chunks[chunkNum]) === "undefined") throw new Error("doXHR failed!");
             return lazyArray.chunks[chunkNum];
           });
-
+  
           if (usesGzip || !datalength) {
             // if the server uses gzip or doesn't supply the length, we have to download the whole file to get the (uncompressed) length
             chunkSize = datalength = 1; // this will force getter(0)/doXHR do download the whole file
@@ -8673,7 +8674,7 @@ var ASM_CONSTS = {
             chunkSize = datalength;
             out("LazyFiles on gzip forces download of the whole file when length is accessed");
           }
-
+  
           this._length = datalength;
           this._chunkSize = chunkSize;
           this.lengthKnown = true;
@@ -8699,12 +8700,12 @@ var ASM_CONSTS = {
               }
             }
           });
-
+  
           var properties = { isDevice: false, contents: lazyArray };
         } else {
           var properties = { isDevice: false, url: url };
         }
-
+  
         var node = FS.createFile(parent, name, properties, canRead, canWrite);
         // This is a total hack, but I want to get this lazy file code out of the
         // core of MEMFS. If we want to keep this lazy file concept I feel it should
@@ -8930,14 +8931,14 @@ var ASM_CONSTS = {
       },doReadlink:function(path, buf, bufsize) {
         if (bufsize <= 0) return -28;
         var ret = FS.readlink(path);
-
+  
         var len = Math.min(bufsize, lengthBytesUTF8(ret));
         var endChar = HEAP8[buf+len];
         stringToUTF8(ret, buf, bufsize+1);
         // readlink is one of the rare functions that write out a C string, but does never append a null to the output buffer(!)
         // stringToUTF8() always appends a null byte, so restore the character under the null byte after the write.
         HEAP8[buf+len] = endChar;
-
+  
         return len;
       },doAccess:function(path, amode) {
         if (amode & ~7) {
@@ -8998,7 +8999,7 @@ var ASM_CONSTS = {
         return low;
       }};
   function _environ_get(__environ, environ_buf) {try {
-
+  
       var bufSize = 0;
       getEnvStrings().forEach(function(string, i) {
         var ptr = environ_buf + bufSize;
@@ -9014,7 +9015,7 @@ var ASM_CONSTS = {
   }
 
   function _environ_sizes_get(penviron_count, penviron_buf_size) {try {
-
+  
       var strings = getEnvStrings();
       HEAP32[((penviron_count)>>2)]=strings.length;
       var bufSize = 0;
@@ -9036,7 +9037,7 @@ var ASM_CONSTS = {
     }
 
   function _fd_close(fd) {try {
-
+  
       var stream = SYSCALLS.getStreamFromFD(fd);
       FS.close(stream);
       return 0;
@@ -9047,7 +9048,7 @@ var ASM_CONSTS = {
   }
 
   function _fd_read(fd, iov, iovcnt, pnum) {try {
-
+  
       var stream = SYSCALLS.getStreamFromFD(fd);
       var num = SYSCALLS.doReadv(stream, iov, iovcnt);
       HEAP32[((pnum)>>2)]=num
@@ -9059,19 +9060,19 @@ var ASM_CONSTS = {
   }
 
   function _fd_seek(fd, offset_low, offset_high, whence, newOffset) {try {
-
-
+  
+      
       var stream = SYSCALLS.getStreamFromFD(fd);
       var HIGH_OFFSET = 0x100000000; // 2^32
       // use an unsigned operator on low and shift high by 32-bits
       var offset = offset_high * HIGH_OFFSET + (offset_low >>> 0);
-
+  
       var DOUBLE_LIMIT = 0x20000000000000; // 2^53
       // we also check for equality since DOUBLE_LIMIT + 1 == DOUBLE_LIMIT
       if (offset <= -DOUBLE_LIMIT || offset >= DOUBLE_LIMIT) {
         return -61;
       }
-
+  
       FS.llseek(stream, offset, whence);
       (tempI64 = [stream.position>>>0,(tempDouble=stream.position,(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[((newOffset)>>2)]=tempI64[0],HEAP32[(((newOffset)+(4))>>2)]=tempI64[1]);
       if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null; // reset readdir state
@@ -9083,7 +9084,7 @@ var ASM_CONSTS = {
   }
 
   function _fd_write(fd, iov, iovcnt, pnum) {try {
-
+  
       var stream = SYSCALLS.getStreamFromFD(fd);
       var num = SYSCALLS.doWritev(stream, iov, iovcnt);
       HEAP32[((pnum)>>2)]=num
@@ -9101,7 +9102,7 @@ var ASM_CONSTS = {
   function __isLeapYear(year) {
         return year%4 === 0 && (year%100 !== 0 || year%400 === 0);
     }
-
+  
   function __arraySum(array, index) {
       var sum = 0;
       for (var i = 0; i <= index; sum += array[i++]) {
@@ -9109,9 +9110,9 @@ var ASM_CONSTS = {
       }
       return sum;
     }
-
+  
   var __MONTH_DAYS_LEAP=[31,29,31,30,31,30,31,31,30,31,30,31];
-
+  
   var __MONTH_DAYS_REGULAR=[31,28,31,30,31,30,31,31,30,31,30,31];
   function __addDays(date, days) {
       var newDate = new Date(date.getTime());
@@ -9119,7 +9120,7 @@ var ASM_CONSTS = {
         var leap = __isLeapYear(newDate.getFullYear());
         var currentMonth = newDate.getMonth();
         var daysInCurrentMonth = (leap ? __MONTH_DAYS_LEAP : __MONTH_DAYS_REGULAR)[currentMonth];
-
+  
         if (days > daysInCurrentMonth-newDate.getDate()) {
           // we spill over to next month
           days -= (daysInCurrentMonth-newDate.getDate()+1);
@@ -9136,15 +9137,15 @@ var ASM_CONSTS = {
           return newDate;
         }
       }
-
+  
       return newDate;
     }
   function _strftime(s, maxsize, format, tm) {
       // size_t strftime(char *restrict s, size_t maxsize, const char *restrict format, const struct tm *restrict timeptr);
       // http://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html
-
+  
       var tm_zone = HEAP32[(((tm)+(40))>>2)];
-
+  
       var date = {
         tm_sec: HEAP32[((tm)>>2)],
         tm_min: HEAP32[(((tm)+(4))>>2)],
@@ -9158,9 +9159,9 @@ var ASM_CONSTS = {
         tm_gmtoff: HEAP32[(((tm)+(36))>>2)],
         tm_zone: tm_zone ? UTF8ToString(tm_zone) : ''
       };
-
+  
       var pattern = UTF8ToString(format);
-
+  
       // expand format
       var EXPANSION_RULES_1 = {
         '%c': '%a %b %d %H:%M:%S %Y',     // Replaced by the locale's appropriate date and time representation - e.g., Mon Aug  3 14:02:01 2013
@@ -9196,10 +9197,10 @@ var ASM_CONSTS = {
       for (var rule in EXPANSION_RULES_1) {
         pattern = pattern.replace(new RegExp(rule, 'g'), EXPANSION_RULES_1[rule]);
       }
-
+  
       var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
+  
       function leadingSomething(value, digits, character) {
         var str = typeof value === 'number' ? value.toString() : (value || '');
         while (str.length < digits) {
@@ -9207,16 +9208,16 @@ var ASM_CONSTS = {
         }
         return str;
       }
-
+  
       function leadingNulls(value, digits) {
         return leadingSomething(value, digits, '0');
       }
-
+  
       function compareByDay(date1, date2) {
         function sgn(value) {
           return value < 0 ? -1 : (value > 0 ? 1 : 0);
         }
-
+  
         var compare;
         if ((compare = sgn(date1.getFullYear()-date2.getFullYear())) === 0) {
           if ((compare = sgn(date1.getMonth()-date2.getMonth())) === 0) {
@@ -9225,7 +9226,7 @@ var ASM_CONSTS = {
         }
         return compare;
       }
-
+  
       function getFirstWeekStartDate(janFourth) {
           switch (janFourth.getDay()) {
             case 0: // Sunday
@@ -9244,16 +9245,16 @@ var ASM_CONSTS = {
               return new Date(janFourth.getFullYear()-1, 11, 30);
           }
       }
-
+  
       function getWeekBasedYear(date) {
           var thisDate = __addDays(new Date(date.tm_year+1900, 0, 1), date.tm_yday);
-
+  
           var janFourthThisYear = new Date(thisDate.getFullYear(), 0, 4);
           var janFourthNextYear = new Date(thisDate.getFullYear()+1, 0, 4);
-
+  
           var firstWeekStartThisYear = getFirstWeekStartDate(janFourthThisYear);
           var firstWeekStartNextYear = getFirstWeekStartDate(janFourthNextYear);
-
+  
           if (compareByDay(firstWeekStartThisYear, thisDate) <= 0) {
             // this date is after the start of the first week of this year
             if (compareByDay(firstWeekStartNextYear, thisDate) <= 0) {
@@ -9265,7 +9266,7 @@ var ASM_CONSTS = {
             return thisDate.getFullYear()-1;
           }
       }
-
+  
       var EXPANSION_RULES_2 = {
         '%a': function(date) {
           return WEEKDAYS[date.tm_wday].substring(0,3);
@@ -9299,7 +9300,7 @@ var ASM_CONSTS = {
           // %G is replaced by 1998 and %V is replaced by 53. If December 29th, 30th,
           // or 31st is a Monday, it and any following days are part of week 1 of the following year.
           // Thus, for Tuesday 30th December 1997, %G is replaced by 1998 and %V is replaced by 01.
-
+  
           return getWeekBasedYear(date).toString().substring(2);
         },
         '%G': function(date) {
@@ -9350,7 +9351,7 @@ var ASM_CONSTS = {
           var janFirst = new Date(date.tm_year+1900, 0, 1);
           var firstSunday = janFirst.getDay() === 0 ? janFirst : __addDays(janFirst, 7-janFirst.getDay());
           var endDate = new Date(date.tm_year+1900, date.tm_mon, date.tm_mday);
-
+  
           // is target date after the first Sunday?
           if (compareByDay(firstSunday, endDate) < 0) {
             // calculate difference in days between first Sunday and endDate
@@ -9359,7 +9360,7 @@ var ASM_CONSTS = {
             var days = firstSundayUntilEndJanuary+februaryFirstUntilEndMonth+endDate.getDate();
             return leadingNulls(Math.ceil(days/7), 2);
           }
-
+  
           return compareByDay(firstSunday, janFirst) === 0 ? '01': '00';
         },
         '%V': function(date) {
@@ -9370,22 +9371,22 @@ var ASM_CONSTS = {
           // Both January 4th and the first Thursday of January are always in week 1. [ tm_year, tm_wday, tm_yday]
           var janFourthThisYear = new Date(date.tm_year+1900, 0, 4);
           var janFourthNextYear = new Date(date.tm_year+1901, 0, 4);
-
+  
           var firstWeekStartThisYear = getFirstWeekStartDate(janFourthThisYear);
           var firstWeekStartNextYear = getFirstWeekStartDate(janFourthNextYear);
-
+  
           var endDate = __addDays(new Date(date.tm_year+1900, 0, 1), date.tm_yday);
-
+  
           if (compareByDay(endDate, firstWeekStartThisYear) < 0) {
             // if given date is before this years first week, then it belongs to the 53rd week of last year
             return '53';
           }
-
+  
           if (compareByDay(firstWeekStartNextYear, endDate) <= 0) {
             // if given date is after next years first week, then it belongs to the 01th week of next year
             return '01';
           }
-
+  
           // given date is in between CW 01..53 of this calendar year
           var daysDifference;
           if (firstWeekStartThisYear.getFullYear() < date.tm_year+1900) {
@@ -9407,7 +9408,7 @@ var ASM_CONSTS = {
           var janFirst = new Date(date.tm_year, 0, 1);
           var firstMonday = janFirst.getDay() === 1 ? janFirst : __addDays(janFirst, janFirst.getDay() === 0 ? 1 : 7-janFirst.getDay()+1);
           var endDate = new Date(date.tm_year+1900, date.tm_mon, date.tm_mday);
-
+  
           // is target date after the first Monday?
           if (compareByDay(firstMonday, endDate) < 0) {
             var februaryFirstUntilEndMonth = __arraySum(__isLeapYear(endDate.getFullYear()) ? __MONTH_DAYS_LEAP : __MONTH_DAYS_REGULAR, endDate.getMonth()-1)-31;
@@ -9447,12 +9448,12 @@ var ASM_CONSTS = {
           pattern = pattern.replace(new RegExp(rule, 'g'), EXPANSION_RULES_2[rule](date));
         }
       }
-
+  
       var bytes = intArrayFromString(pattern, false);
       if (bytes.length > maxsize) {
         return 0;
       }
-
+  
       writeArrayToMemory(bytes, s);
       return bytes.length-1;
     }
@@ -10103,5 +10104,3 @@ else if (typeof define === 'function' && define['amd'])
   define([], function() { return LIBKTX; });
 else if (typeof exports === 'object')
   exports["LIBKTX"] = LIBKTX;
-
-export {LIBKTX};
