@@ -8,7 +8,8 @@
     "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
   },
   "scripts": {
-    "build": "rollup -c --compact",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js",
