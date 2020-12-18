@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop } from 'gltf-sample-viewer';
 
 async function main()
 {
@@ -44,7 +44,7 @@ async function main()
         state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
-        loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder).then( gltf => {
+        loadGltfFromDrop(mainFile, additionalFiles, view).then( gltf => {
             state.gltf = gltf;
             computePrimitiveCentroids(state.gltf);
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
