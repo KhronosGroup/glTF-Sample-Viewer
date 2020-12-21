@@ -11,7 +11,7 @@ import fullscreenShader from './shaders/fullscreen.vert';
 
 // How to use:
 // set canvas/context in constructor
-// init()  (set panorama image)
+// init(input: panorama image)
 // filterAll()
 // fetch texture IDs
 
@@ -26,6 +26,7 @@ class iblSampler
         this.currentHeight = view.canvas.height;
 
         this.textureSize = 1024;
+        this.mipmapCount = undefined;
 
         this.inputImage = undefined;
 
@@ -47,9 +48,6 @@ class iblSampler
         this.shaderCache = new ShaderCache(shaderSources, view.renderer.webGl);
 
 
-        //this.resize(canvas.clientWidth, canvas.clientHeight);
-
-        this.status = 0;
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -148,7 +146,7 @@ class iblSampler
 
     init(panoramaImage)
     {
-        this.inputTextureID = this.loadTexture(panoramaImage);//"assets/environments/helipad.jpg");
+        this.inputTextureID = this.loadTexture(panoramaImage);
 
         this.cubemapTextureID = this.createCubemapTexture(true);
 
@@ -165,6 +163,7 @@ class iblSampler
         this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
         this.gl.generateMipmap(this.gl.TEXTURE_CUBE_MAP);
 
+        this.mipmapCount = Math.floor(Math.log2(this.textureSize))+1;
     }
 
     filterAll()
@@ -300,10 +299,9 @@ class iblSampler
 
     cubeMapToGGX()
     {
-        var outputMipLevels = 11;
-        for(var currentMipLevel = 0; currentMipLevel < 6; ++currentMipLevel)
+        for(var currentMipLevel = 0; currentMipLevel < this.mipmapCount; ++currentMipLevel)
         {
-            const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
+            const roughness =  (currentMipLevel) /  (this.mipmapCount - 1);
             this.applyFilter(
                 1,
                 roughness,
@@ -314,10 +312,10 @@ class iblSampler
 
     cubeMapToSheen()
     {
-        var outputMipLevels = 11;
-        for(var currentMipLevel = 0; currentMipLevel < 6; ++currentMipLevel)
+
+        for(var currentMipLevel = 0; currentMipLevel < this.mipmapCount; ++currentMipLevel)
         {
-            const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
+            const roughness =  (currentMipLevel) /  (this.mipmapCount - 1);
             this.applyFilter(
                 2,
                 roughness,
@@ -325,93 +323,6 @@ class iblSampler
                 this.sheenTextureID);
         }
     }
-
-    /*
-    resize(width, height)
-    {
-        if (this.currentWidth !== width || this.currentHeight !== height)
-        {
-            this.canvas.width = width;
-            this.canvas.height = height;
-            this.currentHeight = height;
-            this.currentWidth = width;
-            this.gl.viewport(0, 0, width, height);
-        }
-    }
-    */
-
-    drawDebugOutput()
-    {/*
-        //render to canvas:
-        this.gl.bindFramebuffer(  this.gl.FRAMEBUFFER, null);
-        this.gl.viewport(0, 0,  this.gl.canvas.width,  this.gl.canvas.height);
-
-        this.gl.clearColor(0, 0.1, 0.1, 1);
-        this.gl.clear( this.gl.COLOR_BUFFER_BIT|  this.gl.DEPTH_BUFFER_BIT);
-
-
-        if( this.cubemapTextureID === undefined)
-        {
-            console.log("cubemapTextureID undefined");
-            return;
-        }
-
-
-        const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
-        const fragmentHash = this.shaderCache.selectShader("debug.frag", []);
-
-        if (fragmentHash && vertexHash)
-        {
-            this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
-        }
-
-        if (this.shader === undefined)
-        {
-            console.log("shader program undefined");
-            return;
-        }
-
-        this.gl.useProgram(this.shader.program);
-
-
-        //  TEXTURE0 = active.
-        this.gl.activeTexture(this.gl.TEXTURE0+0);
-
-        // Bind texture ID to active texture
-        // this.gl.bindTexture(this.gl.TEXTURE_2D, this.inputTextureID);
-        // this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
-        //this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.lambertianTextureID);
-        //this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.ggxTextureID);
-        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
-
-        // map shader uniform to texture unit (TEXTURE0)
-        const location = this.gl.getUniformLocation(this.shader.program,"u_inputTexture");
-        this.gl.uniform1i(location, 0); // texture unit 0
-
-
-
-        this.shader.updateUniform("u_currentFace", 0);
-
-        //fullscreen triangle
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-        */
-    }
-
-
-
-    drawScene()
-    {
-
-        if(this.status == 0) // filtering is done once
-        {
-            this.filterAll();
-            this.status = 1;
-        }
-
-        this.drawDebugOutput();
-
-    }
-
 
 
     destroy()
