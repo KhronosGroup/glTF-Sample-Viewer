@@ -12,15 +12,18 @@ import { AsyncFileReader } from './async_file_reader.js';
 import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 
-function initKtxLib(ktxlib, view)
+function initKtxLib(view, ktxlib)
 {
-    view.ktxDecoder = new KtxDecoder(ktxlib, view.context);
+    view.ktxDecoder = new KtxDecoder(view.context,ktxlib);
 }
 
 async function initDracoLib(dracolib)
 {
     const dracoDecoder = new DracoDecoder(dracolib);
-    await dracoDecoder.ready();
+    if (dracoDecoder !== undefined)
+    {
+        await dracoDecoder.ready();
+    }
 }
 
 async function loadGltf(path, json, buffers, view)

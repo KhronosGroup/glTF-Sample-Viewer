@@ -55,13 +55,13 @@ An example on how to implement the npm package on a webpage can be found [here (
 - If you want to support the `KHR_texture_basisu` extension, you need to add the following library to your html file before calling the main app: \
     `<script src="node_modules/gltf-sample-viewer/libs/libktx.js"></script>` \
     After initalizing the GltfView, the KTX library has to be initilaized by calling: \
-    `initKtxLib(LIBKTX,view);`
+    `initKtxLib(view);`
 - If you want to support the `KHR_draco_mesh_compression` extension, you need to add the following library to your html file before calling the main app: \
     `<script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>` \
     The Draco library has to be initilaized by calling: \
-    `initDracoLib(DracoDecoderModule);`
+    `initDracoLib();`
 
-One can also use own versions of these libraries and pass the required object in the init function.
+One can also use own versions of these libraries and pass the required object in the init function as last argument.
 
 Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
 

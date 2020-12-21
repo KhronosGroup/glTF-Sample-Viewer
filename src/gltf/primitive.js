@@ -44,7 +44,8 @@ class gltfPrimitive extends GltfObject
         {
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
-                if (new DracoDecoder() !== undefined)
+                const dracoDecoder = new DracoDecoder();
+                if (dracoDecoder !== undefined && Object.isFrozen(dracoDecoder))
                 {
                     let dracoGeometry = this.decodeDracoBufferToIntermediate(
                         this.extensions.KHR_draco_mesh_compression, gltf);
