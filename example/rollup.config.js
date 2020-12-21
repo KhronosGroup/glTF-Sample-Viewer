@@ -9,11 +9,12 @@ export default {
       name: 'SampleViewerApp',
       file: 'dist/GltfSVApp.umd.js',
       format: 'umd',
-      sourcemap: true
+      sourcemap: true,
+      external: [ 'gl-matrix',  '@bundled-es-modules/axios']
     }
   ],
   plugins: [
-    glslify(),
+    glslify({include: ['../src/Renderer/shaders/*', '../src/shaders/*']}),
     resolve({
         browser: true,
         preferBuiltins: true

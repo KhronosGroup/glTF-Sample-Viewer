@@ -18,15 +18,18 @@ import { KtxDecoder } from './ktx.js';
 
 import { HDRImage } from '../libs/hdrpng.js';
 
-function initKtxLib(ktxlib, view)
+function initKtxLib(view, ktxlib)
 {
-    view.ktxDecoder = new KtxDecoder(ktxlib, view.context);
+    view.ktxDecoder = new KtxDecoder(view.context,ktxlib);
 }
 
 async function initDracoLib(dracolib)
 {
     const dracoDecoder = new DracoDecoder(dracolib);
-    await dracoDecoder.ready();
+    if (dracoDecoder !== undefined)
+    {
+        await dracoDecoder.ready();
+    }
 }
 
 async function loadGltf(path, json, buffers, view)

@@ -7,8 +7,8 @@ async function main()
     const canvas = document.getElementById("canvas");
     const view = new GltfView(canvas);
     const state = view.createState();
-    initDracoLib(DracoDecoderModule);
-    initKtxLib(LIBKTX,view);
+    initDracoLib();
+    initKtxLib(view);
 
     loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
         state.gltf = gltf;

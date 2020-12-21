@@ -3,7 +3,15 @@ class DracoDecoder {
     constructor(dracoLib) {
         if (!DracoDecoder.instance && dracoLib === undefined)
         {
-            return undefined;
+            if (DracoDecoderModule === undefined)
+            {
+                console.error('Failed to initalize DracoDecoder: draco library undefined');
+                return undefined;
+            }
+            else
+            {
+                dracoLib = DracoDecoderModule;
+            }
         }
         if (!DracoDecoder.instance)
         {

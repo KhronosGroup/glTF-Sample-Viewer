@@ -1,11 +1,31 @@
 class KtxDecoder {
 
-    constructor (externalKtxlib, context) {
+    constructor (context, externalKtxlib) {
         this.libktx = null;
-        this.initializied = this.init(externalKtxlib, context);
+        if (context !== undefined)
+        {
+            if (externalKtxlib === undefined && LIBKTX !== undefined)
+            {
+                externalKtxlib = LIBKTX;
+            }
+            if (externalKtxlib !== undefined)
+            {
+                this.initializied = this.init(context, externalKtxlib);
+            }
+            else
+            {
+                console.error('Failed to initalize KTXDecoder: ktx library undefined');
+                return undefined;
+            }
+        }
+        else
+        {
+            console.error('Failed to initalize KTXDecoder: WebGL context undefined');
+            return undefined;
+        }
     }
 
-    async init(externalKtxlib, context) {
+    async init(context, externalKtxlib) {
         this.libktx = await externalKtxlib({preinitializedWebGLContext: context});
         this.libktx.GL.makeContextCurrent(this.libktx.GL.createContext(null, { majorVersion: 2.0 }));
     }
