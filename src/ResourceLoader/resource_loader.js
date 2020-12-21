@@ -88,26 +88,14 @@ async function loadGltfFromPath(path, view)
     return await loadGltf(path, json, buffers, view);
 }
 
-
-
- async function loadHdrImage(src)
- {
+function onload2promise(obj)
+{
     return new Promise((resolve, reject) => {
-      let img = new HDRImage();
-      img.src = src;
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-    })
-  }
- async function loadJpgImage(src)
- {
-    return new Promise((resolve, reject) => {
-      let img = new Image();
-      img.src = src;
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-    })
-  }
+        obj.onload = () => resolve(obj);
+        obj.onerror = reject;
+    });
+}
+
 
 
 async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
@@ -143,12 +131,14 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
 
     let environmentFiltering = new iblSampler(view);
 
-  //  var image = await loadHdrImage("assets/environments/helipad.hdr");
-    var image = await loadJpgImage("assets/environments/helipad.jpg");
 
+    let imageHDR = new HDRImage();
+    imageHDR.src="assets/environments/helipad.hdr";
 
+    let imageHDRPromise = onload2promise(imageHDR);
+    await imageHDRPromise;
 
-    environmentFiltering.init(image);
+    environmentFiltering.init(imageHDR);
     environmentFiltering.filterAll();
 
     // Diffuse

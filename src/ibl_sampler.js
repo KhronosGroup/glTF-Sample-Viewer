@@ -1,4 +1,3 @@
-
 import { ShaderCache } from './Renderer/shader_cache.js';
 
 
@@ -19,23 +18,25 @@ class iblSampler
 {
     constructor(view)
     {
-        //this.canvas = canvas;
-        this.gl = view.context;//canvas.getContext('webgl2');
-        this.shader = undefined; // current shader
+
+        this.gl = view.context;
+
         this.currentWidth = view.canvas.width;
         this.currentHeight = view.canvas.height;
 
         this.textureSize = 1024;
+        this.sampleCount = 1024;
+        this.lodBias = 0.0;
         this.mipmapCount = undefined;
 
-        this.inputImage = undefined;
 
-        this.inputTextureID = undefined;
-        this.cubemapTextureID = undefined;
         this.lambertianTextureID = undefined;
         this.ggxTextureID = undefined;
         this.sheenTextureID = undefined;
 
+
+        this.inputTextureID = undefined;
+        this.cubemapTextureID = undefined;
         this.framebuffer = undefined;
 
         const shaderSources = new Map();
@@ -53,7 +54,7 @@ class iblSampler
     /////////////////////////////////////////////////////////////////////
 
 
-    loadTexture(image)
+    loadTextureHDR(image)
     {
 
         var texture = this.gl.createTexture();
@@ -62,8 +63,21 @@ class iblSampler
 
 
         this.gl.bindTexture( this.gl.TEXTURE_2D, texture); // as this function is asynchronus, another texture could be set in between
-        this.gl.texImage2D(  this.gl.TEXTURE_2D, 0,   this.gl.RGBA,   this.gl.RGBA,  this.gl.UNSIGNED_BYTE, image);
 
+        const internalFormat =  this.gl.RGB32F;
+        const format = this.gl.RGB;
+        const type =   this.gl.FLOAT;
+
+        this.gl.texImage2D(
+            this.gl.TEXTURE_2D,
+            0, //level
+            internalFormat,
+            image.width,
+            image.height,
+            0, //border
+            format,
+            type,
+            image.dataFloat);
 
         this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_S,  this.gl.MIRRORED_REPEAT);
         this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_T,  this.gl.MIRRORED_REPEAT);
@@ -83,10 +97,10 @@ class iblSampler
 
         // define size and format of level 0
         const level = 0;
-        const internalFormat =  this.gl.RGBA;
+        const internalFormat =  this.gl.RGBA32F;
         const border = 0;
         const format = this.gl.RGBA;
-        const type =  this.gl.UNSIGNED_BYTE;
+        const type =  this.gl.FLOAT;
         const data = null;
         this.gl.texImage2D( this.gl.TEXTURE_2D, level, internalFormat,
             this.textureSize, this.textureSize, border,
@@ -110,10 +124,10 @@ class iblSampler
 
         // define size and format of level 0
         const level = 0;
-        const internalFormat =  this.gl.RGBA;
+        const internalFormat =  this.gl.RGBA32F;
         const border = 0;
         const format = this.gl.RGBA;
-        const type =  this.gl.UNSIGNED_BYTE;
+        const type = this.gl.FLOAT;// this.gl.UNSIGNED_BYTE;
         const data = null;
 
         for(var i = 0; i < 6; ++i)
@@ -146,7 +160,13 @@ class iblSampler
 
     init(panoramaImage)
     {
-        this.inputTextureID = this.loadTexture(panoramaImage);
+        if (!this.gl.getExtension('EXT_color_buffer_float'))
+        {
+           // ToDo: use 8bit/channel
+        }
+
+
+        this.inputTextureID = this.loadTextureHDR(panoramaImage);
 
         this.cubemapTextureID = this.createCubemapTexture(true);
 
@@ -163,7 +183,7 @@ class iblSampler
         this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
         this.gl.generateMipmap(this.gl.TEXTURE_CUBE_MAP);
 
-        this.mipmapCount = Math.floor(Math.log2(this.textureSize))+1;
+        this.mipmapLevels = Math.floor(Math.log2(this.textureSize))+1;
     }
 
     filterAll()
@@ -174,7 +194,7 @@ class iblSampler
         this.cubeMapToSheen();
 
         this.gl.bindFramebuffer(  this.gl.FRAMEBUFFER, null);
-        this.gl.viewport(0, 0, this.currentWidth, this.currentHeight);
+        this.gl.viewport(0, 0, this.currentWidth, this.currentHeight);//ToDo
     }
 
 
@@ -198,8 +218,8 @@ class iblSampler
             const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
             const fragmentHash = this.shaderCache.selectShader("panorama_to_cubemap.frag", []);
 
-            this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
-            this.gl.useProgram(this.shader.program);
+            var shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
+            this.gl.useProgram(shader.program);
 
             //  TEXTURE0 = active.
             this.gl.activeTexture(this.gl.TEXTURE0+0);
@@ -208,10 +228,10 @@ class iblSampler
             this.gl.bindTexture(this.gl.TEXTURE_2D, this.inputTextureID);
 
             // map shader uniform to texture unit (TEXTURE0)
-            const location = this.gl.getUniformLocation(this.shader.program,"u_panorama");
+            const location = this.gl.getUniformLocation(shader.program,"u_panorama");
             this.gl.uniform1i(location, 0); // texture unit 0 (TEXTURE0)
 
-            this.shader.updateUniform("u_currentFace", i);
+            shader.updateUniform("u_currentFace", i);
 
             //fullscreen triangle
             this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
@@ -249,8 +269,8 @@ class iblSampler
             const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
             const fragmentHash = this.shaderCache.selectShader("ibl_filtering.frag", []);
 
-            this.shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
-            this.gl.useProgram(this.shader.program);
+            var shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
+            this.gl.useProgram(shader.program);
 
 
             //  TEXTURE0 = active.
@@ -260,24 +280,17 @@ class iblSampler
             this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
 
             // map shader uniform to texture unit (TEXTURE0)
-            const location = this.gl.getUniformLocation(this.shader.program,"u_cubemapTexture");
+            const location = this.gl.getUniformLocation(shader.program,"u_cubemapTexture");
             this.gl.uniform1i(location, 0); // texture unit 0
 
-            //const roughness =  (currentMipLevel) /  (outputMipLevels - 1);
-            const sampleCount = 1024;
-            //const currentMipLevel = 0;
 
-            const width = this.textureSize;
-            const lodBias = 0.0;
-            //const distribution = 1;
-
-            this.shader.updateUniform("u_roughness", roughness);
-            this.shader.updateUniform("u_sampleCount", sampleCount);
-            this.shader.updateUniform("u_currentMipLevel", targetMipLevel);
-            this.shader.updateUniform("u_width", width);
-            this.shader.updateUniform("u_lodBias", lodBias);
-            this.shader.updateUniform("u_distribution", distribution);
-            this.shader.updateUniform("u_currentFace", i);
+            shader.updateUniform("u_roughness", roughness);
+            shader.updateUniform("u_sampleCount", this.sampleCount);
+            shader.updateUniform("u_currentMipLevel", targetMipLevel);
+            shader.updateUniform("u_width", this.textureSize);
+            shader.updateUniform("u_lodBias", this.lodBias);
+            shader.updateUniform("u_distribution", distribution);
+            shader.updateUniform("u_currentFace", i);
 
 
             //fullscreen triangle
@@ -299,9 +312,9 @@ class iblSampler
 
     cubeMapToGGX()
     {
-        for(var currentMipLevel = 0; currentMipLevel < this.mipmapCount; ++currentMipLevel)
+        for(var currentMipLevel = 0; currentMipLevel < this.mipmapLevels; ++currentMipLevel)
         {
-            const roughness =  (currentMipLevel) /  (this.mipmapCount - 1);
+            const roughness =  (currentMipLevel) /  (this.mipmapLevels - 1);
             this.applyFilter(
                 1,
                 roughness,
@@ -312,10 +325,9 @@ class iblSampler
 
     cubeMapToSheen()
     {
-
-        for(var currentMipLevel = 0; currentMipLevel < this.mipmapCount; ++currentMipLevel)
+        for(var currentMipLevel = 0; currentMipLevel < this.mipmapLevels; ++currentMipLevel)
         {
-            const roughness =  (currentMipLevel) /  (this.mipmapCount - 1);
+            const roughness =  (currentMipLevel) /  (this.mipmapLevels - 1);
             this.applyFilter(
                 2,
                 roughness,
