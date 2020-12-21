@@ -86,7 +86,7 @@ For local usage and debugging, please follow these instructions:
 
 **(2)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
-**(3)** To test the npm package:
+**(3)** To test the gltf-sample-viewer:
 
 - `cd example`
 - run `npm install`
@@ -103,6 +103,11 @@ requests — they will be updated by project maintainers with each new release.
 
 This will create a new `gltf-sample-viewer.js` and `gltf-sample-viewer.module.js` in the `npm_package` folder
 
+**(5)** To test the npm-package:
+- Change the `gltf-sample-viewer` dependency in `example/package.json` from `../src` to `../npm_package`
+- Delete the `gltf-sample-viewer` folder in `example/npm_modules`
+- Now follow steps from **(3)**
+
 
 Debugging
 ---------
@@ -112,6 +117,7 @@ Debugging
   * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
 * Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
+* One might need to append `/example` to `${workspaceFolder}` in the `launch.json` file
 * `Debug->Start Debugging` should now launch a Firefox window with the sample viewer and VS Code breakpoints should be hit.
 
 
