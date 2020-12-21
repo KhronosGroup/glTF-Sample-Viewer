@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltf, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
 
 async function main()
 {
@@ -10,7 +10,7 @@ async function main()
     initDracoLib();
     initKtxLib(view);
 
-    loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
+    loadGltf("assets/models/2.0/Avocado/glTF-Binary/Avocado.glb", view).then( (gltf) => {
         state.gltf = gltf;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
@@ -44,7 +44,7 @@ async function main()
         state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
-        loadGltfFromDrop(mainFile, additionalFiles, view).then( gltf => {
+        loadGltf(mainFile, view, additionalFiles).then( gltf => {
             state.gltf = gltf;
             computePrimitiveCentroids(state.gltf);
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
