@@ -1,10 +1,6 @@
 import { HDRImage } from '../libs/hdrpng.js';
-import { Ktx2Image } from '../libs/ktx2image.js';
-import { WebGl } from './webgl.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
-import axios from '../libs/axios.min.js';
-
 import { AsyncFileReader } from './ResourceLoader/async_file_reader.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};
@@ -13,7 +9,8 @@ class gltfImage extends GltfObject
 {
     constructor(
         uri = undefined,
-        type = WebGl.context.TEXTURE_2D, miplevel = 0,
+        type = WebGLRenderingContext.TEXTURE_2D,
+        miplevel = 0,
         bufferView = undefined,
         name = undefined,
         mimeType = ImageMimeType.JPEG,
@@ -60,7 +57,7 @@ class gltfImage extends GltfObject
         }
         else if (this.mimeType === ImageMimeType.KTX2)
         {
-            this.image = new Ktx2Image();
+            this.image = {};
         }
         else
         {
@@ -71,8 +68,8 @@ class gltfImage extends GltfObject
         const self = this;
 
         if (!await self.setImageFromBufferView(gltf) &&
-            !await self.setImageFromFiles(additionalFiles) &&
-            !await self.setImageFromUri())
+            !await self.setImageFromFiles(additionalFiles, gltf) &&
+            !await self.setImageFromUri(gltf))
         {
             console.error("Was not able to resolve image with uri '%s'", self.uri);
             return;
@@ -91,7 +88,7 @@ class gltfImage extends GltfObject
         });
     }
 
-    async setImageFromUri()
+    async setImageFromUri(gltf)
     {
         if (this.uri === undefined)
         {
@@ -104,12 +101,9 @@ class gltfImage extends GltfObject
                 console.error(error);
             });
         }
-        else if (this.image instanceof Ktx2Image)
+        else
         {
-            let response = await axios.get(this.uri, { responseType: 'arraybuffer'}).catch( (error) => {
-                console.error("Could not get image: " + error);
-            });
-            await this.image.initialize(response.data);
+            this.image = await gltf.ktxDecoder.loadKtxFromUri(this.uri);
         }
 
         return true;
@@ -125,15 +119,22 @@ class gltfImage extends GltfObject
 
         const buffer = gltf.buffers[view.buffer].buffer;
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
-        const blob = new Blob([array], { "type": this.mimeType });
-        const objectURL = URL.createObjectURL(blob);
-        this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
-            console.error("Could not load image from buffer view");
-        });
+        if (this.mimeType === ImageMimeType.KTX2)
+        {
+            this.image = await gltf.ktxDecoder.loadKtxFromBuffer(array);
+        }
+        else
+        {
+            const blob = new Blob([array], { "type": this.mimeType });
+            const objectURL = URL.createObjectURL(blob);
+            this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
+                console.error("Could not load image from buffer view");
+            });
+        }
         return true;
     }
 
-    async setImageFromFiles(files)
+    async setImageFromFiles(files, gltf)
     {
         if (this.uri === undefined || files === undefined)
         {
@@ -153,14 +154,7 @@ class gltfImage extends GltfObject
             return false;
         }
 
-        if (this.image instanceof Ktx2Image)
-        {
-            const imageData = await AsyncFileReader.readAsArrayBuffer(foundFile).catch( () => {
-                console.error("Could not load ktx2 image with FileReader");
-            });
-            await this.image.initialize(imageData);
-        }
-        else
+        if (this.image instanceof Image)
         {
             const imageData = await AsyncFileReader.readAsDataURL(foundFile).catch( () => {
                 console.error("Could not load image with FileReader");
@@ -168,6 +162,11 @@ class gltfImage extends GltfObject
             this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {
                 console.error("Could not create image from FileReader image data");
             });
+        }
+        else
+        {
+            const data = new Uint8Array(await foundFile.arrayBuffer());
+            this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
         }
 
         return true;

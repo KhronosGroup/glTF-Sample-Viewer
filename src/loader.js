@@ -2,18 +2,19 @@ import { gltfImageProcessor } from "./image_processor";
 
 class gltfLoader
 {
-    static async load(gltf, appendix = undefined)
+    static async load(gltf, webGlContext, appendix = undefined)
     {
         const buffers = gltfLoader.getBuffers(appendix);
         const additionalFiles = gltfLoader.getAdditionalFiles(appendix);
 
         const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
-        await buffersPromise;
+
+        await buffersPromise; // images might be stored in the buffers
         const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles)
             .then(() => gltfLoader.processImages(gltf));
 
         return await Promise.all([buffersPromise, imagesPromise])
-            .then(() => gltf.initGl());
+            .then(() => gltf.initGl(webGlContext));
     }
 
     static unload(gltf)

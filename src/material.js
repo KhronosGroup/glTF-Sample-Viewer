@@ -118,7 +118,7 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    initGl(gltf)
+    initGl(gltf, webGlContext)
     {
         if (this.normalTexture !== undefined)
         {
@@ -271,7 +271,7 @@ class gltfMaterial extends GltfObject
                 {
                     clearcoatFactor = this.extensions.KHR_materials_clearcoat.clearcoatFactor;
                 }
-                if(this.extensions.KHR_materials_clearcoat !== undefined)
+                if(this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor !== undefined)
                 {
                     clearcoatRoughnessFactor = this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor;
                 }
@@ -366,7 +366,7 @@ class gltfMaterial extends GltfObject
             }
         }
 
-        initGlForMembers(this, gltf);
+        initGlForMembers(this, gltf, webGlContext);
     }
 
     fromJson(jsonMaterial)
