@@ -86,20 +86,22 @@ For local usage and debugging, please follow these instructions:
 
 **(2)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
-**(3)** To build the npm package:
-- `cd src`
-- run `npm install`
-- run `npm run dev`
-
-**(4)** To test the npm package:
+**(3)** To test the npm package:
 
 - `cd example`
 - run `npm install`
 - start a demo in the browser with `npm run dev`, and open http://localhost:8000.
 
-When making changes, the project is automatically rebuilt and the `example/dist/` and `npm_package` folders
-are updated. Files in the `dist/` and `npm_package` folders should not be included in pull
+When making changes, the project is automatically rebuilt and the `example/dist/` folder
+is updated. Files in the `dist/` folder should not be included in pull
 requests — they will be updated by project maintainers with each new release.
+
+**(4)** To build the npm package for publishing:
+- `cd src`
+- run `npm install`
+- run `npm run build`
+
+This will create a new `gltf-sample-viewer.js` and `gltf-sample-viewer.module.js` in the `npm_package` folder
 
 
 Debugging

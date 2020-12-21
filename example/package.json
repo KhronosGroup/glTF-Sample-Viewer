@@ -26,15 +26,13 @@
   "dependencies": {
     "@bundled-es-modules/axios": "^0.18.1",
     "gl-matrix": "^3.2.1",
-    "gltf-sample-viewer": "../npm_package"
+    "gltf-sample-viewer": "../src"
   },
   "devDependencies": {
-    "@rollup/plugin-wasm": "^5.1.2",
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
     "rollup": "^1.31.1",
     "rollup-plugin-glslify": "^1.1.3",
-    "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "serve": "^11.3.0"
