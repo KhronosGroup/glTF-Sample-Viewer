@@ -143,7 +143,7 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
 
     let environmentFiltering = new iblSampler(view);
 
-   // var image = await loadHdrImage("assets/environments/helipad.hdr");
+  //  var image = await loadHdrImage("assets/environments/helipad.hdr");
     var image = await loadJpgImage("assets/environments/helipad.jpg");
 
 
@@ -151,35 +151,83 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     environmentFiltering.init(image);
     environmentFiltering.filterAll();
 
-    // Test
+    // Diffuse
 
-    const testGltfImage = new gltfImage(
+    const diffuseGltfImage = new gltfImage(
         undefined,
         WebGL2RenderingContext.TEXTURE_CUBE_MAP,
         0,
         undefined,
-        "TEST",
+        "Diffuse",
         ImageMimeType.GLTEXTURE,
         environmentFiltering.lambertianTextureID
         );
 
-    environment.images.push(testGltfImage);
+    environment.images.push(diffuseGltfImage);
 
-    //constructor(sampler = undefined, source = undefined, type = WebGLRenderingContext.TEXTURE_2D, texture = undefined)
-    const testTexture = new gltfTexture(
+    const diffuseTexture = new gltfTexture(
         diffuseCubeSamplerIdx,
         [imageIdx++],
         WebGL2RenderingContext.TEXTURE_CUBE_MAP,
         environmentFiltering.lambertianTextureID);
 
-    environment.textures.push(testTexture);
+    environment.textures.push(diffuseTexture);
 
     environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.diffuseEnvMap.generateMips = false;
 
 
-/*
 
+    // Specular
+    const specularGltfImage = new gltfImage(
+        undefined,
+        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        0,
+        undefined,
+        "Specular",
+        ImageMimeType.GLTEXTURE,
+        environmentFiltering.ggxTextureID
+        );
+
+    environment.images.push(specularGltfImage);
+
+    const specularTexture = new gltfTexture(
+        specularCubeSamplerIdx,
+        [imageIdx++],
+        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        environmentFiltering.ggxTextureID);
+
+    environment.textures.push(specularTexture);
+
+    environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+    environment.specularEnvMap.generateMips = false;
+
+
+    // Sheen
+    const sheenGltfImage = new gltfImage(
+        undefined,
+        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        0,
+        undefined,
+        "Sheen",
+        ImageMimeType.GLTEXTURE,
+        environmentFiltering.ggxTextureID
+        );
+
+    environment.images.push(sheenGltfImage);
+
+    const sheenTexture = new gltfTexture(
+        sheenCubeSamplerIdx,
+        [imageIdx++],
+        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        environmentFiltering.sheenTextureID);
+
+    environment.textures.push(sheenTexture);
+
+    environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+    environment.sheenEnvMap.generateMips = false;
+
+/*
     // Diffuse
 
     const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
@@ -187,7 +235,8 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     environment.images.push(lambertian);
     environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
     environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
-    environment.diffuseEnvMap.generateMips = false;*/
+    environment.diffuseEnvMap.generateMips = false;
+
     // Specular
 
     const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
@@ -206,7 +255,7 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     environment.images.push(sheen);
     environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
     environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
-    environment.sheenEnvMap.generateMips = false;
+    environment.sheenEnvMap.generateMips = false;*/
 
     //
     // Look Up Tables.
@@ -241,7 +290,7 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
 
     environment.initGl(view.context);
 
-    environment.mipCount = specularImage.image.levels;
+    environment.mipCount = environmentFiltering.mipmapLevels;
 
     return environment;
 }
