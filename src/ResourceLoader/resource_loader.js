@@ -100,8 +100,35 @@ function onload2promise(obj)
 }
 
 
+async function loadEnvironmentFromPath(hdrPanoramaPath, view)
+{
 
-async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
+    let image = new HDRImage();
+    image.src = hdrPanoramaPath;
+
+    var promise = onload2promise(image);
+     await promise;
+    return loadEnvironmentFromImage(image, view);
+}
+
+async function loadEnvironmentFromDrop(hdrPanoramaDrop, view)
+{
+    const imageData = await AsyncFileReader.readAsDataURL(hdrPanoramaDrop).catch( () => {
+        console.error("Could not load image with FileReader");
+    });
+
+    let image = new HDRImage();
+    image.src = imageData;
+
+    var promise = onload2promise(image);
+     await promise;
+
+    return loadEnvironmentFromImage(image, view);
+
+}
+
+
+async function loadEnvironmentFromImage(imageHDR, view)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
@@ -133,13 +160,6 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     let imageIdx = environment.images.length;
 
     let environmentFiltering = new iblSampler(view);
-
-
-    let imageHDR = new HDRImage();
-    imageHDR.src="assets/environments/helipad.hdr";
-
-    let imageHDRPromise = onload2promise(imageHDR);
-    await imageHDRPromise;
 
     environmentFiltering.init(imageHDR);
     environmentFiltering.filterAll();
@@ -288,4 +308,4 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     return environment;
 }
 
-export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib};
+export { loadGltfFromPath, loadGltfFromDrop, loadEnvironmentFromPath, loadEnvironmentFromDrop, initKtxLib, initDracoLib};

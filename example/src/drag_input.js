@@ -1,4 +1,4 @@
-import { getIsGltf, getIsGlb } from 'gltf-sample-viewer';
+import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 
 class gltfDragInput
 {
@@ -114,7 +114,7 @@ class gltfDragInput
         let additionalFiles = [];
         for (let file of files)
         {
-            if (getIsGltf(file.name) || getIsGlb(file.name))
+            if (getIsGltf(file.name) || getIsGlb(file.name) || getIsHdr(file.name))
             {
                 mainFile = file;
             }

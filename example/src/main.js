@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop, loadEnvironmentFromDrop } from 'gltf-sample-viewer';
 
 async function main()
 {
@@ -21,7 +21,7 @@ async function main()
         state.animationTimer.start();
     });
 
-    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view).then( (environment) => {
+    loadEnvironmentFromPath("assets/environments/footprint_court.hdr", view).then( (environment) => {
         state.environment = environment;
     });
 
@@ -43,7 +43,11 @@ async function main()
         state.userCamera.zoomIn(delta);
         state.userCamera.updatePosition();
     };
-    input.onDropFiles = (mainFile, additionalFiles) => {
+    input.onDropFiles = (mainFile, additionalFiles, ) => {
+         loadEnvironmentFromDrop(mainFile, view).then( (environment) => {
+            state.environment = environment;
+        });
+/*
         loadGltfFromDrop(mainFile, additionalFiles, view).then( gltf => {
             state.gltf = gltf;
             computePrimitiveCentroids(state.gltf);
@@ -51,7 +55,7 @@ async function main()
             state.userCamera.updatePosition();
             state.animationIndices = [0];
             state.animationTimer.start();
-        });
+        });*/
     };
 
     await view.startRendering(state);

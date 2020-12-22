@@ -129,6 +129,11 @@ function getIsGltf(filename)
     return getExtension(filename) == "gltf";
 }
 
+function getIsHdr(filename)
+{
+    return getExtension(filename) == "hdr";
+}
+
 function getExtension(filename)
 {
     const split = filename.toLowerCase().split(".");
@@ -272,6 +277,7 @@ export {
     clamp,
     getIsGlb,
     getIsGltf,
+    getIsHdr,
     getExtension,
     getFileName,
     getFileNameWithoutExtension,

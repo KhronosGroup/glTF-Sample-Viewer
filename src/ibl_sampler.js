@@ -1,4 +1,5 @@
 import { ShaderCache } from './Renderer/shader_cache.js';
+import { HDRImage } from './libs/hdrpng.js';
 
 
 // ToDo: move these shaders to separate folder
@@ -61,12 +62,31 @@ class iblSampler
 
         this.gl.bindTexture( this.gl.TEXTURE_2D,  texture);
 
-
         this.gl.bindTexture( this.gl.TEXTURE_2D, texture); // as this function is asynchronus, another texture could be set in between
 
-        const internalFormat =  this.gl.RGB32F;
-        const format = this.gl.RGB;
-        const type =   this.gl.FLOAT;
+
+        var internalFormat = this.gl.RGB32F;
+        var format = this.gl.RGB;
+        var type = this.gl.FLOAT;
+        var data = undefined;
+
+        //if (image instanceof HDRImage)
+        {
+            internalFormat = this.gl.RGB32F;
+            format = this.gl.RGB;
+            type = this.gl.FLOAT;
+            data = image.dataFloat;
+        }
+
+        if (image instanceof Image)
+        {
+            internalFormat = this.gl.RGBA;
+            format = this.gl.RGBA;
+            type = this.gl.UNSIGNED_BYTE;
+            data = image;
+        }
+
+
 
         this.gl.texImage2D(
             this.gl.TEXTURE_2D,
@@ -77,7 +97,7 @@ class iblSampler
             0, //border
             format,
             type,
-            image.dataFloat);
+            data);
 
         this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_S,  this.gl.MIRRORED_REPEAT);
         this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_T,  this.gl.MIRRORED_REPEAT);
