@@ -8,7 +8,7 @@ function HDRImage() {
     var res = document.createElement('canvas'), HDRsrc='t',HDRdata=null;
     res.__defineGetter__('dataFloat',function(){ return rgbeToFloat(HDRdata); });
     res.__defineGetter__('dataRGBE',function(){ return HDRdata; });
-    res.__defineSetter__('src',function(val){
+    res.loadHDR = async function(val){
         HDRsrc=val;
         if (typeof val === "string" && val.match(/\.hdr$/i))
         {
@@ -28,7 +28,7 @@ function HDRImage() {
                 this.onload && this.onload();
             }.bind(res));
         }
-    });
+    };
     return res;
 }
 
@@ -56,7 +56,7 @@ function loadHDRFromURL(url, completion ) {
     return req;
 }
 
-function loadHDR(buffer, callback)
+async function loadHDR(buffer, callback)
 {
     var header='',pos=0,d8=buffer,format;
     // read header.

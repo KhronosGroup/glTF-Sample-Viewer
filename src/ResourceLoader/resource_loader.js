@@ -97,7 +97,7 @@ async function loadEnvironment(file, view)
     let image = new HDRImage();
     if (typeof file === "string")
     {
-        image.src = file;
+        await image.loadHDR(file);
         await new Promise((resolve, reject) => {
             image.onload = () => resolve(image);
             image.onerror = reject;
@@ -108,7 +108,7 @@ async function loadEnvironment(file, view)
         const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch( () => {
             console.error("Could not load image with FileReader");
         });
-        image.src = new Uint8Array(imageData);
+        await image.loadHDR(new Uint8Array(imageData));
     }
     return loadEnvironmentFromImage(image, view);
 }
