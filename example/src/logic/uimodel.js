@@ -1,6 +1,6 @@
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF } from '../gltf.js';
-import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters';
+import { glTF } from 'gltf-sample-viewer';
+import { ToneMaps, DebugOutput } from '../../../src/Renderer/rendering_parameters';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState

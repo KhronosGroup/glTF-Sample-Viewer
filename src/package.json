@@ -25,10 +25,6 @@
   "dependencies": {
     "@bundled-es-modules/axios": "^0.18.1",
     "gl-matrix": "^3.2.1"
-    "buefy": "^0.9.4",
-    "rxjs": "^6.6.3",
-    "vue": "^2.6.11",
-    "vue-rx": "^6.2.0"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",

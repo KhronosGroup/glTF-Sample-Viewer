@@ -1,10 +1,10 @@
-import { axios } from '.@bundled-es-modules/axios';
+import { axios } from '@bundled-es-modules/axios';
 
 import {
     getContainingFolder,
     combinePaths,
     getFileNameWithoutExtension
-} from './utils.js';
+} from 'gltf-sample-viewer';
 
 class gltfModelPathProvider
 {

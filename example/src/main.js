@@ -13,6 +13,7 @@ async function main()
     const canvas = document.getElementById("canvas");
     const view = new GltfView(canvas);
     const state = view.createState();
+
     initDracoLib();
     initKtxLib(view);
 
@@ -30,16 +31,16 @@ async function main()
     const gltfLoadedObservable = uiModel.model.pipe(
         mergeMap( gltf_path =>
         {
-                 return from(loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
-                                                                                                        state.gltf = gltf;
-                                                                                                        const scene = state.gltf.scenes[state.sceneIndex];
-                                                                                                        scene.applyTransformHierarchy(state.gltf);
-                                                                                                        computePrimitiveCentroids(state.gltf);
-                                                                                                        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                                                                                                        state.userCamera.updatePosition();
-                                                                                                        state.animationIndices = [0];
-                                                                                                        state.animationTimer.start();
-                                                                                                        })
+            return from(loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
+                state.gltf = gltf;
+                const scene = state.gltf.scenes[state.sceneIndex];
+                scene.applyTransformHierarchy(state.gltf);
+                computePrimitiveCentroids(state.gltf);
+                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+                state.userCamera.updatePosition();
+                state.animationIndices = [0];
+                state.animationTimer.start();
+                })
             );
         })
     );
