@@ -1,4 +1,5 @@
-import axios from '../libs/axios.min.js';
+import { axios } from '.@bundled-es-modules/axios';
+
 import {
     getContainingFolder,
     combinePaths,

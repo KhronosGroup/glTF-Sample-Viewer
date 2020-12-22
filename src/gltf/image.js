@@ -1,7 +1,6 @@
-import { HDRImage } from '../libs/hdrpng.js';
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
-import { AsyncFileReader } from './ResourceLoader/async_file_reader.js';
+import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};
 
@@ -51,11 +50,7 @@ class gltfImage extends GltfObject
             return;
         }
 
-        if (this.mimeType === ImageMimeType.HDR)
-        {
-            this.image = new HDRImage();
-        }
-        else if (this.mimeType === ImageMimeType.KTX2)
+        if (this.mimeType === ImageMimeType.KTX2 && gltf.ktxDecoder !== undefined)
         {
             this.image = {};
         }
@@ -103,7 +98,14 @@ class gltfImage extends GltfObject
         }
         else
         {
-            this.image = await gltf.ktxDecoder.loadKtxFromUri(this.uri);
+            if (gltf.ktxDecoder !== undefined)
+            {
+                this.image = await gltf.ktxDecoder.loadKtxFromUri(this.uri);
+            }
+            else
+            {
+                console.warn('Loading of ktx images failed: KtxDecoder not initalized');
+            }
         }
 
         return true;
@@ -121,7 +123,14 @@ class gltfImage extends GltfObject
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
         if (this.mimeType === ImageMimeType.KTX2)
         {
-            this.image = await gltf.ktxDecoder.loadKtxFromBuffer(array);
+            if (gltf.ktxDecoder !== undefined)
+            {
+                this.image = await gltf.ktxDecoder.loadKtxFromBuffer(array);
+            }
+            else
+            {
+                console.warn('Loading of ktx images failed: KtxDecoder not initalized');
+            }
         }
         else
         {
@@ -165,8 +174,15 @@ class gltfImage extends GltfObject
         }
         else
         {
-            const data = new Uint8Array(await foundFile.arrayBuffer());
-            this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
+            if (gltf.ktxDecoder !== undefined)
+            {
+                const data = new Uint8Array(await foundFile.arrayBuffer());
+                this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
+            }
+            else
+            {
+                console.warn('Loading of ktx images failed: KtxDecoder not initalized');
+            }
         }
 
         return true;

@@ -1,4 +1,4 @@
-import { gltfImageProcessor } from "./image_processor";
+import { gltfImageProcessor } from "./image_processor.js";
 
 class gltfLoader
 {

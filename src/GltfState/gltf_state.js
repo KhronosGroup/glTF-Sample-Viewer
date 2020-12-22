@@ -1,6 +1,6 @@
-import { UserCamera } from '../user_camera.js';
+import { UserCamera } from '../gltf/user_camera.js';
 import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters.js';
-import { AnimationTimer } from '../utils.js';
+import { AnimationTimer } from '../gltf/utils.js';
 
 class GltfState
 {

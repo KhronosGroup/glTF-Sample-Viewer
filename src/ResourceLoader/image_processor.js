@@ -1,6 +1,5 @@
-import { HDRImage } from '../libs/hdrpng.js';
-import { nearestPowerOf2, makeEven } from './math_utils.js';
-import { ImageMimeType } from "./image";
+import { nearestPowerOf2, makeEven } from '../gltf/math_utils.js';
+import { ImageMimeType } from "../gltf/image";
 
 class gltfImageProcessor
 {
@@ -10,10 +9,6 @@ class gltfImageProcessor
         {
             const image = gltfImage.image;
 
-            if (image instanceof HDRImage)
-            {
-                continue;
-            }
             if (gltfImage.mimeType === ImageMimeType.KTX2)
             {
                 continue;

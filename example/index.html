@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="ui.css">
     <link rel="stylesheet" href="dist/gltf-sample-viewer.css">
     <link rel="icon" href="assets/images/gltf.png">
-
+        
     <!-- buefy styles -->
     <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
@@ -27,10 +27,11 @@
     <script src="https://unpkg.com/vue"></script>
     <!-- buefy full -->
     <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+    
+    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+    <script src="node_modules/gltf-sample-viewer/libs/libktx.js"></script>
+    <script src="dist/GltfSVApp.umd.js"></script>
 
-	<script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
-    <script src="libs/libktx.js"></script>
-    <script src="dist/gltf-sample-viewer.umd.js"></script>
 </head>
 <script>
 function getUrlVars() {
@@ -159,7 +160,7 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 
 
-<body onload="gltfSampleViewer.main()">
+<body onload="SampleViewerApp.main()">
     <canvas id="canvas">No Canvas!</canvas>
 
     <!-- UI -->

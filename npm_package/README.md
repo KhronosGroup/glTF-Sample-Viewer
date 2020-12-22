@@ -1,8 +1,6 @@
 Khronos glTF 2.0 Sample Viewer
 ==============================
 
-[![](examples/assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
-
 This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
 
@@ -11,10 +9,7 @@ This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.
 - [Version](#version)
 - [Credits](#credits)
 - [Features](#features)
-- [Viewer](#viewer)
-  - [Usage](#usage)
-  - [Setup](#setup)
-  - [Debugging](#debugging)
+- [Setup](#setup)
 - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
 - [Appendix A Metallic-Roughness Material](#appendix-a-metallic-roughness-material)
   - [Specular Term](#specular-term-f_specular)
@@ -51,74 +46,24 @@ Features
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 - [ ] KHR_xmp_ld
 
-Viewer
-======
 
-Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
-
-Usage
------
-
-**Controls**
-
-`click + drag` : Rotate model
-
-`scroll` : Zoom camera
-
-`GUI` : Use to change models and settings
-
-**Change glTF model**
-
-* Choose one of the glTF models in the selection list
-
-or
-
-* Drag and drop glTF files into viewer
 
 Setup
------
+======
 
-For local usage and debugging, please follow these instructions:
+An example on how to implement the npm package on a webpage can be found [here (TODO: change link to example folder)]()
+- If you want to support the `KHR_texture_basisu` extension, you need to add the following library to your html file before calling the main app: \
+    `<script src="node_modules/gltf-sample-viewer/libs/libktx.js"></script>` \
+    After initalizing the GltfView, the KTX library has to be initilaized by calling: \
+    `initKtxLib(view);`
+- If you want to support the `KHR_draco_mesh_compression` extension, you need to add the following library to your html file before calling the main app: \
+    `<script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>` \
+    The Draco library has to be initilaized by calling: \
+    `initDracoLib();`
 
-**(0)** Make sure [Git LFS](https://git-lfs.github.com) is installed.
+One can also use own versions of these libraries and pass the required object in the init function as last argument.
 
-**(1)** Checkout the [`master`](../../tree/master) branch
-
-**(2)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
-
-**(3)** To test the gltf-sample-viewer:
-
-- `cd example`
-- run `npm install`
-- start a demo in the browser with `npm run dev`, and open http://localhost:8000.
-
-When making changes, the project is automatically rebuilt and the `example/dist/` folder
-is updated. Files in the `dist/` folder should not be included in pull
-requests — they will be updated by project maintainers with each new release.
-
-**(4)** To build the npm package for publishing:
-- `cd src`
-- run `npm install`
-- run `npm run build`
-
-This will create a new `gltf-sample-viewer.js` and `gltf-sample-viewer.module.js` in the `npm_package` folder
-
-**(5)** To test the npm-package:
-- Change the `gltf-sample-viewer` dependency in `example/package.json` from `../src` to `../npm_package`
-- Delete the `gltf-sample-viewer` folder in `example/npm_modules`
-- Now follow steps from **(3)**
-
-
-Debugging
----------
-
-* Requirements
-  * [Visual Studio Code](https://code.visualstudio.com/)
-  * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
-* Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
-* Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
-* One might need to append `/example` to `${workspaceFolder}` in the `launch.json` file
-* `Debug->Start Debugging` should now launch a Firefox window with the sample viewer and VS Code breakpoints should be hit.
+Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
 
 
 Physically-Based Materials in glTF 2.0
