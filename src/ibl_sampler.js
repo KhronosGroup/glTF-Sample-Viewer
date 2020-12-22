@@ -1,5 +1,4 @@
 import { ShaderCache } from './Renderer/shader_cache.js';
-import { HDRImage } from './libs/hdrpng.js';
 
 
 // ToDo: move these shaders to separate folder
@@ -70,7 +69,7 @@ class iblSampler
         var type = this.gl.FLOAT;
         var data = undefined;
 
-        //if (image instanceof HDRImage)
+        if (image.dataFloat instanceof Float32Array)
         {
             internalFormat = this.gl.RGB32F;
             format = this.gl.RGB;
@@ -108,33 +107,6 @@ class iblSampler
     }
 
 
-    createRenderTargetTexture()
-    {
-
-        var targetTexture =  this.gl.createTexture();
-        this.gl.bindTexture( this.gl.TEXTURE_2D, targetTexture);
-
-
-        // define size and format of level 0
-        const level = 0;
-        const internalFormat =  this.gl.RGBA32F;
-        const border = 0;
-        const format = this.gl.RGBA;
-        const type =  this.gl.FLOAT;
-        const data = null;
-        this.gl.texImage2D( this.gl.TEXTURE_2D, level, internalFormat,
-            this.textureSize, this.textureSize, border,
-            format, type, data);
-
-
-        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR);
-        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_S,  this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_T,  this.gl.CLAMP_TO_EDGE);
-
-        return targetTexture;
-    }
-
-
 
     createCubemapTexture(withMipmaps)
     {
@@ -144,10 +116,10 @@ class iblSampler
 
         // define size and format of level 0
         const level = 0;
-        const internalFormat =  this.gl.RGBA32F;
+        const internalFormat = this.use8bit ? this.gl.RGBA8 : this.gl.RGBA32F;
         const border = 0;
         const format = this.gl.RGBA;
-        const type = this.gl.FLOAT;// this.gl.UNSIGNED_BYTE;
+        const type = this.use8bit ? this.gl.UNSIGNED_BYTE : this.gl.FLOAT;
         const data = null;
 
         for(var i = 0; i < 6; ++i)
@@ -182,9 +154,8 @@ class iblSampler
     {
         if (!this.gl.getExtension('EXT_color_buffer_float'))
         {
-           // ToDo: use 8bit/channel
+            this.use8bit = true;
         }
-
 
         this.inputTextureID = this.loadTextureHDR(panoramaImage);
 
