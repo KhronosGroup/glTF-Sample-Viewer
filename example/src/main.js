@@ -1,23 +1,16 @@
 import { gltfInput } from './input.js';
-import { DracoDecoder } from './draco.js';
-import { KtxDecoder } from './ktx.js';
-import { GltfView } from './GltfView/gltf_view.js';
-import { computePrimitiveCentroids } from './gltf_utils.js';
-import { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath } from './ResourceLoader/resource_loader.js';
 
+import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop } from 'gltf-sample-viewer';
 
 async function main()
 {
     const canvas = document.getElementById("canvas");
     const view = new GltfView(canvas);
     const state = view.createState();
+    initDracoLib();
+    initKtxLib(view);
 
-    const dracoDecoder = new DracoDecoder();
-    const ktxDecoder = new KtxDecoder();
-    await dracoDecoder.ready();
-    await ktxDecoder.init(view.context);
-
-    loadGltfFromPath("assets/models/2.0/AlphaBlendModeTest/glTF/AlphaBlendModeTest.gltf", view, ktxDecoder, dracoDecoder).then( (gltf) => {
+    loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
         state.gltf = gltf;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
@@ -28,7 +21,7 @@ async function main()
         state.animationTimer.start();
     });
 
-    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view, ktxDecoder).then( (environment) => {
+    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view).then( (environment) => {
         state.environment = environment;
     });
 
@@ -51,7 +44,7 @@ async function main()
         state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
-        loadGltfFromDrop(mainFile, additionalFiles, view, ktxDecoder, dracoDecoder).then( gltf => {
+        loadGltfFromDrop(mainFile, additionalFiles, view).then( gltf => {
             state.gltf = gltf;
             computePrimitiveCentroids(state.gltf);
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
