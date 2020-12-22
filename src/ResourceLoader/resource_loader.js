@@ -119,7 +119,6 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
     const environment = new glTF();
-    environment.ktxDecoder = view.ktxDecoder;
 
     //
     // Prepare samplers.
