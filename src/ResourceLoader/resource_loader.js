@@ -91,40 +91,26 @@ async function loadGltfFromPath(path, view)
     return await loadGltf(path, json, buffers, view);
 }
 
-function onload2promise(obj)
+
+async function loadEnvironment(file, view)
 {
-    return new Promise((resolve, reject) => {
-        obj.onload = () => resolve(obj);
-        obj.onerror = reject;
-    });
-}
-
-
-async function loadEnvironmentFromPath(hdrPanoramaPath, view)
-{
-
     let image = new HDRImage();
-    image.src = hdrPanoramaPath;
-
-    var promise = onload2promise(image);
-     await promise;
+    if (typeof file === "string")
+    {
+        image.src = file;
+        await new Promise((resolve, reject) => {
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+        });
+    }
+    else
+    {
+        const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch( () => {
+            console.error("Could not load image with FileReader");
+        });
+        image.src = new Uint8Array(imageData);
+    }
     return loadEnvironmentFromImage(image, view);
-}
-
-async function loadEnvironmentFromDrop(hdrPanoramaDrop, view)
-{
-    const imageData = await AsyncFileReader.readAsDataURL(hdrPanoramaDrop).catch( () => {
-        console.error("Could not load image with FileReader");
-    });
-
-    let image = new HDRImage();
-    image.src = imageData;
-
-    var promise = onload2promise(image);
-     await promise;
-
-    return loadEnvironmentFromImage(image, view);
-
 }
 
 
@@ -308,4 +294,4 @@ async function loadEnvironmentFromImage(imageHDR, view)
     return environment;
 }
 
-export { loadGltfFromPath, loadGltfFromDrop, loadEnvironmentFromPath, loadEnvironmentFromDrop, initKtxLib, initDracoLib};
+export { loadGltfFromPath, loadGltfFromDrop, loadEnvironment, initKtxLib, initDracoLib};

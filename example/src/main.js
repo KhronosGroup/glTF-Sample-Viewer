@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop, loadEnvironmentFromDrop } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadEnvironment, initKtxLib, initDracoLib, loadGltfFromDrop} from 'gltf-sample-viewer';
 
 async function main()
 {
@@ -21,7 +21,7 @@ async function main()
         state.animationTimer.start();
     });
 
-    loadEnvironmentFromPath("assets/environments/footprint_court.hdr", view).then( (environment) => {
+    loadEnvironment("assets/environments/footprint_court.hdr", view).then( (environment) => {
         state.environment = environment;
     });
 
@@ -44,7 +44,7 @@ async function main()
         state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles, ) => {
-         loadEnvironmentFromDrop(mainFile, view).then( (environment) => {
+         loadEnvironment(mainFile, view).then( (environment) => {
             state.environment = environment;
         });
 /*
