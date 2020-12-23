@@ -33,7 +33,6 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-glslify": "^1.2.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-scss": "^2.6.1",
     "serve": "^11.3.0"
   },
   "bugs": {

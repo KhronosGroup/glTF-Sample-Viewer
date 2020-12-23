@@ -39,6 +39,7 @@
     "rollup-plugin-glslify": "^1.1.3",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-scss": "^2.6.1",
     "serve": "^11.3.0"
   },
   "bugs": {
