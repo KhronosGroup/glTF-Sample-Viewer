@@ -15,7 +15,7 @@ Vue.component('drop-down-element', {
     },
     // this is used to init the dropdown (so it is not empty on UI bootup)
     mounted(){
-        if(this.dropdowncontent === undefined)
+        if(this.dropdowncontent === undefined || this.dropdowncontent.length === 0)
         {
             return;
         }
