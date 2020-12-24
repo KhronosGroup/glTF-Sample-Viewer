@@ -2,7 +2,7 @@ import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
 import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 
-const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2"};
+const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2", GLTEXTURE: "image/texture"};
 
 class gltfImage extends GltfObject
 {
@@ -46,7 +46,10 @@ class gltfImage extends GltfObject
     {
         if (this.image !== undefined)
         {
-            console.error("image has already been loaded");
+            if (this.mimeType !== ImageMimeType.GLTEXTURE)
+            {
+                console.error("image has already been loaded");
+            }
             return;
         }
 

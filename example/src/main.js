@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltf, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltf, loadEnvironment, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
@@ -17,7 +17,7 @@ async function main()
     initDracoLib();
     initKtxLib(view);
 
-    loadPrefilteredEnvironmentFromPath("assets/environments/footprint_court", view).then( (environment) => {
+    loadEnvironment("assets/environments/footprint_court_512.hdr", view).then( (environment) => {
         state.environment = environment;
     });
 
@@ -110,14 +110,23 @@ async function main()
         state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
-        loadGltf(mainFile, view, additionalFiles).then( gltf => {
-            state.gltf = gltf;
-            computePrimitiveCentroids(state.gltf);
-            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-            state.userCamera.updatePosition();
-            state.animationIndices = [0];
-            state.animationTimer.start();
-        });
+        if (mainFile.name.endsWith(".hdr"))
+        {
+            loadEnvironment(mainFile, view).then( (environment) => {
+                state.environment = environment;
+                });
+        }
+        if (mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
+        {
+            loadGltf(mainFile, view, additionalFiles).then( gltf => {
+                state.gltf = gltf;
+                computePrimitiveCentroids(state.gltf);
+                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+                state.userCamera.updatePosition();
+                state.animationIndices = [0];
+                state.animationTimer.start();
+            });
+        }
     };
 
     await view.startRendering(state);

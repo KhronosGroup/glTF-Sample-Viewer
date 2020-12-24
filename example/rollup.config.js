@@ -15,7 +15,7 @@ export default {
     }
   ],
   plugins: [
-    glslify({include: ['../src/Renderer/shaders/*']}),
+    glslify({include: ['../src/Renderer/shaders/*', '../src/shaders/*']}),
     resolve({
         browser: true,
         preferBuiltins: true

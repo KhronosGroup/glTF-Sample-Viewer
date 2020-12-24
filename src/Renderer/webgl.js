@@ -47,7 +47,8 @@ class gltfWebGl
         }
 
         const image = gltf.images[gltfTex.source];
-        if (image.mimeType === ImageMimeType.KTX2)
+        if (image.mimeType === ImageMimeType.KTX2 ||
+            image.mimeType === ImageMimeType.GLTEXTURE)
         {
             gltfTex.glTexture = image.image;
             gltfTex.initialized = true;
