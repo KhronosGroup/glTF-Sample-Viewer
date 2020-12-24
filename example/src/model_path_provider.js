@@ -1,10 +1,10 @@
-import { axios } from '.@bundled-es-modules/axios';
+import { axios } from '@bundled-es-modules/axios';
 
 import {
     getContainingFolder,
     combinePaths,
     getFileNameWithoutExtension
-} from './utils.js';
+} from 'gltf-sample-viewer';
 
 class gltfModelPathProvider
 {
@@ -15,7 +15,7 @@ class gltfModelPathProvider
         this.modelsDictionary = undefined;
     }
 
-    initialize()
+    async initialize()
     {
         const self = this;
         return axios.get(this.modelIndexerPath).then(response =>

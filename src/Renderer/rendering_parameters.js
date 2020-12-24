@@ -39,8 +39,6 @@ class gltfRenderingParameters
 const ToneMaps =
 {
     LINEAR: "Linear",
-    UNCHARTED: "Uncharted 2",
-    HEJL_RICHARD: "Hejl Richard",
     ACES: "ACES"
 };
 
