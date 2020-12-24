@@ -15,7 +15,6 @@ const int cCharlie = 2;
 //layout(push_constant) uniform FilterParameters {
 uniform  float u_roughness;
 uniform  int u_sampleCount;
-uniform  int u_currentMipLevel;
 uniform  int u_width;
 uniform  float u_lodBias;
 uniform  int u_distribution; // enum
@@ -35,19 +34,19 @@ vec3 uvToXYZ(int face, vec2 uv)
 {
 	if(face == 0)
 		return vec3(     1.f,   uv.y,    -uv.x);
-		
+
 	else if(face == 1)
 		return vec3(    -1.f,   uv.y,     uv.x);
-		
+
 	else if(face == 2)
-		return vec3(   +uv.x,   -1.f,    +uv.y);		
-	
+		return vec3(   +uv.x,   -1.f,    +uv.y);
+
 	else if(face == 3)
 		return vec3(   +uv.x,    1.f,    -uv.y);
-		
+
 	else if(face == 4)
 		return vec3(   +uv.x,   uv.y,      1.f);
-		
+
 	else {//if(face == 5)
 		return vec3(    -uv.x,  +uv.y,     -1.f);}
 }
@@ -71,7 +70,7 @@ float bitfieldReverse(uint bits)
     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-	return float(bits); 
+	return float(bits);
 }
 
 float Hammersley(uint i)
@@ -82,9 +81,9 @@ float Hammersley(uint i)
 vec3 getImportanceSampleDirection(vec3 normal, float sinTheta, float cosTheta, float phi)
 {
 	vec3 H = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
-    
+
     vec3 bitangent = vec3(0.0, 1.0, 0.0);
-	
+
 	// Eliminates singularities.
 	float NdotX = dot(normal, vec3(1.0, 0.0, 0.0));
 	float NdotY = dot(normal, vec3(0.0, 1.0, 0.0));
@@ -104,7 +103,7 @@ vec3 getImportanceSampleDirection(vec3 normal, float sinTheta, float cosTheta, f
 
     vec3 tangent = cross(bitangent, normal);
     bitangent = cross(normal, tangent);
-    
+
 	return normalize(tangent * H.x + bitangent * H.y + normal * H.z);
 }
 
@@ -118,12 +117,12 @@ float V_Ashikhmin(float NdotL, float NdotV)
 float D_GGX(float NdotH, float roughness)
 {
     float alpha = roughness * roughness;
-    
+
     float alpha2 = alpha * alpha;
-    
+
     float divisor = NdotH * NdotH * (alpha2 - 1.0) + 1.0;
-        
-    return alpha2 / (UX3D_MATH_PI * divisor * divisor); 
+
+    return alpha2 / (UX3D_MATH_PI * divisor * divisor);
 }
 
 // NDF
@@ -162,21 +161,21 @@ vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
 	if(u_distribution == cLambertian)
 	{
 		cosTheta = 1.0 - Y;
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);	
+		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	}
 	else if(u_distribution == cGGX)
 	{
 		float alpha = roughness * roughness;
 		cosTheta = sqrt((1.0 - Y) / (1.0 + (alpha*alpha - 1.0) * Y));
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);		
+		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	}
 	else if(u_distribution == cCharlie)
 	{
 		float alpha = roughness * roughness;
 		sinTheta = pow(Y, alpha / (2.0*alpha + 1.0));
 		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
-	}	
-	
+	}
+
 	return getImportanceSampleDirection(N, sinTheta, cosTheta, phi);
 }
 
@@ -191,7 +190,7 @@ float PDF(vec3 V, vec3 H, vec3 N, vec3 L, float roughness)
 	{
 		float VdotH = dot(V, H);
 		float NdotH = dot(N, H);
-	
+
 		float D = D_GGX(NdotH, roughness);
 		return max(D * NdotH / (4.0 * VdotH), 0.0);
 	}
@@ -199,20 +198,20 @@ float PDF(vec3 V, vec3 H, vec3 N, vec3 L, float roughness)
 	{
 		float VdotH = dot(V, H);
 		float NdotH = dot(N, H);
-		
+
 		float D = D_Charlie(roughness, NdotH);
 		return max(D * NdotH / abs(4.0 * VdotH), 0.0);
 	}
-	
+
 	return 0.f;
 }
 
 vec3 filterColor(vec3 N)
 {
-	//return  textureLod(uCubeMap, N, 3.0).rgb;	
+	//return  textureLod(uCubeMap, N, 3.0).rgb;
 	vec4 color = vec4(0.f);
-	float solidAngleTexel = 4.0 * UX3D_MATH_PI / (6.0 * float(u_width) * float(u_width));	
-	
+	float solidAngleTexel = 4.0 * UX3D_MATH_PI / (6.0 * float(u_width) * float(u_width));
+
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
 		vec3 H = getSampleVector(i, N, u_roughness);
@@ -220,36 +219,36 @@ vec3 filterColor(vec3 N)
 		// Note: reflect takes incident vector.
 		// Note: N = V
 		vec3 V = N;
-    
+
 		vec3 L = normalize(reflect(-V, H));
-    
+
 		float NdotL = dot(N, L);
 
 		if (NdotL > 0.0)
 		{
 			float lod = 0.0;
-		
+
 			if (u_roughness > 0.0 ||u_distribution == cLambertian)
-			{		
-				// Mipmap Filtered Samples 
+			{
+				// Mipmap Filtered Samples
 				// see https://github.com/derkreature/IBLBaker
 				// see https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
 				float pdf = PDF(V, H, N, L, u_roughness );
-				
+
 				float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
-				
+
 				lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
 				lod += u_lodBias;
 			}
-						
+
 			if(u_distribution == cLambertian)
 			{
-				color += vec4(textureLod(uCubeMap, H, lod).rgb, 1.0);						
+				color += vec4(textureLod(uCubeMap, H, lod).rgb, 1.0);
 			}
 			else
-			{				
-				color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);		
-			}			
+			{
+				color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
+			}
 		}
 	}
 
@@ -317,7 +316,7 @@ vec3 LUT(float NdotV, float roughness)
 			if (u_distribution == cCharlie)
 			{
 				// LUT for Charlie distribution.
-				
+
 				float sheenDistribution = D_Charlie(roughness, NdotH);
 				float sheenVisibility = V_Ashikhmin(NdotL, NdotV);
 
@@ -337,19 +336,19 @@ vec3 LUT(float NdotV, float roughness)
 
 
 // entry point
-void main() 
+void main()
 {
 	vec2 newUV = texCoord ;
-	 
+
 	newUV = newUV*2.0-1.0;
 
-	vec3 scan = uvToXYZ(u_currentFace, newUV);		
-		
-	vec3 direction = normalize(scan);	
+	vec3 scan = uvToXYZ(u_currentFace, newUV);
+
+	vec3 direction = normalize(scan);
 	direction.y = -direction.y;
 
 	vec3 color = filterColor(direction);
-	
+
 	fragmentColor = vec4(color,1.0);
 
 }

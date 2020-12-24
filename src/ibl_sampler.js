@@ -23,8 +23,8 @@ class iblSampler
         this.currentWidth = view.canvas.width;
         this.currentHeight = view.canvas.height;
 
-        this.textureSize = 1024;
-        this.sampleCount = 1024;
+        this.textureSize = 256;
+        this.sampleCount = 64;
         this.lodBias = 0.0;
         this.mipmapCount = undefined;
 
@@ -275,8 +275,7 @@ class iblSampler
 
 
             shader.updateUniform("u_roughness", roughness);
-            shader.updateUniform("u_sampleCount", this.sampleCount);
-            shader.updateUniform("u_currentMipLevel", targetMipLevel);
+            shader.updateUniform("u_sampleCount", this.sampleCount)
             shader.updateUniform("u_width", this.textureSize);
             shader.updateUniform("u_lodBias", this.lodBias);
             shader.updateUniform("u_distribution", distribution);
