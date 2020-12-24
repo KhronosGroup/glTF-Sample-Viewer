@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib, loadGltfFromDrop } from 'gltf-sample-viewer';
+import { GltfView, computePrimitiveCentroids, loadGltf, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib } from 'gltf-sample-viewer';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
@@ -31,7 +31,7 @@ async function main()
     const gltfLoadedObservable = uiModel.model.pipe(
         mergeMap( gltf_path =>
         {
-            return from(loadGltfFromPath(gltf_path, view).then( (gltf) => {
+            return from(loadGltf(gltf_path, view).then( (gltf) => {
                 state.gltf = gltf;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
@@ -110,7 +110,7 @@ async function main()
         state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
-        loadGltfFromDrop(mainFile, additionalFiles, view).then( gltf => {
+        loadGltf(mainFile, view, additionalFiles).then( gltf => {
             state.gltf = gltf;
             computePrimitiveCentroids(state.gltf);
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);

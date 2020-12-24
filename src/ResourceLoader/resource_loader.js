@@ -26,9 +26,45 @@ async function initDracoLib(dracolib)
     }
 }
 
-async function loadGltf(path, json, buffers, view)
+async function loadGltf(file, view, additionalFiles)
 {
-    const gltf = new glTF(path);
+    let isGlb = undefined;
+    let buffers = undefined;
+    let json = undefined;
+    let data = undefined;
+    if(typeof file === "string")
+    {
+        isGlb = getIsGlb(file);
+        let response = await axios.get(file, { responseType: isGlb ? "arraybuffer" : "json" });
+        json = response.data;
+        data = response.data;
+    }
+    else
+    {
+        let fileContent = file;
+        file = file.name;
+        isGlb = getIsGlb(file);
+        if (isGlb)
+        {
+            data = await AsyncFileReader.readAsArrayBuffer(fileContent);
+        }
+        else
+        {
+            data = await AsyncFileReader.readAsText(fileContent);
+            json = JSON.parse(data);
+            buffers = additionalFiles;
+        }
+    }
+
+    if (isGlb)
+    {
+        const glbParser = new GlbParser(data);
+        const glb = glbParser.extractGlbData();
+        json = glb.json;
+        buffers = glb.buffers;
+    }
+
+    const gltf = new glTF(file);
     gltf.ktxDecoder = view.ktxDecoder;
     //Make sure draco decoder instance is ready
     gltf.fromJson(json);
@@ -43,46 +79,6 @@ async function loadGltf(path, json, buffers, view)
     await gltfLoader.load(gltf, view.context, buffers);
 
     return gltf;
-}
-
-async function loadGltfFromDrop(mainFile, additionalFiles, view)
-{
-    const gltfFile = mainFile.name;
-
-    if (getIsGlb(gltfFile))
-    {
-        const data = await AsyncFileReader.readAsArrayBuffer(mainFile);
-        const glbParser = new GlbParser(data);
-        const glb = glbParser.extractGlbData();
-        return await loadGltf(gltfFile, glb.json, glb.buffers, view);
-    }
-    else
-    {
-        const data = await AsyncFileReader.readAsText(mainFile);
-        const json = JSON.parse(data);
-        return await loadGltf(gltfFile, json, additionalFiles, view);
-    }
-}
-
-async function loadGltfFromPath(path, view)
-{
-
-    const isGlb = getIsGlb(path);
-
-    let response = await axios.get(path, { responseType: isGlb ? "arraybuffer" : "json" });
-
-    let json = response.data;
-    let buffers = undefined;
-
-    if (isGlb)
-    {
-        const glbParser = new GlbParser(response.data);
-        const glb = glbParser.extractGlbData();
-        json = glb.json;
-        buffers = glb.buffers;
-    }
-
-    return await loadGltf(path, json, buffers, view);
 }
 
 async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
@@ -176,4 +172,4 @@ async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryP
     return environment;
 }
 
-export { loadGltfFromPath, loadGltfFromDrop, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib};
+export { loadGltf, loadPrefilteredEnvironmentFromPath, initKtxLib, initDracoLib};

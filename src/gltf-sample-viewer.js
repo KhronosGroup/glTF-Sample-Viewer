@@ -1,6 +1,6 @@
 import { GltfView } from './GltfView/gltf_view.js';
 import { computePrimitiveCentroids } from './gltf/gltf_utils.js';
-import { loadGltfFromPath, loadPrefilteredEnvironmentFromPath, initDracoLib, initKtxLib, loadGltfFromDrop } from './ResourceLoader/resource_loader.js';
+import { loadGltf, loadPrefilteredEnvironmentFromPath, initDracoLib, initKtxLib } from './ResourceLoader/resource_loader.js';
 
 import {
     getIsGltf,
@@ -18,11 +18,10 @@ export {
     getIsGltf,
     getIsGlb,
     computePrimitiveCentroids,
-    loadGltfFromPath,
+    loadGltf,
     loadPrefilteredEnvironmentFromPath,
     initKtxLib,
     initDracoLib,
-    loadGltfFromDrop,
     getContainingFolder,
     combinePaths,
     getFileNameWithoutExtension,
