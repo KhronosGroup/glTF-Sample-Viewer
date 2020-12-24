@@ -26,25 +26,6 @@ async function initDracoLib(dracolib)
     }
 }
 
-async function _loadGltf(path, json, buffers, view)
-{
-    const gltf = new glTF(path);
-    gltf.ktxDecoder = view.ktxDecoder;
-    //Make sure draco decoder instance is ready
-    gltf.fromJson(json);
-
-    // because the gltf image paths are not relative
-    // to the gltf, we have to resolve all image paths before that
-    for (const image of gltf.images)
-    {
-        image.resolveRelativePath(getContainingFolder(gltf.path));
-    }
-
-    await gltfLoader.load(gltf, view.context, buffers);
-
-    return gltf;
-}
-
 async function loadGltf(file, view, additionalFiles)
 {
     let isGlb = undefined;
@@ -82,7 +63,22 @@ async function loadGltf(file, view, additionalFiles)
         json = glb.json;
         buffers = glb.buffers;
     }
-    return await _loadGltf(file, json, buffers, view);
+
+    const gltf = new glTF(file);
+    gltf.ktxDecoder = view.ktxDecoder;
+    //Make sure draco decoder instance is ready
+    gltf.fromJson(json);
+
+    // because the gltf image paths are not relative
+    // to the gltf, we have to resolve all image paths before that
+    for (const image of gltf.images)
+    {
+        image.resolveRelativePath(getContainingFolder(gltf.path));
+    }
+
+    await gltfLoader.load(gltf, view.context, buffers);
+
+    return gltf;
 }
 
 async function loadPrefilteredEnvironmentFromPath(filteredEnvironmentsDirectoryPath, view)
