@@ -1,7 +1,6 @@
 import { ShaderCache } from './Renderer/shader_cache.js';
 
 
-// ToDo: move these shaders to separate folder
 import iblFiltering from './shaders/ibl_filtering.frag';
 import panoramaToCubeMap from './shaders/panorama_to_cubemap.frag';
 import debugOutput from './shaders/debug.frag';
