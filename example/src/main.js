@@ -17,7 +17,7 @@ async function main()
     initDracoLib();
     initKtxLib(view);
 
-    loadEnvironment("assets/environments/footprint_court.hdr", view).then( (environment) => {
+    loadEnvironment("assets/environments/footprint_court_512.hdr", view).then( (environment) => {
         state.environment = environment;
     });
 
