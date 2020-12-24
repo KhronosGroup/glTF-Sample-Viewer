@@ -15,7 +15,10 @@ class GltfState
             useIBL: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
+            environmentBackground: false,
         };
+        this.skinningEnabled = true;
+        this.morphingEnabled = true;
         this.userCamera = new UserCamera();
         this.sceneIndex = 0;
         this.cameraIndex = undefined;

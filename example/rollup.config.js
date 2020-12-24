@@ -1,6 +1,7 @@
 import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
+import scss from 'rollup-plugin-scss';
 
 export default {
   input: 'src/main.js',
@@ -19,6 +20,7 @@ export default {
         browser: true,
         preferBuiltins: true
     }),
-    builtins()
+    builtins(),
+    scss()
   ]
 };
