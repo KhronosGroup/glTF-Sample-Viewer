@@ -1,5 +1,5 @@
-#define UX3D_MATH_PI 3.1415926535897932384626433832795
-#define UX3D_MATH_INV_PI (1.0 / UX3D_MATH_PI)
+#define MATH_PI 3.1415926535897932384626433832795
+#define MATH_INV_PI (1.0 / MATH_PI)
 
 precision highp float;
 
@@ -37,8 +37,8 @@ vec3 uvToXYZ(int face, vec2 uv)
 vec2 dirToUV(vec3 dir)
 {
 	return vec2(
-		0.5f + 0.5f * atan(dir.z, dir.x) / UX3D_MATH_PI,
-		1.f - acos(dir.y) / UX3D_MATH_PI);
+		0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI,
+		1.f - acos(dir.y) / MATH_PI);
 }
 
 vec3 panoramaToCubeMap(int face, vec2 texCoord)

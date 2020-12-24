@@ -2,8 +2,8 @@
 //#extension GL_ARB_separate_shader_objects : enable
 
 precision mediump float;
-#define UX3D_MATH_PI 3.1415926535897932384626433832795
-//#define UX3D_MATH_INV_PI (1.0 / UX3D_MATH_PI)
+#define MATH_PI 3.1415926535897932384626433832795
+//#define MATH_INV_PI (1.0 / MATH_PI)
 
 uniform samplerCube uCubeMap;
 
@@ -54,8 +54,8 @@ vec3 uvToXYZ(int face, vec2 uv)
 vec2 dirToUV(vec3 dir)
 {
 	return vec2(
-		0.5f + 0.5f * atan(dir.z, dir.x) / UX3D_MATH_PI,
-		1.f - acos(dir.y) / UX3D_MATH_PI);
+		0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI,
+		1.f - acos(dir.y) / MATH_PI);
 }
 
 float saturate(float v)
@@ -122,7 +122,7 @@ float D_GGX(float NdotH, float roughness)
 
     float divisor = NdotH * NdotH * (alpha2 - 1.0) + 1.0;
 
-    return alpha2 / (UX3D_MATH_PI * divisor * divisor);
+    return alpha2 / (MATH_PI * divisor * divisor);
 }
 
 // NDF
@@ -135,7 +135,7 @@ float D_Ashikhmin(float NdotH, float roughness)
 	float sin2h = 1.0 - cos2h;
 	float sin4h = sin2h * sin2h;
 	float cot2 = -cos2h / (a2 * sin2h);
-	return 1.0 / (UX3D_MATH_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+	return 1.0 / (MATH_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
 }
 
 // NDF
@@ -146,7 +146,7 @@ float D_Charlie(float sheenRoughness, float NdotH)
     float invR = 1.0 / alphaG;
     float cos2h = NdotH * NdotH;
     float sin2h = 1.0 - cos2h;
-    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * UX3D_MATH_PI);
+    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * MATH_PI);
 }
 
 vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
@@ -154,7 +154,7 @@ vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
 	float X = float(sampleIndex) / float(u_sampleCount);
 	float Y = Hammersley(uint(sampleIndex));
 
-	float phi = 2.0 * UX3D_MATH_PI * X;
+	float phi = 2.0 * MATH_PI * X;
     float cosTheta = 0.f;
 	float sinTheta = 0.f;
 
@@ -184,7 +184,7 @@ float PDF(vec3 V, vec3 H, vec3 N, vec3 L, float roughness)
 	if(u_distribution == cLambertian)
 	{
 		float NdotL = dot(N, L);
-		return max(NdotL * (1.0 / UX3D_MATH_PI), 0.0);
+		return max(NdotL * (1.0 / MATH_PI), 0.0);
 	}
 	else if(u_distribution == cGGX)
 	{
@@ -210,7 +210,7 @@ vec3 filterColor(vec3 N)
 {
 	//return  textureLod(uCubeMap, N, 3.0).rgb;
 	vec4 color = vec4(0.f);
-	float solidAngleTexel = 4.0 * UX3D_MATH_PI / (6.0 * float(u_width) * float(u_width));
+	float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
 
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
@@ -330,7 +330,7 @@ vec3 LUT(float NdotV, float roughness)
 	// The PDF is simply pdf(v, h) -> NDF * <nh>.
 	// To parametrize the PDF over l, use the Jacobian transform, yielding to: pdf(v, l) -> NDF * <nh> / 4<vh>
 	// Since the BRDF divide through the PDF to be normalized, the 4 can be pulled out of the integral.
-	return vec3(4.0 * A, 4.0 * B, 4.0 * 2.0 * UX3D_MATH_PI * C) / float(u_sampleCount);
+	return vec3(4.0 * A, 4.0 * B, 4.0 * 2.0 * MATH_PI * C) / float(u_sampleCount);
 }
 
 
