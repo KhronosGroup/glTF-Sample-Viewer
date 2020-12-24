@@ -31,7 +31,7 @@ async function main()
     const gltfLoadedObservable = uiModel.model.pipe(
         mergeMap( gltf_path =>
         {
-            return from(loadGltfFromPath("assets/models/2.0/Avocado/glTF/Avocado.gltf", view).then( (gltf) => {
+            return from(loadGltfFromPath(gltf_path, view).then( (gltf) => {
                 state.gltf = gltf;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
@@ -40,6 +40,7 @@ async function main()
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
+                return state.gltf;
                 })
             );
         })
