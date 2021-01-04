@@ -59,6 +59,60 @@ class GltfView
         }
     }
 
+    // gatherStatistics collects information about the GltfState such as the number of rendererd meshes or triangles
+    gatherStatistics(state)
+    {
+        if(state.gltf === undefined)
+        {
+            return;
+        }
+
+        // gather information from the active scene
+        const scene = state.gltf.scenes[state.sceneIndex];
+        const nodes = scene.gatherNodes(state.gltf);
+        const activeMeshes = nodes.filter(node => node.mesh !== undefined).map(node => state.gltf.meshes[node.mesh]);
+        const activePrimitives = activeMeshes
+            .reduce((acc, mesh) => acc.concat(mesh.primitives), [])
+            .filter(primitive => primitive.material !== undefined);
+        const activeMaterials = [... new Set(activePrimitives.map(primitive => state.gltf.materials[primitive.material]))];
+        const opaqueMaterials = activeMaterials.filter(material => material.alphaMode !== "BLEND");
+        const transparentMaterials = activeMaterials.filter(material => material.alphaMode === "BLEND");
+        const faceCount = activePrimitives
+            .map(primitive => {
+                const verticesCount = state.gltf.accessors[primitive.indices].count;
+                if (verticesCount === 0)
+                {
+                    return 0;
+                }
+
+                // convert vertex count to point, line or triangle count
+                switch (primitive.mode) {
+                case WebGLRenderingContext.POINTS:
+                    return verticesCount;
+                case WebGLRenderingContext.LINES:
+                    return verticesCount / 2;
+                case WebGLRenderingContext.LINE_LOOP:
+                    return verticesCount;
+                case WebGLRenderingContext.LINE_STRIP:
+                    return verticesCount - 1;
+                case WebGLRenderingContext.TRIANGLES:
+                    return verticesCount / 3;
+                case WebGLRenderingContext.TRIANGLE_STRIP:
+                case WebGLRenderingContext.TRIANGLE_FAN:
+                    return verticesCount - 2;
+                }
+            })
+            .reduce((acc, faceCount) => acc += faceCount);
+
+        // assemble statistics object
+        return {
+            meshCount: activeMeshes.length,
+            faceCount: faceCount,
+            opaqueMaterialsCount: opaqueMaterials.length,
+            transparentMaterialsCount: transparentMaterials.length
+        };
+    }
+
     async startRendering(state)
     {
         const update = () =>
