@@ -9,6 +9,8 @@ class GltfState
         this.gltf = undefined;
         this.environment = undefined;
         this.renderingParameters = {
+            morphing: true,
+            skinning: true,
             clearColor: [58, 64, 74],
             exposure: 1.0,
             usePunctual: false,
@@ -17,8 +19,6 @@ class GltfState
             debugOutput: DebugOutput.NONE,
             environmentBackground: false,
         };
-        this.skinningEnabled = true;
-        this.morphingEnabled = true;
         this.userCamera = new UserCamera();
         this.sceneIndex = 0;
         this.cameraIndex = undefined;
