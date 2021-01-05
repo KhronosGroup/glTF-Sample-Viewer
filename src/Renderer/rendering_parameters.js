@@ -1,5 +1,5 @@
-import { ImageMimeType } from "../image";
-import { AnimationTimer } from "../utils";
+import { ImageMimeType } from "../gltf/image";
+import { AnimationTimer } from "../gltf/utils";
 
 const UserCameraIndex = "orbit camera";
 
@@ -39,8 +39,6 @@ class gltfRenderingParameters
 const ToneMaps =
 {
     LINEAR: "Linear",
-    UNCHARTED: "Uncharted 2",
-    HEJL_RICHARD: "Hejl Richard",
     ACES: "ACES"
 };
 

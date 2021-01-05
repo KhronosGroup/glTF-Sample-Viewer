@@ -1,6 +1,6 @@
-import { UserCamera } from '../user_camera.js';
+import { UserCamera } from '../gltf/user_camera.js';
 import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters.js';
-import { AnimationTimer } from '../utils.js';
+import { AnimationTimer } from '../gltf/utils.js';
 
 class GltfState
 {
@@ -15,7 +15,10 @@ class GltfState
             useIBL: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
+            environmentBackground: false,
         };
+        this.skinningEnabled = true;
+        this.morphingEnabled = true;
         this.userCamera = new UserCamera();
         this.sceneIndex = 0;
         this.cameraIndex = undefined;
