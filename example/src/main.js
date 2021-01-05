@@ -120,11 +120,14 @@ async function main()
         {
             loadGltf(mainFile, view, additionalFiles).then( gltf => {
                 state.gltf = gltf;
+                const scene = state.gltf.scenes[state.sceneIndex];
+                scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
+                return state.gltf;
             });
         }
     };
