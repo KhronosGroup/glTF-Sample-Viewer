@@ -106,12 +106,6 @@ class UserCamera extends gltfCamera
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
-    fitCameraPlanesToScene(gltf, sceneIndex)
-    {
-        getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
-        this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
-    }
-
     toLocalRotation(vector)
     {
         vec3.rotateX(vector, vector, VecZero, -this.yRot);
