@@ -334,7 +334,7 @@ class gltfRenderer
         return lights;
     }
 
-    static updateSkin(state, node)
+    updateSkin(state, node)
     {
         if (state.renderingParameters.skinning && state.gltf.skins !== undefined)
         {
