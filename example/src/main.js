@@ -92,7 +92,14 @@ async function main()
     });
 
     uiModel.animationPlay.subscribe( animationPlay => {
-        state.animationTimer.toggle();
+        if(animationPlay)
+        {
+            state.animationTimer.pause();
+        }
+        else
+        {
+            state.animationTimer.unpause();
+        }
     })
 
     const input = new gltfInput(canvas);

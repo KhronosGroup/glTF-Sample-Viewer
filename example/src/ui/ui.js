@@ -5,6 +5,27 @@ import './sass.scss';
 Vue.use(VueRx, { Subject });
 
 // general components
+Vue.component('toggle-button', {
+    props: ['name', 'onText', 'offText'],
+    template:'#toggleButtonTemplate',
+    data(){
+        return {
+            isOn: true
+        };
+    },
+    mounted(){
+        this.name = this.onText;
+    },
+    methods:
+    {
+        buttonclicked: function(value)
+        {
+            this.isOn = !this.isOn;
+            this.name = this.isOn ? this.onText : this.offText;
+            this.$emit('buttonclicked', this.isOn);
+        }
+    }
+});
 Vue.component('drop-down-element', {
     props: ['name', 'dropdowncontent'],
     template:'#dropDownTemplate',

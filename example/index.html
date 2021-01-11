@@ -52,6 +52,11 @@ function getUrlParam(parameter, defaultvalue){
 
 <!-- vue js templates -->
 <!-- general templates -->
+<script id="toggleButtonTemplate" type="text/x-template">
+    <div>
+        <b-button v-on:click="buttonclicked">{{ name }}</b-button>
+    </div>
+</script>
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
         <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
@@ -136,7 +141,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
-        <b-button v-on:click="animationplayclicked">Play</b-button>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Play" offText="Pause"></toggle-button>
         <check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>
     </div>
 </script>
