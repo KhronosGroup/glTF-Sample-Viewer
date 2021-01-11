@@ -91,6 +91,10 @@ async function main()
         state.renderingParameters.clearColor = clearColor;
     });
 
+    uiModel.animationPlay.subscribe( animationPlay => {
+        state.animationTimer.toggle();
+    })
+
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);

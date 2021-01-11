@@ -63,6 +63,8 @@ class UIModel
                 ] : null;
             })
         );
+
+        this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
     }
 
     attachGltfLoaded(gltfLoadedObservable)

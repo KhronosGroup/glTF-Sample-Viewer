@@ -139,7 +139,13 @@ Vue.component('tab-display', {
 });
 Vue.component('tab-animation', {
   props: ["animations"],
-  template:'#animationTemplate'
+  template:'#animationTemplate',
+  methods:
+  {
+    animationplayclicked: function(value) {
+      this.$emit('animationplayclicked', value)
+    }
+  }
 });
 Vue.component('tab-xmp', {
   props: [""],
@@ -175,7 +181,7 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$'],
+                'addEnvironment$', 'colorChanged$', 'animationPlayChanged$'],
     data() {
       return {
         fullheight: true,
