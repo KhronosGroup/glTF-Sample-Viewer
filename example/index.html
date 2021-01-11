@@ -141,7 +141,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
-        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Play" offText="Pause"></toggle-button>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animations"></toggle-button>
         <check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>
     </div>
 </script>
@@ -202,7 +202,8 @@ function getUrlParam(parameter, defaultvalue){
 
                 <b-tab-item label="Animation" icon="video">
                     <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
-                                    v-bind:animations="animations"></tab-animation>
+                                    v-bind:animations="animations"
+                                    ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
                     <tab-xmp ></tab-xmp>

@@ -6,11 +6,12 @@ Vue.use(VueRx, { Subject });
 
 // general components
 Vue.component('toggle-button', {
-    props: ['name', 'onText', 'offText'],
+    props: ['onText', 'offText'],
     template:'#toggleButtonTemplate',
     data(){
         return {
-            isOn: true
+            name: "Play",
+            isOn: false
         };
     },
     mounted(){
@@ -23,6 +24,11 @@ Vue.component('toggle-button', {
             this.isOn = !this.isOn;
             this.name = this.isOn ? this.onText : this.offText;
             this.$emit('buttonclicked', this.isOn);
+        },
+        setState: function(value)
+        {
+            this.isOn = value;
+            this.name = this.isOn ? this.onText : this.offText;
         }
     }
 });
@@ -165,6 +171,9 @@ Vue.component('tab-animation', {
   {
     animationplayclicked: function(value) {
       this.$emit('animationplayclicked', value)
+    },
+    setAnimationState: function(value) {
+        this.$refs.animations.setState(value);
     }
   }
 });
@@ -227,6 +236,10 @@ const app = new Vue({
         setSelectedScene: function(value)
         {
             this.$refs.scenes.setSelectedScene(value);
+        },
+        setAnimationState: function(value)
+        {
+            this.$refs.animations.setAnimationState(value);
         }
     }
 }).$mount('#app');

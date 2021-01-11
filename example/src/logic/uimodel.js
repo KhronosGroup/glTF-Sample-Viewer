@@ -112,6 +112,10 @@ class UIModel
             this.app.materialVariants = variants;
         });
 
+        gltfLoadedAndInit.subscribe(
+            (_) => {this.app.setAnimationState(true);
+            }
+        );
     }
 }
 

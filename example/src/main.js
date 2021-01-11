@@ -94,11 +94,11 @@ async function main()
     uiModel.animationPlay.subscribe( animationPlay => {
         if(animationPlay)
         {
-            state.animationTimer.pause();
+            state.animationTimer.unpause();
         }
         else
         {
-            state.animationTimer.unpause();
+            state.animationTimer.pause();
         }
     })
 
