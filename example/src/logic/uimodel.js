@@ -132,9 +132,9 @@ class UIModel
                 return [];
             })
         );
-        // variants.subscribe( (variants) => {
-        //     this.app.materialVariants = variants;
-        // });
+        variants.subscribe( (variants) => {
+            this.app.materialVariants = variants;
+        });
 
     }
 }
