@@ -58,6 +58,10 @@ async function main()
     uiModel.camera.pipe(filter(camera => camera !== "User Camera")).subscribe( camera => {
         state.cameraIndex = camera;
     });
+    uiModel.variant.subscribe( variant => {
+        state.variant = variant;
+        console.log(variant);
+    });
 
     uiModel.tonemap.subscribe( tonemap => {
         state.renderingParameters.toneMap = tonemap;

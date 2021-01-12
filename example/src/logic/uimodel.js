@@ -73,6 +73,8 @@ class UIModel
                 mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
         );
         this.model = merge(dropdownGltfChanged, gltfDropObservable);
+
+        this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
     }
 
     initInput()
