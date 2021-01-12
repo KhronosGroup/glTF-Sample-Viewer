@@ -29,9 +29,9 @@ async function main()
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
     const gltfLoadedObservable = uiModel.model.pipe(
-        mergeMap( (gltf_path, additionalFiles) =>
+        mergeMap( (model) =>
         {
-            return from(loadGltf(gltf_path, view, additionalFiles).then( (gltf) => {
+            return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);

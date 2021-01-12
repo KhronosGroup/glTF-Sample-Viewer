@@ -1,8 +1,10 @@
+import { bindCallback, fromEvent, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF } from 'gltf-sample-viewer';
 import { ToneMaps, DebugOutput } from '../../../src/Renderer/rendering_parameters';
 import { gltfInput } from '../input.js';
-import { bindCallback, bindNodeCallback, merge } from 'rxjs';
+
+import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -22,6 +24,7 @@ class UIModel
             pluck("event", "msg"),
             startWith("Avocado"),
             map(value => this.pathProvider.resolve(value)),
+            map( value => ({mainFile: value, additionalFiles: undefined})),
         );
         this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
@@ -67,28 +70,36 @@ class UIModel
         );
 
         this.initInput();
-
-        const gltfDropObservable = this.fileDropObservable.pipe(
-            filter((mainFile, additionalFiles) =>
-                mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
-        );
-        this.model = merge(dropdownGltfChanged, gltfDropObservable);
+        this.model = merge(dropdownGltfChanged, this.gltfDropped);
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
     }
 
     initInput()
     {
+        // input on the canvas
         const canvas = document.getElementById("canvas");
 
-        this.input = new gltfInput(canvas);
-        this.input.setupGlobalInputBindings(document);
-        this.input.setupCanvasInputBindings(canvas);
-
-        this.rotateObservable = bindCallback(this.input.onRotate)();
-        this.panObservable = bindCallback(this.input.onPan)();
-        this.zoomObservable = bindCallback(this.input.onZoom)();
-        this.fileDropObservable = bindCallback(this.input.onDropFiles)();
+        fromEvent(canvas, "dragover").subscribe( event => event.preventDefault() ); // just prevent the default behaviour
+        const dropEvent = fromEvent(canvas, "drop").pipe( map( event => {
+            // prevent the default drop event
+            event.preventDefault();
+            return event;
+        }));
+        this.filesDropped = dropEvent.pipe(map( (event) => {
+            // Use DataTransfer files interface to access the file(s)
+            return Array.from(event.dataTransfer.files);
+        }));
+        this.gltfDropped = this.filesDropped.pipe(
+            // filter out any non .gltf or .glb files
+            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name))),
+            map( (files) => {
+                // restructure the data by separating mainFile (gltf/glb) from additionalFiles
+                const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
+                const additionalFiles = files.filter( (file) => file !== mainFile);
+                return {mainFile: mainFile, additionalFiles: additionalFiles};
+            }),
+        );
     }
 
     attachGltfLoaded(gltfLoadedObservable)
