@@ -110,6 +110,24 @@ class UIModel
             this.app.materialVariants = variants;
         });
 
+        const xmpData = gltfLoadedAndInit.pipe(
+            map( (gltf) => {
+                if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
+                {
+                    if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp !== undefined)
+                    {
+                        let xmpPacket = gltf.extensions.KHR_xmp.packets[gltf.asset.extensions.KHR_xmp.packet];
+                        return xmpPacket.map( (xmp) => {
+                            return {xmp: xmp};
+                        });
+                    }
+                }
+                return [];
+            })
+        );
+        xmpData.subscribe( (xmpData) => {
+            this.app.xmp = xmpData;
+        });
     }
 }
 

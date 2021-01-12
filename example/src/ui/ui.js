@@ -142,8 +142,12 @@ Vue.component('tab-animation', {
   template:'#animationTemplate'
 });
 Vue.component('tab-xmp', {
-  props: [""],
-  template:'#xmpTemplate'
+  props: ["xmp"],
+  template:'#xmpTemplate',
+  data() {
+    return {
+    };
+  },
 });
 Vue.component('tab-advanced-controls', {
   props: ["debugchannels", "tonemaps"],
@@ -189,6 +193,7 @@ const app = new Vue({
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "Linear"}],
         debugchannels: [{title: "None"}],
+        xmp: [{title: "xmp"}],
       };
     },
     methods:
