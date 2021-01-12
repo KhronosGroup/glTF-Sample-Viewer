@@ -132,7 +132,6 @@ Vue.component('tab-display', {
     },
     environmentrotationchanged: function(value) {
         this.$emit('environmentrotationchanged', value);
-        console.log("Blub");
     },
     addenvironment: function(value) {
       this.$emit('addenvironment', value)

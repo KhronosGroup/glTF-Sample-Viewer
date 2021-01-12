@@ -102,7 +102,6 @@ async function main()
             state.renderingParameters.environmentRotation = 0.0;
             break;
         }
-        console.log("lulb2");
     });
 
 
