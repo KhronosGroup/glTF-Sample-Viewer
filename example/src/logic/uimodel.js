@@ -69,28 +69,27 @@ class UIModel
             })
         );
 
-        this.initInput();
-        this.model = merge(dropdownGltfChanged, this.gltfDropped);
+        const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
+        this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
+        this.hdr = inputObservables.hdrDropped;
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
     }
 
-    initInput()
+    static getInputObservables(inputDomElement)
     {
-        // input on the canvas
-        const canvas = document.getElementById("canvas");
-
-        fromEvent(canvas, "dragover").subscribe( event => event.preventDefault() ); // just prevent the default behaviour
-        const dropEvent = fromEvent(canvas, "drop").pipe( map( event => {
+        const observables = {};
+        fromEvent(inputDomElement, "dragover").subscribe( event => event.preventDefault() ); // just prevent the default behaviour
+        const dropEvent = fromEvent(inputDomElement, "drop").pipe( map( event => {
             // prevent the default drop event
             event.preventDefault();
             return event;
         }));
-        this.filesDropped = dropEvent.pipe(map( (event) => {
+        observables.filesDropped = dropEvent.pipe(map( (event) => {
             // Use DataTransfer files interface to access the file(s)
             return Array.from(event.dataTransfer.files);
         }));
-        this.gltfDropped = this.filesDropped.pipe(
+        observables.gltfDropped = observables.filesDropped.pipe(
             // filter out any non .gltf or .glb files
             filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name))),
             map( (files) => {
@@ -100,12 +99,13 @@ class UIModel
                 return {mainFile: mainFile, additionalFiles: additionalFiles};
             }),
         );
-        this.hdrDropped = this.filesDropped.pipe(
+        observables.hdrDropped = observables.filesDropped.pipe(
             map( (files) => {
                 // extract only the hdr file from the stream of files
                 return files.find( (file) => file.name.endsWith(".hdr"));
             })
         )
+        return observables;
     }
 
     attachGltfLoaded(gltfLoadedObservable)

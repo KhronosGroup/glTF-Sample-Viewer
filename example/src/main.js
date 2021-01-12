@@ -114,7 +114,7 @@ async function main()
         state.userCamera.updatePosition();
     };
 
-    uiModel.hdrDropped.subscribe( hdrFile => {
+    uiModel.hdr.subscribe( hdrFile => {
         loadEnvironment(hdrFile, view).then( (environment) => {
             state.environment = environment;
         });
