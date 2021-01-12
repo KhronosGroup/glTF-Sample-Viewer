@@ -20,7 +20,6 @@ async function main()
     loadEnvironment("assets/environments/footprint_court_512.hdr", view).then( (environment) => {
         state.environment = environment;
     });
-
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
@@ -86,6 +85,26 @@ async function main()
     uiModel.environmentEnabled.subscribe( environmentEnabled => {
         state.renderingParameters.environmentBackground = environmentEnabled;
     });
+
+    uiModel.environmentRotation.subscribe( environmentRotation => {
+        switch (environmentRotation)
+        {
+        case "+Z":
+            state.renderingParameters.environmentRotation = 90.0;
+            break;
+        case "-X":
+            state.renderingParameters.environmentRotation = 180.0;
+            break;
+        case "-Z":
+            state.renderingParameters.environmentRotation = 270.0;
+            break;
+        case "+X":
+            state.renderingParameters.environmentRotation = 0.0;
+            break;
+        }
+        console.log("lulb2");
+    });
+
 
     uiModel.clearColor.subscribe( clearColor => {
         state.renderingParameters.clearColor = clearColor;

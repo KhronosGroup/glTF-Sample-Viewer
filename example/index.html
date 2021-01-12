@@ -126,6 +126,7 @@ function getUrlParam(parameter, defaultvalue){
             <label class="label">Background</label>
             <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
             <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color"></color-picker-element>
+            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations" class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
         </section>
         <label class="label">Image Based Lighting</label>
         <b-button v-on:click="addenvironment">Add new HDR</b-button>
@@ -188,6 +189,7 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Display" icon="library-music">
                     <tab-display v-stream:addenvironment="addEnvironment$"
                                   v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
+                                  v-stream:environmentrotationchanged="environmentRotationChanged$"
                                   v-stream:iblchanged="iblChanged$"
                                   v-stream:punctuallightschanged="punctualLightsChanged$"
                                   v-stream:environmentchanged="environmentChanged$"
