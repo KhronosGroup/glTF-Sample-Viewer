@@ -5,7 +5,7 @@ import { GltfView, computePrimitiveCentroids, loadGltf, loadEnvironment, initKtx
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
 import { Observable, from } from 'rxjs';
-import { mergeMap, filter } from 'rxjs/operators';
+import { mergeMap, filter, map, merge } from 'rxjs/operators';
 import { gltfModelPathProvider } from './model_path_provider.js';
 
 async function main()
@@ -46,11 +46,15 @@ async function main()
         })
     );
 
-    uiModel.attachGltfLoaded(gltfLoadedObservable);
-
-    uiModel.scene.subscribe( scene => {
+    const sceneChangedObservable = uiModel.scene.pipe(map( scene => {
         state.sceneIndex = scene;
-    });
+    }));
+
+    //let statisticsUpdateObservable = gltfLoadedObservable; // TODO merge with sceneChangedObservable
+
+    const statisticsUpdateObservable = gltfLoadedObservable.pipe(
+        map( (_) => view.gatherStatistics(state) )
+    );
 
     uiModel.camera.pipe(filter(camera => camera === "User Camera")).subscribe( () => {
         state.cameraIndex = undefined;
@@ -90,6 +94,9 @@ async function main()
     uiModel.clearColor.subscribe( clearColor => {
         state.renderingParameters.clearColor = clearColor;
     });
+
+    uiModel.attachGltfLoaded(gltfLoadedObservable);
+    uiModel.updateStatistics(statisticsUpdateObservable);
 
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);

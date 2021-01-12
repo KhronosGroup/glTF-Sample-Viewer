@@ -109,7 +109,19 @@ class UIModel
         variants.subscribe( (variants) => {
             this.app.materialVariants = variants;
         });
+    }
 
+    updateStatistics(statisticsUpdateObservable)
+    {
+        statisticsUpdateObservable.subscribe(
+            data => {this.app.statistics = [
+                    {title: "Mesh Count", value: data.meshCount},
+                    {title: "Face Count", value: data.faceCount},
+                    {title: "Opaque Materials Count", value: data.opaqueMaterialsCount},
+                    {title: "Transparent Materials Count", value: data.transparentMaterialsCount}
+                ]
+            }
+        )
     }
 }
 

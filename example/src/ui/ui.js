@@ -76,6 +76,14 @@ Vue.component('color-picker-element', {
   },
   template:'#colorPickerTemplate'
 });
+Vue.component('statistics-element', {
+  props: ['name', 'items'],
+  template:'#statisticsTemplate'
+});
+Vue.component('statistics-entry-element', {
+  props: ['name', 'value'],
+  template:'#statisticsEntryTemplate'
+});
 
 
 
@@ -146,7 +154,7 @@ Vue.component('tab-xmp', {
   template:'#xmpTemplate'
 });
 Vue.component('tab-advanced-controls', {
-  props: ["debugchannels", "tonemaps"],
+  props: ["debugchannels", "tonemaps", "statistics"],
   template:'#advancedControlsTemplate',
   data() {
     return {
@@ -189,6 +197,7 @@ const app = new Vue({
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "Linear"}],
         debugchannels: [{title: "None"}],
+        statistics: [{title: "Mesh Count", value: 12}, {title: "Face Count", value: 1243}]
       };
     },
     methods:
