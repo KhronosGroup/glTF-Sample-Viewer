@@ -197,7 +197,7 @@ const app = new Vue({
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "Linear"}],
         debugchannels: [{title: "None"}],
-        statistics: [{title: "Mesh Count", value: 12}, {title: "Face Count", value: 1243}]
+        statistics: []
       };
     },
     methods:

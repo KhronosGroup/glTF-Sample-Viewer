@@ -102,16 +102,18 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <label class="label">{{ name }}</label>
         <div v-for="item in items" :key="item.title">
-            <label class="label">{{ item.title }}</label>
-            <label class="label">{{ item.value }}</label>
-            <!-- <statistics-entry-element v-bind:native-value="item.title" value="item.value">{{item.title}}</statistics-entry-element> -->
+            <statistics-entry-element v-bind:name="item.title" v-bind:value="item.value"></statistics-entry-element>
         </div>
     </div>
 </script>
 <script id="statisticsEntryTemplate" type="text/x-template">
     <div>
-        <label class="label">{{ name }}</label>
-        <label class="label">{{ value }}</label>
+        <section>
+            <label class="smallerLabel">{{ name }}</label>
+        </section>
+        <section>
+            <label class="smallerLabel">{{ value }}</label>
+        </section>
     </div>
 </script>
 

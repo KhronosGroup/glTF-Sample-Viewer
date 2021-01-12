@@ -4,8 +4,8 @@ import { GltfView, computePrimitiveCentroids, loadGltf, loadEnvironment, initKtx
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
-import { Observable, from } from 'rxjs';
-import { mergeMap, filter, map, merge } from 'rxjs/operators';
+import { Observable, from, merge } from 'rxjs';
+import { mergeMap, filter, map } from 'rxjs/operators';
 import { gltfModelPathProvider } from './model_path_provider.js';
 
 async function main()
@@ -50,9 +50,12 @@ async function main()
         state.sceneIndex = scene;
     }));
 
-    //let statisticsUpdateObservable = gltfLoadedObservable; // TODO merge with sceneChangedObservable
+    const statisticsUpdateObservableTemp = merge(
+        gltfLoadedObservable,
+        sceneChangedObservable
+    );
 
-    const statisticsUpdateObservable = gltfLoadedObservable.pipe(
+    const statisticsUpdateObservable = statisticsUpdateObservableTemp.pipe(
         map( (_) => view.gatherStatistics(state) )
     );
 
