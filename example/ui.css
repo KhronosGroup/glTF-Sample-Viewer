@@ -124,6 +124,13 @@ label.switch
     margin-top: 0.5em !important;
 }
 
+.smallestLabel
+{
+    font-weight: 100;
+    margin-bottom: unset !important;
+    margin-top: 0.5em !important;
+}
+
 .select, .select select
 {
     width: 100%;
