@@ -41,7 +41,14 @@ Vue.component('radio-button-list-element', {
         };
     },
     updated: function() {
-
+        this.$emit('selectionchanged', this.radio);
+    },
+    methods:
+    {
+        setSelection: function(value)
+        {
+            this.radio = value;
+        }
     },
     template:'#radioButtonListTemplate'
 });
@@ -99,6 +106,9 @@ Vue.component('tab-models', {
         },
         camerachanged: function(value) {
             this.$emit('camerachanged', value);
+        },
+        variantchanged: function(value) {
+            this.$emit('variantchanged', value);
         },
         setSelectedModel: function(value) {
             this.$refs.models.setSelection(value);

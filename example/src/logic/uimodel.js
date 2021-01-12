@@ -1,6 +1,8 @@
 import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF } from 'gltf-sample-viewer';
 import { ToneMaps, DebugOutput } from '../../../src/Renderer/rendering_parameters';
+import { gltfInput } from '../input.js';
+import { bindCallback, bindNodeCallback, merge } from 'rxjs';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -16,7 +18,7 @@ class UIModel
             return {title: key};
         });
 
-        this.model = app.modelChanged$.pipe(
+        const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
             startWith("Avocado"),
             map(value => this.pathProvider.resolve(value)),
@@ -63,6 +65,28 @@ class UIModel
                 ] : null;
             })
         );
+
+        this.initInput();
+
+        const gltfDropObservable = this.fileDropObservable.pipe(
+            filter((mainFile, additionalFiles) =>
+                mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
+        );
+        this.model = merge(dropdownGltfChanged, gltfDropObservable);
+    }
+
+    initInput()
+    {
+        const canvas = document.getElementById("canvas");
+
+        this.input = new gltfInput(canvas);
+        this.input.setupGlobalInputBindings(document);
+        this.input.setupCanvasInputBindings(canvas);
+
+        this.rotateObservable = bindCallback(this.input.onRotate)();
+        this.panObservable = bindCallback(this.input.onPan)();
+        this.zoomObservable = bindCallback(this.input.onZoom)();
+        this.fileDropObservable = bindCallback(this.input.onDropFiles)();
     }
 
     attachGltfLoaded(gltfLoadedObservable)
@@ -106,9 +130,9 @@ class UIModel
                 return [];
             })
         );
-        variants.subscribe( (variants) => {
-            this.app.materialVariants = variants;
-        });
+        // variants.subscribe( (variants) => {
+        //     this.app.materialVariants = variants;
+        // });
 
     }
 }

@@ -29,9 +29,9 @@ async function main()
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
     const gltfLoadedObservable = uiModel.model.pipe(
-        mergeMap( gltf_path =>
+        mergeMap( (gltf_path, additionalFiles) =>
         {
-            return from(loadGltf(gltf_path, view).then( (gltf) => {
+            return from(loadGltf(gltf_path, view, additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
@@ -41,7 +41,7 @@ async function main()
                 state.animationIndices = [0];
                 state.animationTimer.start();
                 return state.gltf;
-                })
+            })
             );
         })
     );
@@ -115,17 +115,6 @@ async function main()
             loadEnvironment(mainFile, view).then( (environment) => {
                 state.environment = environment;
                 });
-        }
-        if (mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
-        {
-            loadGltf(mainFile, view, additionalFiles).then( gltf => {
-                state.gltf = gltf;
-                computePrimitiveCentroids(state.gltf);
-                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.userCamera.updatePosition();
-                state.animationIndices = [0];
-                state.animationTimer.start();
-            });
         }
     };
 

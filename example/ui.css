@@ -201,3 +201,9 @@ label.switch
     padding-top: unset !important;
     padding-bottom: unset !important;
 }
+
+/* make radio button full width */
+div .field.has-addons
+{
+    display: block;
+}
