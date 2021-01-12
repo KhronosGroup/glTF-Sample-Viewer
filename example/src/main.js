@@ -113,14 +113,12 @@ async function main()
         state.userCamera.zoomIn(delta);
         state.userCamera.updatePosition();
     };
-    input.onDropFiles = (mainFile, additionalFiles) => {
-        if (mainFile.name.endsWith(".hdr"))
-        {
-            loadEnvironment(mainFile, view).then( (environment) => {
-                state.environment = environment;
-                });
-        }
-    };
+
+    uiModel.hdrDropped.subscribe( hdrFile => {
+        loadEnvironment(hdrFile, view).then( (environment) => {
+            state.environment = environment;
+        });
+    });
 
     await view.startRendering(state);
 }

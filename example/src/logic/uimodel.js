@@ -100,6 +100,12 @@ class UIModel
                 return {mainFile: mainFile, additionalFiles: additionalFiles};
             }),
         );
+        this.hdrDropped = this.filesDropped.pipe(
+            map( (files) => {
+                // extract only the hdr file from the stream of files
+                return files.find( (file) => file.name.endsWith(".hdr"));
+            })
+        )
     }
 
     attachGltfLoaded(gltfLoadedObservable)
