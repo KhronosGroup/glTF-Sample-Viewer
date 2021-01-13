@@ -77,7 +77,7 @@ class gltfRenderer
 
         this.opaqueRenderTexture = context.createTexture();
         context.bindTexture(context.TEXTURE_2D, this.opaqueRenderTexture);
-        context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
+        context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
         context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
         context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
         context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
@@ -199,6 +199,8 @@ class gltfRenderer
 
         // Render transmission sample texture
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebuffer);
+
+        this.webGl.context.viewport(0, 0, 1024, 1024);
         for (const drawable of opaqueDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
@@ -207,6 +209,13 @@ class gltfRenderer
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
+
+        //Reset Viewport
+        this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
+
+        //Create Framebuffer Mipmaps
+        this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
+        this.webGl.context.generateMipmap(this.webGl.context.TEXTURE_2D);
 
         // Render to canvas
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
