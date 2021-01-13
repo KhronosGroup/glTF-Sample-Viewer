@@ -354,7 +354,12 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getIBLRadianceTransmission(n, v, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
+
+        vec2 normalizedFragCoord = vec2(0.0,0.0);
+        normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenWidth);
+        normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenHeight);
+
+        f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
     #endif
 #endif
 
