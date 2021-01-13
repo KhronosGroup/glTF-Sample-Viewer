@@ -161,43 +161,43 @@ Vue.component('tab-models', {
     }
 });
 Vue.component('tab-display', {
-  props: ["environments", "colorpicker"],
-  template:'#displayTemplate',
-  data() {
-    return {
-        environmentvisibility: true,
-        punctuallights: true,
-        ibl: true,
-        environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}]
-    };
-  },
-  methods:
-  {
-    environmentvisibilitychanged: function(value) {
-        this.$emit('environmentvisibilitychanged', value)
+    props: ["environments", "colorpicker"],
+    template:'#displayTemplate',
+    data() {
+        return {
+            environmentvisibility: true,
+            punctuallights: true,
+            ibl: true,
+            environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}]
+        };
     },
-    punctuallightschanged: function(value) {
-        this.$emit('punctuallightschanged', value)
-    },
-    iblchanged: function(value) {
-        this.$emit('iblchanged', value)
-    },
-    environmentchanged: function(value) {
-        this.$emit('environmentchanged', value)
-    },
-    environmentrotationchanged: function(value) {
-        this.$emit('environmentrotationchanged', value);
-    },
-    addenvironment: function(value) {
-        this.$emit('addenvironment', value)
-    },
-    colorchanged: function(value) {
-        this.$emit('colorchanged', value)
-    },
-    setSelectedClearColor: function (value) {
-        this.$refs.colorpicker.setColor(value);
+    methods:
+    {
+        environmentvisibilitychanged: function(value) {
+            this.$emit('environmentvisibilitychanged', value)
+        },
+        punctuallightschanged: function(value) {
+            this.$emit('punctuallightschanged', value)
+        },
+        iblchanged: function(value) {
+            this.$emit('iblchanged', value)
+        },
+        environmentchanged: function(value) {
+            this.$emit('environmentchanged', value)
+        },
+        environmentrotationchanged: function(value) {
+            this.$emit('environmentrotationchanged', value);
+        },
+        addenvironment: function(value) {
+            this.$emit('addenvironment', value)
+        },
+        colorchanged: function(value) {
+            this.$emit('colorchanged', value)
+        },
+        setSelectedClearColor: function (value) {
+            this.$refs.colorpicker.setColor(value);
+        }
     }
-  }
 });
 Vue.component('tab-animation', {
     props: ["animations"],
@@ -217,38 +217,27 @@ Vue.component('tab-xmp', {
     template:'#xmpTemplate'
 });
 Vue.component('tab-advanced-controls', {
-  props: ["debugchannels", "tonemaps", "exposure"],
-  template:'#advancedControlsTemplate',
-  data() {
-    return {
-        skinning: true,
-        morphing: true,
-    };
-  },
-  methods:
-  {
-    exposurechanged: function(value) {
-      this.$emit('exposurechanged', value)
-    },
-    skinningchanged: function(value) {
-      this.$emit('skinningchanged', value)
-    },
-    morphingchanged: function(value) {
-      this.$emit('morphingchanged', value)
-    },
-    debugchannelchanged: function(value) {
-      this.$emit('debugchannelchanged', value)
+    props: ["debugchannels", "tonemaps", "exposure"],
+    template:'#advancedControlsTemplate',
+    data() {
+        return {
+            skinning: true,
+            morphing: true,
+        };
     },
     methods:
     {
+        exposurechanged: function(value) {
+            this.$emit('exposurechanged', value)
+        },
         skinningchanged: function(value) {
-            this.$emit('skinningchanged', value);
+            this.$emit('skinningchanged', value)
         },
         morphingchanged: function(value) {
-            this.$emit('morphingchanged', value);
+            this.$emit('morphingchanged', value)
         },
         debugchannelchanged: function(value) {
-            this.$emit('debugchannelchanged', value);
+            this.$emit('debugchannelchanged', value)
         },
         tonemapchanged: function(value) {
             this.$emit('tonemapchanged', value);
