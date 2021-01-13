@@ -161,9 +161,7 @@ class UIModel
                     if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp !== undefined)
                     {
                         let xmpPacket = gltf.extensions.KHR_xmp.packets[gltf.asset.extensions.KHR_xmp.packet];
-                        return xmpPacket.map( (xmp) => {
-                            return {xmp: xmp};
-                        });
+                        return {xmp: xmpPacket};
                     }
                 }
                 return [];
