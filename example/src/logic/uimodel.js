@@ -103,7 +103,8 @@ class UIModel
             map( (files) => {
                 // extract only the hdr file from the stream of files
                 return files.find( (file) => file.name.endsWith(".hdr"));
-            })
+            }),
+            filter(file => file),
         )
         return observables;
     }
