@@ -334,7 +334,7 @@ class gltfRenderer
         return lights;
     }
 
-    static updateSkin(state, node)
+    updateSkin(state, node)
     {
         if (state.renderingParameters.skinning && state.gltf.skins !== undefined)
         {
@@ -373,7 +373,10 @@ class gltfRenderer
             const skin = state.gltf.skins[node.skin];
 
             this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
-            this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
+            if(primitive.hasNormals)
+            {
+                this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
+            }
         }
 
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
