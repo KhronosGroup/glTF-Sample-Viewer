@@ -1,3 +1,17 @@
+vec3 getDiffuseLight(vec3 n)
+{
+    return texture(u_LambertianEnvSampler, u_envRotation * n).rgb;
+}
+
+vec4 getSpecularSample(vec3 reflection, float lod)
+{
+    return textureLod(u_GGXEnvSampler, u_envRotation * reflection, lod);
+}
+
+vec4 getSheenSample(vec3 reflection, float lod)
+{
+    return textureLod(u_CharlieEnvSampler, u_envRotation * reflection, lod);
+}
 
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
 {
@@ -7,7 +21,7 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularC
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
-    vec4 specularSample = textureLod(u_GGXEnvSampler, reflection, lod);
+    vec4 specularSample = getSpecularSample(reflection, lod);
 
     vec3 specularLight = specularSample.rgb;
 
@@ -46,7 +60,7 @@ vec3 getIBLRadianceTransmission(vec3 n, vec3 v, vec2 fragCoord, float perceptual
 
 vec3 getIBLRadianceLambertian(vec3 n, vec3 diffuseColor)
 {
-    vec3 diffuseLight = texture(u_LambertianEnvSampler, n).rgb;
+    vec3 diffuseLight = getDiffuseLight(n);
 
     #ifndef USE_HDR
         diffuseLight = sRGBToLinear(diffuseLight);
@@ -63,7 +77,7 @@ vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, sheenRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     float brdf = texture(u_CharlieLUT, brdfSamplePoint).b;
-    vec4 sheenSample = textureLod(u_CharlieEnvSampler, reflection, lod);
+    vec4 sheenSample = getSheenSample(reflection, lod);
 
     vec3 sheenLight = sheenSample.rgb;
 

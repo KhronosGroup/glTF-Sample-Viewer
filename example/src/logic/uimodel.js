@@ -1,6 +1,10 @@
+import { bindCallback, fromEvent, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF } from 'gltf-sample-viewer';
 import { ToneMaps, DebugOutput } from '../../../src/Renderer/rendering_parameters';
+import { gltfInput } from '../input.js';
+
+import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -16,15 +20,17 @@ class UIModel
             return {title: key};
         });
 
-        this.model = app.modelChanged$.pipe(
+        const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
             startWith("Avocado"),
             map(value => this.pathProvider.resolve(value)),
+            map( value => ({mainFile: value, additionalFiles: undefined})),
         );
         this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
         this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
+        this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
 
         this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
             return {title: ToneMaps[key]};
@@ -48,11 +54,14 @@ class UIModel
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
+
+        const initialClearColor = "#303542";
+        app.setSelectedClearColor(initialClearColor);
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
             pluck("target", "value"),
-            startWith("#303542"),
+            startWith(initialClearColor),
             map(hex => {
                 // convert hex string to rgb values
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -63,6 +72,47 @@ class UIModel
                 ] : null;
             })
         );
+
+        this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
+        
+        const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
+        this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
+        this.hdr = inputObservables.hdrDropped;
+
+        this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
+    }
+
+    static getInputObservables(inputDomElement)
+    {
+        const observables = {};
+        fromEvent(inputDomElement, "dragover").subscribe( event => event.preventDefault() ); // just prevent the default behaviour
+        const dropEvent = fromEvent(inputDomElement, "drop").pipe( map( event => {
+            // prevent the default drop event
+            event.preventDefault();
+            return event;
+        }));
+        observables.filesDropped = dropEvent.pipe(map( (event) => {
+            // Use DataTransfer files interface to access the file(s)
+            return Array.from(event.dataTransfer.files);
+        }));
+        observables.gltfDropped = observables.filesDropped.pipe(
+            // filter out any non .gltf or .glb files
+            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name))),
+            map( (files) => {
+                // restructure the data by separating mainFile (gltf/glb) from additionalFiles
+                const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
+                const additionalFiles = files.filter( (file) => file !== mainFile);
+                return {mainFile: mainFile, additionalFiles: additionalFiles};
+            }),
+        );
+        observables.hdrDropped = observables.filesDropped.pipe(
+            map( (files) => {
+                // extract only the hdr file from the stream of files
+                return files.find( (file) => file.name.endsWith(".hdr"));
+            }),
+            filter(file => file),
+        )
+        return observables;
     }
 
     attachGltfLoaded(gltfLoadedObservable)
@@ -100,7 +150,7 @@ class UIModel
                 if(gltf.variants !== undefined)
                 {
                     return gltf.variants.map( (variant, index) => {
-                        return {title: index};
+                        return {title: variant.name};
                     });
                 }
                 return [];
@@ -110,6 +160,10 @@ class UIModel
             this.app.materialVariants = variants;
         });
 
+        gltfLoadedAndInit.subscribe(
+            (_) => {this.app.setAnimationState(true);
+            }
+        );
     }
 }
 

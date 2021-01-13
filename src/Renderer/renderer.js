@@ -1,4 +1,4 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, mat3, vec3 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { ToneMaps, DebugOutput } from './rendering_parameters.js';
 import { gltfWebGl } from './webgl.js';
@@ -378,7 +378,7 @@ class gltfRenderer
         let textureCount = material.textures.length;
         if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
-            textureCount = this.applyEnvironmentMap(state.environment, textureCount);
+            textureCount = this.applyEnvironmentMap(state, textureCount);
         }
 
         if (state.renderingParameters.usePunctual)
@@ -603,8 +603,9 @@ class gltfRenderer
         }
     }
 
-    applyEnvironmentMap(environment, texSlotOffset)
+    applyEnvironmentMap(state, texSlotOffset)
     {
+        const environment = state.environment;
         this.webGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), environment, environment.diffuseEnvMap, texSlotOffset++);
 
         this.webGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), environment, environment.specularEnvMap, texSlotOffset++);
@@ -614,6 +615,12 @@ class gltfRenderer
         this.webGl.setTexture(this.shader.getUniformLocation("u_CharlieLUT"), environment, environment.sheenLUT, texSlotOffset++);
 
         this.shader.updateUniform("u_MipCount", environment.mipCount);
+
+        let rotMatrix4 = mat4.create();
+        mat4.rotateY(rotMatrix4, rotMatrix4,  state.renderingParameters.environmentRotation / 180.0 * Math.PI);
+        let rotMatrix3 = mat3.create();
+        mat3.fromMat4(rotMatrix3, rotMatrix4);
+        this.shader.updateUniform("u_envRotation", rotMatrix3);
 
         return texSlotOffset;
     }

@@ -20,7 +20,6 @@ async function main()
     loadEnvironment("assets/environments/footprint_court_512.hdr", view).then( (environment) => {
         state.environment = environment;
     });
-
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
@@ -29,9 +28,9 @@ async function main()
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
     const gltfLoadedObservable = uiModel.model.pipe(
-        mergeMap( gltf_path =>
+        mergeMap( (model) =>
         {
-            return from(loadGltf(gltf_path, view).then( (gltf) => {
+            return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
@@ -41,7 +40,7 @@ async function main()
                 state.animationIndices = [0];
                 state.animationTimer.start();
                 return state.gltf;
-                })
+            })
             );
         })
     );
@@ -57,6 +56,10 @@ async function main()
     });
     uiModel.camera.pipe(filter(camera => camera !== "User Camera")).subscribe( camera => {
         state.cameraIndex = camera;
+    });
+
+    uiModel.variant.subscribe( variant => {
+        state.variant = variant;
     });
 
     uiModel.tonemap.subscribe( tonemap => {
@@ -87,8 +90,44 @@ async function main()
         state.renderingParameters.environmentBackground = environmentEnabled;
     });
 
+    uiModel.environmentRotation.subscribe( environmentRotation => {
+        switch (environmentRotation)
+        {
+        case "+Z":
+            state.renderingParameters.environmentRotation = 90.0;
+            break;
+        case "-X":
+            state.renderingParameters.environmentRotation = 180.0;
+            break;
+        case "-Z":
+            state.renderingParameters.environmentRotation = 270.0;
+            break;
+        case "+X":
+            state.renderingParameters.environmentRotation = 0.0;
+            break;
+        }
+    });
+
+
     uiModel.clearColor.subscribe( clearColor => {
         state.renderingParameters.clearColor = clearColor;
+    });
+
+    uiModel.animationPlay.subscribe( animationPlay => {
+        if(animationPlay)
+        {
+            state.animationTimer.unpause();
+        }
+        else
+        {
+            state.animationTimer.pause();
+        }
+    })
+    
+    uiModel.hdr.subscribe( hdrFile => {
+        loadEnvironment(hdrFile, view).then( (environment) => {
+            state.environment = environment;
+        });
     });
 
     const input = new gltfInput(canvas);
@@ -120,11 +159,14 @@ async function main()
         {
             loadGltf(mainFile, view, additionalFiles).then( gltf => {
                 state.gltf = gltf;
+                const scene = state.gltf.scenes[state.sceneIndex];
+                scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
+                return state.gltf;
             });
         }
     };
