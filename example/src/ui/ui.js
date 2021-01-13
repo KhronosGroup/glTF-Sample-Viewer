@@ -76,13 +76,13 @@ Vue.component('color-picker-element', {
   },
   template:'#colorPickerTemplate'
 });
-Vue.component('statistics-element', {
+Vue.component('dual-label-list-element', {
   props: ['name', 'items'],
-  template:'#statisticsTemplate'
+  template:'#dualLabelListTemplate'
 });
-Vue.component('statistics-entry-element', {
+Vue.component('dual-label-element', {
   props: ['name', 'value'],
-  template:'#statisticsEntryTemplate'
+  template:'#dualLabelTemplate'
 });
 
 

@@ -98,15 +98,15 @@ function getUrlParam(parameter, defaultvalue){
         </div>
     </div>
 </script>
-<script id="statisticsTemplate" type="text/x-template">
+<script id="dualLabelListTemplate" type="text/x-template">
     <div>
         <label class="label">{{ name }}</label>
         <div v-for="item in items" :key="item.title">
-            <statistics-entry-element v-bind:name="item.title" v-bind:value="item.value"></statistics-entry-element>
+            <dual-label-element v-bind:name="item.title" v-bind:value="item.value"></dual-label-element>
         </div>
     </div>
 </script>
-<script id="statisticsEntryTemplate" type="text/x-template">
+<script id="dualLabelTemplate" type="text/x-template">
     <div class="greyOverlay">
         <section>
             <label class="smallerLabel">{{ name }}</label>
@@ -173,7 +173,7 @@ function getUrlParam(parameter, defaultvalue){
         <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
         <br>
         <b-switch v-model="morphing" v-on:input="morphingchanged">Morphing</b-switch>
-        <statistics-element name="Statistics" v-bind:items="statistics"></statistics-element>
+        <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
     </div>
 </script>
 
