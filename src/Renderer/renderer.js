@@ -397,11 +397,6 @@ class gltfRenderer
 
             this.webGl.context.uniform2i(this.shader.getUniformLocation("u_ScreenSize"), this.currentWidth, this.currentHeight);
             this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
-
-            //this.webGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + textureCount);
-            //this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueDepthTexture);
-            //this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionDepthSampler"), textureCount);
-            textureCount++;
         }
 
         if (drawIndexed)

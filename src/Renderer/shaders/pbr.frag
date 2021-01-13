@@ -353,7 +353,6 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-
         vec2 normalizedFragCoord = vec2(0.0,0.0);
         normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
         normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
