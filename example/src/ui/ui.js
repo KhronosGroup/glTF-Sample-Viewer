@@ -218,15 +218,7 @@ Vue.component('tab-xmp', {
   },
 });
 Vue.component('tab-advanced-controls', {
-  props: ["debugchannels", "tonemaps", "statistics"],
-  template:'#advancedControlsTemplate',
-  data() {
-    return {
-    };
-  },
-});
-Vue.component('tab-advanced-controls', {
-    props: ["debugchannels", "tonemaps"],
+    props: ["debugchannels", "tonemaps", "statistics"],
     template:'#advancedControlsTemplate',
     data() {
         return {
