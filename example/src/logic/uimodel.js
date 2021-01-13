@@ -48,6 +48,7 @@ class UIModel
             startWith(DebugOutput.NONE)
         );
 
+        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
@@ -74,7 +75,7 @@ class UIModel
         );
 
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
-        
+
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
         this.hdr = inputObservables.hdrDropped;

@@ -78,11 +78,15 @@ async function main()
     });
 
     uiModel.skinningEnabled.subscribe( skinningEnabled => {
-        state.skinningEnabled = skinningEnabled;
+        state.renderingParameters.skinning = skinningEnabled;
+    });
+
+    uiModel.exposure.subscribe( exposure => {
+        state.renderingParameters.exposure = exposure;
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
-        state.morphingEnabled = morphingEnabled;
+        state.renderingParameters.morphing = morphingEnabled;
     });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
