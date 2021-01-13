@@ -131,7 +131,7 @@ function getUrlParam(parameter, defaultvalue){
         </section>
         <section>
             <label class="label">Background</label>
-            <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
+            <!--<b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>-->
             <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color" ref="colorpicker"></color-picker-element>
             <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations"
                 class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>

@@ -75,7 +75,7 @@ class UIModel
         );
 
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
-        
+
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
         this.hdr = inputObservables.hdrDropped;
@@ -125,12 +125,7 @@ class UIModel
         const sceneIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 return gltf.scenes.map( (scene, index) => {
-                    let sceneName = scene.name;
-                    if(sceneName === undefined)
-                    {
-                        sceneName = index;
-                    }
-                    return {title: sceneName};
+                    return {title: index};
                 });
             })
         );
@@ -142,12 +137,7 @@ class UIModel
             map( (gltf) => {
                 const cameraIndices = [{title: "User Camera"}];
                 cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    let cameraName = camera.name;
-                    if(cameraName === undefined)
-                    {
-                        cameraName = index;
-                    }
-                    return {title: cameraName};
+                    return {title: index};
                 }));
                 return cameraIndices;
             })
