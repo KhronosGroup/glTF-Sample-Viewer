@@ -20,7 +20,6 @@ async function main()
     loadEnvironment("assets/environments/footprint_court_512.hdr", view).then( (environment) => {
         state.environment = environment;
     });
-
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
@@ -87,6 +86,25 @@ async function main()
         state.renderingParameters.environmentBackground = environmentEnabled;
     });
 
+    uiModel.environmentRotation.subscribe( environmentRotation => {
+        switch (environmentRotation)
+        {
+        case "+Z":
+            state.renderingParameters.environmentRotation = 90.0;
+            break;
+        case "-X":
+            state.renderingParameters.environmentRotation = 180.0;
+            break;
+        case "-Z":
+            state.renderingParameters.environmentRotation = 270.0;
+            break;
+        case "+X":
+            state.renderingParameters.environmentRotation = 0.0;
+            break;
+        }
+    });
+
+
     uiModel.clearColor.subscribe( clearColor => {
         state.renderingParameters.clearColor = clearColor;
     });
@@ -131,11 +149,14 @@ async function main()
         {
             loadGltf(mainFile, view, additionalFiles).then( gltf => {
                 state.gltf = gltf;
+                const scene = state.gltf.scenes[state.sceneIndex];
+                scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
+                return state.gltf;
             });
         }
     };

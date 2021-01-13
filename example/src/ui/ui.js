@@ -99,6 +99,10 @@ Vue.component('color-picker-element', {
       colorchanged: function(value)
       {
           this.$emit('colorchanged', value)
+      },
+      setColor(value)
+      {
+          this.color = value;
       }
   },
   template:'#colorPickerTemplate'
@@ -133,13 +137,14 @@ Vue.component('tab-models', {
   }
 });
 Vue.component('tab-display', {
-  props: ["environments"],
+  props: ["environments", "colorpicker"],
   template:'#displayTemplate',
   data() {
     return {
         environmentvisibility: true,
         punctuallights: true,
-        ibl: true
+        ibl: true,
+        environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}]
     };
   },
   methods:
@@ -156,12 +161,18 @@ Vue.component('tab-display', {
     environmentchanged: function(value) {
       this.$emit('environmentchanged', value)
     },
+    environmentrotationchanged: function(value) {
+        this.$emit('environmentrotationchanged', value);
+    },
     addenvironment: function(value) {
       this.$emit('addenvironment', value)
     },
     colorchanged: function(value) {
       this.$emit('colorchanged', value)
     },
+    setSelectedClearColor: function (value) {
+      this.$refs.colorpicker.setColor(value);
+    }
   }
 });
 Vue.component('tab-animation', {
@@ -211,7 +222,7 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$', 'animationPlayChanged$'],
+                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$'],
     data() {
       return {
         fullheight: true,
@@ -224,7 +235,7 @@ const app = new Vue({
         environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
         animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
         tonemaps: [{title: "Linear"}],
-        debugchannels: [{title: "None"}],
+        debugchannels: [{title: "None"}]
       };
     },
     methods:
@@ -236,6 +247,10 @@ const app = new Vue({
         setSelectedScene: function(value)
         {
             this.$refs.scenes.setSelectedScene(value);
+        },
+        setSelectedClearColor: function(value)
+        {
+            this.$refs.colorpicker.setSelectedClearColor(value);
         },
         setAnimationState: function(value)
         {
