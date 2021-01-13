@@ -225,7 +225,7 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 
     #ifdef HAS_TRANSMISSION_MAP
         vec4 transmissionSample = texture(u_TransmissionSampler, getTransmissionUV());
-        info.transmissionFactor *= transmissionSample.a;
+        info.transmissionFactor *= transmissionSample.r;
     #endif
 
     return info;
