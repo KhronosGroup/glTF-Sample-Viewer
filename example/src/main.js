@@ -170,7 +170,6 @@ async function main()
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
-                console.log(gltf.scenes);
                 return state.gltf;
             });
         }
