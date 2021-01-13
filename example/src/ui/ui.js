@@ -116,7 +116,8 @@ Vue.component('tab-display', {
     return {
         environmentvisibility: true,
         punctuallights: true,
-        ibl: true
+        ibl: true,
+        environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}]
     };
   },
   methods:
@@ -132,6 +133,9 @@ Vue.component('tab-display', {
     },
     environmentchanged: function(value) {
       this.$emit('environmentchanged', value)
+    },
+    environmentrotationchanged: function(value) {
+        this.$emit('environmentrotationchanged', value);
     },
     addenvironment: function(value) {
       this.$emit('addenvironment', value)
@@ -182,7 +186,7 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$'],
+                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$'],
     data() {
       return {
         fullheight: true,

@@ -25,6 +25,7 @@ class UIModel
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
         this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
+        this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
 
         this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
             return {title: ToneMaps[key]};
