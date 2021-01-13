@@ -106,7 +106,6 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 
 <!-- templates for different menu tabs-->
-<!-- TODO check if we can ge rid of the b-menu tag -->
 <script id="modelsTemplate" type="text/x-template">
     <div>
         <h2>Models</h2>
@@ -151,7 +150,7 @@ function getUrlParam(parameter, defaultvalue){
 <script id="xmpTemplate" type="text/x-template">
     <div>
         <h2>XMP</h2>
-        <p>TODO: GENERATE AWESOME CONTENT HERE</p>
+        <p>{{ xmp }}</p>
     </div>
 </script>
 <script id="advancedControlsTemplate" type="text/x-template">
@@ -212,7 +211,7 @@ function getUrlParam(parameter, defaultvalue){
                                     ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
-                    <tab-xmp ></tab-xmp>
+                    <tab-xmp v-bind:xmp="xmp"></tab-xmp>
                 </b-tab-item>
                 <b-tab-item label="Capture" icon="video">
                 </b-tab-item>

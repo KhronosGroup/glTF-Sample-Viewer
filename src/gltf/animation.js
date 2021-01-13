@@ -19,6 +19,8 @@ class gltfAnimation extends GltfObject
 
     fromJson(jsonAnimation)
     {
+        super.fromJson(jsonAnimation);
+
         this.channels = objectsFromJsons(jsonAnimation.channels, gltfAnimationChannel);
         this.samplers = objectsFromJsons(jsonAnimation.samplers, gltfAnimationSampler);
         this.name = jsonAnimation.name;
