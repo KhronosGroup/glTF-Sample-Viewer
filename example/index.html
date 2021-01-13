@@ -52,6 +52,11 @@ function getUrlParam(parameter, defaultvalue){
 
 <!-- vue js templates -->
 <!-- general templates -->
+<script id="toggleButtonTemplate" type="text/x-template">
+    <div>
+        <b-button v-on:click="buttonclicked">{{ name }}</b-button>
+    </div>
+</script>
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
         <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
@@ -127,7 +132,8 @@ function getUrlParam(parameter, defaultvalue){
         <section>
             <label class="label">Background</label>
             <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
-            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color"></color-picker-element>
+            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color" ref="colorpicker"></color-picker-element>
+            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations" class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
         </section>
         <label class="label">Image Based Lighting</label>
         <b-button v-on:click="addenvironment">Add new HDR</b-button>
@@ -138,7 +144,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
-        <b-button>Play</b-button>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animations"></toggle-button>
         <check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>
     </div>
 </script>
@@ -165,9 +171,9 @@ function getUrlParam(parameter, defaultvalue){
     <canvas id="canvas">No Canvas!</canvas>
 
     <!-- UI -->
-    <div id="app" style="position: absolute; top: 0;">
+    <div id="app" style="position: absolute; top: 0; right: 0;">
         <template>
-            <b-tabs vertical>
+            <b-tabs vertical position="is-right">
                 <b-tab-item label="Models" icon="google-photos">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
@@ -191,15 +197,19 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Display" icon="library-music">
                     <tab-display v-stream:addenvironment="addEnvironment$"
                                   v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
+                                  v-stream:environmentrotationchanged="environmentRotationChanged$"
                                   v-stream:iblchanged="iblChanged$"
                                   v-stream:punctuallightschanged="punctualLightsChanged$"
                                   v-stream:environmentchanged="environmentChanged$"
                                   v-stream:colorchanged="colorChanged$"
-                                  v-bind:environments="environments" ></tab-display>
+                                  v-bind:environments="environments"
+                                  ref="colorpicker"></tab-display>
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
-                    <tab-animation v-bind:animations="animations"></tab-animation>
+                    <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
+                                    v-bind:animations="animations"
+                                    ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
                     <tab-xmp ></tab-xmp>

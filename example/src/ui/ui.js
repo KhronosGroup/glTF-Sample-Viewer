@@ -5,6 +5,33 @@ import './sass.scss';
 Vue.use(VueRx, { Subject });
 
 // general components
+Vue.component('toggle-button', {
+    props: ['onText', 'offText'],
+    template:'#toggleButtonTemplate',
+    data(){
+        return {
+            name: "Play",
+            isOn: false
+        };
+    },
+    mounted(){
+        this.name = this.onText;
+    },
+    methods:
+    {
+        buttonclicked: function(value)
+        {
+            this.isOn = !this.isOn;
+            this.name = this.isOn ? this.onText : this.offText;
+            this.$emit('buttonclicked', this.isOn);
+        },
+        setState: function(value)
+        {
+            this.isOn = value;
+            this.name = this.isOn ? this.onText : this.offText;
+        }
+    }
+});
 Vue.component('drop-down-element', {
     props: ['name', 'dropdowncontent'],
     template:'#dropDownTemplate',
@@ -82,6 +109,10 @@ Vue.component('color-picker-element', {
         colorchanged: function(value)
         {
             this.$emit('colorchanged', value);
+        },
+        setColor(value)
+        {
+            this.color = value;
         }
     },
     template:'#colorPickerTemplate'
@@ -119,40 +150,56 @@ Vue.component('tab-models', {
     }
 });
 Vue.component('tab-display', {
-    props: ["environments"],
-    template:'#displayTemplate',
-    data() {
-        return {
-            environmentvisibility: true,
-            punctuallights: true,
-            ibl: true
-        };
+  props: ["environments", "colorpicker"],
+  template:'#displayTemplate',
+  data() {
+    return {
+        environmentvisibility: true,
+        punctuallights: true,
+        ibl: true,
+        environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}]
+    };
+  },
+  methods:
+  {
+    environmentvisibilitychanged: function(value) {
+        this.$emit('environmentvisibilitychanged', value)
     },
-    methods:
-    {
-        environmentvisibilitychanged: function(value) {
-            this.$emit('environmentvisibilitychanged', value);
-        },
-        punctuallightschanged: function(value) {
-            this.$emit('punctuallightschanged', value);
-        },
-        iblchanged: function(value) {
-            this.$emit('iblchanged', value);
-        },
-        environmentchanged: function(value) {
-            this.$emit('environmentchanged', value);
-        },
-        addenvironment: function(value) {
-            this.$emit('addenvironment', value);
-        },
-        colorchanged: function(value) {
-            this.$emit('colorchanged', value);
-        },
+    punctuallightschanged: function(value) {
+        this.$emit('punctuallightschanged', value)
+    },
+    iblchanged: function(value) {
+        this.$emit('iblchanged', value)
+    },
+    environmentchanged: function(value) {
+        this.$emit('environmentchanged', value)
+    },
+    environmentrotationchanged: function(value) {
+        this.$emit('environmentrotationchanged', value);
+    },
+    addenvironment: function(value) {
+        this.$emit('addenvironment', value)
+    },
+    colorchanged: function(value) {
+        this.$emit('colorchanged', value)
+    },
+    setSelectedClearColor: function (value) {
+        this.$refs.colorpicker.setColor(value);
     }
+  }
 });
 Vue.component('tab-animation', {
     props: ["animations"],
-    template:'#animationTemplate'
+    template:'#animationTemplate',
+    methods:
+    {
+        animationplayclicked: function(value) {
+            this.$emit('animationplayclicked', value)
+        },
+        setAnimationState: function(value) {
+            this.$refs.animations.setState(value);
+        }
+    }
 });
 Vue.component('tab-xmp', {
     props: [""],
@@ -188,7 +235,7 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$', 'variantChanged$'],
+                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$'],
     data() {
         return {
             fullheight: true,
@@ -201,7 +248,7 @@ const app = new Vue({
             environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "Linear"}],
-            debugchannels: [{title: "None"}],
+            debugchannels: [{title: "None"}]
         };
     },
     methods:
@@ -213,6 +260,14 @@ const app = new Vue({
         setSelectedScene: function(value)
         {
             this.$refs.scenes.setSelectedScene(value);
+        },
+        setSelectedClearColor: function(value)
+        {
+            this.$refs.colorpicker.setSelectedClearColor(value);
+        },
+        setAnimationState: function(value)
+        {
+            this.$refs.animations.setAnimationState(value);
         }
     }
 }).$mount('#app');

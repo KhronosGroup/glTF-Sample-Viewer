@@ -30,6 +30,7 @@ class UIModel
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
         this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
+        this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
 
         this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
             return {title: ToneMaps[key]};
@@ -53,11 +54,14 @@ class UIModel
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
+
+        const initialClearColor = "#303542";
+        app.setSelectedClearColor(initialClearColor);
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
             pluck("target", "value"),
-            startWith("#303542"),
+            startWith(initialClearColor),
             map(hex => {
                 // convert hex string to rgb values
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -69,6 +73,8 @@ class UIModel
             })
         );
 
+        this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
+        
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
         this.hdr = inputObservables.hdrDropped;
@@ -154,6 +160,10 @@ class UIModel
             this.app.materialVariants = variants;
         });
 
+        gltfLoadedAndInit.subscribe(
+            (_) => {this.app.setAnimationState(true);
+            }
+        );
     }
 }
 
