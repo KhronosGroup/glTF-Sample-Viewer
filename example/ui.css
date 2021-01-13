@@ -183,6 +183,11 @@ label.switch
     box-shadow: unset !important;
 }
 
+.radio:hover
+{
+    color: #f2f2f2 !important;
+}
+
 .input:active, .input:focus, .is-active.input, .is-active.textarea, .is-focused.input,
 .is-focused.textarea, .select select.is-active, .select select.is-focused,
 .select select:active, .select select:focus, .taginput .is-active.taginput-container.is-focusable,
@@ -200,4 +205,10 @@ label.switch
     font-size: 18px !important;
     padding-top: unset !important;
     padding-bottom: unset !important;
+}
+
+/* make radio button full width */
+div .field.has-addons
+{
+    display: block;
 }
