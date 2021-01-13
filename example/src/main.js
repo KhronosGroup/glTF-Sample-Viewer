@@ -167,28 +167,6 @@ async function main()
         state.userCamera.zoomIn(delta);
         state.userCamera.updatePosition();
     };
-    input.onDropFiles = (mainFile, additionalFiles) => {
-        if (mainFile.name.endsWith(".hdr"))
-        {
-            loadEnvironment(mainFile, view).then( (environment) => {
-                state.environment = environment;
-                });
-        }
-        if (mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
-        {
-            loadGltf(mainFile, view, additionalFiles).then( gltf => {
-                state.gltf = gltf;
-                const scene = state.gltf.scenes[state.sceneIndex];
-                scene.applyTransformHierarchy(state.gltf);
-                computePrimitiveCentroids(state.gltf);
-                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.userCamera.updatePosition();
-                state.animationIndices = [0];
-                state.animationTimer.start();
-                return state.gltf;
-            });
-        }
-    };
 
     await view.startRendering(state);
 }

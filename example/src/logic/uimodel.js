@@ -98,7 +98,7 @@ class UIModel
         }));
         observables.gltfDropped = observables.filesDropped.pipe(
             // filter out any non .gltf or .glb files
-            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name))),
+            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name)).length > 0),
             map( (files) => {
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
                 const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
@@ -165,7 +165,7 @@ class UIModel
             (_) => {this.app.setAnimationState(true);
             }
         );
-        
+
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
