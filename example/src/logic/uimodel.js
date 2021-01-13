@@ -57,7 +57,7 @@ class UIModel
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
 
         const initialClearColor = "#303542";
-        app.setSelectedClearColor(initialClearColor);
+        this.app.setSelectedClearColor(initialClearColor);
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
@@ -116,9 +116,18 @@ class UIModel
         return observables;
     }
 
-    attachGltfLoaded(gltfLoadedObservable)
+    attachGltfLoaded(glTFLoadedStateObservable)
     {
-        const gltfLoadedAndInit = gltfLoadedObservable.pipe(
+        const loadedSceneIndex = glTFLoadedStateObservable.pipe(
+            map( (state) => state.sceneIndex )
+        );
+        loadedSceneIndex.subscribe( (index) => {
+            // TODO why does this have an undefined error
+            this.app.setSelectedScene(index);
+        });
+
+        const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
+            map( state => state.gltf ),
             startWith(new glTF())
         );
 
@@ -165,7 +174,7 @@ class UIModel
             (_) => {this.app.setAnimationState(true);
             }
         );
-        
+
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
