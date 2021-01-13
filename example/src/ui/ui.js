@@ -79,13 +79,24 @@ Vue.component('check-box-element', {
   template:'#checkBoxTemplate'
 });
 Vue.component('slider-element', {
-  props: ['name'],
-  data() {
-    return {
-        value: 0
-    };
-  },
-  template:'#sliderTemplate'
+    props: ['name'],
+    data() {
+        return {
+            value: 1
+        };
+    },
+    updated : function()
+    {
+        this.$emit('valuechanged', this.value);
+    },
+    methods:
+    {
+        setValue(value)
+        {
+            this.value = value;
+        }
+    },
+    template:'#sliderTemplate'
 });
 Vue.component('color-picker-element', {
   props: ['name'],
@@ -193,7 +204,7 @@ Vue.component('tab-xmp', {
   template:'#xmpTemplate'
 });
 Vue.component('tab-advanced-controls', {
-  props: ["debugchannels", "tonemaps"],
+  props: ["debugchannels", "tonemaps", "exposure"],
   template:'#advancedControlsTemplate',
   data() {
     return {
@@ -203,6 +214,9 @@ Vue.component('tab-advanced-controls', {
   },
   methods:
   {
+    exposurechanged: function(value) {
+      this.$emit('exposurechanged', value)
+    },
     skinningchanged: function(value) {
       this.$emit('skinningchanged', value)
     },
@@ -222,7 +236,8 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$'],
+                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
+                'exposureChanged$'],
     data() {
       return {
         fullheight: true,

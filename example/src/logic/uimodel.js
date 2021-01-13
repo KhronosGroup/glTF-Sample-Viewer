@@ -43,6 +43,7 @@ class UIModel
             startWith(DebugOutput.NONE)
         );
 
+        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
@@ -80,7 +81,12 @@ class UIModel
         const sceneIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 return gltf.scenes.map( (scene, index) => {
-                    return {title: index};
+                    let sceneName = scene.name;
+                    if(sceneName === undefined)
+                    {
+                        sceneName = index;
+                    }
+                    return {title: sceneName};
                 });
             })
         );
@@ -92,7 +98,12 @@ class UIModel
             map( (gltf) => {
                 const cameraIndices = [{title: "User Camera"}];
                 cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    return {title: index};
+                    let cameraName = camera.name;
+                    if(cameraName === undefined)
+                    {
+                        cameraName = index;
+                    }
+                    return {title: cameraName};
                 }));
                 return cameraIndices;
             })

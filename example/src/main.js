@@ -67,11 +67,15 @@ async function main()
     });
 
     uiModel.skinningEnabled.subscribe( skinningEnabled => {
-        state.skinningEnabled = skinningEnabled;
+        state.renderingParameters.skinning = skinningEnabled;
+    });
+
+    uiModel.exposure.subscribe( exposure => {
+        state.renderingParameters.exposure = exposure;
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
-        state.morphingEnabled = morphingEnabled;
+        state.renderingParameters.morphing = morphingEnabled;
     });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
@@ -156,6 +160,7 @@ async function main()
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
+                console.log(gltf.scenes);
                 return state.gltf;
             });
         }
