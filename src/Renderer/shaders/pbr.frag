@@ -56,8 +56,7 @@ uniform float u_AlphaCutoff;
 uniform vec3 u_Camera;
 
 #ifdef MATERIAL_TRANSMISSION
-uniform int u_ScreenWidth;
-uniform int u_ScreenHeight;
+uniform ivec2 u_ScreenSize;
 #endif
 
 struct MaterialInfo
@@ -356,8 +355,8 @@ void main()
     #ifdef MATERIAL_TRANSMISSION
 
         vec2 normalizedFragCoord = vec2(0.0,0.0);
-        normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenWidth);
-        normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenHeight);
+        normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
+        normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
 
         f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
     #endif

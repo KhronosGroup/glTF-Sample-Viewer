@@ -29,6 +29,8 @@ class gltfRenderer
         this.opaqueRenderTexture = 0;
         this.opaqueFramebuffer = 0;
         this.opaqueDepthTexture = 0;
+        this.opaqueFramebufferWidth = 1024;
+        this.opaqueFramebufferHeight = 1024;
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
@@ -84,8 +86,8 @@ class gltfRenderer
         context.texImage2D( context.TEXTURE_2D,
                             0,
                             context.RGBA,
-                            1024,
-                            1024,
+                            this.opaqueFramebufferWidth,
+                            this.opaqueFramebufferHeight,
                             0,
                             context.RGBA,
                             context.UNSIGNED_BYTE,
@@ -101,8 +103,8 @@ class gltfRenderer
         context.texImage2D( context.TEXTURE_2D,
                             0,
                             context.DEPTH_COMPONENT16,
-                            1024,
-                            1024,
+                            this.opaqueFramebufferWidth,
+                            this.opaqueFramebufferHeight,
                             0,
                             context.DEPTH_COMPONENT,
                             context.UNSIGNED_SHORT,
@@ -200,7 +202,7 @@ class gltfRenderer
         // Render transmission sample texture
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebuffer);
 
-        this.webGl.context.viewport(0, 0, 1024, 1024);
+        this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
         for (const drawable of opaqueDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
@@ -390,14 +392,14 @@ class gltfRenderer
         {
             this.webGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + textureCount);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionDiffuseSampler"), textureCount);
+            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureCount);
             textureCount++;
 
-            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_ScreenWidth"), this.currentWidth);
-            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_ScreenHeight"),  this.currentHeight);
+            this.webGl.context.uniform2i(this.shader.getUniformLocation("u_ScreenSize"), this.currentWidth, this.currentHeight);
+            this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
-            this.webGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + textureCount);
-            this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueDepthTexture);
+            //this.webGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + textureCount);
+            //this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueDepthTexture);
             //this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionDepthSampler"), textureCount);
             textureCount++;
         }

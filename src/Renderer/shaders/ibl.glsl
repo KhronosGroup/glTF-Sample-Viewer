@@ -32,6 +32,17 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularC
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
+vec3 getTransmissionSample(vec2 fragCoord, float perceptualRoughness)
+{
+    float framebufferLod = log2(float(u_TransmissionFramebufferSize.x)) * perceptualRoughness;
+
+    vec3 transmittedLight = textureLod(u_TransmissionFramebufferSampler, fragCoord.xy, framebufferLod).rgb;
+
+    transmittedLight = sRGBToLinear(transmittedLight);
+
+    return transmittedLight;
+}
+
 
 vec3 getIBLRadianceTransmission(vec3 n, vec3 v, vec2 fragCoord, float perceptualRoughness, vec3 baseColor, vec3 f0, vec3 f90)
 {
@@ -47,11 +58,7 @@ vec3 getIBLRadianceTransmission(vec3 n, vec3 v, vec2 fragCoord, float perceptual
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
     vec3 transmissionVector = normalize(-v); //  view vector
 
-    float framebufferLod = log2(1024.0) * perceptualRoughness;
-
-    vec3 transmittedLight =  textureLod( u_TransmissionDiffuseSampler, fragCoord.xy, framebufferLod).rgb;
-
-    transmittedLight = sRGBToLinear(transmittedLight); // ToDo: Check if framebuffer has SRGB Format
+    vec3 transmittedLight = getTransmissionSample(fragCoord.xy, perceptualRoughness);
 
     return (1.0-specularColor) * transmittedLight * baseColor;
 }

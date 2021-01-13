@@ -70,7 +70,8 @@ uniform mat3 u_SheenRoughnessUVTransform;
 uniform sampler2D u_TransmissionSampler;
 uniform int u_TransmissionUVSet;
 uniform mat3 u_TransmissionUVTransform;
-uniform sampler2D u_TransmissionDiffuseSampler;
+uniform sampler2D u_TransmissionFramebufferSampler;
+uniform ivec2 u_TransmissionFramebufferSize;
 //uniform sampler2D u_TransmissionDepthSampler;
 
 vec2 getNormalUV()
