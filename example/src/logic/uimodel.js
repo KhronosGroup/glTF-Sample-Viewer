@@ -182,6 +182,19 @@ class UIModel
             this.app.xmp = xmpData;
         });
     }
+
+    updateStatistics(statisticsUpdateObservable)
+    {
+        statisticsUpdateObservable.subscribe(
+            data => {this.app.statistics = [
+                    {title: "Mesh Count", value: data.meshCount},
+                    {title: "Triangle Count", value: data.faceCount},
+                    {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
+                    {title: "Transparent Material Count", value: data.transparentMaterialsCount}
+                ]
+            }
+        )
+    }
 }
 
 export { UIModel };

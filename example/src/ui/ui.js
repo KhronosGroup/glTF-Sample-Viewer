@@ -117,6 +117,14 @@ Vue.component('color-picker-element', {
     },
     template:'#colorPickerTemplate'
 });
+Vue.component('dual-label-list-element', {
+  props: ['name', 'items'],
+  template:'#dualLabelListTemplate'
+});
+Vue.component('dual-label-element', {
+  props: ['name', 'value'],
+  template:'#dualLabelTemplate'
+});
 
 
 
@@ -210,7 +218,7 @@ Vue.component('tab-xmp', {
   },
 });
 Vue.component('tab-advanced-controls', {
-    props: ["debugchannels", "tonemaps"],
+    props: ["debugchannels", "tonemaps", "statistics"],
     template:'#advancedControlsTemplate',
     data() {
         return {
@@ -254,7 +262,8 @@ const app = new Vue({
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "Linear"}],
             debugchannels: [{title: "None"}],
-            xmp: [{title: "xmp"}]
+            xmp: [{title: "xmp"}],
+            statistics: []
         };
     },
     methods:
