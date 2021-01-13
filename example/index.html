@@ -68,13 +68,14 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 <script id="radioButtonListTemplate" type="text/x-template">
     <section>
-        <div class="field" v-for="item in radiobuttoncontent" :key="item.title">
-            <b-radio v-model="radio"
+        <b-field>
+            <b-radio  v-for="item in radiobuttoncontent" :key="item.title"
+                    v-model="radio"
                     v-bind:name="name"
                     v-bind:native-value="item.title">
                     {{ item.title }}
             </b-radio>
-        </div>
+        </b-field>
     </section>
 </script>
 <script id="checkBoxTemplate" type="text/x-template">
@@ -115,7 +116,8 @@ function getUrlParam(parameter, defaultvalue){
         <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="scenes"></drop-down-element>
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
-        <radio-button-list-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
+        <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
+                                    v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
     </div>
 </script>
 <script id="displayTemplate" type="text/x-template">
@@ -182,6 +184,7 @@ function getUrlParam(parameter, defaultvalue){
                                 v-stream:flavourchanged="flavourChanged$"
                                 v-stream:scenechanged="sceneChanged$"
                                 v-stream:camerachanged="cameraChanged$"
+                                v-stream:variantchanged="variantChanged$"
                                 v-bind:models="models"
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"

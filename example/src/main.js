@@ -28,9 +28,9 @@ async function main()
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
     const gltfLoadedObservable = uiModel.model.pipe(
-        mergeMap( gltf_path =>
+        mergeMap( (model) =>
         {
-            return from(loadGltf(gltf_path, view).then( (gltf) => {
+            return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
@@ -40,7 +40,7 @@ async function main()
                 state.animationIndices = [0];
                 state.animationTimer.start();
                 return state.gltf;
-                })
+            })
             );
         })
     );
@@ -56,6 +56,10 @@ async function main()
     });
     uiModel.camera.pipe(filter(camera => camera !== "User Camera")).subscribe( camera => {
         state.cameraIndex = camera;
+    });
+
+    uiModel.variant.subscribe( variant => {
+        state.variant = variant;
     });
 
     uiModel.tonemap.subscribe( tonemap => {
@@ -119,6 +123,12 @@ async function main()
             state.animationTimer.pause();
         }
     })
+    
+    uiModel.hdr.subscribe( hdrFile => {
+        loadEnvironment(hdrFile, view).then( (environment) => {
+            state.environment = environment;
+        });
+    });
 
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);

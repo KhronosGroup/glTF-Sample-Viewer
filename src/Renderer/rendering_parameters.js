@@ -27,7 +27,6 @@ class gltfRenderingParameters
         this.animationIndex = "all";
         this.skinning = true;
         this.morphing = true;
-        this.variant = "default";
     }
 
     userCameraActive()
