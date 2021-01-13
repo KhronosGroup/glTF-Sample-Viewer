@@ -70,9 +70,7 @@ uniform sampler2D u_TransmissionSampler;
 uniform int u_TransmissionUVSet;
 uniform mat3 u_TransmissionUVTransform;
 uniform sampler2D u_TransmissionDiffuseSampler;
-uniform sampler2D u_TransmissionDepthSampler;
-uniform float u_ScreenWidth;
-uniform float u_ScreenHeight;
+//uniform sampler2D u_TransmissionDepthSampler;
 
 vec2 getNormalUV()
 {

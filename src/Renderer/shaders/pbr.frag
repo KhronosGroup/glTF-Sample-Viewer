@@ -55,6 +55,11 @@ uniform float u_AlphaCutoff;
 
 uniform vec3 u_Camera;
 
+#ifdef MATERIAL_TRANSMISSION
+uniform int u_ScreenWidth;
+uniform int u_ScreenHeight;
+#endif
+
 struct MaterialInfo
 {
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
