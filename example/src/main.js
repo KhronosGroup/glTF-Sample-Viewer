@@ -60,7 +60,7 @@ async function main()
     });
 
     uiModel.variant.subscribe( variant => {
-        state.renderingParameters.variant = variant;
+        state.variant = variant;
     });
 
     uiModel.tonemap.subscribe( tonemap => {

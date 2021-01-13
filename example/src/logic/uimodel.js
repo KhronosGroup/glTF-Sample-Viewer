@@ -144,7 +144,7 @@ class UIModel
                 if(gltf.variants !== undefined)
                 {
                     return gltf.variants.map( (variant, index) => {
-                        return {title: index};
+                        return {title: variant.name};
                     });
                 }
                 return [];
