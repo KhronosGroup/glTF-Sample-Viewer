@@ -34,112 +34,125 @@ Vue.component('drop-down-element', {
     }
 });
 Vue.component('radio-button-list-element', {
-  props: ['name', 'radiobuttoncontent'],
-  data() {
-    return {
-      radio: ""
-    };
-  },
-  template:'#radioButtonListTemplate'
+    props: ['name', 'radiobuttoncontent'],
+    data() {
+        return {
+            radio: ""
+        };
+    },
+    updated: function() {
+        this.$emit('selectionchanged', this.radio);
+    },
+    methods:
+    {
+        setSelection: function(value)
+        {
+            this.radio = value;
+        }
+    },
+    template:'#radioButtonListTemplate'
 });
 Vue.component('check-box-element', {
-  props: ['name', 'checkboxcontent'],
-  data() {
-    return {
-        checkboxGroup: []
-    };
-  },
-  template:'#checkBoxTemplate'
+    props: ['name', 'checkboxcontent'],
+    data() {
+        return {
+            checkboxGroup: []
+        };
+    },
+    template:'#checkBoxTemplate'
 });
 Vue.component('slider-element', {
-  props: ['name'],
-  data() {
-    return {
-        value: 0
-    };
-  },
-  template:'#sliderTemplate'
+    props: ['name'],
+    data() {
+        return {
+            value: 0
+        };
+    },
+    template:'#sliderTemplate'
 });
 Vue.component('color-picker-element', {
-  props: ['name'],
-  data() {
-    return {
-      color: '#1CA085'
-    }
-  },
-  methods:
-  {
-      colorchanged: function(value)
-      {
-          this.$emit('colorchanged', value)
-      }
-  },
-  template:'#colorPickerTemplate'
+    props: ['name'],
+    data() {
+        return {
+            color: '#1CA085'
+        };
+    },
+    methods:
+    {
+        colorchanged: function(value)
+        {
+            this.$emit('colorchanged', value);
+        }
+    },
+    template:'#colorPickerTemplate'
 });
 
 
 
 // create components for menu tabs
 Vue.component('tab-models', {
-  props: ["materialvariants", "models", "flavors", "scenes", "cameras"],
-  template:'#modelsTemplate',
-  methods:
-  {
-    modelchanged: function(value) {
-        this.$emit('modelchanged', value)
-    },
-    flavourchanged: function(value) {
-        this.$emit('flavourchanged', value)
-    },
-    scenechanged: function(value) {
-        this.$emit('scenechanged', value)
-    },
-    camerachanged: function(value) {
-        this.$emit('camerachanged', value)
-    },
-    setSelectedModel: function(value) {
-        this.$refs.models.setSelection(value);
-    },
-    setSelectedScene: function(value) {
-        this.$refs.scenes.setSelection(value);
+    props: ["materialvariants", "models", "flavors", "scenes", "cameras"],
+    template:'#modelsTemplate',
+    methods:
+    {
+        modelchanged: function(value) {
+            this.$emit('modelchanged', value);
+        },
+        flavourchanged: function(value) {
+            this.$emit('flavourchanged', value);
+        },
+        scenechanged: function(value) {
+            this.$emit('scenechanged', value);
+        },
+        camerachanged: function(value) {
+            this.$emit('camerachanged', value);
+        },
+        variantchanged: function(value) {
+            this.$emit('variantchanged', value);
+        },
+        setSelectedModel: function(value) {
+            this.$refs.models.setSelection(value);
+        },
+        setSelectedScene: function(value) {
+            this.$refs.scenes.setSelection(value);
+        }
     }
-  }
 });
 Vue.component('tab-display', {
-  props: ["environments"],
-  template:'#displayTemplate',
-  data() {
-    return {
-        environmentvisibility: true,
-        punctuallights: true,
-        ibl: true
-    };
-  },
-  methods:
-  {
-    environmentvisibilitychanged: function(value) {
-      this.$emit('environmentvisibilitychanged', value)
+    props: ["environments"],
+    template:'#displayTemplate',
+    data() {
+        return {
+            environmentvisibility: true,
+            punctuallights: true,
+            ibl: true
+        };
     },
-    punctuallightschanged: function(value) {
-      this.$emit('punctuallightschanged', value)
-    },
-    iblchanged: function(value) {
-      this.$emit('iblchanged', value)
-    },
-    environmentchanged: function(value) {
-      this.$emit('environmentchanged', value)
-    },
-    addenvironment: function(value) {
-      this.$emit('addenvironment', value)
-    },
-    colorchanged: function(value) {
-      this.$emit('colorchanged', value)
-    },
-  }
+    methods:
+    {
+        environmentvisibilitychanged: function(value) {
+            this.$emit('environmentvisibilitychanged', value);
+        },
+        punctuallightschanged: function(value) {
+            this.$emit('punctuallightschanged', value);
+        },
+        iblchanged: function(value) {
+            this.$emit('iblchanged', value);
+        },
+        environmentchanged: function(value) {
+            this.$emit('environmentchanged', value);
+        },
+        addenvironment: function(value) {
+            this.$emit('addenvironment', value);
+        },
+        colorchanged: function(value) {
+            this.$emit('colorchanged', value);
+        },
+    }
 });
 Vue.component('tab-animation', {
-  props: ["animations"],
-  template:'#animationTemplate'
+    props: ["animations"],
+    template:'#animationTemplate'
 });
 Vue.component('tab-xmp', {
   props: ["xmp"],
@@ -150,36 +163,36 @@ Vue.component('tab-xmp', {
   },
 });
 Vue.component('tab-advanced-controls', {
-  props: ["debugchannels", "tonemaps"],
-  template:'#advancedControlsTemplate',
-  data() {
-    return {
-        skinning: true,
-        morphing: true,
-    };
-  },
-  methods:
-  {
-    skinningchanged: function(value) {
-      this.$emit('skinningchanged', value)
+    props: ["debugchannels", "tonemaps"],
+    template:'#advancedControlsTemplate',
+    data() {
+        return {
+            skinning: true,
+            morphing: true,
+        };
     },
-    morphingchanged: function(value) {
-      this.$emit('morphingchanged', value)
-    },
-    debugchannelchanged: function(value) {
-      this.$emit('debugchannelchanged', value)
-    },
-    tonemapchanged: function(value) {
-      this.$emit('tonemapchanged', value)
+    methods:
+    {
+        skinningchanged: function(value) {
+            this.$emit('skinningchanged', value);
+        },
+        morphingchanged: function(value) {
+            this.$emit('morphingchanged', value);
+        },
+        debugchannelchanged: function(value) {
+            this.$emit('debugchannelchanged', value);
+        },
+        tonemapchanged: function(value) {
+            this.$emit('tonemapchanged', value);
+        }
     }
-  }
 });
 
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$'],
+                'addEnvironment$', 'colorChanged$', 'variantChanged$'],
     data() {
       return {
         fullheight: true,

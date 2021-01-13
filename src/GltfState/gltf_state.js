@@ -24,6 +24,7 @@ class GltfState
         this.cameraIndex = undefined;
         this.animationIndices = [];
         this.animationTimer = new AnimationTimer();
+        this.variant = undefined;
     }
 }
 
