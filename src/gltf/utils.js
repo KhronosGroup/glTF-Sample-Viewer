@@ -83,7 +83,8 @@ function fromKeys(target, jsonObj, ignore = [])
         }
         if (jsonObj[k] !== undefined)
         {
-            target[k] = jsonObj[k];
+            let normalizedK = k.replace("^@", "");
+            target[normalizedK] = jsonObj[k];
         }
     }
 }

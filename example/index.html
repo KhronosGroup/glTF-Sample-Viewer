@@ -104,9 +104,26 @@ function getUrlParam(parameter, defaultvalue){
         </div>
     </div>
 </script>
+<script id="dualLabelListTemplate" type="text/x-template">
+    <div>
+        <label class="label">{{ name }}</label>
+        <div v-for="item in items" :key="item.title">
+            <dual-label-element v-bind:name="item.title" v-bind:value="item.value"></dual-label-element>
+        </div>
+    </div>
+</script>
+<script id="dualLabelTemplate" type="text/x-template">
+    <div class="greyOverlay">
+        <section>
+            <label class="smallerLabel">{{ name }}</label>
+        </section>
+        <section>
+            <label class="smallestLabel">{{ value }}</label>
+        </section>
+    </div>
+</script>
 
 <!-- templates for different menu tabs-->
-<!-- TODO check if we can ge rid of the b-menu tag -->
 <script id="modelsTemplate" type="text/x-template">
     <div>
         <h2>Models</h2>
@@ -152,7 +169,7 @@ function getUrlParam(parameter, defaultvalue){
 <script id="xmpTemplate" type="text/x-template">
     <div>
         <h2>XMP</h2>
-        <p>TODO: GENERATE AWESOME CONTENT HERE</p>
+        <p>{{ xmp }}</p>
     </div>
 </script>
 <script id="advancedControlsTemplate" type="text/x-template">
@@ -164,6 +181,7 @@ function getUrlParam(parameter, defaultvalue){
         <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
         <br>
         <b-switch v-model="morphing" v-on:input="morphingchanged">Morphing</b-switch>
+        <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
     </div>
 </script>
 
@@ -213,7 +231,7 @@ function getUrlParam(parameter, defaultvalue){
                                     ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
-                    <tab-xmp ></tab-xmp>
+                    <tab-xmp v-bind:xmp="xmp"></tab-xmp>
                 </b-tab-item>
                 <!--<b-tab-item label="Capture" icon="video">
                 </b-tab-item>-->
@@ -222,7 +240,8 @@ function getUrlParam(parameter, defaultvalue){
                                             v-stream:skinningchanged="skinningChanged$"
                                             v-stream:morphingchanged="morphingChanged$"
                                             v-stream:tonemapchanged="tonemapChanged$" v-bind:tonemaps="tonemaps"
-                                            v-stream:debugchannelchanged="debugchannelChanged$" v-bind:debugchannels="debugchannels"></tab-advanced-controls>
+                                            v-stream:debugchannelchanged="debugchannelChanged$" v-bind:debugchannels="debugchannels"
+                                            v-bind:statistics="statistics"></tab-advanced-controls>
                 </b-tab-item>
             </b-tabs>
         </template>

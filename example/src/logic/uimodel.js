@@ -165,6 +165,36 @@ class UIModel
             (_) => {this.app.setAnimationState(true);
             }
         );
+        
+        const xmpData = gltfLoadedAndInit.pipe(
+            map( (gltf) => {
+                if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
+                {
+                    if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp !== undefined)
+                    {
+                        let xmpPacket = gltf.extensions.KHR_xmp.packets[gltf.asset.extensions.KHR_xmp.packet];
+                        return {xmp: xmpPacket};
+                    }
+                }
+                return [];
+            })
+        );
+        xmpData.subscribe( (xmpData) => {
+            this.app.xmp = xmpData;
+        });
+    }
+
+    updateStatistics(statisticsUpdateObservable)
+    {
+        statisticsUpdateObservable.subscribe(
+            data => {this.app.statistics = [
+                    {title: "Mesh Count", value: data.meshCount},
+                    {title: "Triangle Count", value: data.faceCount},
+                    {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
+                    {title: "Transparent Material Count", value: data.transparentMaterialsCount}
+                ]
+            }
+        )
     }
 }
 
