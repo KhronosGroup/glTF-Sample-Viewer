@@ -14,6 +14,8 @@ class gltfMesh extends GltfObject
 
     fromJson(jsonMesh)
     {
+        super.fromJson(jsonMesh);
+
         if (jsonMesh.name !== undefined)
         {
             this.name = jsonMesh.name;

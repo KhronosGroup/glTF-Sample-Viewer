@@ -52,6 +52,11 @@ function getUrlParam(parameter, defaultvalue){
 
 <!-- vue js templates -->
 <!-- general templates -->
+<script id="toggleButtonTemplate" type="text/x-template">
+    <div>
+        <b-button v-on:click="buttonclicked">{{ name }}</b-button>
+    </div>
+</script>
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
         <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
@@ -63,13 +68,14 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 <script id="radioButtonListTemplate" type="text/x-template">
     <section>
-        <div class="field" v-for="item in radiobuttoncontent" :key="item.title">
-            <b-radio v-model="radio"
+        <b-field>
+            <b-radio  v-for="item in radiobuttoncontent" :key="item.title"
+                    v-model="radio"
                     v-bind:name="name"
                     v-bind:native-value="item.title">
                     {{ item.title }}
             </b-radio>
-        </div>
+        </b-field>
     </section>
 </script>
 <script id="checkBoxTemplate" type="text/x-template">
@@ -118,7 +124,6 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 
 <!-- templates for different menu tabs-->
-<!-- TODO check if we can ge rid of the b-menu tag -->
 <script id="modelsTemplate" type="text/x-template">
     <div>
         <h2>Models</h2>
@@ -128,7 +133,8 @@ function getUrlParam(parameter, defaultvalue){
         <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="scenes"></drop-down-element>
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
-        <radio-button-list-element name="Material Variants" v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
+        <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
+                                    v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
     </div>
 </script>
 <script id="displayTemplate" type="text/x-template">
@@ -143,7 +149,8 @@ function getUrlParam(parameter, defaultvalue){
         <section>
             <label class="label">Background</label>
             <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
-            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color"></color-picker-element>
+            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color" ref="colorpicker"></color-picker-element>
+            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations" class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
         </section>
         <label class="label">Image Based Lighting</label>
         <b-button v-on:click="addenvironment">Add new HDR</b-button>
@@ -154,14 +161,14 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
-        <b-button>Play</b-button>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animations"></toggle-button>
         <check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>
     </div>
 </script>
 <script id="xmpTemplate" type="text/x-template">
     <div>
         <h2>XMP</h2>
-        <p>TODO: GENERATE AWESOME CONTENT HERE</p>
+        <p>{{ xmp }}</p>
     </div>
 </script>
 <script id="advancedControlsTemplate" type="text/x-template">
@@ -182,9 +189,9 @@ function getUrlParam(parameter, defaultvalue){
     <canvas id="canvas">No Canvas!</canvas>
 
     <!-- UI -->
-    <div id="app" style="position: absolute; top: 0;">
+    <div id="app" style="position: absolute; top: 0; right: 0;">
         <template>
-            <b-tabs vertical>
+            <b-tabs vertical position="is-right">
                 <b-tab-item label="Models" icon="google-photos">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
@@ -195,6 +202,7 @@ function getUrlParam(parameter, defaultvalue){
                                 v-stream:flavourchanged="flavourChanged$"
                                 v-stream:scenechanged="sceneChanged$"
                                 v-stream:camerachanged="cameraChanged$"
+                                v-stream:variantchanged="variantChanged$"
                                 v-bind:models="models"
                                 v-bind:flavors="flavors"
                                 v-bind:scenes="scenes"
@@ -207,18 +215,22 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Display" icon="library-music">
                     <tab-display v-stream:addenvironment="addEnvironment$"
                                   v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
+                                  v-stream:environmentrotationchanged="environmentRotationChanged$"
                                   v-stream:iblchanged="iblChanged$"
                                   v-stream:punctuallightschanged="punctualLightsChanged$"
                                   v-stream:environmentchanged="environmentChanged$"
                                   v-stream:colorchanged="colorChanged$"
-                                  v-bind:environments="environments" ></tab-display>
+                                  v-bind:environments="environments"
+                                  ref="colorpicker"></tab-display>
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
-                    <tab-animation v-bind:animations="animations"></tab-animation>
+                    <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
+                                    v-bind:animations="animations"
+                                    ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
-                    <tab-xmp ></tab-xmp>
+                    <tab-xmp v-bind:xmp="xmp"></tab-xmp>
                 </b-tab-item>
                 <b-tab-item label="Capture" icon="video">
                 </b-tab-item>
