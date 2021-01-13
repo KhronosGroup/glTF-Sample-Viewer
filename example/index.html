@@ -214,6 +214,11 @@ function getUrlParam(parameter, defaultvalue){
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Display 30X30.svg" width="30px" height="30px">
+                        <span>Display</span>
+                    </template>
                     <tab-display v-stream:addenvironment="addEnvironment$"
                                   v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
                                   v-stream:environmentrotationchanged="environmentRotationChanged$"
@@ -226,16 +231,36 @@ function getUrlParam(parameter, defaultvalue){
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Animation 30X30.svg" width="30px" height="30px">
+                        <span>Animation</span>
+                    </template>
                     <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
                                     v-bind:animations="animations"
                                     ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/XMP 30X30.svg" width="30px" height="30px">
+                        <span>XMP</span>
+                    </template>
                     <tab-xmp v-bind:xmp="xmp"></tab-xmp>
                 </b-tab-item>
                 <!--<b-tab-item label="Capture" icon="video">
+                    <template #header>
+                        to get colored icons use: https://stackoverflow.com/a/43916743
+                        <img src="assets/ui/Capture 30X30.svg" width="30px" height="30px">
+                        <span>Capture</span>
+                    </template>
                 </b-tab-item>-->
                 <b-tab-item label="Advanced Controls" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Developer 30X30.svg" width="30px" height="30px">
+                        <span>Advanced Controls</span>
+                    </template>
                     <tab-advanced-controls v-stream:exposurechanged="exposureChanged$"
                                             v-stream:skinningchanged="skinningChanged$"
                                             v-stream:morphingchanged="morphingChanged$"
