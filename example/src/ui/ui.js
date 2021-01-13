@@ -235,7 +235,8 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$'],
+                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
+                'variantChanged$'],
     data() {
         return {
             fullheight: true,
