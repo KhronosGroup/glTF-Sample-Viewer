@@ -17,13 +17,13 @@ class GltfView
 
     renderFrameToCanvas(state)
     {
-        this.renderer.clearFrame(state.renderingParameters.clearColor);
-
         // TODO: this should probably not be done here
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
 
         this.renderer.resize(this.canvas.width, this.canvas.height);
+
+        this.renderer.clearFrame(state.renderingParameters.clearColor);
 
         if(state.gltf === undefined)
         {
