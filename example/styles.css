@@ -10,7 +10,6 @@ html, body {
 #canvas {
     width:  100%;
     margin:  0px;
-    height: 100%;
     background: rgb(51, 51, 51);
 }
 

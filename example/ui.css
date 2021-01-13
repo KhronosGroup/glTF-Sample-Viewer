@@ -108,6 +108,25 @@ label.switch
 /* Styles for individual elements */
 /**********************************/
 /**********************************/
+html
+{
+    overflow: unset !important;
+}
+
+body
+{
+    display: flex;
+}
+
+canvas
+{
+    display: block;
+}
+
+.b-tabs.is-vertical.is-right
+{
+    flex-wrap: unset;
+}
 
 
 .tab-item h2
