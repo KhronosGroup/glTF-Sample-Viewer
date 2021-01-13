@@ -5,6 +5,33 @@ import './sass.scss';
 Vue.use(VueRx, { Subject });
 
 // general components
+Vue.component('toggle-button', {
+    props: ['onText', 'offText'],
+    template:'#toggleButtonTemplate',
+    data(){
+        return {
+            name: "Play",
+            isOn: false
+        };
+    },
+    mounted(){
+        this.name = this.onText;
+    },
+    methods:
+    {
+        buttonclicked: function(value)
+        {
+            this.isOn = !this.isOn;
+            this.name = this.isOn ? this.onText : this.offText;
+            this.$emit('buttonclicked', this.isOn);
+        },
+        setState: function(value)
+        {
+            this.isOn = value;
+            this.name = this.isOn ? this.onText : this.offText;
+        }
+    }
+});
 Vue.component('drop-down-element', {
     props: ['name', 'dropdowncontent'],
     template:'#dropDownTemplate',
@@ -150,7 +177,16 @@ Vue.component('tab-display', {
 });
 Vue.component('tab-animation', {
   props: ["animations"],
-  template:'#animationTemplate'
+  template:'#animationTemplate',
+  methods:
+  {
+    animationplayclicked: function(value) {
+      this.$emit('animationplayclicked', value)
+    },
+    setAnimationState: function(value) {
+        this.$refs.animations.setState(value);
+    }
+  }
 });
 Vue.component('tab-xmp', {
   props: [""],
@@ -186,7 +222,7 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
                 'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$'],
+                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$'],
     data() {
       return {
         fullheight: true,
@@ -215,6 +251,10 @@ const app = new Vue({
         setSelectedClearColor: function(value)
         {
             this.$refs.colorpicker.setSelectedClearColor(value);
+        },
+        setAnimationState: function(value)
+        {
+            this.$refs.animations.setAnimationState(value);
         }
     }
 }).$mount('#app');

@@ -67,6 +67,8 @@ class UIModel
                 ] : null;
             })
         );
+
+        this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
     }
 
     attachGltfLoaded(gltfLoadedObservable)
@@ -114,6 +116,10 @@ class UIModel
             this.app.materialVariants = variants;
         });
 
+        gltfLoadedAndInit.subscribe(
+            (_) => {this.app.setAnimationState(true);
+            }
+        );
     }
 }
 
