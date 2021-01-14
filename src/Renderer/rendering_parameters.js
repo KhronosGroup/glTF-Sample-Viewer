@@ -11,7 +11,7 @@ class gltfRenderingParameters
         usePunctual = false,
         exposure = 1.0,
         clearColor = [50, 50, 50],
-        toneMap = ToneMaps.LINEAR,
+        toneMap = ToneMaps.NONE,
         debugOutput = DebugOutput.NONE)
     {
         this.environmentName = environmentName;
@@ -37,7 +37,8 @@ class gltfRenderingParameters
 
 const ToneMaps =
 {
-    LINEAR: "Linear",
+    NONE: "None",
+    ACES_FAST: "ACES fast",
     ACES: "ACES"
 };
 

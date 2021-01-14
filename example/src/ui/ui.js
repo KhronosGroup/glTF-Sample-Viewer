@@ -274,7 +274,7 @@ const app = new Vue({
             materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
             environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
-            tonemaps: [{title: "Linear"}],
+            tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
             statistics: []
