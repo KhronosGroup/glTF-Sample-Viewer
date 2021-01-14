@@ -271,7 +271,7 @@ const app = new Vue({
             flavors: [],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera"}],
-            materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
+            materialVariants: [{title: "None"}],
             environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "Linear"}],

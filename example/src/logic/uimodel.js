@@ -155,6 +155,11 @@ class UIModel
                     });
                 }
                 return [];
+            }),
+            map(variants => {
+                // Add a "None" variant to the beginning
+                variants.unshift({title: "None"});
+                return variants;
             })
         );
         variants.subscribe( (variants) => {
@@ -165,7 +170,7 @@ class UIModel
             (_) => {this.app.setAnimationState(true);
             }
         );
-        
+
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
