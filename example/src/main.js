@@ -86,8 +86,8 @@ async function main()
         state.renderingParameters.skinning = skinningEnabled;
     });
 
-    uiModel.exposure.subscribe( exposure => {
-        state.renderingParameters.exposure = exposure;
+    uiModel.exposurecompensation.subscribe( exposurecompensation => {
+        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {

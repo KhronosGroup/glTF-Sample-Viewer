@@ -48,7 +48,7 @@ class UIModel
             startWith(DebugOutput.NONE)
         );
 
-        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
+        this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
@@ -165,7 +165,7 @@ class UIModel
             (_) => {this.app.setAnimationState(true);
             }
         );
-        
+
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
