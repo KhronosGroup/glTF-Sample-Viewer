@@ -148,9 +148,9 @@ vec4 getBaseColor()
     #endif
 
     #if defined(MATERIAL_SPECULARGLOSSINESS) && defined(HAS_DIFFUSE_MAP)
-        baseColor *= sRGBToLinear(texture(u_DiffuseSampler, getDiffuseUV()));
+        baseColor *= texture(u_DiffuseSampler, getDiffuseUV());
     #elif defined(MATERIAL_METALLICROUGHNESS) && defined(HAS_BASE_COLOR_MAP)
-        baseColor *= sRGBToLinear(texture(u_BaseColorSampler, getBaseColorUV()));
+        baseColor *= texture(u_BaseColorSampler, getBaseColorUV());
     #endif
 
     return baseColor * getVertexColor();
@@ -162,7 +162,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     info.perceptualRoughness = u_GlossinessFactor;
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = sRGBToLinear(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
+    vec4 sgSample = texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV());
     info.perceptualRoughness *= sgSample.a ; // glossiness to roughness
     info.f0 *= sgSample.rgb; // specular
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
@@ -421,7 +421,7 @@ void main()
 
     f_emissive = u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
-    f_emissive *= sRGBToLinear(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
+    f_emissive *= texture(u_EmissiveSampler, getEmissiveUV()).rgb;
 #endif
 
     vec3 color = vec3(0);
