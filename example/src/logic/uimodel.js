@@ -48,6 +48,7 @@ class UIModel
             startWith(DebugOutput.NONE)
         );
 
+        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
@@ -74,7 +75,7 @@ class UIModel
         );
 
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
-        
+
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
         this.hdr = inputObservables.hdrDropped;
@@ -181,6 +182,19 @@ class UIModel
         xmpData.subscribe( (xmpData) => {
             this.app.xmp = xmpData;
         });
+    }
+
+    updateStatistics(statisticsUpdateObservable)
+    {
+        statisticsUpdateObservable.subscribe(
+            data => {this.app.statistics = [
+                    {title: "Mesh Count", value: data.meshCount},
+                    {title: "Triangle Count", value: data.faceCount},
+                    {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
+                    {title: "Transparent Material Count", value: data.transparentMaterialsCount}
+                ]
+            }
+        )
     }
 }
 

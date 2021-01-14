@@ -55,6 +55,10 @@ uniform float u_AlphaCutoff;
 
 uniform vec3 u_Camera;
 
+#ifdef MATERIAL_TRANSMISSION
+uniform ivec2 u_ScreenSize;
+#endif
+
 struct MaterialInfo
 {
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
@@ -220,7 +224,7 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 
     #ifdef HAS_TRANSMISSION_MAP
         vec4 transmissionSample = texture(u_TransmissionSampler, getTransmissionUV());
-        info.transmissionFactor *= transmissionSample.a;
+        info.transmissionFactor *= transmissionSample.r;
     #endif
 
     return info;
@@ -349,7 +353,11 @@ void main()
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
-        f_transmission += getIBLRadianceTransmission(n, v, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
+        vec2 normalizedFragCoord = vec2(0.0,0.0);
+        normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
+        normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
+
+        f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
     #endif
 #endif
 
@@ -358,6 +366,10 @@ void main()
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
+    // apply ambient occlusion too all lighting that is not punctual
+    f_specular = mix(f_specular, f_specular * ao, u_OcclusionStrength);
+    f_sheen = mix(f_sheen, f_sheen * ao, u_OcclusionStrength);
+    f_clearcoat = mix(f_clearcoat, f_clearcoat * ao, u_OcclusionStrength);
 #endif
 
 #ifdef USE_PUNCTUAL

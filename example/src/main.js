@@ -4,8 +4,8 @@ import { GltfView, computePrimitiveCentroids, loadGltf, loadEnvironment, initKtx
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
-import { Observable, from } from 'rxjs';
-import { mergeMap, filter } from 'rxjs/operators';
+import { Observable, Subject, from, merge } from 'rxjs';
+import { mergeMap, filter, map, multicast } from 'rxjs/operators';
 import { gltfModelPathProvider } from './model_path_provider.js';
 
 async function main()
@@ -27,7 +27,8 @@ async function main()
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
-    const gltfLoadedObservable = uiModel.model.pipe(
+    const subject = new Subject();
+    const gltfLoadedMulticast = uiModel.model.pipe(
         mergeMap( (model) =>
         {
             return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
@@ -42,14 +43,24 @@ async function main()
                 return state.gltf;
             })
             );
-        })
+        }),
+        // transform gltf loaded observable to multicast observable to avoid multiple execution with multiple subscriptions
+        multicast(subject)
     );
 
-    uiModel.attachGltfLoaded(gltfLoadedObservable);
 
-    uiModel.scene.subscribe( scene => {
+    const sceneChangedObservable = uiModel.scene.pipe(map( scene => {
         state.sceneIndex = scene;
-    });
+    }));
+
+    const statisticsUpdateObservableTemp = merge(
+        gltfLoadedMulticast,
+        sceneChangedObservable
+    );
+
+    const statisticsUpdateObservable = statisticsUpdateObservableTemp.pipe(
+        map( (_) => view.gatherStatistics(state) )
+    );
 
     uiModel.camera.pipe(filter(camera => camera === "User Camera")).subscribe( () => {
         state.cameraIndex = undefined;
@@ -71,11 +82,15 @@ async function main()
     });
 
     uiModel.skinningEnabled.subscribe( skinningEnabled => {
-        state.skinningEnabled = skinningEnabled;
+        state.renderingParameters.skinning = skinningEnabled;
+    });
+
+    uiModel.exposure.subscribe( exposure => {
+        state.renderingParameters.exposure = exposure;
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
-        state.morphingEnabled = morphingEnabled;
+        state.renderingParameters.morphing = morphingEnabled;
     });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
@@ -123,12 +138,16 @@ async function main()
             state.animationTimer.pause();
         }
     })
-    
+
     uiModel.hdr.subscribe( hdrFile => {
         loadEnvironment(hdrFile, view).then( (environment) => {
             state.environment = environment;
         });
     });
+
+    uiModel.attachGltfLoaded(gltfLoadedMulticast);
+    uiModel.updateStatistics(statisticsUpdateObservable);
+    gltfLoadedMulticast.connect();
 
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);

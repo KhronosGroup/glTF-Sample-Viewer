@@ -81,7 +81,8 @@ class GlbParser
         const chunkLength = chunkInfo.length;
         const jsonStart = (this.glbHeaderInts + this.glbChunkHeaderInts) * 4;
         const jsonSlice = new Uint8Array(this.data, jsonStart, chunkLength);
-        return JSON.parse(String.fromCharCode.apply(null, jsonSlice));
+        const stringBuffer = new TextDecoder("utf-8").decode(jsonSlice);
+        return JSON.parse(stringBuffer);
     }
 
     getBufferFromChunk(chunkInfo)

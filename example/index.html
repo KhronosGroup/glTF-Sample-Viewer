@@ -104,6 +104,24 @@ function getUrlParam(parameter, defaultvalue){
         </div>
     </div>
 </script>
+<script id="dualLabelListTemplate" type="text/x-template">
+    <div>
+        <label class="label">{{ name }}</label>
+        <div v-for="item in items" :key="item.title">
+            <dual-label-element v-bind:name="item.title" v-bind:value="item.value"></dual-label-element>
+        </div>
+    </div>
+</script>
+<script id="dualLabelTemplate" type="text/x-template">
+    <div class="greyOverlay">
+        <section>
+            <label class="smallerLabel">{{ name }}</label>
+        </section>
+        <section>
+            <label class="smallestLabel">{{ value }}</label>
+        </section>
+    </div>
+</script>
 
 <!-- templates for different menu tabs-->
 <script id="modelsTemplate" type="text/x-template">
@@ -111,7 +129,7 @@ function getUrlParam(parameter, defaultvalue){
         <h2>Models</h2>
 
         <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="models"></drop-down-element>
-        <drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>
+        <!--<drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>-->
         <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="scenes"></drop-down-element>
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
@@ -130,13 +148,14 @@ function getUrlParam(parameter, defaultvalue){
         </section>
         <section>
             <label class="label">Background</label>
-            <b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>
+            <!--<b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>-->
             <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color" ref="colorpicker"></color-picker-element>
-            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations" class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
+            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations"
+                class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
         </section>
-        <label class="label">Image Based Lighting</label>
+        <!--<label class="label">Image Based Lighting</label>
         <b-button v-on:click="addenvironment">Add new HDR</b-button>
-        <drop-down-element v-on:selectionchanged="environmentchanged" v-bind:dropdowncontent="environments" class="smallerLabel" name="Active Environment" ></drop-down-element>
+        <drop-down-element v-on:selectionchanged="environmentchanged" v-bind:dropdowncontent="environments" class="smallerLabel" name="Active Environment" ></drop-down-element>-->
     </div>
 </script>
 <script id="animationTemplate" type="text/x-template">
@@ -144,7 +163,7 @@ function getUrlParam(parameter, defaultvalue){
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
         <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animations"></toggle-button>
-        <check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>
+        <!--<check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>-->
     </div>
 </script>
 <script id="xmpTemplate" type="text/x-template">
@@ -157,11 +176,12 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Advanced Controls</h2>
         <drop-down-element name="Debug Channels" v-on:selectionchanged="debugchannelchanged" v-bind:dropdowncontent="debugchannels"></drop-down-element>
-        <slider-element class="smallerLabel" name="Exposure"></slider-element>
+        <slider-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged"></slider-element>
         <drop-down-element class="smallerLabel" name="Tone Map" v-on:selectionchanged="tonemapchanged" v-bind:dropdowncontent="tonemaps"></drop-down-element>
         <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
         <br>
         <b-switch v-model="morphing" v-on:input="morphingchanged">Morphing</b-switch>
+        <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
     </div>
 </script>
 
@@ -194,6 +214,11 @@ function getUrlParam(parameter, defaultvalue){
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Display 30X30.svg" width="30px" height="30px">
+                        <span>Display</span>
+                    </template>
                     <tab-display v-stream:addenvironment="addEnvironment$"
                                   v-stream:environmentvisibilitychanged="environmentVisibilityChanged$"
                                   v-stream:environmentrotationchanged="environmentRotationChanged$"
@@ -206,20 +231,42 @@ function getUrlParam(parameter, defaultvalue){
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Animation 30X30.svg" width="30px" height="30px">
+                        <span>Animation</span>
+                    </template>
                     <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
                                     v-bind:animations="animations"
                                     ref="animations"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/XMP 30X30.svg" width="30px" height="30px">
+                        <span>XMP</span>
+                    </template>
                     <tab-xmp v-bind:xmp="xmp"></tab-xmp>
                 </b-tab-item>
-                <b-tab-item label="Capture" icon="video">
-                </b-tab-item>
+                <!--<b-tab-item label="Capture" icon="video">
+                    <template #header>
+                        to get colored icons use: https://stackoverflow.com/a/43916743
+                        <img src="assets/ui/Capture 30X30.svg" width="30px" height="30px">
+                        <span>Capture</span>
+                    </template>
+                </b-tab-item>-->
                 <b-tab-item label="Advanced Controls" icon="video">
-                    <tab-advanced-controls v-stream:skinningchanged="skinningChanged$"
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Developer 30X30.svg" width="30px" height="30px">
+                        <span>Advanced Controls</span>
+                    </template>
+                    <tab-advanced-controls v-stream:exposurechanged="exposureChanged$"
+                                            v-stream:skinningchanged="skinningChanged$"
                                             v-stream:morphingchanged="morphingChanged$"
                                             v-stream:tonemapchanged="tonemapChanged$" v-bind:tonemaps="tonemaps"
-                                            v-stream:debugchannelchanged="debugchannelChanged$" v-bind:debugchannels="debugchannels"></tab-advanced-controls>
+                                            v-stream:debugchannelchanged="debugchannelChanged$" v-bind:debugchannels="debugchannels"
+                                            v-bind:statistics="statistics"></tab-advanced-controls>
                 </b-tab-item>
             </b-tabs>
         </template>
