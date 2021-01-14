@@ -69,6 +69,10 @@ function getUrlParam(parameter, defaultvalue){
 <script id="radioButtonListTemplate" type="text/x-template">
     <section>
         <b-field>
+            <b-radio v-model="radio"
+                    v-bind:name="name">
+                    None
+            </b-radio>
             <b-radio  v-for="item in radiobuttoncontent" :key="item.title"
                     v-model="radio"
                     v-bind:name="name"
