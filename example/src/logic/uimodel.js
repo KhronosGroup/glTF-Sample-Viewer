@@ -11,10 +11,11 @@ import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 // as close as possible
 class UIModel
 {
-    constructor(app, modelPathProvider)
+    constructor(app, modelPathProvider, state)
     {
         this.app = app;
         this.pathProvider = modelPathProvider;
+        this.state = state;
 
         this.app.models = this.pathProvider.getAllKeys().map(key => {
             return {title: key};
@@ -73,6 +74,24 @@ class UIModel
                 ] : null;
             })
         );
+
+        const cameraIndices = this.scene.pipe(map( scene => {
+            let cameraIndices = [{title: "User Camera"}];
+            const gltf = state.gltf;
+            cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+                if(gltf.scenes[scene].includesNode(gltf, camera.node))
+                {
+                    return {title: index};
+                }
+            }));
+            cameraIndices = cameraIndices.filter(function(el) {
+                return el !== undefined;
+            });
+            return cameraIndices;
+        }));
+        cameraIndices.subscribe( (cameras) => {
+            this.app.cameras = cameras;
+        });
 
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
 
@@ -135,10 +154,16 @@ class UIModel
 
         const cameraIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
-                const cameraIndices = [{title: "User Camera"}];
+                let cameraIndices = [{title: "User Camera"}];
                 cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    return {title: index};
+                    if(gltf.scenes[this.state.sceneIndex].includesNode(gltf, camera.node))
+                    {
+                        return {title: index};
+                    }
                 }));
+                cameraIndices = cameraIndices.filter(function(el) {
+                    return el !== undefined;
+                });
                 return cameraIndices;
             })
         );
@@ -165,7 +190,7 @@ class UIModel
             (_) => {this.app.setAnimationState(true);
             }
         );
-        
+
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
