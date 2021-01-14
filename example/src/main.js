@@ -49,9 +49,10 @@ async function main()
     );
 
 
-    const sceneChangedObservable = uiModel.scene.pipe(map( scene => {
-        state.sceneIndex = scene;
-    }));
+    const sceneChangedObservable = uiModel.scene.pipe(
+        map( sceneIndex => {
+            state.sceneIndex = sceneIndex;
+        }));
 
     const statisticsUpdateObservableTemp = merge(
         gltfLoadedMulticast,

@@ -89,10 +89,10 @@ Vue.component('check-box-element', {
     template:'#checkBoxTemplate'
 });
 Vue.component('slider-element', {
-    props: ['name'],
+    props: ['name', 'min', 'max', 'stepsize'],
     data() {
         return {
-            value: 1
+            value: 0,
         };
     },
     updated : function()

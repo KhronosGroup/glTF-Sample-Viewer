@@ -92,8 +92,8 @@ function getUrlParam(parameter, defaultvalue){
 <script id="sliderTemplate" type="text/x-template">
     <div>
         <label class="label">{{ name }}</label>
-        <b-numberinput  v-model="value" min="0" max="100" :exponential=".5"></b-numberinput >
-        <b-slider v-model="value"></b-slider>
+        <b-numberinput  v-model="value" v-bind:min="min" v-bind:max="max" v-bind:step="stepsize" :exponential=".5"></b-numberinput >
+        <b-slider v-model="value" v-bind:min="min" v-bind:max="max" v-bind:step="stepsize"></b-slider>
     </div>
 </script>
 <script id="colorPickerTemplate" type="text/x-template">
@@ -176,7 +176,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Advanced Controls</h2>
         <drop-down-element name="Debug Channels" v-on:selectionchanged="debugchannelchanged" v-bind:dropdowncontent="debugchannels"></drop-down-element>
-        <slider-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged"></slider-element>
+        <slider-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged" min="-2" max="2" stepsize="0.33333"></slider-element>
         <drop-down-element class="smallerLabel" name="Tone Map" v-on:selectionchanged="tonemapchanged" v-bind:dropdowncontent="tonemaps"></drop-down-element>
         <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
         <br>
