@@ -167,7 +167,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     environment.textures.push(diffuseTexture);
 
-    environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, false);
+    environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.diffuseEnvMap.generateMips = false;
 
 
@@ -193,7 +193,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     environment.textures.push(specularTexture);
 
-    environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, false);
+    environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.specularEnvMap.generateMips = false;
 
 
@@ -218,7 +218,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     environment.textures.push(sheenTexture);
 
-    environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, false);
+    environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.sheenEnvMap.generateMips = false;
 
 /*
