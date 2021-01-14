@@ -503,7 +503,6 @@ class gltfRenderer
         if (state.renderingParameters.useIBL && state.environment)
         {
             fragDefines.push("USE_IBL 1");
-            fragDefines.push("USE_HDR 1");
         }
 
         switch (state.renderingParameters.toneMap)
