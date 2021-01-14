@@ -81,6 +81,20 @@ class UIModel
         this.hdr = inputObservables.hdrDropped;
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
+
+        const dropedFileName = inputObservables.gltfDropped.pipe(
+            map( (data) => {
+                return data.mainFile.name;
+            })
+        );
+        dropedFileName.subscribe( (filename) => {
+            if(filename !== undefined)
+            {
+                filename = filename.split('/').pop();
+                filename = filename.substr(0, filename.lastIndexOf('.'));
+                this.app.setSelectedModel(filename);
+            }
+        });
     }
 
     static getInputObservables(inputDomElement)
@@ -112,7 +126,7 @@ class UIModel
                 return files.find( (file) => file.name.endsWith(".hdr"));
             }),
             filter(file => file),
-        )
+        );
         return observables;
     }
 

@@ -37,7 +37,8 @@ Vue.component('drop-down-element', {
     template:'#dropDownTemplate',
     data() {
         return {
-            selectedOption: ""
+            selectedOption: "",
+            placeholdertext: "Select"
         };
     },
     // this is used to init the dropdown (so it is not empty on UI bootup)
@@ -56,7 +57,8 @@ Vue.component('drop-down-element', {
         },
         setSelection: function(value)
         {
-            this.selectedOption = value;
+            this.selectedOption = null;
+            this.placeholdertext = value;
         }
     }
 });
