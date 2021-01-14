@@ -161,10 +161,10 @@ Vue.component('tab-models', {
             this.$emit('variantchanged', value);
         },
         setSelectedModel: function(value) {
-            this.$refs.models.setSelection(value);
+            this.$refs.modelselection.setSelection(value);
         },
         setSelectedScene: function(value) {
-            this.$refs.scenes.setSelection(value);
+            this.$refs.sceneselection.setSelection(value);
         }
     }
 });
@@ -216,7 +216,7 @@ Vue.component('tab-animation', {
             this.$emit('animationplayclicked', value)
         },
         setAnimationState: function(value) {
-            this.$refs.animations.setState(value);
+            this.$refs.animationtoggle.setState(value);
         }
     }
 });
@@ -284,19 +284,19 @@ const app = new Vue({
     {
         setSelectedModel: function(value)
         {
-            this.$refs.models.setSelectedModel(value);
+            this.$refs.tabmodels.setSelectedModel(value);
         },
         setSelectedScene: function(value)
         {
-            this.$refs.scenes.setSelectedScene(value);
+            this.$refs.tabmodels.setSelectedScene(value);
         },
         setSelectedClearColor: function(value)
         {
-            this.$refs.colorpicker.setSelectedClearColor(value);
+            this.$refs.tabdisplay.setSelectedClearColor(value);
         },
         setAnimationState: function(value)
         {
-            this.$refs.animations.setAnimationState(value);
+            this.$refs.tabanimation.setAnimationState(value);
         }
     }
 }).$mount('#app');

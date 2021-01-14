@@ -118,14 +118,6 @@ class UIModel
 
     attachGltfLoaded(glTFLoadedStateObservable)
     {
-        const loadedSceneIndex = glTFLoadedStateObservable.pipe(
-            map( (state) => state.sceneIndex )
-        );
-        loadedSceneIndex.subscribe( (index) => {
-            // TODO why does this have an undefined error
-            this.app.setSelectedScene(index);
-        });
-
         const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
             map( state => state.gltf ),
             startWith(new glTF())
@@ -140,6 +132,13 @@ class UIModel
         );
         sceneIndices.subscribe( (scenes) => {
             this.app.scenes = scenes;
+        });
+
+        const loadedSceneIndex = glTFLoadedStateObservable.pipe(
+            map( (state) => state.sceneIndex )
+        );
+        loadedSceneIndex.subscribe( (index) => {
+            this.app.setSelectedScene(index);
         });
 
         const cameraIndices = gltfLoadedAndInit.pipe(
