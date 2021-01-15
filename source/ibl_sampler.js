@@ -59,28 +59,10 @@ class iblSampler
 
         this.gl.bindTexture( this.gl.TEXTURE_2D, texture); // as this function is asynchronus, another texture could be set in between
 
-
         var internalFormat = this.gl.RGBA32F;
-        var format = this.gl.RGB;
+        var format = this.gl.RGBA;
         var type = this.gl.FLOAT;
-        var data = undefined;
-
-        if (image.dataFloat instanceof Float32Array)
-        {
-            internalFormat = this.gl.RGBA32F;
-            format = this.gl.RGBA;
-            type = this.gl.FLOAT;
-            data = image.dataFloat;
-        }
-        else if (image instanceof Image)
-        {
-            internalFormat = this.gl.RGBA;
-            format = this.gl.RGBA;
-            type = this.gl.UNSIGNED_BYTE;
-            data = image;
-        }
-
-
+        var data = image.dataFloat;
 
         this.gl.texImage2D(
             this.gl.TEXTURE_2D,
