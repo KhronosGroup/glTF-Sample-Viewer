@@ -23,18 +23,18 @@ class gltfWebGl
             }
         }
 
-        let EXT_texture_filter_anisotropic = this.context.getExtension("EXT_texture_filter_anisotropic");
+        // let EXT_texture_filter_anisotropic = this.context.getExtension("EXT_texture_filter_anisotropic");
 
-        if (EXT_texture_filter_anisotropic)
-        {
-            this.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
-            this.context.maxAnisotropy = this.context.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-            this.context.supports_EXT_texture_filter_anisotropic = true;
-        }
-        else
-        {
-            this.context.supports_EXT_texture_filter_anisotropic = false;
-        }
+        // if (EXT_texture_filter_anisotropic)
+        // {
+        //     this.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
+        //     this.context.maxAnisotropy = this.context.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        //     this.context.supports_EXT_texture_filter_anisotropic = true;
+        // }
+        // else
+        // {
+        //     this.context.supports_EXT_texture_filter_anisotropic = false;
+        // }
     }
 
     setTexture(loc, gltf, textureInfo, texSlot)

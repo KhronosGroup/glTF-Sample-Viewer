@@ -65,13 +65,11 @@ class gltfImage extends GltfObject
             return;
         }
 
-        const self = this;
-
-        if (!await self.setImageFromBufferView(gltf) &&
-            !await self.setImageFromFiles(additionalFiles, gltf) &&
-            !await self.setImageFromUri(gltf))
+        if (!await this.setImageFromBufferView(gltf) &&
+            !await this.setImageFromFiles(additionalFiles, gltf) &&
+            !await this.setImageFromUri(gltf))
         {
-            console.error("Was not able to resolve image with uri '%s'", self.uri);
+            console.error("Was not able to resolve image with uri '%s'", this.uri);
             return;
         }
 
@@ -95,13 +93,7 @@ class gltfImage extends GltfObject
             return false;
         }
 
-        if (typeof(Image) !== 'undefined' && this.image instanceof Image)
-        {
-            this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
-                console.error(error);
-            });
-        }
-        else if(this.mimeType === ImageMimeType.KTX2)
+        if(this.mimeType === ImageMimeType.KTX2)
         {
             if (gltf.ktxDecoder !== undefined)
             {
@@ -111,6 +103,12 @@ class gltfImage extends GltfObject
             {
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
+        }
+        else if (typeof(Image) !== 'undefined' && this.image instanceof Image)
+        {
+            this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
+                console.error(error);
+            });
         }
         else
         {
