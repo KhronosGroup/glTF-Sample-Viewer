@@ -20,7 +20,7 @@ class GltfView
     {
         if(this.ui !== undefined)
         {
-            this.canvas.width = this.canvas.clientWidth - this.ui.getBoundingClientRect().width;
+            this.canvas.width = window.innerWidth - this.ui.getBoundingClientRect().width;
         }
         else
         {
