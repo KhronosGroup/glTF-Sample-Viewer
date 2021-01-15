@@ -57,10 +57,8 @@ class iblSampler
 
         this.gl.bindTexture( this.gl.TEXTURE_2D,  texture);
 
-        this.gl.bindTexture( this.gl.TEXTURE_2D, texture); // as this function is asynchronus, another texture could be set in between
-
-        var internalFormat = this.gl.RGBA32F;
-        var format = this.gl.RGBA;
+        var internalFormat = this.gl.RGB32F;
+        var format = this.gl.RGB;
         var type = this.gl.FLOAT;
         var data = image.dataFloat;
 
@@ -194,7 +192,7 @@ class iblSampler
 
             // map shader uniform to texture unit (TEXTURE0)
             const location = this.gl.getUniformLocation(shader.program,"u_panorama");
-            this.gl.uniform1i(location, 0); // texture unit 0 (TEXTURE0)
+            this.gl.uniform1i(location, this.gl.TEXTURE0+0); // texture unit 0 (TEXTURE0)
 
             shader.updateUniform("u_currentFace", i);
 
