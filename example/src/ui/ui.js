@@ -61,11 +61,14 @@ Vue.component('drop-down-element', {
     }
 });
 Vue.component('radio-button-list-element', {
-    props: ['name', 'radiobuttoncontent'],
+    props: ['name', 'radiobuttoncontent', 'defaultselection'],
     data() {
         return {
             radio: ""
         };
+    },
+    mounted: function() {
+        this.radio = this.defaultselection;
     },
     updated: function() {
         this.$emit('selectionchanged', this.radio);
