@@ -1,8 +1,12 @@
 #!/usr/bin/env node
+
+const yargs = require("yargs");
+const sample_viewer = require("gltf-sample-viewer");
+const fs = require("fs");
+const node_gles = require("node-gles");
+
 async function main()
 {
-    const yargs = require("yargs");
-    const sample_viewer = require("gltf-sample-viewer");
 
     const options = yargs
         .usage("Usage: <name>")
@@ -13,13 +17,15 @@ async function main()
     const width = 1024;
     const height = 1024;
 
-    const gl = require('gl')(width, height, { preserveDrawingBuffer: true })
+    const gl = node_gles.createWebGLRenderingContext();
 
     const view = new sample_viewer.GltfView(gl);
     const state = view.createState();
 
-    state.environment = await sample_viewer.loadEnvironment("../app_web/assets/environments/footprint_court_512.hdr", view);
-    state.gltf = await sample_viewer.loadGltf("../app_web/assets/models/avocado/glTF-Binary/Avocado.glb", view);
+    const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/environments/footprint_court_512.hdr")).buffer;
+    state.environment = await sample_viewer.loadEnvironment(environment_file, view);
+    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/avocado/glTF-Binary/Avocado.glb")).buffer;
+    state.gltf = await sample_viewer.loadGltf(glb_file, view);
 
     const defaultScene = state.gltf.scene;
     state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
