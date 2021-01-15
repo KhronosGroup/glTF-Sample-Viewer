@@ -134,7 +134,8 @@ function getUrlParam(parameter, defaultvalue){
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
         <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
-                                    v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
+                                    v-bind:radiobuttoncontent="materialvariants"
+                                    defaultselection="None"></radio-button-list-element>
     </div>
 </script>
 <script id="displayTemplate" type="text/x-template">

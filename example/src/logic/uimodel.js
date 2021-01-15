@@ -188,6 +188,11 @@ class UIModel
                     });
                 }
                 return [];
+            }),
+            map(variants => {
+                // Add a "None" variant to the beginning
+                variants.unshift({title: "None"});
+                return variants;
             })
         );
         variants.subscribe( (variants) => {
