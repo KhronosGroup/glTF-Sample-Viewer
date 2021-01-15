@@ -24,7 +24,7 @@ async function main()
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
-    const uiModel = await new UIModel(app, pathProvider);
+    const uiModel = await new UIModel(app, pathProvider, state);
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
