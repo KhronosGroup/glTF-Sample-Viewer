@@ -16,7 +16,7 @@ import { AsyncFileReader } from './async_file_reader.js';
 import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 
-import { HDRImage } from '../libs/hdrpng.js';
+import { loadHDR } from '../libs/hdrpng.js';
 
 function initKtxLib(view, ktxlib)
 {
@@ -90,21 +90,19 @@ async function loadGltf(file, view, additionalFiles)
 
 async function loadEnvironment(file, view)
 {
-    let image = new HDRImage();
+    let image = undefined;
     if (typeof file === "string")
     {
-        await image.loadHDR(file);
-        await new Promise((resolve, reject) => {
-            image.onload = () => resolve(image);
-            image.onerror = reject;
-        });
+        let response = await axios.get(file, { responseType: "arraybuffer" });
+
+        image = await loadHDR(new Uint8Array(response.data));
     }
     else
     {
         const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch( () => {
             console.error("Could not load image with FileReader");
         });
-        await image.loadHDR(new Uint8Array(imageData));
+        image = await loadHDR(new Uint8Array(imageData));
     }
     return loadEnvironmentFromImage(image, view);
 }
