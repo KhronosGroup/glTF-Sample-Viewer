@@ -20,10 +20,6 @@ class gltfImage extends GltfObject
         this.bufferView = bufferView;
         this.mimeType = mimeType;
         this.image = image; // javascript image
-        if (this.image !== undefined)
-        {
-            this.image.crossOrigin = "";
-        }
         this.name = name;
         this.type = type; // nonstandard
         this.miplevel = miplevel; // nonstandard
