@@ -49,7 +49,7 @@ class gltfAccessor extends GltfObject
             if (arrayLength * componentSize > buffer.buffer.byteLength - byteOffset)
             {
                 arrayLength = (buffer.buffer.byteLength - byteOffset) / componentSize;
-                console.warn("Count in accessor " + this.name + " is too large.");
+                console.warn("Count in accessor '" + (this.name ? this.name : "") + "' is too large.");
             }
 
             switch (this.componentType)
