@@ -33,6 +33,8 @@ async function main()
         {
             return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
+                const defaultScene = state.gltf.scene;
+                state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
@@ -40,7 +42,7 @@ async function main()
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
-                return state.gltf;
+                return state;
             })
             );
         }),
@@ -49,10 +51,14 @@ async function main()
     );
 
 
-    const sceneChangedObservable = uiModel.scene.pipe(
-        map( sceneIndex => {
-            state.sceneIndex = sceneIndex;
-        }));
+    const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
+        state.sceneIndex = newSceneIndex;
+        const scene = state.gltf.scenes[state.sceneIndex];
+        scene.applyTransformHierarchy(state.gltf);
+        computePrimitiveCentroids(state.gltf);
+        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+        state.userCamera.updatePosition();
+    }));
 
     const statisticsUpdateObservableTemp = merge(
         gltfLoadedMulticast,

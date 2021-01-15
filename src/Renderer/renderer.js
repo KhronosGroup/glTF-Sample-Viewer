@@ -503,21 +503,17 @@ class gltfRenderer
         if (state.renderingParameters.useIBL && state.environment)
         {
             fragDefines.push("USE_IBL 1");
-            fragDefines.push("USE_HDR 1");
         }
 
         switch (state.renderingParameters.toneMap)
         {
-        case (ToneMaps.UNCHARTED):
-            fragDefines.push("TONEMAP_UNCHARTED 1");
-            break;
-        case (ToneMaps.HEJL_RICHARD):
-            fragDefines.push("TONEMAP_HEJLRICHARD 1");
+        case (ToneMaps.ACES_FAST):
+            fragDefines.push("TONEMAP_ACES_FAST 1");
             break;
         case (ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;
-        case (ToneMaps.LINEAR):
+        case (ToneMaps.NONE):
         default:
             break;
         }

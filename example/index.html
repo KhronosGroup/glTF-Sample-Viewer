@@ -135,9 +135,9 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Models</h2>
 
-        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="models"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="modelselection"></drop-down-element>
         <!--<drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>-->
-        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="scenes"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="sceneselection"></drop-down-element>
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
         <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
@@ -169,7 +169,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
-        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animations"></toggle-button>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animationtoggle"></toggle-button>
         <!--<check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>-->
     </div>
 </script>
@@ -216,8 +216,7 @@ function getUrlParam(parameter, defaultvalue){
                                 v-bind:scenes="scenes"
                                 v-bind:cameras="cameras"
                                 v-bind:materialvariants="materialVariants"
-                                ref="models"
-                                ref="scenes"></tab-models>
+                                ref="tabmodels"></tab-models>
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
@@ -234,7 +233,7 @@ function getUrlParam(parameter, defaultvalue){
                                   v-stream:environmentchanged="environmentChanged$"
                                   v-stream:colorchanged="colorChanged$"
                                   v-bind:environments="environments"
-                                  ref="colorpicker"></tab-display>
+                                  ref="tabdisplay"></tab-display>
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
@@ -245,7 +244,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
                     <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
                                     v-bind:animations="animations"
-                                    ref="animations"></tab-animation>
+                                    ref="tabanimation"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
                     <template #header>
