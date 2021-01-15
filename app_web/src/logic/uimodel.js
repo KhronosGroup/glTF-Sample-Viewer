@@ -116,20 +116,21 @@ class UIModel
         }));
         observables.gltfDropped = observables.filesDropped.pipe(
             // filter out any non .gltf or .glb files
-            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name))),
+            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name)).length > 0),
             map( (files) => {
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
                 const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
                 const additionalFiles = files.filter( (file) => file !== mainFile);
                 return {mainFile: mainFile, additionalFiles: additionalFiles};
             }),
+            filter(files => files.mainFile !== undefined),
         );
         observables.hdrDropped = observables.filesDropped.pipe(
             map( (files) => {
                 // extract only the hdr file from the stream of files
                 return files.find( (file) => file.name.endsWith(".hdr"));
             }),
-            filter(file => file),
+            filter(file => file !== undefined),
         )
         return observables;
     }
