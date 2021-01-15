@@ -13,7 +13,7 @@ class GltfState
             skinning: true,
             clearColor: [58, 64, 74],
             exposure: 1.0,
-            usePunctual: false,
+            usePunctual: true,
             useIBL: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
