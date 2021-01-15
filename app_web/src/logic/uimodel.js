@@ -1,7 +1,6 @@
 import { bindCallback, fromEvent, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF } from 'gltf-sample-viewer';
-import { ToneMaps, DebugOutput } from '../../../src/Renderer/rendering_parameters';
+import { glTF, ToneMaps, DebugOutput } from 'gltf-sample-viewer';
 import { gltfInput } from '../input.js';
 
 import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';

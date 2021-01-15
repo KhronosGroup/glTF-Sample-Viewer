@@ -19,6 +19,11 @@ import {
 
 import { glTF } from './gltf/gltf.js';
 
+import {
+    ToneMaps,
+    DebugOutput
+} from "./Renderer/rendering_parameters.js"
+
 
 export {
     GltfView,
@@ -34,4 +39,6 @@ export {
     combinePaths,
     getFileNameWithoutExtension,
     glTF,
+    ToneMaps,
+    DebugOutput
 };
