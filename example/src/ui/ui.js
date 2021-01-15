@@ -37,7 +37,9 @@ Vue.component('drop-down-element', {
     template:'#dropDownTemplate',
     data() {
         return {
-            selectedOption: ""
+            selectedOption:
+            {
+            }
         };
     },
     // this is used to init the dropdown (so it is not empty on UI bootup)
@@ -46,17 +48,22 @@ Vue.component('drop-down-element', {
         {
             return;
         }
-        this.selectedOption = this.dropdowncontent[0].title;
+        this.selectedOption = this.dropdowncontent[0];
     },
     methods:
     {
         selectionchanged: function(value)
         {
-            this.$emit('selectionchanged', value);
+            this.$emit('selectionchanged', { title: value.title, metadata: value.metadata });
         },
         setSelection: function(value)
         {
-            this.selectedOption = value;
+            const tmp = this.dropdowncontent[value];
+            if(tmp === undefined)
+            {
+                return;
+            }
+            this.selectedOption = tmp;
         }
     }
 });
@@ -268,7 +275,7 @@ const app = new Vue({
             fullheight: true,
             right: true,
             models: [{title: "Avocado"}],
-            flavors: [],
+            flavors: [{title: "gltf"}],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera"}],
             materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],

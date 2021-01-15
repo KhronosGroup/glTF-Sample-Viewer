@@ -52,7 +52,7 @@ async function main()
 
 
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
-        state.sceneIndex = newSceneIndex;
+        state.sceneIndex = newSceneIndex.metadata;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
@@ -69,11 +69,11 @@ async function main()
         map( (_) => view.gatherStatistics(state) )
     );
 
-    uiModel.camera.pipe(filter(camera => camera === "User Camera")).subscribe( () => {
+    uiModel.camera.pipe(filter(camera => camera.title === "User Camera")).subscribe( () => {
         state.cameraIndex = undefined;
     });
-    uiModel.camera.pipe(filter(camera => camera !== "User Camera")).subscribe( camera => {
-        state.cameraIndex = camera;
+    uiModel.camera.pipe(filter(camera => camera.title !== "User Camera")).subscribe( camera => {
+        state.cameraIndex = camera.metadata;
     });
 
     uiModel.variant.subscribe( variant => {

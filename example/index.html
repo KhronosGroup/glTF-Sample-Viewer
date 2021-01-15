@@ -60,7 +60,8 @@ function getUrlParam(parameter, defaultvalue){
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
         <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
-            <option v-for="item in dropdowncontent" :key="item.title">
+            <option v-for="(item) in dropdowncontent" :key="item.title"
+                v-bind:value="{title: item.title, metadata: item.metadata}">
                 {{ item.title }}
             </option>
         </b-select>
@@ -69,7 +70,7 @@ function getUrlParam(parameter, defaultvalue){
 <script id="radioButtonListTemplate" type="text/x-template">
     <section>
         <b-field>
-            <b-radio  v-for="item in radiobuttoncontent" :key="item.title"
+            <b-radio v-for="item in radiobuttoncontent" :key="item.title"
                     v-model="radio"
                     v-bind:name="name"
                     v-bind:native-value="item.title">

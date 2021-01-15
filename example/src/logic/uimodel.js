@@ -24,7 +24,13 @@ class UIModel
         const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
             startWith("Avocado"),
-            map(value => this.pathProvider.resolve(value)),
+            map(value => {
+                if(typeof value === "string" )
+                {
+                    return this.pathProvider.resolve(value);
+                }
+                return this.pathProvider.resolve(value.title);
+            }),
             map( value => ({mainFile: value, additionalFiles: undefined})),
         );
         this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
@@ -79,9 +85,14 @@ class UIModel
             let cameraIndices = [{title: "User Camera"}];
             const gltf = state.gltf;
             cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                if(gltf.scenes[scene].includesNode(gltf, camera.node))
+                if(gltf.scenes[scene.metadata].includesNode(gltf, camera.node))
                 {
-                    return {title: index};
+                    let name = camera.name;
+                    if(name === "" || name === undefined)
+                    {
+                        name = index;
+                    }
+                    return {title: name, metadata: index};
                 }
             }));
             cameraIndices = cameraIndices.filter(function(el) {
@@ -145,7 +156,12 @@ class UIModel
         const sceneIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 return gltf.scenes.map( (scene, index) => {
-                    return {title: index};
+                    let name = scene.name;
+                    if(name === "" || name === undefined)
+                    {
+                        name = index;
+                    }
+                    return {title: name, metadata: index};
                 });
             })
         );
@@ -166,7 +182,12 @@ class UIModel
                 cameraIndices.push(...gltf.cameras.map( (camera, index) => {
                     if(gltf.scenes[this.state.sceneIndex].includesNode(gltf, camera.node))
                     {
-                        return {title: index};
+                        let name = camera.name;
+                        if(name === "" || name === undefined)
+                        {
+                            name = index;
+                        }
+                        return {title: name, metadata: index};
                     }
                 }));
                 cameraIndices = cameraIndices.filter(function(el) {
