@@ -72,8 +72,7 @@ class iblSampler
             type = this.gl.FLOAT;
             data = image.dataFloat;
         }
-
-        if (image instanceof Image)
+        else if (image instanceof Image)
         {
             internalFormat = this.gl.RGBA;
             format = this.gl.RGBA;

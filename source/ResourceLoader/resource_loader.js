@@ -45,6 +45,18 @@ async function loadGltf(file, view, additionalFiles)
         json = response.data;
         data = response.data;
     }
+    else if(file instanceof ArrayBuffer)
+    {
+        isGlb = additionalFiles === undefined;
+        if (isGlb)
+        {
+            data = file;
+        }
+        else
+        {
+            // TODO
+        }
+    }
     else
     {
         let fileContent = file;
@@ -96,6 +108,10 @@ async function loadEnvironment(file, view)
         let response = await axios.get(file, { responseType: "arraybuffer" });
 
         image = await loadHDR(new Uint8Array(response.data));
+    }
+    else if(file instanceof ArrayBuffer)
+    {
+        image = await loadHDR(new Uint8Array(file));
     }
     else
     {
