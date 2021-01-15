@@ -11,7 +11,8 @@ import { gltfModelPathProvider } from './model_path_provider.js';
 async function main()
 {
     const canvas = document.getElementById("canvas");
-    const view = new GltfView(canvas);
+    const ui = document.getElementById("app");
+    const view = new GltfView(canvas, ui);
     const state = view.createState();
 
     initDracoLib();
