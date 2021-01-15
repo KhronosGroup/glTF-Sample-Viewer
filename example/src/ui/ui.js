@@ -88,7 +88,7 @@ Vue.component('check-box-element', {
     },
     template:'#checkBoxTemplate'
 });
-Vue.component('slider-element', {
+Vue.component('exposure-element', {
     props: ['name'],
     data() {
         return {
@@ -106,7 +106,7 @@ Vue.component('slider-element', {
             this.value = value;
         }
     },
-    template:'#sliderTemplate'
+    template:'#exposureTemplate'
 });
 Vue.component('color-picker-element', {
     props: ['name'],
