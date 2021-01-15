@@ -24,7 +24,7 @@ async function main()
 
     const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/environments/footprint_court_512.hdr")).buffer;
     state.environment = await sample_viewer.loadEnvironment(environment_file, view);
-    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/avocado/glTF-Binary/Avocado.glb")).buffer;
+    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/2.0/Avocado/glTF-Binary/Avocado.glb")).buffer;
     state.gltf = await sample_viewer.loadGltf(glb_file, view);
 
     const defaultScene = state.gltf.scene;

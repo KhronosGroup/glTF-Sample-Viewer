@@ -43,7 +43,14 @@ class gltfLoader
 
     static getAdditionalFiles(appendix)
     {
-        return gltfLoader.getTypedAppendix(appendix, File);
+        if(typeof(File) !== 'undefined')
+        {
+            return gltfLoader.getTypedAppendix(appendix, File);
+        }
+        else
+        {
+            return;
+        }
     }
 
     static getTypedAppendix(appendix, Type)

@@ -38,12 +38,14 @@ async function loadGltf(file, view, additionalFiles)
     let buffers = undefined;
     let json = undefined;
     let data = undefined;
+    let filename = "";
     if(typeof file === "string")
     {
         isGlb = getIsGlb(file);
         let response = await axios.get(file, { responseType: isGlb ? "arraybuffer" : "json" });
         json = response.data;
         data = response.data;
+        filename = file;
     }
     else if(file instanceof ArrayBuffer)
     {
@@ -60,7 +62,7 @@ async function loadGltf(file, view, additionalFiles)
     else
     {
         let fileContent = file;
-        file = file.name;
+        filename = file.name;
         isGlb = getIsGlb(file);
         if (isGlb)
         {
@@ -82,7 +84,7 @@ async function loadGltf(file, view, additionalFiles)
         buffers = glb.buffers;
     }
 
-    const gltf = new glTF(file);
+    const gltf = new glTF(filename);
     gltf.ktxDecoder = view.ktxDecoder;
     //Make sure draco decoder instance is ready
     gltf.fromJson(json);

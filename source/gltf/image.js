@@ -53,12 +53,18 @@ class gltfImage extends GltfObject
         {
             this.image = {};
         }
-        else
+        else if(typeof(Image) !== 'undefined')
         {
             this.image = new Image();
+            this.image.crossOrigin = "";
+        }
+        else
+        {
+            //TODO
+            console.error("Unsupported image type " + this.mimeType);
+            return;
         }
 
-        this.image.crossOrigin = "";
         const self = this;
 
         if (!await self.setImageFromBufferView(gltf) &&
@@ -89,13 +95,13 @@ class gltfImage extends GltfObject
             return false;
         }
 
-        if (this.image instanceof Image)
+        if (typeof(Image) !== 'undefined' && this.image instanceof Image)
         {
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
             });
         }
-        else
+        else if(this.mimeType === ImageMimeType.KTX2)
         {
             if (gltf.ktxDecoder !== undefined)
             {
@@ -105,6 +111,10 @@ class gltfImage extends GltfObject
             {
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
+        }
+        else
+        {
+            return false;
         }
 
         return true;
