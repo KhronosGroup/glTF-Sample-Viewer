@@ -60,15 +60,15 @@ class iblSampler
         this.gl.bindTexture( this.gl.TEXTURE_2D, texture); // as this function is asynchronus, another texture could be set in between
 
 
-        var internalFormat = this.gl.RGB32F;
+        var internalFormat = this.gl.RGBA32F;
         var format = this.gl.RGB;
         var type = this.gl.FLOAT;
         var data = undefined;
 
         if (image.dataFloat instanceof Float32Array)
         {
-            internalFormat = this.gl.RGB32F;
-            format = this.gl.RGB;
+            internalFormat = this.gl.RGBA32F;
+            format = this.gl.RGBA;
             type = this.gl.FLOAT;
             data = image.dataFloat;
         }
@@ -137,8 +137,6 @@ class iblSampler
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_MAG_FILTER,  this.gl.LINEAR);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_S,  this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_T,  this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri( this.gl.TEXTURE_CUBE_MAP,  this.gl.TEXTURE_WRAP_R,  this.gl.CLAMP_TO_EDGE);
-
 
         return targetTexture;
     }
