@@ -3,6 +3,7 @@ import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
+import { GL  } from '../Renderer/webgl.js';
 
 class gltfPrimitive extends GltfObject
 {
@@ -13,7 +14,7 @@ class gltfPrimitive extends GltfObject
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
-        this.mode = WebGLRenderingContext.TRIANGLES;
+        this.mode = GL.TRIANGLES;
 
         // non gltf
         this.glAttributes = [];
@@ -40,7 +41,7 @@ class gltfPrimitive extends GltfObject
 
         initGlForMembers(this, gltf, webGlContext);
 
-        const maxAttributes = webGlContext.getParameter(WebGLRenderingContext.MAX_VERTEX_ATTRIBS);
+        const maxAttributes = webGlContext.getParameter(GL.MAX_VERTEX_ATTRIBS);
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
 
@@ -402,19 +403,19 @@ class gltfPrimitive extends GltfObject
     {
         switch (componentType)
         {
-        case WebGL2RenderingContext.BYTE:
+        case GL.BYTE:
             return "Int8Array";
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.UNSIGNED_BYTE:
             return "Uint8Array";
-        case WebGL2RenderingContext.SHORT:
+        case GL.SHORT:
             return "Int16Array";
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.UNSIGNED_SHORT:
             return "Uint16Array";
-        case WebGL2RenderingContext.INT:
+        case GL.INT:
             return "Int32Array";
-        case WebGL2RenderingContext.UNSIGNED_INT:
+        case GL.UNSIGNED_INT:
             return "Uint32Array";
-        case WebGL2RenderingContext.FLOAT:
+        case GL.FLOAT:
             return "Float32Array";
         default:
             return "Float32Array";
@@ -446,7 +447,7 @@ class gltfPrimitive extends GltfObject
         // Gather all vertex attributes.
         for(let dracoAttr in gltfDracoAttributes)
         {
-            let componentType = WebGL2RenderingContext.BYTE;
+            let componentType = GL.BYTE;
             let accessotVertexCount;
             // find gltf accessor for this draco attribute
             for (const [key, value] of Object.entries(this.attributes))

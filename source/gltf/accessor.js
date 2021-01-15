@@ -1,4 +1,4 @@
-import { WebGl } from '../Renderer/webgl.js';
+import { GL } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfAccessor extends GltfObject
@@ -48,22 +48,22 @@ class gltfAccessor extends GltfObject
 
             switch (this.componentType)
             {
-            case WebGL2RenderingContext.BYTE:
+            case GL.BYTE:
                 this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.UNSIGNED_BYTE:
+            case GL.UNSIGNED_BYTE:
                 this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.SHORT:
+            case GL.SHORT:
                 this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.UNSIGNED_SHORT:
+            case GL.UNSIGNED_SHORT:
                 this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.UNSIGNED_INT:
+            case GL.UNSIGNED_INT:
                 this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.FLOAT:
+            case GL.FLOAT:
                 this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
                 break;
             }
@@ -104,27 +104,27 @@ class gltfAccessor extends GltfObject
             let func = 'getFloat32';
             switch (this.componentType)
             {
-            case WebGL2RenderingContext.BYTE:
+            case GL.BYTE:
                 this.filteredView = new Int8Array(arrayLength);
                 func = 'getInt8';
                 break;
-            case WebGL2RenderingContext.UNSIGNED_BYTE:
+            case GL.UNSIGNED_BYTE:
                 this.filteredView = new Uint8Array(arrayLength);
                 func = 'getUint8';
                 break;
-            case WebGL2RenderingContext.SHORT:
+            case GL.SHORT:
                 this.filteredView = new Int16Array(arrayLength);
                 func = 'getInt16';
                 break;
-            case WebGL2RenderingContext.UNSIGNED_SHORT:
+            case GL.UNSIGNED_SHORT:
                 this.filteredView = new Uint16Array(arrayLength);
                 func = 'getUint16';
                 break;
-            case WebGL2RenderingContext.UNSIGNED_INT:
+            case GL.UNSIGNED_INT:
                 this.filteredView = new Uint32Array(arrayLength);
                 func = 'getUint32';
                 break;
-            case WebGL2RenderingContext.FLOAT:
+            case GL.FLOAT:
                 this.filteredView = new Float32Array(arrayLength);
                 func = 'getFloat32';
                 break;
@@ -170,13 +170,13 @@ class gltfAccessor extends GltfObject
         let indicesTypedView;
         switch (this.sparse.indices.componentType)
         {
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.UNSIGNED_BYTE:
             indicesTypedView = new Uint8Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.UNSIGNED_SHORT:
             indicesTypedView = new Uint16Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_INT:
+        case GL.UNSIGNED_INT:
             indicesTypedView = new Uint32Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
             break;
         }
@@ -200,22 +200,22 @@ class gltfAccessor extends GltfObject
         let valuesTypedView;
         switch (this.componentType)
         {
-        case WebGL2RenderingContext.BYTE:
+        case GL.BYTE:
             valuesTypedView = new Int8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.UNSIGNED_BYTE:
             valuesTypedView = new Uint8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.SHORT:
+        case GL.SHORT:
             valuesTypedView = new Int16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.UNSIGNED_SHORT:
             valuesTypedView = new Uint16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_INT:
+        case GL.UNSIGNED_INT:
             valuesTypedView = new Uint32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.FLOAT:
+        case GL.FLOAT:
             valuesTypedView = new Float32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
         }
@@ -240,14 +240,14 @@ class gltfAccessor extends GltfObject
     {
         switch (componentType)
         {
-        case WebGL2RenderingContext.BYTE:
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.BYTE:
+        case GL.UNSIGNED_BYTE:
             return 1;
-        case WebGL2RenderingContext.SHORT:
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.SHORT:
+        case GL.UNSIGNED_SHORT:
             return 2;
-        case WebGL2RenderingContext.UNSIGNED_INT:
-        case WebGL2RenderingContext.FLOAT:
+        case GL.UNSIGNED_INT:
+        case GL.FLOAT:
             return 4;
         default:
             return 0;

@@ -2230,11 +2230,284 @@ class AsyncFileReader
 
 const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2", GLTEXTURE: "image/texture"};
 
+let GL = undefined;
+
+class gltfWebGl
+{
+    constructor(context)
+    {
+        this.context = context;
+        if(GL === undefined)
+        {
+            GL = context;
+        }
+    }
+
+    loadWebGlExtensions(webglExtensions)
+    {
+        for (let extension of webglExtensions)
+        {
+            if (this.context.getExtension(extension) === null)
+            {
+                console.warn("Extension " + extension + " not supported!");
+            }
+        }
+
+        let EXT_texture_filter_anisotropic = this.context.getExtension("EXT_texture_filter_anisotropic");
+
+        if (EXT_texture_filter_anisotropic)
+        {
+            this.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
+            this.context.maxAnisotropy = this.context.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            this.context.supports_EXT_texture_filter_anisotropic = true;
+        }
+        else
+        {
+            this.context.supports_EXT_texture_filter_anisotropic = false;
+        }
+    }
+
+    setTexture(loc, gltf, textureInfo, texSlot)
+    {
+        if (loc === -1)
+        {
+            return false;
+        }
+
+        let gltfTex = gltf.textures[textureInfo.index];
+
+        if (gltfTex === undefined)
+        {
+            console.warn("Texture is undefined: " + textureInfo.index);
+            return false;
+        }
+
+        const image = gltf.images[gltfTex.source];
+        if (image.mimeType === ImageMimeType.KTX2 ||
+            image.mimeType === ImageMimeType.GLTEXTURE)
+        {
+            gltfTex.glTexture = image.image;
+            gltfTex.initialized = true;
+        }
+
+        if (gltfTex.glTexture === undefined)
+        {
+            gltfTex.glTexture = this.context.createTexture();
+        }
+
+        this.context.activeTexture(GL.TEXTURE0 + texSlot);
+        this.context.bindTexture(gltfTex.type, gltfTex.glTexture);
+
+        this.context.uniform1i(loc, texSlot);
+
+        if (!gltfTex.initialized)
+        {
+            const gltfSampler = gltf.samplers[gltfTex.sampler];
+
+            if (gltfSampler === undefined)
+            {
+                console.warn("Sampler is undefined for texture: " + textureInfo.index);
+                return false;
+            }
+
+            this.context.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, false);
+
+            if (image === undefined)
+            {
+                console.warn("Image is undefined for texture: " + gltfTex.source);
+                return false;
+            }
+            const internalformat = textureInfo.linear ? GL.RGBA : GL.SRGB8_ALPHA8;
+            this.context.texImage2D(image.type, image.miplevel, internalformat, GL.RGBA, GL.UNSIGNED_BYTE, image.image);
+            const generateMips = image.shouldGenerateMips();
+
+            this.setSampler(gltfSampler, gltfTex.type, generateMips);
+
+            if (textureInfo.generateMips && generateMips)
+            {
+                // Until this point, images can be assumed to be power of two.
+                switch (gltfSampler.minFilter)
+                {
+                case GL.NEAREST_MIPMAP_NEAREST:
+                case GL.NEAREST_MIPMAP_LINEAR:
+                case GL.LINEAR_MIPMAP_NEAREST:
+                case GL.LINEAR_MIPMAP_LINEAR:
+                    this.context.generateMipmap(gltfTex.type);
+                    break;
+                }
+            }
+
+            gltfTex.initialized = true;
+        }
+
+        return gltfTex.initialized;
+    }
+
+    setIndices(gltf, accessorIndex)
+    {
+        let gltfAccessor = gltf.accessors[accessorIndex];
+
+        if (gltfAccessor.glBuffer === undefined)
+        {
+            gltfAccessor.glBuffer = this.context.createBuffer();
+
+            let data = gltfAccessor.getTypedView(gltf);
+
+            if (data === undefined)
+            {
+                return false;
+            }
+
+            this.context.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+            this.context.bufferData(GL.ELEMENT_ARRAY_BUFFER, data, GL.STATIC_DRAW);
+        }
+        else
+        {
+            this.context.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
+        }
+
+        return true;
+    }
+
+    enableAttribute(gltf, attributeLocation, gltfAccessor)
+    {
+        if (attributeLocation === -1)
+        {
+            console.warn("Tried to access unknown attribute");
+            return false;
+        }
+
+        if(gltfAccessor.bufferView === undefined)
+        {
+            console.warn("Tried to access undefined bufferview");
+            return true;
+        }
+
+        let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
+
+        if (gltfAccessor.glBuffer === undefined)
+        {
+            gltfAccessor.glBuffer = this.context.createBuffer();
+
+            let data = gltfAccessor.getTypedView(gltf);
+
+            if (data === undefined)
+            {
+                return false;
+            }
+
+            this.context.bindBuffer(GL.ARRAY_BUFFER, gltfAccessor.glBuffer);
+            this.context.bufferData(GL.ARRAY_BUFFER, data, GL.STATIC_DRAW);
+        }
+        else
+        {
+            this.context.bindBuffer(GL.ARRAY_BUFFER, gltfAccessor.glBuffer);
+        }
+
+        this.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+        this.context.enableVertexAttribArray(attributeLocation);
+
+        return true;
+    }
+
+    compileShader(shaderIdentifier, isVert, shaderSource)
+    {
+        const shader = this.context.createShader(isVert ? GL.VERTEX_SHADER : GL.FRAGMENT_SHADER);
+        this.context.shaderSource(shader, shaderSource);
+        this.context.compileShader(shader);
+        const compiled = this.context.getShaderParameter(shader, GL.COMPILE_STATUS);
+
+        if (!compiled)
+        {
+            // output surrounding source code
+            let info = "";
+            const messages = this.context.getShaderInfoLog(shader).split("\n");
+            for(const message of messages)
+            {
+                info += message + "\n";
+                const matches = message.match(/(?:(?:WARNING)|(?:ERROR)): [0-9]*:([0-9]*).*/i);
+                if (matches && matches.length > 1)
+                {
+                    const lineNumber = parseInt(matches[1]) - 1;
+                    const lines = shaderSource.split("\n");
+
+                    for(let i = Math.max(0, lineNumber - 2); i < Math.min(lines.length, lineNumber + 3); i++)
+                    {
+                        if (lineNumber === i)
+                        {
+                            info += "->";
+                        }
+                        info += "\t" + lines[i] + "\n";
+                    }
+                }
+            }
+
+            throw new Error("Could not compile WebGL program '" + shaderIdentifier + "'. \n\n" + info);
+        }
+
+        return shader;
+    }
+
+    linkProgram(vertex, fragment)
+    {
+        let program = this.context.createProgram();
+        this.context.attachShader(program, vertex);
+        this.context.attachShader(program, fragment);
+        this.context.linkProgram(program);
+
+        if (!this.context.getProgramParameter(program, GL.LINK_STATUS))
+        {
+            var info = this.context.getProgramInfoLog(program);
+            throw new Error('Could not link WebGL program. \n\n' + info);
+        }
+
+        return program;
+    }
+
+    //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
+    setSampler(gltfSamplerObj, type, generateMipmaps) // TEXTURE_2D
+    {
+        if (generateMipmaps)
+        {
+            this.context.texParameteri(type, GL.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
+            this.context.texParameteri(type, GL.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
+        }
+        else
+        {
+            this.context.texParameteri(type, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+            this.context.texParameteri(type, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+        }
+
+        // If not mip-mapped, force to non-mip-mapped sampler.
+        if (!generateMipmaps && (gltfSamplerObj.minFilter != GL.NEAREST) && (gltfSamplerObj.minFilter != GL.LINEAR))
+        {
+            if ((gltfSamplerObj.minFilter == GL.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == GL.NEAREST_MIPMAP_LINEAR))
+            {
+                this.context.texParameteri(type, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+            }
+            else
+            {
+                this.context.texParameteri(type, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
+            }
+        }
+        else
+        {
+            this.context.texParameteri(type, GL.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
+        }
+        this.context.texParameteri(type, GL.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
+
+        if (this.context.supports_EXT_texture_filter_anisotropic)
+        {
+            this.context.texParameterf(type, this.context.anisotropy, this.context.maxAnisotropy); // => 16xAF
+        }
+    }
+}
+
 class gltfImage extends GltfObject
 {
     constructor(
         uri = undefined,
-        type = WebGLRenderingContext.TEXTURE_2D,
+        type = GL.TEXTURE_2D,
         miplevel = 0,
         bufferView = undefined,
         name = undefined,
@@ -2493,7 +2766,7 @@ class gltfShader
 
         if(this.program !== undefined)
         {
-            const uniformCount = this.gl.context.getProgramParameter(this.program, WebGL2RenderingContext.ACTIVE_UNIFORMS);
+            const uniformCount = this.gl.context.getProgramParameter(this.program, GL.ACTIVE_UNIFORMS);
             for(let i = 0; i < uniformCount; ++i)
             {
                 const info = this.gl.context.getActiveUniform(this.program, i);
@@ -2501,7 +2774,7 @@ class gltfShader
                 this.uniforms.set(info.name, {type: info.type, loc: loc});
             }
 
-            const attribCount = this.gl.context.getProgramParameter(this.program, WebGL2RenderingContext.ACTIVE_ATTRIBUTES);
+            const attribCount = this.gl.context.getProgramParameter(this.program, GL.ACTIVE_ATTRIBUTES);
             for(let i = 0; i < attribCount; ++i)
             {
                 const info = this.gl.context.getActiveAttrib(this.program, i);
@@ -2621,7 +2894,7 @@ class gltfShader
         if(uniform !== undefined)
         {
             switch (uniform.type) {
-            case WebGL2RenderingContext.FLOAT:
+            case GL.FLOAT:
             {
                 if(Array.isArray(value) || value instanceof Float32Array)
                 {
@@ -2631,11 +2904,11 @@ class gltfShader
                 }
                 break;
             }
-            case WebGL2RenderingContext.FLOAT_VEC2: this.gl.context.uniform2fv(uniform.loc, value); break;
-            case WebGL2RenderingContext.FLOAT_VEC3: this.gl.context.uniform3fv(uniform.loc, value); break;
-            case WebGL2RenderingContext.FLOAT_VEC4: this.gl.context.uniform4fv(uniform.loc, value); break;
+            case GL.FLOAT_VEC2: this.gl.context.uniform2fv(uniform.loc, value); break;
+            case GL.FLOAT_VEC3: this.gl.context.uniform3fv(uniform.loc, value); break;
+            case GL.FLOAT_VEC4: this.gl.context.uniform4fv(uniform.loc, value); break;
 
-            case WebGL2RenderingContext.INT:
+            case GL.INT:
             {
                 if(Array.isArray(value) || value instanceof Uint32Array || value instanceof Int32Array)
                 {
@@ -2645,13 +2918,13 @@ class gltfShader
                 }
                 break;
             }
-            case WebGL2RenderingContext.INT_VEC2: this.gl.context.uniform2iv(uniform.loc, value); break;
-            case WebGL2RenderingContext.INT_VEC3: this.gl.context.uniform3iv(uniform.loc, value); break;
-            case WebGL2RenderingContext.INT_VEC4: this.gl.context.uniform4iv(uniform.loc, value); break;
+            case GL.INT_VEC2: this.gl.context.uniform2iv(uniform.loc, value); break;
+            case GL.INT_VEC3: this.gl.context.uniform3iv(uniform.loc, value); break;
+            case GL.INT_VEC4: this.gl.context.uniform4iv(uniform.loc, value); break;
 
-            case WebGL2RenderingContext.FLOAT_MAT2: this.gl.context.uniformMatrix2fv(uniform.loc, false, value); break;
-            case WebGL2RenderingContext.FLOAT_MAT3: this.gl.context.uniformMatrix3fv(uniform.loc, false, value); break;
-            case WebGL2RenderingContext.FLOAT_MAT4: this.gl.context.uniformMatrix4fv(uniform.loc, false, value); break;
+            case GL.FLOAT_MAT2: this.gl.context.uniformMatrix2fv(uniform.loc, false, value); break;
+            case GL.FLOAT_MAT3: this.gl.context.uniformMatrix3fv(uniform.loc, false, value); break;
+            case GL.FLOAT_MAT4: this.gl.context.uniformMatrix4fv(uniform.loc, false, value); break;
             }
         }
         else if(log)
@@ -2785,274 +3058,6 @@ class ShaderCache
     }
 }
 
-class gltfWebGl
-{
-    constructor()
-    {
-        this.context = undefined;
-    }
-
-    loadWebGlExtensions(webglExtensions)
-    {
-        for (let extension of webglExtensions)
-        {
-            if (this.context.getExtension(extension) === null)
-            {
-                console.warn("Extension " + extension + " not supported!");
-            }
-        }
-
-        let EXT_texture_filter_anisotropic = this.context.getExtension("EXT_texture_filter_anisotropic");
-
-        if (EXT_texture_filter_anisotropic)
-        {
-            this.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
-            this.context.maxAnisotropy = this.context.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-            this.context.supports_EXT_texture_filter_anisotropic = true;
-        }
-        else
-        {
-            this.context.supports_EXT_texture_filter_anisotropic = false;
-        }
-    }
-
-    setTexture(loc, gltf, textureInfo, texSlot)
-    {
-        if (loc === -1)
-        {
-            return false;
-        }
-
-        let gltfTex = gltf.textures[textureInfo.index];
-
-        if (gltfTex === undefined)
-        {
-            console.warn("Texture is undefined: " + textureInfo.index);
-            return false;
-        }
-
-        const image = gltf.images[gltfTex.source];
-        if (image.mimeType === ImageMimeType.KTX2 ||
-            image.mimeType === ImageMimeType.GLTEXTURE)
-        {
-            gltfTex.glTexture = image.image;
-            gltfTex.initialized = true;
-        }
-
-        if (gltfTex.glTexture === undefined)
-        {
-            gltfTex.glTexture = this.context.createTexture();
-        }
-
-        this.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + texSlot);
-        this.context.bindTexture(gltfTex.type, gltfTex.glTexture);
-
-        this.context.uniform1i(loc, texSlot);
-
-        if (!gltfTex.initialized)
-        {
-            const gltfSampler = gltf.samplers[gltfTex.sampler];
-
-            if (gltfSampler === undefined)
-            {
-                console.warn("Sampler is undefined for texture: " + textureInfo.index);
-                return false;
-            }
-
-            this.context.pixelStorei(WebGL2RenderingContext.UNPACK_FLIP_Y_WEBGL, false);
-
-            if (image === undefined)
-            {
-                console.warn("Image is undefined for texture: " + gltfTex.source);
-                return false;
-            }
-            const internalformat = textureInfo.linear ? WebGL2RenderingContext.RGBA : WebGL2RenderingContext.SRGB8_ALPHA8;
-            this.context.texImage2D(image.type, image.miplevel, internalformat, WebGL2RenderingContext.RGBA, WebGL2RenderingContext.UNSIGNED_BYTE, image.image);
-            const generateMips = image.shouldGenerateMips();
-
-            this.setSampler(gltfSampler, gltfTex.type, generateMips);
-
-            if (textureInfo.generateMips && generateMips)
-            {
-                // Until this point, images can be assumed to be power of two.
-                switch (gltfSampler.minFilter)
-                {
-                case WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST:
-                case WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR:
-                case WebGL2RenderingContext.LINEAR_MIPMAP_NEAREST:
-                case WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR:
-                    this.context.generateMipmap(gltfTex.type);
-                    break;
-                }
-            }
-
-            gltfTex.initialized = true;
-        }
-
-        return gltfTex.initialized;
-    }
-
-    setIndices(gltf, accessorIndex)
-    {
-        let gltfAccessor = gltf.accessors[accessorIndex];
-
-        if (gltfAccessor.glBuffer === undefined)
-        {
-            gltfAccessor.glBuffer = this.context.createBuffer();
-
-            let data = gltfAccessor.getTypedView(gltf);
-
-            if (data === undefined)
-            {
-                return false;
-            }
-
-            this.context.bindBuffer(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
-            this.context.bufferData(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, data, WebGL2RenderingContext.STATIC_DRAW);
-        }
-        else
-        {
-            this.context.bindBuffer(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, gltfAccessor.glBuffer);
-        }
-
-        return true;
-    }
-
-    enableAttribute(gltf, attributeLocation, gltfAccessor)
-    {
-        if (attributeLocation === -1)
-        {
-            console.warn("Tried to access unknown attribute");
-            return false;
-        }
-
-        if(gltfAccessor.bufferView === undefined)
-        {
-            console.warn("Tried to access undefined bufferview");
-            return true;
-        }
-
-        let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
-
-        if (gltfAccessor.glBuffer === undefined)
-        {
-            gltfAccessor.glBuffer = this.context.createBuffer();
-
-            let data = gltfAccessor.getTypedView(gltf);
-
-            if (data === undefined)
-            {
-                return false;
-            }
-
-            this.context.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, gltfAccessor.glBuffer);
-            this.context.bufferData(WebGL2RenderingContext.ARRAY_BUFFER, data, WebGL2RenderingContext.STATIC_DRAW);
-        }
-        else
-        {
-            this.context.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, gltfAccessor.glBuffer);
-        }
-
-        this.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
-        this.context.enableVertexAttribArray(attributeLocation);
-
-        return true;
-    }
-
-    compileShader(shaderIdentifier, isVert, shaderSource)
-    {
-        const shader = this.context.createShader(isVert ? WebGL2RenderingContext.VERTEX_SHADER : WebGL2RenderingContext.FRAGMENT_SHADER);
-        this.context.shaderSource(shader, shaderSource);
-        this.context.compileShader(shader);
-        const compiled = this.context.getShaderParameter(shader, WebGL2RenderingContext.COMPILE_STATUS);
-
-        if (!compiled)
-        {
-            // output surrounding source code
-            let info = "";
-            const messages = this.context.getShaderInfoLog(shader).split("\n");
-            for(const message of messages)
-            {
-                info += message + "\n";
-                const matches = message.match(/(?:(?:WARNING)|(?:ERROR)): [0-9]*:([0-9]*).*/i);
-                if (matches && matches.length > 1)
-                {
-                    const lineNumber = parseInt(matches[1]) - 1;
-                    const lines = shaderSource.split("\n");
-
-                    for(let i = Math.max(0, lineNumber - 2); i < Math.min(lines.length, lineNumber + 3); i++)
-                    {
-                        if (lineNumber === i)
-                        {
-                            info += "->";
-                        }
-                        info += "\t" + lines[i] + "\n";
-                    }
-                }
-            }
-
-            throw new Error("Could not compile WebGL program '" + shaderIdentifier + "'. \n\n" + info);
-        }
-
-        return shader;
-    }
-
-    linkProgram(vertex, fragment)
-    {
-        let program = this.context.createProgram();
-        this.context.attachShader(program, vertex);
-        this.context.attachShader(program, fragment);
-        this.context.linkProgram(program);
-
-        if (!this.context.getProgramParameter(program, WebGL2RenderingContext.LINK_STATUS))
-        {
-            var info = this.context.getProgramInfoLog(program);
-            throw new Error('Could not link WebGL program. \n\n' + info);
-        }
-
-        return program;
-    }
-
-    //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
-    setSampler(gltfSamplerObj, type, generateMipmaps) // TEXTURE_2D
-    {
-        if (generateMipmaps)
-        {
-            this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_S, gltfSamplerObj.wrapS);
-            this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_T, gltfSamplerObj.wrapT);
-        }
-        else
-        {
-            this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_S, WebGL2RenderingContext.CLAMP_TO_EDGE);
-            this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_WRAP_T, WebGL2RenderingContext.CLAMP_TO_EDGE);
-        }
-
-        // If not mip-mapped, force to non-mip-mapped sampler.
-        if (!generateMipmaps && (gltfSamplerObj.minFilter != WebGL2RenderingContext.NEAREST) && (gltfSamplerObj.minFilter != WebGL2RenderingContext.LINEAR))
-        {
-            if ((gltfSamplerObj.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST) || (gltfSamplerObj.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR))
-            {
-                this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MIN_FILTER, WebGL2RenderingContext.NEAREST);
-            }
-            else
-            {
-                this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MIN_FILTER, WebGL2RenderingContext.LINEAR);
-            }
-        }
-        else
-        {
-            this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MIN_FILTER, gltfSamplerObj.minFilter);
-        }
-        this.context.texParameteri(type, WebGL2RenderingContext.TEXTURE_MAG_FILTER, gltfSamplerObj.magFilter);
-
-        if (this.context.supports_EXT_texture_filter_anisotropic)
-        {
-            this.context.texParameterf(type, this.context.anisotropy, this.context.maxAnisotropy); // => 16xAF
-        }
-    }
-}
-const WebGl = new gltfWebGl();
-
 var pbrShader = "precision highp float;\n#define GLSLIFY 1\n#include <tonemapping.glsl>\n#include <textures.glsl>\n#include <functions.glsl>\n#include <brdf.glsl>\n#include <punctual.glsl>\n#include <ibl.glsl>\nout vec4 g_finalColor;\n#ifdef USE_PUNCTUAL\nuniform Light u_Lights[LIGHT_COUNT+1];\n#endif\nuniform float u_MetallicFactor;uniform float u_RoughnessFactor;uniform vec4 u_BaseColorFactor;uniform vec3 u_SpecularFactor;uniform vec4 u_DiffuseFactor;uniform float u_GlossinessFactor;uniform float u_SheenRoughnessFactor;uniform vec3 u_SheenColorFactor;uniform float u_ClearcoatFactor;uniform float u_ClearcoatRoughnessFactor;uniform float u_TransmissionFactor;uniform float u_AlphaCutoff;uniform vec3 u_Camera;\n#ifdef MATERIAL_TRANSMISSION\nuniform ivec2 u_ScreenSize;\n#endif\nstruct MaterialInfo{float perceptualRoughness;vec3 f0;float alphaRoughness;vec3 albedoColor;vec3 f90;float metallic;vec3 n;vec3 baseColor;float sheenRoughnessFactor;vec3 sheenColorFactor;vec3 clearcoatF0;vec3 clearcoatF90;float clearcoatFactor;vec3 clearcoatNormal;float clearcoatRoughness;float transmissionFactor;};NormalInfo getNormalInfo(vec3 v){vec2 UV=getNormalUV();vec3 uv_dx=dFdx(vec3(UV,0.0));vec3 uv_dy=dFdy(vec3(UV,0.0));vec3 t_=(uv_dy.t*dFdx(v_Position)-uv_dx.t*dFdy(v_Position))/(uv_dx.s*uv_dy.t-uv_dy.s*uv_dx.t);vec3 n,t,b,ng;\n#ifdef HAS_TANGENTS\nt=normalize(v_TBN[0]);b=normalize(v_TBN[1]);ng=normalize(v_TBN[2]);\n#else\n#ifdef HAS_NORMALS\nng=normalize(v_Normal);\n#else\nng=normalize(cross(dFdx(v_Position),dFdy(v_Position)));\n#endif\nt=normalize(t_-ng*dot(ng,t_));b=cross(ng,t);\n#endif\nif(gl_FrontFacing==false){t*=-1.0;b*=-1.0;ng*=-1.0;}\n#ifdef HAS_NORMAL_MAP\nn=texture(u_NormalSampler,UV).rgb*2.0-vec3(1.0);n*=vec3(u_NormalScale,u_NormalScale,1.0);n=mat3(t,b,ng)*normalize(n);\n#else\nn=ng;\n#endif\nNormalInfo info;info.ng=ng;info.t=t;info.b=b;info.n=n;return info;}vec4 getBaseColor(){vec4 baseColor=vec4(1.0,1.0,1.0,1.0);\n#if defined(MATERIAL_SPECULARGLOSSINESS)\nbaseColor=u_DiffuseFactor;\n#elif defined(MATERIAL_METALLICROUGHNESS)\nbaseColor=u_BaseColorFactor;\n#endif\n#if defined(MATERIAL_SPECULARGLOSSINESS) && defined(HAS_DIFFUSE_MAP)\nbaseColor*=texture(u_DiffuseSampler,getDiffuseUV());\n#elif defined(MATERIAL_METALLICROUGHNESS) && defined(HAS_BASE_COLOR_MAP)\nbaseColor*=texture(u_BaseColorSampler,getBaseColorUV());\n#endif\nreturn baseColor*getVertexColor();}MaterialInfo getSpecularGlossinessInfo(MaterialInfo info){info.f0=u_SpecularFactor;info.perceptualRoughness=u_GlossinessFactor;\n#ifdef HAS_SPECULAR_GLOSSINESS_MAP\nvec4 sgSample=texture(u_SpecularGlossinessSampler,getSpecularGlossinessUV());info.perceptualRoughness*=sgSample.a;info.f0*=sgSample.rgb;\n#endif\ninfo.perceptualRoughness=1.0-info.perceptualRoughness;info.albedoColor=info.baseColor.rgb*(1.0-max(max(info.f0.r,info.f0.g),info.f0.b));return info;}MaterialInfo getMetallicRoughnessInfo(MaterialInfo info,float f0_ior){info.metallic=u_MetallicFactor;info.perceptualRoughness=u_RoughnessFactor;\n#ifdef HAS_METALLIC_ROUGHNESS_MAP\nvec4 mrSample=texture(u_MetallicRoughnessSampler,getMetallicRoughnessUV());info.perceptualRoughness*=mrSample.g;info.metallic*=mrSample.b;\n#endif\nvec3 f0=vec3(f0_ior);info.albedoColor=mix(info.baseColor.rgb*(vec3(1.0)-f0),vec3(0),info.metallic);info.f0=mix(f0,info.baseColor.rgb,info.metallic);return info;}MaterialInfo getSheenInfo(MaterialInfo info){info.sheenColorFactor=u_SheenColorFactor;info.sheenRoughnessFactor=u_SheenRoughnessFactor;\n#ifdef HAS_SHEEN_COLOR_MAP\nvec4 sheenColorSample=texture(u_SheenColorSampler,getSheenColorUV());info.sheenColorFactor*=sheenColorSample.rgb;\n#endif\n#ifdef HAS_SHEEN_ROUGHNESS_MAP\nvec4 sheenRoughnessSample=texture(u_SheenRoughnessSampler,getSheenRoughnessUV());info.sheenRoughnessFactor*=sheenRoughnessSample.a;\n#endif\nreturn info;}\n#ifdef MATERIAL_TRANSMISSION\nMaterialInfo getTransmissionInfo(MaterialInfo info){info.transmissionFactor=u_TransmissionFactor;\n#ifdef HAS_TRANSMISSION_MAP\nvec4 transmissionSample=texture(u_TransmissionSampler,getTransmissionUV());info.transmissionFactor*=transmissionSample.r;\n#endif\nreturn info;}\n#endif\nMaterialInfo getClearCoatInfo(MaterialInfo info,NormalInfo normalInfo,float f0_ior){info.clearcoatFactor=u_ClearcoatFactor;info.clearcoatRoughness=u_ClearcoatRoughnessFactor;info.clearcoatF0=vec3(f0_ior);info.clearcoatF90=vec3(1.0);\n#ifdef HAS_CLEARCOAT_TEXTURE_MAP\nvec4 clearcoatSample=texture(u_ClearcoatSampler,getClearcoatUV());info.clearcoatFactor*=clearcoatSample.r;\n#endif\n#ifdef HAS_CLEARCOAT_ROUGHNESS_MAP\nvec4 clearcoatSampleRoughness=texture(u_ClearcoatRoughnessSampler,getClearcoatRoughnessUV());info.clearcoatRoughness*=clearcoatSampleRoughness.g;\n#endif\n#ifdef HAS_CLEARCOAT_NORMAL_MAP\nvec4 clearcoatSampleNormal=texture(u_ClearcoatNormalSampler,getClearcoatNormalUV());info.clearcoatNormal=normalize(clearcoatSampleNormal.xyz);\n#else\ninfo.clearcoatNormal=normalInfo.ng;\n#endif\ninfo.clearcoatRoughness=clamp(info.clearcoatRoughness,0.0,1.0);return info;}float albedoSheenScalingLUT(float NdotV,float sheenRoughnessFactor){return texture(u_SheenELUT,vec2(NdotV,sheenRoughnessFactor)).r;}void main(){vec4 baseColor=getBaseColor();\n#ifdef ALPHAMODE_OPAQUE\nbaseColor.a=1.0;\n#endif\n#ifdef MATERIAL_UNLIT\ng_finalColor=(vec4(linearTosRGB(baseColor.rgb),baseColor.a));return;\n#endif\nvec3 v=normalize(u_Camera-v_Position);NormalInfo normalInfo=getNormalInfo(v);vec3 n=normalInfo.n;vec3 t=normalInfo.t;vec3 b=normalInfo.b;float NdotV=clampedDot(n,v);float TdotV=clampedDot(t,v);float BdotV=clampedDot(b,v);MaterialInfo materialInfo;materialInfo.baseColor=baseColor.rgb;float ior=1.5;float f0_ior=0.04;\n#ifdef MATERIAL_SPECULARGLOSSINESS\nmaterialInfo=getSpecularGlossinessInfo(materialInfo);\n#endif\n#ifdef MATERIAL_METALLICROUGHNESS\nmaterialInfo=getMetallicRoughnessInfo(materialInfo,f0_ior);\n#endif\n#ifdef MATERIAL_SHEEN\nmaterialInfo=getSheenInfo(materialInfo);\n#endif\n#ifdef MATERIAL_CLEARCOAT\nmaterialInfo=getClearCoatInfo(materialInfo,normalInfo,f0_ior);\n#endif\n#ifdef MATERIAL_TRANSMISSION\nmaterialInfo=getTransmissionInfo(materialInfo);\n#endif\nmaterialInfo.perceptualRoughness=clamp(materialInfo.perceptualRoughness,0.0,1.0);materialInfo.metallic=clamp(materialInfo.metallic,0.0,1.0);materialInfo.alphaRoughness=materialInfo.perceptualRoughness*materialInfo.perceptualRoughness;float reflectance=max(max(materialInfo.f0.r,materialInfo.f0.g),materialInfo.f0.b);materialInfo.f90=vec3(clamp(reflectance*50.0,0.0,1.0));materialInfo.n=n;vec3 f_specular=vec3(0.0);vec3 f_diffuse=vec3(0.0);vec3 f_emissive=vec3(0.0);vec3 f_clearcoat=vec3(0.0);vec3 f_sheen=vec3(0.0);vec3 f_transmission=vec3(0.0);float albedoSheenScaling=1.0;\n#ifdef USE_IBL\nf_specular+=getIBLRadianceGGX(n,v,materialInfo.perceptualRoughness,materialInfo.f0);f_diffuse+=getIBLRadianceLambertian(n,materialInfo.albedoColor);\n#ifdef MATERIAL_CLEARCOAT\nf_clearcoat+=getIBLRadianceGGX(materialInfo.clearcoatNormal,v,materialInfo.clearcoatRoughness,materialInfo.clearcoatF0);\n#endif\n#ifdef MATERIAL_SHEEN\nf_sheen+=getIBLRadianceCharlie(n,v,materialInfo.sheenRoughnessFactor,materialInfo.sheenColorFactor);\n#endif\n#ifdef MATERIAL_TRANSMISSION\nvec2 normalizedFragCoord=vec2(0.0,0.0);normalizedFragCoord.x=gl_FragCoord.x/float(u_ScreenSize.x);normalizedFragCoord.y=gl_FragCoord.y/float(u_ScreenSize.y);f_transmission+=materialInfo.transmissionFactor*getIBLRadianceTransmission(n,u_Camera-v_Position,normalizedFragCoord,materialInfo.perceptualRoughness,materialInfo.baseColor,materialInfo.f0,materialInfo.f90);\n#endif\n#endif\nfloat ao=1.0;\n#ifdef HAS_OCCLUSION_MAP\nao=texture(u_OcclusionSampler,getOcclusionUV()).r;f_diffuse=mix(f_diffuse,f_diffuse*ao,u_OcclusionStrength);f_specular=mix(f_specular,f_specular*ao,u_OcclusionStrength);f_sheen=mix(f_sheen,f_sheen*ao,u_OcclusionStrength);f_clearcoat=mix(f_clearcoat,f_clearcoat*ao,u_OcclusionStrength);\n#endif\n#ifdef USE_PUNCTUAL\nfor(int i=0;i<LIGHT_COUNT;++i){Light light=u_Lights[i];vec3 pointToLight=-light.direction;float rangeAttenuation=1.0;float spotAttenuation=1.0;if(light.type!=LightType_Directional){pointToLight=light.position-v_Position;}if(light.type!=LightType_Directional){rangeAttenuation=getRangeAttenuation(light.range,length(pointToLight));}if(light.type==LightType_Spot){spotAttenuation=getSpotAttenuation(pointToLight,light.direction,light.outerConeCos,light.innerConeCos);}vec3 intensity=rangeAttenuation*spotAttenuation*light.intensity*light.color;vec3 l=normalize(pointToLight);vec3 h=normalize(l+v);float NdotL=clampedDot(n,l);float NdotV=clampedDot(n,v);float NdotH=clampedDot(n,h);float LdotH=clampedDot(l,h);float VdotH=clampedDot(v,h);if(NdotL>0.0||NdotV>0.0){f_diffuse+=intensity*NdotL*BRDF_lambertian(materialInfo.f0,materialInfo.f90,materialInfo.albedoColor,VdotH);f_specular+=intensity*NdotL*BRDF_specularGGX(materialInfo.f0,materialInfo.f90,materialInfo.alphaRoughness,VdotH,NdotL,NdotV,NdotH);\n#ifdef MATERIAL_SHEEN\nf_sheen+=intensity*getPunctualRadianceSheen(materialInfo.sheenColorFactor,materialInfo.sheenRoughnessFactor,NdotL,NdotV,NdotH);albedoSheenScaling=min(1.0-max3(materialInfo.sheenColorFactor)*albedoSheenScalingLUT(NdotV,materialInfo.sheenRoughnessFactor),1.0-max3(materialInfo.sheenColorFactor)*albedoSheenScalingLUT(NdotL,materialInfo.sheenRoughnessFactor));\n#endif\n#ifdef MATERIAL_CLEARCOAT\nf_clearcoat+=intensity*getPunctualRadianceClearCoat(materialInfo.clearcoatNormal,v,l,h,VdotH,materialInfo.clearcoatF0,materialInfo.clearcoatF90,materialInfo.clearcoatRoughness);\n#endif\n}\n#ifdef MATERIAL_TRANSMISSION\nf_transmission+=intensity*getPunctualRadianceTransmission(n,v,l,materialInfo.alphaRoughness,materialInfo.f0,materialInfo.f90,materialInfo.transmissionFactor,materialInfo.baseColor);\n#endif\n}\n#endif\nf_emissive=u_EmissiveFactor;\n#ifdef HAS_EMISSIVE_MAP\nf_emissive*=texture(u_EmissiveSampler,getEmissiveUV()).rgb;\n#endif\nvec3 color=vec3(0);float clearcoatFactor=0.0;vec3 clearcoatFresnel=vec3(0.0);\n#ifdef MATERIAL_CLEARCOAT\nclearcoatFactor=materialInfo.clearcoatFactor;clearcoatFresnel=F_Schlick(materialInfo.clearcoatF0,materialInfo.clearcoatF90,clampedDot(materialInfo.clearcoatNormal,v));\n#endif\n#ifdef MATERIAL_TRANSMISSION\nvec3 diffuse=mix(f_diffuse,f_transmission,materialInfo.transmissionFactor);\n#else\nvec3 diffuse=f_diffuse;\n#endif\ncolor=f_emissive+diffuse+f_specular;color=f_sheen+color*albedoSheenScaling;color=color*(1.0-clearcoatFactor*clearcoatFresnel)+f_clearcoat*clearcoatFactor;\n#ifndef DEBUG_OUTPUT\n#ifdef ALPHAMODE_MASK\nif(baseColor.a<u_AlphaCutoff){discard;}baseColor.a=1.0;\n#endif\ng_finalColor=vec4(toneMap(color),baseColor.a);\n#else\n#ifdef DEBUG_METALLIC\ng_finalColor.rgb=vec3(materialInfo.metallic);\n#endif\n#ifdef DEBUG_ROUGHNESS\ng_finalColor.rgb=vec3(materialInfo.perceptualRoughness);\n#endif\n#ifdef DEBUG_NORMAL\n#ifdef HAS_NORMAL_MAP\ng_finalColor.rgb=texture(u_NormalSampler,getNormalUV()).rgb;\n#else\ng_finalColor.rgb=vec3(0.5,0.5,1.0);\n#endif\n#endif\n#ifdef DEBUG_GEOMETRY_NORMAL\ng_finalColor.rgb=(normalInfo.ng+1.0)/2.0;\n#endif\n#ifdef DEBUG_WORLDSPACE_NORMAL\ng_finalColor.rgb=(n+1.0)/2.0;\n#endif\n#ifdef DEBUG_TANGENT\ng_finalColor.rgb=t*0.5+vec3(0.5);\n#endif\n#ifdef DEBUG_BITANGENT\ng_finalColor.rgb=b*0.5+vec3(0.5);\n#endif\n#ifdef DEBUG_BASECOLOR\ng_finalColor.rgb=linearTosRGB(materialInfo.baseColor);\n#endif\n#ifdef DEBUG_OCCLUSION\ng_finalColor.rgb=vec3(ao);\n#endif\n#ifdef DEBUG_F0\ng_finalColor.rgb=materialInfo.f0;\n#endif\n#ifdef DEBUG_FEMISSIVE\ng_finalColor.rgb=linearTosRGB(f_emissive);\n#endif\n#ifdef DEBUG_FSPECULAR\ng_finalColor.rgb=linearTosRGB(f_specular);\n#endif\n#ifdef DEBUG_FDIFFUSE\ng_finalColor.rgb=linearTosRGB(f_diffuse);\n#endif\n#ifdef DEBUG_FCLEARCOAT\ng_finalColor.rgb=linearTosRGB(f_clearcoat);\n#endif\n#ifdef DEBUG_FSHEEN\ng_finalColor.rgb=linearTosRGB(f_sheen);\n#endif\n#ifdef DEBUG_FTRANSMISSION\ng_finalColor.rgb=linearTosRGB(f_transmission);\n#endif\n#ifdef DEBUG_ALPHA\ng_finalColor.rgb=vec3(baseColor.a);\n#endif\ng_finalColor.a=1.0;\n#endif\n}"; // eslint-disable-line
 
 var brdfShader = "#define GLSLIFY 1\nvec3 F_Schlick(vec3 f0,vec3 f90,float VdotH){return f0+(f90-f0)*pow(clamp(1.0-VdotH,0.0,1.0),5.0);}float V_GGX(float NdotL,float NdotV,float alphaRoughness){float alphaRoughnessSq=alphaRoughness*alphaRoughness;float GGXV=NdotL*sqrt(NdotV*NdotV*(1.0-alphaRoughnessSq)+alphaRoughnessSq);float GGXL=NdotV*sqrt(NdotL*NdotL*(1.0-alphaRoughnessSq)+alphaRoughnessSq);float GGX=GGXV+GGXL;if(GGX>0.0){return 0.5/GGX;}return 0.0;}float D_GGX(float NdotH,float alphaRoughness){float alphaRoughnessSq=alphaRoughness*alphaRoughness;float f=(NdotH*NdotH)*(alphaRoughnessSq-1.0)+1.0;return alphaRoughnessSq/(M_PI*f*f);}float lambdaSheenNumericHelper(float x,float alphaG){float oneMinusAlphaSq=(1.0-alphaG)*(1.0-alphaG);float a=mix(21.5473,25.3245,oneMinusAlphaSq);float b=mix(3.82987,3.32435,oneMinusAlphaSq);float c=mix(0.19823,0.16801,oneMinusAlphaSq);float d=mix(-1.97760,-1.27393,oneMinusAlphaSq);float e=mix(-4.32054,-4.85967,oneMinusAlphaSq);return a/(1.0+b*pow(x,c))+d*x+e;}float lambdaSheen(float cosTheta,float alphaG){if(abs(cosTheta)<0.5){return exp(lambdaSheenNumericHelper(cosTheta,alphaG));}else{return exp(2.0*lambdaSheenNumericHelper(0.5,alphaG)-lambdaSheenNumericHelper(1.0-cosTheta,alphaG));}}float V_Sheen(float NdotL,float NdotV,float sheenRoughness){sheenRoughness=max(sheenRoughness,0.000001);float alphaG=sheenRoughness*sheenRoughness;return clamp(1.0/((1.0+lambdaSheen(NdotV,alphaG)+lambdaSheen(NdotL,alphaG))*(4.0*NdotV*NdotL)),0.0,1.0);}float D_Charlie(float sheenRoughness,float NdotH){sheenRoughness=max(sheenRoughness,0.000001);float alphaG=sheenRoughness*sheenRoughness;float invR=1.0/alphaG;float cos2h=NdotH*NdotH;float sin2h=1.0-cos2h;return(2.0+invR)*pow(sin2h,invR*0.5)/(2.0*M_PI);}vec3 BRDF_lambertian(vec3 f0,vec3 f90,vec3 diffuseColor,float VdotH){return(1.0-F_Schlick(f0,f90,VdotH))*(diffuseColor/M_PI);}vec3 BRDF_specularGGX(vec3 f0,vec3 f90,float alphaRoughness,float VdotH,float NdotL,float NdotV,float NdotH){vec3 F=F_Schlick(f0,f90,VdotH);float Vis=V_GGX(NdotL,NdotV,alphaRoughness);float D=D_GGX(NdotH,alphaRoughness);return F*Vis*D;}vec3 BRDF_specularSheen(vec3 sheenColor,float sheenRoughness,float NdotL,float NdotV,float NdotH){float sheenDistribution=D_Charlie(sheenRoughness,NdotH);float sheenVisibility=V_Sheen(NdotL,NdotV,sheenRoughness);return sheenColor*sheenDistribution*sheenVisibility;}"; // eslint-disable-line
@@ -3080,8 +3085,7 @@ class gltfRenderer
         this.currentWidth = 0;
         this.currentHeight = 0;
 
-        this.webGl = new gltfWebGl();
-        this.webGl.context = context;
+        this.webGl = new gltfWebGl(context);
 
         // create render target for non transmission materials
         this.opaqueRenderTexture = 0;
@@ -3129,9 +3133,9 @@ class gltfRenderer
     init()
     {
         const context = this.webGl.context;
-        context.pixelStorei(WebGL2RenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGL2RenderingContext.NONE);
-        context.enable(WebGL2RenderingContext.DEPTH_TEST);
-        context.depthFunc(WebGL2RenderingContext.LEQUAL);
+        context.pixelStorei(GL.UNPACK_COLORSPACE_CONVERSION_WEBGL, GL.NONE);
+        context.enable(GL.DEPTH_TEST);
+        context.depthFunc(GL.LEQUAL);
         context.colorMask(true, true, true, true);
         context.clearDepth(1.0);
 
@@ -3193,10 +3197,10 @@ class gltfRenderer
     {
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
         this.webGl.context.clearColor(clearColor[0] / 255.0, clearColor[1] / 255.0, clearColor[2] / 255.0, 1.0);
-        this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
+        this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebuffer);
         this.webGl.context.clearColor(clearColor[0] / 255.0, clearColor[1] / 255.0, clearColor[2] / 255.0, 1.0);
-        this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
+        this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
 
@@ -3363,31 +3367,31 @@ class gltfRenderer
 
         if (determinant(node.worldTransform) < 0.0)
         {
-            this.webGl.context.frontFace(WebGL2RenderingContext.CW);
+            this.webGl.context.frontFace(GL.CW);
         }
         else
         {
-            this.webGl.context.frontFace(WebGL2RenderingContext.CCW);
+            this.webGl.context.frontFace(GL.CCW);
         }
 
         if (material.doubleSided)
         {
-            this.webGl.context.disable(WebGL2RenderingContext.CULL_FACE);
+            this.webGl.context.disable(GL.CULL_FACE);
         }
         else
         {
-            this.webGl.context.enable(WebGL2RenderingContext.CULL_FACE);
+            this.webGl.context.enable(GL.CULL_FACE);
         }
 
         if (material.alphaMode === 'BLEND')
         {
-            this.webGl.context.enable(WebGL2RenderingContext.BLEND);
-            this.webGl.context.blendFuncSeparate(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA, WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
-            this.webGl.context.blendEquation(WebGL2RenderingContext.FUNC_ADD);
+            this.webGl.context.enable(GL.BLEND);
+            this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.webGl.context.blendEquation(GL.FUNC_ADD);
         }
         else
         {
-            this.webGl.context.disable(WebGL2RenderingContext.BLEND);
+            this.webGl.context.disable(GL.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;
@@ -3448,7 +3452,7 @@ class gltfRenderer
 
         if(transmissionSampleTexture !== undefined)
         {
-            this.webGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + textureCount);
+            this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
             this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureCount);
             textureCount++;
@@ -3684,10 +3688,9 @@ class gltfRenderer
 
 class GltfView
 {
-    constructor(canvas)
+    constructor(context)
     {
-        this.canvas = canvas;
-        this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
+        this.context = context;
         this.renderer = new gltfRenderer(this.context);
     }
 
@@ -3696,14 +3699,22 @@ class GltfView
         return new GltfState();
     }
 
-    renderFrameToCanvas(state)
+
+
+    updateCanvas(canvas)
     {
         // TODO: this should probably not be done here
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+    }
 
-        this.renderer.resize(this.canvas.width, this.canvas.height);
+    updateViewport(width, height)
+    {
+        this.renderer.resize(width, height);
+    }
 
+    renderFrame(state)
+    {
         this.renderer.clearFrame(state.renderingParameters.clearColor);
 
         if(state.gltf === undefined)
@@ -3717,7 +3728,6 @@ class GltfView
 
         this.renderer.drawScene(state, scene);
     }
-
     animate(state)
     {
         if(state.gltf === undefined)
@@ -3768,18 +3778,18 @@ class GltfView
 
                 // convert vertex count to point, line or triangle count
                 switch (primitive.mode) {
-                case WebGLRenderingContext.POINTS:
+                case GL.POINTS:
                     return verticesCount;
-                case WebGLRenderingContext.LINES:
+                case GL.LINES:
                     return verticesCount / 2;
-                case WebGLRenderingContext.LINE_LOOP:
+                case GL.LINE_LOOP:
                     return verticesCount;
-                case WebGLRenderingContext.LINE_STRIP:
+                case GL.LINE_STRIP:
                     return verticesCount - 1;
-                case WebGLRenderingContext.TRIANGLES:
+                case GL.TRIANGLES:
                     return verticesCount / 3;
-                case WebGLRenderingContext.TRIANGLE_STRIP:
-                case WebGLRenderingContext.TRIANGLE_FAN:
+                case GL.TRIANGLE_STRIP:
+                case GL.TRIANGLE_FAN:
                     return verticesCount - 2;
                 }
             })
@@ -3794,12 +3804,14 @@ class GltfView
         };
     }
 
-    async startRendering(state)
+    async startRendering(state, canvas)
     {
         const update = () =>
         {
             this.animate(state);
-            this.renderFrameToCanvas(state);
+            this.updateCanvas(canvas);
+            this.updateViewport(canvas.width, canvas.height);
+            this.renderFrame(state);
             window.requestAnimationFrame(update);
         };
 
@@ -5345,22 +5357,22 @@ class gltfAccessor extends GltfObject
 
             switch (this.componentType)
             {
-            case WebGL2RenderingContext.BYTE:
+            case GL.BYTE:
                 this.typedView = new Int8Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.UNSIGNED_BYTE:
+            case GL.UNSIGNED_BYTE:
                 this.typedView = new Uint8Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.SHORT:
+            case GL.SHORT:
                 this.typedView = new Int16Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.UNSIGNED_SHORT:
+            case GL.UNSIGNED_SHORT:
                 this.typedView = new Uint16Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.UNSIGNED_INT:
+            case GL.UNSIGNED_INT:
                 this.typedView = new Uint32Array(buffer.buffer, byteOffset, arrayLength);
                 break;
-            case WebGL2RenderingContext.FLOAT:
+            case GL.FLOAT:
                 this.typedView = new Float32Array(buffer.buffer, byteOffset, arrayLength);
                 break;
             }
@@ -5401,27 +5413,27 @@ class gltfAccessor extends GltfObject
             let func = 'getFloat32';
             switch (this.componentType)
             {
-            case WebGL2RenderingContext.BYTE:
+            case GL.BYTE:
                 this.filteredView = new Int8Array(arrayLength);
                 func = 'getInt8';
                 break;
-            case WebGL2RenderingContext.UNSIGNED_BYTE:
+            case GL.UNSIGNED_BYTE:
                 this.filteredView = new Uint8Array(arrayLength);
                 func = 'getUint8';
                 break;
-            case WebGL2RenderingContext.SHORT:
+            case GL.SHORT:
                 this.filteredView = new Int16Array(arrayLength);
                 func = 'getInt16';
                 break;
-            case WebGL2RenderingContext.UNSIGNED_SHORT:
+            case GL.UNSIGNED_SHORT:
                 this.filteredView = new Uint16Array(arrayLength);
                 func = 'getUint16';
                 break;
-            case WebGL2RenderingContext.UNSIGNED_INT:
+            case GL.UNSIGNED_INT:
                 this.filteredView = new Uint32Array(arrayLength);
                 func = 'getUint32';
                 break;
-            case WebGL2RenderingContext.FLOAT:
+            case GL.FLOAT:
                 this.filteredView = new Float32Array(arrayLength);
                 func = 'getFloat32';
                 break;
@@ -5467,13 +5479,13 @@ class gltfAccessor extends GltfObject
         let indicesTypedView;
         switch (this.sparse.indices.componentType)
         {
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.UNSIGNED_BYTE:
             indicesTypedView = new Uint8Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.UNSIGNED_SHORT:
             indicesTypedView = new Uint16Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_INT:
+        case GL.UNSIGNED_INT:
             indicesTypedView = new Uint32Array(indicesBuffer.buffer, indicesByteOffset, indicesArrayLength);
             break;
         }
@@ -5497,22 +5509,22 @@ class gltfAccessor extends GltfObject
         let valuesTypedView;
         switch (this.componentType)
         {
-        case WebGL2RenderingContext.BYTE:
+        case GL.BYTE:
             valuesTypedView = new Int8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.UNSIGNED_BYTE:
             valuesTypedView = new Uint8Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.SHORT:
+        case GL.SHORT:
             valuesTypedView = new Int16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.UNSIGNED_SHORT:
             valuesTypedView = new Uint16Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.UNSIGNED_INT:
+        case GL.UNSIGNED_INT:
             valuesTypedView = new Uint32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
-        case WebGL2RenderingContext.FLOAT:
+        case GL.FLOAT:
             valuesTypedView = new Float32Array(valuesBuffer.buffer, valuesByteOffset, valuesArrayLength);
             break;
         }
@@ -5537,14 +5549,14 @@ class gltfAccessor extends GltfObject
     {
         switch (componentType)
         {
-        case WebGL2RenderingContext.BYTE:
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.BYTE:
+        case GL.UNSIGNED_BYTE:
             return 1;
-        case WebGL2RenderingContext.SHORT:
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.SHORT:
+        case GL.UNSIGNED_SHORT:
             return 2;
-        case WebGL2RenderingContext.UNSIGNED_INT:
-        case WebGL2RenderingContext.FLOAT:
+        case GL.UNSIGNED_INT:
+        case GL.FLOAT:
             return 4;
         default:
             return 0;
@@ -5857,12 +5869,12 @@ class ImageBasedLight extends GltfObject
         if (this.diffuseEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.diffuseEnvironmentTexture];
-            textureObject.type = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
+            textureObject.type = GL.TEXTURE_CUBE_MAP;
         }
         if (this.specularEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.specularEnvironmentTexture];
-            textureObject.type = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
+            textureObject.type = GL.TEXTURE_CUBE_MAP;
 
             const imageObject = gltf.images[textureObject.source];
             this.levelCount = imageObject.image.levelCount;
@@ -5870,7 +5882,7 @@ class ImageBasedLight extends GltfObject
         if(this.sheenEnvironmentTexture !== undefined)
         {
             const textureObject = gltf.textures[this.sheenEnvironmentTexture];
-            textureObject.type = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
+            textureObject.type = GL.TEXTURE_CUBE_MAP;
 
             const imageObject = gltf.images[textureObject.source];
             if (this.levelCount !== imageObject.image.levelCount)
@@ -5883,7 +5895,7 @@ class ImageBasedLight extends GltfObject
 
 class gltfTexture extends GltfObject
 {
-    constructor(sampler = undefined, source = undefined, type = WebGLRenderingContext.TEXTURE_2D, texture = undefined)
+    constructor(sampler = undefined, source = undefined, type = GL.TEXTURE_2D, texture = undefined)
     {
         super();
         this.sampler = sampler; // index to gltfSampler, default sampler ?
@@ -6525,7 +6537,7 @@ class gltfPrimitive extends GltfObject
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
-        this.mode = WebGLRenderingContext.TRIANGLES;
+        this.mode = GL.TRIANGLES;
 
         // non gltf
         this.glAttributes = [];
@@ -6552,7 +6564,7 @@ class gltfPrimitive extends GltfObject
 
         initGlForMembers(this, gltf, webGlContext);
 
-        const maxAttributes = webGlContext.getParameter(WebGLRenderingContext.MAX_VERTEX_ATTRIBS);
+        const maxAttributes = webGlContext.getParameter(GL.MAX_VERTEX_ATTRIBS);
 
         // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
 
@@ -6914,19 +6926,19 @@ class gltfPrimitive extends GltfObject
     {
         switch (componentType)
         {
-        case WebGL2RenderingContext.BYTE:
+        case GL.BYTE:
             return "Int8Array";
-        case WebGL2RenderingContext.UNSIGNED_BYTE:
+        case GL.UNSIGNED_BYTE:
             return "Uint8Array";
-        case WebGL2RenderingContext.SHORT:
+        case GL.SHORT:
             return "Int16Array";
-        case WebGL2RenderingContext.UNSIGNED_SHORT:
+        case GL.UNSIGNED_SHORT:
             return "Uint16Array";
-        case WebGL2RenderingContext.INT:
+        case GL.INT:
             return "Int32Array";
-        case WebGL2RenderingContext.UNSIGNED_INT:
+        case GL.UNSIGNED_INT:
             return "Uint32Array";
-        case WebGL2RenderingContext.FLOAT:
+        case GL.FLOAT:
             return "Float32Array";
         default:
             return "Float32Array";
@@ -6958,7 +6970,7 @@ class gltfPrimitive extends GltfObject
         // Gather all vertex attributes.
         for(let dracoAttr in gltfDracoAttributes)
         {
-            let componentType = WebGL2RenderingContext.BYTE;
+            let componentType = GL.BYTE;
             let accessotVertexCount;
             // find gltf accessor for this draco attribute
             for (const [key, value] of Object.entries(this.attributes))
@@ -7230,10 +7242,10 @@ class gltfNode extends GltfObject
 class gltfSampler extends GltfObject
 {
     constructor(
-        magFilter = WebGLRenderingContext.LINEAR,
-        minFilter = WebGLRenderingContext.LINEAR_MIPMAP_LINEAR,
-        wrapS = WebGLRenderingContext.REPEAT,
-        wrapT = WebGLRenderingContext.REPEAT)
+        magFilter = GL.LINEAR,
+        minFilter = GL.LINEAR_MIPMAP_LINEAR,
+        wrapS = GL.REPEAT,
+        wrapT = GL.REPEAT)
     {
         super();
         this.magFilter = magFilter;
@@ -8771,16 +8783,16 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     let samplerIdx = environment.samplers.length;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
     const diffuseCubeSamplerIdx = samplerIdx++;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR_MIPMAP_LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
     const specularCubeSamplerIdx = samplerIdx++;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "SheenCubeMapSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR_MIPMAP_LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "SheenCubeMapSampler"));
     const sheenCubeSamplerIdx = samplerIdx++;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "LUTSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "LUTSampler"));
     const lutSamplerIdx = samplerIdx++;
 
     //
@@ -8798,7 +8810,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     const diffuseGltfImage = new gltfImage(
         undefined,
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         0,
         undefined,
         "Diffuse",
@@ -8811,7 +8823,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     const diffuseTexture = new gltfTexture(
         diffuseCubeSamplerIdx,
         [imageIdx++],
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         environmentFiltering.lambertianTextureID);
 
     environment.textures.push(diffuseTexture);
@@ -8824,7 +8836,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Specular
     const specularGltfImage = new gltfImage(
         undefined,
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         0,
         undefined,
         "Specular",
@@ -8837,7 +8849,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     const specularTexture = new gltfTexture(
         specularCubeSamplerIdx,
         [imageIdx++],
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         environmentFiltering.ggxTextureID);
 
     environment.textures.push(specularTexture);
@@ -8849,7 +8861,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Sheen
     const sheenGltfImage = new gltfImage(
         undefined,
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         0,
         undefined,
         "Sheen",
@@ -8862,7 +8874,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     const sheenTexture = new gltfTexture(
         sheenCubeSamplerIdx,
         [imageIdx++],
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         environmentFiltering.sheenTextureID);
 
     environment.textures.push(sheenTexture);
@@ -8873,19 +8885,19 @@ async function loadEnvironmentFromImage(imageHDR, view)
 /*
     // Diffuse
 
-    const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
+    const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", GL.TEXTURE_CUBE_MAP);
     lambertian.mimeType = ImageMimeType.KTX2;
     environment.images.push(lambertian);
-    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
     environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.diffuseEnvMap.generateMips = false;
 
     // Specular
 
-    const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
+    const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", GL.TEXTURE_CUBE_MAP);
     specular.mimeType = ImageMimeType.KTX2;
     environment.images.push(specular);
-    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
     environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.specularEnvMap.generateMips = false;
 
@@ -8893,10 +8905,10 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     // Sheen
 
-    const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
+    const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", GL.TEXTURE_CUBE_MAP);
     sheen.mimeType = ImageMimeType.KTX2;
     environment.images.push(sheen);
-    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
     environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.sheenEnvMap.generateMips = false;*/
 
@@ -8906,8 +8918,8 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     // GGX
 
-    environment.images.push(new gltfImage("assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("assets/images/lut_ggx.png", GL.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.lut = new gltfTextureInfo(environment.textures.length - 1);
     environment.lut.generateMips = false;
@@ -8915,16 +8927,16 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Sheen
     // Charlie
 
-    environment.images.push(new gltfImage("assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("assets/images/lut_charlie.png", GL.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenLUT.generateMips = false;
 
     // Sheen E LUT
 
-    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", GL.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenELUT.generateMips = false;
@@ -8938,7 +8950,9 @@ async function loadEnvironmentFromImage(imageHDR, view)
     return environment;
 }
 
+exports.DebugOutput = DebugOutput;
 exports.GltfView = GltfView;
+exports.ToneMaps = ToneMaps;
 exports.combinePaths = combinePaths;
 exports.computePrimitiveCentroids = computePrimitiveCentroids;
 exports.getContainingFolder = getContainingFolder;

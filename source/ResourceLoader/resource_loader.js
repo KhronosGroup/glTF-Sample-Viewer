@@ -7,7 +7,7 @@ import { gltfLoader } from "./loader.js";
 import { gltfImage, ImageMimeType } from "../gltf/image.js";
 import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
-
+import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
 
 
@@ -122,16 +122,16 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     let samplerIdx = environment.samplers.length;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "DiffuseCubeMapSampler"));
     const diffuseCubeSamplerIdx = samplerIdx++;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR_MIPMAP_LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "SpecularCubeMapSampler"));
     const specularCubeSamplerIdx = samplerIdx++;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "SheenCubeMapSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR_MIPMAP_LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "SheenCubeMapSampler"));
     const sheenCubeSamplerIdx = samplerIdx++;
 
-    environment.samplers.push(new gltfSampler(WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.LINEAR, WebGL2RenderingContext.CLAMP_TO_EDGE, WebGL2RenderingContext.CLAMP_TO_EDGE, "LUTSampler"));
+    environment.samplers.push(new gltfSampler(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "LUTSampler"));
     const lutSamplerIdx = samplerIdx++;
 
     //
@@ -149,7 +149,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     const diffuseGltfImage = new gltfImage(
         undefined,
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         0,
         undefined,
         "Diffuse",
@@ -162,7 +162,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     const diffuseTexture = new gltfTexture(
         diffuseCubeSamplerIdx,
         [imageIdx++],
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         environmentFiltering.lambertianTextureID);
 
     environment.textures.push(diffuseTexture);
@@ -175,7 +175,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Specular
     const specularGltfImage = new gltfImage(
         undefined,
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         0,
         undefined,
         "Specular",
@@ -188,7 +188,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     const specularTexture = new gltfTexture(
         specularCubeSamplerIdx,
         [imageIdx++],
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         environmentFiltering.ggxTextureID);
 
     environment.textures.push(specularTexture);
@@ -200,7 +200,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Sheen
     const sheenGltfImage = new gltfImage(
         undefined,
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         0,
         undefined,
         "Sheen",
@@ -213,7 +213,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     const sheenTexture = new gltfTexture(
         sheenCubeSamplerIdx,
         [imageIdx++],
-        WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+        GL.TEXTURE_CUBE_MAP,
         environmentFiltering.sheenTextureID);
 
     environment.textures.push(sheenTexture);
@@ -224,19 +224,19 @@ async function loadEnvironmentFromImage(imageHDR, view)
 /*
     // Diffuse
 
-    const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
+    const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", GL.TEXTURE_CUBE_MAP);
     lambertian.mimeType = ImageMimeType.KTX2;
     environment.images.push(lambertian);
-    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
     environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.diffuseEnvMap.generateMips = false;
 
     // Specular
 
-    const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
+    const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", GL.TEXTURE_CUBE_MAP);
     specular.mimeType = ImageMimeType.KTX2;
     environment.images.push(specular);
-    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
     environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.specularEnvMap.generateMips = false;
 
@@ -244,10 +244,10 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     // Sheen
 
-    const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", WebGL2RenderingContext.TEXTURE_CUBE_MAP);
+    const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", GL.TEXTURE_CUBE_MAP);
     sheen.mimeType = ImageMimeType.KTX2;
     environment.images.push(sheen);
-    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_CUBE_MAP));
+    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
     environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.sheenEnvMap.generateMips = false;*/
 
@@ -257,8 +257,8 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     // GGX
 
-    environment.images.push(new gltfImage("assets/images/lut_ggx.png", WebGL2RenderingContext.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("assets/images/lut_ggx.png", GL.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.lut = new gltfTextureInfo(environment.textures.length - 1);
     environment.lut.generateMips = false;
@@ -266,16 +266,16 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Sheen
     // Charlie
 
-    environment.images.push(new gltfImage("assets/images/lut_charlie.png", WebGL2RenderingContext.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("assets/images/lut_charlie.png", GL.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenLUT.generateMips = false;
 
     // Sheen E LUT
 
-    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", WebGL2RenderingContext.TEXTURE_2D));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], WebGL2RenderingContext.TEXTURE_2D));
+    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", GL.TEXTURE_2D));
+    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenELUT.generateMips = false;

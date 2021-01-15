@@ -1,12 +1,12 @@
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfRenderer } from '../Renderer/renderer.js';
+import { GL } from '../Renderer/webgl.js';
 
 class GltfView
 {
-    constructor(canvas)
+    constructor(context)
     {
-        this.canvas = canvas;
-        this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
+        this.context = context;
         this.renderer = new gltfRenderer(this.context);
     }
 
@@ -15,14 +15,22 @@ class GltfView
         return new GltfState();
     }
 
-    renderFrameToCanvas(state)
+
+
+    updateCanvas(canvas)
     {
         // TODO: this should probably not be done here
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+    }
 
-        this.renderer.resize(this.canvas.width, this.canvas.height);
+    updateViewport(width, height)
+    {
+        this.renderer.resize(width, height);
+    }
 
+    renderFrame(state)
+    {
         this.renderer.clearFrame(state.renderingParameters.clearColor);
 
         if(state.gltf === undefined)
@@ -36,7 +44,6 @@ class GltfView
 
         this.renderer.drawScene(state, scene);
     }
-
     animate(state)
     {
         if(state.gltf === undefined)
@@ -87,18 +94,18 @@ class GltfView
 
                 // convert vertex count to point, line or triangle count
                 switch (primitive.mode) {
-                case WebGLRenderingContext.POINTS:
+                case GL.POINTS:
                     return verticesCount;
-                case WebGLRenderingContext.LINES:
+                case GL.LINES:
                     return verticesCount / 2;
-                case WebGLRenderingContext.LINE_LOOP:
+                case GL.LINE_LOOP:
                     return verticesCount;
-                case WebGLRenderingContext.LINE_STRIP:
+                case GL.LINE_STRIP:
                     return verticesCount - 1;
-                case WebGLRenderingContext.TRIANGLES:
+                case GL.TRIANGLES:
                     return verticesCount / 3;
-                case WebGLRenderingContext.TRIANGLE_STRIP:
-                case WebGLRenderingContext.TRIANGLE_FAN:
+                case GL.TRIANGLE_STRIP:
+                case GL.TRIANGLE_FAN:
                     return verticesCount - 2;
                 }
             })
@@ -113,12 +120,14 @@ class GltfView
         };
     }
 
-    async startRendering(state)
+    async startRendering(state, canvas)
     {
         const update = () =>
         {
             this.animate(state);
-            this.renderFrameToCanvas(state);
+            this.updateCanvas(canvas);
+            this.updateViewport(canvas.width, canvas.height);
+            this.renderFrame(state);
             window.requestAnimationFrame(update);
         };
 

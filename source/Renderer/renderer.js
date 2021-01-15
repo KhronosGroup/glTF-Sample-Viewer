@@ -1,7 +1,7 @@
 import { mat4, mat3, vec3 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { ToneMaps, DebugOutput } from './rendering_parameters.js';
-import { gltfWebGl } from './webgl.js';
+import { gltfWebGl, GL } from './webgl.js';
 
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
@@ -22,8 +22,7 @@ class gltfRenderer
         this.currentWidth = 0;
         this.currentHeight = 0;
 
-        this.webGl = new gltfWebGl();
-        this.webGl.context = context;
+        this.webGl = new gltfWebGl(context);
 
         // create render target for non transmission materials
         this.opaqueRenderTexture = 0;
@@ -71,9 +70,9 @@ class gltfRenderer
     init()
     {
         const context = this.webGl.context;
-        context.pixelStorei(WebGL2RenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGL2RenderingContext.NONE);
-        context.enable(WebGL2RenderingContext.DEPTH_TEST);
-        context.depthFunc(WebGL2RenderingContext.LEQUAL);
+        context.pixelStorei(GL.UNPACK_COLORSPACE_CONVERSION_WEBGL, GL.NONE);
+        context.enable(GL.DEPTH_TEST);
+        context.depthFunc(GL.LEQUAL);
         context.colorMask(true, true, true, true);
         context.clearDepth(1.0);
 
@@ -135,10 +134,10 @@ class gltfRenderer
     {
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
         this.webGl.context.clearColor(clearColor[0] / 255.0, clearColor[1] / 255.0, clearColor[2] / 255.0, 1.0);
-        this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
+        this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebuffer);
         this.webGl.context.clearColor(clearColor[0] / 255.0, clearColor[1] / 255.0, clearColor[2] / 255.0, 1.0);
-        this.webGl.context.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT | WebGL2RenderingContext.DEPTH_BUFFER_BIT);
+        this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
 
@@ -305,31 +304,31 @@ class gltfRenderer
 
         if (mat4.determinant(node.worldTransform) < 0.0)
         {
-            this.webGl.context.frontFace(WebGL2RenderingContext.CW);
+            this.webGl.context.frontFace(GL.CW);
         }
         else
         {
-            this.webGl.context.frontFace(WebGL2RenderingContext.CCW);
+            this.webGl.context.frontFace(GL.CCW);
         }
 
         if (material.doubleSided)
         {
-            this.webGl.context.disable(WebGL2RenderingContext.CULL_FACE);
+            this.webGl.context.disable(GL.CULL_FACE);
         }
         else
         {
-            this.webGl.context.enable(WebGL2RenderingContext.CULL_FACE);
+            this.webGl.context.enable(GL.CULL_FACE);
         }
 
         if (material.alphaMode === 'BLEND')
         {
-            this.webGl.context.enable(WebGL2RenderingContext.BLEND);
-            this.webGl.context.blendFuncSeparate(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA, WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
-            this.webGl.context.blendEquation(WebGL2RenderingContext.FUNC_ADD);
+            this.webGl.context.enable(GL.BLEND);
+            this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.webGl.context.blendEquation(GL.FUNC_ADD);
         }
         else
         {
-            this.webGl.context.disable(WebGL2RenderingContext.BLEND);
+            this.webGl.context.disable(GL.BLEND);
         }
 
         const drawIndexed = primitive.indices !== undefined;
@@ -390,7 +389,7 @@ class gltfRenderer
 
         if(transmissionSampleTexture !== undefined)
         {
-            this.webGl.context.activeTexture(WebGL2RenderingContext.TEXTURE0 + textureCount);
+            this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
             this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureCount);
             textureCount++;

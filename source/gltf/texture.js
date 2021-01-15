@@ -1,10 +1,10 @@
 import { fromKeys, initGlForMembers } from './utils.js';
-import { WebGl } from '../Renderer/webgl.js';
+import { GL } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
 
 class gltfTexture extends GltfObject
 {
-    constructor(sampler = undefined, source = undefined, type = WebGLRenderingContext.TEXTURE_2D, texture = undefined)
+    constructor(sampler = undefined, source = undefined, type = GL.TEXTURE_2D, texture = undefined)
     {
         super();
         this.sampler = sampler; // index to gltfSampler, default sampler ?

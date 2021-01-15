@@ -1,14 +1,14 @@
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
 import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
-
-const ImageMimeType = {JPEG: "image/jpeg", PNG: "image/png", HDR: "image/vnd.radiance", KTX2: "image/ktx2", GLTEXTURE: "image/texture"};
+import { GL } from "../Renderer/webgl";
+import { ImageMimeType } from "./image_mime_type.js";
 
 class gltfImage extends GltfObject
 {
     constructor(
         uri = undefined,
-        type = WebGLRenderingContext.TEXTURE_2D,
+        type = GL.TEXTURE_2D,
         miplevel = 0,
         bufferView = undefined,
         name = undefined,

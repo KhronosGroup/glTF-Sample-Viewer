@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "cd ../source; npm run build; cd ../app_headless; node index.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,9 @@
   },
   "homepage": "https://github.com/KhronosGroup/glTF-Sample-Viewer#readme",
   "dependencies": {
-    "gltf-sample-viewer": "../source",
+    "@types/webgl2": "0.0.5",
+    "gl": "^4.9.0",
+    "gltf-sample-viewer": "../npm_package",
     "yargs": "^16.2.0"
   }
 }
