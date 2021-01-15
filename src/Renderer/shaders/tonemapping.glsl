@@ -3,6 +3,22 @@ uniform float u_Exposure;
 const float GAMMA = 2.2;
 const float INV_GAMMA = 1.0 / GAMMA;
 
+// sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
+const mat3 ACESInputMat = mat3
+(
+    0.59719, 0.07600, 0.02840,
+    0.35458, 0.90834, 0.13383,
+    0.04823, 0.01566, 0.83777
+);
+
+// ODT_SAT => XYZ => D60_2_D65 => sRGB
+const mat3 ACESOutputMat = mat3
+(
+    1.60475, -0.10208, -0.00327,
+    -0.53108,  1.10813, -0.07276,
+    -0.07367, -0.00605,  1.07602
+);
+
 // linear to sRGB approximation
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 vec3 linearTosRGB(vec3 color)
@@ -22,61 +38,53 @@ vec4 sRGBToLinear(vec4 srgbIn)
     return vec4(sRGBToLinear(srgbIn.xyz), srgbIn.w);
 }
 
-// Uncharted 2 tone map
-// see: http://filmicworlds.com/blog/filmic-tonemapping-operators/
-vec3 toneMapUncharted2Impl(vec3 color)
-{
-    const float A = 0.15;
-    const float B = 0.50;
-    const float C = 0.10;
-    const float D = 0.20;
-    const float E = 0.02;
-    const float F = 0.30;
-    return ((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F))-E/F;
-}
-
-vec3 toneMapUncharted(vec3 color)
-{
-    const float W = 11.2;
-    color = toneMapUncharted2Impl(color * 2.0);
-    vec3 whiteScale = 1.0 / toneMapUncharted2Impl(vec3(W));
-    return linearTosRGB(color * whiteScale);
-}
-
-// Hejl Richard tone map
-// see: http://filmicworlds.com/blog/filmic-tonemapping-operators/
-vec3 toneMapHejlRichard(vec3 color)
-{
-    color = max(vec3(0.0), color - vec3(0.004));
-    return (color*(6.2*color+.5))/(color*(6.2*color+1.7)+0.06);
-}
-
-// ACES tone map
+// ACES tone map (faster approximation)
 // see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
-vec3 toneMapACES(vec3 color)
+vec3 toneMapACESFast(vec3 color)
 {
+    color *= 0.6;
     const float A = 2.51;
     const float B = 0.03;
     const float C = 2.43;
     const float D = 0.59;
     const float E = 0.14;
-    return linearTosRGB(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0));
+    return clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0);
+}
+
+// ACES filmic tone map approximation
+// see https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
+vec3 RRTAndODTFit(vec3 color)
+{
+    vec3 a = color * (color + 0.0245786) - 0.000090537;
+    vec3 b = color * (0.983729 * color + 0.4329510) + 0.238081;
+    return a / b;
+}
+
+vec3 toneMapACES(vec3 color)
+{
+    color = ACESInputMat * color;
+
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = ACESOutputMat * color;
+
+    // Clamp to [0, 1]
+    color = clamp(color, 0.0, 1.0);
+
+    return color;
 }
 
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
-#ifdef TONEMAP_UNCHARTED
-    return toneMapUncharted(color);
-#endif
-
-#ifdef TONEMAP_HEJLRICHARD
-    return toneMapHejlRichard(color);
+#ifdef TONEMAP_ACES_FAST
+    return linearTosRGB(toneMapACESFast(color));
 #endif
 
 #ifdef TONEMAP_ACES
-    return toneMapACES(color);
+    return linearTosRGB(toneMapACES(color));
 #endif
 
     return linearTosRGB(color);

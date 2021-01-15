@@ -15,6 +15,7 @@ class gltfAnimation extends GltfObject
 
         // not gltf
         this.interpolators = [];
+        this.maxTime = 0;
     }
 
     fromJson(jsonAnimation)
@@ -44,6 +45,21 @@ class gltfAnimation extends GltfObject
             return;
         }
 
+        if(this.maxTime == 0)
+        {
+            for(let i = 0; i < this.channels.length; ++i)
+            {
+                const channel = this.channels[i];
+                const sampler = this.samplers[channel.sampler];
+                const input = gltf.accessors[sampler.input].getDeinterlacedView(gltf);
+                const max = input[input.length - 1];
+                if(max > this.maxTime)
+                {
+                    this.maxTime = max;
+                }
+            }
+        }
+
         for(let i = 0; i < this.interpolators.length; ++i)
         {
             const channel = this.channels[i];
@@ -55,18 +71,18 @@ class gltfAnimation extends GltfObject
             switch(channel.target.path)
             {
             case InterpolationPath.TRANSLATION:
-                node.applyTranslation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
+                node.applyTranslation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime));
                 break;
             case InterpolationPath.ROTATION:
-                node.applyRotation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4));
+                node.applyRotation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime));
                 break;
             case InterpolationPath.SCALE:
-                node.applyScale(interpolator.interpolate(gltf, channel, sampler, totalTime, 3));
+                node.applyScale(interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime));
                 break;
             case InterpolationPath.WEIGHTS:
             {
                 const mesh = gltf.meshes[node.mesh];
-                mesh.weights = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length);
+                mesh.weights = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length, this.maxTime);
                 break;
             }
             }

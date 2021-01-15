@@ -58,7 +58,7 @@ class UIModel
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
 
         const initialClearColor = "#303542";
-        app.setSelectedClearColor(initialClearColor);
+        this.app.setSelectedClearColor(initialClearColor);
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
@@ -135,9 +135,10 @@ class UIModel
         return observables;
     }
 
-    attachGltfLoaded(gltfLoadedObservable)
+    attachGltfLoaded(glTFLoadedStateObservable)
     {
-        const gltfLoadedAndInit = gltfLoadedObservable.pipe(
+        const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
+            map( state => state.gltf ),
             startWith(new glTF())
         );
 
@@ -150,6 +151,13 @@ class UIModel
         );
         sceneIndices.subscribe( (scenes) => {
             this.app.scenes = scenes;
+        });
+
+        const loadedSceneIndex = glTFLoadedStateObservable.pipe(
+            map( (state) => state.sceneIndex )
+        );
+        loadedSceneIndex.subscribe( (index) => {
+            this.app.setSelectedScene(index);
         });
 
         const cameraIndices = gltfLoadedAndInit.pipe(
