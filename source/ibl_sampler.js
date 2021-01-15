@@ -20,9 +20,6 @@ class iblSampler
 
         this.gl = view.context;
 
-        this.currentWidth = view.canvas.width;
-        this.currentHeight = view.canvas.height;
-
         this.textureSize = 256;
         this.sampleCount = 64;
         this.lodBias = 0.0;
@@ -184,7 +181,6 @@ class iblSampler
         this.cubeMapToSheen();
 
         this.gl.bindFramebuffer(  this.gl.FRAMEBUFFER, null);
-        this.gl.viewport(0, 0, this.currentWidth, this.currentHeight);//ToDo
     }
 
 

@@ -280,7 +280,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenELUT.generateMips = false;
 
-    await gltfLoader.loadImages(environment).then(() => gltfLoader.processImages(environment));
+    await gltfLoader.loadImages(environment);
 
     environment.initGl(view.context);
 

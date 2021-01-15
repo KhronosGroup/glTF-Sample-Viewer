@@ -11,7 +11,7 @@ import { gltfModelPathProvider } from './model_path_provider.js';
 async function main()
 {
     const canvas = document.getElementById("canvas");
-    const context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
+    const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const view = new GltfView(context);
     const state = view.createState();
 

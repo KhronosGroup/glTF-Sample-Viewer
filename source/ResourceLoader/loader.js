@@ -1,4 +1,3 @@
-import { gltfImageProcessor } from "./image_processor.js";
 
 class gltfLoader
 {
@@ -10,8 +9,7 @@ class gltfLoader
         const buffersPromise = gltfLoader.loadBuffers(gltf, buffers, additionalFiles);
 
         await buffersPromise; // images might be stored in the buffers
-        const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles)
-            .then(() => gltfLoader.processImages(gltf));
+        const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles);
 
         return await Promise.all([buffersPromise, imagesPromise])
             .then(() => gltf.initGl(webGlContext));
@@ -88,12 +86,6 @@ class gltfLoader
             imagePromises.push(image.load(gltf, additionalFiles));
         }
         return Promise.all(imagePromises);
-    }
-
-    static processImages(gltf)
-    {
-        const imageProcessor = new gltfImageProcessor();
-        imageProcessor.processImages(gltf);
     }
 }
 
