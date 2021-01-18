@@ -59,7 +59,7 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
-        <b-select v-model="selectedOption" v-on:input="selectionchanged" v-bind:placeholder="placeholdertext">
+        <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
             <option v-for="item in dropdowncontent" :key="item.title">
                 {{ item.title }}
             </option>
