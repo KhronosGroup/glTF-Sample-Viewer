@@ -42,7 +42,14 @@ class gltfAccessor extends GltfObject
             let arrayLength = 0;
             if(bufferView.byteStride !== 0)
             {
-                arrayLength = bufferView.byteStride / componentSize * (this.count - 1) + componentCount;
+                if (componentSize !== 0)
+                {
+                    arrayLength = bufferView.byteStride / componentSize * (this.count - 1) + componentCount;
+                }
+                else
+                {
+                    console.warn("Invalid component type in accessor '" + (this.name ? this.name : "") + "'");
+                }
             }
             else
             {
