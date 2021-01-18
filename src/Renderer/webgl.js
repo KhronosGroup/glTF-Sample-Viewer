@@ -81,7 +81,8 @@ class gltfWebGl
                 console.warn("Image is undefined for texture: " + gltfTex.source);
                 return false;
             }
-            this.context.texImage2D(image.type, image.miplevel, WebGL2RenderingContext.RGBA, WebGL2RenderingContext.RGBA, WebGL2RenderingContext.UNSIGNED_BYTE, image.image);
+            const internalformat = textureInfo.linear ? WebGL2RenderingContext.RGBA : WebGL2RenderingContext.SRGB8_ALPHA8;
+            this.context.texImage2D(image.type, image.miplevel, internalformat, WebGL2RenderingContext.RGBA, WebGL2RenderingContext.UNSIGNED_BYTE, image.image);
             const generateMips = image.shouldGenerateMips();
 
             this.setSampler(gltfSampler, gltfTex.type, generateMips);

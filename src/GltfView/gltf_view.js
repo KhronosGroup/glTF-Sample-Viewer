@@ -3,9 +3,10 @@ import { gltfRenderer } from '../Renderer/renderer.js';
 
 class GltfView
 {
-    constructor(canvas)
+    constructor(canvas, ui)
     {
         this.canvas = canvas;
+        this.ui = ui;
         this.context = this.canvas.getContext("webgl2", { alpha: false, antialias: true });
         this.renderer = new gltfRenderer(this.context);
     }
@@ -17,8 +18,14 @@ class GltfView
 
     renderFrameToCanvas(state)
     {
-        // TODO: this should probably not be done here
-        this.canvas.width = this.canvas.clientWidth;
+        if(this.ui !== undefined)
+        {
+            this.canvas.width = window.innerWidth - this.ui.getBoundingClientRect().width;
+        }
+        else
+        {
+            this.canvas.width = this.canvas.clientWidth;
+        }
         this.canvas.height = this.canvas.clientHeight;
 
         this.renderer.resize(this.canvas.width, this.canvas.height);

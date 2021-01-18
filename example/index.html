@@ -59,7 +59,7 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 <script id="dropDownTemplate" type="text/x-template">
     <b-field v-bind:label="name">
-        <b-select v-model="selectedOption" v-on:input="selectionchanged" placeholder="Select">
+        <b-select v-model="selectedOption" v-on:input="selectionchanged" v-bind:placeholder="placeholdertext">
             <option v-for="item in dropdowncontent" :key="item.title">
                 {{ item.title }}
             </option>
@@ -89,11 +89,18 @@ function getUrlParam(parameter, defaultvalue){
         </div>
     </section>
 </script>
-<script id="sliderTemplate" type="text/x-template">
+<script id="exposureTemplate" type="text/x-template">
     <div>
         <label class="label">{{ name }}</label>
-        <b-numberinput  v-model="value" min="0" max="100" :exponential=".5"></b-numberinput >
-        <b-slider v-model="value"></b-slider>
+        <b-slider v-model="value" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks>
+            <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
+            <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
+            <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
+            <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
+            <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
+            <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
+            <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+        </b-slider>
     </div>
 </script>
 <script id="colorPickerTemplate" type="text/x-template">
@@ -128,13 +135,14 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Models</h2>
 
-        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="models"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="modelselection"></drop-down-element>
         <!--<drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>-->
-        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="scenes"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="sceneselection"></drop-down-element>
         <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
         <label class="label">Variants</label>
         <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
-                                    v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
+                                    v-bind:radiobuttoncontent="materialvariants"
+                                    defaultselection="None"></radio-button-list-element>
     </div>
 </script>
 <script id="displayTemplate" type="text/x-template">
@@ -162,7 +170,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Animation</h2>
         <label  class="label">Animation Controls</label>
-        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animations"></toggle-button>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animationtoggle"></toggle-button>
         <!--<check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>-->
     </div>
 </script>
@@ -176,7 +184,7 @@ function getUrlParam(parameter, defaultvalue){
     <div>
         <h2>Advanced Controls</h2>
         <drop-down-element name="Debug Channels" v-on:selectionchanged="debugchannelchanged" v-bind:dropdowncontent="debugchannels"></drop-down-element>
-        <slider-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged"></slider-element>
+        <exposure-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged"></exposure-element>
         <drop-down-element class="smallerLabel" name="Tone Map" v-on:selectionchanged="tonemapchanged" v-bind:dropdowncontent="tonemaps"></drop-down-element>
         <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
         <br>
@@ -190,7 +198,7 @@ function getUrlParam(parameter, defaultvalue){
     <canvas id="canvas">No Canvas!</canvas>
 
     <!-- UI -->
-    <div id="app" style="position: absolute; top: 0; right: 0;">
+    <div id="app">
         <template>
             <b-tabs vertical position="is-right">
                 <b-tab-item label="Models" icon="google-photos">
@@ -209,8 +217,7 @@ function getUrlParam(parameter, defaultvalue){
                                 v-bind:scenes="scenes"
                                 v-bind:cameras="cameras"
                                 v-bind:materialvariants="materialVariants"
-                                ref="models"
-                                ref="scenes"></tab-models>
+                                ref="tabmodels"></tab-models>
                 </b-tab-item>
 
                 <b-tab-item label="Display" icon="library-music">
@@ -227,7 +234,7 @@ function getUrlParam(parameter, defaultvalue){
                                   v-stream:environmentchanged="environmentChanged$"
                                   v-stream:colorchanged="colorChanged$"
                                   v-bind:environments="environments"
-                                  ref="colorpicker"></tab-display>
+                                  ref="tabdisplay"></tab-display>
                 </b-tab-item>
 
                 <b-tab-item label="Animation" icon="video">
@@ -238,7 +245,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
                     <tab-animation v-stream:animationplayclicked="animationPlayChanged$"
                                     v-bind:animations="animations"
-                                    ref="animations"></tab-animation>
+                                    ref="tabanimation"></tab-animation>
                 </b-tab-item>
                 <b-tab-item label="XMP" icon="video">
                     <template #header>

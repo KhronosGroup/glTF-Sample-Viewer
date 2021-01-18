@@ -85,7 +85,7 @@ class gltfInterpolator
         this.prevKey = 0;
     }
 
-    interpolate(gltf, channel, sampler, t, stride)
+    interpolate(gltf, channel, sampler, t, stride, maxTime)
     {
         const input = gltf.accessors[sampler.input].getDeinterlacedView(gltf);
         const output = gltf.accessors[sampler.output].getDeinterlacedView(gltf);
@@ -96,8 +96,9 @@ class gltfInterpolator
         }
 
         // Wrap t around, so the animation loops.
-        // Make sure that t is never earlier than the first keyframe.
-        t = Math.max(t % input[input.length - 1], input[0]);
+        // Make sure that t is never earlier than the first keyframe and never later then the last keyframe.
+        t = t % maxTime;
+        t = clamp(t, input[0], input[input.length - 1]);
 
         if (this.prevT > t)
         {

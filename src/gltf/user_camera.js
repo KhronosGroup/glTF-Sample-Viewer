@@ -138,7 +138,8 @@ class UserCamera extends gltfCamera
 
     fitCameraPlanesToExtents(min, max)
     {
-        const longestDistance = vec3.distance(min, max);
+        // Manually increase scene extent just for the camera planes to avoid camera clipping in most situations.
+        const longestDistance = 10 * vec3.distance(min, max);
         let zNear = this.zoom - (longestDistance * 0.6);
         let zFar = this.zoom + (longestDistance * 0.6);
 

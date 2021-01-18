@@ -25,10 +25,6 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularC
 
     vec3 specularLight = specularSample.rgb;
 
-#ifndef USE_HDR
-    specularLight = sRGBToLinear(specularLight);
-#endif
-
    return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
@@ -68,11 +64,6 @@ vec3 getIBLRadianceTransmission(vec3 n, vec3 v, vec2 fragCoord, float perceptual
 vec3 getIBLRadianceLambertian(vec3 n, vec3 diffuseColor)
 {
     vec3 diffuseLight = getDiffuseLight(n);
-
-    #ifndef USE_HDR
-        diffuseLight = sRGBToLinear(diffuseLight);
-    #endif
-
     return diffuseLight * diffuseColor;
 }
 
@@ -87,10 +78,5 @@ vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor
     vec4 sheenSample = getSheenSample(reflection, lod);
 
     vec3 sheenLight = sheenSample.rgb;
-
-    #ifndef USE_HDR
-    sheenLight = sRGBToLinear(sheenLight);
-    #endif
-
     return sheenLight * sheenColor * brdf;
 }

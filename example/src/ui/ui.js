@@ -37,7 +37,8 @@ Vue.component('drop-down-element', {
     template:'#dropDownTemplate',
     data() {
         return {
-            selectedOption: ""
+            selectedOption: "",
+            placeholdertext: "Select"
         };
     },
     // this is used to init the dropdown (so it is not empty on UI bootup)
@@ -56,16 +57,20 @@ Vue.component('drop-down-element', {
         },
         setSelection: function(value)
         {
-            this.selectedOption = value;
+            this.selectedOption = null;
+            this.placeholdertext = value;
         }
     }
 });
 Vue.component('radio-button-list-element', {
-    props: ['name', 'radiobuttoncontent'],
+    props: ['name', 'radiobuttoncontent', 'defaultselection'],
     data() {
         return {
             radio: ""
         };
+    },
+    mounted: function() {
+        this.radio = this.defaultselection;
     },
     updated: function() {
         this.$emit('selectionchanged', this.radio);
@@ -88,11 +93,11 @@ Vue.component('check-box-element', {
     },
     template:'#checkBoxTemplate'
 });
-Vue.component('slider-element', {
+Vue.component('exposure-element', {
     props: ['name'],
     data() {
         return {
-            value: 1
+            value: 0,
         };
     },
     updated : function()
@@ -106,7 +111,7 @@ Vue.component('slider-element', {
             this.value = value;
         }
     },
-    template:'#sliderTemplate'
+    template:'#exposureTemplate'
 });
 Vue.component('color-picker-element', {
     props: ['name'],
@@ -161,10 +166,10 @@ Vue.component('tab-models', {
             this.$emit('variantchanged', value);
         },
         setSelectedModel: function(value) {
-            this.$refs.models.setSelection(value);
+            this.$refs.modelselection.setSelection(value);
         },
         setSelectedScene: function(value) {
-            this.$refs.scenes.setSelection(value);
+            this.$refs.sceneselection.setSelection(value);
         }
     }
 });
@@ -216,7 +221,7 @@ Vue.component('tab-animation', {
             this.$emit('animationplayclicked', value)
         },
         setAnimationState: function(value) {
-            this.$refs.animations.setState(value);
+            this.$refs.animationtoggle.setState(value);
         }
     }
 });
@@ -271,10 +276,10 @@ const app = new Vue({
             flavors: [],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera"}],
-            materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
+            materialVariants: [{title: "None"}],
             environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
-            tonemaps: [{title: "Linear"}],
+            tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
             statistics: []
@@ -284,19 +289,19 @@ const app = new Vue({
     {
         setSelectedModel: function(value)
         {
-            this.$refs.models.setSelectedModel(value);
+            this.$refs.tabmodels.setSelectedModel(value);
         },
         setSelectedScene: function(value)
         {
-            this.$refs.scenes.setSelectedScene(value);
+            this.$refs.tabmodels.setSelectedScene(value);
         },
         setSelectedClearColor: function(value)
         {
-            this.$refs.colorpicker.setSelectedClearColor(value);
+            this.$refs.tabdisplay.setSelectedClearColor(value);
         },
         setAnimationState: function(value)
         {
-            this.$refs.animations.setAnimationState(value);
+            this.$refs.tabanimation.setAnimationState(value);
         }
     }
 }).$mount('#app');

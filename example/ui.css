@@ -108,6 +108,25 @@ label.switch
 /* Styles for individual elements */
 /**********************************/
 /**********************************/
+html
+{
+    overflow: unset !important;
+}
+
+body
+{
+    display: flex;
+}
+
+canvas
+{
+    display: block;
+}
+
+.b-tabs.is-vertical.is-right
+{
+    flex-wrap: unset;
+}
 
 
 .tab-item h2
@@ -227,4 +246,23 @@ label.switch
 div .field.has-addons
 {
     display: block;
+}
+
+.b-slider.exposureSlider
+{
+    margin-bottom: 50px;
+}
+
+.exposureSliderMarker
+{
+    color: #e2e2e2;
+}
+
+.b-slider-tick-label
+{
+    margin-top: 8px;
+    margin-left: -5px;
+    line-height: 0.5;
+    position: relative !important;
+    text-align: center;
 }

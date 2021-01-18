@@ -11,7 +11,8 @@ import { gltfModelPathProvider } from './model_path_provider.js';
 async function main()
 {
     const canvas = document.getElementById("canvas");
-    const view = new GltfView(canvas);
+    const ui = document.getElementById("app");
+    const view = new GltfView(canvas, ui);
     const state = view.createState();
 
     initDracoLib();
@@ -23,7 +24,7 @@ async function main()
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
-    const uiModel = await new UIModel(app, pathProvider);
+    const uiModel = await new UIModel(app, pathProvider, state);
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
@@ -33,6 +34,8 @@ async function main()
         {
             return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
+                const defaultScene = state.gltf.scene;
+                state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
@@ -40,7 +43,7 @@ async function main()
                 state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
-                return state.gltf;
+                return state;
             })
             );
         }),
@@ -49,8 +52,13 @@ async function main()
     );
 
 
-    const sceneChangedObservable = uiModel.scene.pipe(map( scene => {
-        state.sceneIndex = scene;
+    const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
+        state.sceneIndex = newSceneIndex;
+        const scene = state.gltf.scenes[state.sceneIndex];
+        scene.applyTransformHierarchy(state.gltf);
+        computePrimitiveCentroids(state.gltf);
+        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+        state.userCamera.updatePosition();
     }));
 
     const statisticsUpdateObservableTemp = merge(
@@ -85,8 +93,8 @@ async function main()
         state.renderingParameters.skinning = skinningEnabled;
     });
 
-    uiModel.exposure.subscribe( exposure => {
-        state.renderingParameters.exposure = exposure;
+    uiModel.exposurecompensation.subscribe( exposurecompensation => {
+        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {

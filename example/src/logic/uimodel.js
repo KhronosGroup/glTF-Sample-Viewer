@@ -11,10 +11,11 @@ import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 // as close as possible
 class UIModel
 {
-    constructor(app, modelPathProvider)
+    constructor(app, modelPathProvider, state)
     {
         this.app = app;
         this.pathProvider = modelPathProvider;
+        this.state = state;
 
         this.app.models = this.pathProvider.getAllKeys().map(key => {
             return {title: key};
@@ -48,7 +49,7 @@ class UIModel
             startWith(DebugOutput.NONE)
         );
 
-        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
+        this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
@@ -57,7 +58,7 @@ class UIModel
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
 
         const initialClearColor = "#303542";
-        app.setSelectedClearColor(initialClearColor);
+        this.app.setSelectedClearColor(initialClearColor);
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
@@ -74,6 +75,24 @@ class UIModel
             })
         );
 
+        const cameraIndices = this.scene.pipe(map( scene => {
+            let cameraIndices = [{title: "User Camera"}];
+            const gltf = state.gltf;
+            cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+                if(gltf.scenes[scene].includesNode(gltf, camera.node))
+                {
+                    return {title: index};
+                }
+            }));
+            cameraIndices = cameraIndices.filter(function(el) {
+                return el !== undefined;
+            });
+            return cameraIndices;
+        }));
+        cameraIndices.subscribe( (cameras) => {
+            this.app.cameras = cameras;
+        });
+
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
@@ -81,6 +100,20 @@ class UIModel
         this.hdr = inputObservables.hdrDropped;
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
+
+        const dropedFileName = inputObservables.gltfDropped.pipe(
+            map( (data) => {
+                return data.mainFile.name;
+            })
+        );
+        dropedFileName.subscribe( (filename) => {
+            if(filename !== undefined)
+            {
+                filename = filename.split('/').pop();
+                filename = filename.substr(0, filename.lastIndexOf('.'));
+                this.app.setSelectedModel(filename);
+            }
+        });
     }
 
     static getInputObservables(inputDomElement)
@@ -112,13 +145,14 @@ class UIModel
                 return files.find( (file) => file.name.endsWith(".hdr"));
             }),
             filter(file => file),
-        )
+        );
         return observables;
     }
 
-    attachGltfLoaded(gltfLoadedObservable)
+    attachGltfLoaded(glTFLoadedStateObservable)
     {
-        const gltfLoadedAndInit = gltfLoadedObservable.pipe(
+        const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
+            map( state => state.gltf ),
             startWith(new glTF())
         );
 
@@ -133,12 +167,25 @@ class UIModel
             this.app.scenes = scenes;
         });
 
+        const loadedSceneIndex = glTFLoadedStateObservable.pipe(
+            map( (state) => state.sceneIndex )
+        );
+        loadedSceneIndex.subscribe( (index) => {
+            this.app.setSelectedScene(index);
+        });
+
         const cameraIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
-                const cameraIndices = [{title: "User Camera"}];
+                let cameraIndices = [{title: "User Camera"}];
                 cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    return {title: index};
+                    if(gltf.scenes[this.state.sceneIndex].includesNode(gltf, camera.node))
+                    {
+                        return {title: index};
+                    }
                 }));
+                cameraIndices = cameraIndices.filter(function(el) {
+                    return el !== undefined;
+                });
                 return cameraIndices;
             })
         );
@@ -155,6 +202,11 @@ class UIModel
                     });
                 }
                 return [];
+            }),
+            map(variants => {
+                // Add a "None" variant to the beginning
+                variants.unshift({title: "None"});
+                return variants;
             })
         );
         variants.subscribe( (variants) => {
