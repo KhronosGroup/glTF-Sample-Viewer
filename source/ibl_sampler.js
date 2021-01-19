@@ -57,10 +57,27 @@ class iblSampler
 
         this.gl.bindTexture( this.gl.TEXTURE_2D,  texture);
 
-        var internalFormat = this.gl.RGB32F;
+        var internalFormat = this.gl.RGBA32F;
         var format = this.gl.RGB;
         var type = this.gl.FLOAT;
-        var data = image.dataFloat;
+        var data = undefined;
+
+        if (image.dataFloat instanceof Float32Array)
+        {
+            internalFormat = this.gl.RGBA32F;
+            format = this.gl.RGBA;
+            type = this.gl.FLOAT;
+            data = image.dataFloat;
+        }
+        else if (image instanceof Image)
+        {
+            internalFormat = this.gl.RGBA;
+            format = this.gl.RGBA;
+            type = this.gl.UNSIGNED_BYTE;
+            data = image;
+        }
+
+
 
         this.gl.texImage2D(
             this.gl.TEXTURE_2D,
@@ -120,8 +137,6 @@ class iblSampler
 
         return targetTexture;
     }
-
-
 
     init(panoramaImage)
     {
