@@ -1,12 +1,12 @@
 import VueRx from 'vue-rx';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import './sass.scss';
 
 Vue.use(VueRx, { Subject });
 
 // general components
 Vue.component('toggle-button', {
-    props: ['onText', 'offText'],
+    props: ['ontext', 'offtext'],
     template:'#toggleButtonTemplate',
     data(){
         return {
@@ -29,41 +29,6 @@ Vue.component('toggle-button', {
         {
             this.isOn = value;
             this.name = this.isOn ? this.onText : this.offText;
-        }
-    }
-});
-Vue.component('drop-down-element', {
-    props: ['name', 'dropdowncontent'],
-    template:'#dropDownTemplate',
-    data() {
-        return {
-            selectedOption:
-            {
-            }
-        };
-    },
-    // this is used to init the dropdown (so it is not empty on UI bootup)
-    mounted(){
-        if(this.dropdowncontent === undefined || this.dropdowncontent.length === 0)
-        {
-            return;
-        }
-        this.selectedOption = this.dropdowncontent[0];
-    },
-    methods:
-    {
-        selectionchanged: function(value)
-        {
-            this.$emit('selectionchanged', { title: value.title, metadata: value.metadata });
-        },
-        setSelection: function(value)
-        {
-            const tmp = this.dropdowncontent[value];
-            if(tmp === undefined)
-            {
-                return;
-            }
-            this.selectedOption = tmp;
         }
     }
 });
@@ -144,126 +109,6 @@ Vue.component('dual-label-element', {
   template:'#dualLabelTemplate'
 });
 
-
-
-// create components for menu tabs
-Vue.component('tab-models', {
-    props: ["materialvariants", "models", "flavors", "scenes", "cameras"],
-    template:'#modelsTemplate',
-    methods:
-    {
-        modelchanged: function(value) {
-            this.$emit('modelchanged', value);
-        },
-        flavourchanged: function(value) {
-            this.$emit('flavourchanged', value);
-        },
-        scenechanged: function(value) {
-            this.$emit('scenechanged', value);
-        },
-        camerachanged: function(value) {
-            this.$emit('camerachanged', value);
-        },
-        variantchanged: function(value) {
-            this.$emit('variantchanged', value);
-        },
-        setSelectedModel: function(value) {
-            this.$refs.modelselection.setSelection(value);
-        },
-        setSelectedScene: function(value) {
-            this.$refs.sceneselection.setSelection(value);
-        }
-    }
-});
-Vue.component('tab-display', {
-    props: ["environments", "colorpicker"],
-    template:'#displayTemplate',
-    data() {
-        return {
-            environmentvisibility: true,
-            punctuallights: true,
-            ibl: true,
-            environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}]
-        };
-    },
-    methods:
-    {
-        environmentvisibilitychanged: function(value) {
-            this.$emit('environmentvisibilitychanged', value)
-        },
-        punctuallightschanged: function(value) {
-            this.$emit('punctuallightschanged', value)
-        },
-        iblchanged: function(value) {
-            this.$emit('iblchanged', value)
-        },
-        environmentchanged: function(value) {
-            this.$emit('environmentchanged', value)
-        },
-        environmentrotationchanged: function(value) {
-            this.$emit('environmentrotationchanged', value);
-        },
-        addenvironment: function(value) {
-            this.$emit('addenvironment', value)
-        },
-        colorchanged: function(value) {
-            this.$emit('colorchanged', value)
-        },
-        setSelectedClearColor: function (value) {
-            this.$refs.colorpicker.setColor(value);
-        }
-    }
-});
-Vue.component('tab-animation', {
-    props: ["animations"],
-    template:'#animationTemplate',
-    methods:
-    {
-        animationplayclicked: function(value) {
-            this.$emit('animationplayclicked', value)
-        },
-        setAnimationState: function(value) {
-            this.$refs.animationtoggle.setState(value);
-        }
-    }
-});
-Vue.component('tab-xmp', {
-  props: ["xmp"],
-  template:'#xmpTemplate',
-  data() {
-    return {
-    };
-  },
-});
-Vue.component('tab-advanced-controls', {
-    props: ["debugchannels", "tonemaps", "statistics", "exposure"],
-    template:'#advancedControlsTemplate',
-    data() {
-        return {
-            skinning: true,
-            morphing: true,
-        };
-    },
-    methods:
-    {
-        exposurechanged: function(value) {
-            this.$emit('exposurechanged', value)
-        },
-        skinningchanged: function(value) {
-            this.$emit('skinningchanged', value)
-        },
-        morphingchanged: function(value) {
-            this.$emit('morphingchanged', value)
-        },
-        debugchannelchanged: function(value) {
-            this.$emit('debugchannelchanged', value)
-        },
-        tonemapchanged: function(value) {
-            this.$emit('tonemapchanged', value);
-        }
-    }
-});
-
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
                 'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
@@ -284,26 +129,27 @@ const app = new Vue({
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
-            statistics: []
+            statistics: [],
+
+            selectedModel: {},
+            selectedScene: {},
+            selectedCamera: {},
+
+            ibl: true,
+            punctualLights: true,
+            environmentVisibility: true,
+            clearColor: "",
+            environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}],
+
+            skinning: true,
+            morphing: true
         };
     },
     methods:
     {
-        setSelectedModel: function(value)
-        {
-            this.$refs.tabmodels.setSelectedModel(value);
-        },
-        setSelectedScene: function(value)
-        {
-            this.$refs.tabmodels.setSelectedScene(value);
-        },
-        setSelectedClearColor: function(value)
-        {
-            this.$refs.tabdisplay.setSelectedClearColor(value);
-        },
         setAnimationState: function(value)
         {
-            this.$refs.tabanimation.setAnimationState(value);
+            this.$refs.animationState.setState(value);
         }
     }
 }).$mount('#app');
