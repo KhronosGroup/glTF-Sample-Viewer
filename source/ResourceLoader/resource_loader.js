@@ -59,11 +59,11 @@ async function loadGltf(file, view, additionalFiles)
             // TODO
         }
     }
-    else
+    else if(typeof(File) !== 'undefined' && file instanceof File)
     {
         let fileContent = file;
         filename = file.name;
-        isGlb = getIsGlb(file);
+        isGlb = getIsGlb(filename);
         if (isGlb)
         {
             data = await AsyncFileReader.readAsArrayBuffer(fileContent);
@@ -74,6 +74,10 @@ async function loadGltf(file, view, additionalFiles)
             json = JSON.parse(data);
             buffers = additionalFiles;
         }
+    }
+    else
+    {
+        console.error("Passed invalid type to loadGltf " + typeof(file));
     }
 
     if (isGlb)

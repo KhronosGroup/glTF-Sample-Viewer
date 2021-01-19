@@ -51,16 +51,6 @@ class gltfImage extends GltfObject
             return;
         }
 
-        if (this.mimeType === ImageMimeType.KTX2 && gltf.ktxDecoder !== undefined)
-        {
-            this.image = {};
-        }
-        else if(typeof(Image) !== 'undefined')
-        {
-            this.image = new Image();
-            this.image.crossOrigin = "";
-        }
-
         if (!await this.setImageFromBufferView(gltf) &&
             !await this.setImageFromFiles(additionalFiles, gltf) &&
             !await this.setImageFromUri(gltf))
@@ -79,6 +69,7 @@ class gltfImage extends GltfObject
             image.addEventListener('load', () => resolve(image) );
             image.addEventListener('error', reject);
             image.src = url;
+            image.crossOrigin = "";
         });
     }
 
@@ -100,7 +91,7 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if (typeof(Image) !== 'undefined' && this.image instanceof Image)
+        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
         {
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
@@ -108,6 +99,7 @@ class gltfImage extends GltfObject
         }
         else
         {
+            console.error("Unsupported image type " + this.mimeType);
             return false;
         }
 
@@ -180,16 +172,7 @@ class gltfImage extends GltfObject
             return false;
         }
 
-        if (this.image instanceof Image)
-        {
-            const imageData = await AsyncFileReader.readAsDataURL(foundFile).catch( () => {
-                console.error("Could not load image with FileReader");
-            });
-            this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {
-                console.error("Could not create image from FileReader image data");
-            });
-        }
-        else
+        if(this.mimeType === ImageMimeType.KTX2)
         {
             if (gltf.ktxDecoder !== undefined)
             {
@@ -201,6 +184,21 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
+        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        {
+            const imageData = await AsyncFileReader.readAsDataURL(foundFile).catch( () => {
+                console.error("Could not load image with FileReader");
+            });
+            this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {
+                console.error("Could not create image from FileReader image data");
+            });
+        }
+        else
+        {
+            console.error("Unsupported image type " + this.mimeType);
+            return false;
+        }
+
 
         return true;
     }
