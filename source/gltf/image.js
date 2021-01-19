@@ -3,6 +3,8 @@ import { isPowerOf2 } from './math_utils.js';
 import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 import { GL } from "../Renderer/webgl";
 import { ImageMimeType } from "./image_mime_type.js";
+import * as jpeg  from "jpeg-js";
+import { decode } from 'fast-png';
 
 class gltfImage extends GltfObject
 {
@@ -57,12 +59,6 @@ class gltfImage extends GltfObject
         {
             this.image = new Image();
             this.image.crossOrigin = "";
-        }
-        else
-        {
-            //TODO
-            console.error("Unsupported image type " + this.mimeType);
-            return;
         }
 
         if (!await this.setImageFromBufferView(gltf) &&
@@ -139,7 +135,7 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else
+        else if(typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
         {
             const blob = new Blob([array], { "type": this.mimeType });
             const objectURL = URL.createObjectURL(blob);
@@ -147,6 +143,20 @@ class gltfImage extends GltfObject
                 console.error("Could not load image from buffer view");
             });
         }
+        else if(this.mimeType === ImageMimeType.JPEG)
+        {
+            this.image = jpeg.decode(array, {useTArray: true});
+        }
+        else if(this.mimeType === ImageMimeType.PNG)
+        {
+            this.image = decode(array);
+        }
+        else
+        {
+            console.error("Unsupported image type " + this.mimeType);
+            return false;
+        }
+
         return true;
     }
 

@@ -38,8 +38,8 @@ async function main()
     view.animate(state);
     view.renderFrame(state);
 
-    var pixels = new Uint8Array(width * height * 4)
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+    var pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 }
 
 main().then(() => console.log("Done"));

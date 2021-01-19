@@ -24,8 +24,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@bundled-es-modules/axios": "^0.18.1",
+    "fast-png": "^5.0.3",
     "gl-matrix": "^3.2.1",
-    "resize-img": "^2.0.0"
+    "jpeg-js": "^0.4.3"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",

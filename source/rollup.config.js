@@ -8,17 +8,19 @@ export default {
     {
       file: '../npm_package/gltf-sample-viewer.js',
       format: 'cjs',
-      external:['gl-matrix', '@bundled-es-modules/axios'],
+      external:['gl-matrix', '@bundled-es-modules/axios', 'jpeg-js', 'fast-png'],
     },
     {
         file: '../npm_package/gltf-sample-viewer.module.js',
         format: 'esm',
-        external: [ 'gl-matrix',  '@bundled-es-modules/axios']
+        external: [ 'gl-matrix',  '@bundled-es-modules/axios', 'jpeg-js', 'fast-png']
     }
   ],
   plugins: [
     glslify(),
     resolve(),
-    commonjs()
+    commonjs({
+        include: 'node_modules/**'
+    })
   ]
 };
