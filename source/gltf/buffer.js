@@ -1,4 +1,4 @@
-import { axios } from '@bundled-es-modules/axios';
+import axios from 'axios';
 import { getContainingFolder } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 

@@ -1,5 +1,5 @@
 
-import { axios } from '@bundled-es-modules/axios';
+import  axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
 import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
