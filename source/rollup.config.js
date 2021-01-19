@@ -1,6 +1,6 @@
-import commonjs from 'rollup-plugin-commonjs';
+import commonjs from '@rollup/plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 
 export default {
   input: ['gltf-sample-viewer.js'],
@@ -11,6 +11,11 @@ export default {
       external:['gl-matrix', '@bundled-es-modules/axios', 'jpeg-js', 'fast-png'],
       sourcemap: true,
       plugins: [
+        glslify(),
+        resolve({
+            browser: true,
+            preferBuiltins: false
+        }),
         commonjs({
             include: 'node_modules/**'
         })
@@ -19,11 +24,21 @@ export default {
     {
         file: '../npm_package/gltf-sample-viewer.module.js',
         format: 'esm',
-        external: [ 'gl-matrix',  '@bundled-es-modules/axios', 'jpeg-js', 'fast-png']
+        external: [ 'gl-matrix',  '@bundled-es-modules/axios', 'jpeg-js', 'fast-png'],
+        sourcemap: true,
+        plugins: [
+            glslify(),
+            resolve({
+                browser: true,
+                preferBuiltins: false
+            }),
+            commonjs({
+                include: 'node_modules/**'
+            })
+          ]
     }
   ],
   plugins: [
     glslify(),
-    resolve()
   ]
 };

@@ -29,12 +29,12 @@
     "jpeg-js": "^0.4.3"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.1.0",
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
-    "rollup": "^1.31.1",
-    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup": "^2.30.0",
     "rollup-plugin-glslify": "^1.2.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
     "serve": "^11.3.0"
   },
   "bugs": {

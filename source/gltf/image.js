@@ -4,7 +4,7 @@ import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 import { GL } from "../Renderer/webgl";
 import { ImageMimeType } from "./image_mime_type.js";
 import * as jpeg  from "jpeg-js";
-import { decode } from 'fast-png';
+import * as png from 'fast-png';
 
 class gltfImage extends GltfObject
 {
@@ -141,7 +141,7 @@ class gltfImage extends GltfObject
         }
         else if(this.mimeType === ImageMimeType.PNG)
         {
-            this.image = decode(array);
+            this.image = png.decode(array);
         }
         else
         {
