@@ -9,6 +9,12 @@ export default {
       file: '../npm_package/gltf-sample-viewer.js',
       format: 'cjs',
       external:['gl-matrix', '@bundled-es-modules/axios', 'jpeg-js', 'fast-png'],
+      sourcemap: true,
+      plugins: [
+        commonjs({
+            include: 'node_modules/**'
+        })
+      ]
     },
     {
         file: '../npm_package/gltf-sample-viewer.module.js',
@@ -18,9 +24,6 @@ export default {
   ],
   plugins: [
     glslify(),
-    resolve(),
-    commonjs({
-        include: 'node_modules/**'
-    })
+    resolve()
   ]
 };

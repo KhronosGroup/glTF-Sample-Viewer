@@ -57,15 +57,15 @@ class iblSampler
 
         this.gl.bindTexture( this.gl.TEXTURE_2D,  texture);
 
-        var internalFormat = this.gl.RGBA32F;
+        var internalFormat = this.gl.RGB32F;
         var format = this.gl.RGB;
         var type = this.gl.FLOAT;
         var data = undefined;
 
         if (image.dataFloat instanceof Float32Array)
         {
-            internalFormat = this.gl.RGBA32F;
-            format = this.gl.RGBA;
+            internalFormat = this.gl.RGB32F;
+            format = this.gl.RGB;
             type = this.gl.FLOAT;
             data = image.dataFloat;
         }
