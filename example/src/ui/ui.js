@@ -104,20 +104,20 @@ Vue.component('color-picker-element', {
     template:'#colorPickerTemplate'
 });
 Vue.component('dual-label-list-element', {
-  props: ['name', 'items'],
-  template:'#dualLabelListTemplate'
+    props: ['name', 'items'],
+    template:'#dualLabelListTemplate'
 });
 Vue.component('dual-label-element', {
-  props: ['name', 'value'],
-  template:'#dualLabelTemplate'
+    props: ['name', 'value'],
+    template:'#dualLabelTemplate'
 });
 
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
-                'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-                'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
-                'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
-                'variantChanged$', 'exposureChanged$'],
+        'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
+        'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
+        'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
+        'variantChanged$', 'exposureChanged$'],
     data() {
         return {
             fullheight: true,

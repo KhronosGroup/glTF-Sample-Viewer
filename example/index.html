@@ -169,7 +169,8 @@ function getUrlParam(parameter, defaultvalue){
 
                     <label class="label">Variants</label>
                     <!-- <radio-button-list-element v-on:selectionchanged="variantChanged$" name="Material Variants"
-                                                v-bind:radiobuttoncontent="materialVariants"></radio-button-list-element> -->
+                                    v-bind:radiobuttoncontent="materialVariants"
+                                    defaultselection="None"></radio-button-list-element> -->
                 </b-tab-item>
 
 
@@ -267,7 +268,7 @@ function getUrlParam(parameter, defaultvalue){
                             </option>
                         </b-select>
                     </b-field>
-                    <slider-element class="smallerLabel" name="Exposure" v-stream:valuechanged="exposureChanged$"></slider-element>
+                    <exposure-element class="smallerLabel" name="Exposure" v-stream:valuechanged="exposureChanged$"></exposure-element>
                     <b-field label="Tone Map" class="smallerLabel">
                         <b-select v-stream:input="tonemapChanged$">
                             <option v-for="(item) in tonemaps"
