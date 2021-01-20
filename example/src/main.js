@@ -70,11 +70,11 @@ async function main()
         map( (_) => view.gatherStatistics(state) )
     );
 
-    uiModel.camera.pipe(filter(camera => camera.title === "User Camera")).subscribe( () => {
+    uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
         state.cameraIndex = undefined;
     });
-    uiModel.camera.pipe(filter(camera => camera.title !== "User Camera")).subscribe( camera => {
-        state.cameraIndex = camera.metadata;
+    uiModel.camera.pipe(filter(camera => camera !== -1)).subscribe( camera => {
+        state.cameraIndex = camera;
     });
 
     uiModel.variant.subscribe( variant => {
