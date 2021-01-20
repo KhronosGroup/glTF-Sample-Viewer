@@ -40,8 +40,6 @@ class UserCamera extends gltfCamera
         this.toLocalRotation(direction);
 
         vec3.add(this.position, this.target, direction);
-
-        this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     // Set exact position of camera, without rotating it.
@@ -75,6 +73,7 @@ class UserCamera extends gltfCamera
             this.zoom /= this.zoomFactor;
         }
         this.updatePosition();
+        this.fitCameraPlanesToExtents();
     }
 
     rotate(x, y)
@@ -113,9 +112,12 @@ class UserCamera extends gltfCamera
         getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
+
+        const direction = vec3.fromValues(0, 0, this.zoom);
+        vec3.add(this.position, this.target, direction);
+
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
-        this.updatePosition();
     }
 
     toLocalRotation(vector)
