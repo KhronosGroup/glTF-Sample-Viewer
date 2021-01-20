@@ -33,16 +33,16 @@ Features
 ========
 
 - [x] glTF 2.0
-- [ ] [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
+- [x] [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
 - [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)
 - [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_clearcoat)
 - [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
 - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_sheen)
 - [x] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_transmission)
 - [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
-- [ ] [KHR_materials_variants](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_variants)
+- [x] [KHR_materials_variants](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_variants)
 - [x] [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
-- [ ] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
+- [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 - [ ] KHR_xmp_ld
 
@@ -51,7 +51,9 @@ Features
 Setup
 ======
 
-An example on how to implement the npm package on a webpage can be found [here (TODO: change link to example folder)]()
+Web based
+---------
+An example on how to implement the npm package on a webpage can be found [here (TODO: change link to app_web)]()
 - If you want to support the `KHR_texture_basisu` extension, you need to add the following library to your html file before calling the main app: \
     `<script src="node_modules/gltf-sample-viewer/libs/libktx.js"></script>` \
     After initalizing the GltfView, the KTX library has to be initilaized by calling: \
@@ -64,6 +66,10 @@ An example on how to implement the npm package on a webpage can be found [here (
 One can also use own versions of these libraries and pass the required object in the init function as last argument.
 
 Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
+
+Headless
+--------
+An example on how to implement the npm package in a headless state can be found [here (TODO: change link to app_headless)]()
 
 
 Physically-Based Materials in glTF 2.0
