@@ -84,6 +84,7 @@ const app = new Vue({
     },
     mounted: function()
     {
+        // remove input class from color picker (added by default by buefy)
         const colorPicker = document.getElementById("clearColorPicker");
         colorPicker.classList.remove("input");
     },
