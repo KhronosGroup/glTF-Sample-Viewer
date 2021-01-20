@@ -36,14 +36,10 @@ class UserCamera extends gltfCamera
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
-        const direction = vec3.fromValues(0, 0, 1);
+        const direction = vec3.fromValues(0, 0, this.zoom);
         this.toLocalRotation(direction);
 
-        const position = vec3.create();
-        vec3.scale(position, direction, this.zoom);
-        vec3.add(position, position, this.target);
-
-        this.position = position;
+        vec3.add(this.position, this.target, direction);
 
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
@@ -154,6 +150,8 @@ class UserCamera extends gltfCamera
 
     fitCameraPlanesToExtents(min, max)
     {
+        // depends only on scene min/max and the camera zoom
+
         // Manually increase scene extent just for the camera planes to avoid camera clipping in most situations.
         const longestDistance = 10 * vec3.distance(min, max);
         let zNear = this.zoom - (longestDistance * 0.6);
