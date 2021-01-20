@@ -37,6 +37,7 @@ async function main()
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
+                state.cameraIndex = undefined;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
