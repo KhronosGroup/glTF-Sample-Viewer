@@ -138,7 +138,7 @@ function getUrlParam(parameter, defaultvalue){
                     <b-field label="Models">
                         <b-select v-model="selectedModel" v-stream:input="modelChanged$">
                             <option v-for="(item) in models" v-bind:value="item">
-                                {{ item.title }}
+                                {{ item}}
                             </option>
                         </b-select>
                     </b-field>
@@ -196,9 +196,9 @@ function getUrlParam(parameter, defaultvalue){
                             </div>
                         </b-field>
                         <b-field label="Select Environment Rotation" class="smallerLabel">
-                            <b-select v-stream:input="environmentRotationChanged$">
+                            <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
                                 <option v-for="(item) in environmentRotations"
-                                    v-bind:value="item.index">
+                                    v-bind:value="item.title">
                                     {{ item.title }}
                                 </option>
                             </b-select>
@@ -261,7 +261,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
                     <h2>Advanced Controls</h2>
                     <b-field label="Debug Channels" class="smallerLabel">
-                        <b-select v-stream:input="debugchannelChanged$">
+                        <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
                             <option v-for="(item) in debugchannels"
                                 v-bind:value="item.title">
                                 {{ item.title }}
@@ -270,7 +270,7 @@ function getUrlParam(parameter, defaultvalue){
                     </b-field>
                     <exposure-element class="smallerLabel" name="Exposure" v-stream:valuechanged="exposureChanged$"></exposure-element>
                     <b-field label="Tone Map" class="smallerLabel">
-                        <b-select v-stream:input="tonemapChanged$">
+                        <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
                             <option v-for="(item) in tonemaps"
                                 v-bind:value="item.title">
                                 {{ item.title }}

@@ -16,19 +16,13 @@ class UIModel
         this.app = app;
         this.pathProvider = modelPathProvider;
 
-        this.app.models = this.pathProvider.getAllKeys().map(key => {
-            return {title: key};
-        });
+        this.app.models = this.pathProvider.getAllKeys();
 
         const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
             startWith("Avocado"),
             map(value => {
-                if(typeof value === "string" )
-                {
-                    return this.pathProvider.resolve(value);
-                }
-                return this.pathProvider.resolve(value.title);
+                return this.pathProvider.resolve(value);
             }),
             map( value => ({mainFile: value, additionalFiles: undefined})),
         );

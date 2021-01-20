@@ -15,20 +15,20 @@ Vue.component('toggle-button', {
         };
     },
     mounted(){
-        this.name = this.onText;
+        this.name = this.ontext;
     },
     methods:
     {
         buttonclicked: function(value)
         {
             this.isOn = !this.isOn;
-            this.name = this.isOn ? this.onText : this.offText;
+            this.name = this.isOn ? this.ontext : this.offtext;
             this.$emit('buttonclicked', this.isOn);
         },
         setState: function(value)
         {
             this.isOn = value;
-            this.name = this.isOn ? this.onText : this.offText;
+            this.name = this.isOn ? this.ontext : this.offtext;
         }
     }
 });
@@ -122,7 +122,7 @@ const app = new Vue({
         return {
             fullheight: true,
             right: true,
-            models: [{title: "Avocado"}],
+            models: ["Avocado"],
             flavors: [{title: "gltf"}],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
@@ -134,7 +134,7 @@ const app = new Vue({
             xmp: [{title: "xmp"}],
             statistics: [],
 
-            selectedModel: {},
+            selectedModel: "Avocado",
             selectedScene: {},
             selectedCamera: {},
 
@@ -143,9 +143,12 @@ const app = new Vue({
             environmentVisibility: true,
             clearColor: "",
             environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}],
+            selectedEnvironmentRotation: "+Z",
 
+            debugChannel: "None",
+            toneMap: "None",
             skinning: true,
-            morphing: true
+            morphing: true,
         };
     },
     methods:
