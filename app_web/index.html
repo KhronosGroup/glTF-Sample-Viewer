@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>glTF Sample Viewer</title>
+
+    <meta name="author" content="Khronos Group Inc.">
+    <meta name="description" content="The official glTF sample viewer">
+    <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ui.css">
+    <link rel="stylesheet" href="dist/GltfSVApp.umd.css">
+    <link rel="icon" href="assets/images/gltf.png">
+
+    <!-- buefy styles -->
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <!-- load fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- vue.js-->
+    <script src="https://unpkg.com/vue"></script>
+    <!-- buefy full -->
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+
+    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+    <script src="node_modules/gltf-sample-viewer/libs/libktx.js"></script>
+
+</head>
+<script>
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+function getUrlParam(parameter, defaultvalue){
+    var urlparameter = defaultvalue;
+    if(window.location.href.indexOf(parameter) > -1){
+        urlparameter = getUrlVars()[parameter];
+        }
+    return urlparameter;
+}
+</script>
+
+<!-- vue js templates -->
+<!-- general templates -->
+<script id="toggleButtonTemplate" type="text/x-template">
+    <div>
+        <b-button v-on:click="buttonclicked">{{ name }}</b-button>
+    </div>
+</script>
+<script id="dualLabelListTemplate" type="text/x-template">
+    <div>
+        <label class="label">{{ name }}</label>
+        <div v-for="item in items" :key="item.title">
+            <dual-label-element v-bind:name="item.title" v-bind:value="item.value"></dual-label-element>
+        </div>
+    </div>
+</script>
+<script id="dualLabelTemplate" type="text/x-template">
+    <div class="greyOverlay">
+        <section>
+            <label class="smallerLabel">{{ name }}</label>
+        </section>
+        <section>
+            <label class="smallestLabel">{{ value }}</label>
+        </section>
+    </div>
+</script>
+<script id="jsonToUITemplate" type="text/x-template">
+    <div>
+        <div v-for="(value, name) in data">
+            <div class="greyOverlay" style="word-break: break-word;">
+                <section>
+                    <label class="smallerLabel">{{ name }}</label>
+                </section>
+                <!-- if value is object -->
+                <div v-if="value !== null && value !== undefined && value.constructor.name === 'Object'">
+                    <json-to-ui-template v-bind:data="value"></json-to-ui-template>
+                </div>
+                <!-- if value is array -->
+                <div v-else-if="Array.isArray(value)">
+                    <label v-for="arrayValue in value" class="smallestLabel" style="display: block;">{{ arrayValue }}</label>
+                </div>
+                <div v-else>
+                    <label class="smallestLabel">{{ value }}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<!-- templates for different menu tabs-->
+<script id="modelsTemplate" type="text/x-template">
+    <div>
+        <h2>Models</h2>
+
+        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="modelselection"></drop-down-element>
+        <!--<drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>-->
+        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="sceneselection"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
+        <label class="label">Variants</label>
+        <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
+                                    v-bind:radiobuttoncontent="materialvariants"
+                                    defaultselection="None"></radio-button-list-element>
+    </div>
+</script>
+<script id="displayTemplate" type="text/x-template">
+    <div>
+        <h2>Display</h2>
+        <section>
+            <label class="label">Lighting</label>
+            <b-switch v-model="ibl" v-on:input="iblchanged">Image Based</b-switch>
+            <br>
+            <b-switch v-model="punctuallights" v-on:input="punctuallightschanged">Punctual Lighting</b-switch>
+        </section>
+        <section>
+            <label class="label">Background</label>
+            <!--<b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>-->
+            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color" ref="colorpicker"></color-picker-element>
+            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations"
+                class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
+        </section>
+        <!--<label class="label">Image Based Lighting</label>
+        <b-button v-on:click="addenvironment">Add new HDR</b-button>
+        <drop-down-element v-on:selectionchanged="environmentchanged" v-bind:dropdowncontent="environments" class="smallerLabel" name="Active Environment" ></drop-down-element>-->
+    </div>
+</script>
+<script id="animationTemplate" type="text/x-template">
+    <div>
+        <h2>Animation</h2>
+        <label  class="label">Animation Controls</label>
+        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animationtoggle"></toggle-button>
+        <!--<check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>-->
+    </div>
+</script>
+<script id="xmpTemplate" type="text/x-template">
+    <div>
+        <h2>XMP</h2>
+        <json-to-ui-template v-bind:data="xmp.xmp"></json-to-ui-template>
+    </div>
+</script>
+<script id="advancedControlsTemplate" type="text/x-template">
+    <div>
+        <h2>Advanced Controls</h2>
+        <drop-down-element name="Debug Channels" v-on:selectionchanged="debugchannelchanged" v-bind:dropdowncontent="debugchannels"></drop-down-element>
+        <exposure-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged"></exposure-element>
+        <drop-down-element class="smallerLabel" name="Tone Map" v-on:selectionchanged="tonemapchanged" v-bind:dropdowncontent="tonemaps"></drop-down-element>
+        <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
+        <br>
+        <b-switch v-model="morphing" v-on:input="morphingchanged">Morphing</b-switch>
+        <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
+    </div>
+</script>
+
+
+<body onload="SampleViewerApp.main()">
+    <canvas id="canvas">No Canvas!</canvas>
+
+    <!-- UI -->
+    <div id="app">
+        <template>
+            <b-tabs vertical position="is-right">
+                <b-tab-item label="Models" icon="google-photos">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Model 30X30.svg" width="30px" height="30px">
+                        <span>Models</span>
+                    </template>
+                    <h2>Models</h2>
+                    <b-field label="Models">
+                        <b-select v-model="selectedModel" v-stream:input="modelChanged$">
+                            <option v-for="(item) in models" v-bind:value="item">
+                                {{ item}}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <!-- <b-field label="Scenes">
+                        <b-select v-model="selectedflavour" v-stream:input="flavourChanged$">
+                            <option v-for="(item) in Flavors"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field> -->
+                    <b-field label="Scenes">
+                        <b-select v-model="selectedScene" v-stream:input="sceneChanged$">
+                            <option v-for="(item) in scenes"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <b-field label="Cameras">
+                        <b-select v-model="selectedCamera" v-stream:input="cameraChanged$">
+                            <option v-for="(item) in cameras"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+
+                    <b-field label="Variants">
+                        <b-radio v-for="item in materialVariants" v-bind:key="item.titel"
+                            v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                                {{ item.title }}
+                        </b-radio>
+                    </b-field>
+                </b-tab-item>
+
+
+                <b-tab-item label="Display" icon="library-music">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Display 30X30.svg" width="30px" height="30px">
+                        <span>Display</span>
+                    </template>
+                    <h2>Display</h2>
+                    <section>
+                        <label class="label">Lighting</label>
+                        <b-switch v-model="ibl" v-stream:input="iblChanged$">Image Based</b-switch>
+                        <br>
+                        <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
+                    </section>
+                    <section>
+                        <label class="label">Background</label>
+                        <!--<b-switch v-model="environmentvisibility" v-stream:input="environmentVisibilityChanged$">Environment Background</b-switch>-->
+                        <b-field label="Background Color" class="smallerLabel"></b-field>
+                            <div class="flexContainer">
+                                <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
+                            </div>
+                        </b-field>
+                        <b-field label="Select Environment Rotation" class="smallerLabel">
+                            <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
+                                <option v-for="(item) in environmentRotations"
+                                    v-bind:value="item.title">
+                                    {{ item.title }}
+                                </option>
+                            </b-select>
+                        </b-field>
+                    </section>
+                    <!-- <label class="label">Image Based Lighting</label>
+                    <b-button v-stream:click="addEnvironment$">Add new HDR</b-button>
+                    <b-field label="Active Environment" class="smallerLabel">
+                        <b-select v-stream:input="environmentChanged$">
+                            <option v-for="(item) in environments"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field> -->
+                </b-tab-item>
+
+
+                <b-tab-item label="Animation" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Animation 30X30.svg" width="30px" height="30px">
+                        <span>Animation</span>
+                    </template>
+                    <h2>Animation</h2>
+                    <label  class="label">Animation Controls</label>
+                    <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
+                    <!-- <b-field label="Animation" class="smallerLabel">
+                        <b-select v-stream:input="environmentChanged$">
+                            <option v-for="(item) in animations"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field> -->
+                </b-tab-item>
+                <b-tab-item label="XMP" icon="video" style="overflow-y: auto; overflow-x: hidden; height: 100%;">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/XMP 30X30.svg" width="30px" height="30px">
+                        <span>XMP</span>
+                    </template>
+                    <h2>XMP</h2>
+                    <p>{{ xmp }}</p>
+                </b-tab-item>
+                <!--<b-tab-item label="Capture" icon="video">
+                    <template #header>
+                        to get colored icons use: https://stackoverflow.com/a/43916743
+                        <img src="assets/ui/Capture 30X30.svg" width="30px" height="30px">
+                        <span>Capture</span>
+                    </template>
+                </b-tab-item>-->
+                <b-tab-item label="Advanced Controls" icon="video">
+                    <template #header>
+                        <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                        <img src="assets/ui/Developer 30X30.svg" width="30px" height="30px">
+                        <span>Advanced Controls</span>
+                    </template>
+                    <h2>Advanced Controls</h2>
+                    <b-field label="Debug Channels" class="smallerLabel">
+                        <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
+                            <option v-for="(item) in debugchannels"
+                                v-bind:value="item.title">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <label class="smallerLabel">Exposure</label>
+                    <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks
+                            v-stream:input="exposureChanged$">
+                        <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
+                        <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
+                        <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
+                        <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
+                        <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
+                        <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
+                        <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+                    </b-slider>
+                    <b-field label="Tone Map" class="smallerLabel">
+                        <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
+                            <option v-for="(item) in tonemaps"
+                                v-bind:value="item.title">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <b-switch v-model="skinning" v-stream:input="skinningChanged$">Skinning</b-switch>
+                    <br>
+                    <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
+                    <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
+                </b-tab-item>
+            </b-tabs>
+        </template>
+    </div>
+</body>
+<script src="dist/GltfSVApp.umd.js"></script>
+</html>
