@@ -153,6 +153,7 @@ class UIModel
             startWith(new glTF())
         );
 
+        // update scenes
         const sceneIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
                 return gltf.scenes.map( (scene, index) => {
@@ -176,10 +177,11 @@ class UIModel
             this.app.selectedScene = scene;
         });
 
+        // update cameras
         const cameraIndices = glTFLoadedStateObservable.pipe(
             map( (state) => {
                 let gltf = state.gltf;
-                let cameraIndices = [{title: "User Camera", metadata: undefined}];
+                let cameraIndices = [{title: "User Camera", index: -1}];
                 cameraIndices.push(...gltf.cameras.map( (camera, index) => {
                     if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
                     {
@@ -188,8 +190,9 @@ class UIModel
                         {
                             name = index;
                         }
-                        return {title: name, metadata: index};
+                        return {title: name, index: index};
                     }
+                    return -1;
                 }));
                 cameraIndices = cameraIndices.filter(function(el) {
                     return el !== undefined;
@@ -202,16 +205,15 @@ class UIModel
         });
         const loadedCameraIndex = glTFLoadedStateObservable.pipe(
             map( (state) => {
-                let cameraName = "User Camera";
-                if(state.cameraIndex !== undefined)
-                {
-                    cameraName = state.gltf.cameras[state.cameraIndex].name;
-                }
-                return state.cameraIndex, cameraName ;
+                return state.cameraIndex;
             })
         );
-        loadedCameraIndex.subscribe( (index, name) => {
-            this.app.selectedcamera = {title: name, metadata: index};
+        loadedCameraIndex.subscribe( index => {
+            if(index ===  undefined)
+            {
+                index = -1;
+            }
+            this.app.selectedCamera = index;
         });
 
         const variants = gltfLoadedAndInit.pipe(
@@ -250,11 +252,6 @@ class UIModel
         xmpData.subscribe( (xmpData) => {
             this.app.xmp = xmpData;
         });
-    }
-
-    updateCameras()
-    {
-
     }
 
     updateStatistics(statisticsUpdateObservable)

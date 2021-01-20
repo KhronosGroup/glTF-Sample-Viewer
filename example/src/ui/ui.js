@@ -122,7 +122,7 @@ const app = new Vue({
             models: [{title: "Avocado"}],
             flavors: [{title: "gltf"}],
             scenes: [{title: "0"}, {title: "1"}],
-            cameras: [{title: "User Camera"}],
+            cameras: [{title: "User Camera", index: undefined}],
             materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
             environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
