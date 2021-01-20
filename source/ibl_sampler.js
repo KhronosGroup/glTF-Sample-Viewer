@@ -62,21 +62,43 @@ class iblSampler
         var type = this.gl.FLOAT;
         var data = undefined;
 
-        if (image.dataFloat instanceof Float32Array)
+        if (image.dataFloat instanceof Float32Array && typeof(this.gl.RGB32F) !== 'undefined')
         {
             internalFormat = this.gl.RGB32F;
             format = this.gl.RGB;
             type = this.gl.FLOAT;
             data = image.dataFloat;
         }
-        else if (image instanceof Image)
+        else if(image.dataFloat instanceof Float32Array)
+        {
+            // workaround for node-gles not supporting RGB32F
+            internalFormat = this.gl.RGBA32F;
+            format = this.gl.RGBA;
+            type = this.gl.FLOAT;
+
+            const numPixels = image.dataFloat.length / 3;
+            data = new Float32Array(numPixels * 4);
+            for(let i = 0; i < numPixels; ++i)
+            {
+                // copy the pixels and padd the alpha channel
+                data[i] = image.dataFloat[i];
+                data[i+1] = image.dataFloat[i+1];
+                data[i+2] = image.dataFloat[i+2];
+                data[i+3] = 0;
+            }
+        }
+        else if (typeof(Image) !== 'undefined' && image instanceof Image)
         {
             internalFormat = this.gl.RGBA;
             format = this.gl.RGBA;
             type = this.gl.UNSIGNED_BYTE;
             data = image;
         }
-
+        else
+        {
+            console.error("loadTextureHDR failed, unsupported HDR image");
+            return;
+        }
 
 
         this.gl.texImage2D(
