@@ -26,6 +26,7 @@
   "homepage": "https://github.com/KhronosGroup/glTF-Sample-Viewer#readme",
   "dependencies": {
     "@types/webgl2": "0.0.5",
+    "fast-png": "^5.0.3",
     "gltf-sample-viewer": "../npm_package",
     "node-gles": "0.0.17",
     "yargs": "^16.2.0"

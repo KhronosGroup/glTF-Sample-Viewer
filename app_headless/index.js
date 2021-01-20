@@ -4,6 +4,7 @@ const yargs = require("yargs");
 const sample_viewer = require("gltf-sample-viewer");
 const fs = require("fs");
 const node_gles = require("node-gles");
+const png = require("fast-png");
 
 async function main()
 {
@@ -30,7 +31,7 @@ async function main()
     };
 
     state.environment = await sample_viewer.loadEnvironment(environment_file, view, luts);
-    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/2.0/Avocado/glTF-Binary/Avocado.glb")).buffer;
+    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/2.0/Box/glTF-Binary/Box.glb")).buffer;
     state.gltf = await sample_viewer.loadGltf(glb_file, view);
 
     const defaultScene = state.gltf.scene;
@@ -44,8 +45,16 @@ async function main()
     view.animate(state);
     view.renderFrame(state);
 
-    var pixels = new Uint8Array(width * height * 4);
+    let pixels = new Uint8Array(width * height * 4);
     gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+    const image = {
+        width: width,
+        height: height,
+        data: pixels
+    };
+    const pngFile = png.encode(image);
+    fs.writeFileSync(__dirname + "/render.png", pngFile);
 }
 
 main().then(() => console.log("Done"));
