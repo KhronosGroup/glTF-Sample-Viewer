@@ -18,6 +18,14 @@ class gltfMaterial extends GltfObject
         this.alphaCutoff = 0.5;
         this.doubleSided = false;
 
+        // pbr next extension toggles
+        this.hasClearcoat = false;
+        this.allowClearcoat = true;
+        this.hasSheen = false;
+        this.allowSheen = true;
+        this.hasTransmission = false;
+        this.allowTransmission = true;
+
         // non gltf properties
         this.type = "unlit";
         this.textures = [];
@@ -54,7 +62,22 @@ class gltfMaterial extends GltfObject
 
     getDefines()
     {
-        return this.defines;
+        const defines = this.defines;
+
+        if (this.hasClearcoat && this.allowClearcoat)
+        {
+            defines.push("MATERIAL_CLEARCOAT 1");
+        }
+        if (this.hasSheen && this.allowSheen)
+        {
+            defines.push("MATERIAL_SHEEN 1");
+        }
+        if (this.hasTransmission && this.allowTransmission)
+        {
+            defines.push("MATERIAL_TRANSMISSION 1");
+        }
+
+        return defines;
     }
 
     getProperties()
@@ -265,7 +288,7 @@ class gltfMaterial extends GltfObject
                 let clearcoatFactor = 0.0;
                 let clearcoatRoughnessFactor = 0.0;
 
-                this.defines.push("MATERIAL_CLEARCOAT 1");
+                this.hasClearcoat = true;
 
                 if(this.extensions.KHR_materials_clearcoat.clearcoatFactor !== undefined)
                 {
@@ -311,7 +334,7 @@ class gltfMaterial extends GltfObject
                 let sheenRoughnessFactor = 0.0;
                 let sheenColorFactor =  vec3.fromValues(1.0, 1.0, 1.0);
 
-                this.defines.push("MATERIAL_SHEEN 1");
+                this.hasSheen = true;
 
                 if(this.extensions.KHR_materials_sheen.sheenRoughnessFactor !== undefined)
                 {
@@ -347,7 +370,7 @@ class gltfMaterial extends GltfObject
             {
                 let transmissionFactor = 0.0;
 
-                this.defines.push("MATERIAL_TRANSMISSION 1");
+                this.hasTransmission = true;
 
                 if (transmissionFactor !== undefined)
                 {
