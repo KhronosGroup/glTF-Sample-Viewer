@@ -12,7 +12,6 @@ class UserCamera extends gltfCamera
     constructor(
         position = [0, 0, 0],
         target = [0, 0,0],
-        up = [0, 1, 0],
         xRot = 0,
         yRot = 0,
         zoom = 1)
@@ -21,7 +20,6 @@ class UserCamera extends gltfCamera
 
         this.position = jsToGl(position);
         this.target = jsToGl(target);
-        this.up = jsToGl(up);
         this.xRot = xRot;
         this.yRot = yRot;
         this.zoom = zoom;
