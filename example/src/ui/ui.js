@@ -33,11 +33,14 @@ Vue.component('toggle-button', {
     }
 });
 Vue.component('radio-button-list-element', {
-    props: ['name', 'radiobuttoncontent'],
+    props: ['name', 'radiobuttoncontent', 'defaultselection'],
     data() {
         return {
             radio: ""
         };
+    },
+    mounted: function() {
+        this.radio = this.defaultselection;
     },
     updated: function() {
         this.$emit('selectionchanged', this.radio);
@@ -60,11 +63,11 @@ Vue.component('check-box-element', {
     },
     template:'#checkBoxTemplate'
 });
-Vue.component('slider-element', {
+Vue.component('exposure-element', {
     props: ['name'],
     data() {
         return {
-            value: 1
+            value: 0,
         };
     },
     updated : function()
@@ -78,7 +81,7 @@ Vue.component('slider-element', {
             this.value = value;
         }
     },
-    template:'#sliderTemplate'
+    template:'#exposureTemplate'
 });
 Vue.component('color-picker-element', {
     props: ['name'],
@@ -122,8 +125,8 @@ const app = new Vue({
             models: [{title: "Avocado"}],
             flavors: [{title: "gltf"}],
             scenes: [{title: "0"}, {title: "1"}],
-            cameras: [{title: "User Camera", index: undefined}],
-            materialVariants: [{title: "mat var yellow"}, {title: "mat var red"}, {title: "mat var blue"}],
+            cameras: [{title: "User Camera", index: -1}],
+            materialVariants: [{title: "None"}],
             environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "None"}],

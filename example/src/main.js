@@ -11,7 +11,8 @@ import { gltfModelPathProvider } from './model_path_provider.js';
 async function main()
 {
     const canvas = document.getElementById("canvas");
-    const view = new GltfView(canvas);
+    const ui = document.getElementById("app");
+    const view = new GltfView(canvas, ui);
     const state = view.createState();
 
     initDracoLib();
@@ -92,8 +93,8 @@ async function main()
         state.renderingParameters.skinning = skinningEnabled;
     });
 
-    uiModel.exposure.subscribe( exposure => {
-        state.renderingParameters.exposure = exposure;
+    uiModel.exposurecompensation.subscribe( exposurecompensation => {
+        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {

@@ -54,7 +54,7 @@ class UIModel
             startWith(DebugOutput.NONE)
         );
 
-        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
+        this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
@@ -225,6 +225,11 @@ class UIModel
                     });
                 }
                 return [];
+            }),
+            map(variants => {
+                // Add a "None" variant to the beginning
+                variants.unshift({title: "None"});
+                return variants;
             })
         );
         variants.subscribe( (variants) => {

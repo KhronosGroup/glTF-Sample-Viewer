@@ -47,7 +47,8 @@ class gltfCamera extends GltfObject
             }
         }
 
-        if(this.node === undefined)
+        // cameraIndex stays undefined if camera is not assigned to any node
+        if(this.node === undefined && cameraIndex !== undefined)
         {
             console.error("Invalid node for camera " + cameraIndex);
         }

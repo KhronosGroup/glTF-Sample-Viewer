@@ -80,11 +80,18 @@ function getUrlParam(parameter, defaultvalue){
         </div>
     </section>
 </script>
-<script id="sliderTemplate" type="text/x-template">
+<script id="exposureTemplate" type="text/x-template">
     <div>
         <label class="label">{{ name }}</label>
-        <b-numberinput  v-model="value" min="0" max="100" :exponential=".5"></b-numberinput >
-        <b-slider v-model="value"></b-slider>
+        <b-slider v-model="value" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks>
+            <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
+            <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
+            <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
+            <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
+            <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
+            <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
+            <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+        </b-slider>
     </div>
 </script>
 <script id="colorPickerTemplate" type="text/x-template">
@@ -118,7 +125,7 @@ function getUrlParam(parameter, defaultvalue){
     <canvas id="canvas">No Canvas!</canvas>
 
     <!-- UI -->
-    <div id="app" style="position: absolute; top: 0; right: 0;">
+    <div id="app">
         <template>
             <b-tabs vertical position="is-right">
                 <b-tab-item label="Models" icon="google-photos">
