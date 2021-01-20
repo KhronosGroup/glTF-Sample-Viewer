@@ -139,6 +139,10 @@ Vue.component('dual-label-element', {
   props: ['name', 'value'],
   template:'#dualLabelTemplate'
 });
+Vue.component('json-to-ui-template', {
+  props: ['data'],
+  template:'#jsonToUITemplate'
+});
 
 
 
