@@ -383,7 +383,7 @@ class gltfRenderer
             textureCount = this.applyEnvironmentMap(state, textureCount);
         }
 
-        if (state.renderingParameters.usePunctual)
+        if (state.renderingParameters.usePunctual && state.environment !== undefined)
         {
             this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, state.environment.sheenELUT, textureCount++);
         }
