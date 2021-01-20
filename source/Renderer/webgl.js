@@ -87,7 +87,7 @@ class gltfWebGl
                 console.warn("Image is undefined for texture: " + gltfTex.source);
                 return false;
             }
-            const internalformat = textureInfo.linear ? GL.RGBA : GL.SRGB8_ALPHA8;
+            const internalformat = (textureInfo.linear || GL.SRGB8_ALPHA8 === undefined) ? GL.RGBA : GL.SRGB8_ALPHA8;
             this.context.texImage2D(image.type, image.miplevel, internalformat, GL.RGBA, GL.UNSIGNED_BYTE, image.image);
             const generateMips = image.shouldGenerateMips();
 

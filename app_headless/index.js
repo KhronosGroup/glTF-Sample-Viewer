@@ -23,7 +23,13 @@ async function main()
     const state = view.createState();
 
     const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/environments/footprint_court_512.hdr")).buffer;
-    state.environment = await sample_viewer.loadEnvironment(environment_file, view);
+    const luts = {
+        lut_ggx_file: new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/images/lut_ggx.png")).buffer,
+        lut_charlie_file: new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/images/lut_charlie.png")).buffer,
+        lut_sheen_E_file: new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/images/lut_sheen_E.png")).buffer,
+    };
+
+    state.environment = await sample_viewer.loadEnvironment(environment_file, view, luts);
     const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/2.0/Avocado/glTF-Binary/Avocado.glb")).buffer;
     state.gltf = await sample_viewer.loadGltf(glb_file, view);
 

@@ -1,5 +1,5 @@
 
-import  axios from 'axios';
+import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
 import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
@@ -20,7 +20,7 @@ import { loadHDR } from '../libs/hdrpng.js';
 
 function initKtxLib(view, ktxlib)
 {
-    view.ktxDecoder = new KtxDecoder(view.context,ktxlib);
+    view.ktxDecoder = new KtxDecoder(view.context, ktxlib);
 }
 
 async function initDracoLib(dracolib)
@@ -39,7 +39,7 @@ async function loadGltf(file, view, additionalFiles)
     let json = undefined;
     let data = undefined;
     let filename = "";
-    if(typeof file === "string")
+    if (typeof file === "string")
     {
         isGlb = getIsGlb(file);
         let response = await axios.get(file, { responseType: isGlb ? "arraybuffer" : "json" });
@@ -47,7 +47,7 @@ async function loadGltf(file, view, additionalFiles)
         data = response.data;
         filename = file;
     }
-    else if(file instanceof ArrayBuffer)
+    else if (file instanceof ArrayBuffer)
     {
         isGlb = additionalFiles === undefined;
         if (isGlb)
@@ -59,7 +59,7 @@ async function loadGltf(file, view, additionalFiles)
             // TODO
         }
     }
-    else if(typeof(File) !== 'undefined' && file instanceof File)
+    else if (typeof (File) !== 'undefined' && file instanceof File)
     {
         let fileContent = file;
         filename = file.name;
@@ -77,7 +77,7 @@ async function loadGltf(file, view, additionalFiles)
     }
     else
     {
-        console.error("Passed invalid type to loadGltf " + typeof(file));
+        console.error("Passed invalid type to loadGltf " + typeof (file));
     }
 
     if (isGlb)
@@ -106,7 +106,7 @@ async function loadGltf(file, view, additionalFiles)
 }
 
 
-async function loadEnvironment(file, view)
+async function loadEnvironment(file, view, luts)
 {
     let image = undefined;
     if (typeof file === "string")
@@ -115,22 +115,23 @@ async function loadEnvironment(file, view)
 
         image = await loadHDR(new Uint8Array(response.data));
     }
-    else if(file instanceof ArrayBuffer)
+    else if (file instanceof ArrayBuffer)
     {
         image = await loadHDR(new Uint8Array(file));
     }
     else
     {
-        const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch( () => {
+        const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch(() =>
+        {
             console.error("Could not load image with FileReader");
         });
         image = await loadHDR(new Uint8Array(imageData));
     }
-    return loadEnvironmentFromImage(image, view);
+    return loadEnvironmentFromImage(image, view, luts);
 }
 
 
-async function loadEnvironmentFromImage(imageHDR, view)
+async function loadEnvironmentFromImage(imageHDR, view, luts)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
@@ -175,7 +176,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
         "Diffuse",
         ImageMimeType.GLTEXTURE,
         environmentFiltering.lambertianTextureID
-        );
+    );
 
     environment.images.push(diffuseGltfImage);
 
@@ -201,7 +202,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
         "Specular",
         ImageMimeType.GLTEXTURE,
         environmentFiltering.ggxTextureID
-        );
+    );
 
     environment.images.push(specularGltfImage);
 
@@ -226,7 +227,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
         "Sheen",
         ImageMimeType.GLTEXTURE,
         environmentFiltering.ggxTextureID
-        );
+    );
 
     environment.images.push(sheenGltfImage);
 
@@ -241,35 +242,35 @@ async function loadEnvironmentFromImage(imageHDR, view)
     environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.sheenEnvMap.generateMips = false;
 
-/*
-    // Diffuse
+    /*
+        // Diffuse
 
-    const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", GL.TEXTURE_CUBE_MAP);
-    lambertian.mimeType = ImageMimeType.KTX2;
-    environment.images.push(lambertian);
-    environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
-    environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
-    environment.diffuseEnvMap.generateMips = false;
+        const lambertian = new gltfImage(filteredEnvironmentsDirectoryPath + "/lambertian/diffuse.ktx2", GL.TEXTURE_CUBE_MAP);
+        lambertian.mimeType = ImageMimeType.KTX2;
+        environment.images.push(lambertian);
+        environment.textures.push(new gltfTexture(diffuseCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
+        environment.diffuseEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+        environment.diffuseEnvMap.generateMips = false;
 
-    // Specular
+        // Specular
 
-    const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", GL.TEXTURE_CUBE_MAP);
-    specular.mimeType = ImageMimeType.KTX2;
-    environment.images.push(specular);
-    environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
-    environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
-    environment.specularEnvMap.generateMips = false;
+        const specular = new gltfImage(filteredEnvironmentsDirectoryPath + "/ggx/specular.ktx2", GL.TEXTURE_CUBE_MAP);
+        specular.mimeType = ImageMimeType.KTX2;
+        environment.images.push(specular);
+        environment.textures.push(new gltfTexture(specularCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
+        environment.specularEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+        environment.specularEnvMap.generateMips = false;
 
-    const specularImage = environment.images[environment.textures[environment.textures.length - 1].source];
+        const specularImage = environment.images[environment.textures[environment.textures.length - 1].source];
 
-    // Sheen
+        // Sheen
 
-    const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", GL.TEXTURE_CUBE_MAP);
-    sheen.mimeType = ImageMimeType.KTX2;
-    environment.images.push(sheen);
-    environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
-    environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
-    environment.sheenEnvMap.generateMips = false;*/
+        const sheen = new gltfImage(filteredEnvironmentsDirectoryPath + "/charlie/sheen.ktx2", GL.TEXTURE_CUBE_MAP);
+        sheen.mimeType = ImageMimeType.KTX2;
+        environment.images.push(sheen);
+        environment.textures.push(new gltfTexture(sheenCubeSamplerIdx, [imageIdx++], GL.TEXTURE_CUBE_MAP));
+        environment.sheenEnvMap = new gltfTextureInfo(environment.textures.length - 1, 0, true);
+        environment.sheenEnvMap.generateMips = false;*/
 
     //
     // Look Up Tables.
@@ -277,7 +278,16 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     // GGX
 
-    environment.images.push(new gltfImage("assets/images/lut_ggx.png", GL.TEXTURE_2D));
+    if (luts === undefined)
+    {
+        luts = {
+            lut_ggx_file: "assets/images/lut_ggx.png",
+            lut_charlie_file: "assets/images/lut_charlie.png",
+            lut_sheen_E_file: "assets/images/lut_sheen_E.png",
+        };
+    }
+
+    environment.images.push(new gltfImage(luts.lut_ggx_file, GL.TEXTURE_2D, 0, undefined, undefined, ImageMimeType.PNG));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.lut = new gltfTextureInfo(environment.textures.length - 1);
@@ -286,7 +296,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
     // Sheen
     // Charlie
 
-    environment.images.push(new gltfImage("assets/images/lut_charlie.png", GL.TEXTURE_2D));
+    environment.images.push(new gltfImage(luts.lut_charlie_file, GL.TEXTURE_2D, 0, undefined, undefined, ImageMimeType.PNG));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
@@ -294,7 +304,7 @@ async function loadEnvironmentFromImage(imageHDR, view)
 
     // Sheen E LUT
 
-    environment.images.push(new gltfImage("assets/images/lut_sheen_E.png", GL.TEXTURE_2D));
+    environment.images.push(new gltfImage(luts.lut_sheen_E_file, GL.TEXTURE_2D, 0, undefined, undefined, ImageMimeType.PNG));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
@@ -309,4 +319,4 @@ async function loadEnvironmentFromImage(imageHDR, view)
     return environment;
 }
 
-export { loadGltf, loadEnvironment, initKtxLib, initDracoLib};
+export { loadGltf, loadEnvironment, initKtxLib, initDracoLib };

@@ -29,7 +29,7 @@ class gltfImage extends GltfObject
 
     resolveRelativePath(basePath)
     {
-        if (this.uri !== undefined)
+        if (typeof this.uri === 'string' || this.uri instanceof String)
         {
             if (this.uri.startsWith('./'))
             {
@@ -96,6 +96,14 @@ class gltfImage extends GltfObject
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
             });
+        }
+        else if(this.mimeType === ImageMimeType.JPEG && this.uri instanceof ArrayBuffer)
+        {
+            this.image = jpeg.decode(this.uri, {useTArray: true});
+        }
+        else if(this.mimeType === ImageMimeType.PNG && this.uri instanceof ArrayBuffer)
+        {
+            this.image = png.decode(this.uri);
         }
         else
         {
