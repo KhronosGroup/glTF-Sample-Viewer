@@ -1,6 +1,7 @@
 import commonjs from '@rollup/plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from '@rollup/plugin-node-resolve';
+import { terser } from "rollup-plugin-terser";
 
 export default {
   input: ['gltf-sample-viewer.js'],
@@ -19,6 +20,7 @@ export default {
   ],
   plugins: [
     glslify(),
+    terser(),
     resolve({
         browser: true,
         preferBuiltins: false
