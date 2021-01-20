@@ -50,6 +50,19 @@ class UserCamera extends gltfCamera
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
+    // Set exact position of camera, without rotating it.
+    setPosition(x, y, z)
+    {
+        const position = vec3.fromValues(x, y, z);
+        const difference = vec3.create();
+        vec3.subtract(difference, position, this.position);
+
+        this.position = position;
+        vec3.add(this.target, this.target, difference);
+
+        this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+    }
+
     reset(gltf, sceneIndex)
     {
         this.xRot = 0;
