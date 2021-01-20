@@ -129,6 +129,29 @@ function getUrlParam(parameter, defaultvalue){
         </section>
     </div>
 </script>
+<script id="jsonToUITemplate" type="text/x-template">
+    <div>
+        <div v-for="(value, name) in data">
+            <div class="greyOverlay" style="word-break: break-word;">
+                <section>
+                    <label class="smallerLabel">{{ name }}</label>
+                </section>
+                <!-- if value is object -->
+                <div v-if="value !== null && value !== undefined && value.constructor.name === 'Object'">
+                    <json-to-ui-template v-bind:data="value"></json-to-ui-template>
+                </div>
+                <!-- if value is array -->
+                <div v-else-if="Array.isArray(value)">
+                    <label v-for="arrayValue in value" class="smallestLabel" style="display: block;">{{ arrayValue }}</label>
+                </div>
+                <div v-else>
+                    <label class="smallestLabel">{{ value }}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
 
 <!-- templates for different menu tabs-->
 <script id="modelsTemplate" type="text/x-template">
@@ -177,7 +200,7 @@ function getUrlParam(parameter, defaultvalue){
 <script id="xmpTemplate" type="text/x-template">
     <div>
         <h2>XMP</h2>
-        <p>{{ xmp }}</p>
+        <json-to-ui-template v-bind:data="xmp.xmp"></json-to-ui-template>
     </div>
 </script>
 <script id="advancedControlsTemplate" type="text/x-template">
@@ -247,7 +270,7 @@ function getUrlParam(parameter, defaultvalue){
                                     v-bind:animations="animations"
                                     ref="tabanimation"></tab-animation>
                 </b-tab-item>
-                <b-tab-item label="XMP" icon="video">
+                <b-tab-item label="XMP" icon="video" style="overflow-y: auto; overflow-x: hidden; height: 100%;">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                         <img src="assets/ui/XMP 30X30.svg" width="30px" height="30px">
