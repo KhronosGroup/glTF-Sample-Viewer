@@ -4,8 +4,9 @@ import { GL } from '../Renderer/webgl.js';
 
 class GltfView
 {
-    constructor(context)
+    constructor(context, ui)
     {
+        this.ui = ui;
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
     }
@@ -15,22 +16,27 @@ class GltfView
         return new GltfState();
     }
 
-
-
     updateCanvas(canvas)
     {
-        // TODO: this should probably not be done here
-        canvas.width = canvas.clientWidth;
+        if(this.ui !== undefined)
+        {
+            canvas.width = window.innerWidth - this.ui.getBoundingClientRect().width;
+        }
+        else
+        {
+            canvas.width = canvas.clientWidth;
+        }
         canvas.height = canvas.clientHeight;
     }
-
+    
     updateViewport(width, height)
     {
         this.renderer.resize(width, height);
     }
-
+    
     renderFrame(state)
     {
+
         this.renderer.clearFrame(state.renderingParameters.clearColor);
 
         if(state.gltf === undefined)

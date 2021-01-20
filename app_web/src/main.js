@@ -12,7 +12,8 @@ async function main()
 {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
-    const view = new GltfView(context);
+    const ui = document.getElementById("app");
+    const view = new GltfView(context, ui);
     const state = view.createState();
 
     initDracoLib();
@@ -93,8 +94,8 @@ async function main()
         state.renderingParameters.skinning = skinningEnabled;
     });
 
-    uiModel.exposure.subscribe( exposure => {
-        state.renderingParameters.exposure = exposure;
+    uiModel.exposurecompensation.subscribe( exposurecompensation => {
+        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
     });
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
