@@ -53,7 +53,7 @@ async function main()
 
 
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
-        state.sceneIndex = newSceneIndex.metadata;
+        state.sceneIndex = newSceneIndex;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
@@ -155,6 +155,8 @@ async function main()
 
     uiModel.attachGltfLoaded(gltfLoadedMulticast);
     uiModel.updateStatistics(statisticsUpdateObservable);
+    const sceneChangedStateObservable = uiModel.scene.pipe(map( newSceneIndex => state));
+    uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
     gltfLoadedMulticast.connect();
 
     const input = new gltfInput(canvas);
@@ -180,7 +182,7 @@ async function main()
         {
             loadEnvironment(mainFile, view).then( (environment) => {
                 state.environment = environment;
-                });
+            });
         }
         if (mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
         {

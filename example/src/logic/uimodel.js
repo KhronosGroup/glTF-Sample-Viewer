@@ -74,30 +74,6 @@ class UIModel
             })
         );
 
-        // if scene was changed reload camera drop down
-        // const cameraIndices = this.scene.pipe(map( scene => {
-        //     let cameraIndices = [{title: "User Camera", metadata: undefined}];
-        //     const gltf = state.gltf;
-        //     cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-        //         if(gltf.scenes[scene.metadata].includesNode(gltf, camera.node))
-        //         {
-        //             let name = camera.name;
-        //             if(name === "" || name === undefined)
-        //             {
-        //                 name = index;
-        //             }
-        //             return {title: name, metadata: index};
-        //         }
-        //     }));
-        //     cameraIndices = cameraIndices.filter(function(el) {
-        //         return el !== undefined;
-        //     });
-        //     return cameraIndices;
-        // }));
-        // cameraIndices.subscribe( (cameras) => {
-        //     this.app.cameras = cameras;
-        // });
-
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
@@ -172,43 +148,7 @@ class UIModel
         });
 
         // update cameras
-        const cameraIndices = glTFLoadedStateObservable.pipe(
-            map( (state) => {
-                let gltf = state.gltf;
-                let cameraIndices = [{title: "User Camera", index: -1}];
-                cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
-                    {
-                        let name = camera.name;
-                        if(name === "" || name === undefined)
-                        {
-                            name = index;
-                        }
-                        return {title: name, index: index};
-                    }
-                    return -1;
-                }));
-                cameraIndices = cameraIndices.filter(function(el) {
-                    return el !== undefined;
-                });
-                return cameraIndices;
-            })
-        );
-        cameraIndices.subscribe( (cameras) => {
-            this.app.cameras = cameras;
-        });
-        const loadedCameraIndex = glTFLoadedStateObservable.pipe(
-            map( (state) => {
-                return state.cameraIndex;
-            })
-        );
-        loadedCameraIndex.subscribe( index => {
-            if(index ===  undefined)
-            {
-                index = -1;
-            }
-            this.app.selectedCamera = index;
-        });
+        this.attachCameraChangeObservable(glTFLoadedStateObservable);
 
         const variants = gltfLoadedAndInit.pipe(
             map( (gltf) => {
@@ -264,6 +204,47 @@ class UIModel
             ];
             }
         );
+    }
+
+
+    attachCameraChangeObservable(sceneChangeObservable)
+    {
+        const cameraIndices = sceneChangeObservable.pipe(
+            map( (state) => {
+                let gltf = state.gltf;
+                let cameraIndices = [{title: "User Camera", index: -1}];
+                cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+                    if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
+                    {
+                        let name = camera.name;
+                        if(name === "" || name === undefined)
+                        {
+                            name = index;
+                        }
+                        return {title: name, index: index};
+                    }
+                }));
+                cameraIndices = cameraIndices.filter(function(el) {
+                    return el !== undefined;
+                });
+                return cameraIndices;
+            })
+        );
+        cameraIndices.subscribe( (cameras) => {
+            this.app.cameras = cameras;
+        });
+        const loadedCameraIndex = sceneChangeObservable.pipe(
+            map( (state) => {
+                return state.cameraIndex;
+            })
+        );
+        loadedCameraIndex.subscribe( index => {
+            if(index ===  undefined)
+            {
+                index = -1;
+            }
+            this.app.selectedCamera = index;
+        });
     }
 }
 
