@@ -382,12 +382,12 @@ class gltfRenderer
             textureCount = this.applyEnvironmentMap(state, textureCount);
         }
 
-        if (state.renderingParameters.usePunctual)
+        if (state.renderingParameters.usePunctual && state.environment !== undefined)
         {
             this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, state.environment.sheenELUT, textureCount++);
         }
 
-        if(transmissionSampleTexture !== undefined)
+        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL)
         {
             this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
