@@ -24,7 +24,7 @@ async function main()
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
 
-    const uiModel = await new UIModel(app, pathProvider, state);
+    const uiModel = await new UIModel(app, pathProvider);
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
@@ -70,10 +70,10 @@ async function main()
         map( (_) => view.gatherStatistics(state) )
     );
 
-    uiModel.camera.pipe(filter(camera => camera === "User Camera")).subscribe( () => {
+    uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
         state.cameraIndex = undefined;
     });
-    uiModel.camera.pipe(filter(camera => camera !== "User Camera")).subscribe( camera => {
+    uiModel.camera.pipe(filter(camera => camera !== -1)).subscribe( camera => {
         state.cameraIndex = camera;
     });
 
@@ -155,6 +155,8 @@ async function main()
 
     uiModel.attachGltfLoaded(gltfLoadedMulticast);
     uiModel.updateStatistics(statisticsUpdateObservable);
+    const sceneChangedStateObservable = uiModel.scene.pipe(map( newSceneIndex => state));
+    uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
     gltfLoadedMulticast.connect();
 
     const input = new gltfInput(canvas);
@@ -180,7 +182,7 @@ async function main()
         {
             loadEnvironment(mainFile, view).then( (environment) => {
                 state.environment = environment;
-                });
+            });
         }
         if (mainFile.name.endsWith(".gltf") || mainFile.name.endsWith(".glb"))
         {
