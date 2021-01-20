@@ -122,7 +122,6 @@ function getUrlParam(parameter, defaultvalue){
                         </b-select>
                     </b-field>
 
-                    <label class="label">Variants</label>
                     <b-field label="Variants">
                         <b-radio v-for="item in materialVariants" v-bind:key="item.titel"
                             v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
