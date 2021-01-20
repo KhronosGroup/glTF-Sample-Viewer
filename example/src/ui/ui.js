@@ -82,6 +82,11 @@ const app = new Vue({
             morphing: true,
         };
     },
+    mounted: function()
+    {
+        const colorPicker = document.getElementById("clearColorPicker");
+        colorPicker.classList.remove("input");
+    },
     methods:
     {
         setAnimationState: function(value)

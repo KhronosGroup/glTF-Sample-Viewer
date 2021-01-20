@@ -61,7 +61,6 @@ class UIModel
         this.clearColor = app.colorChanged$.pipe(
             filter(value => value.event !== undefined),
             pluck("event", "msg"),
-            pluck("target", "value"),
             startWith(initialClearColor),
             map(hex => {
                 // convert hex string to rgb values
