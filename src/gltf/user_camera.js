@@ -78,6 +78,7 @@ class UserCamera extends gltfCamera
         {
             this.zoom /= this.zoomFactor;
         }
+        this.updatePosition();
     }
 
     rotate(x, y)
@@ -86,6 +87,7 @@ class UserCamera extends gltfCamera
         this.xRot += (x * this.rotateSpeed);
         this.yRot += (y * this.rotateSpeed);
         this.yRot = clamp(this.yRot, -yMax, yMax);
+        this.updatePosition();
     }
 
     pan(x, y)
@@ -100,6 +102,8 @@ class UserCamera extends gltfCamera
 
         vec3.add(this.target, this.target, up);
         vec3.add(this.target, this.target, left);
+
+        this.updatePosition();
     }
 
     fitPanSpeedToScene(min, max)
@@ -115,6 +119,7 @@ class UserCamera extends gltfCamera
         this.fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        this.updatePosition();
     }
 
     toLocalRotation(vector)

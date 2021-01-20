@@ -40,7 +40,6 @@ async function main()
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
                 return state;
@@ -58,7 +57,6 @@ async function main()
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-        state.userCamera.updatePosition();
     }));
 
     const statisticsUpdateObservableTemp = merge(
@@ -163,17 +161,14 @@ async function main()
     input.onRotate = (deltaX, deltaY) =>
     {
         state.userCamera.rotate(deltaX, deltaY);
-        state.userCamera.updatePosition();
     };
     input.onPan = (deltaX, deltaY) =>
     {
         state.userCamera.pan(deltaX, deltaY);
-        state.userCamera.updatePosition();
     };
     input.onZoom = (delta) =>
     {
         state.userCamera.zoomIn(delta);
-        state.userCamera.updatePosition();
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
         if (mainFile.name.endsWith(".hdr"))
@@ -190,7 +185,6 @@ async function main()
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
                 return state.gltf;
