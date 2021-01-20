@@ -57,51 +57,6 @@ function getUrlParam(parameter, defaultvalue){
         <b-button v-on:click="buttonclicked">{{ name }}</b-button>
     </div>
 </script>
-<script id="radioButtonListTemplate" type="text/x-template">
-    <section>
-        <b-field>
-            <b-radio v-for="item in radiobuttoncontent" :key="item.title"
-                    v-model="radio"
-                    v-bind:name="name"
-                    v-bind:native-value="item.title">
-                    {{ item.title }}
-            </b-radio>
-        </b-field>
-    </section>
-</script>
-<script id="checkBoxTemplate" type="text/x-template">
-    <section>
-        <label class="label">{{ name }}</label>
-        <div v-for="item in checkboxcontent" :key="item.title">
-            <b-checkbox v-model="checkboxGroup"
-                    v-bind:native-value="item.title">
-                {{ item.title }}
-            </b-checkbox>
-        </div>
-    </section>
-</script>
-<script id="exposureTemplate" type="text/x-template">
-    <div>
-        <label class="label">{{ name }}</label>
-        <b-slider v-model="value" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks>
-            <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
-            <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
-            <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
-            <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
-            <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
-            <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
-            <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
-        </b-slider>
-    </div>
-</script>
-<script id="colorPickerTemplate" type="text/x-template">
-    <div>
-        <label class="label">{{ name }}</label>
-        <div class="flexContainer">
-            <input type="color" id="head" class="colorInput" v-on:input="colorchanged" v-model="color">
-        </div>
-    </div>
-</script>
 <script id="dualLabelListTemplate" type="text/x-template">
     <div>
         <label class="label">{{ name }}</label>
@@ -168,9 +123,12 @@ function getUrlParam(parameter, defaultvalue){
                     </b-field>
 
                     <label class="label">Variants</label>
-                    <!-- <radio-button-list-element v-on:selectionchanged="variantChanged$" name="Material Variants"
-                                    v-bind:radiobuttoncontent="materialVariants"
-                                    defaultselection="None"></radio-button-list-element> -->
+                    <b-field label="Variants">
+                        <b-radio v-for="item in materialVariants" v-bind:key="item.titel"
+                            v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                                {{ item.title }}
+                        </b-radio>
+                    </b-field>
                 </b-tab-item>
 
 
@@ -268,7 +226,17 @@ function getUrlParam(parameter, defaultvalue){
                             </option>
                         </b-select>
                     </b-field>
-                    <exposure-element class="smallerLabel" name="Exposure" v-stream:valuechanged="exposureChanged$"></exposure-element>
+                    <label class="smallerLabel">Exposure</label>
+                    <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks
+                            v-stream:input="exposureChanged$">
+                        <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
+                        <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
+                        <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
+                        <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
+                        <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
+                        <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
+                        <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+                    </b-slider>
                     <b-field label="Tone Map" class="smallerLabel">
                         <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
                             <option v-for="(item) in tonemaps"

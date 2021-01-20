@@ -32,77 +32,6 @@ Vue.component('toggle-button', {
         }
     }
 });
-Vue.component('radio-button-list-element', {
-    props: ['name', 'radiobuttoncontent', 'defaultselection'],
-    data() {
-        return {
-            radio: ""
-        };
-    },
-    mounted: function() {
-        this.radio = this.defaultselection;
-    },
-    updated: function() {
-        this.$emit('selectionchanged', this.radio);
-    },
-    methods:
-    {
-        setSelection: function(value)
-        {
-            this.radio = value;
-        }
-    },
-    template:'#radioButtonListTemplate'
-});
-Vue.component('check-box-element', {
-    props: ['name', 'checkboxcontent'],
-    data() {
-        return {
-            checkboxGroup: []
-        };
-    },
-    template:'#checkBoxTemplate'
-});
-Vue.component('exposure-element', {
-    props: ['name'],
-    data() {
-        return {
-            value: 0,
-        };
-    },
-    updated : function()
-    {
-        this.$emit('valuechanged', this.value);
-    },
-    methods:
-    {
-        setValue(value)
-        {
-            this.value = value;
-        }
-    },
-    template:'#exposureTemplate'
-});
-Vue.component('color-picker-element', {
-    props: ['name'],
-    data() {
-        return {
-            color: '#1CA085'
-        };
-    },
-    methods:
-    {
-        colorchanged: function(value)
-        {
-            this.$emit('colorchanged', value);
-        },
-        setColor(value)
-        {
-            this.color = value;
-        }
-    },
-    template:'#colorPickerTemplate'
-});
 Vue.component('dual-label-list-element', {
     props: ['name', 'items'],
     template:'#dualLabelListTemplate'
@@ -137,6 +66,7 @@ const app = new Vue({
             selectedModel: "Avocado",
             selectedScene: {},
             selectedCamera: {},
+            selectedVariant: "None",
 
             ibl: true,
             punctualLights: true,
@@ -146,6 +76,7 @@ const app = new Vue({
             selectedEnvironmentRotation: "+Z",
 
             debugChannel: "None",
+            exposureSetting: 0,
             toneMap: "None",
             skinning: true,
             morphing: true,
