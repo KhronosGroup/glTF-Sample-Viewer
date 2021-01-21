@@ -56,6 +56,16 @@ class UserCamera extends gltfCamera
         this.zoom = vec3.length(difference);
     }
 
+    setPosition(position)
+    {
+        this.lookAt(position, this.target);
+    }
+
+    setTarget(target)
+    {
+        this.lookAt(target, this.getPosition());
+    }
+
     setRotation(yaw, pitch)
     {
         // Rotates target instead of position
@@ -67,6 +77,11 @@ class UserCamera extends gltfCamera
         vec3.rotateX(difference, difference, VecZero, -pitch * this.rotateSpeed);
 
         vec3.add(this.target, this.position, difference);
+    }
+
+    setZoom(zoom)
+    {
+        this.zoom = zoom;
     }
 
     reset(gltf, sceneIndex)
