@@ -33,11 +33,15 @@ class UserCamera extends gltfCamera
     // Returns a JSON object describing the user camera's current values.
     getDescription()
     {
-        const toJs = vec => [vec[0], vec[1], vec[2]];
+        const vecToJs = vec => [vec[0], vec[1], vec[2]];
+        const matToJs = mat => [mat[0], mat[1], mat[2], mat[3],
+                                mat[4], mat[5], mat[6], mat[7],
+                                mat[8], mat[9], mat[10], mat[11],
+                                mat[12], mat[13], mat[14], mat[15]];
 
         return {
-            target: toJs(this.target),
-            position: toJs(this.getPosition()),
+            target: vecToJs(this.target),
+            position: vecToJs(this.getPosition()),
             pitch: this.pitch,
             yaw: this.yaw,
             zoom: this.zoom,
@@ -46,7 +50,9 @@ class UserCamera extends gltfCamera
             yfov: this.yfov,
             xmag: this.xmag,
             ymag: this.ymag,
-            aspectRatio: this.aspectRatio
+            aspectRatio: this.aspectRatio,
+            viewMatrix: matToJs(this.viewMatrix()),
+            projectionMatrix: matToJs(this.projectionMatrix()),
         }
     }
 
