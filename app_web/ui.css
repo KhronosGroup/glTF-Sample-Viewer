@@ -150,7 +150,7 @@ canvas
     opacity: 0.8;
 }
 
-.greyOverlay
+.cardGrayMain
 {
     background-color: #424242;
     margin-bottom: 5px;
@@ -158,6 +158,14 @@ canvas
     padding-bottom: 8px;
     padding-left: 8px;
 }
+
+.cardHeader
+{
+    display: flex;
+    justify-content: space-between
+}
+
+
 
 .select, .select select
 {

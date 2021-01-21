@@ -78,10 +78,24 @@ function getUrlParam(parameter, defaultvalue){
 <script id="jsonToUITemplate" type="text/x-template">
     <div>
         <div v-for="(value, name) in data">
-            <div class="greyOverlay" style="word-break: break-word;">
-                <section>
-                    <label class="smallerLabel">{{ name }}</label>
-                </section>
+            <!-- TODO toggle class based on data member -->
+            <b-collapse class="cardGrayMain" animation="slide"  style="word-break: break-word;">
+                <!-- header -->
+                <template #trigger="props">
+                    <div class="cardHeader" role="button">
+                        <p class="smallerLabel">
+                            {{ name }}
+                        </p>
+                        <!-- a element needed for buefy. can be removed if hover effects are made custom -->
+                        <a>
+                            <b-icon
+                                :icon="props.open ? 'menu-down' : 'menu-up'">
+                            </b-icon>
+                        </a>
+                    </div>
+                </template>
+
+                <!-- content -->
                 <!-- if value is object -->
                 <div v-if="value !== null && value !== undefined && value.constructor.name === 'Object'">
                     <json-to-ui-template v-bind:data="value"></json-to-ui-template>
@@ -93,7 +107,7 @@ function getUrlParam(parameter, defaultvalue){
                 <div v-else>
                     <label class="smallestLabel">{{ value }}</label>
                 </div>
-            </div>
+            </b-collapse>
         </div>
     </div>
 </script>
