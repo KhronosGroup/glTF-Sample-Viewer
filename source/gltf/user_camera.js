@@ -13,14 +13,14 @@ class UserCamera extends gltfCamera
         target = [0, 0, 0],
         yaw = 0,
         pitch = 0,
-        zoom = 1)
+        distance = 1)
     {
         super();
 
         this.target = jsToGl(target);
         this.yaw = yaw;
         this.pitch = pitch;
-        this.zoom = zoom;
+        this.distance = distance;
         this.zoomFactor = 1.04;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
@@ -39,7 +39,7 @@ class UserCamera extends gltfCamera
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
         // pitch rotates *around* x-axis, yaw rotates *around* y-axis
-        const direction = vec3.fromValues(0, 0, this.zoom);
+        const direction = vec3.fromValues(0, 0, this.distance);
         this.toGlobalOrientation(direction);
 
         const position = vec3.create();
@@ -63,7 +63,7 @@ class UserCamera extends gltfCamera
 
         this.pitch = vec3.angle(difference, projectedDifference);
         this.yaw = vec3.angle(projectedDifference, vec3.fromValues(1.0, 0.0, 0.0));
-        this.zoom = vec3.length(difference);
+        this.distance = vec3.length(difference);
     }
 
     setPosition(position)
@@ -73,7 +73,8 @@ class UserCamera extends gltfCamera
 
     setTarget(target)
     {
-        this.lookAt(target, this.getPosition());
+        //this.lookAt(target, this.getPosition());
+        this.target = target;
     }
 
     setRotation(yaw, pitch)
@@ -82,9 +83,9 @@ class UserCamera extends gltfCamera
         this.pitch = pitch;
     }
 
-    setZoom(zoom)
+    setZoom(distance)
     {
-        this.zoom = zoom;
+        this.distance = distance;
     }
 
     reset(gltf, sceneIndex)
@@ -98,11 +99,11 @@ class UserCamera extends gltfCamera
     {
         if (value > 0)
         {
-            this.zoom *= this.zoomFactor;
+            this.distance *= this.zoomFactor;
         }
         else
         {
-            this.zoom /= this.zoomFactor;
+            this.distance /= this.zoomFactor;
         }
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
@@ -141,7 +142,7 @@ class UserCamera extends gltfCamera
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
-        const direction = vec3.fromValues(0, 0, this.zoom);
+        const direction = vec3.fromValues(0, 0, this.distance);
         vec3.add(this.getPosition(), this.target, direction);
 
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
@@ -158,7 +159,7 @@ class UserCamera extends gltfCamera
     fitZoomToExtents(min, max)
     {
         const maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
-        this.zoom = this.getFittingZoom(maxAxisLength);
+        this.distance = this.getFittingZoom(maxAxisLength);
     }
 
     fitCameraTargetToExtents(min, max)
@@ -171,12 +172,12 @@ class UserCamera extends gltfCamera
 
     fitCameraPlanesToExtents(min, max)
     {
-        // depends only on scene min/max and the camera zoom
+        // depends only on scene min/max and the camera distance
 
         // Manually increase scene extent just for the camera planes to avoid camera clipping in most situations.
         const longestDistance = 10 * vec3.distance(min, max);
-        let zNear = this.zoom - (longestDistance * 0.6);
-        let zFar = this.zoom + (longestDistance * 0.6);
+        let zNear = this.distance - (longestDistance * 0.6);
+        let zFar = this.distance + (longestDistance * 0.6);
 
         // minimum near plane value needs to depend on far plane value to avoid z fighting or too large near planes
         zNear = Math.max(zNear, zFar / MaxNearFarRatio);
