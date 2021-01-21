@@ -1,4 +1,5 @@
 import { GltfView } from './GltfView/gltf_view.js';
+import { GltfState } from './GltfState/gltf_state.js';
 import { computePrimitiveCentroids } from './gltf/gltf_utils.js';
 
 import {
@@ -27,6 +28,7 @@ import {
 
 export {
     GltfView,
+    GltfState,
     getIsGltf,
     getIsGlb,
     getIsHdr,

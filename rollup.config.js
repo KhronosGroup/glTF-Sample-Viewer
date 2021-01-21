@@ -9,12 +9,12 @@ export default {
   external:['gl-matrix', '@bundled-es-modules/axios', 'jpeg-js', 'fast-png'],
   output: [
     {
-      file: 'dist/gltf-sample-viewer.js',
+      file: 'dist/gltf-viewer.js',
       format: 'cjs',
       sourcemap: true
     },
     {
-        file: 'dist/gltf-sample-viewer.module.js',
+        file: 'dist/gltf-viewer.module.js',
         format: 'esm',
         sourcemap: true,
     }

@@ -2,7 +2,8 @@
   "name": "@khronosgroup/gltf-viewer",
   "version": "0.8.0",
   "description": "The official glTF sample viewer.",
-  "main": "gltf-sample-viewer.js",
+  "main": "dist/gltf-viewer.js",
+  "module": "dist/gltf-viewer.module.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
