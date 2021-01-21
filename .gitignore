@@ -15,3 +15,4 @@ debug.log
 /3751792e8d692473.wasm
 /1053c4edd3398f26.wasm
 npm_package/*.map
+npm_package/
