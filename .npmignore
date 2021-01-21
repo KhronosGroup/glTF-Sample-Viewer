@@ -5,6 +5,7 @@ app_headless/
 app_web/
 assets/
 source/
+documentation/
 .project
 .settings
 .eslintignore
