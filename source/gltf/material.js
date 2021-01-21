@@ -20,11 +20,8 @@ class gltfMaterial extends GltfObject
 
         // pbr next extension toggles
         this.hasClearcoat = false;
-        this.allowClearcoat = true;
         this.hasSheen = false;
-        this.allowSheen = true;
         this.hasTransmission = false;
-        this.allowTransmission = true;
 
         // non gltf properties
         this.type = "unlit";
@@ -60,19 +57,19 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    getDefines()
+    getDefines(renderingParameters)
     {
-        const defines = this.defines;
+        const defines = Array.from(this.defines);
 
-        if (this.hasClearcoat && this.allowClearcoat)
+        if (this.hasClearcoat && renderingParameters.cearcoat)
         {
             defines.push("MATERIAL_CLEARCOAT 1");
         }
-        if (this.hasSheen && this.allowSheen)
+        if (this.hasSheen && renderingParameters.sheen)
         {
             defines.push("MATERIAL_SHEEN 1");
         }
-        if (this.hasTransmission && this.allowTransmission)
+        if (this.hasTransmission && renderingParameters.transmission)
         {
             defines.push("MATERIAL_TRANSMISSION 1");
         }

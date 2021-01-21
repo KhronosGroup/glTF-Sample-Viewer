@@ -264,17 +264,13 @@ class gltfRenderer
             material = state.gltf.materials[primitive.material];
         }
 
-        material.allowClearcoat = state.renderingParameters.clearcoat;
-        material.allowSheen = state.renderingParameters.sheen;
-        material.allowTransmission = state.renderingParameters.transmission;
-
         //select shader permutation, compile and link program.
 
         let vertDefines = [];
         this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
         vertDefines = primitive.getDefines().concat(vertDefines);
 
-        let fragDefines = material.getDefines().concat(vertDefines);
+        let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
         this.pushFragParameterDefines(fragDefines, state);
 
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
