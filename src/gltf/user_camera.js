@@ -10,15 +10,13 @@ const MaxNearFarRatio = 10000;
 class UserCamera extends gltfCamera
 {
     constructor(
-        position = [0, 0, 0],
-        target = [0, 0,0],
+        target = [0, 0, 0],
         xRot = 0,
         yRot = 0,
         zoom = 1)
     {
         super();
 
-        this.position = jsToGl(position);
         this.target = jsToGl(target);
         this.xRot = xRot;
         this.yRot = yRot;
@@ -32,14 +30,16 @@ class UserCamera extends gltfCamera
         };
     }
 
-    updatePosition()
+    getPosition()
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
         // yRot rotates *around* x-axis, xRot rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, this.zoom);
         this.toLocalRotation(direction);
 
-        vec3.add(this.position, this.target, direction);
+        const position = vec3.create();
+        vec3.add(position, this.target, direction);
+        return position;
     }
 
     // Set exact position of camera, without rotating it.
@@ -73,7 +73,7 @@ class UserCamera extends gltfCamera
         this.fitViewToScene(gltf, sceneIndex, true);
     }
 
-    zoom(value)
+    zoomBy(value)
     {
         if (value > 0)
         {
@@ -83,8 +83,7 @@ class UserCamera extends gltfCamera
         {
             this.zoom /= this.zoomFactor;
         }
-        this.updatePosition();
-        this.fitCameraPlanesToExtents();
+        this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     orbit(x, y)
@@ -93,7 +92,6 @@ class UserCamera extends gltfCamera
         this.xRot += (x * this.rotateSpeed);
         this.yRot += (y * this.rotateSpeed);
         this.yRot = clamp(this.yRot, -yMax, yMax);
-        this.updatePosition();
 
         // const difference = vec3.create();
         // vec3.subtract(difference, this.position, this.target);
@@ -116,8 +114,6 @@ class UserCamera extends gltfCamera
 
         vec3.add(this.target, this.target, up);
         vec3.add(this.target, this.target, left);
-
-        this.updatePosition();
     }
 
     fitPanSpeedToScene(min, max)
@@ -133,7 +129,7 @@ class UserCamera extends gltfCamera
         this.fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
         const direction = vec3.fromValues(0, 0, this.zoom);
-        vec3.add(this.position, this.target, direction);
+        vec3.add(this.getPosition(), this.target, direction);
 
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
@@ -148,11 +144,6 @@ class UserCamera extends gltfCamera
     getLookAtTarget()
     {
         return this.target;
-    }
-
-    getPosition()
-    {
-        return this.position;
     }
 
     fitZoomToExtents(min, max)

@@ -168,7 +168,7 @@ async function main()
     };
     input.onZoom = (delta) =>
     {
-        state.userCamera.zoom(delta);
+        state.userCamera.zoomBy(delta);
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
         if (mainFile.name.endsWith(".hdr"))
