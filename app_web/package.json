@@ -6,7 +6,7 @@
   "module": "src/main.js",
   "scripts": {
     "build": "cd ../source; npm run build; cd ../app_web; rollup -c",
-    "dev": "concurrently \"cd ../source; npm run dev\" \"rollup -c -w\" \"serve --listen 8000 dist\"",
+    "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js",
@@ -27,7 +27,8 @@
     "@bundled-es-modules/axios": "^0.18.1",
     "buefy": "^0.9.4",
     "gl-matrix": "^3.2.1",
-    "gltf-sample-viewer": "../source",
+    "@khronosgroup/gltf-viewer": "..",
+    "gltf-viewer-source": "../source",
     "rxjs": "^6.6.3",
     "vue": "^2.6.11",
     "vue-rx": "^6.2.0"

@@ -1,9 +1,7 @@
 import { bindCallback, fromEvent, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF, ToneMaps, DebugOutput } from 'gltf-sample-viewer';
+import { glTF, ToneMaps, DebugOutput, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
 import { gltfInput } from '../input.js';
-
-import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState

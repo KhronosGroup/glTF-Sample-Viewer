@@ -4,7 +4,7 @@ import {
     getContainingFolder,
     combinePaths,
     getFileNameWithoutExtension
-} from 'gltf-sample-viewer';
+} from 'gltf-viewer-source';
 
 class gltfModelPathProvider
 {
