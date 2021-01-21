@@ -264,6 +264,10 @@ class gltfRenderer
             material = state.gltf.materials[primitive.material];
         }
 
+        material.allowClearcoat = state.renderingParameters.clearcoat;
+        material.allowSheen = state.renderingParameters.sheen;
+        material.allowTransmission = state.renderingParameters.transmission;
+
         //select shader permutation, compile and link program.
 
         let vertDefines = [];

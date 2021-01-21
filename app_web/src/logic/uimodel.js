@@ -50,6 +50,9 @@ class UIModel
         this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
+        this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
+        this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
+        this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
