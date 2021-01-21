@@ -42,15 +42,18 @@ class UserCamera extends gltfCamera
         return position;
     }
 
-    // Set exact position of camera, without rotating it.
-    setPosition(x, y, z)
+    lookAt(from, to)
     {
-        const position = vec3.fromValues(x, y, z);
-        const difference = vec3.create();
-        vec3.subtract(difference, position, this.position);
+        // up is implicitly (0, 1, 0)
+        this.target = to;
 
-        this.position = position;
-        vec3.add(this.target, this.target, difference);
+        const difference = vec3.create();
+        vec3.subtract(difference, from, to);
+        const projectedDifference = vec3.fromValues(from[0] - to[0], 0, from[2] - to[2]);
+
+        this.yRot = vec3.angle(difference, projectedDifference);
+        this.xRot = vec3.angle(projectedDifference, vec3.fromValues(1.0, 0.0, 0.0));
+        this.zoom = vec3.length(difference);
     }
 
     setRotation(yaw, pitch)
