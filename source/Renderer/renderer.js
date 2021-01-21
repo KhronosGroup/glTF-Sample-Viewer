@@ -359,7 +359,7 @@ class gltfRenderer
 
         for (let [uniform, val] of material.getProperties().entries())
         {
-            this.shader.updateUniform(uniform, val);
+            this.shader.updateUniform(uniform, val, false);
         }
 
         for (let i = 0; i < material.textures.length; ++i)
@@ -387,7 +387,7 @@ class gltfRenderer
             this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, state.environment.sheenELUT, textureCount++);
         }
 
-        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL && state.environment)
+        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL && state.environment && state.renderingParameters.transmission)
         {
             this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
