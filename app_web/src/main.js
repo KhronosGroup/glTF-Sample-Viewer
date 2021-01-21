@@ -41,8 +41,8 @@ async function main()
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
+                state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.userCamera.updatePosition();
                 state.animationIndices = [0];
                 state.animationTimer.start();
                 return state;
@@ -60,7 +60,6 @@ async function main()
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-        state.userCamera.updatePosition();
     }));
 
     const statisticsUpdateObservableTemp = merge(
@@ -166,18 +165,24 @@ async function main()
     input.setupCanvasInputBindings(canvas);
     input.onRotate = (deltaX, deltaY) =>
     {
-        state.userCamera.rotate(deltaX, deltaY);
-        state.userCamera.updatePosition();
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.orbit(deltaX, deltaY);
+        }
     };
     input.onPan = (deltaX, deltaY) =>
     {
-        state.userCamera.pan(deltaX, deltaY);
-        state.userCamera.updatePosition();
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.pan(deltaX, deltaY);
+        }
     };
     input.onZoom = (delta) =>
     {
-        state.userCamera.zoomIn(delta);
-        state.userCamera.updatePosition();
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.zoomBy(delta);
+        }
     };
 
     await view.startRendering(state, canvas);
