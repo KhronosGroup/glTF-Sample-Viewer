@@ -162,7 +162,13 @@ class UserCamera extends gltfCamera
     fitDistanceToExtents(min, max)
     {
         const maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
-        this.distance = this.getFittingDistance(maxAxisLength);
+        const yfov = this.yfov;
+        const xfov = this.yfov * this.aspectRatio;
+
+        const yZoom = maxAxisLength / 2 / Math.tan(yfov / 2);
+        const xZoom = maxAxisLength / 2 / Math.tan(xfov / 2);
+
+        this.distance = Math.max(xZoom, yZoom);
     }
 
     fitCameraTargetToExtents(min, max)
@@ -187,17 +193,6 @@ class UserCamera extends gltfCamera
 
         this.znear = zNear;
         this.zfar = zFar;
-    }
-
-    getFittingDistance(axisLength)
-    {
-        const yfov = this.yfov;
-        const xfov = this.yfov * this.aspectRatio;
-
-        const yZoom = axisLength / 2 / Math.tan(yfov / 2);
-        const xZoom = axisLength / 2 / Math.tan(xfov / 2);
-
-        return Math.max(xZoom, yZoom);
     }
 }
 
