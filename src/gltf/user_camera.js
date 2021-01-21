@@ -68,15 +68,8 @@ class UserCamera extends gltfCamera
 
     setRotation(yaw, pitch)
     {
-        // Rotates target instead of position
-
-        const difference = vec3.create();
-        vec3.subtract(difference, this.target, this.position);
-
-        vec3.rotateY(difference, difference, VecZero, -yaw * this.rotateSpeed);
-        vec3.rotateX(difference, difference, VecZero, -pitch * this.rotateSpeed);
-
-        vec3.add(this.target, this.position, difference);
+        this.xRot = yaw;
+        this.yRot = pitch;
     }
 
     setZoom(zoom)
