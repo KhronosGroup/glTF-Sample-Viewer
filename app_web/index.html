@@ -99,70 +99,6 @@ function getUrlParam(parameter, defaultvalue){
 </script>
 
 
-<!-- templates for different menu tabs-->
-<script id="modelsTemplate" type="text/x-template">
-    <div>
-        <h2>Models</h2>
-
-        <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="modelselection"></drop-down-element>
-        <!--<drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>-->
-        <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="sceneselection"></drop-down-element>
-        <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
-        <label class="label">Variants</label>
-        <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
-                                    v-bind:radiobuttoncontent="materialvariants"
-                                    defaultselection="None"></radio-button-list-element>
-    </div>
-</script>
-<script id="displayTemplate" type="text/x-template">
-    <div>
-        <h2>Display</h2>
-        <section>
-            <label class="label">Lighting</label>
-            <b-switch v-model="ibl" v-on:input="iblchanged">Image Based</b-switch>
-            <br>
-            <b-switch v-model="punctuallights" v-on:input="punctuallightschanged">Punctual Lighting</b-switch>
-        </section>
-        <section>
-            <label class="label">Background</label>
-            <!--<b-switch v-model="environmentvisibility" v-on:input="environmentvisibilitychanged">Environment Background</b-switch>-->
-            <color-picker-element class="smallerLabel" v-on:colorchanged="colorchanged" name="Background Color" ref="colorpicker"></color-picker-element>
-            <drop-down-element v-on:selectionchanged="environmentrotationchanged" v-bind:dropdowncontent="environmentRotations"
-                class="smallerLabel" name="Select Environment Rotation" ></drop-down-element>
-        </section>
-        <!--<label class="label">Image Based Lighting</label>
-        <b-button v-on:click="addenvironment">Add new HDR</b-button>
-        <drop-down-element v-on:selectionchanged="environmentchanged" v-bind:dropdowncontent="environments" class="smallerLabel" name="Active Environment" ></drop-down-element>-->
-    </div>
-</script>
-<script id="animationTemplate" type="text/x-template">
-    <div>
-        <h2>Animation</h2>
-        <label  class="label">Animation Controls</label>
-        <toggle-button v-on:buttonclicked="animationplayclicked" onText="Pause" offText="Play" ref="animationtoggle"></toggle-button>
-        <!--<check-box-element name="Animation" v-bind:checkboxcontent="animations"></check-box-element>-->
-    </div>
-</script>
-<script id="xmpTemplate" type="text/x-template">
-    <div>
-        <h2>XMP</h2>
-        <json-to-ui-template v-bind:data="xmp.xmp"></json-to-ui-template>
-    </div>
-</script>
-<script id="advancedControlsTemplate" type="text/x-template">
-    <div>
-        <h2>Advanced Controls</h2>
-        <drop-down-element name="Debug Channels" v-on:selectionchanged="debugchannelchanged" v-bind:dropdowncontent="debugchannels"></drop-down-element>
-        <exposure-element class="smallerLabel" name="Exposure" v-on:valuechanged="exposurechanged"></exposure-element>
-        <drop-down-element class="smallerLabel" name="Tone Map" v-on:selectionchanged="tonemapchanged" v-bind:dropdowncontent="tonemaps"></drop-down-element>
-        <b-switch v-model="skinning" v-on:input="skinningchanged">Skinning</b-switch>
-        <br>
-        <b-switch v-model="morphing" v-on:input="morphingchanged">Morphing</b-switch>
-        <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
-    </div>
-</script>
-
-
 <body onload="SampleViewerApp.main()">
     <canvas id="canvas">No Canvas!</canvas>
 
@@ -286,7 +222,7 @@ function getUrlParam(parameter, defaultvalue){
                         <span>XMP</span>
                     </template>
                     <h2>XMP</h2>
-                    <p>{{ xmp }}</p>
+                    <json-to-ui-template v-bind:data="xmp.xmp"></json-to-ui-template>
                 </b-tab-item>
                 <!--<b-tab-item label="Capture" icon="video">
                     <template #header>
