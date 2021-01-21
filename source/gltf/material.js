@@ -61,7 +61,7 @@ class gltfMaterial extends GltfObject
     {
         const defines = Array.from(this.defines);
 
-        if (this.hasClearcoat && renderingParameters.cearcoat)
+        if (this.hasClearcoat && renderingParameters.clearcoat)
         {
             defines.push("MATERIAL_CLEARCOAT 1");
         }
