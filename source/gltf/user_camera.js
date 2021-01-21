@@ -87,13 +87,6 @@ class UserCamera extends gltfCamera
         this.distance = distance;
     }
 
-    reset(gltf, sceneIndex)
-    {
-        this.yaw = 0;
-        this.pitch = 0;
-        this.fitViewToScene(gltf, sceneIndex, true);
-    }
-
     zoomBy(value)
     {
         if (value > 0)
@@ -135,6 +128,14 @@ class UserCamera extends gltfCamera
         this.panSpeed = longestDistance / PanSpeedDenominator;
     }
 
+    reset()
+    {
+        this.yaw = 0;
+        this.pitch = 0;
+        fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
+    }
+
     fitViewToScene(gltf, sceneIndex)
     {
         getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
@@ -146,6 +147,9 @@ class UserCamera extends gltfCamera
 
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+
+        this.yaw = 0;
+        this.pitch = 0;
     }
 
     // Converts orientation from camera space to global space
