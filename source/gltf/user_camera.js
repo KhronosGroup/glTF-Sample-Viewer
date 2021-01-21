@@ -73,7 +73,6 @@ class UserCamera extends gltfCamera
 
     setTarget(target)
     {
-        //this.lookAt(target, this.getPosition());
         this.target = target;
     }
 
