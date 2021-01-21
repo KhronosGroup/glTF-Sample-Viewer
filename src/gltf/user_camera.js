@@ -40,8 +40,19 @@ class UserCamera extends gltfCamera
             position: toJs(this.getPosition()),
             pitch: this.pitch,
             yaw: this.yaw,
-            zoom: this.zoom
+            zoom: this.zoom,
+            znear: this.znear,
+            zfar: this.zfar,
+            yfov: this.yfov,
+            xmag: this.xmag,
+            ymag: this.ymag,
+            aspectRatio: this.aspectRatio
         }
+    }
+
+    setVerticalFoV(yfov)
+    {
+        this.yfov = yfov;
     }
 
     getPosition()

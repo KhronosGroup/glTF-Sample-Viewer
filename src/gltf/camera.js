@@ -27,11 +27,6 @@ class gltfCamera extends GltfObject
         this.node = nodeIndex;
     }
 
-    setVerticalFoV(yfov)
-    {
-        this.yfov = yfov;
-    }
-
     initGl(gltf, webGlContext)
     {
         super.initGl(gltf, webGlContext);
