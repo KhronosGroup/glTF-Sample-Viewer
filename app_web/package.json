@@ -27,7 +27,7 @@
     "@bundled-es-modules/axios": "^0.18.1",
     "buefy": "^0.9.4",
     "gl-matrix": "^3.2.1",
-    "gltf-sample-viewer": "../npm_package",
+    "gltf-sample-viewer": "../source",
     "rollup-plugin-commonjs": "^10.1.0",
     "rxjs": "^6.6.3",
     "vue": "^2.6.11",
