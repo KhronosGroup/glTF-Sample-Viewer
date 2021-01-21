@@ -171,6 +171,46 @@ class gltfCamera extends GltfObject
     {
         return gltf.nodes[this.node];
     }
+
+    // Returns a JSON object describing the user camera's current values.
+    getDescription(gltf)
+    {
+        const camera = {
+            "name": this.name,
+            "type": this.type
+        };
+
+        if (this.type === "perspective")
+        {
+            camera["perspective"]["aspectRatio"] = this.aspectRatio;
+            camera["perspective"]["yfov"] = this.yfov;
+            camera["perspective"]["zfar"] = this.zfar;
+            camera["perspective"]["ynear"] = this.ynear;
+        }
+        else if (this.type === "orthographic")
+        {
+            camera["orthographic"]["xmag"] = this.xmag;
+            camera["orthographic"]["ymag"] = this.ymag;
+            camera["orthographic"]["zfar"] = this.zfar;
+            camera["orthographic"]["ynear"] = this.ynear;
+        }
+
+        const mat = this.getViewMatrix(gltf);
+
+        const node = {
+            "name": this.name,
+            "camera": 0,
+            "matrix": [mat[0], mat[1], mat[2], mat[3],
+                       mat[4], mat[5], mat[6], mat[7],
+                       mat[8], mat[9], mat[10], mat[11],
+                       mat[12], mat[13], mat[14], mat[15]]
+        };
+
+        return {
+            "node": node,
+            "camera": camera
+        }
+    }
 }
 
 export { gltfCamera };
