@@ -164,15 +164,24 @@ async function main()
     input.setupCanvasInputBindings(canvas);
     input.onRotate = (deltaX, deltaY) =>
     {
-        state.userCamera.orbit(deltaX, deltaY);
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.orbit(deltaX, deltaY);
+        }
     };
     input.onPan = (deltaX, deltaY) =>
     {
-        state.userCamera.pan(deltaX, deltaY);
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.pan(deltaX, deltaY);
+        }
     };
     input.onZoom = (delta) =>
     {
-        state.userCamera.zoomBy(delta);
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.zoomBy(delta);
+        }
     };
 
     await view.startRendering(state, canvas);
