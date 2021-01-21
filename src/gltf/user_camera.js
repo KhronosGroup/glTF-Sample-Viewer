@@ -73,7 +73,7 @@ class UserCamera extends gltfCamera
         this.fitViewToScene(gltf, sceneIndex, true);
     }
 
-    zoomIn(value)
+    zoom(value)
     {
         if (value > 0)
         {
@@ -87,7 +87,7 @@ class UserCamera extends gltfCamera
         this.fitCameraPlanesToExtents();
     }
 
-    rotate(x, y)
+    orbit(x, y)
     {
         const yMax = Math.PI / 2 - 0.01;
         this.xRot += (x * this.rotateSpeed);

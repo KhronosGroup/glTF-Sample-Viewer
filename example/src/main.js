@@ -160,7 +160,7 @@ async function main()
     input.setupCanvasInputBindings(canvas);
     input.onRotate = (deltaX, deltaY) =>
     {
-        state.userCamera.rotate(deltaX, deltaY);
+        state.userCamera.orbit(deltaX, deltaY);
     };
     input.onPan = (deltaX, deltaY) =>
     {
@@ -168,7 +168,7 @@ async function main()
     };
     input.onZoom = (delta) =>
     {
-        state.userCamera.zoomIn(delta);
+        state.userCamera.zoom(delta);
     };
     input.onDropFiles = (mainFile, additionalFiles) => {
         if (mainFile.name.endsWith(".hdr"))
