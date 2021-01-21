@@ -7,9 +7,9 @@ class gltfCamera extends GltfObject
     constructor(
         type = "perspective",
         znear = 0.01,
-        zfar = 10000.0,
+        zfar = undefined,
         yfov = 45.0 * Math.PI / 180.0,
-        aspectRatio = 16.0 / 9.0,
+        aspectRatio = undefined,
         xmag = 1.0,
         ymag = 1.0,
         name = undefined,
