@@ -7,7 +7,7 @@ class gltfCamera extends GltfObject
     constructor(
         type = "perspective",
         znear = 0.01,
-        zfar = undefined,
+        zfar = Infinity,
         yfov = 45.0 * Math.PI / 180.0,
         aspectRatio = undefined,
         xmag = 1.0,
@@ -191,7 +191,7 @@ class gltfCamera extends GltfObject
                 camera["perspective"]["aspectRatio"] = this.aspectRatio;
             }
             camera["perspective"]["yfov"] = this.yfov;
-            if (this.zfar != undefined)
+            if (this.zfar != Infinity)
             {
                 camera["perspective"]["zfar"] = this.zfar;
             }

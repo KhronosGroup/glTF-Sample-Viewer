@@ -41,6 +41,7 @@ async function main()
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
                 computePrimitiveCentroids(state.gltf);
+                state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
                 state.animationIndices = [0];
                 state.animationTimer.start();
