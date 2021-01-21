@@ -176,12 +176,12 @@ class UIModel
 
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
-                if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
+                if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp_json_ld !== undefined)
                 {
-                    if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp !== undefined)
+                    if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp_json_ld !== undefined)
                     {
-                        let xmpPacket = gltf.extensions.KHR_xmp.packets[gltf.asset.extensions.KHR_xmp.packet];
-                        return {xmp: xmpPacket};
+                        let xmpPacket = gltf.extensions.KHR_xmp_json_ld.packets[gltf.asset.extensions.KHR_xmp_json_ld.packet];
+                        return xmpPacket;
                     }
                 }
                 return [];
