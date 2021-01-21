@@ -115,12 +115,12 @@ class gltfCamera extends GltfObject
     {
         const view = mat4.create();
         const position = this.getPosition(gltf);
-        const target = this.getLookAtTarget(gltf);
+        const target = this.getTarget(gltf);
         mat4.lookAt(view, position, target, vec3.fromValues(0, 1, 0));
         return view;
     }
 
-    getLookAtTarget(gltf)
+    getTarget(gltf)
     {
         const target = vec3.create();
         const position = this.getPosition(gltf);

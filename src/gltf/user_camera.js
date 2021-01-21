@@ -11,18 +11,18 @@ class UserCamera extends gltfCamera
 {
     constructor(
         target = [0, 0, 0],
-        xRot = 0,
-        yRot = 0,
+        yaw = 0,
+        pitch = 0,
         zoom = 1)
     {
         super();
 
         this.target = jsToGl(target);
-        this.xRot = xRot;
-        this.yRot = yRot;
+        this.yaw = yaw;
+        this.pitch = pitch;
         this.zoom = zoom;
         this.zoomFactor = 1.04;
-        this.rotateSpeed = 1 / 180;
+        this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {
             min: vec3.create(),
@@ -33,13 +33,18 @@ class UserCamera extends gltfCamera
     getPosition()
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
-        // yRot rotates *around* x-axis, xRot rotates *around* y-axis
+        // pitch rotates *around* x-axis, yaw rotates *around* y-axis
         const direction = vec3.fromValues(0, 0, this.zoom);
-        this.toLocalRotation(direction);
+        this.toGlobalOrientation(direction);
 
         const position = vec3.create();
         vec3.add(position, this.target, direction);
         return position;
+    }
+
+    getTarget()
+    {
+        return this.target;
     }
 
     lookAt(from, to)
@@ -51,8 +56,8 @@ class UserCamera extends gltfCamera
         vec3.subtract(difference, from, to);
         const projectedDifference = vec3.fromValues(from[0] - to[0], 0, from[2] - to[2]);
 
-        this.yRot = vec3.angle(difference, projectedDifference);
-        this.xRot = vec3.angle(projectedDifference, vec3.fromValues(1.0, 0.0, 0.0));
+        this.pitch = vec3.angle(difference, projectedDifference);
+        this.yaw = vec3.angle(projectedDifference, vec3.fromValues(1.0, 0.0, 0.0));
         this.zoom = vec3.length(difference);
     }
 
@@ -68,8 +73,8 @@ class UserCamera extends gltfCamera
 
     setRotation(yaw, pitch)
     {
-        this.xRot = yaw;
-        this.yRot = pitch;
+        this.yaw = yaw;
+        this.pitch = pitch;
     }
 
     setZoom(zoom)
@@ -79,8 +84,8 @@ class UserCamera extends gltfCamera
 
     reset(gltf, sceneIndex)
     {
-        this.xRot = 0;
-        this.yRot = 0;
+        this.yaw = 0;
+        this.pitch = 0;
         this.fitViewToScene(gltf, sceneIndex, true);
     }
 
@@ -100,27 +105,19 @@ class UserCamera extends gltfCamera
     orbit(x, y)
     {
         const yMax = Math.PI / 2 - 0.01;
-        this.xRot += (x * this.rotateSpeed);
-        this.yRot += (y * this.rotateSpeed);
-        this.yRot = clamp(this.yRot, -yMax, yMax);
-
-        // const difference = vec3.create();
-        // vec3.subtract(difference, this.position, this.target);
-
-        // vec3.rotateY(difference, difference, VecZero, -x * this.rotateSpeed);
-        // vec3.rotateX(difference, difference, VecZero, -y * this.rotateSpeed);
-
-        // vec3.add(this.position, this.target, difference);
+        this.yaw += (x * this.orbitSpeed);
+        this.pitch += (y * this.orbitSpeed);
+        this.pitch = clamp(this.pitch, -yMax, yMax);
     }
 
     pan(x, y)
     {
         const left = vec3.fromValues(-1, 0, 0);
-        this.toLocalRotation(left);
+        this.toGlobalOrientation(left);
         vec3.scale(left, left, x * this.panSpeed);
 
         const up = vec3.fromValues(0, 1, 0);
-        this.toLocalRotation(up);
+        this.toGlobalOrientation(up);
         vec3.scale(up, up, y * this.panSpeed);
 
         vec3.add(this.target, this.target, up);
@@ -146,15 +143,11 @@ class UserCamera extends gltfCamera
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
-    toLocalRotation(vector)
+    // Converts orientation from camera space to global space
+    toGlobalOrientation(vector)
     {
-        vec3.rotateX(vector, vector, VecZero, -this.yRot);
-        vec3.rotateY(vector, vector, VecZero, -this.xRot);
-    }
-
-    getLookAtTarget()
-    {
-        return this.target;
+        vec3.rotateX(vector, vector, VecZero, -this.pitch);
+        vec3.rotateY(vector, vector, VecZero, -this.yaw);
     }
 
     fitZoomToExtents(min, max)
