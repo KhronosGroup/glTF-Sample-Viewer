@@ -51,8 +51,19 @@ class UserCamera extends gltfCamera
 
         this.position = position;
         vec3.add(this.target, this.target, difference);
+    }
 
-        this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+    setRotation(yaw, pitch)
+    {
+        // Rotates target instead of position
+
+        const difference = vec3.create();
+        vec3.subtract(difference, this.target, this.position);
+
+        vec3.rotateY(difference, difference, VecZero, -yaw * this.rotateSpeed);
+        vec3.rotateX(difference, difference, VecZero, -pitch * this.rotateSpeed);
+
+        vec3.add(this.target, this.position, difference);
     }
 
     reset(gltf, sceneIndex)
@@ -83,6 +94,14 @@ class UserCamera extends gltfCamera
         this.yRot += (y * this.rotateSpeed);
         this.yRot = clamp(this.yRot, -yMax, yMax);
         this.updatePosition();
+
+        // const difference = vec3.create();
+        // vec3.subtract(difference, this.position, this.target);
+
+        // vec3.rotateY(difference, difference, VecZero, -x * this.rotateSpeed);
+        // vec3.rotateX(difference, difference, VecZero, -y * this.rotateSpeed);
+
+        // vec3.add(this.position, this.target, difference);
     }
 
     pan(x, y)
