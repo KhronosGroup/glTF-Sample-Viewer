@@ -34,7 +34,7 @@ export default {
             { src: ["../assets/environments/*.hdr", "!../asset/environments/.git"], dest: "dist/assets/environments"},
             { src: ["../assets/images"], dest: "dist/assets/images"},
             { src: ["../assets/ui"], dest: "dist/assets/ui"},
-            { src: ["../npm_package/libs/*"], dest: "dist/libs"}
+            { src: ["../source/libs/*", "!../source/libs/hdrpng.js"], dest: "dist/libs"}
         ]
     })
   ]
