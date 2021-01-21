@@ -132,7 +132,7 @@ class UserCamera extends gltfCamera
     {
         this.yaw = 0;
         this.pitch = 0;
-        fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
         fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
@@ -140,7 +140,7 @@ class UserCamera extends gltfCamera
     {
         getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
-        this.fitZoomToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
         const direction = vec3.fromValues(0, 0, this.distance);
         vec3.add(this.getPosition(), this.target, direction);
@@ -159,10 +159,10 @@ class UserCamera extends gltfCamera
         vec3.rotateY(vector, vector, VecZero, -this.yaw);
     }
 
-    fitZoomToExtents(min, max)
+    fitDistanceToExtents(min, max)
     {
         const maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
-        this.distance = this.getFittingZoom(maxAxisLength);
+        this.distance = this.getFittingDistance(maxAxisLength);
     }
 
     fitCameraTargetToExtents(min, max)
@@ -189,7 +189,7 @@ class UserCamera extends gltfCamera
         this.zfar = zFar;
     }
 
-    getFittingZoom(axisLength)
+    getFittingDistance(axisLength)
     {
         const yfov = this.yfov;
         const xfov = this.yfov * this.aspectRatio;
