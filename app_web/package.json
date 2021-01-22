@@ -30,6 +30,7 @@
     "gltf-sample-viewer": "../source",
     "rollup-plugin-commonjs": "^10.1.0",
     "rxjs": "^6.6.3",
+    "simple-dropzone": "^0.8.0",
     "vue": "^2.6.11",
     "vue-rx": "^6.2.0"
   },
