@@ -29,7 +29,7 @@ async function main()
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
-    const subject = new Subject();
+    const gltfLoadedSubject = new Subject();
     const gltfLoadedMulticast = uiModel.model.pipe(
         mergeMap( (model) =>
         {
@@ -50,10 +50,10 @@ async function main()
             );
         }),
         // transform gltf loaded observable to multicast observable to avoid multiple execution with multiple subscriptions
-        multicast(subject)
+        multicast(gltfLoadedSubject)
     );
 
-
+    const sceneChangedSubject = new Subject();
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
         state.sceneIndex = newSceneIndex;
         state.cameraIndex = undefined;
@@ -61,7 +61,9 @@ async function main()
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-    }));
+    }),
+    multicast(sceneChangedSubject)
+    );
 
     const statisticsUpdateObservableTemp = merge(
         gltfLoadedMulticast,
