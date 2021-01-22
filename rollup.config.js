@@ -1,7 +1,6 @@
 import commonjs from '@rollup/plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from "rollup-plugin-terser";
 import copy from "rollup-plugin-copy";
 
 export default {
@@ -21,7 +20,6 @@ export default {
   ],
   plugins: [
     glslify(),
-    terser(),
     resolve({
         browser: true,
         preferBuiltins: false
