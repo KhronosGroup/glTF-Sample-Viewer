@@ -1,7 +1,7 @@
 Khronos glTF 2.0 Sample Viewer
 ==============================
 
-[![](examples/assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
+[![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
 
 This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
@@ -59,7 +59,7 @@ Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
 Usage
 -----
 
-**Controls**
+### Controls
 
 `click + drag` : Rotate model
 
@@ -67,13 +67,13 @@ Usage
 
 `GUI` : Use to change models and settings
 
-**Change glTF model**
+### Change glTF model
 
 * Choose one of the glTF models in the selection list
-
-or
-
 * Drag and drop glTF files into viewer
+
+### Change the environment map
+* Drag and drop a .hdr panorama file
 
 Setup
 -----
@@ -86,26 +86,22 @@ For local usage and debugging, please follow these instructions:
 
 **(2)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
-**(3)** To test the gltf-sample-viewer:
+**(3)** To test the web app:
 
-- `cd example`
+- `cd app_web`
 - run `npm install`
 - start a demo in the browser with `npm run dev`, and open http://localhost:8000.
 
-When making changes, the project is automatically rebuilt and the `example/dist/` folder
-is updated. Files in the `dist/` folder should not be included in pull
-requests — they will be updated by project maintainers with each new release.
+When making changes, the project is automatically rebuilt and the `app_web/dist/` directory is populated with the web app. This directory contains all files necessary for deployment to a webserver.
 
 **(4)** To build the npm package for publishing:
-- `cd src`
 - run `npm install`
 - run `npm run build`
 
-This will create a new `gltf-sample-viewer.js` and `gltf-sample-viewer.module.js` in the `npm_package` folder
+This will create a new `gltf-viewer.js` and `gltf-viewer.module.js` in the `dist` directory.
 
 **(5)** To test the npm-package:
-- Change the `gltf-sample-viewer` dependency in `example/package.json` from `../src` to `../npm_package`
-- Delete the `gltf-sample-viewer` folder in `example/npm_modules`
+- Replace the `gltf-viewer-source` dependency in `app_web/package.json` with `"@khronosgroup/gltf-viewer":  ".."`
 - Now follow steps from **(3)**
 
 
@@ -116,7 +112,7 @@ Debugging
   * [Visual Studio Code](https://code.visualstudio.com/)
   * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
 * Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
-* Open the project folder in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
+* Open the project directory in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
 * One might need to append `/example` to `${workspaceFolder}` in the `launch.json` file
 * `Debug->Start Debugging` should now launch a Firefox window with the sample viewer and VS Code breakpoints should be hit.
 
