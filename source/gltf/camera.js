@@ -7,9 +7,9 @@ class gltfCamera extends GltfObject
     constructor(
         type = "perspective",
         znear = 0.01,
-        zfar = 10000.0,
+        zfar = Infinity,
         yfov = 45.0 * Math.PI / 180.0,
-        aspectRatio = 16.0 / 9.0,
+        aspectRatio = undefined,
         xmag = 1.0,
         ymag = 1.0,
         name = undefined,
@@ -115,12 +115,12 @@ class gltfCamera extends GltfObject
     {
         const view = mat4.create();
         const position = this.getPosition(gltf);
-        const target = this.getLookAtTarget(gltf);
+        const target = this.getTarget(gltf);
         mat4.lookAt(view, position, target, vec3.fromValues(0, 1, 0));
         return view;
     }
 
-    getLookAtTarget(gltf)
+    getTarget(gltf)
     {
         const target = vec3.create();
         const position = this.getPosition(gltf);
@@ -170,6 +170,60 @@ class gltfCamera extends GltfObject
     getNode(gltf)
     {
         return gltf.nodes[this.node];
+    }
+
+    // Returns a JSON object describing the user camera's current values.
+    getDescription(gltf)
+    {
+        const camera = {
+            "type": this.type
+        };
+
+        if (this.name != undefined)
+        {
+            camera["name"] = this.name;
+        }
+
+        if (this.type === "perspective")
+        {
+            if (this.aspectRatio != undefined)
+            {
+                camera["perspective"]["aspectRatio"] = this.aspectRatio;
+            }
+            camera["perspective"]["yfov"] = this.yfov;
+            if (this.zfar != Infinity)
+            {
+                camera["perspective"]["zfar"] = this.zfar;
+            }
+            camera["perspective"]["ynear"] = this.ynear;
+        }
+        else if (this.type === "orthographic")
+        {
+            camera["orthographic"]["xmag"] = this.xmag;
+            camera["orthographic"]["ymag"] = this.ymag;
+            camera["orthographic"]["zfar"] = this.zfar;
+            camera["orthographic"]["ynear"] = this.ynear;
+        }
+
+        const mat = this.getViewMatrix(gltf);
+
+        const node = {
+            "camera": 0,
+            "matrix": [mat[0], mat[1], mat[2], mat[3],
+                       mat[4], mat[5], mat[6], mat[7],
+                       mat[8], mat[9], mat[10], mat[11],
+                       mat[12], mat[13], mat[14], mat[15]]
+        };
+
+        if (this.nodeIndex != undefined && gltf.nodes[this.nodeIndex].name != undefined)
+        {
+            node["name"] = gltf.nodes[this.nodeIndex].name;
+        }
+
+        return {
+            "node": node,
+            "camera": camera
+        }
     }
 }
 
