@@ -6,15 +6,14 @@ Khronos glTF 2.0 Sample Viewer
 This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
 
-**Table of Contents**
+Table of Contents
+-----------------
 
 - [Version](#version)
 - [Credits](#credits)
 - [Features](#features)
-- [Viewer](#viewer)
-  - [Usage](#usage)
-  - [Setup](#setup)
-  - [Debugging](#debugging)
+- [Setup](#setup)
+- [Web App](#web-app)
 - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
 - [Appendix A Metallic-Roughness Material](#appendix-a-metallic-roughness-material)
   - [Specular Term](#specular-term-f_specular)
@@ -35,7 +34,7 @@ Refactored and developed by [UX3D](https://www.ux3d.io/). Supported by the [Khro
 Original code based on the former [glTF-WebGL-PBR](https://github.com/KhronosGroup/glTF-Sample-Viewer/tree/glTF-WebGL-PBR) project. Previously supported by [Facebook](https://www.facebook.com/) for animations, skinning and morphing.
 
 Features
-========
+--------
 
 - [x] glTF 2.0
 - [x] [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
@@ -51,74 +50,31 @@ Features
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
 - [ ] KHR_xmp_ld
 
-Viewer
-======
-
-Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
-
-Usage
------
-
-### Controls
-
-`click + drag` : Rotate model
-
-`scroll` : Zoom camera
-
-`GUI` : Use to change models and settings
-
-### Change glTF model
-
-* Choose one of the glTF models in the selection list
-* Drag and drop glTF files into viewer
-
-### Change the environment map
-* Drag and drop a .hdr panorama file
 
 Setup
 -----
 
 For local usage and debugging, please follow these instructions:
 
-**(0)** Make sure [Git LFS](https://git-lfs.github.com) is installed.
+0. Make sure [Git LFS](https://git-lfs.github.com) is installed.
 
-**(1)** Checkout the [`master`](../../tree/master) branch
+1. Checkout the [`master`](../../tree/master) branch
 
-**(2)** Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
+2. Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
-**(3)** To test the web app:
-
-- `cd app_web`
-- run `npm install`
-- start a demo in the browser with `npm run dev`, and open http://localhost:8000.
-
-When making changes, the project is automatically rebuilt and the `app_web/dist/` directory is populated with the web app. This directory contains all files necessary for deployment to a webserver.
-
-**(4)** To build the npm package for publishing:
-- run `npm install`
-- run `npm run build`
+3. To build the npm package for publishing:
+	- run `npm install`
+	- run `npm run build`
 
 This will create a new `gltf-viewer.js` and `gltf-viewer.module.js` in the `dist` directory.
 
-**(5)** To test the npm-package:
-- Replace the `gltf-viewer-source` dependency in `app_web/package.json` with `"@khronosgroup/gltf-viewer":  ".."`
-- Now follow steps from **(3)**
+Web App
+-------
 
-
-Debugging
----------
-
-* Requirements
-  * [Visual Studio Code](https://code.visualstudio.com/)
-  * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/)
-* Install the [Debugger for Firefox](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug) extension for Visual Studio Code
-* Open the project directory in Visual Studio Code and select `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
-* One might need to append `/example` to `${workspaceFolder}` in the `launch.json` file
-* `Debug->Start Debugging` should now launch a Firefox window with the sample viewer and VS Code breakpoints should be hit.
-
+You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](https://github.com/ux3d/glTF-Sample-Viewer/tree/develop/app_web). A live demo can be found at [gltf.ux3d.io](https://gltf.ux3d.io).
 
 Physically-Based Materials in glTF 2.0
-======================================
+--------------------------------------
 
 With the change from glTF 1.0 to glTF 2.0, one of the largest changes included core support for materials that could be used for physically-based shading. Part of this process involved choosing technically accurate, yet user-friendly, parameters for which developers and artists could use intuitively. This resulted in the introduction of the **Metallic-Roughness Material** to glTF. If you would like to read more about glTF, you can find the content at its [GitHub page](https://github.com/KhronosGroup/glTF).
 
@@ -128,7 +84,7 @@ For implementation details and further theory, please find more information in t
 
 
 Appendix A: Metallic-Roughness Material
-=======================================
+---------------------------------------
 
 For further reference, please read the [glTF 2.0: Appendix B: BRDF Implementation](https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#appendix-b-brdf-implementation)
 The following sections do summarize the important shader code.
