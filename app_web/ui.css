@@ -153,10 +153,15 @@ canvas
 .cardGrayMain
 {
     background-color: #424242;
-    margin-bottom: 5px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 8px;
+    padding: 8px;
+    margin-right: 5px;
+    margin-bottom: 8px;
+}
+.cardGrayMainInner
+{
+    background-color: #202020;
+    padding: 8px;
+    margin-bottom: 8px;
 }
 
 .cardHeader

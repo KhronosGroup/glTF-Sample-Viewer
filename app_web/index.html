@@ -78,8 +78,7 @@ function getUrlParam(parameter, defaultvalue){
 <script id="jsonToUITemplate" type="text/x-template">
     <div>
         <div v-for="(value, name) in data">
-            <!-- TODO toggle class based on data member -->
-            <b-collapse class="cardGrayMain" animation="slide"  style="word-break: break-word;">
+            <b-collapse :class="(isinner === false) ? 'cardGrayMain' : 'cardGrayMainInner'" animation="slide"  style="word-break: break-word;">
                 <!-- header -->
                 <template #trigger="props">
                     <div class="cardHeader" role="button">
@@ -88,8 +87,7 @@ function getUrlParam(parameter, defaultvalue){
                         </p>
                         <!-- a element needed for buefy. can be removed if hover effects are made custom -->
                         <a>
-                            <b-icon
-                                :icon="props.open ? 'menu-down' : 'menu-up'">
+                            <b-icon :icon="props.open ? 'menu-down' : 'menu-up'">
                             </b-icon>
                         </a>
                     </div>
@@ -98,7 +96,7 @@ function getUrlParam(parameter, defaultvalue){
                 <!-- content -->
                 <!-- if value is object -->
                 <div v-if="value !== null && value !== undefined && value.constructor.name === 'Object'">
-                    <json-to-ui-template v-bind:data="value"></json-to-ui-template>
+                    <json-to-ui-template v-bind:data="value" v-bind:isinner="!isinner"></json-to-ui-template>
                 </div>
                 <!-- if value is array -->
                 <div v-else-if="Array.isArray(value)">
@@ -236,7 +234,7 @@ function getUrlParam(parameter, defaultvalue){
                         <span>XMP</span>
                     </template>
                     <h2>XMP</h2>
-                    <json-to-ui-template v-bind:data="xmp"></json-to-ui-template>
+                    <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
                 </b-tab-item>
                 <!--<b-tab-item label="Capture" icon="video">
                     <template #header>
