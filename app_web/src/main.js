@@ -102,6 +102,16 @@ async function main()
         state.renderingParameters.morphing = morphingEnabled;
     });
 
+    uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
+        state.renderingParameters.clearcoat = clearcoatEnabled;
+    });
+    uiModel.sheenEnabled.subscribe( sheenEnabled => {
+        state.renderingParameters.sheen = sheenEnabled;
+    });
+    uiModel.transmissionEnabled.subscribe( transmissionEnabled => {
+        state.renderingParameters.transmission = transmissionEnabled;
+    });
+
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
     });

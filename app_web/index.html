@@ -259,8 +259,7 @@ function getUrlParam(parameter, defaultvalue){
                     </b-slider>
                     <b-field label="Tone Map" class="smallerLabel">
                         <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
-                            <option v-for="(item) in tonemaps"
-                                v-bind:value="item.title">
+                            <option v-for="(item) in tonemaps" v-bind:value="item.title">
                                 {{ item.title }}
                             </option>
                         </b-select>
@@ -268,6 +267,11 @@ function getUrlParam(parameter, defaultvalue){
                     <b-switch v-model="skinning" v-stream:input="skinningChanged$">Skinning</b-switch>
                     <br>
                     <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
+                    <b-field label="Disable extensions" class="label">
+                        <b-switch v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>
+                        <b-switch v-model="sheenEnabled" v-stream:input="sheenChanged$">Sheen</b-switch>
+                        <b-switch v-model="transmissionEnabled" v-stream:input="transmissionChanged$">Transmission</b-switch>
+                    </b-field>
                     <dual-label-list-element name="Statistics" v-bind:items="statistics"></dual-label-list-element>
                 </b-tab-item>
             </b-tabs>
