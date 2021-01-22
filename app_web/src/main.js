@@ -56,6 +56,7 @@ async function main()
 
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
         state.sceneIndex = newSceneIndex;
+        state.cameraIndex = undefined;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
