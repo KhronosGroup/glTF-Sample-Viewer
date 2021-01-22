@@ -4,10 +4,10 @@ import { GL } from '../Renderer/webgl.js';
 
 class GltfView
 {
-    constructor(context, uiWidth = 0)
+    constructor(context, canvasWithUIDimensionsCallback)
     {
         this.context = context;
-        this.uiWidth = uiWidth;
+        this.canvasWithUIDimensionsCallback = canvasWithUIDimensionsCallback;
         this.renderer = new gltfRenderer(this.context);
     }
 
@@ -18,9 +18,9 @@ class GltfView
 
     updateCanvas(canvas)
     {
-        if(this.uiWidth !== undefined)
+        if(this.canvasWithUIDimensionsCallback !== undefined)
         {
-            canvas.width = window.innerWidth - this.uiWidth;
+            canvas.width = this.canvasWithUIDimensionsCallback();
         }
         else
         {
