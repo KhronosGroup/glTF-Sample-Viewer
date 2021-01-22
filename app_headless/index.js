@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const yargs = require("yargs");
-const sample_viewer = require("gltf-sample-viewer");
+const sample_viewer = require("@khronosgroup/gltf-viewer");
 const fs = require("fs");
 const node_gles = require("node-gles");
 const png = require("fast-png");
@@ -23,15 +23,15 @@ async function main()
     const view = new sample_viewer.GltfView(gl);
     const state = view.createState();
 
-    const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/environments/footprint_court_512.hdr")).buffer;
+    const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../assets/environments/footprint_court_512.hdr")).buffer;
     const luts = {
-        lut_ggx_file: new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/images/lut_ggx.png")).buffer,
-        lut_charlie_file: new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/images/lut_charlie.png")).buffer,
-        lut_sheen_E_file: new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/images/lut_sheen_E.png")).buffer,
+        lut_ggx_file: new Uint8Array(fs.readFileSync(__dirname + "/../assets/images/lut_ggx.png")).buffer,
+        lut_charlie_file: new Uint8Array(fs.readFileSync(__dirname + "/../assets/images/lut_charlie.png")).buffer,
+        lut_sheen_E_file: new Uint8Array(fs.readFileSync(__dirname + "/../assets/images/lut_sheen_E.png")).buffer,
     };
 
     state.environment = await sample_viewer.loadEnvironment(environment_file, view, luts);
-    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../app_web/assets/models/2.0/Box/glTF-Binary/Box.glb")).buffer;
+    const glb_file = new Uint8Array(fs.readFileSync(__dirname + "/../assets/models/2.0/Box/glTF-Binary/Box.glb")).buffer;
     state.gltf = await sample_viewer.loadGltf(glb_file, view);
 
     const defaultScene = state.gltf.scene;
@@ -40,7 +40,6 @@ async function main()
     scene.applyTransformHierarchy(state.gltf);
     sample_viewer.computePrimitiveCentroids(state.gltf);
     state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-    state.userCamera.updatePosition();
 
     view.animate(state);
     view.renderFrame(state);

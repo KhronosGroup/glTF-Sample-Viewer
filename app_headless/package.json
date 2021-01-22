@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cd ../source; npm run build; cd ../app_headless; node index.js"
+    "start": "cd ..; npm run build; cd app_headless; node index.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@types/webgl2": "0.0.5",
     "fast-png": "^5.0.3",
-    "gltf-sample-viewer": "../npm_package",
+    "@khronosgroup/gltf-viewer": "..",
     "node-gles": "0.0.17",
     "yargs": "^16.2.0"
   }
