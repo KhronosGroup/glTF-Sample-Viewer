@@ -57,6 +57,7 @@ uniform mat3 u_ClearcoatRoughnessUVTransform;
 uniform sampler2D u_ClearcoatNormalSampler;
 uniform int u_ClearcoatNormalUVSet;
 uniform mat3 u_ClearcoatNormalUVTransform;
+uniform float u_ClearcoatNormalScale;
 
 // Sheen Material
 uniform sampler2D u_SheenColorSampler;
