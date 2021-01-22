@@ -36,7 +36,7 @@ nav.tabs ul
 
 section.tab-content
 {
-    background-color: #333333;
+    background-color: #363636;
     width: 300px;
 }
 
@@ -150,17 +150,25 @@ canvas
     opacity: 0.8;
 }
 
+.xmpWrapper
+{
+    margin-right: 5px;
+}
+
 .cardGrayMain
 {
     background-color: #424242;
     padding: 8px;
-    margin-right: 5px;
+    padding-right: 0px;
+    padding-bottom: 5px;
     margin-bottom: 8px;
 }
 .cardGrayMainInner
 {
-    background-color: #202020;
+    background-color: #4d4d4d;
     padding: 8px;
+    padding-right: 0px;
+    padding-bottom: 5px;
     margin-bottom: 8px;
 }
 
