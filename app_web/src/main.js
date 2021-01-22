@@ -13,7 +13,7 @@ async function main()
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const ui = document.getElementById("app");
-    const view = new GltfView(context, ui);
+    const view = new GltfView(context, ui.getBoundingClientRect().width);
     const state = view.createState();
 
     initDracoLib();
