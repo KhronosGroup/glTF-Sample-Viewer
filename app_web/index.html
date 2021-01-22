@@ -234,7 +234,9 @@ function getUrlParam(parameter, defaultvalue){
                         <span>XMP</span>
                     </template>
                     <h2>XMP</h2>
-                    <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
+                    <div class="xmpWrapper">
+                        <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false" ref="xmpUI"></json-to-ui-template>
+                    </div>
                 </b-tab-item>
                 <!--<b-tab-item label="Capture" icon="video">
                     <template #header>
