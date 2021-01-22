@@ -42,6 +42,7 @@ async function main()
     state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
     view.animate(state);
+    view.updateViewport(width, height);
     view.renderFrame(state);
 
     let pixels = new Uint8Array(width * height * 4);
