@@ -226,19 +226,17 @@ class UIModel
         });
 
         const animations = gltfLoadedAndInit.pipe(
-            map( gltf => {
-                return gltf.animations.map( (anim, index) => {
-                    let name = anim.name;
-                    if (name === undefined || name === "")
-                    {
-                        name = index;
-                    }
-                    return {
-                        title: name,
-                        index: index
-                    };
-                })
-            })
+            map( gltf =>  gltf.animations.map( (anim, index) => {
+                let name = anim.name;
+                if (name === undefined || name === "")
+                {
+                    name = index;
+                }
+                return {
+                    title: name,
+                    index: index
+                };
+            }))
         );
         animations.subscribe( animations => {
             this.app.animations = animations;
