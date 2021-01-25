@@ -43,6 +43,7 @@ async function main()
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+                state.animationIndices = gltf.animations.map( (anim, index) => index);
                 state.animationTimer.start();
                 return state;
             })

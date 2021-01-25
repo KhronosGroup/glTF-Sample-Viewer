@@ -244,6 +244,12 @@ class UIModel
         animations.subscribe( animations => {
             this.app.animations = animations;
         });
+
+        glTFLoadedStateObservable.pipe(
+            map( state => state.animationIndices)
+        ).subscribe( animationIndices => {
+            this.app.selectedAnimations = animationIndices;
+        })
     }
 
     updateStatistics(statisticsUpdateObservable)
