@@ -50,7 +50,7 @@ const app = new Vue({
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
-        'variantChanged$', 'exposureChanged$'],
+        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$"],
     data() {
         return {
             fullheight: true,
@@ -84,6 +84,9 @@ const app = new Vue({
             toneMap: "None",
             skinning: true,
             morphing: true,
+            clearcoatEnabled: true,
+            sheenEnabled: true,
+            transmissionEnabled: true,
         };
     },
     mounted: function()

@@ -1,7 +1,6 @@
-import { bindCallback, fromEvent, merge } from 'rxjs';
+import { fromEvent, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF, ToneMaps, DebugOutput } from 'gltf-sample-viewer';
-import { gltfInput } from '../input.js';
 
 import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 
@@ -50,6 +49,9 @@ class UIModel
         this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
+        this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
+        this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
+        this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
@@ -79,6 +81,32 @@ class UIModel
         this.hdr = inputObservables.hdrDropped;
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
+
+        this.model.subscribe(() => {
+            // remove last filename
+            if(this.app.models[this.app.models.length -1] === this.lastDroppedFilename)
+            {
+                this.app.models.pop();
+                this.lastDroppedFilename = undefined;
+            }
+        });
+
+        const dropedFileName = inputObservables.gltfDropped.pipe(
+            map( (data) => {
+                return data.mainFile.name;
+            })
+        );
+        dropedFileName.subscribe( (filename) => {
+            if(filename !== undefined)
+            {
+                filename = filename.split('/').pop();
+                filename = filename.substr(0, filename.lastIndexOf('.'));
+
+                this.app.models.push(filename);
+                this.app.selectedModel = filename;
+                this.lastDroppedFilename = filename;
+            }
+        });
     }
 
     static getInputObservables(inputDomElement)
