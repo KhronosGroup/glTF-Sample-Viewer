@@ -110,7 +110,7 @@ async function main()
             camera = state.gltf.cameras[state.cameraIndex];
         }
         const cameraDesc = camera.getDescription(state.gltf);
-        // TODO Do something with the camera
+        copyToClipboard(JSON.stringify(cameraDesc));
     });
 
     uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
@@ -207,6 +207,15 @@ async function main()
     };
 
     await view.startRendering(state, canvas);
+}
+
+function copyToClipboard(text) {
+    var dummy = document.createElement("textarea");
+    document.body.appendChild(dummy);
+    dummy.value = text;
+    dummy.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummy);
 }
 
 export { main };
