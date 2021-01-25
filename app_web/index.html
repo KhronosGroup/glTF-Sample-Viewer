@@ -146,12 +146,13 @@ function getUrlParam(parameter, defaultvalue){
                                 </option>
                             </b-select>
                         </b-field>
-
+                        
                         <b-field label="Variants">
-                            <b-radio v-for="item in materialVariants" v-bind:key="item.titel"
-                                v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                            <b-field v-for="item in materialVariants" v-bind:key="item.titel">
+                                <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
                                     {{ item.title }}
-                            </b-radio>
+                                </b-radio>
+                            </b-field>
                         </b-field>
                     </div>
                 </b-tab-item>
