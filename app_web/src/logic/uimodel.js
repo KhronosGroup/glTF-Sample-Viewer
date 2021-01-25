@@ -1,8 +1,10 @@
-import { fromEvent, merge } from 'rxjs';
+import { Observable, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF, ToneMaps, DebugOutput } from 'gltf-sample-viewer';
 
-import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
+import { getIsGltf, getIsGlb } from 'gltf-sample-viewer';
+
+import { SimpleDropzone } from 'simple-dropzone';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -112,19 +114,23 @@ class UIModel
     static getInputObservables(inputDomElement)
     {
         const observables = {};
-        fromEvent(inputDomElement, "dragover").subscribe( event => event.preventDefault() ); // just prevent the default behaviour
-        const dropEvent = fromEvent(inputDomElement, "drop").pipe( map( event => {
-            // prevent the default drop event
-            event.preventDefault();
-            return event;
-        }));
-        observables.filesDropped = dropEvent.pipe(map( (event) => {
-            // Use DataTransfer files interface to access the file(s)
-            return Array.from(event.dataTransfer.files);
-        }));
+
+        const simpleDropzoneObservabel = new Observable(subscriber => {
+            const dropCtrl = new SimpleDropzone(inputDomElement, inputDomElement);
+            dropCtrl.on('drop', ({files}) => {
+                subscriber.next(files);
+            });
+            dropCtrl.on('droperror', () => {
+                subscriber.error();
+            });
+        });
+        observables.filesDropped = simpleDropzoneObservabel.pipe(
+            map(files => Array.from(files.values()))
+        );
+
         observables.gltfDropped = observables.filesDropped.pipe(
             // filter out any non .gltf or .glb files
-            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name)).length > 0),
+
             map( (files) => {
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
                 const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
@@ -139,7 +145,7 @@ class UIModel
                 return files.find( (file) => file.name.endsWith(".hdr"));
             }),
             filter(file => file !== undefined),
-        )
+        );
         return observables;
     }
 
