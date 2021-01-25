@@ -106,7 +106,7 @@ function getUrlParam(parameter, defaultvalue){
     <div id="app">
         <template>
             <b-tabs vertical position="is-right">
-                <b-tab-item label="Models" icon="google-photos" class="tab-item">
+                <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                         <img src="assets/ui/Model 30X30.svg" width="30px" height="30px">
@@ -146,7 +146,7 @@ function getUrlParam(parameter, defaultvalue){
                                 </option>
                             </b-select>
                         </b-field>
-                        
+
                         <b-field label="Variants">
                             <b-field v-for="item in materialVariants" v-bind:key="item.titel">
                                 <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
