@@ -231,7 +231,7 @@ function getUrlParam(parameter, defaultvalue){
 
                         <b-field label="Animations">
                             <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                <b-checkbox v-bind:native-value="animation.key" v-stream:input="selectedAnimationsChanged$" v-model="selectedAnimations">
+                                <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations">
                                     {{ animation.title }}
                                 </b-checkbox>
                             </b-field>

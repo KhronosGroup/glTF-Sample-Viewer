@@ -77,6 +77,9 @@ class UIModel
         );
 
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
+        this.activeAnimations = app.$watchAsObservable('selectedAnimations').pipe(
+            map( ({ newValue, oldValue }) => newValue)
+        );
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
