@@ -4,10 +4,9 @@ import { GL } from '../Renderer/webgl.js';
 
 class GltfView
 {
-    constructor(context, canvasWithUIDimensionsCallback)
+    constructor(context)
     {
         this.context = context;
-        this.canvasWithUIDimensionsCallback = canvasWithUIDimensionsCallback;
         this.renderer = new gltfRenderer(this.context);
     }
 
@@ -16,26 +15,11 @@ class GltfView
         return new GltfState();
     }
 
-    updateCanvas(canvas)
+    renderFrame(state, width, height)
     {
-        if(this.canvasWithUIDimensionsCallback !== undefined)
-        {
-            canvas.width = this.canvasWithUIDimensionsCallback();
-        }
-        else
-        {
-            canvas.width = canvas.clientWidth;
-        }
-        canvas.height = canvas.clientHeight;
-    }
+        this.animate(state);
 
-    updateViewport(width, height)
-    {
         this.renderer.resize(width, height);
-    }
-
-    renderFrame(state)
-    {
 
         this.renderer.clearFrame(state.renderingParameters.clearColor);
 
@@ -50,6 +34,7 @@ class GltfView
 
         this.renderer.drawScene(state, scene);
     }
+
     animate(state)
     {
         if(state.gltf === undefined)
@@ -124,21 +109,6 @@ class GltfView
             opaqueMaterialsCount: opaqueMaterials.length,
             transparentMaterialsCount: transparentMaterials.length
         };
-    }
-
-    async startRendering(state, canvas)
-    {
-        const update = () =>
-        {
-            this.animate(state);
-            this.updateCanvas(canvas);
-            this.updateViewport(canvas.width, canvas.height);
-            this.renderFrame(state);
-            window.requestAnimationFrame(update);
-        };
-
-        // After this start executing render loop.
-        window.requestAnimationFrame(update);
     }
 }
 

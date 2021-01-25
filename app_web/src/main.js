@@ -13,8 +13,7 @@ async function main()
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const ui = document.getElementById("app");
-    const uiSizeCallback = function() { return window.innerWidth - ui.getBoundingClientRect().width; }
-    const view = new GltfView(context, uiSizeCallback);
+    const view = new GltfView(context);
     const state = view.createState();
 
     initDracoLib();
@@ -197,7 +196,18 @@ async function main()
         }
     };
 
-    await view.startRendering(state, canvas);
+    // configure the animation loop
+    const update = () =>
+    {
+        canvas.width = window.innerWidth - ui.getBoundingClientRect().width;
+        canvas.height = canvas.clientHeight;
+
+        view.renderFrame(state, canvas.width, canvas.height);
+        window.requestAnimationFrame(update);
+    };
+
+    // After this start executing animation loop.
+    window.requestAnimationFrame(update);
 }
 
 export { main };
