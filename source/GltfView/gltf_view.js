@@ -28,12 +28,12 @@ class GltfView
         }
         canvas.height = canvas.clientHeight;
     }
-    
+
     updateViewport(width, height)
     {
         this.renderer.resize(width, height);
     }
-    
+
     renderFrame(state)
     {
 
@@ -92,7 +92,11 @@ class GltfView
         const transparentMaterials = activeMaterials.filter(material => material.alphaMode === "BLEND");
         const faceCount = activePrimitives
             .map(primitive => {
-                const verticesCount = state.gltf.accessors[primitive.indices].count;
+                let verticesCount = 0;
+                if(primitive.indices !== undefined)
+                {
+                    verticesCount = state.gltf.accessors[primitive.indices].count;
+                }
                 if (verticesCount === 0)
                 {
                     return 0;
