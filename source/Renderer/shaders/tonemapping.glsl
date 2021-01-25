@@ -42,7 +42,6 @@ vec4 sRGBToLinear(vec4 srgbIn)
 // see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 vec3 toneMapACESFast(vec3 color)
 {
-    color *= 0.6;
     const float A = 2.51;
     const float B = 0.03;
     const float C = 2.43;
@@ -72,7 +71,7 @@ vec3 toneMapACES(vec3 color)
     // Clamp to [0, 1]
     color = clamp(color, 0.0, 1.0);
 
-    return color;
+    return color * 1.8;
 }
 
 vec3 toneMap(vec3 color)

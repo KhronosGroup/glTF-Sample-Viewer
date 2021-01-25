@@ -1,19 +1,10 @@
 {
-  "name": "gltf-sample-viewer",
-  "version": "1.0.0",
-  "description": "The official glTF sample viewer.",
+  "name": "gltf-viewer-source",
+  "description": "Package for the source of gltf-viewer",
   "main": "gltf-sample-viewer.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
-  },
-  "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint --fix src/**/*.js",
-    "postversion": "git push && git push --tags"
   },
   "keywords": [
     "gltf",
@@ -27,16 +18,6 @@
     "fast-png": "^5.0.3",
     "gl-matrix": "^3.2.1",
     "jpeg-js": "^0.4.3"
-  },
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^17.0.0",
-    "@rollup/plugin-node-resolve": "^11.1.0",
-    "concurrently": "^5.1.0",
-    "eslint": "^6.8.0",
-    "rollup": "^2.37.0",
-    "rollup-plugin-glslify": "^1.2.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "serve": "^11.3.0"
   },
   "bugs": {
     "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"

@@ -1,8 +1,6 @@
 import { Observable, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF, ToneMaps, DebugOutput } from 'gltf-sample-viewer';
-
-import { getIsGltf, getIsGlb } from 'gltf-sample-viewer';
+import { glTF, ToneMaps, DebugOutput, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
 
@@ -71,7 +69,8 @@ class UIModel
                 return result ? [
                     parseInt(result[1], 16),
                     parseInt(result[2], 16),
-                    parseInt(result[3], 16)
+                    parseInt(result[3], 16),
+                    255
                 ] : null;
             })
         );

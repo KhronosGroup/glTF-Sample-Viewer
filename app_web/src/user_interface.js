@@ -226,7 +226,7 @@ class gltfUserInterface
         const hexR = hexColor.substring(1, 3);
         const hexG = hexColor.substring(3, 5);
         const hexB = hexColor.substring(5, 7);
-        return [ this.fromHexValue(hexR) , this.fromHexValue(hexG), this.fromHexValue(hexB) ];
+        return [ this.fromHexValue(hexR) , this.fromHexValue(hexG), this.fromHexValue(hexB), 255 ];
     }
 
     // array format: [ R, G, B ]

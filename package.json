@@ -1,0 +1,46 @@
+{
+  "name": "@khronosgroup/gltf-viewer",
+  "version": "1.0.0-alpha.1",
+  "description": "The official glTF sample viewer.",
+  "main": "dist/gltf-viewer.js",
+  "module": "dist/gltf-viewer.module.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "gltf",
+    "webgl",
+    "pbr"
+  ],
+  "author": "Khronos Group Inc.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "fast-png": "^5.0.3",
+    "gl-matrix": "^3.2.1",
+    "jpeg-js": "^0.4.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.1.0",
+    "concurrently": "^5.1.0",
+    "eslint": "^6.8.0",
+    "rollup": "^2.37.0",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-glslify": "^1.2.0",
+    "serve": "^11.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"
+  },
+  "homepage": "https://github.com/KhronosGroup/glTF-Sample-Viewer/#readme"
+}

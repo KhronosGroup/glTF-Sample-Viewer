@@ -1,3 +1,23 @@
-.vscode
-assets
-*.html
+# top level directories
+.git/
+.vscode/
+app_headless/
+app_web/
+assets/
+source/
+documentation/
+.project
+.settings
+.eslintignore
+.gitattributes
+.gitmodules
+.eslintrc.json
+
+# files types to ignore
+rollup.config.js
+package-lock.json
+.DS_Store
+npm-debug.log
+yarn.lock
+*.map
+
