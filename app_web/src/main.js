@@ -74,6 +74,19 @@ async function main()
         map( (_) => view.gatherStatistics(state) )
     );
 
+    const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe( map(_ => {
+        let camera = state.userCamera;
+        if(state.cameraIndex !== undefined)
+        {
+            camera = state.gltf.cameras[state.cameraIndex];
+        }
+        const cameraDesc = camera.getDescription(state.gltf);
+        return cameraDesc;
+    }));
+    cameraExportChangedObservable.subscribe( cameraDesc => {
+        uiModel.copyToClipboard(JSON.stringify(cameraDesc));
+    });
+
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
         state.cameraIndex = undefined;
     });

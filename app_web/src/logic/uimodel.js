@@ -56,6 +56,7 @@ class UIModel
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
         this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
+        this.cameraValuesExport = app.cameraExport$.pipe(pluck('event'));
 
         const initialClearColor = "#303542";
         this.app.clearColor = initialClearColor;
@@ -277,6 +278,15 @@ class UIModel
             }
             this.app.selectedCamera = index;
         });
+    }
+
+    copyToClipboard(text) {
+        var dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = text;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
     }
 }
 

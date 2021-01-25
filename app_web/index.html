@@ -298,6 +298,9 @@ function getUrlParam(parameter, defaultvalue){
                         <b-switch v-model="skinning" v-stream:input="skinningChanged$">Skinning</b-switch>
                         <br>
                         <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
+                        <b-field label="Current camera values" class="label">
+                        	<button v-stream:click="cameraExport$" type="button" class="button"><i class="fa fa-download downloadIcon"></i>  Copy to Clipboard</button>
+                    	</b-field>
                         <b-field label="Disable extensions" class="label">
                             <b-switch v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>
                             <b-switch v-model="sheenEnabled" v-stream:input="sheenChanged$">Sheen</b-switch>
