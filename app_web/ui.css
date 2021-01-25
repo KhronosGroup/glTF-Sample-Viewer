@@ -103,6 +103,13 @@ label.switch
     white-space: nowrap;
 }
 
+.tabItemScrollable
+{
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+}
+
 /**********************************/
 /**********************************/
 /* Styles for individual elements */
@@ -128,6 +135,15 @@ canvas
     flex-wrap: unset;
 }
 
+.b-tabs .tab-content
+{
+    padding-right: 0px !important;
+}
+
+.tabContent
+{
+    margin-right: 10px;
+}
 
 .tab-item h2
 {
@@ -261,8 +277,4 @@ div .field.has-addons
 .b-slider-tick-label
 {
     margin-top: 8px;
-    margin-left: -5px;
-    line-height: 0.5;
-    position: relative !important;
-    text-align: center;
 }
