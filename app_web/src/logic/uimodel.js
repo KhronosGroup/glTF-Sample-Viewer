@@ -1,7 +1,6 @@
-import { Subject, fromEvent, merge } from 'rxjs';
-import { map, filter, startWith, pluck, multicast } from 'rxjs/operators';
+import { fromEvent, merge } from 'rxjs';
+import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF, ToneMaps, DebugOutput } from 'gltf-sample-viewer';
-import { gltfInput } from '../input.js';
 
 import { getIsGltf, getIsGlb, getIsHdr } from 'gltf-sample-viewer';
 
