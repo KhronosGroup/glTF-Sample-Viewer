@@ -319,6 +319,8 @@ class gltfMaterial extends GltfObject
                     this.textures.push(this.clearcoatNormalTexture);
                     this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
+                    this.properties.set("u_ClearcoatNormalScale", this.clearcoatNormalTexture.scale);
+
                 }
                 this.properties.set("u_ClearcoatFactor", clearcoatFactor);
                 this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
