@@ -169,7 +169,8 @@ class gltfImage extends GltfObject
 
         let foundFile = files.find(function(file)
         {
-            if (file.name === this.uri || file.fullPath === this.uri)
+            const uriName = this.uri.split('\\').pop().split('/').pop();
+            if (file.name === uriName)
             {
                 return true;
             }

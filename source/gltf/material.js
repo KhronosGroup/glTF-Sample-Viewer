@@ -18,6 +18,11 @@ class gltfMaterial extends GltfObject
         this.alphaCutoff = 0.5;
         this.doubleSided = false;
 
+        // pbr next extension toggles
+        this.hasClearcoat = false;
+        this.hasSheen = false;
+        this.hasTransmission = false;
+
         // non gltf properties
         this.type = "unlit";
         this.textures = [];
@@ -52,9 +57,24 @@ class gltfMaterial extends GltfObject
         }
     }
 
-    getDefines()
+    getDefines(renderingParameters)
     {
-        return this.defines;
+        const defines = Array.from(this.defines);
+
+        if (this.hasClearcoat && renderingParameters.clearcoat)
+        {
+            defines.push("MATERIAL_CLEARCOAT 1");
+        }
+        if (this.hasSheen && renderingParameters.sheen)
+        {
+            defines.push("MATERIAL_SHEEN 1");
+        }
+        if (this.hasTransmission && renderingParameters.transmission)
+        {
+            defines.push("MATERIAL_TRANSMISSION 1");
+        }
+
+        return defines;
     }
 
     getProperties()
@@ -265,7 +285,7 @@ class gltfMaterial extends GltfObject
                 let clearcoatFactor = 0.0;
                 let clearcoatRoughnessFactor = 0.0;
 
-                this.defines.push("MATERIAL_CLEARCOAT 1");
+                this.hasClearcoat = true;
 
                 if(this.extensions.KHR_materials_clearcoat.clearcoatFactor !== undefined)
                 {
@@ -299,6 +319,8 @@ class gltfMaterial extends GltfObject
                     this.textures.push(this.clearcoatNormalTexture);
                     this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
+                    this.properties.set("u_ClearcoatNormalScale", this.clearcoatNormalTexture.scale);
+
                 }
                 this.properties.set("u_ClearcoatFactor", clearcoatFactor);
                 this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
@@ -311,7 +333,7 @@ class gltfMaterial extends GltfObject
                 let sheenRoughnessFactor = 0.0;
                 let sheenColorFactor =  vec3.fromValues(1.0, 1.0, 1.0);
 
-                this.defines.push("MATERIAL_SHEEN 1");
+                this.hasSheen = true;
 
                 if(this.extensions.KHR_materials_sheen.sheenRoughnessFactor !== undefined)
                 {
@@ -347,7 +369,7 @@ class gltfMaterial extends GltfObject
             {
                 let transmissionFactor = 0.0;
 
-                this.defines.push("MATERIAL_TRANSMISSION 1");
+                this.hasTransmission = true;
 
                 if (transmissionFactor !== undefined)
                 {

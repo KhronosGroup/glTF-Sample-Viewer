@@ -41,7 +41,7 @@ Vue.component('dual-label-element', {
     template:'#dualLabelTemplate'
 });
 Vue.component('json-to-ui-template', {
-    props: ['data'],
+    props: ['data', 'isinner'],
     template:'#jsonToUITemplate'
 });
 
@@ -50,7 +50,7 @@ const app = new Vue({
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
-        'variantChanged$', 'exposureChanged$'],
+        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$"],
     data() {
         return {
             fullheight: true,
@@ -84,6 +84,9 @@ const app = new Vue({
             toneMap: "None",
             skinning: true,
             morphing: true,
+            clearcoatEnabled: true,
+            sheenEnabled: true,
+            transmissionEnabled: true,
         };
     },
     mounted: function()

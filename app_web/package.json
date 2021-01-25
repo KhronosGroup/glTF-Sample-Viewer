@@ -30,6 +30,7 @@
     "@khronosgroup/gltf-viewer": "..",
     "gltf-viewer-source": "../source",
     "rxjs": "^6.6.3",
+    "simple-dropzone": "^0.8.0",
     "vue": "^2.6.11",
     "vue-rx": "^6.2.0"
   },

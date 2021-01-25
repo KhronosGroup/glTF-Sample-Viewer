@@ -1,7 +1,8 @@
-import { bindCallback, fromEvent, merge } from 'rxjs';
+import { Observable, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
 import { glTF, ToneMaps, DebugOutput, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
-import { gltfInput } from '../input.js';
+
+import { SimpleDropzone } from 'simple-dropzone';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -48,6 +49,9 @@ class UIModel
         this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
+        this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
+        this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
+        this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
@@ -78,24 +82,54 @@ class UIModel
         this.hdr = inputObservables.hdrDropped;
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
+
+        this.model.subscribe(() => {
+            // remove last filename
+            if(this.app.models[this.app.models.length -1] === this.lastDroppedFilename)
+            {
+                this.app.models.pop();
+                this.lastDroppedFilename = undefined;
+            }
+        });
+
+        const dropedFileName = inputObservables.gltfDropped.pipe(
+            map( (data) => {
+                return data.mainFile.name;
+            })
+        );
+        dropedFileName.subscribe( (filename) => {
+            if(filename !== undefined)
+            {
+                filename = filename.split('/').pop();
+                filename = filename.substr(0, filename.lastIndexOf('.'));
+
+                this.app.models.push(filename);
+                this.app.selectedModel = filename;
+                this.lastDroppedFilename = filename;
+            }
+        });
     }
 
     static getInputObservables(inputDomElement)
     {
         const observables = {};
-        fromEvent(inputDomElement, "dragover").subscribe( event => event.preventDefault() ); // just prevent the default behaviour
-        const dropEvent = fromEvent(inputDomElement, "drop").pipe( map( event => {
-            // prevent the default drop event
-            event.preventDefault();
-            return event;
-        }));
-        observables.filesDropped = dropEvent.pipe(map( (event) => {
-            // Use DataTransfer files interface to access the file(s)
-            return Array.from(event.dataTransfer.files);
-        }));
+
+        const simpleDropzoneObservabel = new Observable(subscriber => {
+            const dropCtrl = new SimpleDropzone(inputDomElement, inputDomElement);
+            dropCtrl.on('drop', ({files}) => {
+                subscriber.next(files);
+            });
+            dropCtrl.on('droperror', () => {
+                subscriber.error();
+            });
+        });
+        observables.filesDropped = simpleDropzoneObservabel.pipe(
+            map(files => Array.from(files.values()))
+        );
+
         observables.gltfDropped = observables.filesDropped.pipe(
             // filter out any non .gltf or .glb files
-            filter( (files) => files.filter( file => getIsGlb(file.name) || getIsGltf(file.name)).length > 0),
+
             map( (files) => {
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
                 const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
@@ -110,7 +144,7 @@ class UIModel
                 return files.find( (file) => file.name.endsWith(".hdr"));
             }),
             filter(file => file !== undefined),
-        )
+        );
         return observables;
     }
 
@@ -175,12 +209,12 @@ class UIModel
 
         const xmpData = gltfLoadedAndInit.pipe(
             map( (gltf) => {
-                if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp !== undefined)
+                if(gltf.extensions !== undefined && gltf.extensions.KHR_xmp_json_ld !== undefined)
                 {
-                    if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp !== undefined)
+                    if(gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp_json_ld !== undefined)
                     {
-                        let xmpPacket = gltf.extensions.KHR_xmp.packets[gltf.asset.extensions.KHR_xmp.packet];
-                        return {xmp: xmpPacket};
+                        let xmpPacket = gltf.extensions.KHR_xmp_json_ld.packets[gltf.asset.extensions.KHR_xmp_json_ld.packet];
+                        return xmpPacket;
                     }
                 }
                 return [];

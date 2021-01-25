@@ -13,7 +13,7 @@ async function main()
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const ui = document.getElementById("app");
-    const view = new GltfView(context, ui);
+    const view = new GltfView(context);
     const state = view.createState();
 
     initDracoLib();
@@ -29,7 +29,7 @@ async function main()
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
-    const subject = new Subject();
+    const gltfLoadedSubject = new Subject();
     const gltfLoadedMulticast = uiModel.model.pipe(
         mergeMap( (model) =>
         {
@@ -50,17 +50,20 @@ async function main()
             );
         }),
         // transform gltf loaded observable to multicast observable to avoid multiple execution with multiple subscriptions
-        multicast(subject)
+        multicast(gltfLoadedSubject)
     );
 
-
+    const sceneChangedSubject = new Subject();
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
         state.sceneIndex = newSceneIndex;
+        state.cameraIndex = undefined;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-    }));
+    }),
+    multicast(sceneChangedSubject)
+    );
 
     const statisticsUpdateObservableTemp = merge(
         gltfLoadedMulticast,
@@ -100,6 +103,16 @@ async function main()
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
         state.renderingParameters.morphing = morphingEnabled;
+    });
+
+    uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
+        state.renderingParameters.clearcoat = clearcoatEnabled;
+    });
+    uiModel.sheenEnabled.subscribe( sheenEnabled => {
+        state.renderingParameters.sheen = sheenEnabled;
+    });
+    uiModel.transmissionEnabled.subscribe( transmissionEnabled => {
+        state.renderingParameters.transmission = transmissionEnabled;
     });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
@@ -185,7 +198,18 @@ async function main()
         }
     };
 
-    await view.startRendering(state, canvas);
+    // configure the animation loop
+    const update = () =>
+    {
+        canvas.width = window.innerWidth - ui.getBoundingClientRect().width;
+        canvas.height = canvas.clientHeight;
+
+        view.renderFrame(state, canvas.width, canvas.height);
+        window.requestAnimationFrame(update);
+    };
+
+    // After this start executing animation loop.
+    window.requestAnimationFrame(update);
 }
 
 export { main };
