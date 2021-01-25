@@ -141,6 +141,19 @@ NormalInfo getNormalInfo(vec3 v)
     return info;
 }
 
+vec3 getClearcoatNormal(NormalInfo normalInfo)
+{
+    #ifdef HAS_CLEARCOAT_NORMAL_MAP
+        vec3 n = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV()).rgb * 2.0 - vec3(1.0);
+        n *= vec3(u_ClearcoatNormalScale, u_ClearcoatNormalScale, 1.0);
+        n = mat3(normalInfo.t, normalInfo.b, normalInfo.ng) * normalize(n);
+        return n;
+    #else
+        return normalInfo.ng;
+    #endif
+}
+
+
 vec4 getBaseColor()
 {
     vec4 baseColor = vec4(1.0, 1.0, 1.0, 1.0);
@@ -248,12 +261,9 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0
         info.clearcoatRoughness *= clearcoatSampleRoughness.g;
     #endif
 
-    #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        vec4 clearcoatSampleNormal = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
-        info.clearcoatNormal = normalize(clearcoatSampleNormal.xyz);
-    #else
-        info.clearcoatNormal = normalInfo.ng;
-    #endif
+
+    info.clearcoatNormal = getClearcoatNormal(normalInfo);
+
 
     info.clearcoatRoughness = clamp(info.clearcoatRoughness, 0.0, 1.0);
 
