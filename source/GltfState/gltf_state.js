@@ -11,7 +11,7 @@ class GltfState
         this.renderingParameters = {
             morphing: true,
             skinning: true,
-            clearColor: [58, 64, 74],
+            clearColor: [58, 64, 74, 255],
             exposure: 1.0,
             usePunctual: true,
             useIBL: true,
