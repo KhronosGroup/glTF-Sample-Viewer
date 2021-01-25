@@ -224,6 +224,15 @@ class UIModel
         xmpData.subscribe( (xmpData) => {
             this.app.xmp = xmpData;
         });
+
+        const animations = gltfLoadedAndInit.pipe(
+            map( gltf => {
+                return gltf.animations.map( (anim, index) => ({title: anim.name, index: index}))
+            })
+        );
+        animations.subscribe( animations => {
+            this.app.animations = animations;
+        });
     }
 
     updateStatistics(statisticsUpdateObservable)

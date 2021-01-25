@@ -202,6 +202,7 @@ function getUrlParam(parameter, defaultvalue){
                                 </b-select>
                             </b-field>
                         </section>
+
                         <!-- <label class="label">Image Based Lighting</label>
                         <b-button v-stream:click="addEnvironment$">Add new HDR</b-button>
                         <b-field label="Active Environment" class="smallerLabel">
@@ -227,14 +228,14 @@ function getUrlParam(parameter, defaultvalue){
                         <h2>Animation</h2>
                         <label  class="label">Animation Controls</label>
                         <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
-                        <!-- <b-field label="Animation" class="smallerLabel">
-                            <b-select v-stream:input="environmentChanged$">
-                                <option v-for="(item) in animations"
-                                    v-bind:value="item.index">
-                                    {{ item.title }}
-                                </option>
-                            </b-select>
-                        </b-field> -->
+
+                        <b-field label="Animations">
+                            <b-field v-for="animation in animations" v-bind:key="animation.index">
+                                <b-checkbox v-bind:native-value="animation.key" v-stream:input="selectedAnimationsChanged$" v-model="selectedAnimations">
+                                    {{ animation.title }}
+                                </b-checkbox>
+                            </b-field>
+                        </b-field>
                     </div>
                 </b-tab-item>
 
