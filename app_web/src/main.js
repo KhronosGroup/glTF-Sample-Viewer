@@ -103,6 +103,16 @@ async function main()
         state.renderingParameters.morphing = morphingEnabled;
     });
 
+    uiModel.cameraValuesExport.subscribe( _ => {
+        let camera = state.userCamera;
+        if(state.cameraIndex !== undefined)
+        {
+            camera = state.gltf.cameras[state.cameraIndex];
+        }
+        const cameraDesc = camera.getDescription(state.gltf);
+        // TODO Do something with the camera
+    });
+
     uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
         state.renderingParameters.clearcoat = clearcoatEnabled;
     });

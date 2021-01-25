@@ -186,6 +186,7 @@ class gltfCamera extends GltfObject
 
         if (this.type === "perspective")
         {
+            camera["perspective"] = {};
             if (this.aspectRatio != undefined)
             {
                 camera["perspective"]["aspectRatio"] = this.aspectRatio;
@@ -199,6 +200,7 @@ class gltfCamera extends GltfObject
         }
         else if (this.type === "orthographic")
         {
+            camera["orthographic"] = {};
             camera["orthographic"]["xmag"] = this.xmag;
             camera["orthographic"]["ymag"] = this.ymag;
             camera["orthographic"]["zfar"] = this.zfar;
