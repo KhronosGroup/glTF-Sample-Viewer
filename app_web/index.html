@@ -78,13 +78,25 @@ function getUrlParam(parameter, defaultvalue){
 <script id="jsonToUITemplate" type="text/x-template">
     <div>
         <div v-for="(value, name) in data">
-            <div class="greyOverlay" style="word-break: break-word;">
-                <section>
-                    <label class="smallerLabel">{{ name }}</label>
-                </section>
+            <b-collapse :class="(isinner === false) ? 'cardGrayMain' : 'cardGrayMainInner'" animation="slide"  style="word-break: break-word;">
+                <!-- header -->
+                <template #trigger="props">
+                    <div class="cardHeader" role="button">
+                        <p class="smallerLabel">
+                            {{ name }}
+                        </p>
+                        <!-- a element needed for buefy. can be removed if hover effects are made custom -->
+                        <a>
+                            <b-icon :icon="props.open ? 'menu-down' : 'menu-up'">
+                            </b-icon>
+                        </a>
+                    </div>
+                </template>
+
+                <!-- content -->
                 <!-- if value is object -->
                 <div v-if="value !== null && value !== undefined && value.constructor.name === 'Object'">
-                    <json-to-ui-template v-bind:data="value"></json-to-ui-template>
+                    <json-to-ui-template v-bind:data="value" v-bind:isinner="!isinner"></json-to-ui-template>
                 </div>
                 <!-- if value is array -->
                 <div v-else-if="Array.isArray(value)">
@@ -93,7 +105,7 @@ function getUrlParam(parameter, defaultvalue){
                 <div v-else>
                     <label class="smallestLabel">{{ value }}</label>
                 </div>
-            </div>
+            </b-collapse>
         </div>
     </div>
 </script>
@@ -234,9 +246,9 @@ function getUrlParam(parameter, defaultvalue){
                         <span>XMP</span>
                     </template>
 
-                    <div class="tabContent">
+                    <div class="tabContent xmpWrapper">
                         <h2>XMP</h2>
-                        <json-to-ui-template v-bind:data="xmp.xmp"></json-to-ui-template>
+                        <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false" ref="xmpUI"></json-to-ui-template>
                     </div>
                 </b-tab-item>
                 <!--<b-tab-item label="Capture" icon="video">
