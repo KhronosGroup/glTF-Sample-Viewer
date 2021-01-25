@@ -26,8 +26,7 @@ class UIModel
             map( value => ({mainFile: value, additionalFiles: undefined})),
         );
         this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
-        const sceneSubject = new Subject();
-        this.scene = app.sceneChanged$.pipe(pluck("event", "msg"), multicast(sceneSubject));
+        this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
         this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
         this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
