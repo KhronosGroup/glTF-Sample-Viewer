@@ -278,3 +278,17 @@ div .field.has-addons
 {
     margin-top: 8px;
 }
+
+/* buttons */
+.downloadIcon
+{
+    margin-right: 5px;
+}
+
+button.button
+{
+    background-color: #87c540;
+    color: #f2f2f2;
+    border: none;
+    border-radius: 290486px;
+}
