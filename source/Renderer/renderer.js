@@ -384,7 +384,7 @@ class gltfRenderer
 
         if (state.renderingParameters.usePunctual && state.environment !== undefined)
         {
-            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, state.environment.sheenELUT, textureCount++);
+            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureCount++);
         }
 
         if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL && state.environment && state.renderingParameters.transmission)
