@@ -21,8 +21,12 @@ class gltfAccessor extends GltfObject
         this.glBuffer = undefined;
         this.typedView = undefined;
         this.filteredView = undefined;
+        this.normalizedFilteredView = undefined;
+        this.normalizedTypedView = undefined;
     }
 
+    // getTypedView provides a view to the accessors data in form of
+    // a TypedArray. This data can directly be passed to vertexAttribPointer
     getTypedView(gltf)
     {
         if (this.typedView !== undefined)
@@ -97,6 +101,25 @@ class gltfAccessor extends GltfObject
         return this.typedView;
     }
 
+    // getNormalizedTypedView provides an alternative view to the accessors data,
+    // where quantized data is already normalized. This is useful if the data is not passed
+    // to vertexAttribPointer but used immediately (like e.g. animations)
+    getNormalizedTypedView(gltf)
+    {
+        if(this.normalizedTypedView !== undefined)
+        {
+            return this.normalizedTypedView;
+        }
+
+        const typedView = this.getTypedView(gltf);
+        this.normalizedTypedView = this.normalized ? gltfAccessor.dequantize(typedView, this.componentType) : typedView;
+        return this.normalizedTypedView;
+    }
+
+    // getDeinterlacedView provides a view to the accessors data in form of
+    // a TypedArray. In contrast to getTypedView, getDeinterlacedView deinterlaces
+    // data, i.e. stripping padding and unrelated components from the array. It then
+    // only contains the data of the accessor
     getDeinterlacedView(gltf)
     {
         if (this.filteredView !== undefined)
@@ -155,7 +178,7 @@ class gltfAccessor extends GltfObject
 
         if (this.filteredView === undefined)
         {
-            console.warn("Failed to convert buffer view to filtered view!: " + this.bufferView);
+            console.warn("Failed to convert buffer view to filtered view!: " + this.bufferView)
         }
         else if (this.sparse !== undefined)
         {
@@ -163,6 +186,21 @@ class gltfAccessor extends GltfObject
         }
 
         return this.filteredView;
+    }
+
+    // getNormalizedDeinterlacedView provides an alternative view to the accessors data,
+    // where quantized data is already normalized. This is useful if the data is not passed
+    // to vertexAttribPointer but used immediately (like e.g. animations)
+    getNormalizedDeinterlacedView(gltf)
+    {
+        if(this.normalizedFilteredView !== undefined)
+        {
+            return this.normalizedFilteredView;
+        }
+
+        const filteredView = this.getDeinterlacedView(gltf);
+        this.normalizedFilteredView = this.normalized ? gltfAccessor.dequantize(filteredView, this.componentType) : filteredView;
+        return this.normalizedFilteredView;
     }
 
     applySparse(gltf, view)
@@ -244,6 +282,24 @@ class gltfAccessor extends GltfObject
             {
                 view[indicesTypedView[i] * valuesComponentCount + k] = valuesTypedView[i * valuesComponentCount + k];
             }
+        }
+    }
+
+    // dequantize can be used to perform the normalization from WebGL2 vertexAttribPointer explicitly
+    static dequantize(typedArray, componentType)
+    {
+        switch (componentType)
+        {
+        case GL.BYTE:
+            return typedArray.map(c => Math.max(c / 127.0, -1.0));
+        case GL.UNSIGNED_BYTE:
+            return typedArray.map(c => c / 255.0);
+        case GL.SHORT:
+            return typedArray.map(c => Math.max(c / 32767.0, -1.0));
+        case GL.UNSIGNED_SHORT:
+            return typedArray.map(c => c / 65535.0);
+        default:
+            return typedArray;
         }
     }
 
