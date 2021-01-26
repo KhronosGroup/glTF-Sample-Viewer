@@ -54,6 +54,15 @@ class GltfView
             {
                 animation.advance(state.gltf, t);
             }
+
+            const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
+                return false === state.animationIndices.includes(index);
+            });
+
+            for(const disabledAnimation of disabledAnimations)
+            {
+                disabledAnimation.advance(state.gltf, undefined);
+            }
         }
     }
 
