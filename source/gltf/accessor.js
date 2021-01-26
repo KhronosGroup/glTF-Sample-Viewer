@@ -291,13 +291,13 @@ class gltfAccessor extends GltfObject
         switch (componentType)
         {
         case GL.BYTE:
-            return typedArray.map(c => Math.max(c / 127.0, -1.0));
+            return new Float32Array(typedArray).map(c => Math.max(c / 127.0, -1.0));
         case GL.UNSIGNED_BYTE:
-            return typedArray.map(c => c / 255.0);
+            return new Float32Array(typedArray).map(c => c / 255.0);
         case GL.SHORT:
-            return typedArray.map(c => Math.max(c / 32767.0, -1.0));
+            return new Float32Array(typedArray).map(c => Math.max(c / 32767.0, -1.0));
         case GL.UNSIGNED_SHORT:
-            return typedArray.map(c => c / 65535.0);
+            return new Float32Array(typedArray).map(c => c / 65535.0);
         default:
             return typedArray;
         }
