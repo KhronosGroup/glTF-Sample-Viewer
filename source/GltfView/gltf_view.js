@@ -42,7 +42,7 @@ class GltfView
             return;
         }
 
-        if(state.gltf.animations !== undefined && state.animationIndices !== undefined && !state.animationTimer.paused)
+        if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
         {
             const t = state.animationTimer.elapsedSec();
 
