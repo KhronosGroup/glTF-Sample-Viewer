@@ -1,3 +1,4 @@
+@charset "utf-8";
 
 // setup initial colors
 @import "../../node_modules/bulma/sass/utilities/initial-variables";
@@ -10,18 +11,18 @@ $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
 
 
-$black: findColorInvert(hsl(0, 0%, 4%));
-$black-bis: findColorInvert(hsl(0, 0%, 7%));
-$black-ter: findColorInvert(hsl(0, 0%, 14%));
-$grey-darker: findColorInvert(hsl(0, 0%, 21%));
-$grey-dark: findColorInvert(hsl(0, 0%, 29%));
-$grey: findColorInvert(hsl(0, 0%, 48%));
-$grey-light: findColorInvert(hsl(0, 0%, 71%));
-$grey-lighter: findColorInvert(hsl(0, 0%, 86%));
-$grey-lightest: findColorInvert(hsl(0, 0%, 93%));
-$white-ter: findColorInvert(hsl(0, 0%, 96%));
-$white-bis: findColorInvert(hsl(0, 0%, 98%));
-$white: findColorInvert(hsl(0, 0%, 100%));
+$black: findColorInvert($black);
+$black-bis: findColorInvert($black-bis);
+$black-ter: findColorInvert($black-ter);
+$grey-darker: findColorInvert($grey-darker);
+$grey-dark: findColorInvert($grey-dark);
+$grey: findColorInvert($grey);
+$grey-light: findColorInvert($grey-light);
+$grey-lighter: findColorInvert($grey-lighter);
+$grey-lightest: findColorInvert($grey-lightest);
+$white-ter: findColorInvert($white-ter);
+$white-bis: findColorInvert($white-bis);
+$white: findColorInvert($white);
 
 // setup derived colors
 @import "../../node_modules/bulma/sass/utilities/derived-variables";
