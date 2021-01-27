@@ -49,9 +49,9 @@ const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'renderEnvChanged$', 'morphingChanged$',
-        'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
+        'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
-        'cameraExport$'],
+        'cameraExport$', 'captureCanvas$'],
     data() {
         return {
             fullheight: true,
@@ -72,6 +72,7 @@ const app = new Vue({
             selectedScene: {},
             selectedCamera: {},
             selectedVariant: "None",
+            selectedAnimations: [],
 
             ibl: true,
             punctualLights: true,
