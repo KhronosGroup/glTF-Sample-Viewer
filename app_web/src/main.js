@@ -43,7 +43,7 @@ async function main()
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.animationIndices = [0];
+                state.animationIndices = gltf.animations.map( (anim, index) => index);
                 state.animationTimer.start();
                 return state;
             })
@@ -85,6 +85,22 @@ async function main()
     }));
     cameraExportChangedObservable.subscribe( cameraDesc => {
         uiModel.copyToClipboard(JSON.stringify(cameraDesc));
+    });
+
+    uiModel.captureCanvas.subscribe( () => {
+        view.renderFrame(state, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL();
+
+        var element = document.createElement('a');
+        element.setAttribute('href', dataURL);
+        element.setAttribute('download', "capture.png");
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     });
 
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
@@ -172,7 +188,11 @@ async function main()
         {
             state.animationTimer.pause();
         }
-    })
+    });
+
+    uiModel.activeAnimations.subscribe( animations => {
+        state.animationIndices = animations;
+    });
 
     uiModel.hdr.subscribe( hdrFile => {
         loadEnvironment(hdrFile, view).then( (environment) => {

@@ -384,7 +384,7 @@ class gltfRenderer
 
         if (state.renderingParameters.usePunctual && state.environment !== undefined)
         {
-            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.gltf, state.environment.sheenELUT, textureCount++);
+            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureCount++);
         }
 
         if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL && state.environment && state.renderingParameters.transmission)
@@ -460,10 +460,10 @@ class gltfRenderer
         if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
-            if (mesh.weights !== undefined && mesh.weights.length > 0)
+            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
+                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.getWeightsAnimated().length, 8));
             }
         }
     }
@@ -484,9 +484,9 @@ class gltfRenderer
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = state.gltf.meshes[node.mesh];
-            if (mesh.weights !== undefined && mesh.weights.length > 0)
+            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", mesh.weights);
+                this.shader.updateUniformArray("u_morphWeights", mesh.getWeightsAnimated());
             }
         }
     }
