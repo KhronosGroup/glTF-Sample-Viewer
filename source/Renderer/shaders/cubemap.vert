@@ -2,7 +2,7 @@ in vec3 a_position;
 out vec3 TexCoords;
 
 uniform mat4 u_ViewProjectionMatrix;
-uniform mat3 u_envRotation = mat3(1.f);
+uniform mat3 u_envRotation;
 
 void main()
 {

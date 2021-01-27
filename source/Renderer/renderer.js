@@ -13,6 +13,8 @@ import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from './shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
+import cubemapVertShader from './shaders/cubemap.vert';
+import cubemapFragShader from './shaders/cubemap.frag';
 
 class gltfRenderer
 {
@@ -42,6 +44,8 @@ class gltfRenderer
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
+        shaderSources.set("cubemap.vert", cubemapVertShader);
+        shaderSources.set("cubemap.frag", cubemapFragShader);
 
         this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
@@ -168,6 +172,9 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state)
+        return
+
         const nodes = scene.gatherNodes(state.gltf);
 
         // Update skins.
@@ -243,7 +250,7 @@ class gltfRenderer
         }
 
         // draw environment
-        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state)
+        //this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state)
     }
 
     // vertices with given material
