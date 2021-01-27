@@ -29,7 +29,7 @@ export default {
     scss(),
     copy({
         targets: [
-            { src: ["index.html", "styles.css", "ui.css"], dest: "dist/"},
+            { src: ["index.html"], dest: "dist/"},
             { src: ["../assets/models/2.0", "!../asset/models/.git"], dest: "dist/assets/models"},
             { src: ["../assets/environments/*.hdr", "!../asset/environments/.git"], dest: "dist/assets/environments"},
             { src: ["../assets/images"], dest: "dist/assets"},
