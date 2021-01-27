@@ -59,6 +59,7 @@ class EnvironmentRenderer
         webGl.setTexture(this.shader.getUniformLocation("u_specularEnvSampler"), state.environment, state.environment.specularEnvMap, 0);
 
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
+        this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
 
         let rotMatrix4 = mat4.create();
         mat4.rotateY(rotMatrix4, rotMatrix4,  state.renderingParameters.environmentRotation / 180.0 * Math.PI);

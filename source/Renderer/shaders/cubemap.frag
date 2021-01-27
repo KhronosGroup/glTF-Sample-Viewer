@@ -10,7 +10,5 @@ in vec3 TexCoords;
 void main()
 {
     vec4 color = texture(u_specularEnvSampler, TexCoords);
-    FragColor = vec4(linearTosRGB(color.rgb), color.a);
-    //FragColor.rgb = TexCoords;
-    //FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+    FragColor = vec4(toneMap(color.rgb), color.a);
 }
