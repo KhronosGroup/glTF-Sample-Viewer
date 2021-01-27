@@ -1,7 +1,7 @@
-// contains sass code for buefy
 
-// Import Bulma's core
-@import "../../node_modules/bulma/sass/utilities/_all";
+// setup initial colors
+@import "../../node_modules/bulma/sass/utilities/initial-variables";
+@import "../../node_modules/bulma/sass/utilities/functions";
 
 // Set your colors
 $primary: #87c540;
@@ -9,73 +9,32 @@ $primary-light: findLightColor($primary);
 $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
 
-// Lists and maps
-$custom-colors: null !default;
-$custom-shades: null !default;
 
-// Setup $colors to use as bulma classes (e.g. 'is-twitter')
-$colors: mergeColorMaps(
-    (
-        "white": (
-            $white,
-            $black,
-        ),
-        "black": (
-            $black,
-            $white,
-        ),
-        "light": (
-            $light,
-            $light-invert,
-        ),
-        "dark": (
-            $dark,
-            $dark-invert,
-        ),
-        "primary": (
-            $primary,
-            $primary-invert,
-            $primary-light,
-            $primary-dark,
-        ),
-        "link": (
-            $link,
-            $link-invert,
-            $link-light,
-            $link-dark,
-        ),
-        "info": (
-            $info,
-            $info-invert,
-            $info-light,
-            $info-dark,
-        ),
-        "success": (
-            $success,
-            $success-invert,
-            $success-light,
-            $success-dark,
-        ),
-        "warning": (
-            $warning,
-            $warning-invert,
-            $warning-light,
-            $warning-dark,
-        ),
-        "danger": (
-            $danger,
-            $danger-invert,
-            $danger-light,
-            $danger-dark,
-        ),
-    ),
-    $custom-colors
-);
+$black: findColorInvert(hsl(0, 0%, 4%));
+$black-bis: findColorInvert(hsl(0, 0%, 7%));
+$black-ter: findColorInvert(hsl(0, 0%, 14%));
+$grey-darker: findColorInvert(hsl(0, 0%, 21%));
+$grey-dark: findColorInvert(hsl(0, 0%, 29%));
+$grey: findColorInvert(hsl(0, 0%, 48%));
+$grey-light: findColorInvert(hsl(0, 0%, 71%));
+$grey-lighter: findColorInvert(hsl(0, 0%, 86%));
+$grey-lightest: findColorInvert(hsl(0, 0%, 93%));
+$white-ter: findColorInvert(hsl(0, 0%, 96%));
+$white-bis: findColorInvert(hsl(0, 0%, 98%));
+$white: findColorInvert(hsl(0, 0%, 100%));
+
+// setup derived colors
+@import "../../node_modules/bulma/sass/utilities/derived-variables";
 
 // Links
 $link: $primary;
 $link-invert: $primary-invert;
 $link-focus-border: $primary;
+
+// Setup $colors to use as bulma classes (e.g. 'is-twitter')
+$addColors: (
+);
+$colors: map-merge($colors, $addColors);
 
 // Import Bulma and Buefy styles
 @import "../../node_modules/bulma/bulma";
