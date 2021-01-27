@@ -40,7 +40,7 @@ class EnvironmentRenderer
 
     drawEnvironmentMap(webGl, viewProjectionMatrix, state, shaderCache, fragDefines)
     {
-        if (state.environment == undefined)
+        if (state.environment == undefined || state.renderingParameters.renderEnvironmentMap == false)
         {
             return
         }
