@@ -61,7 +61,7 @@ const app = new Vue({
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
             materialVariants: [{title: "None"}],
-            environments: [{title: "Doge"}, {title: "Helipad"}, {title: "Footprint Court"}],
+
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
@@ -80,6 +80,8 @@ const app = new Vue({
             clearColor: "",
             environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}],
             selectedEnvironmentRotation: "+Z",
+            environments: [{index: 0, name: ""}],
+            selectedEnvironment: 0,
 
             debugChannel: "None",
             exposureSetting: 0,
