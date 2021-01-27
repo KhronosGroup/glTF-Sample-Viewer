@@ -188,6 +188,7 @@ function getUrlParam(parameter, defaultvalue){
                         <section>
                             <label class="label">Background</label>
                             <!--<b-switch v-model="environmentvisibility" v-stream:input="environmentVisibilityChanged$">Environment Background</b-switch>-->
+                            <b-switch v-model="renderEnv" v-stream:input="renderEnvChanged$">Environment Map</b-switch>
                             <b-field label="Background Color" class="smallerLabel"></b-field>
                                 <div class="flexContainer">
                                     <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>

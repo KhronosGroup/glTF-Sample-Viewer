@@ -18,7 +18,7 @@ class GltfState
             exposure: 1.0,
             usePunctual: true,
             useIBL: true,
-            renderEnvironmentMap: false,
+            renderEnvironmentMap: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
             environmentBackground: false,

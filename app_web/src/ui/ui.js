@@ -48,7 +48,7 @@ Vue.component('json-to-ui-template', {
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-        'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
+        'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'renderEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
         'cameraExport$'],
@@ -75,6 +75,7 @@ const app = new Vue({
 
             ibl: true,
             punctualLights: true,
+            renderEnv: true,
             environmentVisibility: true,
             clearColor: "",
             environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}],
