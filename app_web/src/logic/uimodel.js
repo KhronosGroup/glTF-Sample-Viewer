@@ -31,7 +31,7 @@ class UIModel
         this.app.environments = environments;
         const selectedEnvironment = app.$watchAsObservable('selectedEnvironment').pipe(
             pluck('newValue'),
-            map( environmentIndex => this.app.environments[environmentIndex].hdr_path)
+            map( environmentName => this.app.environments[environmentName].hdr_path)
         );
         const initialEnvironment = "footprint_court";
         this.app.selectedEnvironment = initialEnvironment;

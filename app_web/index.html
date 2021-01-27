@@ -206,6 +206,11 @@ function getUrlParam(parameter, defaultvalue){
                         <section>
                             <label class="label">Image Based Lighting</label>
                             <b-field label="Active Environment" class="smallerLabel">
+                                <!-- <b-select v-model="selectedEnvironment">
+                                    <option v-for="name in Object.keys(environments)" v-bind:native-value="name" v-bind:key="name" value="name">
+                                        {{ environments[name].title }}
+                                    </option>
+                                </b-select> -->
 
                                 <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                     <template #trigger="{ active }">
