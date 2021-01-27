@@ -66,7 +66,7 @@ class gltfRenderer
 
         this.init();
 
-        this.environmentRenderer = new EnvironmentRenderer(this.shaderCache, this.webGl);
+        this.environmentRenderer = new EnvironmentRenderer(this.webGl);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -172,9 +172,6 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state)
-        return
-
         const nodes = scene.gatherNodes(state.gltf);
 
         // Update skins.
@@ -230,6 +227,13 @@ class gltfRenderer
 
         // Render to canvas
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
+        this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
+
+        // Render environment
+        const fragDefines = [];
+        this.pushFragParameterDefines(fragDefines, state);
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
+
         for (const drawable of opaqueDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
@@ -248,9 +252,6 @@ class gltfRenderer
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
         }
-
-        // draw environment
-        //this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state)
     }
 
     // vertices with given material

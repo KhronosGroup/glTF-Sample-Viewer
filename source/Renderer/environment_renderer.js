@@ -3,18 +3,10 @@ import { mat4, mat3, vec3 } from 'gl-matrix';
 
 class EnvironmentRenderer
 {
-    constructor(shaderCache, webgl)
+    constructor(webgl)
     {
-        // create shader program
-        const vertShader = shaderCache.selectShader("cubemap.vert", []);
-        const fragShader = shaderCache.selectShader("cubemap.frag", []);
-        this.shader = shaderCache.getShaderProgram(vertShader, fragShader);
-
         // allocate and write vertex buffers
         const gl = webgl.context;
-        const program = this.shader.program
-
-        this.positionAttributeLocation = gl.getAttribLocation(program, "a_position");
 
         this.indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
@@ -47,7 +39,7 @@ class EnvironmentRenderer
         ]), gl.STATIC_DRAW);
     }
 
-    drawEnvironmentMap(webGl, viewProjectionMatrix, state)
+    drawEnvironmentMap(webGl, viewProjectionMatrix, state, shaderCache, fragDefines)
     {
         if (state.environment == undefined)
         {
@@ -55,24 +47,36 @@ class EnvironmentRenderer
         }
 
         const gl = webGl.context;
-        gl.useProgram(this.shader.program);
-        webGl.setTexture(this.shader.getUniformLocation("u_specularEnvSampler"), state.environment, state.environment.specularEnvMap, 0);
 
-        this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
-        this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
+        const vertShader = shaderCache.selectShader("cubemap.vert", []);
+        const fragShader = shaderCache.selectShader("cubemap.frag", fragDefines);
+        const shader = shaderCache.getShaderProgram(vertShader, fragShader);
+
+        gl.useProgram(shader.program);
+        webGl.setTexture(shader.getUniformLocation("u_specularEnvSampler"), state.environment, state.environment.specularEnvMap, 0);
+
+        shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
+        shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
 
         let rotMatrix4 = mat4.create();
         mat4.rotateY(rotMatrix4, rotMatrix4,  state.renderingParameters.environmentRotation / 180.0 * Math.PI);
         let rotMatrix3 = mat3.create();
         mat3.fromMat4(rotMatrix3, rotMatrix4);
-        this.shader.updateUniform("u_envRotation", rotMatrix3);
+        shader.updateUniform("u_envRotation", rotMatrix3);
 
+        gl.frontFace(gl.CCW);
+        gl.enable(gl.CULL_FACE);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.DEPTH_TEST);
 
-        gl.enableVertexAttribArray(this.positionAttributeLocation);
-        gl.vertexAttribPointer(this.positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+        const positionAttributeLocation = shader.getAttributeLocation("a_position");
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(positionAttributeLocation);
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+
+        gl.enable(gl.DEPTH_TEST);
     }
 }
 
