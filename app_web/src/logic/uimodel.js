@@ -77,6 +77,9 @@ class UIModel
         );
 
         this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
+        this.activeAnimations = app.$watchAsObservable('selectedAnimations').pipe(
+            map( ({ newValue, oldValue }) => newValue)
+        );
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
@@ -224,6 +227,29 @@ class UIModel
         xmpData.subscribe( (xmpData) => {
             this.app.xmp = xmpData;
         });
+
+        const animations = gltfLoadedAndInit.pipe(
+            map( gltf =>  gltf.animations.map( (anim, index) => {
+                let name = anim.name;
+                if (name === undefined || name === "")
+                {
+                    name = index;
+                }
+                return {
+                    title: name,
+                    index: index
+                };
+            }))
+        );
+        animations.subscribe( animations => {
+            this.app.animations = animations;
+        });
+
+        glTFLoadedStateObservable.pipe(
+            map( state => state.animationIndices)
+        ).subscribe( animationIndices => {
+            this.app.selectedAnimations = animationIndices;
+        })
     }
 
     updateStatistics(statisticsUpdateObservable)

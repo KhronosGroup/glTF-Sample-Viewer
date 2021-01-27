@@ -43,7 +43,7 @@ async function main()
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.animationIndices = [0];
+                state.animationIndices = gltf.animations.map( (anim, index) => index);
                 state.animationTimer.start();
                 return state;
             })
@@ -172,7 +172,11 @@ async function main()
         {
             state.animationTimer.pause();
         }
-    })
+    });
+
+    uiModel.activeAnimations.subscribe( animations => {
+        state.animationIndices = animations;
+    });
 
     uiModel.hdr.subscribe( hdrFile => {
         loadEnvironment(hdrFile, view).then( (environment) => {
