@@ -27,6 +27,10 @@ class gltfNode extends GltfObject
         this.normalMatrix = mat4.create();
         this.light = undefined;
         this.changed = true;
+
+        this.animationRotation = undefined;
+        this.animationTranslation = undefined;
+        this.animationScale = undefined;
     }
 
     initGl()
@@ -78,23 +82,23 @@ class gltfNode extends GltfObject
     }
 
     // vec3
-    applyTranslation(translation)
+    applyTranslationAnimation(translation)
     {
-        this.translation = translation;
+        this.animationTranslation = translation;
         this.changed = true;
     }
 
     // quat
-    applyRotation(rotation)
+    applyRotationAnimation(rotation)
     {
-        this.rotation = rotation;
+        this.animationRotation = rotation;
         this.changed = true;
     }
 
     // vec3
-    applyScale(scale)
+    applyScaleAnimation(scale)
     {
-        this.scale = scale;
+        this.animationScale = scale;
         this.changed = true;
     }
 
@@ -111,7 +115,10 @@ class gltfNode extends GltfObject
         if(this.transform === undefined || this.changed)
         {
             this.transform = mat4.create();
-            mat4.fromRotationTranslationScale(this.transform, this.rotation, this.translation, this.scale);
+            const translation = this.animationTranslation !== undefined ? this.animationTranslation : this.translation;
+            const rotation = this.animationRotation !== undefined ? this.animationRotation : this.rotation;
+            const scale = this.animationScale !== undefined ? this.animationScale : this.scale;
+            mat4.fromRotationTranslationScale(this.transform, rotation, translation, scale);
             this.changed = false;
         }
 
