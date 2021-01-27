@@ -2,6 +2,7 @@ import { mat4, mat3, vec3 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { ToneMaps, DebugOutput } from './rendering_parameters.js';
 import { gltfWebGl, GL } from './webgl.js';
+import { EnvironmentRenderer } from './environment_renderer.js'
 
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
@@ -60,6 +61,8 @@ class gltfRenderer
         this.currentCameraPosition = vec3.create();
 
         this.init();
+
+        this.environmentRenderer = new EnvironmentRenderer(this.shaderCache, this.webGl);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -238,6 +241,9 @@ class gltfRenderer
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
         }
+
+        // draw environment
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state)
     }
 
     // vertices with given material
