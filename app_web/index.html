@@ -269,6 +269,9 @@ function getUrlParam(parameter, defaultvalue){
 
                     <div class="tabContent">
                         <h2>Advanced Controls</h2>
+                        <b-field label="Capture Canvas" class="smallerLabel">
+                        	<button v-stream:click="captureCanvas$" type="button" class="button"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
+                    	</b-field>
                         <b-field label="Debug Channels" class="smallerLabel">
                             <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
                                 <option v-for="(item) in debugchannels"
@@ -299,7 +302,7 @@ function getUrlParam(parameter, defaultvalue){
                         <br>
                         <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
                         <b-field label="Current camera values" class="label">
-                        	<button v-stream:click="cameraExport$" type="button" class="button"><i class="fa fa-download downloadIcon"></i>  Copy to Clipboard</button>
+                        	<button v-stream:click="cameraExport$" type="button" class="button"><i class="fa fa-download downloadIcon"></i>Copy to Clipboard</button>
                     	</b-field>
                         <b-field label="Disable extensions" class="label">
                             <b-switch v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>

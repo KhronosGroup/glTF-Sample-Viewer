@@ -87,6 +87,22 @@ async function main()
         uiModel.copyToClipboard(JSON.stringify(cameraDesc));
     });
 
+    uiModel.captureCanvas.subscribe( () => {
+        view.renderFrame(state, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL();
+
+        var element = document.createElement('a');
+        element.setAttribute('href', dataURL);
+        element.setAttribute('download', "capture.png");
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    });
+
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
         state.cameraIndex = undefined;
     });

@@ -51,7 +51,7 @@ const app = new Vue({
         'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
-        'cameraExport$'],
+        'cameraExport$', 'captureCanvas$'],
     data() {
         return {
             fullheight: true,
