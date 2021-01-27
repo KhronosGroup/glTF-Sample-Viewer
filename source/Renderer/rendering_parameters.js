@@ -1,39 +1,6 @@
 import { ImageMimeType } from "../gltf/image";
-import { AnimationTimer } from "../gltf/utils";
 
 const UserCameraIndex = "orbit camera";
-
-class gltfRenderingParameters
-{
-    constructor(
-        environmentName = Object.keys(Environments)[0],
-        useIBL = true,
-        usePunctual = false,
-        exposure = 1.0,
-        clearColor = [50, 50, 50],
-        toneMap = ToneMaps.NONE,
-        debugOutput = DebugOutput.NONE)
-    {
-        this.environmentName = environmentName;
-        this.useIBL = useIBL;
-        this.usePunctual = usePunctual;
-        this.exposure = exposure;
-        this.clearColor = clearColor;
-        this.toneMap = toneMap;
-        this.debugOutput = debugOutput;
-        this.sceneIndex = 0;
-        this.cameraIndex = UserCameraIndex;
-        this.animationTimer = new AnimationTimer();
-        this.animationIndex = "all";
-        this.skinning = true;
-        this.morphing = true;
-    }
-
-    userCameraActive()
-    {
-        return this.cameraIndex === UserCameraIndex;
-    }
-}
 
 const ToneMaps =
 {
@@ -78,4 +45,4 @@ const Environments =
     "Chromatic": { folder: "chromatic", mipLevel: 11, type: ImageMimeType.KTX2 }
 };
 
-export { UserCameraIndex, gltfRenderingParameters, Environments, ToneMaps, DebugOutput };
+export { UserCameraIndex, Environments, ToneMaps, DebugOutput };
