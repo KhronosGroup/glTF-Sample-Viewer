@@ -5,7 +5,6 @@ class EnvironmentRenderer
 {
     constructor(webgl)
     {
-        // allocate and write vertex buffers
         const gl = webgl.context;
 
         this.indexBuffer = gl.createBuffer();
