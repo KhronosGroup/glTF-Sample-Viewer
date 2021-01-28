@@ -85,6 +85,45 @@ class glTF extends GltfObject
                 this.scene = json.scene;
             }
         }
+
+        this.computeDisjointAnimations();
+    }
+
+    // Computes indices of animations which are disjoint and can be played simultaneously.
+    computeDisjointAnimations()
+    {
+        for (let i = 0; i < this.animations.length; i++)
+        {
+            this.animations[i].disjointAnimations = [];
+
+            for (let k = 0; k < this.animations.length; k++)
+            {
+                if (i == k)
+                {
+                    continue;
+                }
+
+                let isDisjoint = true;
+
+                for (const iChannel of this.animations[i].channels)
+                {
+                    for (const kChannel of this.animations[k].channels)
+                    {
+                        if (iChannel.target.node === kChannel.target.node
+                            && iChannel.target.path === kChannel.target.path)
+                        {
+                            isDisjoint = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isDisjoint)
+                {
+                    this.animations[i].disjointAnimations.push(k);
+                }
+            }
+        }
     }
 }
 
