@@ -132,8 +132,8 @@ class UserCamera extends gltfCamera
     {
         this.yaw = 0;
         this.pitch = 0;
-        fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
-        fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     fitViewToScene(gltf, sceneIndex)
