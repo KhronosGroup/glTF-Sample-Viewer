@@ -43,10 +43,8 @@ async function main()
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                //state.animationIndices = gltf.animations.map( (anim, index) => index);
-                //state.animationIndices = gltf.animations.length > 0 ? [0] : [];
 
-                // Try to start as many animations as possible without generating conficts:
+                // Try to start as many animations as possible without generating conficts.
                 state.animationIndices = []
                 for (let i = 0; i < gltf.animations.length; i++)
                 {
@@ -56,6 +54,7 @@ async function main()
                     }
                 }
                 state.animationTimer.start();
+
                 return state;
             })
             );
