@@ -125,6 +125,36 @@ class glTF extends GltfObject
             }
         }
     }
+
+    nonDisjointAnimations(animationIndices)
+    {
+        const animations = this.animations;
+        const nonDisjointAnimations = [];
+
+        for (let i = 0; i < animations.length; i++)
+        {
+            let isDisjoint = true;
+            for (const k of animationIndices)
+            {
+                if (i == k)
+                {
+                    continue;
+                }
+
+                if (!animations[k].disjointAnimations.includes(i))
+                {
+                    isDisjoint = false;
+                }
+            }
+
+            if (!isDisjoint)
+            {
+                nonDisjointAnimations.push(i);
+            }
+        }
+
+        return nonDisjointAnimations;
+    }
 }
 
 function getJsonLightsFromExtensions(extensions)
