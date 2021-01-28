@@ -43,7 +43,8 @@ async function main()
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.animationIndices = gltf.animations.map( (anim, index) => index);
+                //state.animationIndices = gltf.animations.map( (anim, index) => index);
+                state.animationIndices = gltf.animations.length > 0 ? [0] : [];
                 state.animationTimer.start();
                 return state;
             })
@@ -52,6 +53,37 @@ async function main()
         // transform gltf loaded observable to multicast observable to avoid multiple execution with multiple subscriptions
         multicast(gltfLoadedSubject)
     );
+
+    const disabledAnimations = uiModel.activeAnimations.pipe(map(animationIndices => {
+        // Disable all animations which are not disjoint to the current selection of animations.
+        const animations = state.gltf.animations;
+        const disabledAnimations = [];
+
+        for (let i = 0; i < animations.length; i++)
+        {
+            let isDisjoint = true;
+            for (const k of animationIndices)
+            {
+                if (i == k)
+                {
+                    continue;
+                }
+
+                if (!animations[i].disjointAnimations.includes(i))
+                {
+                    isDisjoint = false;
+                }
+            }
+
+            if (!isDisjoint)
+            {
+                disabledAnimations.push(i);
+            }
+        }
+
+        return disabledAnimations;
+    }));
+    uiModel.disabledAnimations(disabledAnimations);
 
     const sceneChangedSubject = new Subject();
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {

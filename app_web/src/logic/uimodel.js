@@ -18,7 +18,7 @@ class UIModel
 
         const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
-            startWith("Avocado"),
+            startWith("Fox"),
             map(value => {
                 return this.pathProvider.resolve(value);
             }),
@@ -266,6 +266,12 @@ class UIModel
         );
     }
 
+    disabledAnimations(disabledAnimationsObservable)
+    {
+        disabledAnimationsObservable.subscribe(
+            data => { this.app.disabledAnimations = data; }
+        );
+    }
 
     attachCameraChangeObservable(sceneChangeObservable)
     {
