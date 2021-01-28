@@ -69,7 +69,7 @@ async function main()
                     continue;
                 }
 
-                if (!animations[i].disjointAnimations.includes(i))
+                if (!animations[k].disjointAnimations.includes(i))
                 {
                     isDisjoint = false;
                 }

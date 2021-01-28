@@ -18,7 +18,7 @@ class UIModel
 
         const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
-            startWith("Fox"),
+            startWith("Avocado"),
             map(value => {
                 return this.pathProvider.resolve(value);
             }),
