@@ -54,7 +54,7 @@ class EnvironmentRenderer
         gl.useProgram(shader.program);
         webGl.setTexture(shader.getUniformLocation("u_specularEnvSampler"), state.environment, state.environment.specularEnvMap, 0);
         shader.updateUniform("u_MipCount", state.environment.mipCount);
-        shader.updateUniform("u_envBlurNormalized", 0.2);
+        shader.updateUniform("u_envBlurNormalized", state.renderingParameters.blurEnvironmentMap ? 0.2 : 0.0);
 
         shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
         shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
