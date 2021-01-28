@@ -10,20 +10,11 @@ $primary-light: findLightColor($primary);
 $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
 $border: #f5f5f5;
-
-
-$black: findColorInvert($black);
-$black-bis: findColorInvert($black-bis);
-$black-ter: findColorInvert($black-ter);
-$grey-darker: findColorInvert($grey-darker);
-$grey-dark: findColorInvert($grey-dark);
-$grey: findColorInvert($grey);
-$grey-light: findColorInvert($grey-light);
-$grey-lighter: findColorInvert($grey-lighter);
-$grey-lightest: findColorInvert($grey-lightest);
-$white-ter: findColorInvert($white-ter);
-$white-bis: findColorInvert($white-bis);
-$white: findColorInvert($white);
+$text: #f5f5f5;
+$text-invert: #7cff92;
+// this changes the color of labels, etc. (i dont know why either...)
+$text-strong: #f5f5f5;
+$dark: #f5f5f5;
 
 // set font styles
 $size-normal: 18px;
@@ -281,7 +272,6 @@ button.button
 .input, .select select, .taginput .taginput-container.is-focusable, .textarea
 {
     background-color: #2c2c2c !important;
-    color: #f5f5f5 !important;
 }
 .input, .select select, .taginput .taginput-container.is-focusable, .textarea
 {
@@ -289,7 +279,6 @@ button.button
 }
 .select select option
 {
-    color: #f5f5f5 !important;
     background-color: #212121 !important;
 }
 
@@ -312,11 +301,6 @@ section.tab-content
 .tabs li:hover
 {
     background-color: #2c2c2c;
-}
-
-.tabs li a, .tabs li a:hover, h2, label, label.label, p, a
-{
-    color: #f5f5f5;
 }
 
 nav.tabs
