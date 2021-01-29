@@ -42,8 +42,17 @@ class GltfView
             return;
         }
 
-        if(state.gltf.animations !== undefined && state.animationIndices !== undefined && !state.animationTimer.paused)
+        if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
         {
+            const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
+                return false === state.animationIndices.includes(index);
+            });
+
+            for(const disabledAnimation of disabledAnimations)
+            {
+                disabledAnimation.advance(state.gltf, undefined);
+            }
+
             const t = state.animationTimer.elapsedSec();
 
             const animations = state.animationIndices.map(index => {

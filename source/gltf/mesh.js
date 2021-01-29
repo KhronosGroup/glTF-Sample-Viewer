@@ -10,6 +10,9 @@ class gltfMesh extends GltfObject
         this.primitives = [];
         this.name = undefined;
         this.weights = [];
+
+        // non gltf
+        this.weightsAnimated = undefined;
     }
 
     fromJson(jsonMesh)
@@ -27,6 +30,11 @@ class gltfMesh extends GltfObject
         {
             this.weights = jsonMesh.weights;
         }
+    }
+
+    getWeightsAnimated()
+    {
+        return this.weightsAnimated !== undefined ? this.weightsAnimated : this.weights;
     }
 }
 
