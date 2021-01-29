@@ -16,6 +16,7 @@ class gltfAnimation extends GltfObject
         // not gltf
         this.interpolators = [];
         this.maxTime = 0;
+        this.disjointAnimations = [];
     }
 
     fromJson(jsonAnimation)

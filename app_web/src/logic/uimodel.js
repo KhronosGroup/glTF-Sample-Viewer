@@ -266,6 +266,12 @@ class UIModel
         );
     }
 
+    disabledAnimations(disabledAnimationsObservable)
+    {
+        disabledAnimationsObservable.subscribe(
+            data => { this.app.disabledAnimations = data; }
+        );
+    }
 
     attachCameraChangeObservable(sceneChangeObservable)
     {
