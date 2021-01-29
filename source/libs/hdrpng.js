@@ -43,7 +43,7 @@ async function loadHDR(buffer)
     {
         const scanline = [];
 
-        const rgbe = d8.slice(pos, pos += 4);
+        let rgbe = d8.slice(pos, pos += 4);
         const isNewRLE = (rgbe[0] == 2 && rgbe[1] == 2 && rgbe[2] == ((width >> 8) & 0xFF) && rgbe[3] == (width & 0xFF));
 
         if (isNewRLE && (width >= 8) && (width < 32768))
@@ -83,7 +83,7 @@ async function loadHDR(buffer)
         {
             pos -= 4;
 
-            for (const i = 0; i < width; i++)
+            for (let i = 0; i < width; i++)
             {
                 rgbe = d8.slice(pos, pos += 4);
 
