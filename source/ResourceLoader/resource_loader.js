@@ -18,17 +18,36 @@ import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
 
-function initKtxLib(view, ktxlib)
-{
-    view.ktxDecoder = new KtxDecoder(view.context, ktxlib);
-}
 
-async function initDracoLib(dracolib)
+class ResourceLoader
 {
-    const dracoDecoder = new DracoDecoder(dracolib);
-    if (dracoDecoder !== undefined)
+    constructor(view)
     {
-        await dracoDecoder.ready();
+        this.view = view;
+    }
+
+    async loadGltf(gltfFile, externalFiles)
+    {
+        return loadGltf(gltfFile, this.view, externalFiles);
+    }
+
+    async loadEnvironment(environmentFile, lutFiles)
+    {
+        return loadEnvironment(environmentFile, this.view, lutFiles);
+    }
+
+    initKtxLib(ktxlib)
+    {
+        this.view.ktxDecoder = new KtxDecoder(this.view.context, ktxlib);
+    }
+
+    async initDracoLib(dracolib)
+    {
+        const dracoDecoder = new DracoDecoder(dracolib);
+        if (dracoDecoder !== undefined)
+        {
+            await dracoDecoder.ready();
+        }
     }
 }
 
@@ -319,4 +338,4 @@ async function loadEnvironmentFromImage(imageHDR, view, luts)
     return environment;
 }
 
-export { loadGltf, loadEnvironment, initKtxLib, initDracoLib };
+export { ResourceLoader };

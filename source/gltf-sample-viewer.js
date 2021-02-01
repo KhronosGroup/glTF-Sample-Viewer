@@ -1,12 +1,11 @@
 import { GltfView } from './GltfView/gltf_view.js';
-import { GltfState } from './GltfState/gltf_state.js';
+import {
+    GltfState
+} from './GltfState/gltf_state.js';
 import { computePrimitiveCentroids } from './gltf/gltf_utils.js';
 
 import {
-    loadGltf,
-    loadEnvironment,
-    initDracoLib,
-    initKtxLib
+    ResourceLoader
 } from './ResourceLoader/resource_loader.js';
 
 import {
@@ -21,26 +20,21 @@ import {
 import { glTF } from './gltf/gltf.js';
 
 import {
-    ToneMaps,
-    DebugOutput
-} from "./Renderer/rendering_parameters.js"
+
+} from "./Renderer/rendering_parameters.js";
 
 
 export {
     GltfView,
     GltfState,
+    ResourceLoader,
+
     getIsGltf,
     getIsGlb,
     getIsHdr,
     computePrimitiveCentroids,
-    loadGltf,
-    loadEnvironment,
-    initKtxLib,
-    initDracoLib,
     getContainingFolder,
     combinePaths,
     getFileNameWithoutExtension,
-    glTF,
-    ToneMaps,
-    DebugOutput
+    glTF
 };

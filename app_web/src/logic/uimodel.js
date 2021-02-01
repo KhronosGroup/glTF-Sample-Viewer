@@ -1,6 +1,6 @@
 import { Observable, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF, ToneMaps, DebugOutput, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
+import { glTF, GltfState, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
 
@@ -30,20 +30,20 @@ class UIModel
         this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
         this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
 
-        this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
-            return {title: ToneMaps[key]};
+        this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => {
+            return {title: GltfState.ToneMaps[key]};
         });
         this.tonemap = app.tonemapChanged$.pipe(
             pluck("event", "msg"),
-            startWith(ToneMaps.LINEAR)
+            startWith(GltfState.ToneMaps.LINEAR)
         );
 
-        this.app.debugchannels = Object.keys(DebugOutput).map((key) => {
-            return {title: DebugOutput[key]};
+        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => {
+            return {title: GltfState.DebugOutput[key]};
         });
         this.debugchannel = app.debugchannelChanged$.pipe(
             pluck("event", "msg"),
-            startWith(DebugOutput.NONE)
+            startWith(GltfState.DebugOutput.NONE)
         );
 
         this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));

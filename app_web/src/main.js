@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids, loadGltf, loadEnvironment, initKtxLib, initDracoLib } from 'gltf-viewer-source';
+import { GltfView, computePrimitiveCentroids } from 'gltf-viewer-source';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
@@ -14,12 +14,13 @@ async function main()
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const ui = document.getElementById("app");
     const view = new GltfView(context);
+    const resourceLoader = view.createResourceLoader();
     const state = view.createState();
 
-    initDracoLib();
-    initKtxLib(view);
+    resourceLoader.initDracoLib();
+    resourceLoader.initKtxLib();
 
-    loadEnvironment("assets/environments/footprint_court_512.hdr", view).then( (environment) => {
+    resourceLoader.loadEnvironment("assets/environments/footprint_court_512.hdr").then( (environment) => {
         state.environment = environment;
     });
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
@@ -33,7 +34,7 @@ async function main()
     const gltfLoadedMulticast = uiModel.model.pipe(
         mergeMap( (model) =>
         {
-            return from(loadGltf(model.mainFile, view, model.additionalFiles).then( (gltf) => {
+            return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;

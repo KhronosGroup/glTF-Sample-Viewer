@@ -1,20 +1,35 @@
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfRenderer } from '../Renderer/renderer.js';
 import { GL } from '../Renderer/webgl.js';
+import { ResourceLoader } from '../ResourceLoader/resource_loader.js';
 
 class GltfView
 {
+    // GltfView is always bound to a WebGL 2.0 context.
+    // The context can be received from a canvas with the canvas.getContext("webgl2")
+    // method.
     constructor(context)
     {
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
     }
 
+    // createState constructes a new GltfState for the GltfView. The resources referenced in
+    // a gltf state can directly be stored as resources on the WebGL context of GltfView,
+    // therefore GltfStates cannot not be shared between GltfViews.
     createState()
     {
-        return new GltfState();
+        return new GltfState(this);
     }
 
+    createResourceLoader()
+    {
+        return new ResourceLoader(this);
+    }
+
+    // renderFrame to the context's default framebuffer
+    // Call this function in the javascript animation update
+    // loop for continuous rendering to a canvas
     renderFrame(state, width, height)
     {
         this.animate(state);
@@ -35,6 +50,11 @@ class GltfView
         this.renderer.drawScene(state, scene);
     }
 
+    // animate should be called ahead of renderFrame if animations should
+    // be applied to the scene. For continuous animation updates, call this function
+    // in the javascript animation update loop.
+    // The animation uses the animtion time from GltfState.animationTimer, which can be
+    // set to pause to halt the animation playback.
     animate(state)
     {
         if(state.gltf === undefined)
