@@ -162,6 +162,9 @@ async function main()
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
     });
+    uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
+        state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
+    });
 
     uiModel.punctualLightsEnabled.subscribe( punctualLightsEnabled => {
         state.renderingParameters.usePunctual = punctualLightsEnabled;
