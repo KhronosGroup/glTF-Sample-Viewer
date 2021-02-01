@@ -87,6 +87,11 @@ class gltfInterpolator
 
     interpolate(gltf, channel, sampler, t, stride, maxTime)
     {
+        if(t === undefined)
+        {
+            return undefined;
+        }
+
         const input = gltf.accessors[sampler.input].getNormalizedDeinterlacedView(gltf);
         const output = gltf.accessors[sampler.output].getNormalizedDeinterlacedView(gltf);
 

@@ -54,8 +54,18 @@ async function main()
                 computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-                state.animationIndices = gltf.animations.map( (anim, index) => index);
+
+                // Try to start as many animations as possible without generating conficts.
+                state.animationIndices = []
+                for (let i = 0; i < gltf.animations.length; i++)
+                {
+                    if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
+                    {
+                        state.animationIndices.push(i);
+                    }
+                }
                 state.animationTimer.start();
+
                 return state;
             })
             );
@@ -63,6 +73,11 @@ async function main()
         // transform gltf loaded observable to multicast observable to avoid multiple execution with multiple subscriptions
         multicast(gltfLoadedSubject)
     );
+
+    uiModel.disabledAnimations(uiModel.activeAnimations.pipe(map(animationIndices => {
+        // Disable all animations which are not disjoint to the current selection of animations.
+        return state.gltf.nonDisjointAnimations(animationIndices);
+    })));
 
     const sceneChangedSubject = new Subject();
     const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
@@ -96,6 +111,22 @@ async function main()
     }));
     cameraExportChangedObservable.subscribe( cameraDesc => {
         uiModel.copyToClipboard(JSON.stringify(cameraDesc));
+    });
+
+    uiModel.captureCanvas.subscribe( () => {
+        view.renderFrame(state, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL();
+
+        var element = document.createElement('a');
+        element.setAttribute('href', dataURL);
+        element.setAttribute('download', "capture.png");
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     });
 
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
@@ -141,6 +172,9 @@ async function main()
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
+    });
+    uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
+        state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
     });
 
     uiModel.punctualLightsEnabled.subscribe( punctualLightsEnabled => {

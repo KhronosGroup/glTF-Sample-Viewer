@@ -2,6 +2,7 @@ import { mat4, mat3, vec3 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { ToneMaps, DebugOutput } from './rendering_parameters.js';
 import { gltfWebGl, GL } from './webgl.js';
+import { EnvironmentRenderer } from './environment_renderer.js'
 
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
@@ -12,6 +13,8 @@ import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from './shaders/tonemapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
+import cubemapVertShader from './shaders/cubemap.vert';
+import cubemapFragShader from './shaders/cubemap.frag';
 
 class gltfRenderer
 {
@@ -41,6 +44,8 @@ class gltfRenderer
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
+        shaderSources.set("cubemap.vert", cubemapVertShader);
+        shaderSources.set("cubemap.frag", cubemapFragShader);
 
         this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
@@ -60,6 +65,8 @@ class gltfRenderer
         this.currentCameraPosition = vec3.create();
 
         this.init();
+
+        this.environmentRenderer = new EnvironmentRenderer(this.webGl);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -200,8 +207,12 @@ class gltfRenderer
 
         // Render transmission sample texture
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebuffer);
-
         this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+
+        // Render environment for the transmission background
+        this.pushFragParameterDefines([], state);
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, []);
+
         for (const drawable of opaqueDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
@@ -220,6 +231,13 @@ class gltfRenderer
 
         // Render to canvas
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
+        this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
+
+        // Render environment
+        const fragDefines = [];
+        this.pushFragParameterDefines(fragDefines, state);
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
+
         for (const drawable of opaqueDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
@@ -460,10 +478,10 @@ class gltfRenderer
         if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
-            if (mesh.weights !== undefined && mesh.weights.length > 0)
+            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.weights.length, 8));
+                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.getWeightsAnimated().length, 8));
             }
         }
     }
@@ -484,9 +502,9 @@ class gltfRenderer
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = state.gltf.meshes[node.mesh];
-            if (mesh.weights !== undefined && mesh.weights.length > 0)
+            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", mesh.weights);
+                this.shader.updateUniformArray("u_morphWeights", mesh.getWeightsAnimated());
             }
         }
     }

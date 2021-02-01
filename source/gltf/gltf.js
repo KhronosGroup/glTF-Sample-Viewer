@@ -85,6 +85,75 @@ class glTF extends GltfObject
                 this.scene = json.scene;
             }
         }
+
+        this.computeDisjointAnimations();
+    }
+
+    // Computes indices of animations which are disjoint and can be played simultaneously.
+    computeDisjointAnimations()
+    {
+        for (let i = 0; i < this.animations.length; i++)
+        {
+            this.animations[i].disjointAnimations = [];
+
+            for (let k = 0; k < this.animations.length; k++)
+            {
+                if (i == k)
+                {
+                    continue;
+                }
+
+                let isDisjoint = true;
+
+                for (const iChannel of this.animations[i].channels)
+                {
+                    for (const kChannel of this.animations[k].channels)
+                    {
+                        if (iChannel.target.node === kChannel.target.node
+                            && iChannel.target.path === kChannel.target.path)
+                        {
+                            isDisjoint = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isDisjoint)
+                {
+                    this.animations[i].disjointAnimations.push(k);
+                }
+            }
+        }
+    }
+
+    nonDisjointAnimations(animationIndices)
+    {
+        const animations = this.animations;
+        const nonDisjointAnimations = [];
+
+        for (let i = 0; i < animations.length; i++)
+        {
+            let isDisjoint = true;
+            for (const k of animationIndices)
+            {
+                if (i == k)
+                {
+                    continue;
+                }
+
+                if (!animations[k].disjointAnimations.includes(i))
+                {
+                    isDisjoint = false;
+                }
+            }
+
+            if (!isDisjoint)
+            {
+                nonDisjointAnimations.push(i);
+            }
+        }
+
+        return nonDisjointAnimations;
     }
 }
 

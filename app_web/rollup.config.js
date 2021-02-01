@@ -35,7 +35,9 @@ export default {
             { src: ["../assets/images"], dest: "dist/assets"},
             { src: ["../assets/ui"], dest: "dist/assets"},
             { src: ["../source/libs/*", "!../source/libs/hdrpng.js"], dest: "dist/libs"}
-        ]
+        ],
+        copyOnce: true,
+        verbose: true
     })
   ]
 };
