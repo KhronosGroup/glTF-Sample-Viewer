@@ -162,8 +162,12 @@ async function main()
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
     });
+
     uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
         state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
+    });
+    uiModel.blurEnvEnabled.subscribe( blurEnvEnabled => {
+        state.renderingParameters.blurEnvironmentMap = blurEnvEnabled;
     });
 
     uiModel.punctualLightsEnabled.subscribe( punctualLightsEnabled => {
