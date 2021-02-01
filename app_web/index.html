@@ -10,8 +10,6 @@
     <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="ui.css">
     <link rel="stylesheet" href="GltfSVApp.umd.css">
     <link rel="icon" href="assets/images/gltf.png">
 
@@ -233,7 +231,7 @@ function getUrlParam(parameter, defaultvalue){
 
                         <b-field label="Animations">
                             <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations">
+                                <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations" :disabled="disabledAnimations.includes(animation.index)">
                                     {{ animation.title }}
                                 </b-checkbox>
                             </b-field>

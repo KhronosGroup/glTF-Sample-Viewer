@@ -73,6 +73,7 @@ const app = new Vue({
             selectedCamera: {},
             selectedVariant: "None",
             selectedAnimations: [],
+            disabledAnimations: [],
 
             ibl: true,
             punctualLights: true,
