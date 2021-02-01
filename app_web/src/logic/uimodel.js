@@ -9,7 +9,7 @@ import { SimpleDropzone } from 'simple-dropzone';
 // as close as possible
 class UIModel
 {
-    constructor(app, modelPathProvider)
+    constructor(app, modelPathProvider, environments)
     {
         this.app = app;
         this.pathProvider = modelPathProvider;
@@ -27,8 +27,14 @@ class UIModel
         this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
-        this.environment = app.environmentChanged$.pipe(pluck("event", "msg"));
         this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
+        this.app.environments = environments;
+        const selectedEnvironment = app.$watchAsObservable('selectedEnvironment').pipe(
+            pluck('newValue'),
+            map( environmentName => this.app.environments[environmentName].hdr_path)
+        );
+        const initialEnvironment = "footprint_court";
+        this.app.selectedEnvironment = initialEnvironment;
 
         this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
             return {title: ToneMaps[key]};
@@ -86,7 +92,17 @@ class UIModel
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
-        this.hdr = inputObservables.hdrDropped;
+        this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment).pipe(
+            startWith(environments[initialEnvironment].hdr_path)
+        );
+
+        inputObservables.hdrDropped.subscribe( hdrPath => {
+            this.app.environments[hdrPath.name] = {
+                title: hdrPath.name,
+                hdr_path: hdrPath,
+            };
+            this.app.selectedEnvironment = hdrPath.name;
+        });
 
         this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
 
@@ -252,7 +268,7 @@ class UIModel
             map( state => state.animationIndices)
         ).subscribe( animationIndices => {
             this.app.selectedAnimations = animationIndices;
-        })
+        });
     }
 
     updateStatistics(statisticsUpdateObservable)
