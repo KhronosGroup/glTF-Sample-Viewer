@@ -9,11 +9,19 @@ $primary: #87c540;
 $primary-light: findLightColor($primary);
 $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
+$scheme-main: #363636;
+$scheme-invert: #f5f5f5;
 $border: #f5f5f5;
 $text: #f5f5f5;
 // this changes the color of labels, etc. (i dont know why either...)
 $text-strong: #f5f5f5;
 $dark: #f5f5f5;
+
+// button styles
+$button-color: #f2f2f2;
+$button-background-color: #87c540;
+$button-padding-vertical: 0em;
+$button-border-width: 0em;
 
 // set font styles
 $size-normal: 18px;
@@ -36,10 +44,28 @@ $colors: map-merge($colors, $addColors);
 @import "../../node_modules/bulma/bulma";
 @import "../../node_modules/buefy/src/scss/buefy";
 
-/* tabs */
+// general settings
+html
+{
+    overflow: unset;
+}
+
+// there is no specific bulma setting for this
+.select select
+{
+    padding-top: 0em;
+    padding-bottom: 0em;
+}
+
+/* tab selection on the right */
 .b-tabs.is-vertical
 {
     height: 100vh;
+}
+
+nav.tabs
+{
+    width: 100px;
 }
 
 nav.tabs ul
@@ -84,45 +110,7 @@ nav.tabs ul
     text-align: center;
 }
 
-/* spacing */
-.label:not(:last-child)
-{
-    margin-top: 2em;
-}
-label.switch
-{
-    margin-top: 0.5em;
-    white-space: nowrap;
-}
-
-.tabItemScrollable
-{
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100%;
-}
-
-/**********************************/
-/**********************************/
-/* Styles for individual elements */
-/**********************************/
-/**********************************/
-html
-{
-    overflow: unset !important;
-}
-
-canvas
-{
-    display: block;
-}
-
-nav.tabs
-{
-    width: 100px;
-    overflow: hidden;
-}
-
+// tab content
 .b-tabs.is-vertical.is-right
 {
     flex-wrap: unset;
@@ -144,6 +132,24 @@ nav.tabs
     margin-bottom: 70px;
     margin-top: 70px;
     font-size: 22pt;
+}
+
+/* spacing */
+.label:not(:last-child)
+{
+    margin-top: 2em;
+}
+label.switch
+{
+    margin-top: 0.5em;
+    white-space: nowrap;
+}
+
+.tabItemScrollable
+{
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
 }
 
 .smallerLabel .label
@@ -188,12 +194,6 @@ nav.tabs
     justify-content: space-between
 }
 
-button.button
-{
-    border: none;
-    border-radius: 290486px;
-}
-
 .select, .select select
 {
     width: 100%;
@@ -226,30 +226,11 @@ div .field.has-addons
     display: block;
 }
 
-.input:active, .input:focus, .is-active.input, .is-active.textarea, .is-focused.input,
-.is-focused.textarea, .select select.is-active, .select select.is-focused,
-.select select:active, .select select:focus, .taginput .is-active.taginput-container.is-focusable,
-.taginput .is-focused.taginput-container.is-focusable, .taginput .taginput-container.is-focusable:active,
-.taginput .taginput-container.is-focusable:focus, .textarea:active, .textarea:focus
-{
-    box-shadow: unset !important;
-}
-
-.button, .input, .textarea, .taginput .taginput-container.is-focusable, .select select,
-.file-cta, .file-name, .pagination-previous, .pagination-next, .pagination-link, .pagination-ellipsis
-{
-    height: 30px !important;
-    line-height: 1 !important;
-    padding-top: unset !important;
-    padding-bottom: unset !important;
-}
-
-/* make radio button full width */
+/* make html recognize exposure slider full height  */
 .b-slider.exposureSlider
 {
     margin-bottom: 50px;
 }
-
 
 .b-slider-tick-label
 {
@@ -262,39 +243,14 @@ div .field.has-addons
     margin-right: 5px;
 }
 
-button.button
-{
-    background-color: #87c540;
-    color: #f2f2f2;
-}
-
-.input, .select select, .taginput .taginput-container.is-focusable, .textarea
-{
-    background-color: #2c2c2c !important;
-}
-.input, .select select, .taginput .taginput-container.is-focusable, .textarea
-{
-    border-radius: 1px;
-}
-.select select option
-{
-    color: #f5f5f5 !important;
-    background-color: #212121 !important;
-}
-
 /* arrow button on drop down */
 .select:not(.is-multiple):not(.is-loading)::after {
-    border-color: #f5f5f5 !important;
-}
-
-section.tab-content
-{
-    background-color: #363636;
+    border-color: #f5f5f5;
 }
 
 // highlighting of tabs
 .tabs li.is-active {
-    border-right: 7.5px solid #87c540 !important;
+    border-right: 7.5px solid #87c540;
     background-color: #373737;
 }
 
@@ -306,16 +262,6 @@ section.tab-content
 nav.tabs
 {
     background-color: #1b1b1b;
-}
-
-
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: rgb(51, 51, 51);
 }
 
 #canvas {

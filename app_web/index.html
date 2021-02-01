@@ -52,7 +52,7 @@ function getUrlParam(parameter, defaultvalue){
 <!-- general templates -->
 <script id="toggleButtonTemplate" type="text/x-template">
     <div>
-        <b-button v-on:click="buttonclicked">{{ name }}</b-button>
+        <b-button v-on:click="buttonclicked" rounded="true">{{ name }}</b-button>
     </div>
 </script>
 <script id="dualLabelListTemplate" type="text/x-template">
@@ -213,7 +213,7 @@ function getUrlParam(parameter, defaultvalue){
 
                                 <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                     <template #trigger="{ active }">
-                                        <b-button
+                                        <b-button rounded="true"
                                             type="is-primary"
                                             :icon-right="active ? 'menu-up' : 'menu-down'">
                                             {{ environments[selectedEnvironment].title }}
@@ -284,7 +284,7 @@ function getUrlParam(parameter, defaultvalue){
                     <div class="tabContent">
                         <h2>Advanced Controls</h2>
                         <b-field label="Capture Canvas" class="smallerLabel">
-                        	<button v-stream:click="captureCanvas$" type="button" class="button"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
+                        	<button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
                     	</b-field>
                         <b-field label="Debug Channels" class="smallerLabel">
                             <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
@@ -316,7 +316,7 @@ function getUrlParam(parameter, defaultvalue){
                         <br>
                         <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
                         <b-field label="Current camera values" class="label">
-                        	<button v-stream:click="cameraExport$" type="button" class="button"><i class="fa fa-download downloadIcon"></i>Copy to Clipboard</button>
+                        	<button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Copy to Clipboard</button>
                     	</b-field>
                         <b-field label="Disable extensions" class="label">
                             <b-switch v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>
