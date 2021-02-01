@@ -26,6 +26,12 @@ class ResourceLoader
         this.view = view;
     }
 
+    /**
+     * loadGltf asynchroneously and create resources for rendering
+     * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as
+     * preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
+     * @param {File[]} [externalFiles] additional files containing resources that are referenced in the gltf
+     */
     async loadGltf(gltfFile, externalFiles)
     {
         return loadGltf(gltfFile, this.view, externalFiles);
@@ -75,7 +81,7 @@ async function loadGltf(file, view, additionalFiles)
         }
         else
         {
-            // TODO
+            console.error("Only .glb files can be loaded from an array buffer");
         }
     }
     else if (typeof (File) !== 'undefined' && file instanceof File)
