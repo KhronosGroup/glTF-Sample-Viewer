@@ -32,7 +32,7 @@ class GltfView
     // loop for continuous rendering to a canvas
     renderFrame(state, width, height)
     {
-        this.animate(state);
+        this._animate(state);
 
         this.renderer.resize(width, height);
 
@@ -48,42 +48,6 @@ class GltfView
         scene.applyTransformHierarchy(state.gltf);
 
         this.renderer.drawScene(state, scene);
-    }
-
-    // animate should be called ahead of renderFrame if animations should
-    // be applied to the scene. For continuous animation updates, call this function
-    // in the javascript animation update loop.
-    // The animation uses the animtion time from GltfState.animationTimer, which can be
-    // set to pause to halt the animation playback.
-    animate(state)
-    {
-        if(state.gltf === undefined)
-        {
-            return;
-        }
-
-        if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
-        {
-            const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
-                return false === state.animationIndices.includes(index);
-            });
-
-            for(const disabledAnimation of disabledAnimations)
-            {
-                disabledAnimation.advance(state.gltf, undefined);
-            }
-
-            const t = state.animationTimer.elapsedSec();
-
-            const animations = state.animationIndices.map(index => {
-                return state.gltf.animations[index];
-            }).filter(animation => animation !== undefined);
-
-            for(const animation of animations)
-            {
-                animation.advance(state.gltf, t);
-            }
-        }
     }
 
     // gatherStatistics collects information about the GltfState such as the number of rendererd meshes or triangles
@@ -142,6 +106,37 @@ class GltfView
             opaqueMaterialsCount: opaqueMaterials.length,
             transparentMaterialsCount: transparentMaterials.length
         };
+    }
+
+    _animate(state)
+    {
+        if(state.gltf === undefined)
+        {
+            return;
+        }
+
+        if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
+        {
+            const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
+                return false === state.animationIndices.includes(index);
+            });
+
+            for(const disabledAnimation of disabledAnimations)
+            {
+                disabledAnimation.advance(state.gltf, undefined);
+            }
+
+            const t = state.animationTimer.elapsedSec();
+
+            const animations = state.animationIndices.map(index => {
+                return state.gltf.animations[index];
+            }).filter(animation => animation !== undefined);
+
+            for(const animation of animations)
+            {
+                animation.advance(state.gltf, t);
+            }
+        }
     }
 }
 
