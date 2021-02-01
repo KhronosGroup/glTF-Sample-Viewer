@@ -26,6 +26,7 @@ $button-border-width: 0em;
 // set font styles
 $size-normal: 18px;
 $family-primary: 'Roboto', sans-serif;
+$title-sub-size: 22pt;
 
 // setup derived colors
 @import "../../node_modules/bulma/sass/utilities/derived-variables";
@@ -111,27 +112,24 @@ nav.tabs ul
 }
 
 // tab content
-.b-tabs.is-vertical.is-right
-{
-    flex-wrap: unset;
-}
-
 .b-tabs .tab-content
 {
-    padding-right: 0px !important;
     width: 300px;
+    // necessary for scrollbar (overflow property) to work correct
+    padding: 0px;
 }
 
 .tabContent
 {
+    // necessary for scrollbar (overflow property) to work correct
     margin-right: 10px;
+    padding: 1em;
 }
 
 .tab-item h2
 {
     margin-bottom: 70px;
     margin-top: 70px;
-    font-size: 22pt;
 }
 
 /* spacing */
@@ -159,11 +157,10 @@ label.switch
     margin-top: 0.5em !important;
 }
 
-.smallestLabel
+.smallestLabel, .smallerLabel span
 {
     font-size: 16px;
     font-weight: 100;
-    opacity: 0.8;
 }
 
 .xmpWrapper
@@ -223,7 +220,7 @@ label.switch
 // ensure on off buttons (in advanced controls) are in their own lines
 div .field.has-addons
 {
-    display: block;
+    display: grid;
 }
 
 /* make html recognize exposure slider full height  */

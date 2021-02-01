@@ -273,12 +273,13 @@ class UIModel
     updateStatistics(statisticsUpdateObservable)
     {
         statisticsUpdateObservable.subscribe(
-            data => {this.app.statistics = [
-                {title: "Mesh Count", value: data.meshCount},
-                {title: "Triangle Count", value: data.faceCount},
-                {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
-                {title: "Transparent Material Count", value: data.transparentMaterialsCount}
-            ];
+            data => {
+                let statistics = {};
+                statistics["Mesh Count"] = data.meshCount;
+                statistics["Triangle Count"] = data.faceCount;
+                statistics["Opaque Material Count"] = data.opaqueMaterialsCount;
+                statistics["Transparent Material Count"] = data.transparentMaterialsCount;
+                this.app.statistics = statistics;
             }
         );
     }
