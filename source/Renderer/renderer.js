@@ -207,8 +207,12 @@ class gltfRenderer
 
         // Render transmission sample texture
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebuffer);
-
         this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+
+        // Render environment for the transmission background
+        this.pushFragParameterDefines([], state);
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, []);
+
         for (const drawable of opaqueDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
