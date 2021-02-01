@@ -6,7 +6,7 @@ import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
 import { Observable, Subject, from, merge } from 'rxjs';
 import { mergeMap, filter, map, multicast } from 'rxjs/operators';
-import { gltfModelPathProvider } from './model_path_provider.js';
+import { gltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
 
 async function main()
 {
@@ -20,13 +20,24 @@ async function main()
     resourceLoader.initDracoLib();
     resourceLoader.initKtxLib();
 
-    resourceLoader.loadEnvironment("assets/environments/footprint_court_512.hdr").then( (environment) => {
-        state.environment = environment;
-    });
+
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
+    const environmentPaths = fillEnvironmentWithPaths({
+        "footprint_court_512": "Foodprint Court (512p)",
+        "footprint_court": "Foodprint Court",
+        "pisa": "Pisa courtyard nearing sunset, Italy",
+        "doge2": "Courtyard of the Doge's palace",
+        "ennis": "Dining room of the Ennis-Brown House",
+        "field": "Field",
+        "helipad": "Helipad Goldenhour",
+        "papermill": "Papermill Ruins",
+        "neutral": "Studio Neutral",
+        "chromatic": "Studio Chromatic",
+        "directional": "Studio Directional",
+    }, "assets/environments/");
 
-    const uiModel = await new UIModel(app, pathProvider);
+    const uiModel = new UIModel(app, pathProvider, environmentPaths);
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI

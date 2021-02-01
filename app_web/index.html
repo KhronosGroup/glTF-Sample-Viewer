@@ -203,16 +203,24 @@ function getUrlParam(parameter, defaultvalue){
                             </b-field>
                         </section>
 
-                        <!-- <label class="label">Image Based Lighting</label>
-                        <b-button v-stream:click="addEnvironment$">Add new HDR</b-button>
-                        <b-field label="Active Environment" class="smallerLabel">
-                            <b-select v-stream:input="environmentChanged$">
-                                <option v-for="(item) in environments"
-                                    v-bind:value="item.index">
-                                    {{ item.title }}
-                                </option>
-                            </b-select>
-                        </b-field> -->
+                        <section>
+                            <label class="label">Image Based Lighting</label>
+                            <b-field label="Active Environment" class="smallerLabel">
+                                <b-dropdown aria-role="list" v-model="selectedEnvironment">
+                                    <template #trigger="{ active }">
+                                        <b-button
+                                            type="is-primary"
+                                            :icon-right="active ? 'menu-up' : 'menu-down'">
+                                            {{ environments[selectedEnvironment].title }}
+                                        </b-button>
+                                    </template>
+
+                                    <b-dropdown-item aria-role="listitem" v-for="name in Object.keys(environments)" v-bind:key="name" :value="name">
+                                        {{ environments[name].title }}
+                                    </b-dropdown-item>
+                                </b-dropdown>
+                            </b-field>
+                        </section>
                     </div>
                 </b-tab-item>
 
