@@ -1,6 +1,6 @@
 import { Observable, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF, GltfState, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
+import { gltf, GltfState, Utils } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
 
@@ -139,7 +139,7 @@ class UIModel
 
             map( (files) => {
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
-                const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
+                const mainFile = files.find( (file) => Utils.getIsGlb(file.name) || Utils.getIsGltf(file.name));
                 const additionalFiles = files.filter( (file) => file !== mainFile);
                 return {mainFile: mainFile, additionalFiles: additionalFiles};
             }),
@@ -159,7 +159,7 @@ class UIModel
     {
         const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
             map( state => state.gltf ),
-            startWith(new glTF())
+            startWith(new gltf.glTF())
         );
 
         // update scenes

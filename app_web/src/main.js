@@ -1,6 +1,6 @@
 import { gltfInput } from './input.js';
 
-import { GltfView, computePrimitiveCentroids } from 'gltf-viewer-source';
+import { GltfView, Utils } from 'gltf-viewer-source';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
@@ -41,12 +41,11 @@ async function main()
                 state.cameraIndex = undefined;
                 const scene = state.gltf.scenes[state.sceneIndex];
                 scene.applyTransformHierarchy(state.gltf);
-                computePrimitiveCentroids(state.gltf);
                 state.userCamera.aspectRatio = canvas.width / canvas.height;
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
                 // Try to start as many animations as possible without generating conficts.
-                state.animationIndices = []
+                state.animationIndices = [];
                 for (let i = 0; i < gltf.animations.length; i++)
                 {
                     if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
@@ -75,7 +74,6 @@ async function main()
         state.cameraIndex = undefined;
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
-        computePrimitiveCentroids(state.gltf);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
     }),
     multicast(sceneChangedSubject)
@@ -218,7 +216,7 @@ async function main()
     });
 
     uiModel.hdr.subscribe( hdrFile => {
-        loadEnvironment(hdrFile, view).then( (environment) => {
+        resourceLoader.loadEnvironment(hdrFile, view).then( (environment) => {
             state.environment = environment;
         });
     });
