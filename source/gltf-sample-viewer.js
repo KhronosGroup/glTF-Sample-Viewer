@@ -13,3 +13,10 @@ export {
     ResourceLoader,
     Gltf
 };
+
+export default {
+    GltfView: GltfView,
+    GltfState: GltfState,
+    ResourceLoader: ResourceLoader,
+    Gltf: Gltf
+};

@@ -227,7 +227,7 @@ async function main()
     });
 
     uiModel.hdr.subscribe( hdrFile => {
-        resourceLoader.loadEnvironment(hdrFile, view).then( (environment) => {
+        resourceLoader.loadEnvironment(hdrFile).then( (environment) => {
             state.environment = environment;
         });
     });
