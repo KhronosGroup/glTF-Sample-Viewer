@@ -218,7 +218,8 @@ vec3 filterColor(vec3 N)
 
         if(u_distribution == cLambertian)
         {
-            color += vec4(textureLod(uCubeMap, H, 0.0).rgb * dot(N, H), 1.0);
+            // sample lambertian at a lower resolution to avoid fireflies
+            color += vec4(textureLod(uCubeMap, H, 4.0).rgb * dot(N, H), 1.0);
             continue;
         }
 
