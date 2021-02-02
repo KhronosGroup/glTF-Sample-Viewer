@@ -109,8 +109,49 @@ const app = new Vue({
         setAnimationState: function(value)
         {
             this.$refs.animationState.setState(value);
-        }
+        },
+        warn(message) {
+            this.$buefy.toast.open({
+                message: message,
+                type: 'is-warning'
+            })
+        },
+        error(message) {
+            this.$buefy.toast.open({
+                message: message,
+                type: 'is-danger',
+                duration: 5000
+            })
+        },
     }
 }).$mount('#app');
 
 export { app };
+
+// pipe error messages to UI
+(function(){
+
+    var originalWarn = console.warn;
+    var originalError = console.error;
+
+    console.warn = function(txt) {
+        app.warn(txt);
+        originalWarn.apply(console, arguments);
+    }
+    console.error = function(txt) {
+        app.error(txt);
+        originalError.apply(console, arguments);
+    }
+
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+        var message = [
+            'Message: ' + msg,
+            'URL: ' + url,
+            'Line: ' + lineNo,
+            'Column: ' + columnNo,
+            'Error object: ' + JSON.stringify(error)
+          ].join(' - ');
+        app.error(message);
+    };
+})();
+
