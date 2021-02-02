@@ -94,6 +94,8 @@ const app = new Vue({
             clearcoatEnabled: true,
             sheenEnabled: true,
             transmissionEnabled: true,
+
+            activeTab: 0,
         };
     },
     mounted: function()
