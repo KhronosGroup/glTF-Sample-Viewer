@@ -187,6 +187,7 @@ function getUrlParam(parameter, defaultvalue){
                             <label class="label">Background</label>
                             <!--<b-switch v-model="environmentvisibility" v-stream:input="environmentVisibilityChanged$">Environment Background</b-switch>-->
                             <b-switch v-model="renderEnv" v-stream:input="renderEnvChanged$">Environment Map</b-switch>
+                            <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$">Blur</b-switch>
                             <b-field label="Background Color" class="smallerLabel"></b-field>
                                 <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
                             </b-field>
@@ -203,12 +204,6 @@ function getUrlParam(parameter, defaultvalue){
                         <section>
                             <label class="label">Image Based Lighting</label>
                             <b-field label="Active Environment" class="smallerLabel">
-                                <!-- <b-select v-model="selectedEnvironment">
-                                    <option v-for="name in Object.keys(environments)" v-bind:native-value="name" v-bind:key="name" value="name">
-                                        {{ environments[name].title }}
-                                    </option>
-                                </b-select> -->
-
                                 <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                     <template #trigger="{ active }">
                                         <b-button rounded
