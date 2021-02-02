@@ -55,24 +55,6 @@ function getUrlParam(parameter, defaultvalue){
         <b-button v-on:click="buttonclicked" rounded>{{ name }}</b-button>
     </div>
 </script>
-<script id="dualLabelListTemplate" type="text/x-template">
-    <div>
-        <label class="label">{{ name }}</label>
-        <div v-for="item in items" :key="item.title">
-            <dual-label-element v-bind:name="item.title" v-bind:value="item.value"></dual-label-element>
-        </div>
-    </div>
-</script>
-<script id="dualLabelTemplate" type="text/x-template">
-    <div class="greyOverlay">
-        <section>
-            <label class="smallerLabel">{{ name }}</label>
-        </section>
-        <section>
-            <label class="smallestLabel">{{ value }}</label>
-        </section>
-    </div>
-</script>
 <script id="jsonToUITemplate" type="text/x-template">
     <div>
         <div v-for="(value, name) in data">
@@ -124,7 +106,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2>Models</h2>
+                        <h2 class="title">Models</h2>
                         <b-field label="Models">
                             <b-select v-model="selectedModel" v-stream:input="modelChanged$">
                                 <option v-for="(item) in models" v-bind:value="item">
@@ -176,15 +158,15 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2>Display</h2>
+                        <h2 class="title">Display</h2>
                         <section>
-                            <label class="label">Lighting</label>
+                            <label class="subtitle">Lighting</label>
                             <b-switch v-model="ibl" v-stream:input="iblChanged$">Image Based</b-switch>
                             <br>
                             <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
                         </section>
                         <section>
-                            <label class="label">Background</label>
+                            <label class="subtitle">Background</label>
                             <!--<b-switch v-model="environmentvisibility" v-stream:input="environmentVisibilityChanged$">Environment Background</b-switch>-->
                             <b-switch v-model="renderEnv" v-stream:input="renderEnvChanged$">Environment Map</b-switch>
                             <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$">Blur</b-switch>
@@ -202,7 +184,7 @@ function getUrlParam(parameter, defaultvalue){
                         </section>
 
                         <section>
-                            <label class="label">Image Based Lighting</label>
+                            <label class="subtitle">Image Based Lighting</label>
                             <b-field label="Active Environment" class="smallerLabel">
                                 <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                     <template #trigger="{ active }">
@@ -231,8 +213,8 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2>Animation</h2>
-                        <label  class="label">Animation Controls</label>
+                        <h2 class="title">Animation</h2>
+                        <label  class="subtitle">Animation Controls</label>
                         <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
 
                         <b-field label="Animations">
@@ -254,7 +236,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2>XMP</h2>
+                        <h2 class="title">XMP</h2>
                         <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
                     </div>
                 </b-tab-item>
@@ -275,7 +257,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2>Advanced Controls</h2>
+                        <h2 class="title">Advanced Controls</h2>
                         <b-field label="Capture Canvas" class="smallerLabel">
                         	<button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
                     	</b-field>
@@ -308,15 +290,15 @@ function getUrlParam(parameter, defaultvalue){
                         <b-switch v-model="skinning" v-stream:input="skinningChanged$">Skinning</b-switch>
                         <br>
                         <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
-                        <b-field label="Current camera values" class="label">
+                        <b-field label="Current camera values" class="subtitle">
                         	<button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Copy to Clipboard</button>
                     	</b-field>
-                        <b-field label="Disable extensions" class="label">
+                        <b-field label="Disable extensions" class="subtitle">
                             <b-switch class="smallerLabel" v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>
                             <b-switch class="smallerLabel" v-model="sheenEnabled" v-stream:input="sheenChanged$">Sheen</b-switch>
                             <b-switch class="smallerLabel" v-model="transmissionEnabled" v-stream:input="transmissionChanged$">Transmission</b-switch>
                         </b-field>
-                        <b-field label="Statistics" class="label">
+                        <b-field label="Statistics" class="subtitle">
                             <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false"></json-to-ui-template>
                         </b-field>
                     </div>

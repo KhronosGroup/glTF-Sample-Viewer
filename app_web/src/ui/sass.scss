@@ -30,7 +30,8 @@ $button-border-width: 0em;
 // set font styles
 $size-normal: 18px;
 $family-primary: 'Roboto', sans-serif;
-$title-sub-size: 22pt;
+$title-size: 22pt;
+$subtitle-size: 18px;
 
 // setup derived colors
 @import "../../node_modules/bulma/sass/utilities/derived-variables";
