@@ -96,6 +96,7 @@ const app = new Vue({
             transmissionEnabled: true,
 
             activeTab: 0,
+            loadingComponent: {},
         };
     },
     mounted: function()
@@ -122,6 +123,23 @@ const app = new Vue({
                 type: 'is-danger',
                 duration: 5000
             })
+        },
+        goToLoadingState() {
+            if(this.loadingComponent === undefined)
+            {
+                return;
+            }
+            this.loadingComponent = this.$buefy.loading.open({
+                container: null
+            })
+        },
+        exitLoadingState()
+        {
+            if(this.loadingComponent === undefined)
+            {
+                return;
+            }
+            this.loadingComponent.close();
         },
     }
 }).$mount('#app');
