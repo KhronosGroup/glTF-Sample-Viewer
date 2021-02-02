@@ -8,11 +8,14 @@ import {
 
 class gltfModelPathProvider
 {
-    constructor(modelIndexerPath, ignoredVariants = ["glTF-Embedded"])
+    constructor(modelIndexerPath, currentFalvour="glTF", ignoredVariants = ["glTF-Embedded"])
     {
         this.modelIndexerPath = modelIndexerPath;
         this.ignoredVariants = ignoredVariants;
+        this.currentFalvour = currentFalvour;
         this.modelsDictionary = undefined;
+
+        this.modelIndexer = undefined;
     }
 
     async initialize()
@@ -20,8 +23,8 @@ class gltfModelPathProvider
         const self = this;
         return axios.get(this.modelIndexerPath).then(response =>
         {
-            const modelIndexer = response.data;
-            self.populateDictionary(modelIndexer);
+            self.modelIndexer = response.data;
+            self.populateDictionary(self.modelIndexer);
         });
     }
 
@@ -57,6 +60,10 @@ class gltfModelPathProvider
                 {
                     continue;
                 }
+                if (this.currentFalvour !== variant)
+                {
+                    continue;
+                }
 
                 const fileName = entry.variants[variant];
                 const modelPath = combinePaths(modelsFolder, entry.name, variant, fileName);
@@ -74,6 +81,21 @@ class gltfModelPathProvider
                 this.modelsDictionary[modelKey] = modelPath;
             }
         }
+    }
+
+    // Sets current flavour and repopulates the models dictionary
+    setCurrentFlavour(currentFalvour)
+    {
+        this.currentFalvour = currentFalvour;
+
+        if(this.modelIndexer === undefined)
+        {
+            console.log("can't set flavor. Model indexer not yet loaded.")
+        }
+
+        this.populateDictionary(this.modelIndexer);
+
+        console.log("flavour set to: " + currentFalvour);
     }
 }
 

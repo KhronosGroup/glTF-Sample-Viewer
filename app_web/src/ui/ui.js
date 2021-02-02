@@ -46,7 +46,7 @@ Vue.component('json-to-ui-template', {
 });
 
 const app = new Vue({
-    domStreams: ['modelChanged$', 'flavorChanged$', 'sceneChanged$', 'cameraChanged$',
+    domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'renderEnvChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
@@ -57,7 +57,7 @@ const app = new Vue({
             fullheight: true,
             right: true,
             models: ["Avocado"],
-            flavors: [{title: "glTF"}, {title: "binary"}, {title: "Quantized"}, {title: "Draco"}],
+            flavors: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
             materialVariants: [{title: "None"}],

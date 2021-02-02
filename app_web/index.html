@@ -128,15 +128,15 @@ function getUrlParam(parameter, defaultvalue){
                         <b-field label="Models">
                             <b-select v-model="selectedModel" v-stream:input="modelChanged$">
                                 <option v-for="(item) in models" v-bind:value="item">
-                                    {{ item}}
+                                    {{ item }}
                                 </option>
                             </b-select>
                         </b-field>
                         <b-field label="Flavor">
-                            <b-select v-model="selectedFlavor" v-stream:input="flavorChanged$">
+                            <b-select v-model="selectedFlavor" v-stream:input="flavourChanged$">
                                 <option v-for="(item) in flavors"
-                                    v-bind:value="item.index">
-                                    {{ item.title }}
+                                    v-bind:value="item">
+                                    {{ item }}
                                 </option>
                             </b-select>
                         </b-field>
