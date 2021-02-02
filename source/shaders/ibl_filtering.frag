@@ -216,6 +216,12 @@ vec3 filterColor(vec3 N)
 	{
 		vec3 H = getSampleVector(i, N, u_roughness);
 
+        if(u_distribution == cLambertian)
+        {
+            color += vec4(textureLod(uCubeMap, H, 0.0).rgb * dot(N, H), 1.0);
+            continue;
+        }
+
 		// Note: reflect takes incident vector.
 		// Note: N = V
 		vec3 V = N;
@@ -240,15 +246,7 @@ vec3 filterColor(vec3 N)
 				lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
 				lod += u_lodBias;
 			}
-
-			if(u_distribution == cLambertian)
-			{
-				color += vec4(textureLod(uCubeMap, H, lod).rgb, 1.0);
-			}
-			else
-			{
-				color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
-			}
+            color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
 		}
 	}
 
