@@ -125,10 +125,11 @@ vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
 	float sinTheta = 0.f;
 
     // generate the points on the hemisphere with a fitting mapping for
-    // the distribution
+    // the distribution (e.g. lambertian uses a cosine importance)
 	if(u_distribution == cLambertian)
 	{
-		cosTheta = 1.0 - u;
+        // cosinus mapping
+		cosTheta = sqrt(1.0 - u);
 		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	}
 	else if(u_distribution == cGGX)
@@ -237,7 +238,7 @@ vec3 filterColor(vec3 N)
             float NdotH = clamp(dot(N, H), 0.0, 1.0);
 
             // sample lambertian at a lower resolution to avoid fireflies
-            color += vec4(textureLod(uCubeMap, H, u_lodBias).rgb * NdotH, 1.0);
+            color += vec4(textureLod(uCubeMap, H, u_lodBias).rgb, 1.0);
             continue;
         }
 
