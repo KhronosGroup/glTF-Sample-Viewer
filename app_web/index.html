@@ -159,32 +159,26 @@ function getUrlParam(parameter, defaultvalue){
 
                     <div class="tabContent">
                         <h2 class="title">Display</h2>
-                        <section>
-                            <label class="subtitle">Lighting</label>
+                        <b-field label="Lighting" class="subtitle">
                             <b-switch v-model="ibl" v-stream:input="iblChanged$">Image Based</b-switch>
-                            <br>
                             <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
-                        </section>
-                        <section>
-                            <label class="subtitle">Background</label>
-                            <!--<b-switch v-model="environmentvisibility" v-stream:input="environmentVisibilityChanged$">Environment Background</b-switch>-->
+                        </b-field>
+                        <b-field label="Background" class="subtitle">
                             <b-switch v-model="renderEnv" v-stream:input="renderEnvChanged$">Environment Map</b-switch>
                             <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$">Blur</b-switch>
                             <b-field label="Background Color" class="smallerLabel"></b-field>
-                                <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
-                            </b-field>
-                            <b-field label="Select Environment Rotation" class="smallerLabel">
-                                <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
-                                    <option v-for="(item) in environmentRotations"
-                                        v-bind:value="item.title">
-                                        {{ item.title }}
-                                    </option>
-                                </b-select>
-                            </b-field>
-                        </section>
+                            <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
+                        </b-field>
+                        <b-field label="Select Environment Rotation" class="smallerLabel">
+                            <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
+                                <option v-for="(item) in environmentRotations"
+                                    v-bind:value="item.title">
+                                    {{ item.title }}
+                                </option>
+                            </b-select>
+                        </b-field>
 
-                        <section>
-                            <label class="subtitle">Image Based Lighting</label>
+                        <b-field label="Image Based Lighting" class="subtitle">
                             <b-field label="Active Environment" class="smallerLabel">
                                 <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                     <template #trigger="{ active }">
@@ -200,7 +194,7 @@ function getUrlParam(parameter, defaultvalue){
                                     </b-dropdown-item>
                                 </b-dropdown>
                             </b-field>
-                        </section>
+                        </b-field>
                     </div>
                 </b-tab-item>
 
