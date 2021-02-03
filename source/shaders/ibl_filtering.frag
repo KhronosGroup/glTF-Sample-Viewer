@@ -172,8 +172,8 @@ float PDF(vec3 H, vec3 N, float roughness)
 	return 0.f;
 }
 
-// getSampleVector returns an importance sample direction with pdf in the .w component
-vec4 getSampleVector(int sampleIndex, vec3 N, float roughness)
+// getImportanceSample returns an importance sample direction with pdf in the .w component
+vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 {
     vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
     float u = hammersleyPoint.x;
@@ -231,7 +231,7 @@ vec3 filterColor(vec3 N)
 
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
-        vec4 importanceSample = getSampleVector(i, N, u_roughness);
+        vec4 importanceSample = getImportanceSample(i, N, u_roughness);
 
 		vec3 H = vec3(importanceSample.xyz);
         float pdf = importanceSample.w;
@@ -310,7 +310,7 @@ vec3 LUT(float NdotV, float roughness)
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
 		// Importance sampling, depending on the distribution.
-		vec3 H = getSampleVector(i, N, roughness).xyz;
+		vec3 H = getImportanceSample(i, N, roughness).xyz;
 		vec3 L = normalize(reflect(-V, H));
 
 		float NdotL = saturate(L.z);
