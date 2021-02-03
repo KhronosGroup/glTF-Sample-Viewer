@@ -209,14 +209,14 @@ label.switch
 .colorInput
 {
     -webkit-appearance: none;
-    border: none;
+    border: solid 1px #f2f2f2;
     padding: 0;
 }
 .colorInput::-webkit-color-swatch-wrapper {
 	padding: 0;
 }
 .colorInput::-webkit-color-swatch {
-	border: none;
+	border: solid 1px #f2f2f2;
 }
 .colorInputText, .colorInputText input
 {
