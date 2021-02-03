@@ -20,11 +20,21 @@ class UIModel
             pluck("event", "msg"),
             startWith("Avocado"),
             map(value => {
-                return this.pathProvider.resolve(value);
+                app.flavours = this.pathProvider.getModelFlavours(value);
+                app.selectedFlavour = "glTF";
+                return this.pathProvider.resolve(value, app.selectedFlavour);
             }),
             map( value => ({mainFile: value, additionalFiles: undefined})),
         );
-        this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
+
+        const dropdownFlavourChanged = app.flavourChanged$.pipe(
+            pluck("event", "msg"),
+            map(value => {
+                return this.pathProvider.resolve(app.selectedModel, value);
+            }),
+            map( value => ({mainFile: value, additionalFiles: undefined})),
+        );
+
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
         this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
@@ -91,7 +101,7 @@ class UIModel
         );
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
-        this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
+        this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.gltfDropped);
         this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment).pipe(
             startWith(environments[initialEnvironment].hdr_path)
         );

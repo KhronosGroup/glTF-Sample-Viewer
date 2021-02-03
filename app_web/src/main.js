@@ -74,11 +74,6 @@ async function main()
         multicast(gltfLoadedSubject)
     );
 
-    uiModel.flavour.subscribe( flavour => {
-        pathProvider.setCurrentFlavour(flavour);
-        uiModel.app.models = pathProvider.getAllKeys()
-    });
-
     uiModel.disabledAnimations(uiModel.activeAnimations.pipe(map(animationIndices => {
         // Disable all animations which are not disjoint to the current selection of animations.
         return state.gltf.nonDisjointAnimations(animationIndices);

@@ -2,8 +2,7 @@ import axios from 'axios';
 
 import {
     getContainingFolder,
-    combinePaths,
-    getFileNameWithoutExtension
+    combinePaths
 } from 'gltf-viewer-source';
 
 class gltfModelPathProvider
@@ -12,10 +11,7 @@ class gltfModelPathProvider
     {
         this.modelIndexerPath = modelIndexerPath;
         this.ignoredVariants = ignoredVariants;
-        this.currentFalvour = currentFalvour;
         this.modelsDictionary = undefined;
-
-        this.modelIndexer = undefined;
     }
 
     async initialize()
@@ -23,24 +19,18 @@ class gltfModelPathProvider
         const self = this;
         return axios.get(this.modelIndexerPath).then(response =>
         {
-            self.modelIndexer = response.data;
-            self.populateDictionary(self.modelIndexer);
+            self.populateDictionary(response.data);
         });
     }
 
-    resolve(modelKey)
+    resolve(modelKey, flavour)
     {
-        return this.modelsDictionary[modelKey];
+        return this.modelsDictionary[modelKey][flavour];
     }
 
     getAllKeys()
     {
         return Object.keys(this.modelsDictionary);
-    }
-
-    pathExists(path)
-    {
-        return Object.values(this.modelsDictionary).find(p => p === path);
     }
 
     populateDictionary(modelIndexer)
@@ -49,10 +39,13 @@ class gltfModelPathProvider
         this.modelsDictionary = {};
         for (const entry of modelIndexer)
         {
-            if (entry.variants === undefined)
+            // TODO maybe handle undefined names better
+            if (entry.variants === undefined || entry.name === undefined)
             {
                 continue;
             }
+
+            let variants = [];
 
             for (const variant of Object.keys(entry.variants))
             {
@@ -60,42 +53,23 @@ class gltfModelPathProvider
                 {
                     continue;
                 }
-                if (this.currentFalvour !== variant)
-                {
-                    continue;
-                }
 
                 const fileName = entry.variants[variant];
                 const modelPath = combinePaths(modelsFolder, entry.name, variant, fileName);
-                let modelKey = getFileNameWithoutExtension(fileName);
+                variants[variant] = modelPath;
 
-                if (entry.name !== undefined)
-                {
-                    modelKey = entry.name;
-                }
-                if (variant !== "glTF")
-                {
-                    modelKey += " (" + variant.replace("glTF-", "") + ")";
-                }
-
-                this.modelsDictionary[modelKey] = modelPath;
             }
+            this.modelsDictionary[entry.name] = variants;
         }
     }
 
-    // Sets current flavour and repopulates the models dictionary
-    setCurrentFlavour(currentFalvour)
+    getModelFlavours(modelName)
     {
-        this.currentFalvour = currentFalvour;
-
-        if(this.modelIndexer === undefined)
+        if(this.modelsDictionary[modelName] === undefined)
         {
-            console.log("can't set flavor. Model indexer not yet loaded.")
+            return ["glTF"];
         }
-
-        this.populateDictionary(this.modelIndexer);
-
-        console.log("flavour set to: " + currentFalvour);
+        return Object.keys(this.modelsDictionary[modelName]);
     }
 }
 
