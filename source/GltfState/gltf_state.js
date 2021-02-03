@@ -4,7 +4,7 @@ import { AnimationTimer } from '../gltf/utils.js';
 
 class GltfState
 {
-    constructor()
+    constructor(view)
     {
         this.gltf = undefined;
         this.environment = undefined;
@@ -31,7 +31,13 @@ class GltfState
         this.animationIndices = [];
         this.animationTimer = new AnimationTimer();
         this.variant = undefined;
+
+        // retain a reference to the view with which the state was created, so that it can be validated
+        this._view = view;
     }
 }
+
+GltfState.ToneMaps = ToneMaps;
+GltfState.DebugOutput = DebugOutput;
 
 export { GltfState };

@@ -18,17 +18,42 @@ import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
 
-function initKtxLib(view, ktxlib)
-{
-    view.ktxDecoder = new KtxDecoder(view.context, ktxlib);
-}
 
-async function initDracoLib(dracolib)
+class ResourceLoader
 {
-    const dracoDecoder = new DracoDecoder(dracolib);
-    if (dracoDecoder !== undefined)
+    constructor(view)
     {
-        await dracoDecoder.ready();
+        this.view = view;
+    }
+
+    /**
+     * loadGltf asynchroneously and create resources for rendering
+     * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as
+     * preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
+     * @param {File[]} [externalFiles] additional files containing resources that are referenced in the gltf
+     */
+    async loadGltf(gltfFile, externalFiles)
+    {
+        return loadGltf(gltfFile, this.view, externalFiles);
+    }
+
+    async loadEnvironment(environmentFile, lutFiles)
+    {
+        return loadEnvironment(environmentFile, this.view, lutFiles);
+    }
+
+    initKtxLib(ktxlib)
+    {
+        this.view.ktxDecoder = new KtxDecoder(this.view.context, ktxlib);
+    }
+
+    async initDracoLib(dracolib)
+    {
+        const dracoDecoder = new DracoDecoder(dracolib);
+        if (dracoDecoder !== undefined)
+        {
+            await dracoDecoder.ready();
+        }
     }
 }
 
@@ -56,7 +81,7 @@ async function loadGltf(file, view, additionalFiles)
         }
         else
         {
-            // TODO
+            console.error("Only .glb files can be loaded from an array buffer");
         }
     }
     else if (typeof (File) !== 'undefined' && file instanceof File)
@@ -319,4 +344,4 @@ async function loadEnvironmentFromImage(imageHDR, view, luts)
     return environment;
 }
 
-export { loadGltf, loadEnvironment, initKtxLib, initDracoLib };
+export { ResourceLoader };

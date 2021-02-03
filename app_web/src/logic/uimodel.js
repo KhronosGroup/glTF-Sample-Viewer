@@ -1,6 +1,6 @@
 import { Observable, merge } from 'rxjs';
 import { map, filter, startWith, pluck } from 'rxjs/operators';
-import { glTF, ToneMaps, DebugOutput, getIsGltf, getIsGlb, getIsHdr} from 'gltf-viewer-source';
+import { Gltf, GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
 
@@ -36,20 +36,20 @@ class UIModel
         const initialEnvironment = "footprint_court";
         this.app.selectedEnvironment = initialEnvironment;
 
-        this.app.tonemaps = Object.keys(ToneMaps).map((key) => {
-            return {title: ToneMaps[key]};
+        this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => {
+            return {title: GltfState.ToneMaps[key]};
         });
         this.tonemap = app.tonemapChanged$.pipe(
             pluck("event", "msg"),
-            startWith(ToneMaps.LINEAR)
+            startWith(GltfState.ToneMaps.LINEAR)
         );
 
-        this.app.debugchannels = Object.keys(DebugOutput).map((key) => {
-            return {title: DebugOutput[key]};
+        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => {
+            return {title: GltfState.DebugOutput[key]};
         });
         this.debugchannel = app.debugchannelChanged$.pipe(
             pluck("event", "msg"),
-            startWith(DebugOutput.NONE)
+            startWith(GltfState.DebugOutput.NONE)
         );
 
         this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
@@ -155,7 +155,7 @@ class UIModel
 
             map( (files) => {
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
-                const mainFile = files.find( (file) => getIsGlb(file.name) || getIsGltf(file.name));
+                const mainFile = files.find( (file) => file.name.endsWith(".glb") || file.name.endsWith(".gltf"));
                 const additionalFiles = files.filter( (file) => file !== mainFile);
                 return {mainFile: mainFile, additionalFiles: additionalFiles};
             }),
@@ -175,7 +175,7 @@ class UIModel
     {
         const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
             map( state => state.gltf ),
-            startWith(new glTF())
+            startWith(new Gltf.glTF())
         );
 
         // update scenes
