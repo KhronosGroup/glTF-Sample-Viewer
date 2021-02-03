@@ -189,7 +189,7 @@ vec4 getSampleVector(int sampleIndex, vec3 N, float roughness)
 	{
         // cosinus mapping
 		cosTheta = sqrt(1.0 - u);
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+		sinTheta = sqrt(u); // equivalent to `sqrt(1.0 - cosTheta*cosTheta)`;
 	}
 	else if(u_distribution == cGGX)
 	{
