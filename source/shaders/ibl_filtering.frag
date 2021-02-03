@@ -114,52 +114,6 @@ mat3 generateTBN(vec3 normal)
 	return mat3(tangent, bitangent, normal);
 }
 
-vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
-{
-    vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
-    float u = hammersleyPoint.x;
-    float v = hammersleyPoint.y;
-
-	float phi = 2.0 * MATH_PI * v;
-    float cosTheta = 0.f;
-	float sinTheta = 0.f;
-
-    // generate the points on the hemisphere with a fitting mapping for
-    // the distribution (e.g. lambertian uses a cosine importance)
-	if(u_distribution == cLambertian)
-	{
-        // cosinus mapping
-		cosTheta = sqrt(1.0 - u);
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-	}
-	else if(u_distribution == cGGX)
-	{
-        // specular mapping
-		float alpha = roughness * roughness;
-		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-	}
-	else if(u_distribution == cCharlie)
-	{
-        // sheen mapping
-		float alpha = roughness * roughness;
-		sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
-		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
-	}
-
-    // transform the hemisphere sample to the normal coordinate frame
-    // i.e. rotate the hemisphere to the normal direction
-    vec3 localSpaceDirection = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
-    mat3 TBN = generateTBN(N);
-    return TBN * localSpaceDirection;
-}
-
-// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
-float V_Ashikhmin(float NdotL, float NdotV)
-{
-    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
-}
-
 // NDF
 float D_GGX(float NdotH, float roughness)
 {
@@ -196,31 +150,77 @@ float D_Charlie(float sheenRoughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * MATH_PI);
 }
 
-float PDF(vec3 V, vec3 H, vec3 N, vec3 L, float roughness)
+
+float PDF(vec3 H, vec3 N, float roughness)
 {
+    float NdotH = dot(N, H);
 	if(u_distribution == cLambertian)
 	{
-		float NdotL = dot(N, L);
-		return max(NdotL * (1.0 / MATH_PI), 0.0);
+		return max(NdotH * (1.0 / MATH_PI), 0.0);
 	}
 	else if(u_distribution == cGGX)
 	{
-		float VdotH = dot(V, H);
-		float NdotH = dot(N, H);
-
 		float D = D_GGX(NdotH, roughness);
-		return max(D * NdotH / (4.0 * VdotH), 0.0);
+		return max(D * NdotH / (4.0 * NdotH), 0.0);
 	}
 	else if(u_distribution == cCharlie)
 	{
-		float VdotH = dot(V, H);
-		float NdotH = dot(N, H);
-
 		float D = D_Charlie(roughness, NdotH);
-		return max(D * NdotH / abs(4.0 * VdotH), 0.0);
+		return max(D * NdotH / abs(4.0 * NdotH), 0.0);
 	}
 
 	return 0.f;
+}
+
+// getSampleVector returns an importance sample direction with pdf in the .w component
+vec4 getSampleVector(int sampleIndex, vec3 N, float roughness)
+{
+    vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
+    float u = hammersleyPoint.x;
+    float v = hammersleyPoint.y;
+
+	float phi = 2.0 * MATH_PI * v;
+    float cosTheta = 0.f;
+	float sinTheta = 0.f;
+
+    // generate the points on the hemisphere with a fitting mapping for
+    // the distribution (e.g. lambertian uses a cosine importance)
+	if(u_distribution == cLambertian)
+	{
+        // cosinus mapping
+		cosTheta = sqrt(1.0 - u);
+		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+	}
+	else if(u_distribution == cGGX)
+	{
+        // specular mapping
+		float alpha = roughness * roughness;
+		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
+		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+	}
+	else if(u_distribution == cCharlie)
+	{
+        // sheen mapping
+		float alpha = roughness * roughness;
+		sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
+		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
+	}
+
+    // transform the hemisphere sample to the normal coordinate frame
+    // i.e. rotate the hemisphere to the normal direction
+    vec3 localSpaceDirection = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
+    mat3 TBN = generateTBN(N);
+    vec3 direction = TBN * localSpaceDirection;
+
+    float pdf = PDF(direction, N, roughness);
+
+    return vec4(direction, pdf);
+}
+
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
+float V_Ashikhmin(float NdotL, float NdotV)
+{
+    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
 }
 
 vec3 filterColor(vec3 N)
@@ -231,7 +231,10 @@ vec3 filterColor(vec3 N)
 
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
-		vec3 H = getSampleVector(i, N, u_roughness);
+        vec4 importanceSample = getSampleVector(i, N, u_roughness);
+
+		vec3 H = vec3(importanceSample.xyz);
+        float pdf = importanceSample.w;
 
         if(u_distribution == cLambertian)
         {
@@ -259,8 +262,6 @@ vec3 filterColor(vec3 N)
 				// Mipmap Filtered Samples
 				// see https://github.com/derkreature/IBLBaker
 				// see https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
-				float pdf = PDF(V, H, N, L, u_roughness );
-
 				float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
 
 				lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
@@ -309,7 +310,7 @@ vec3 LUT(float NdotV, float roughness)
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
 		// Importance sampling, depending on the distribution.
-		vec3 H = getSampleVector(i, N, roughness);
+		vec3 H = getSampleVector(i, N, roughness).xyz;
 		vec3 L = normalize(reflect(-V, H));
 
 		float NdotL = saturate(L.z);
