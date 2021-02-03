@@ -45,6 +45,7 @@ async function main()
     const gltfLoadedMulticast = uiModel.model.pipe(
         mergeMap( (model) =>
         {
+        	uiModel.goToLoadingState();
             return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
@@ -65,6 +66,8 @@ async function main()
                     }
                 }
                 state.animationTimer.start();
+
+                uiModel.exitLoadingState();
 
                 return state;
             })

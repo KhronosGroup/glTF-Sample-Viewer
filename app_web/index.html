@@ -97,12 +97,13 @@ function getUrlParam(parameter, defaultvalue){
     <!-- UI -->
     <div id="app">
         <template>
-            <b-tabs vertical position="is-right" class="is-flex-wrap-nowrap" type="is-toggle">
-                <b-tab-item label="Models" icon="google-photos" class="tabItemScrollable tab-item">
+            <b-tabs vertical position="is-right" v-model="activeTab" class="is-flex-wrap-nowrap" type="is-toggle">
+                <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                        <img src="assets/ui/Model 30X30.svg" width="30px" height="30px">
-                        <span>Models</span>
+                        <img v-bind:src="[activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
+                            v-bind:width="[activeTab === 0 ? '50px' : '30px']">
+                        <span v-bind:style="[activeTab === 0 ? {'display': 'none'} : {}]">Models</span>
                     </template>
 
                     <div class="tabContent">
@@ -140,10 +141,18 @@ function getUrlParam(parameter, defaultvalue){
                         </b-field>
 
                         <b-field label="Variants">
-                            <b-field v-for="item in materialVariants" v-bind:key="item.titel">
-                                <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
-                                    {{ item.title }}
-                                </b-radio>
+                            <b-field label="Variants">
+                                <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
+                                    <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                                        {{ item.title }}
+                                    </b-radio>
+                                </b-field>
+                                <b-select v-model="selectedVariant" v-stream:input="variantChanged$" v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
+                                    <option v-for="(item) in materialVariants"
+                                        v-bind:value="item.title">
+                                        {{ item.title }}
+                                    </option>
+                                </b-select>
                             </b-field>
                         </b-field>
                     </div>
@@ -153,8 +162,9 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Display" icon="library-music" class="tabItemScrollable tab-item">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                        <img src="assets/ui/Display 30X30.svg" width="30px" height="30px">
-                        <span>Display</span>
+                        <img v-bind:src="[activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
+                            v-bind:width="[activeTab === 1 ? '50px' : '30px']">
+                        <span v-bind:style="[activeTab === 1 ? {'display': 'none'} : {}]">Display</span>
                     </template>
 
                     <div class="tabContent">
@@ -202,8 +212,9 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                        <img src="assets/ui/Animation 30X30.svg" width="30px" height="30px">
-                        <span>Animation</span>
+                        <img v-bind:src="[activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
+                        v-bind:width="[activeTab === 2 ? '50px' : '30px']">
+                        <span v-bind:style="[activeTab === 2 ? {'display': 'none'} : {}]">Animation</span>
                     </template>
 
                     <div class="tabContent">
@@ -225,8 +236,9 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="XMP" icon="video" class="tabItemScrollable tab-item">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                        <img src="assets/ui/XMP 30X30.svg" width="30px" height="30px">
-                        <span>XMP</span>
+                        <img v-bind:src="[activeTab === 3 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
+                        v-bind:width="[activeTab === 3 ? '50px' : '30px']">
+                        <span v-bind:style="[activeTab === 3 ? {'display': 'none'} : {}]">XMP</span>
                     </template>
 
                     <div class="tabContent">
@@ -246,8 +258,9 @@ function getUrlParam(parameter, defaultvalue){
                 <b-tab-item label="Advanced Controls" icon="video"  class="tabItemScrollable tab-item">
                     <template #header>
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                        <img src="assets/ui/Developer 30X30.svg" width="30px" height="30px">
-                        <span>Advanced Controls</span>
+                        <img v-bind:src="[activeTab === 4 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
+                            v-bind:width="[activeTab === 4 ? '50px' : '30px']">
+                        <span v-bind:style="[activeTab === 4 ? {'display': 'none'} : {}]">Advanced Controls</span>
                     </template>
 
                     <div class="tabContent">

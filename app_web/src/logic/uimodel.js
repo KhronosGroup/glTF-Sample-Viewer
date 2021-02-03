@@ -340,6 +340,14 @@ class UIModel
         document.execCommand("copy");
         document.body.removeChild(dummy);
     }
+
+    goToLoadingState() {
+        this.app.goToLoadingState();
+    }
+    exitLoadingState()
+    {
+        this.app.exitLoadingState();
+    }
 }
 
 export { UIModel };
