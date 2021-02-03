@@ -32,14 +32,6 @@ Vue.component('toggle-button', {
         }
     }
 });
-Vue.component('dual-label-list-element', {
-    props: ['name', 'items'],
-    template:'#dualLabelListTemplate'
-});
-Vue.component('dual-label-element', {
-    props: ['name', 'value'],
-    template:'#dualLabelTemplate'
-});
 Vue.component('json-to-ui-template', {
     props: ['data', 'isinner'],
     template:'#jsonToUITemplate'

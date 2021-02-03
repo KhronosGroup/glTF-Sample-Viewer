@@ -1,10 +1,6 @@
 import axios from 'axios';
 
-import {
-    getContainingFolder,
-    combinePaths,
-    getFileNameWithoutExtension
-} from 'gltf-viewer-source';
+import path from 'path';
 
 class gltfModelPathProvider
 {
@@ -42,7 +38,7 @@ class gltfModelPathProvider
 
     populateDictionary(modelIndexer)
     {
-        const modelsFolder = getContainingFolder(this.modelIndexerPath);
+        const modelsFolder = path.dirname(this.modelIndexerPath);
         this.modelsDictionary = {};
         for (const entry of modelIndexer)
         {
@@ -59,8 +55,8 @@ class gltfModelPathProvider
                 }
 
                 const fileName = entry.variants[variant];
-                const modelPath = combinePaths(modelsFolder, entry.name, variant, fileName);
-                let modelKey = getFileNameWithoutExtension(fileName);
+                const modelPath = path.join(modelsFolder, entry.name, variant, fileName);
+                let modelKey = path.basename(fileName, path.extname(fileName));
 
                 if (entry.name !== undefined)
                 {
