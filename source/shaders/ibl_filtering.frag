@@ -63,20 +63,21 @@ float saturate(float v)
 	return clamp(v, 0.0f, 1.0f);
 }
 
-float bitfieldReverse(uint bits)
+// Hammersley Points on the Hemisphere
+// http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+float radicalInverse_VdC(uint bits)
 {
     bits = (bits << 16u) | (bits >> 16u);
     bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-	return float(bits);
+	return float(bits) * 2.3283064365386963e-10; // / 0x100000000
 }
+vec2 hammersley2d(int i, int N) {
+    return vec2(float(i)/float(N), radicalInverse_VdC(uint(i)));
+ }
 
-float Hammersley(uint i)
-{
-    return bitfieldReverse(i) * 2.3283064365386963e-10;
-}
 
 vec3 getImportanceSampleDirection(vec3 normal, float sinTheta, float cosTheta, float phi)
 {
@@ -151,28 +152,29 @@ float D_Charlie(float sheenRoughness, float NdotH)
 
 vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
 {
-	float X = float(sampleIndex) / float(u_sampleCount);
-	float Y = Hammersley(uint(sampleIndex));
+    vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
+    float u = hammersleyPoint.x;
+    float v = hammersleyPoint.y;
 
-	float phi = 2.0 * MATH_PI * X;
+	float phi = 2.0 * MATH_PI * v;
     float cosTheta = 0.f;
 	float sinTheta = 0.f;
 
 	if(u_distribution == cLambertian)
 	{
-		cosTheta = 1.0 - Y;
+		cosTheta = 1.0 - u;
 		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	}
 	else if(u_distribution == cGGX)
 	{
 		float alpha = roughness * roughness;
-		cosTheta = sqrt((1.0 - Y) / (1.0 + (alpha*alpha - 1.0) * Y));
+		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
 		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	}
 	else if(u_distribution == cCharlie)
 	{
 		float alpha = roughness * roughness;
-		sinTheta = pow(Y, alpha / (2.0*alpha + 1.0));
+		sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
 		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
 	}
 
