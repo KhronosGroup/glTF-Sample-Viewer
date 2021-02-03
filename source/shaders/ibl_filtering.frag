@@ -64,7 +64,9 @@ float saturate(float v)
 }
 
 // Hammersley Points on the Hemisphere
+// CC BY 3.0 (Holger Dammertz)
 // http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+// with adapted interface
 float radicalInverse_VdC(uint bits)
 {
     bits = (bits << 16u) | (bits >> 16u);
@@ -74,15 +76,19 @@ float radicalInverse_VdC(uint bits)
     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
 	return float(bits) * 2.3283064365386963e-10; // / 0x100000000
 }
+
+// hammersley2d describes a sequence of points in the 2d unit square [0,1)^2
+// that can be used for quasi Monte Carlo integration
 vec2 hammersley2d(int i, int N) {
     return vec2(float(i)/float(N), radicalInverse_VdC(uint(i)));
  }
 
+// Hemisphere Sample
 
-vec3 getImportanceSampleDirection(vec3 normal, float sinTheta, float cosTheta, float phi)
+// TBN generates a tangent bitangent normal coordinate frame from the normal
+// (the normal must be normalized)
+mat3 generateTBN(vec3 normal)
 {
-	vec3 H = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
-
     vec3 bitangent = vec3(0.0, 1.0, 0.0);
 
 	// Eliminates singularities.
@@ -105,7 +111,46 @@ vec3 getImportanceSampleDirection(vec3 normal, float sinTheta, float cosTheta, f
     vec3 tangent = cross(bitangent, normal);
     bitangent = cross(normal, tangent);
 
-	return normalize(tangent * H.x + bitangent * H.y + normal * H.z);
+	return mat3(tangent, bitangent, normal);
+}
+
+vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
+{
+    vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
+    float u = hammersleyPoint.x;
+    float v = hammersleyPoint.y;
+
+	float phi = 2.0 * MATH_PI * v;
+    float cosTheta = 0.f;
+	float sinTheta = 0.f;
+
+    // generate the points on the hemisphere with a fitting mapping for
+    // the distribution
+	if(u_distribution == cLambertian)
+	{
+		cosTheta = 1.0 - u;
+		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+	}
+	else if(u_distribution == cGGX)
+	{
+        // specular mapping
+		float alpha = roughness * roughness;
+		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
+		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+	}
+	else if(u_distribution == cCharlie)
+	{
+        // sheen mapping
+		float alpha = roughness * roughness;
+		sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
+		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
+	}
+
+    // transform the hemisphere sample to the normal coordinate frame
+    // i.e. rotate the hemisphere to the normal direction
+    vec3 localSpaceDirection = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
+    mat3 TBN = generateTBN(N);
+    return TBN * localSpaceDirection;
 }
 
 // https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
@@ -148,37 +193,6 @@ float D_Charlie(float sheenRoughness, float NdotH)
     float cos2h = NdotH * NdotH;
     float sin2h = 1.0 - cos2h;
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * MATH_PI);
-}
-
-vec3 getSampleVector(int sampleIndex, vec3 N, float roughness)
-{
-    vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
-    float u = hammersleyPoint.x;
-    float v = hammersleyPoint.y;
-
-	float phi = 2.0 * MATH_PI * v;
-    float cosTheta = 0.f;
-	float sinTheta = 0.f;
-
-	if(u_distribution == cLambertian)
-	{
-		cosTheta = 1.0 - u;
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-	}
-	else if(u_distribution == cGGX)
-	{
-		float alpha = roughness * roughness;
-		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-	}
-	else if(u_distribution == cCharlie)
-	{
-		float alpha = roughness * roughness;
-		sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
-		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
-	}
-
-	return getImportanceSampleDirection(N, sinTheta, cosTheta, phi);
 }
 
 float PDF(vec3 V, vec3 H, vec3 N, vec3 L, float roughness)
