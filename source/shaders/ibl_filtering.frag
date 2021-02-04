@@ -150,7 +150,6 @@ float D_Charlie(float sheenRoughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * MATH_PI);
 }
 
-
 float PDF(vec3 H, vec3 N, float roughness)
 {
     float NdotH = dot(N, H);
@@ -161,12 +160,12 @@ float PDF(vec3 H, vec3 N, float roughness)
 	else if(u_distribution == cGGX)
 	{
 		float D = D_GGX(NdotH, roughness);
-		return max(D * NdotH / (4.0 * NdotH), 0.0);
+		return max(D / 4.0, 0.0);
 	}
 	else if(u_distribution == cCharlie)
 	{
 		float D = D_Charlie(roughness, NdotH);
-		return max(D * NdotH / abs(4.0 * NdotH), 0.0);
+		return max(D / 4.0, 0.0);
 	}
 
 	return 0.f;
@@ -179,17 +178,22 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     float u = hammersleyPoint.x;
     float v = hammersleyPoint.y;
 
-	float phi = 2.0 * MATH_PI * v;
+	float phi = 0.0;
     float cosTheta = 0.f;
 	float sinTheta = 0.f;
+    float pdf = 0.0;
 
     // generate the points on the hemisphere with a fitting mapping for
     // the distribution (e.g. lambertian uses a cosine importance)
 	if(u_distribution == cLambertian)
 	{
-        // cosinus mapping
-		cosTheta = sqrt(1.0 - u);
+        // Cosine weighted hemisphere sampling
+        // http://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#Cosine-WeightedHemisphereSampling
+        cosTheta = sqrt(1.0 - u);
 		sinTheta = sqrt(u); // equivalent to `sqrt(1.0 - cosTheta*cosTheta)`;
+        phi = 2.0 * MATH_PI * v;
+
+        pdf = cosTheta / MATH_PI; // evaluation for solid angle, therefore drop the sinTheta
 	}
 	else if(u_distribution == cGGX)
 	{
@@ -197,6 +201,7 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 		float alpha = roughness * roughness;
 		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
 		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+        phi = 2.0 * MATH_PI * v;
 	}
 	else if(u_distribution == cCharlie)
 	{
@@ -204,6 +209,7 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 		float alpha = roughness * roughness;
 		sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
 		cosTheta = sqrt(1.0 - sinTheta * sinTheta);
+        phi = 2.0 * MATH_PI * v;
 	}
 
     // transform the hemisphere sample to the normal coordinate frame
@@ -212,7 +218,10 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     mat3 TBN = generateTBN(N);
     vec3 direction = TBN * localSpaceDirection;
 
-    float pdf = PDF(direction, N, roughness);
+    if(u_distribution == cGGX || u_distribution == cCharlie)
+    {
+        pdf = PDF(direction, N, roughness);
+    }
 
     return vec4(direction, pdf);
 }
@@ -241,7 +250,7 @@ vec3 filterColor(vec3 N)
             float NdotH = clamp(dot(N, H), 0.0, 1.0);
 
             // sample lambertian at a lower resolution to avoid fireflies
-            color += vec4(textureLod(uCubeMap, H, u_lodBias).rgb, 1.0);
+            color += vec4(textureLod(uCubeMap, H, u_lodBias).rgb * NdotH / pdf, 1.0);
             continue;
         }
 
@@ -257,7 +266,7 @@ vec3 filterColor(vec3 N)
 		{
 			float lod = 0.0;
 
-			if (u_roughness > 0.0 ||u_distribution == cLambertian)
+			if (u_roughness > 0.0)
 			{
 				// Mipmap Filtered Samples
 				// see https://github.com/derkreature/IBLBaker
