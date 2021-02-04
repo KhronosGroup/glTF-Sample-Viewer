@@ -107,8 +107,8 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2 class="title">Models</h2>
-                        <b-field label="Models">
+                        <h2 class="title is-spaced">Models</h2>
+                        <b-field label="Models" class="subtitle">
                             <b-select v-model="selectedModel" v-stream:input="modelChanged$">
                                 <option v-for="(item) in models" v-bind:value="item">
                                     {{ item}}
@@ -123,7 +123,7 @@ function getUrlParam(parameter, defaultvalue){
                                 </option>
                             </b-select>
                         </b-field> -->
-                        <b-field label="Scenes">
+                        <b-field label="Scenes" class="subtitle">
                             <b-select v-model="selectedScene" v-stream:input="sceneChanged$">
                                 <option v-for="(item) in scenes"
                                     v-bind:value="item.index">
@@ -131,7 +131,7 @@ function getUrlParam(parameter, defaultvalue){
                                 </option>
                             </b-select>
                         </b-field>
-                        <b-field label="Cameras">
+                        <b-field label="Cameras" class="subtitle">
                             <b-select v-model="selectedCamera" v-stream:input="cameraChanged$">
                                 <option v-for="(item) in cameras"
                                     v-bind:value="item.index">
@@ -140,7 +140,7 @@ function getUrlParam(parameter, defaultvalue){
                             </b-select>
                         </b-field>
 
-                        <b-field label="Variants">
+                        <b-field label="Variants" class="subtitle">
                             <b-field label="Variants">
                                 <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
                                     <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
@@ -168,7 +168,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2 class="title">Display</h2>
+                        <h2 class="title is-spaced">Display</h2>
                         <b-field label="Lighting" class="subtitle">
                             <b-switch v-model="ibl" v-stream:input="iblChanged$">Image Based</b-switch>
                             <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
@@ -218,7 +218,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2 class="title">Animation</h2>
+                        <h2 class="title is-spaced">Animation</h2>
                         <label  class="subtitle">Animation Controls</label>
                         <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
 
@@ -242,7 +242,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2 class="title">XMP</h2>
+                        <h2 class="title is-spaced">XMP</h2>
                         <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
                     </div>
                 </b-tab-item>
@@ -264,7 +264,7 @@ function getUrlParam(parameter, defaultvalue){
                     </template>
 
                     <div class="tabContent">
-                        <h2 class="title">Advanced Controls</h2>
+                        <h2 class="title is-spaced">Advanced Controls</h2>
                         <b-field label="Capture Canvas" class="smallerLabel">
                         	<button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
                     	</b-field>
