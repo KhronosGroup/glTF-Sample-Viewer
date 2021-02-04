@@ -264,6 +264,11 @@ div .field.has-addons
 .select:not(.is-multiple):not(.is-loading)::after {
     border-color: #f5f5f5;
 }
+// this seems to be the only option to change the button height
+button.button
+{
+    height: 2em;
+}
 
 // dropdown overlay
 .is-dropAreaCard
