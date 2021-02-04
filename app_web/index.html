@@ -309,6 +309,22 @@ function getUrlParam(parameter, defaultvalue){
                     </div>
                 </b-tab-item>
             </b-tabs>
+
+            <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone">
+                <div class="is-overlay is-dropAreaCard is-flex">
+                    <div class="box has-text-centered">
+                        <span class="icon is-large">
+                            <i class="fas fa-folder-open fa-4x"></i>
+                        </span>
+                        <p class="is-size-1 has-text-weight-light">
+                            Drag and drop files here
+                        </p>
+                        <p class="is-size-4">
+                            Supported files: glTF, glb & hdr
+                        </p>
+                      </div>
+                 </div>
+            </div>
         </template>
     </div>
 </body>

@@ -13,7 +13,7 @@ $scheme-main: #363636;
 $scheme-invert: #f5f5f5;
 $border: #f5f5f5;
 $text: #f5f5f5;
-// this changes the color of labels, etc. (i dont know why either...)
+// this changes the color of labels, etc.
 $text-strong: #f5f5f5;
 $dark: #f5f5f5;
 
@@ -34,6 +34,14 @@ $family-primary: 'Roboto', sans-serif;
 $title-size: 22pt;
 $subtitle-size: 18px;
 $subtitle-weight: 500;
+$label-weight: 500;
+
+// dropdown overlay
+$icon-dimensions-large: 8em;
+$box-background-color: rgba(255, 255, 255, 0.61);
+$box-color: findColorInvert($text);
+$box-radius: 30px;
+$box-padding: 3rem;
 
 // setup derived colors
 @import "../../node_modules/bulma/sass/utilities/derived-variables";
@@ -256,6 +264,14 @@ div .field.has-addons
 .select:not(.is-multiple):not(.is-loading)::after {
     border-color: #f5f5f5;
 }
+
+// dropdown overlay
+.is-dropAreaCard
+{
+    justify-content: center;
+    align-items: center;
+}
+
 
 #canvas {
     width:  100%;

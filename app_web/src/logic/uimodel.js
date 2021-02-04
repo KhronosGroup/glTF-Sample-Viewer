@@ -90,7 +90,10 @@ class UIModel
             map( ({ newValue, oldValue }) => newValue)
         );
 
-        const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
+        const canvas = document.getElementById("canvas");
+        const dropZone = document.getElementById("dropZone");
+        this.registerDropZoneUIHandle(canvas);
+        const inputObservables = UIModel.getInputObservables(dropZone, this.app);
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
         this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment).pipe(
             startWith(environments[initialEnvironment].hdr_path)
@@ -133,16 +136,19 @@ class UIModel
         });
     }
 
-    static getInputObservables(inputDomElement)
+    // app has to be the vuejs app instance
+    static getInputObservables(inputDomElement, app)
     {
         const observables = {};
 
         const simpleDropzoneObservabel = new Observable(subscriber => {
             const dropCtrl = new SimpleDropzone(inputDomElement, inputDomElement);
             dropCtrl.on('drop', ({files}) => {
+                app.showDropDownOverlay = false;
                 subscriber.next(files);
             });
             dropCtrl.on('droperror', () => {
+                app.showDropDownOverlay = false;
                 subscriber.error();
             });
         });
@@ -169,6 +175,14 @@ class UIModel
             filter(file => file !== undefined),
         );
         return observables;
+    }
+
+    registerDropZoneUIHandle(inputDomElement)
+    {
+        const self = this;
+        inputDomElement.addEventListener('dragenter', function(event) {
+            self.app.showDropDownOverlay = true;
+        });
     }
 
     attachGltfLoaded(glTFLoadedStateObservable)

@@ -89,6 +89,7 @@ const app = new Vue({
 
             activeTab: 0,
             loadingComponent: {},
+            showDropDownOverlay: false,
         };
     },
     mounted: function()
