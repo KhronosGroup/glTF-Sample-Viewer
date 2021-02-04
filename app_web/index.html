@@ -141,19 +141,17 @@ function getUrlParam(parameter, defaultvalue){
                         </b-field>
 
                         <b-field label="Variants" class="subtitle">
-                            <b-field label="Variants">
-                                <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
-                                    <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
-                                        {{ item.title }}
-                                    </b-radio>
-                                </b-field>
-                                <b-select v-model="selectedVariant" v-stream:input="variantChanged$" v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
-                                    <option v-for="(item) in materialVariants"
-                                        v-bind:value="item.title">
-                                        {{ item.title }}
-                                    </option>
-                                </b-select>
+                            <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
+                                <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                                    {{ item.title }}
+                                </b-radio>
                             </b-field>
+                            <b-select v-model="selectedVariant" v-stream:input="variantChanged$" v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
+                                <option v-for="(item) in materialVariants"
+                                    v-bind:value="item.title">
+                                    {{ item.title }}
+                                </option>
+                            </b-select>
                         </b-field>
                     </div>
                 </b-tab-item>
