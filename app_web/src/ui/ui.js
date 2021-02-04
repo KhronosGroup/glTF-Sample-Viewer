@@ -90,6 +90,7 @@ const app = new Vue({
             activeTab: 0,
             loadingComponent: {},
             showDropDownOverlay: false,
+            uploadedHDR: undefined,
         };
     },
     mounted: function()
@@ -133,6 +134,10 @@ const app = new Vue({
                 return;
             }
             this.loadingComponent.close();
+        },
+        onFileChange(e) {
+            const file = e.target.files[0];
+            this.uploadedHDR = file;
         },
     }
 }).$mount('#app');

@@ -201,6 +201,12 @@ function getUrlParam(parameter, defaultvalue){
                     </b-field>
 
                     <b-field label="Image Based Lighting" class="subtitle">
+                        <button class="button is-rounded">
+                            <input class="file-input" type="file" accept=".hdr" @change="onFileChange">
+                            <i class="fas fa-plus"></i>
+                            Add New HDR
+                        </button>
+
                         <b-field label="Active Environment" class="smallerLabel">
                             <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                 <template #trigger="{ active }">

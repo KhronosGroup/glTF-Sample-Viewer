@@ -63,7 +63,9 @@ class UIModel
         this.renderEnvEnabled = app.renderEnvChanged$.pipe(pluck("event", "msg"));
         this.blurEnvEnabled = app.blurEnvChanged$.pipe(pluck("event", "msg"));
         this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
-        this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
+        this.addEnvironment = app.$watchAsObservable('uploadedHDR').pipe(
+            pluck('newValue')
+        );
         this.captureCanvas = app.captureCanvas$.pipe(pluck('event'));
         this.cameraValuesExport = app.cameraExport$.pipe(pluck('event'));
 
@@ -95,11 +97,12 @@ class UIModel
         this.registerDropZoneUIHandle(canvas);
         const inputObservables = UIModel.getInputObservables(dropZone, this.app);
         this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
-        this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment).pipe(
+        this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment, this.addEnvironment).pipe(
             startWith(environments[initialEnvironment].hdr_path)
         );
 
-        inputObservables.hdrDropped.subscribe( hdrPath => {
+        const hdrUIChange = merge(inputObservables.hdrDropped, this.addEnvironment);
+        hdrUIChange.subscribe( hdrPath => {
             this.app.environments[hdrPath.name] = {
                 title: hdrPath.name,
                 hdr_path: hdrPath,
