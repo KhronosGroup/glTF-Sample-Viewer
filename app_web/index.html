@@ -154,7 +154,7 @@ function getUrlParam(parameter, defaultvalue){
                         </b-select>
                     </b-field>
 
-                    <b-field label="Variants" class="subtitle">
+                    <b-field label="Variants" class="subtitle" v-bind:style="[materialVariants.length <= 1 ? {'display': 'none'} : {}]">
                         <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
                             <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
                                 {{ item.title }}
@@ -240,7 +240,7 @@ function getUrlParam(parameter, defaultvalue){
                     <label  class="subtitle">Animation Controls</label>
                     <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
 
-                    <b-field label="Animations">
+                    <b-field label="Animations" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                         <b-field v-for="animation in animations" v-bind:key="animation.index">
                             <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations" :disabled="disabledAnimations.includes(animation.index)">
                                 {{ animation.title }}
