@@ -49,7 +49,7 @@ const app = new Vue({
             fullheight: true,
             right: true,
             models: ["Avocado"],
-            flavors: [{title: "gltf"}],
+            flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
             materialVariants: [{title: "None"}],
@@ -61,6 +61,7 @@ const app = new Vue({
             statistics: [],
 
             selectedModel: "Avocado",
+            selectedFlavour: "",
             selectedScene: {},
             selectedCamera: {},
             selectedVariant: "None",
