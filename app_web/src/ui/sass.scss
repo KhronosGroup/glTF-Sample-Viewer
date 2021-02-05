@@ -1,105 +1,69 @@
-// contains sass code for buefy
+@charset "utf-8";
 
-// Import Bulma's core
-@import "../../node_modules/bulma/sass/utilities/_all";
+// setup initial colors
+@import "../../node_modules/bulma/sass/utilities/initial-variables";
+@import "../../node_modules/bulma/sass/utilities/functions";
 
 // Set your colors
 $primary: #87c540;
 $primary-light: findLightColor($primary);
 $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
+$scheme-main: #363636;
+$scheme-invert: #f5f5f5;
+$border: #f5f5f5;
+$text: #f5f5f5;
+// this changes the color of labels, etc. (i dont know why either...)
+$text-strong: #f5f5f5;
+$dark: #f5f5f5;
 
-// Lists and maps
-$custom-colors: null !default;
-$custom-shades: null !default;
+$tabs-toggle-link-border-width: 0px;
+$tabs-toggle-link-active-background-color: #373737;
+$tabs-toggle-link-hover-background-color: #2c2c2c;
 
-// Setup $colors to use as bulma classes (e.g. 'is-twitter')
-$colors: mergeColorMaps(
-    (
-        "white": (
-            $white,
-            $black,
-        ),
-        "black": (
-            $black,
-            $white,
-        ),
-        "light": (
-            $light,
-            $light-invert,
-        ),
-        "dark": (
-            $dark,
-            $dark-invert,
-        ),
-        "primary": (
-            $primary,
-            $primary-invert,
-            $primary-light,
-            $primary-dark,
-        ),
-        "link": (
-            $link,
-            $link-invert,
-            $link-light,
-            $link-dark,
-        ),
-        "info": (
-            $info,
-            $info-invert,
-            $info-light,
-            $info-dark,
-        ),
-        "success": (
-            $success,
-            $success-invert,
-            $success-light,
-            $success-dark,
-        ),
-        "warning": (
-            $warning,
-            $warning-invert,
-            $warning-light,
-            $warning-dark,
-        ),
-        "danger": (
-            $danger,
-            $danger-invert,
-            $danger-light,
-            $danger-dark,
-        ),
-    ),
-    $custom-colors
-);
+// button styles
+$button-color: #f2f2f2;
+$button-background-color: #87c540;
+$button-padding-vertical: 0em;
+$button-border-width: 0em;
+
+// set font styles
+$size-normal: 18px;
+$family-primary: 'Roboto', sans-serif;
+$title-size: 22pt;
+$subtitle-size: 18px;
+
+// setup derived colors
+@import "../../node_modules/bulma/sass/utilities/derived-variables";
 
 // Links
 $link: $primary;
 $link-invert: $primary-invert;
 $link-focus-border: $primary;
 
+// Setup $colors to use as bulma classes (e.g. 'is-twitter')
+$addColors: (
+);
+$colors: map-merge($colors, $addColors);
+
 // Import Bulma and Buefy styles
 @import "../../node_modules/bulma/bulma";
 @import "../../node_modules/buefy/src/scss/buefy";
 
-/* only contains styles for the ui */
-
-/******************/
-/******************/
-/* general styles */
-/******************/
-/******************/
-
-h2, label, label.label, p, a
+// general settings
+html
 {
-    color: #f2f2f2;
-    font-size: 18px;
-}
-body, button, input, optgroup, select, textarea
-{
-    font-family: 'Roboto', sans-serif;
+    overflow: unset;
 }
 
-/* tabs */
+// there is no specific bulma setting for this
+.select select
+{
+    padding-top: 0em;
+    padding-bottom: 0em;
+}
+
+/* tab selection on the right */
 .b-tabs.is-vertical
 {
     height: 100vh;
@@ -107,9 +71,7 @@ body, button, input, optgroup, select, textarea
 
 nav.tabs
 {
-    background-color: #1b1b1b;
     width: 100px;
-    overflow: hidden;
 }
 
 nav.tabs ul
@@ -117,32 +79,24 @@ nav.tabs ul
     flex-shrink: unset;
 }
 
-section.tab-content
-{
-    background-color: #363636;
-    width: 300px;
-}
-
+// highlighting of tabs
 .tabs li.is-active {
-    border-right: 7.5px solid #87c540 !important;
-    background-color: #373737;
+    border-right: 7.5px solid #87c540;
 }
 
-.tabs li:hover
+// this is the default background color for tab selection on the right (not provided by bulma)
+nav.tabs
 {
-    background-color: #2c2c2c;
-}
-.tabs li a:hover
-{
-    color: #f5f5f5;
+    background-color: #1b1b1b;
 }
 
 .tabs li
 {
     height: 100px;
-    display: table !important;
+    display: table;
 }
 
+// handle options placement
 .tabs li:first-child
 {
     margin-top: calc(100vh * 0.11);
@@ -161,11 +115,9 @@ section.tab-content
     display: table-cell;
     vertical-align: middle;
     white-space: normal;
-    border-bottom: unset;
     padding-left: unset;
     padding-right: unset;
     width: 100%;
-    color: #f5f5f5;
 }
 .tabs li a span, .tabs li a img
 {
@@ -173,6 +125,26 @@ section.tab-content
     margin-left: auto;
     margin-right: auto !important;
     text-align: center;
+}
+
+// tab content
+.b-tabs .tab-content
+{
+    width: 300px;
+    // necessary for scrollbar (overflow property) to work correct
+    padding: 0px;
+}
+
+.tabContent
+{
+    // necessary for scrollbar (overflow property) to work correct
+    padding: 1em;
+}
+
+.tab-item h2
+{
+    margin-bottom: 70px;
+    margin-top: 70px;
 }
 
 /* spacing */
@@ -193,48 +165,6 @@ label.switch
     height: 100%;
 }
 
-/**********************************/
-/**********************************/
-/* Styles for individual elements */
-/**********************************/
-/**********************************/
-html
-{
-    overflow: unset !important;
-}
-
-body
-{
-    display: flex;
-}
-
-canvas
-{
-    display: block;
-}
-
-.b-tabs.is-vertical.is-right
-{
-    flex-wrap: unset;
-}
-
-.b-tabs .tab-content
-{
-    padding-right: 0px !important;
-}
-
-.tabContent
-{
-    margin-right: 10px;
-}
-
-.tab-item h2
-{
-    margin-bottom: 70px;
-    margin-top: 70px;
-    font-size: 22pt;
-}
-
 .smallerLabel .label
 {
     font-weight: 400;
@@ -242,16 +172,10 @@ canvas
     margin-top: 0.5em !important;
 }
 
-.smallestLabel
+.smallestLabel, .smallerLabel span
 {
     font-size: 16px;
     font-weight: 100;
-    opacity: 0.8;
-}
-
-.xmpWrapper
-{
-    margin-right: 5px;
 }
 
 .cardGrayMain
@@ -277,110 +201,38 @@ canvas
     justify-content: space-between
 }
 
-
-
 .select, .select select
 {
     width: 100%;
 }
 
-.flexContainer
-{
-    display: flex;
-}
 .colorInput
 {
     -webkit-appearance: none;
-    border: none;
+    border: solid 1px #f2f2f2;
     padding: 0;
 }
 .colorInput::-webkit-color-swatch-wrapper {
 	padding: 0;
 }
 .colorInput::-webkit-color-swatch {
-	border: none;
+	border: solid 1px #f2f2f2;
 }
 .colorInputText, .colorInputText input
 {
     width: auto;
 }
 
-/* arrow button on drop down */
-.select:not(.is-multiple):not(.is-loading)::after {
-    border-color: #f2f2f2 !important;
-}
-
-.input, .select select, .taginput .taginput-container.is-focusable, .textarea
-{
-    background-color: #2c2c2c !important;
-    border-color: #f5f5f5;
-    color: #f5f5f5 !important;
-    border-radius: 1px;
-}
-.select select option
-{
-    color: #f5f5f5 !important;
-    background-color: #212121 !important;
-}
-
-.checkbox span.check, .radio span.check
-{
-    width: 24px !important;
-    height: 24px !important;
-}
-
-.b-radio.radio input[type=radio]+.check:before
-{
-    box-shadow: unset !important;
-}
-.b-radio.radio input[type=radio]+.check:focus
-{
-    box-shadow: unset !important;
-}
-
-.radio:hover
-{
-    color: #f2f2f2 !important;
-}
-
-.checkbox:hover
-{
-    color: #f2f2f2 !important;
-}
-
-.input:active, .input:focus, .is-active.input, .is-active.textarea, .is-focused.input,
-.is-focused.textarea, .select select.is-active, .select select.is-focused,
-.select select:active, .select select:focus, .taginput .is-active.taginput-container.is-focusable,
-.taginput .is-focused.taginput-container.is-focusable, .taginput .taginput-container.is-focusable:active,
-.taginput .taginput-container.is-focusable:focus, .textarea:active, .textarea:focus
-{
-    box-shadow: unset !important;
-}
-
-.button, .input, .textarea, .taginput .taginput-container.is-focusable, .select select,
-.file-cta, .file-name, .pagination-previous, .pagination-next, .pagination-link, .pagination-ellipsis
-{
-    height: 30px !important;
-    line-height: 1 !important;
-    font-size: 18px !important;
-    padding-top: unset !important;
-    padding-bottom: unset !important;
-}
-
-/* make radio button full width */
+// ensure on off buttons (in advanced controls) are in their own lines
 div .field.has-addons
 {
-    display: block;
+    display: grid;
 }
 
+/* make html recognize exposure slider full height  */
 .b-slider.exposureSlider
 {
     margin-bottom: 50px;
-}
-
-.exposureSliderMarker
-{
-    color: #e2e2e2;
 }
 
 .b-slider-tick-label
@@ -394,21 +246,9 @@ div .field.has-addons
     margin-right: 5px;
 }
 
-button.button
-{
-    background-color: #87c540;
-    color: #f2f2f2;
-    border: none;
-    border-radius: 290486px;
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: rgb(51, 51, 51);
+/* arrow button on drop down */
+.select:not(.is-multiple):not(.is-loading)::after {
+    border-color: #f5f5f5;
 }
 
 #canvas {
@@ -421,10 +261,6 @@ html, body {
     height: 48px;
 }
 
-select {
-    width: 169px;
-}
-
 #gltf-sample-viewer-model-spinner {
     position: absolute;
     top: 0;
@@ -432,7 +268,7 @@ select {
     bottom: 0;
     right: 0;
     margin: auto;
-    border: 16px solid #f3f3f3;
+    border: 16px solid #f5f5f5;
     pointer-events: none;
     border-top: 16px solid #86C540;
     border-radius: 50%;

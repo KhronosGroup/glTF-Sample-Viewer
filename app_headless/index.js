@@ -38,7 +38,6 @@ async function main()
     state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
     const scene = state.gltf.scenes[state.sceneIndex];
     scene.applyTransformHierarchy(state.gltf);
-    sample_viewer.computePrimitiveCentroids(state.gltf);
     state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
     view.renderFrame(state, width, height);

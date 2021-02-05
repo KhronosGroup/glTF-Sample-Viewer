@@ -1,46 +1,15 @@
 import { GltfView } from './GltfView/gltf_view.js';
+
 import { GltfState } from './GltfState/gltf_state.js';
-import { computePrimitiveCentroids } from './gltf/gltf_utils.js';
 
-import {
-    loadGltf,
-    loadEnvironment,
-    initDracoLib,
-    initKtxLib
-} from './ResourceLoader/resource_loader.js';
+import { ResourceLoader } from './ResourceLoader/resource_loader.js';
 
-import {
-    getIsGltf,
-    getIsGlb,
-    getIsHdr,
-    getContainingFolder,
-    combinePaths,
-    getFileNameWithoutExtension
-} from './gltf/utils.js';
-
-import { glTF } from './gltf/gltf.js';
-
-import {
-    ToneMaps,
-    DebugOutput
-} from "./Renderer/rendering_parameters.js"
-
+// import all the glTF object definitions, to allow manual construction of glTFs
+import * as Gltf from './gltf/gltf.js';
 
 export {
     GltfView,
     GltfState,
-    getIsGltf,
-    getIsGlb,
-    getIsHdr,
-    computePrimitiveCentroids,
-    loadGltf,
-    loadEnvironment,
-    initKtxLib,
-    initDracoLib,
-    getContainingFolder,
-    combinePaths,
-    getFileNameWithoutExtension,
-    glTF,
-    ToneMaps,
-    DebugOutput
+    ResourceLoader,
+    Gltf
 };

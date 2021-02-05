@@ -4,6 +4,7 @@ import {
     getContainingFolder,
     combinePaths
 } from 'gltf-viewer-source';
+import path from 'path';
 
 class gltfModelPathProvider
 {
@@ -35,7 +36,7 @@ class gltfModelPathProvider
 
     populateDictionary(modelIndexer)
     {
-        const modelsFolder = getContainingFolder(this.modelIndexerPath);
+        const modelsFolder = path.dirname(this.modelIndexerPath);
         this.modelsDictionary = {};
         for (const entry of modelIndexer)
         {
@@ -55,7 +56,7 @@ class gltfModelPathProvider
                 }
 
                 const fileName = entry.variants[variant];
-                const modelPath = combinePaths(modelsFolder, entry.name, variant, fileName);
+                const modelPath = path.join(modelsFolder, entry.name, variant, fileName);
                 variants[variant] = modelPath;
 
             }

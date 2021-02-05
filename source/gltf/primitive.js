@@ -166,6 +166,62 @@ class gltfPrimitive extends GltfObject
                 ++i;
             }
         }
+
+        this.computeCentroid(gltf);
+    }
+
+    computeCentroid(gltf)
+    {
+        const positionsAccessor = gltf.accessors[this.attributes.POSITION];
+        const positions = positionsAccessor.getTypedView(gltf);
+
+        if(this.indices !== undefined)
+        {
+            // Primitive has indices.
+
+            const indicesAccessor = gltf.accessors[this.indices];
+
+            const indices = indicesAccessor.getTypedView(gltf);
+
+            const acc = new Float32Array(3);
+
+            for(let i = 0; i < indices.length; i++) {
+                const offset = 3 * indices[i];
+                acc[0] += positions[offset];
+                acc[1] += positions[offset + 1];
+                acc[2] += positions[offset + 2];
+            }
+
+            const centroid = new Float32Array([
+                acc[0] / indices.length,
+                acc[1] / indices.length,
+                acc[2] / indices.length,
+            ]);
+
+            this.centroid = centroid;
+        }
+        else
+        {
+            // Primitive does not have indices.
+
+            const acc = new Float32Array(3);
+
+            for(let i = 0; i < positions.length; i += 3) {
+                acc[0] += positions[i];
+                acc[1] += positions[i + 1];
+                acc[2] += positions[i + 2];
+            }
+
+            const positionVectors = positions.length / 3;
+
+            const centroid = new Float32Array([
+                acc[0] / positionVectors,
+                acc[1] / positionVectors,
+                acc[2] / positionVectors,
+            ]);
+
+            this.centroid = centroid;
+        }
     }
 
     getShaderIdentifier()
@@ -176,11 +232,6 @@ class gltfPrimitive extends GltfObject
     getDefines()
     {
         return this.defines;
-    }
-
-    setCentroid(centroid)
-    {
-        this.centroid = centroid;
     }
 
     fromJson(jsonPrimitive)

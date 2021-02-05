@@ -214,4 +214,22 @@ function enforceVariantsUniqueness(variants)
     return variants;
 }
 
-export { glTF };
+export {
+    glTF,
+    gltfAccessor,
+    gltfBuffer,
+    gltfCamera,
+    gltfImage,
+    gltfLight,
+    gltfMaterial,
+    gltfMesh,
+    gltfNode,
+    gltfSampler,
+    gltfScene,
+    gltfTexture,
+    gltfAsset,
+    GltfObject,
+    gltfAnimation,
+    gltfSkin,
+    gltfVariant
+};

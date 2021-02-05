@@ -32,14 +32,6 @@ Vue.component('toggle-button', {
         }
     }
 });
-Vue.component('dual-label-list-element', {
-    props: ['name', 'items'],
-    template:'#dualLabelListTemplate'
-});
-Vue.component('dual-label-element', {
-    props: ['name', 'value'],
-    template:'#dualLabelTemplate'
-});
 Vue.component('json-to-ui-template', {
     props: ['data', 'isinner'],
     template:'#jsonToUITemplate'
@@ -95,6 +87,9 @@ const app = new Vue({
             clearcoatEnabled: true,
             sheenEnabled: true,
             transmissionEnabled: true,
+
+            activeTab: 0,
+            loadingComponent: {},
         };
     },
     mounted: function()
@@ -108,8 +103,66 @@ const app = new Vue({
         setAnimationState: function(value)
         {
             this.$refs.animationState.setState(value);
-        }
+        },
+        warn(message) {
+            this.$buefy.toast.open({
+                message: message,
+                type: 'is-warning'
+            })
+        },
+        error(message) {
+            this.$buefy.toast.open({
+                message: message,
+                type: 'is-danger',
+                duration: 5000
+            })
+        },
+        goToLoadingState() {
+            if(this.loadingComponent === undefined)
+            {
+                return;
+            }
+            this.loadingComponent = this.$buefy.loading.open({
+                container: null
+            })
+        },
+        exitLoadingState()
+        {
+            if(this.loadingComponent === undefined)
+            {
+                return;
+            }
+            this.loadingComponent.close();
+        },
     }
 }).$mount('#app');
 
 export { app };
+
+// pipe error messages to UI
+(function(){
+
+    var originalWarn = console.warn;
+    var originalError = console.error;
+
+    console.warn = function(txt) {
+        app.warn(txt);
+        originalWarn.apply(console, arguments);
+    }
+    console.error = function(txt) {
+        app.error(txt);
+        originalError.apply(console, arguments);
+    }
+
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+        var message = [
+            'Message: ' + msg,
+            'URL: ' + url,
+            'Line: ' + lineNo,
+            'Column: ' + columnNo,
+            'Error object: ' + JSON.stringify(error)
+          ].join(' - ');
+        app.error(message);
+    };
+})();
+
