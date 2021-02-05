@@ -111,7 +111,7 @@ function getUrlParam(parameter, defaultvalue){
                   </div>
              </div>
         </div>
-        <b-tabs vertical position="is-right" v-model="activeTab" class="is-flex-wrap-nowrap" type="is-toggle">
+        <b-tabs vertical position="is-right" v-model="activeTab" class="is-flex-wrap-nowrap" type="is-toggle" v-bind:animated="false">
             <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable">
                 <template #header>
                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
