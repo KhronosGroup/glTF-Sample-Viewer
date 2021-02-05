@@ -31,12 +31,27 @@ async function loadHDR(buffer)
     // read header.
     while (!header.match(/\n\n[^\n]+\n/g)) header += String.fromCharCode(d8[pos++]);
     // check format.
-    format = header.match(/FORMAT=(.*)$/m)[1];
+    format = header.match(/FORMAT=(.*)$/m);
+    if (format.length < 2)
+    {
+        return undefined;
+    }
+    format = format[1];
     if (format != '32-bit_rle_rgbe') return console.warn('unknown format : ' + format), this.onerror();
     // parse resolution
-    const rez = header.split(/\n/).reverse()[1].split(' '), width = rez[3] * 1, height = rez[1] * 1;
+    let rez = header.split(/\n/).reverse();
+    if (rez.length < 2)
+    {
+        return undefined;
+    }
+    rez = rez[1].split(' ');
+    if (rez.length < 4)
+    {
+        return undefined;
+    }
+    const width = rez[3] * 1, height = rez[1] * 1;
     // Create image.
-    const img = new Uint8Array(width * height * 4)
+    const img = new Uint8Array(width * height * 4);
     let ipos = 0;
     // Read all scanlines
     for (let j = 0; j < height; j++)
