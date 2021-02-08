@@ -270,7 +270,7 @@ async function main()
     const update = () =>
     {
         canvas.width = window.innerWidth - ui.getBoundingClientRect().width;
-        canvas.height = canvas.clientHeight;
+        canvas.height = window.innerHeight;
 
         view.renderFrame(state, canvas.width, canvas.height);
         window.requestAnimationFrame(update);
