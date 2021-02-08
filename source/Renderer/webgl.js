@@ -214,7 +214,7 @@ class gltfWebGl
                 }
             }
 
-            throw new Error("Could not compile WebGL program '" + shaderIdentifier + "'. \n\n" + info);
+            throw new Error("Could not compile WebGL program '" + shaderIdentifier + "': " + info);
         }
 
         return shader;
