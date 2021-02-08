@@ -152,6 +152,10 @@ async function loadEnvironment(file, view, luts)
         });
         image = await loadHDR(new Uint8Array(imageData));
     }
+    if (image === undefined)
+    {
+        return undefined;
+    }
     return loadEnvironmentFromImage(image, view, luts);
 }
 
