@@ -458,6 +458,8 @@ void main()
     #ifdef MATERIAL_CLEARCOAT
         clearcoatFactor = materialInfo.clearcoatFactor;
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, v));
+        // account for masking
+        f_clearcoat = f_clearcoat * clearcoatFactor;
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
@@ -468,7 +470,7 @@ void main()
 
     color = f_emissive + diffuse + f_specular;
     color = f_sheen + color * albedoSheenScaling;
-    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
 
 #ifndef DEBUG_OUTPUT // no debug
 
