@@ -211,11 +211,6 @@ class gltfImage extends GltfObject
 
         return true;
     }
-
-    shouldGenerateMips()
-    {
-        return (isPowerOf2(this.image.width) && isPowerOf2(this.image.height));
-    }
 }
 
 export { gltfImage, ImageMimeType };
