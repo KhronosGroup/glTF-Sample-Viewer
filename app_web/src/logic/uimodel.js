@@ -20,11 +20,21 @@ class UIModel
             pluck("event", "msg"),
             startWith("Avocado"),
             map(value => {
-                return this.pathProvider.resolve(value);
+                app.flavours = this.pathProvider.getModelFlavours(value);
+                app.selectedFlavour = "glTF";
+                return this.pathProvider.resolve(value, app.selectedFlavour);
             }),
             map( value => ({mainFile: value, additionalFiles: undefined})),
         );
-        this.flavour = app.flavourChanged$.pipe(pluck("event", "msg")); // TODO gltfModelPathProvider needs to be changed to accept flavours explicitely
+
+        const dropdownFlavourChanged = app.flavourChanged$.pipe(
+            pluck("event", "msg"),
+            map(value => {
+                return this.pathProvider.resolve(app.selectedModel, value);
+            }),
+            map( value => ({mainFile: value, additionalFiles: undefined})),
+        );
+
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
         this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
@@ -91,7 +101,7 @@ class UIModel
         );
 
         const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
-        this.model = merge(dropdownGltfChanged, inputObservables.gltfDropped);
+        this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.gltfDropped);
         this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment).pipe(
             startWith(environments[initialEnvironment].hdr_path)
         );
@@ -274,12 +284,13 @@ class UIModel
     updateStatistics(statisticsUpdateObservable)
     {
         statisticsUpdateObservable.subscribe(
-            data => {this.app.statistics = [
-                {title: "Mesh Count", value: data.meshCount},
-                {title: "Triangle Count", value: data.faceCount},
-                {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
-                {title: "Transparent Material Count", value: data.transparentMaterialsCount}
-            ];
+            data => {
+                let statistics = {};
+                statistics["Mesh Count"] = data.meshCount;
+                statistics["Triangle Count"] = data.faceCount;
+                statistics["Opaque Material Count"] = data.opaqueMaterialsCount;
+                statistics["Transparent Material Count"] = data.transparentMaterialsCount;
+                this.app.statistics = statistics;
             }
         );
     }
@@ -338,6 +349,14 @@ class UIModel
         dummy.select();
         document.execCommand("copy");
         document.body.removeChild(dummy);
+    }
+
+    goToLoadingState() {
+        this.app.goToLoadingState();
+    }
+    exitLoadingState()
+    {
+        this.app.exitLoadingState();
     }
 }
 

@@ -1,10 +1,14 @@
 import axios from 'axios';
 
+import {
+    getContainingFolder,
+    combinePaths
+} from 'gltf-viewer-source';
 import path from 'path';
 
 class gltfModelPathProvider
 {
-    constructor(modelIndexerPath, ignoredVariants = ["glTF-Embedded"])
+    constructor(modelIndexerPath, currentFalvour="glTF", ignoredVariants = ["glTF-Embedded"])
     {
         this.modelIndexerPath = modelIndexerPath;
         this.ignoredVariants = ignoredVariants;
@@ -16,24 +20,18 @@ class gltfModelPathProvider
         const self = this;
         return axios.get(this.modelIndexerPath).then(response =>
         {
-            const modelIndexer = response.data;
-            self.populateDictionary(modelIndexer);
+            self.populateDictionary(response.data);
         });
     }
 
-    resolve(modelKey)
+    resolve(modelKey, flavour)
     {
-        return this.modelsDictionary[modelKey];
+        return this.modelsDictionary[modelKey][flavour];
     }
 
     getAllKeys()
     {
         return Object.keys(this.modelsDictionary);
-    }
-
-    pathExists(path)
-    {
-        return Object.values(this.modelsDictionary).find(p => p === path);
     }
 
     populateDictionary(modelIndexer)
@@ -42,10 +40,13 @@ class gltfModelPathProvider
         this.modelsDictionary = {};
         for (const entry of modelIndexer)
         {
-            if (entry.variants === undefined)
+            // TODO maybe handle undefined names better
+            if (entry.variants === undefined || entry.name === undefined)
             {
                 continue;
             }
+
+            let variants = [];
 
             for (const variant of Object.keys(entry.variants))
             {
@@ -56,20 +57,20 @@ class gltfModelPathProvider
 
                 const fileName = entry.variants[variant];
                 const modelPath = path.join(modelsFolder, entry.name, variant, fileName);
-                let modelKey = path.basename(fileName, path.extname(fileName));
+                variants[variant] = modelPath;
 
-                if (entry.name !== undefined)
-                {
-                    modelKey = entry.name;
-                }
-                if (variant !== "glTF")
-                {
-                    modelKey += " (" + variant.replace("glTF-", "") + ")";
-                }
-
-                this.modelsDictionary[modelKey] = modelPath;
             }
+            this.modelsDictionary[entry.name] = variants;
         }
+    }
+
+    getModelFlavours(modelName)
+    {
+        if(this.modelsDictionary[modelName] === undefined)
+        {
+            return ["glTF"];
+        }
+        return Object.keys(this.modelsDictionary[modelName]);
     }
 }
 
