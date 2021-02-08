@@ -103,9 +103,8 @@ class UIModel
         );
 
         const canvas = document.getElementById("canvas");
-        const dropZone = document.getElementById("dropZone");
         this.registerDropZoneUIHandle(canvas);
-        const inputObservables = UIModel.getInputObservables(dropZone, this.app);
+        const inputObservables = UIModel.getInputObservables(canvas, this.app);
         this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.gltfDropped);
         this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment, this.addEnvironment).pipe(
             startWith(environments[initialEnvironment].hdr_path)
@@ -195,6 +194,9 @@ class UIModel
         const self = this;
         inputDomElement.addEventListener('dragenter', function(event) {
             self.app.showDropDownOverlay = true;
+        });
+        inputDomElement.addEventListener('dragleave', function(event) {
+            self.app.showDropDownOverlay = false;
         });
     }
 
