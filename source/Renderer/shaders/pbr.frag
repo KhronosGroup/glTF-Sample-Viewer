@@ -436,7 +436,11 @@ void main()
         }
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor);
+            vec2 normalizedFragCoord = vec2(0.0,0.0);
+            normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
+            normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
+            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor,
+                        normalizedFragCoord, materialInfo.perceptualRoughness);
         #endif
     }
 #endif // !USE_PUNCTUAL

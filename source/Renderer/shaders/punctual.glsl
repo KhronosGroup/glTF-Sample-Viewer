@@ -47,8 +47,19 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
+vec3 getTransmissionSamplePunctual(vec2 fragCoord, float perceptualRoughness)
+{
+    float framebufferLod = log2(float(u_TransmissionFramebufferSize.x)) * perceptualRoughness;
 
-vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness, vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor)
+    vec3 transmittedLight = textureLod(u_TransmissionFramebufferSampler, fragCoord.xy, framebufferLod).rgb;
+
+    transmittedLight = sRGBToLinear(transmittedLight);
+
+    return transmittedLight;
+}
+
+vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness,
+        vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor, vec2 fragCoord, float perceptualRoughness)
 {
     vec3 n = normalize(normal);           // Outward direction of surface point
     vec3 v = normalize(view);             // Direction from surface point to view
@@ -63,8 +74,11 @@ vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, 
 
     // Transmission BTDF
     vec3 f_transmission = (1.0 - F) * T * baseColor * D * Vis;
-
-    return f_transmission;
+    #ifdef USE_IBL
+        return f_transmission;
+    #else
+        return f_transmission * (getTransmissionSamplePunctual(fragCoord.xy, perceptualRoughness) * baseColor);
+    #endif
 }
 
 vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, float VdotH, vec3 f0, vec3 f90, float clearcoatRoughness)
