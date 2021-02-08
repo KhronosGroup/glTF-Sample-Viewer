@@ -170,12 +170,12 @@ function getUrlParam(parameter, defaultvalue){
                     <div class="tabContent">
                         <h2 class="title">Display</h2>
                         <b-field label="Lighting" class="subtitle">
-                            <b-switch v-model="ibl" v-stream:input="iblChanged$">Image Based</b-switch>
+                            <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based</b-switch>
                             <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
                         </b-field>
                         <b-field label="Background" class="subtitle">
-                            <b-switch v-model="renderEnv" v-stream:input="renderEnvChanged$">Environment Map</b-switch>
-                            <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$">Blur</b-switch>
+                            <b-switch v-model="renderEnv" v-bind:disabled="ibl === false ? true : false">Environment Map</b-switch>
+                            <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$" v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
                             <b-field label="Background Color" class="smallerLabel"></b-field>
                             <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
                         </b-field>
