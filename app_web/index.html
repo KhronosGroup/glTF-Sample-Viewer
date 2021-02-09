@@ -97,7 +97,7 @@ function getUrlParam(parameter, defaultvalue){
     <!-- UI -->
     <div id="app">
         <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone" style="pointer-events: none;">
-            <div class="is-overlay is-dropAreaCard is-flex">
+            <div class="is-overlay is-dropAreaCard is-flex" style="z-index: 999;">
                 <div class="box has-text-centered">
                     <span class="icon is-large">
                         <i class="fas fa-folder-open fa-4x"></i>
