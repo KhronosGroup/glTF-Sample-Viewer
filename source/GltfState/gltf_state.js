@@ -2,8 +2,16 @@ import { UserCamera } from '../gltf/user_camera.js';
 import { ToneMaps, DebugOutput } from '../Renderer/rendering_parameters.js';
 import { AnimationTimer } from '../gltf/utils.js';
 
+/**
+ * GltfState containing a state for visualization in GltfView
+ */
 class GltfState
 {
+    /**
+     * GltfState represents all state that can be visualized in a view. You could have
+     * multiple GltfStates configured and switch between them on demand.
+     * @param {*} view GltfView to which this state belongs
+     */
     constructor(view)
     {
         this.gltf = undefined;
@@ -36,7 +44,14 @@ class GltfState
     }
 }
 
+/**
+ * Enum for tone maps
+ */
 GltfState.ToneMaps = ToneMaps;
+
+/**
+ * Enum for debug output channels
+ */
 GltfState.DebugOutput = DebugOutput;
 
 export { GltfState };
