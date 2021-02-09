@@ -24,7 +24,9 @@ class ResourceLoader
     /**
      * ResourceLoader class that provides an interface to load resources into
      * the view. Typically this is created with GltfView.createResourceLoader()
-     * @param {GltfView} view backreference to the GltfView that this resource loader should operate on
+     * You cannot share resource loaders between GltfViews as some of the resources
+     * are allocated directly on the WebGl2 Context
+     * @param {GltfView} view the GltfView for which the resources are loaded
      */
     constructor(view)
     {
@@ -116,7 +118,34 @@ class ResourceLoader
      */
     async loadEnvironment(environmentFile, lutFiles)
     {
-        return loadEnvironment(environmentFile, this.view, lutFiles);
+        let image = undefined;
+        if (typeof environmentFile === "string")
+        {
+            let response = await axios.get(environmentFile, { responseType: "arraybuffer" });
+
+            image = await loadHDR(new Uint8Array(response.data));
+        }
+        else if (environmentFile instanceof ArrayBuffer)
+        {
+            image = await loadHDR(new Uint8Array(environmentFile));
+        }
+        else if (typeof (File) !== 'undefined' && environmentFile instanceof File)
+        {
+            const imageData = await AsyncFileReader.readAsArrayBuffer(environmentFile).catch(() =>
+            {
+                console.error("Could not load image with FileReader");
+            });
+            image = await loadHDR(new Uint8Array(imageData));
+        }
+        else
+        {
+            console.error("Passed invalid type to loadEnvironment " + typeof (gltfFile));
+        }
+        if (image === undefined)
+        {
+            return undefined;
+        }
+        return _loadEnvironmentFromPanorama(image, this.view, lutFiles);
     }
 
     /**
@@ -142,36 +171,7 @@ class ResourceLoader
     }
 }
 
-async function loadEnvironment(file, view, luts)
-{
-    let image = undefined;
-    if (typeof file === "string")
-    {
-        let response = await axios.get(file, { responseType: "arraybuffer" });
-
-        image = await loadHDR(new Uint8Array(response.data));
-    }
-    else if (file instanceof ArrayBuffer)
-    {
-        image = await loadHDR(new Uint8Array(file));
-    }
-    else
-    {
-        const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch(() =>
-        {
-            console.error("Could not load image with FileReader");
-        });
-        image = await loadHDR(new Uint8Array(imageData));
-    }
-    if (image === undefined)
-    {
-        return undefined;
-    }
-    return loadEnvironmentFromImage(image, view, luts);
-}
-
-
-async function loadEnvironmentFromImage(imageHDR, view, luts)
+async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template
