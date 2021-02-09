@@ -22,7 +22,7 @@ class iblSampler
 
         this.textureSize = 256;
         this.ggxSampleCount = 64;
-        this.lambertianSampleCount = 8192;
+        this.lambertianSampleCount = 2048;
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
         this.mipmapCount = undefined;
