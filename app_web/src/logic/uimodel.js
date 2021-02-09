@@ -308,17 +308,20 @@ class UIModel
             map( (state) => {
                 let gltf = state.gltf;
                 let cameraIndices = [{title: "User Camera", index: -1}];
-                cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
-                    {
-                        let name = camera.name;
-                        if(name === "" || name === undefined)
+                if (gltf.scenes[state.sceneIndex] !== undefined)
+                {
+                    cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+                        if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
                         {
-                            name = index;
+                            let name = camera.name;
+                            if(name === "" || name === undefined)
+                            {
+                                name = index;
+                            }
+                            return {title: name, index: index};
                         }
-                        return {title: name, index: index};
-                    }
-                }));
+                    }));
+                }
                 cameraIndices = cameraIndices.filter(function(el) {
                     return el !== undefined;
                 });
