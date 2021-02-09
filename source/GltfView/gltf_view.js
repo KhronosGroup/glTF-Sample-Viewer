@@ -5,23 +5,37 @@ import { ResourceLoader } from '../ResourceLoader/resource_loader.js';
 
 class GltfView
 {
-    // GltfView is always bound to a WebGL 2.0 context.
-    // The context can be received from a canvas with the canvas.getContext("webgl2")
-    // method.
+    /**
+     * GltfView representing one WebGl 2.0 context or in other words one
+     * 3D rendering of the Gltf.
+     * You can create multiple views for example when multiple canvases should
+     * be shown on the same webpage.
+     * @param {*} context WebGl 2.0 context. Get it from a canvas with `canvas.getContext("webgl2")`
+     */
     constructor(context)
     {
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
     }
 
-    // createState constructes a new GltfState for the GltfView. The resources referenced in
-    // a gltf state can directly be stored as resources on the WebGL context of GltfView,
-    // therefore GltfStates cannot not be shared between GltfViews.
+    /**
+     * createState constructs a new GltfState for the GltfView. The resources
+     * referenced in a gltf state can directly be stored as resources on the WebGL
+     * context of GltfView, therefore GltfStates cannot not be shared between
+     * GltfViews.
+     * @returns {GltfState} GltfState
+     */
     createState()
     {
         return new GltfState(this);
     }
 
+    /**
+     * createResourceLoader creates a resource loader with which glTFs and
+     * environments can be loaded for the view
+     * @param {String} [externalDracoLib] optional URI of an external Draco library, e.g. from a CDN
+     * @param {String} [externalKtxLib] optional URI of an external KTX library, e.g. from a CDN
+     */
     createResourceLoader(externalDracoLib = undefined, externalKtxLib = undefined)
     {
         let resourceLoader = new ResourceLoader(this);
@@ -30,9 +44,13 @@ class GltfView
         return resourceLoader;
     }
 
-    // renderFrame to the context's default framebuffer
-    // Call this function in the javascript animation update
-    // loop for continuous rendering to a canvas
+    /**
+     * renderFrame to the context's default frame buffer
+     * Call this function in the javascript animation update loop for continuous rendering to a canvas
+     * @param {*} state GltfState that is be used for rendering
+     * @param {*} width of the viewport
+     * @param {*} height of the viewport
+     */
     renderFrame(state, width, height)
     {
         this._animate(state);
@@ -58,7 +76,12 @@ class GltfView
         this.renderer.drawScene(state, scene);
     }
 
-    // gatherStatistics collects information about the GltfState such as the number of rendererd meshes or triangles
+    /**
+     * gatherStatistics collects information about the GltfState such as the number of
+     * rendered meshes or triangles
+     * @param {*} state GltfState about which the statistics should be collected
+     * @returns {Object} an object containing statistics information
+     */
     gatherStatistics(state)
     {
         if(state.gltf === undefined)
