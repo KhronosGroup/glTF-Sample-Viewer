@@ -362,15 +362,15 @@ void main()
         f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
     #endif
 
-    #ifdef MATERIAL_TRANSMISSION
-        vec2 normalizedFragCoord = vec2(0.0,0.0);
-        normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
-        normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
-
-        f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
-    #endif
 #endif
 
+#if defined(MATERIAL_TRANSMISSION) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
+    vec2 normalizedFragCoord = vec2(0.0,0.0);
+    normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
+    normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
+
+    f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
+#endif
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
@@ -458,6 +458,8 @@ void main()
     #ifdef MATERIAL_CLEARCOAT
         clearcoatFactor = materialInfo.clearcoatFactor;
         clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, v));
+        // account for masking
+        f_clearcoat = f_clearcoat * clearcoatFactor;
     #endif
 
     #ifdef MATERIAL_TRANSMISSION
@@ -468,7 +470,7 @@ void main()
 
     color = f_emissive + diffuse + f_specular;
     color = f_sheen + color * albedoSheenScaling;
-    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat * clearcoatFactor;
+    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
 
 #ifndef DEBUG_OUTPUT // no debug
 

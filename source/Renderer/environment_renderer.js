@@ -42,7 +42,7 @@ class EnvironmentRenderer
     {
         if (state.environment == undefined || state.renderingParameters.renderEnvironmentMap == false)
         {
-            return
+            return;
         }
 
         const gl = webGl.context;

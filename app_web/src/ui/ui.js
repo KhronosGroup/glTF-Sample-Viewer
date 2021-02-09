@@ -40,7 +40,7 @@ Vue.component('json-to-ui-template', {
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-        'environmentVisibilityChanged$', 'punctualLightsChanged$', 'iblChanged$', 'renderEnvChanged$', 'blurEnvChanged$', 'morphingChanged$',
+        'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
         'cameraExport$', 'captureCanvas$'],
@@ -72,7 +72,6 @@ const app = new Vue({
             punctualLights: true,
             renderEnv: true,
             blurEnv: true,
-            environmentVisibility: true,
             clearColor: "",
             environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}],
             selectedEnvironmentRotation: "+Z",
@@ -92,6 +91,8 @@ const app = new Vue({
             loadingComponent: {},
             showDropDownOverlay: false,
             uploadedHDR: undefined,
+            // this is a helper to reset the ui when image based lighting is reenabled
+            environmentVisiblePrefState: true,
         };
     },
     mounted: function()
@@ -105,6 +106,17 @@ const app = new Vue({
         setAnimationState: function(value)
         {
             this.$refs.animationState.setState(value);
+        },
+        iblTriggered: function(value)
+        {
+            if(this.ibl == false)
+            {
+                this.environmentVisiblePrefState = this.renderEnv;
+                this.renderEnv = false;
+            }
+            else{
+                this.renderEnv = this.environmentVisiblePrefState;
+            }
         },
         warn(message) {
             this.$buefy.toast.open({

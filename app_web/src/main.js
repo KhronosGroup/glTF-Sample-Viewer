@@ -187,10 +187,6 @@ async function main()
         state.renderingParameters.usePunctual = punctualLightsEnabled;
     });
 
-    uiModel.environmentEnabled.subscribe( environmentEnabled => {
-        state.renderingParameters.environmentBackground = environmentEnabled;
-    });
-
     uiModel.environmentRotation.subscribe( environmentRotation => {
         switch (environmentRotation)
         {
@@ -270,7 +266,7 @@ async function main()
     const update = () =>
     {
         canvas.width = window.innerWidth - ui.getBoundingClientRect().width;
-        canvas.height = canvas.clientHeight;
+        canvas.height = window.innerHeight;
 
         view.renderFrame(state, canvas.width, canvas.height);
         window.requestAnimationFrame(update);

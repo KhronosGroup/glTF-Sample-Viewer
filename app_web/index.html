@@ -178,26 +178,26 @@ function getUrlParam(parameter, defaultvalue){
                     <span v-bind:style="[activeTab === 1 ? {'display': 'none'} : {}]">Display</span>
                 </template>
 
-                <div class="tabContent">
-                    <h2 class="title is-spaced">Display</h2>
-                    <b-field label="Lighting" class="subtitle">
-                        <b-switch v-model="ibl" v-stream:input="iblChanged$">Image Based</b-switch>
-                        <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
-                    </b-field>
-                    <b-field label="Background" class="subtitle">
-                        <b-switch v-model="renderEnv" v-stream:input="renderEnvChanged$">Environment Map</b-switch>
-                        <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$">Blur</b-switch>
-                        <b-field label="Background Color" class="smallerLabel"></b-field>
-                        <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
-                    </b-field>
-                    <b-field label="Select Environment Rotation" class="smallerLabel">
-                        <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
-                            <option v-for="(item) in environmentRotations"
-                                v-bind:value="item.title">
-                                {{ item.title }}
-                            </option>
-                        </b-select>
-                    </b-field>
+                    <div class="tabContent">
+                        <h2 class="title  is-spaced">Display</h2>
+                        <b-field label="Lighting" class="subtitle">
+                            <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based</b-switch>
+                            <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
+                        </b-field>
+                        <b-field label="Background" class="subtitle">
+                            <b-switch v-model="renderEnv" v-bind:disabled="ibl === false ? true : false">Environment Map</b-switch>
+                            <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$" v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
+                            <b-field label="Background Color" class="smallerLabel"></b-field>
+                            <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
+                        </b-field>
+                        <b-field label="Select Environment Rotation" class="smallerLabel">
+                            <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
+                                <option v-for="(item) in environmentRotations"
+                                    v-bind:value="item.title">
+                                    {{ item.title }}
+                                </option>
+                            </b-select>
+                        </b-field>
 
                     <b-field label="Image Based Lighting" class="subtitle">
                         <button class="button is-rounded">

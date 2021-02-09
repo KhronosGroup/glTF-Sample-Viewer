@@ -49,11 +49,6 @@ vec3 getIBLRadianceTransmission(vec3 n, vec3 v, vec2 fragCoord, float perceptual
     vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
     vec3 specularColor = f0 * brdf.x + f90 * brdf.y;
 
-
-    // Sample GGX environment map.
-    float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
-    vec3 transmissionVector = normalize(-v); //  view vector
-
     vec3 transmittedLight = getTransmissionSample(fragCoord.xy, perceptualRoughness);
 
     return (1.0-specularColor) * transmittedLight * baseColor;

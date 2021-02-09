@@ -70,9 +70,9 @@ class UIModel
         this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
-        this.renderEnvEnabled = app.renderEnvChanged$.pipe(pluck("event", "msg"));
+        this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.blurEnvEnabled = app.blurEnvChanged$.pipe(pluck("event", "msg"));
-        this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
         this.addEnvironment = app.$watchAsObservable('uploadedHDR').pipe(
             pluck('newValue')
         );
