@@ -26,7 +26,7 @@ class ResourceLoader
      * the view. Typically this is created with GltfView.createResourceLoader()
      * You cannot share resource loaders between GltfViews as some of the resources
      * are allocated directly on the WebGl2 Context
-     * @param {GltfView} view the GltfView for which the resources are loaded
+     * @param {Object} view the GltfView for which the resources are loaded
      */
     constructor(view)
     {
@@ -37,6 +37,7 @@ class ResourceLoader
      * loadGltf asynchroneously and create resources for rendering
      * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
      * @param {File[]} [externalFiles] additional files containing resources that are referenced in the gltf
+     * @returns {Promise} a promise that fulfills when the gltf file was loaded
      */
     async loadGltf(gltfFile, externalFiles)
     {
@@ -115,6 +116,7 @@ class ResourceLoader
      * loadEnvironment asynchroneously, run IBL sampling and create resources for rendering
      * @param {(String | ArrayBuffer | File)} environmentFile the .hdr file either as path or resource
      * @param {Object} [lutFiles] object containing paths or resources for the environment look up textures. Keys are lut_ggx_file, lut_charlie_file and lut_sheen_E_file
+     * @returns {Promise} a promise that fulfills when the environment file was loaded
      */
     async loadEnvironment(environmentFile, lutFiles)
     {
