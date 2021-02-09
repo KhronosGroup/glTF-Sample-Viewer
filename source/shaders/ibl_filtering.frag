@@ -172,11 +172,13 @@ float PDF(vec3 H, vec3 N, float roughness)
 // getImportanceSample returns an importance sample direction with pdf in the .w component
 vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 {
+    // generate a quasi monte carlo point in the unit square [0.1)^2
     vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
     float u = hammersleyPoint.x;
     float v = hammersleyPoint.y;
 
-	float phi = 0.0;
+    // declare importance sample parameters
+	float phi = 0.0; // theoretically there could be a distribution that defines phi differently
     float cosTheta = 0.f;
 	float sinTheta = 0.f;
     float pdf = 0.0;
@@ -248,7 +250,14 @@ vec3 filterColor(vec3 N)
             float NdotH = clamp(dot(N, H), 0.0, 1.0);
 
             // sample lambertian at a lower resolution to avoid fireflies
-            color += vec4(textureLod(uCubeMap, H, u_lodBias).rgb * NdotH / pdf, 1.0);
+            vec3 lambertian = textureLod(uCubeMap, H, u_lodBias).rgb;
+
+            //// the below operations cancel each other out
+            // lambertian *= NdotH; // lamberts law
+            // lambertian /= pdf; // invert bias from importance sampling
+            // lambertian /= MATH_PI; // convert irradiance to radiance https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+
+            color += vec4(lambertian, 1.0);
             continue;
         }
 
