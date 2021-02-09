@@ -234,7 +234,7 @@ float V_Ashikhmin(float NdotL, float NdotV)
 
 // Mipmap Filtered Samples (GPU Gems 3, 20.4)
 // https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-20-gpu-based-importance-sampling
-float computeLod(vec3 u, float pdf)
+float computeLod(float pdf)
 {
     // IBL Baker (Matt Davidson)
     // https://github.com/derkreature/IBLBaker/blob/65d244546d2e79dd8df18a28efdabcf1f2eb7717/data/shadersD3D11/IblImportanceSamplingDiffuse.fx#L215
@@ -260,7 +260,7 @@ vec3 filterColor(vec3 N)
         float pdf = importanceSample.w;
 
         // mipmap filtered samples (GPU Gems 3, 20.4)
-        float lod = computeLod(H, pdf);
+        float lod = computeLod(pdf);
 
         if(u_distribution == cLambertian)
         {
@@ -285,6 +285,12 @@ vec3 filterColor(vec3 N)
 
 		if (NdotL > 0.0)
 		{
+            if(u_roughness == 0.0)
+            {
+                // without this the roughness=0 lod is too high (taken from original implementation)
+                lod = u_lodBias;
+            }
+
             color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
 		}
 	}
