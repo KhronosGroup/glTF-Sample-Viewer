@@ -187,10 +187,6 @@ async function main()
         state.renderingParameters.usePunctual = punctualLightsEnabled;
     });
 
-    uiModel.environmentEnabled.subscribe( environmentEnabled => {
-        state.renderingParameters.environmentBackground = environmentEnabled;
-    });
-
     uiModel.environmentRotation.subscribe( environmentRotation => {
         switch (environmentRotation)
         {
