@@ -130,20 +130,24 @@ class UIModel
             }
         });
 
-        const dropedFileName = inputObservables.gltfDropped.pipe(
+        const dropedGLtfFileName = inputObservables.gltfDropped.pipe(
             map( (data) => {
                 return data.mainFile.name;
             })
         );
-        dropedFileName.subscribe( (filename) => {
+        dropedGLtfFileName.subscribe( (filename) => {
             if(filename !== undefined)
             {
                 filename = filename.split('/').pop();
+                let fileExtension = filename.split('.').pop();;
                 filename = filename.substr(0, filename.lastIndexOf('.'));
 
                 this.app.models.push(filename);
                 this.app.selectedModel = filename;
                 this.lastDroppedFilename = filename;
+
+                app.flavours = [fileExtension];
+                app.selectedFlavour = fileExtension;
             }
         });
     }
