@@ -93,6 +93,22 @@ mat3 generateTBN(vec3 normal)
     vec3 tangent = cross(bitangent, normal);
     bitangent = cross(normal, tangent);
 
+    // eliminate singularity if normal is aligned with the Y axis
+    float NdotY = dot(normal, vec3(0.0, 1.0, 0.0));
+    float epsilon = 0.0001;
+    if (abs(NdotY) <= epsilon)
+    {
+        // Sampling +Y or -Y, so we need a more robust bitangent.
+ 		if (NdotY > 0.0)
+ 		{
+ 			bitangent = vec3(0.0, 0.0, 1.0);
+ 		}
+ 		else
+ 		{
+ 			bitangent = vec3(0.0, 0.0, -1.0);
+ 		}
+    }
+
 	return mat3(tangent, bitangent, normal);
 }
 
