@@ -236,13 +236,11 @@ float V_Ashikhmin(float NdotL, float NdotV)
 // https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-20-gpu-based-importance-sampling
 float computeLod(vec3 u, float pdf)
 {
-    float lod = 0.0;
-
-
-        // see https://github.com/derkreature/IBLBaker
-        float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
-        float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
-        lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
+    // IBL Baker (Matt Davidson)
+    // https://github.com/derkreature/IBLBaker/blob/65d244546d2e79dd8df18a28efdabcf1f2eb7717/data/shadersD3D11/IblImportanceSamplingDiffuse.fx#L215
+    float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_sampleCount));
+    float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
+    float lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
 
     lod += u_lodBias;
 
