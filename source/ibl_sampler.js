@@ -310,8 +310,7 @@ class iblSampler
             0.0,
             0,
             this.lambertianTextureID,
-            this.lambertianSampleCount,
-            this.mipmapLevels / 2.0);
+            this.lambertianSampleCount);
     }
 
 

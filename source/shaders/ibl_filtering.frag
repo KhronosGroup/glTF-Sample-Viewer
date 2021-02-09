@@ -90,16 +90,13 @@ vec2 hammersley2d(int i, int N) {
 mat3 generateTBN(vec3 normal)
 {
     vec3 bitangent = vec3(0.0, 1.0, 0.0);
-    vec3 tangent = cross(bitangent, normal);
-    bitangent = cross(normal, tangent);
 
-    // eliminate singularity if normal is aligned with the Y axis
-    float NdotY = dot(normal, vec3(0.0, 1.0, 0.0));
-    float epsilon = 0.0001;
-    if (abs(NdotY) <= epsilon)
+    float NdotUp = dot(normal, vec3(0.0, 1.0, 0.0));
+    float epsilon = 0.0000001;
+    if (1.0 - abs(NdotUp) <= epsilon)
     {
         // Sampling +Y or -Y, so we need a more robust bitangent.
- 		if (NdotY > 0.0)
+ 		if (NdotUp > 0.0)
  		{
  			bitangent = vec3(0.0, 0.0, 1.0);
  		}
@@ -108,6 +105,9 @@ mat3 generateTBN(vec3 normal)
  			bitangent = vec3(0.0, 0.0, -1.0);
  		}
     }
+
+    vec3 tangent = normalize(cross(bitangent, normal));
+    bitangent = cross(normal, tangent);
 
 	return mat3(tangent, bitangent, normal);
 }
@@ -232,11 +232,27 @@ float V_Ashikhmin(float NdotL, float NdotV)
     return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
 }
 
+// Mipmap Filtered Samples (GPU Gems 3, 20.4)
+// https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-20-gpu-based-importance-sampling
+float computeLod(vec3 u, float pdf)
+{
+    float lod = 0.0;
+
+
+        // see https://github.com/derkreature/IBLBaker
+        float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
+        float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
+        lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
+
+    lod += u_lodBias;
+
+    return lod;
+}
+
 vec3 filterColor(vec3 N)
 {
 	//return  textureLod(uCubeMap, N, 3.0).rgb;
 	vec4 color = vec4(0.f);
-	float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
 
 	for(int i = 0; i < u_sampleCount; ++i)
 	{
@@ -245,12 +261,15 @@ vec3 filterColor(vec3 N)
 		vec3 H = vec3(importanceSample.xyz);
         float pdf = importanceSample.w;
 
+        // mipmap filtered samples (GPU Gems 3, 20.4)
+        float lod = computeLod(H, pdf);
+
         if(u_distribution == cLambertian)
         {
             float NdotH = clamp(dot(N, H), 0.0, 1.0);
 
             // sample lambertian at a lower resolution to avoid fireflies
-            vec3 lambertian = textureLod(uCubeMap, H, u_lodBias).rgb;
+            vec3 lambertian = textureLod(uCubeMap, H, lod).rgb;
 
             //// the below operations cancel each other out
             // lambertian *= NdotH; // lamberts law
@@ -262,27 +281,12 @@ vec3 filterColor(vec3 N)
         }
 
 		// Note: reflect takes incident vector.
-		// Note: N = V
 		vec3 V = N;
-
 		vec3 L = normalize(reflect(-V, H));
-
 		float NdotL = dot(N, L);
 
 		if (NdotL > 0.0)
 		{
-			float lod = 0.0;
-
-			if (u_roughness > 0.0)
-			{
-				// Mipmap Filtered Samples
-				// see https://github.com/derkreature/IBLBaker
-				// see https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
-				float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
-
-				lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
-				lod += u_lodBias;
-			}
             color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
 		}
 	}
