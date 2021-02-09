@@ -21,7 +21,7 @@ class iblSampler
         this.gl = view.context;
 
         this.textureSize = 256;
-        this.ggxSampleCount = 64;
+        this.ggxSampleCount = 256;
         this.lambertianSampleCount = 2048;
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
