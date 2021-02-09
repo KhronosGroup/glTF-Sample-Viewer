@@ -22,7 +22,7 @@ class GltfView
         return new GltfState(this);
     }
 
-    createResourceLoader(externalDracoLib = null, externalKtxLib = null)
+    createResourceLoader(externalDracoLib = undefined, externalKtxLib = undefined)
     {
         let resourceLoader = new ResourceLoader(this);
         resourceLoader.initKtxLib(externalKtxLib);

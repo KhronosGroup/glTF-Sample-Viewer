@@ -38,7 +38,75 @@ class ResourceLoader
      */
     async loadGltf(gltfFile, externalFiles)
     {
-        return loadGltf(gltfFile, this.view, externalFiles);
+        let isGlb = undefined;
+        let buffers = undefined;
+        let json = undefined;
+        let data = undefined;
+        let filename = "";
+        if (typeof gltfFile === "string")
+        {
+            isGlb = getIsGlb(gltfFile);
+            let response = await axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" });
+            json = response.data;
+            data = response.data;
+            filename = gltfFile;
+        }
+        else if (gltfFile instanceof ArrayBuffer)
+        {
+            isGlb = externalFiles === undefined;
+            if (isGlb)
+            {
+                data = gltfFile;
+            }
+            else
+            {
+                console.error("Only .glb files can be loaded from an array buffer");
+            }
+        }
+        else if (typeof (File) !== 'undefined' && gltfFile instanceof File)
+        {
+            let fileContent = gltfFile;
+            filename = gltfFile.name;
+            isGlb = getIsGlb(filename);
+            if (isGlb)
+            {
+                data = await AsyncFileReader.readAsArrayBuffer(fileContent);
+            }
+            else
+            {
+                data = await AsyncFileReader.readAsText(fileContent);
+                json = JSON.parse(data);
+                buffers = externalFiles;
+            }
+        }
+        else
+        {
+            console.error("Passed invalid type to loadGltf " + typeof (gltfFile));
+        }
+
+        if (isGlb)
+        {
+            const glbParser = new GlbParser(data);
+            const glb = glbParser.extractGlbData();
+            json = glb.json;
+            buffers = glb.buffers;
+        }
+
+        const gltf = new glTF(filename);
+        gltf.ktxDecoder = this.view.ktxDecoder;
+        //Make sure draco decoder instance is ready
+        gltf.fromJson(json);
+
+        // because the gltf image paths are not relative
+        // to the gltf, we have to resolve all image paths before that
+        for (const image of gltf.images)
+        {
+            image.resolveRelativePath(getContainingFolder(gltf.path));
+        }
+
+        await gltfLoader.load(gltf, this.view.context, buffers);
+
+        return gltf;
     }
 
     /**
@@ -73,80 +141,6 @@ class ResourceLoader
         }
     }
 }
-
-async function loadGltf(file, view, additionalFiles)
-{
-    let isGlb = undefined;
-    let buffers = undefined;
-    let json = undefined;
-    let data = undefined;
-    let filename = "";
-    if (typeof file === "string")
-    {
-        isGlb = getIsGlb(file);
-        let response = await axios.get(file, { responseType: isGlb ? "arraybuffer" : "json" });
-        json = response.data;
-        data = response.data;
-        filename = file;
-    }
-    else if (file instanceof ArrayBuffer)
-    {
-        isGlb = additionalFiles === undefined;
-        if (isGlb)
-        {
-            data = file;
-        }
-        else
-        {
-            console.error("Only .glb files can be loaded from an array buffer");
-        }
-    }
-    else if (typeof (File) !== 'undefined' && file instanceof File)
-    {
-        let fileContent = file;
-        filename = file.name;
-        isGlb = getIsGlb(filename);
-        if (isGlb)
-        {
-            data = await AsyncFileReader.readAsArrayBuffer(fileContent);
-        }
-        else
-        {
-            data = await AsyncFileReader.readAsText(fileContent);
-            json = JSON.parse(data);
-            buffers = additionalFiles;
-        }
-    }
-    else
-    {
-        console.error("Passed invalid type to loadGltf " + typeof (file));
-    }
-
-    if (isGlb)
-    {
-        const glbParser = new GlbParser(data);
-        const glb = glbParser.extractGlbData();
-        json = glb.json;
-        buffers = glb.buffers;
-    }
-
-    const gltf = new glTF(filename);
-    gltf.ktxDecoder = view.ktxDecoder;
-    //Make sure draco decoder instance is ready
-    gltf.fromJson(json);
-
-    // because the gltf image paths are not relative
-    // to the gltf, we have to resolve all image paths before that
-    for (const image of gltf.images)
-    {
-        image.resolveRelativePath(getContainingFolder(gltf.path));
-    }
-
-    await gltfLoader.load(gltf, view.context, buffers);
-
-    return gltf;
-}
-
 
 async function loadEnvironment(file, view, luts)
 {
