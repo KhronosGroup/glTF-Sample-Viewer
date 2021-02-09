@@ -70,10 +70,12 @@ class UIModel
         this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
-        this.renderEnvEnabled = app.renderEnvChanged$.pipe(pluck("event", "msg"));
+        this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.blurEnvEnabled = app.blurEnvChanged$.pipe(pluck("event", "msg"));
-        this.environmentEnabled = app.environmentVisibilityChanged$.pipe(pluck("event", "msg"));
-        this.addEnvironment = app.addEnvironment$.pipe(map(() => {/* TODO Open file dialog */}));
+        this.addEnvironment = app.$watchAsObservable('uploadedHDR').pipe(
+            pluck('newValue')
+        );
         this.captureCanvas = app.captureCanvas$.pipe(pluck('event'));
         this.cameraValuesExport = app.cameraExport$.pipe(pluck('event'));
 
@@ -100,13 +102,16 @@ class UIModel
             map( ({ newValue, oldValue }) => newValue)
         );
 
-        const inputObservables = UIModel.getInputObservables(document.getElementById("canvas"));
+        const canvas = document.getElementById("canvas");
+        this.registerDropZoneUIHandle(canvas);
+        const inputObservables = UIModel.getInputObservables(canvas, this.app);
         this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.gltfDropped);
-        this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment).pipe(
+        this.hdr = merge(inputObservables.hdrDropped, selectedEnvironment, this.addEnvironment).pipe(
             startWith(environments[initialEnvironment].hdr_path)
         );
 
-        inputObservables.hdrDropped.subscribe( hdrPath => {
+        const hdrUIChange = merge(inputObservables.hdrDropped, this.addEnvironment);
+        hdrUIChange.subscribe( hdrPath => {
             this.app.environments[hdrPath.name] = {
                 title: hdrPath.name,
                 hdr_path: hdrPath,
@@ -143,16 +148,19 @@ class UIModel
         });
     }
 
-    static getInputObservables(inputDomElement)
+    // app has to be the vuejs app instance
+    static getInputObservables(inputDomElement, app)
     {
         const observables = {};
 
         const simpleDropzoneObservabel = new Observable(subscriber => {
             const dropCtrl = new SimpleDropzone(inputDomElement, inputDomElement);
             dropCtrl.on('drop', ({files}) => {
+                app.showDropDownOverlay = false;
                 subscriber.next(files);
             });
             dropCtrl.on('droperror', () => {
+                app.showDropDownOverlay = false;
                 subscriber.error();
             });
         });
@@ -179,6 +187,17 @@ class UIModel
             filter(file => file !== undefined),
         );
         return observables;
+    }
+
+    registerDropZoneUIHandle(inputDomElement)
+    {
+        const self = this;
+        inputDomElement.addEventListener('dragenter', function(event) {
+            self.app.showDropDownOverlay = true;
+        });
+        inputDomElement.addEventListener('dragleave', function(event) {
+            self.app.showDropDownOverlay = false;
+        });
     }
 
     attachGltfLoaded(glTFLoadedStateObservable)
@@ -308,17 +327,20 @@ class UIModel
             map( (state) => {
                 let gltf = state.gltf;
                 let cameraIndices = [{title: "User Camera", index: -1}];
-                cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
-                    {
-                        let name = camera.name;
-                        if(name === "" || name === undefined)
+                if (gltf.scenes[state.sceneIndex] !== undefined)
+                {
+                    cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+                        if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
                         {
-                            name = index;
+                            let name = camera.name;
+                            if(name === "" || name === undefined)
+                            {
+                                name = index;
+                            }
+                            return {title: name, index: index};
                         }
-                        return {title: name, index: index};
-                    }
-                }));
+                    }));
+                }
                 cameraIndices = cameraIndices.filter(function(el) {
                     return el !== undefined;
                 });

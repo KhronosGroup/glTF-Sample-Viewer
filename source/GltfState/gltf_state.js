@@ -22,7 +22,6 @@ class GltfState
             blurEnvironmentMap: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
-            environmentBackground: false,
             environmentRotation: 90.0 //+X = 0 +Z = 90 -X = 180 -Z = 270
         };
         this.userCamera = new UserCamera();

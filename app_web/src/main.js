@@ -26,9 +26,9 @@ async function main()
     const environmentPaths = fillEnvironmentWithPaths({
         "footprint_court_512": "Foodprint Court (512p)",
         "footprint_court": "Foodprint Court",
-        "pisa": "Pisa courtyard nearing sunset, Italy",
-        "doge2": "Courtyard of the Doge's palace",
-        "ennis": "Dining room of the Ennis-Brown House",
+        "pisa": "Pisa",
+        "doge2": "Doge's palace",
+        "ennis": "Dining room",
         "field": "Field",
         "helipad": "Helipad Goldenhour",
         "papermill": "Papermill Ruins",
@@ -51,21 +51,28 @@ async function main()
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 state.cameraIndex = undefined;
-                const scene = state.gltf.scenes[state.sceneIndex];
-                scene.applyTransformHierarchy(state.gltf);
-                state.userCamera.aspectRatio = canvas.width / canvas.height;
-                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-
-                // Try to start as many animations as possible without generating conficts.
-                state.animationIndices = [];
-                for (let i = 0; i < gltf.animations.length; i++)
+                if (state.gltf.scenes.length != 0)
                 {
-                    if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
+                    if(state.sceneIndex > state.gltf.scenes.length - 1)
                     {
-                        state.animationIndices.push(i);
+                        state.sceneIndex = 0;
                     }
+                    const scene = state.gltf.scenes[state.sceneIndex];
+                    scene.applyTransformHierarchy(state.gltf);
+                    state.userCamera.aspectRatio = canvas.width / canvas.height;
+                    state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+
+                    // Try to start as many animations as possible without generating conficts.
+                    state.animationIndices = [];
+                    for (let i = 0; i < gltf.animations.length; i++)
+                    {
+                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
+                        {
+                            state.animationIndices.push(i);
+                        }
+                    }
+                    state.animationTimer.start();
                 }
-                state.animationTimer.start();
 
                 uiModel.exitLoadingState();
 
@@ -87,8 +94,11 @@ async function main()
         state.sceneIndex = newSceneIndex;
         state.cameraIndex = undefined;
         const scene = state.gltf.scenes[state.sceneIndex];
-        scene.applyTransformHierarchy(state.gltf);
-        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+        if (scene !== undefined)
+        {
+            scene.applyTransformHierarchy(state.gltf);
+            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+        }
     }),
     multicast(sceneChangedSubject)
     );
@@ -187,10 +197,6 @@ async function main()
         state.renderingParameters.usePunctual = punctualLightsEnabled;
     });
 
-    uiModel.environmentEnabled.subscribe( environmentEnabled => {
-        state.renderingParameters.environmentBackground = environmentEnabled;
-    });
-
     uiModel.environmentRotation.subscribe( environmentRotation => {
         switch (environmentRotation)
         {
@@ -270,7 +276,7 @@ async function main()
     const update = () =>
     {
         canvas.width = window.innerWidth - ui.getBoundingClientRect().width;
-        canvas.height = canvas.clientHeight;
+        canvas.height = window.innerHeight;
 
         view.renderFrame(state, canvas.width, canvas.height);
         window.requestAnimationFrame(update);

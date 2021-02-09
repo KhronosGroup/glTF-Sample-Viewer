@@ -89,11 +89,10 @@ class gltfWebGl
             }
             const internalformat = (textureInfo.linear || GL.SRGB8_ALPHA8 === undefined) ? GL.RGBA : GL.SRGB8_ALPHA8;
             this.context.texImage2D(image.type, image.miplevel, internalformat, GL.RGBA, GL.UNSIGNED_BYTE, image.image);
-            const generateMips = image.shouldGenerateMips();
 
-            this.setSampler(gltfSampler, gltfTex.type, generateMips);
+            this.setSampler(gltfSampler, gltfTex.type, textureInfo.generateMips);
 
-            if (textureInfo.generateMips && generateMips)
+            if (textureInfo.generateMips)
             {
                 // Until this point, images can be assumed to be power of two.
                 switch (gltfSampler.minFilter)

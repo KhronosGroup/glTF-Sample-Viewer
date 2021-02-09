@@ -1,9 +1,5 @@
 import axios from 'axios';
 
-import {
-    getContainingFolder,
-    combinePaths
-} from 'gltf-viewer-source';
 import path from 'path';
 
 class gltfModelPathProvider

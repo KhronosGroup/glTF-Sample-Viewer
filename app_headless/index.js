@@ -36,22 +36,29 @@ async function main()
 
     const defaultScene = state.gltf.scene;
     state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
-    const scene = state.gltf.scenes[state.sceneIndex];
-    scene.applyTransformHierarchy(state.gltf);
-    state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+    if (state.gltf.scenes.length != 0)
+    {
+        if(state.sceneIndex > state.gltf.scenes.length - 1)
+        {
+            state.sceneIndex = 0;
+        }
+        const scene = state.gltf.scenes[state.sceneIndex];
+        scene.applyTransformHierarchy(state.gltf);
+        state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
-    view.renderFrame(state, width, height);
+        view.renderFrame(state, width, height);
 
-    let pixels = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        let pixels = new Uint8Array(width * height * 4);
+        gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-    const image = {
-        width: width,
-        height: height,
-        data: pixels
-    };
-    const pngFile = png.encode(image);
-    fs.writeFileSync(__dirname + "/render.png", pngFile);
+        const image = {
+            width: width,
+            height: height,
+            data: pixels
+        };
+        const pngFile = png.encode(image);
+        fs.writeFileSync(__dirname + "/render.png", pngFile);
+    }
 }
 
 main().then(() => console.log("Done"));

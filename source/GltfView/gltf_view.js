@@ -45,6 +45,11 @@ class GltfView
 
         const scene = state.gltf.scenes[state.sceneIndex];
 
+        if(scene === undefined)
+        {
+            return;
+        }
+
         scene.applyTransformHierarchy(state.gltf);
 
         this.renderer.drawScene(state, scene);
@@ -60,6 +65,14 @@ class GltfView
 
         // gather information from the active scene
         const scene = state.gltf.scenes[state.sceneIndex];
+        if (scene === undefined)
+        {
+            return {
+                meshCount: 0,
+                faceCount: 0,
+                opaqueMaterialsCount: 0,
+                transparentMaterialsCount: 0};
+        }
         const nodes = scene.gatherNodes(state.gltf);
         const activeMeshes = nodes.filter(node => node.mesh !== undefined).map(node => state.gltf.meshes[node.mesh]);
         const activePrimitives = activeMeshes
