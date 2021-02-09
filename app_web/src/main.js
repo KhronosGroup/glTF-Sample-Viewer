@@ -17,10 +17,6 @@ async function main()
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
 
-    resourceLoader.initDracoLib();
-    resourceLoader.initKtxLib();
-
-
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({

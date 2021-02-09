@@ -22,9 +22,12 @@ class GltfView
         return new GltfState(this);
     }
 
-    createResourceLoader()
+    createResourceLoader(externalDracoLib = null, externalKtxLib = null)
     {
-        return new ResourceLoader(this);
+        let resourceLoader = new ResourceLoader(this);
+        resourceLoader.initKtxLib(externalKtxLib);
+        resourceLoader.initDracoLib(externalDracoLib);
+        return resourceLoader;
     }
 
     // renderFrame to the context's default framebuffer

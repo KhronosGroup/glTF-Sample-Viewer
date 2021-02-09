@@ -21,6 +21,11 @@ import { loadHDR } from '../libs/hdrpng.js';
 
 class ResourceLoader
 {
+    /**
+     * ResourceLoader class that provides an interface to load resources into
+     * the view. Typically this is created with GltfView.createResourceLoader()
+     * @param {GltfView} view backreference to the GltfView that this resource loader should operate on
+     */
     constructor(view)
     {
         this.view = view;
@@ -28,8 +33,7 @@ class ResourceLoader
 
     /**
      * loadGltf asynchroneously and create resources for rendering
-     * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as
-     * preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
+     * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
      * @param {File[]} [externalFiles] additional files containing resources that are referenced in the gltf
      */
     async loadGltf(gltfFile, externalFiles)
@@ -37,19 +41,32 @@ class ResourceLoader
         return loadGltf(gltfFile, this.view, externalFiles);
     }
 
+    /**
+     * loadEnvironment asynchroneously, run IBL sampling and create resources for rendering
+     * @param {(String | ArrayBuffer | File)} environmentFile the .hdr file either as path or resource
+     * @param {Object} [lutFiles] object containing paths or resources for the environment look up textures. Keys are lut_ggx_file, lut_charlie_file and lut_sheen_E_file
+     */
     async loadEnvironment(environmentFile, lutFiles)
     {
         return loadEnvironment(environmentFile, this.view, lutFiles);
     }
 
-    initKtxLib(ktxlib)
+    /**
+     * initKtxLib must be called before loading gltf files with ktx2 assets
+     * @param {String} [externalKtxLib] path to an external ktx library (for example from a CDN)
+     */
+    initKtxLib(externalKtxLib)
     {
-        this.view.ktxDecoder = new KtxDecoder(this.view.context, ktxlib);
+        this.view.ktxDecoder = new KtxDecoder(this.view.context, externalKtxLib);
     }
 
-    async initDracoLib(dracolib)
+    /**
+     * initDracoLib must be called before loading gltf files with draco meshes. It is sufficient to call this only once
+     * @param {*} [externalDracoLib] path to an external draco library (for example from a CDN)
+     */
+    async initDracoLib(externalDracoLib)
     {
-        const dracoDecoder = new DracoDecoder(dracolib);
+        const dracoDecoder = new DracoDecoder(externalDracoLib);
         if (dracoDecoder !== undefined)
         {
             await dracoDecoder.ready();
