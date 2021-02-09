@@ -26,9 +26,9 @@ async function main()
     const environmentPaths = fillEnvironmentWithPaths({
         "footprint_court_512": "Foodprint Court (512p)",
         "footprint_court": "Foodprint Court",
-        "pisa": "Pisa courtyard nearing sunset, Italy",
-        "doge2": "Courtyard of the Doge's palace",
-        "ennis": "Dining room of the Ennis-Brown House",
+        "pisa": "Pisa",
+        "doge2": "Doge's palace",
+        "ennis": "Dining room",
         "field": "Field",
         "helipad": "Helipad Goldenhour",
         "papermill": "Papermill Ruins",
