@@ -35,6 +35,7 @@ class GltfView
      * environments can be loaded for the view
      * @param {String} [externalDracoLib] optional URI of an external Draco library, e.g. from a CDN
      * @param {String} [externalKtxLib] optional URI of an external KTX library, e.g. from a CDN
+     * @returns {ResourceLoader} ResourceLoader
      */
     createResourceLoader(externalDracoLib = undefined, externalKtxLib = undefined)
     {

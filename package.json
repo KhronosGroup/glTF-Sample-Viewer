@@ -11,6 +11,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
+    "build_docs": "./node_modules/.bin/jsdoc2md source/gltf-sample-viewer.js source/GltfView/gltf_view.js source/GltfState/gltf_state.js source/ResourceLoader/resource_loader.js source/gltf/user_camera.js > API.md",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js",
@@ -34,6 +35,7 @@
     "@rollup/plugin-node-resolve": "^11.1.0",
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
+    "jsdoc-to-markdown": "^6.0.1",
     "rollup": "^2.37.0",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-glslify": "^1.2.0",
