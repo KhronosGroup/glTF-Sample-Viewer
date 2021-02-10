@@ -18,7 +18,10 @@ import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
 
-
+/**
+ * ResourceLoader can be used to load resources for the GltfState
+ * that are then used to display the loaded data with GltfView
+ */
 class ResourceLoader
 {
     /**

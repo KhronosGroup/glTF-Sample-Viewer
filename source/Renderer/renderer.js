@@ -1,6 +1,6 @@
 import { mat4, mat3, vec3 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
-import { ToneMaps, DebugOutput } from './rendering_parameters.js';
+import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
 import { EnvironmentRenderer } from './environment_renderer.js'
 
@@ -525,79 +525,79 @@ class gltfRenderer
 
         switch (state.renderingParameters.toneMap)
         {
-        case (ToneMaps.ACES_FAST):
+        case (GltfState.ToneMaps.ACES_FAST):
             fragDefines.push("TONEMAP_ACES_FAST 1");
             break;
-        case (ToneMaps.ACES):
+        case (GltfState.ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;
-        case (ToneMaps.NONE):
+        case (GltfState.ToneMaps.NONE):
         default:
             break;
         }
 
-        if (state.renderingParameters.debugOutput !== DebugOutput.NONE)
+        if (state.renderingParameters.debugOutput !== GltfState.DebugOutput.NONE)
         {
             fragDefines.push("DEBUG_OUTPUT 1");
         }
 
         switch (state.renderingParameters.debugOutput)
         {
-        case (DebugOutput.METALLIC):
+        case (GltfState.DebugOutput.METALLIC):
             fragDefines.push("DEBUG_METALLIC 1");
             break;
-        case (DebugOutput.ROUGHNESS):
+        case (GltfState.DebugOutput.ROUGHNESS):
             fragDefines.push("DEBUG_ROUGHNESS 1");
             break;
-        case (DebugOutput.NORMAL):
+        case (GltfState.DebugOutput.NORMAL):
             fragDefines.push("DEBUG_NORMAL 1");
             break;
-        case (DebugOutput.WORLDSPACENORMAL):
+        case (GltfState.DebugOutput.WORLDSPACENORMAL):
             fragDefines.push("DEBUG_WORLDSPACE_NORMAL 1");
             break;
-        case (DebugOutput.GEOMETRYNORMAL):
+        case (GltfState.DebugOutput.GEOMETRYNORMAL):
             fragDefines.push("DEBUG_GEOMETRY_NORMAL 1");
             break;
-        case (DebugOutput.TANGENT):
+        case (GltfState.DebugOutput.TANGENT):
             fragDefines.push("DEBUG_TANGENT 1");
             break;
-        case (DebugOutput.BITANGENT):
+        case (GltfState.DebugOutput.BITANGENT):
             fragDefines.push("DEBUG_BITANGENT 1");
             break;
-        case (DebugOutput.BASECOLOR):
+        case (GltfState.DebugOutput.BASECOLOR):
             fragDefines.push("DEBUG_BASECOLOR 1");
             break;
-        case (DebugOutput.OCCLUSION):
+        case (GltfState.DebugOutput.OCCLUSION):
             fragDefines.push("DEBUG_OCCLUSION 1");
             break;
-        case (DebugOutput.EMISSIVE):
+        case (GltfState.DebugOutput.EMISSIVE):
             fragDefines.push("DEBUG_FEMISSIVE 1");
             break;
-        case (DebugOutput.SPECULAR):
+        case (GltfState.DebugOutput.SPECULAR):
             fragDefines.push("DEBUG_FSPECULAR 1");
             break;
-        case (DebugOutput.DIFFUSE):
+        case (GltfState.DebugOutput.DIFFUSE):
             fragDefines.push("DEBUG_FDIFFUSE 1");
             break;
-        case (DebugOutput.THICKNESS):
+        case (GltfState.DebugOutput.THICKNESS):
             fragDefines.push("DEBUG_THICKNESS 1");
             break;
-        case (DebugOutput.CLEARCOAT):
+        case (GltfState.DebugOutput.CLEARCOAT):
             fragDefines.push("DEBUG_FCLEARCOAT 1");
             break;
-        case (DebugOutput.SHEEN):
+        case (GltfState.DebugOutput.SHEEN):
             fragDefines.push("DEBUG_FSHEEN 1");
             break;
-        case (DebugOutput.SUBSURFACE):
+        case (GltfState.DebugOutput.SUBSURFACE):
             fragDefines.push("DEBUG_FSUBSURFACE 1");
             break;
-        case (DebugOutput.TRANSMISSION):
+        case (GltfState.DebugOutput.TRANSMISSION):
             fragDefines.push("DEBUG_FTRANSMISSION 1");
             break;
-        case (DebugOutput.F0):
+        case (GltfState.DebugOutput.F0):
             fragDefines.push("DEBUG_F0 1");
             break;
-        case (DebugOutput.ALPHA):
+        case (GltfState.DebugOutput.ALPHA):
             fragDefines.push("DEBUG_ALPHA 1");
             break;
         }

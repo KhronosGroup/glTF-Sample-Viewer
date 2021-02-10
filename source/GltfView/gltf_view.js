@@ -3,6 +3,9 @@ import { gltfRenderer } from '../Renderer/renderer.js';
 import { GL } from '../Renderer/webgl.js';
 import { ResourceLoader } from '../ResourceLoader/resource_loader.js';
 
+/**
+ * GltfView represents a view on a gltf, e.g. in a canvas
+ */
 class GltfView
 {
     /**

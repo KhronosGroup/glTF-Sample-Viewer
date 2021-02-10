@@ -2,12 +2,15 @@
 
 <dl>
 <dt><a href="#GltfView">GltfView</a></dt>
-<dd></dd>
+<dd><p>GltfView represents a view on a gltf, e.g. in a canvas</p>
+</dd>
 <dt><a href="#GltfState">GltfState</a></dt>
 <dd><p>GltfState containing a state for visualization in GltfView</p>
 </dd>
 <dt><a href="#ResourceLoader">ResourceLoader</a></dt>
-<dd></dd>
+<dd><p>ResourceLoader can be used to load resources for the GltfState
+that are then used to display the loaded data with GltfView</p>
+</dd>
 <dt><a href="#UserCamera">UserCamera</a></dt>
 <dd></dd>
 </dl>
@@ -15,6 +18,8 @@
 <a name="GltfView"></a>
 
 ## GltfView
+GltfView represents a view on a gltf, e.g. in a canvas
+
 **Kind**: global class  
 
 * [GltfView](#GltfView)
@@ -97,8 +102,54 @@ GltfState containing a state for visualization in GltfView
 
 * [GltfState](#GltfState)
     * [new GltfState(view)](#new_GltfState_new)
-    * [.ToneMaps](#GltfState.ToneMaps)
-    * [.DebugOutput](#GltfState.DebugOutput)
+    * _instance_
+        * [.gltf](#GltfState+gltf)
+        * [.environment](#GltfState+environment)
+        * [.userCamera](#GltfState+userCamera)
+        * [.sceneIndex](#GltfState+sceneIndex)
+        * [.cameraIndex](#GltfState+cameraIndex)
+        * [.animationIndices](#GltfState+animationIndices)
+        * [.animationTimer](#GltfState+animationTimer)
+        * [.variant](#GltfState+variant)
+        * [.renderingParameters](#GltfState+renderingParameters)
+            * [.morphing](#GltfState+renderingParameters.morphing)
+            * [.skinning](#GltfState+renderingParameters.skinning)
+            * [.clearcoat](#GltfState+renderingParameters.clearcoat)
+            * [.sheen](#GltfState+renderingParameters.sheen)
+            * [.transmission](#GltfState+renderingParameters.transmission)
+            * [.clearColor](#GltfState+renderingParameters.clearColor)
+            * [.exposure](#GltfState+renderingParameters.exposure)
+            * [.usePunctual](#GltfState+renderingParameters.usePunctual)
+            * [.useIBL](#GltfState+renderingParameters.useIBL)
+            * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
+            * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
+            * [.toneMap](#GltfState+renderingParameters.toneMap)
+            * [.debugOutput](#GltfState+renderingParameters.debugOutput)
+            * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+    * _static_
+        * [.ToneMaps](#GltfState.ToneMaps)
+            * [.NONE](#GltfState.ToneMaps.NONE)
+            * [.ACES_FAST](#GltfState.ToneMaps.ACES_FAST)
+            * [.ACES](#GltfState.ToneMaps.ACES)
+        * [.DebugOutput](#GltfState.DebugOutput)
+            * [.NONE](#GltfState.DebugOutput.NONE)
+            * [.METALLIC](#GltfState.DebugOutput.METALLIC)
+            * [.ROUGHNESS](#GltfState.DebugOutput.ROUGHNESS)
+            * [.NORMAL](#GltfState.DebugOutput.NORMAL)
+            * [.WORLDSPACENORMAL](#GltfState.DebugOutput.WORLDSPACENORMAL)
+            * [.GEOMETRYNORMAL](#GltfState.DebugOutput.GEOMETRYNORMAL)
+            * [.TANGENT](#GltfState.DebugOutput.TANGENT)
+            * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
+            * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
+            * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
+            * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
+            * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
+            * [.SPECULAR](#GltfState.DebugOutput.SPECULAR)
+            * [.CLEARCOAT](#GltfState.DebugOutput.CLEARCOAT)
+            * [.SHEEN](#GltfState.DebugOutput.SHEEN)
+            * [.TRANSMISSION](#GltfState.DebugOutput.TRANSMISSION)
+            * [.ALPHA](#GltfState.DebugOutput.ALPHA)
+            * [.F0](#GltfState.DebugOutput.F0)
 
 <a name="new_GltfState_new"></a>
 
@@ -111,21 +162,340 @@ multiple GltfStates configured and switch between them on demand.
 | --- | --- | --- |
 | view | <code>\*</code> | GltfView to which this state belongs |
 
+<a name="GltfState+gltf"></a>
+
+### gltfState.gltf
+loaded gltf data @see ResourceLoader.loadGltf
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+environment"></a>
+
+### gltfState.environment
+loaded environment data @see ResourceLoader.loadEnvironment
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+userCamera"></a>
+
+### gltfState.userCamera
+user camera @see UserCamera, convenient camera controls
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+sceneIndex"></a>
+
+### gltfState.sceneIndex
+gltf scene that is visible in the view
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+cameraIndex"></a>
+
+### gltfState.cameraIndex
+index of the camera that is used to render the view. a
+value of 'undefined' enables the user camera
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+animationIndices"></a>
+
+### gltfState.animationIndices
+indices of active animations
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+animationTimer"></a>
+
+### gltfState.animationTimer
+animation timer allows to control the animation time
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+variant"></a>
+
+### gltfState.variant
+KHR_materials_variants
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+<a name="GltfState+renderingParameters"></a>
+
+### gltfState.renderingParameters
+parameters used to configure the rendering
+
+**Kind**: instance property of [<code>GltfState</code>](#GltfState)  
+
+* [.renderingParameters](#GltfState+renderingParameters)
+    * [.morphing](#GltfState+renderingParameters.morphing)
+    * [.skinning](#GltfState+renderingParameters.skinning)
+    * [.clearcoat](#GltfState+renderingParameters.clearcoat)
+    * [.sheen](#GltfState+renderingParameters.sheen)
+    * [.transmission](#GltfState+renderingParameters.transmission)
+    * [.clearColor](#GltfState+renderingParameters.clearColor)
+    * [.exposure](#GltfState+renderingParameters.exposure)
+    * [.usePunctual](#GltfState+renderingParameters.usePunctual)
+    * [.useIBL](#GltfState+renderingParameters.useIBL)
+    * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
+    * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
+    * [.toneMap](#GltfState+renderingParameters.toneMap)
+    * [.debugOutput](#GltfState+renderingParameters.debugOutput)
+    * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+
+<a name="GltfState+renderingParameters.morphing"></a>
+
+#### renderingParameters.morphing
+morphing between vertices
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.skinning"></a>
+
+#### renderingParameters.skinning
+skin / skeleton
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.clearcoat"></a>
+
+#### renderingParameters.clearcoat
+KHR_materials_clearcoat
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.sheen"></a>
+
+#### renderingParameters.sheen
+KHR_materials_sheen
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.transmission"></a>
+
+#### renderingParameters.transmission
+KHR_materials_transmission
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.clearColor"></a>
+
+#### renderingParameters.clearColor
+clear color expressed as list of ints in the range [0, 255]
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.exposure"></a>
+
+#### renderingParameters.exposure
+exposure factor
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.usePunctual"></a>
+
+#### renderingParameters.usePunctual
+KHR_lights_punctual
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.useIBL"></a>
+
+#### renderingParameters.useIBL
+image based lighting
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.renderEnvironmentMap"></a>
+
+#### renderingParameters.renderEnvironmentMap
+render the environment map in the background
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.blurEnvironmentMap"></a>
+
+#### renderingParameters.blurEnvironmentMap
+apply blur to the background environment map
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.toneMap"></a>
+
+#### renderingParameters.toneMap
+which tonemap to use, use ACES for a filmic effect
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.debugOutput"></a>
+
+#### renderingParameters.debugOutput
+render some debug output channes, such as for example the normals
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.environmentRotation"></a>
+
+#### renderingParameters.environmentRotation
+By default the front face of the environment is +Z (90)
+Front faces:
++X = 0 
++Z = 90 
+-X = 180 
+-Z = 270
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState.ToneMaps"></a>
 
 ### GltfState.ToneMaps
-Enum for tone maps
+ToneMaps enum for the different tonemappings that are supported 
+by gltf sample viewer
 
 **Kind**: static property of [<code>GltfState</code>](#GltfState)  
+
+* [.ToneMaps](#GltfState.ToneMaps)
+    * [.NONE](#GltfState.ToneMaps.NONE)
+    * [.ACES_FAST](#GltfState.ToneMaps.ACES_FAST)
+    * [.ACES](#GltfState.ToneMaps.ACES)
+
+<a name="GltfState.ToneMaps.NONE"></a>
+
+#### ToneMaps.NONE
+don't apply tone mapping
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
+<a name="GltfState.ToneMaps.ACES_FAST"></a>
+
+#### ToneMaps.ACES\_FAST
+fast implementation of the ACES sRGB RRT+ODT
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
+<a name="GltfState.ToneMaps.ACES"></a>
+
+#### ToneMaps.ACES
+more accurate implementation of the ACES sRGB RRT+ODT
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.DebugOutput"></a>
 
 ### GltfState.DebugOutput
-Enum for debug output channels
+DebugOutput enum for selecting debug output channels
+such as "NORMAL"
 
 **Kind**: static property of [<code>GltfState</code>](#GltfState)  
+
+* [.DebugOutput](#GltfState.DebugOutput)
+    * [.NONE](#GltfState.DebugOutput.NONE)
+    * [.METALLIC](#GltfState.DebugOutput.METALLIC)
+    * [.ROUGHNESS](#GltfState.DebugOutput.ROUGHNESS)
+    * [.NORMAL](#GltfState.DebugOutput.NORMAL)
+    * [.WORLDSPACENORMAL](#GltfState.DebugOutput.WORLDSPACENORMAL)
+    * [.GEOMETRYNORMAL](#GltfState.DebugOutput.GEOMETRYNORMAL)
+    * [.TANGENT](#GltfState.DebugOutput.TANGENT)
+    * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
+    * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
+    * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
+    * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
+    * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
+    * [.SPECULAR](#GltfState.DebugOutput.SPECULAR)
+    * [.CLEARCOAT](#GltfState.DebugOutput.CLEARCOAT)
+    * [.SHEEN](#GltfState.DebugOutput.SHEEN)
+    * [.TRANSMISSION](#GltfState.DebugOutput.TRANSMISSION)
+    * [.ALPHA](#GltfState.DebugOutput.ALPHA)
+    * [.F0](#GltfState.DebugOutput.F0)
+
+<a name="GltfState.DebugOutput.NONE"></a>
+
+#### DebugOutput.NONE
+standard rendering - debug output is disabled
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.METALLIC"></a>
+
+#### DebugOutput.METALLIC
+output the metallic value from pbr metallic roughness
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.ROUGHNESS"></a>
+
+#### DebugOutput.ROUGHNESS
+output the roughness value from pbr metallic roughness
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.NORMAL"></a>
+
+#### DebugOutput.NORMAL
+output the normal map value in TBN space
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.WORLDSPACENORMAL"></a>
+
+#### DebugOutput.WORLDSPACENORMAL
+output the world space normals (i.e. with TBN applied)
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.GEOMETRYNORMAL"></a>
+
+#### DebugOutput.GEOMETRYNORMAL
+output the normal from the TBN
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.TANGENT"></a>
+
+#### DebugOutput.TANGENT
+output the tangent from the TBN
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.BITANGENT"></a>
+
+#### DebugOutput.BITANGENT
+output the bitangent from the TBN
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.BASECOLOR"></a>
+
+#### DebugOutput.BASECOLOR
+output the base color value
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.OCCLUSION"></a>
+
+#### DebugOutput.OCCLUSION
+output the occlusion value
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.EMISSIVE"></a>
+
+#### DebugOutput.EMISSIVE
+output the emissive value
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.DIFFUSE"></a>
+
+#### DebugOutput.DIFFUSE
+output diffuse lighting
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.SPECULAR"></a>
+
+#### DebugOutput.SPECULAR
+output specular lighting
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.CLEARCOAT"></a>
+
+#### DebugOutput.CLEARCOAT
+output clearcoat lighting
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.SHEEN"></a>
+
+#### DebugOutput.SHEEN
+output sheen lighting
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.TRANSMISSION"></a>
+
+#### DebugOutput.TRANSMISSION
+output tranmission lighting
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.ALPHA"></a>
+
+#### DebugOutput.ALPHA
+output the alpha value
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.F0"></a>
+
+#### DebugOutput.F0
+output computed F0
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
 <a name="ResourceLoader"></a>
 
 ## ResourceLoader
+ResourceLoader can be used to load resources for the GltfState
+that are then used to display the loaded data with GltfView
+
 **Kind**: global class  
 
 * [ResourceLoader](#ResourceLoader)
