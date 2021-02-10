@@ -91,24 +91,20 @@ mat3 generateTBN(vec3 normal)
 {
     vec3 bitangent = vec3(0.0, 1.0, 0.0);
 
-    // we can omit the following elimination of singularities,
-    // as the output cube maps are power of two and therefore
-    // never generate a perfectly upright normal
-
-    // float NdotUp = dot(normal, vec3(0.0, 1.0, 0.0));
-    // float epsilon = 0.0000001;
-    // if (1.0 - abs(NdotUp) <= epsilon)
-    // {
-    //     // Sampling +Y or -Y, so we need a more robust bitangent.
-    //     if (NdotUp > 0.0)
-    //     {
-    //         bitangent = vec3(0.0, 0.0, 1.0);
-    //     }
-    //     else
-    //     {
-    //         bitangent = vec3(0.0, 0.0, -1.0);
-    //     }
-    // }
+    float NdotUp = dot(normal, vec3(0.0, 1.0, 0.0));
+    float epsilon = 0.0000001;
+    if (1.0 - abs(NdotUp) <= epsilon)
+    {
+        // Sampling +Y or -Y, so we need a more robust bitangent.
+        if (NdotUp > 0.0)
+        {
+            bitangent = vec3(0.0, 0.0, 1.0);
+        }
+        else
+        {
+            bitangent = vec3(0.0, 0.0, -1.0);
+        }
+    }
 
     vec3 tangent = normalize(cross(bitangent, normal));
     bitangent = cross(normal, tangent);
