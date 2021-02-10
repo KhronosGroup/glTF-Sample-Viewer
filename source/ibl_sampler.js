@@ -231,7 +231,7 @@ class iblSampler
 
             // map shader uniform to texture unit (TEXTURE0)
             const location = this.gl.getUniformLocation(shader.program,"u_panorama");
-            this.gl.uniform1i(location, this.gl.TEXTURE0+0); // texture unit 0 (TEXTURE0)
+            this.gl.uniform1i(location, 0); // texture unit 0 (TEXTURE0)
 
             shader.updateUniform("u_currentFace", i);
 
