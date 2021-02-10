@@ -264,7 +264,7 @@ async function main()
     {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.zoomBy(delta);
+            state.userCamera.zoomStep(delta);
         }
     };
 
