@@ -47,10 +47,9 @@ class UserCamera extends gltfCamera
 
     getLookDirection()
     {
-        const direction = vec3.create();
-        const rotation = this.getRotation();
-        vec3.transformQuat(direction, vec3.fromValues(0, 0, -1), rotation);
-        return direction;
+        let dir = [-this.transform[8], -this.transform[9], -this.transform[10]];
+        vec3.normalize(dir, dir);
+        return dir;
     }
 
     getTarget()
@@ -58,7 +57,10 @@ class UserCamera extends gltfCamera
         const target = vec3.create();
         const position = this.getPosition();
         let lookDirection = this.getLookDirection();
-        lookDirection = lookDirection.map(x => x * this.distance);
+        if (this.distance != 0 && this.distance != 1)
+        {
+            lookDirection = lookDirection.map(x => x * this.distance);
+        }
         vec3.add(target, lookDirection, position);
         return target;
     }
