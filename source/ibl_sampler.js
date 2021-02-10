@@ -21,7 +21,9 @@ class iblSampler
         this.gl = view.context;
 
         this.textureSize = 256;
-        this.sampleCount = 64;
+        this.ggxSampleCount = 256;
+        this.lambertianSampleCount = 2048;
+        this.sheenSamplCount = 64;
         this.lodBias = 0.0;
         this.mipmapCount = undefined;
 
@@ -247,7 +249,9 @@ class iblSampler
         distribution,
         roughness,
         targetMipLevel,
-        targetTexture)
+        targetTexture,
+        sampleCount,
+        lodBias = 0.0)
     {
         var currentTextureSize =  this.textureSize>>(targetMipLevel);
 
@@ -285,9 +289,9 @@ class iblSampler
 
 
             shader.updateUniform("u_roughness", roughness);
-            shader.updateUniform("u_sampleCount", this.sampleCount)
+            shader.updateUniform("u_sampleCount", sampleCount);
             shader.updateUniform("u_width", this.textureSize);
-            shader.updateUniform("u_lodBias", this.lodBias);
+            shader.updateUniform("u_lodBias", lodBias);
             shader.updateUniform("u_distribution", distribution);
             shader.updateUniform("u_currentFace", i);
 
@@ -305,7 +309,8 @@ class iblSampler
             0,
             0.0,
             0,
-            this.lambertianTextureID);
+            this.lambertianTextureID,
+            this.lambertianSampleCount);
     }
 
 
@@ -318,7 +323,8 @@ class iblSampler
                 1,
                 roughness,
                 currentMipLevel,
-                this.ggxTextureID);
+                this.ggxTextureID,
+                this.ggxSampleCount);
         }
     }
 
@@ -331,7 +337,8 @@ class iblSampler
                 2,
                 roughness,
                 currentMipLevel,
-                this.sheenTextureID);
+                this.sheenTextureID,
+                this.sheenSamplCount);
         }
     }
 

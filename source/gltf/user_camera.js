@@ -1,26 +1,22 @@
-import { vec3 } from 'gl-matrix';
+import { vec3, mat4, quat } from 'gl-matrix';
 import { gltfCamera } from './camera.js';
-import { jsToGl, clamp } from './utils.js';
+import { clamp } from './utils.js';
 import { getSceneExtents } from './gltf_utils.js';
 
-const VecZero = vec3.create();
+
 const PanSpeedDenominator = 1200;
 const MaxNearFarRatio = 10000;
 
 class UserCamera extends gltfCamera
 {
-    constructor(
-        target = [0, 0, 0],
-        yaw = 0,
-        pitch = 0,
-        distance = 1)
+    constructor()
     {
         super();
 
-        this.target = jsToGl(target);
-        this.yaw = yaw;
-        this.pitch = pitch;
-        this.distance = distance;
+        this.transform = mat4.create();
+        this.rotAroundY = 0;
+        this.rotAroundX = 0;
+        this.distance = 1;
         this.zoomFactor = 1.04;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
@@ -37,58 +33,86 @@ class UserCamera extends gltfCamera
 
     getPosition()
     {
-        // calculate direction from focus to camera (assuming camera is at positive z)
-        // pitch rotates *around* x-axis, yaw rotates *around* y-axis
-        const direction = vec3.fromValues(0, 0, this.distance);
-        this.toGlobalOrientation(direction);
+        let pos = vec3.create();
+        mat4.getTranslation(pos, this.transform);
+        return pos;
+    }
 
-        const position = vec3.create();
-        vec3.add(position, this.target, direction);
-        return position;
+    getRotation()
+    {
+        let rot = quat.create();
+        mat4.getRotation(rot, this.transform);
+        return rot;
+    }
+
+    getLookDirection()
+    {
+        let dir = [-this.transform[8], -this.transform[9], -this.transform[10]];
+        vec3.normalize(dir, dir);
+        return dir;
     }
 
     getTarget()
     {
-        return this.target;
+        const target = vec3.create();
+        const position = this.getPosition();
+        let lookDirection = this.getLookDirection();
+        if (this.distance != 0 && this.distance != 1)
+        {
+            lookDirection = lookDirection.map(x => x * this.distance);
+        }
+        vec3.add(target, lookDirection, position);
+        return target;
     }
 
     lookAt(from, to)
     {
-        // up is implicitly (0, 1, 0)
-        this.target = to;
-
-        const difference = vec3.create();
-        vec3.subtract(difference, from, to);
-        const projectedDifference = vec3.fromValues(from[0] - to[0], 0, from[2] - to[2]);
-
-        this.pitch = vec3.angle(difference, projectedDifference);
-        this.yaw = vec3.angle(projectedDifference, vec3.fromValues(1.0, 0.0, 0.0));
-        this.distance = vec3.length(difference);
+        this.transform = mat4.create();
+        mat4.lookAt(this.transform, from, to, vec3.fromValues(0, 1, 0));
     }
 
     setPosition(position)
     {
-        this.lookAt(position, this.target);
+        this.transform[12] = position[0];
+        this.transform[13] = position[1];
+        this.transform[14] = position[2];
     }
 
     setTarget(target)
     {
-        this.target = target;
+        let pos = vec3.create();
+        mat4.getTranslation(pos, this.transform);
+        this.transform = mat4.create();
+        mat4.lookAt(this.transform, pos, target, vec3.fromValues(0, 1, 0));
+        this.setDistanceFromTarget(this.distance, target);
     }
 
     setRotation(yaw, pitch)
     {
-        this.yaw = yaw;
-        this.pitch = pitch;
+        const tmpPos = this.getPosition();
+        let mat4x = mat4.create();
+        let mat4y = mat4.create();
+        mat4.fromXRotation(mat4x, pitch);
+        mat4.fromYRotation(mat4y, yaw);
+        this.transform = mat4y;
+        this.setPosition(tmpPos);
+        mat4.multiply(this.transform, this.transform, mat4x);
     }
 
-    setZoom(distance)
+    setDistanceFromTarget(distance, target)
     {
+        const lookDirection = this.getLookDirection();
+        const distVec = lookDirection.map(x => x * -distance);
+        let pos = vec3.create();
+        vec3.add(pos, target, distVec);
+        this.setPosition(pos);
         this.distance = distance;
+
     }
 
     zoomBy(value)
     {
+        let target = this.getTarget();
         if (value > 0)
         {
             this.distance *= this.zoomFactor;
@@ -97,29 +121,35 @@ class UserCamera extends gltfCamera
         {
             this.distance /= this.zoomFactor;
         }
+        this.setDistanceFromTarget(this.distance, target);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     orbit(x, y)
     {
-        const yMax = Math.PI / 2 - 0.01;
-        this.yaw += (x * this.orbitSpeed);
-        this.pitch += (y * this.orbitSpeed);
-        this.pitch = clamp(this.pitch, -yMax, yMax);
+        const target = this.getTarget();
+        const rotAroundXMax = Math.PI / 2 - 0.01;
+        this.rotAroundY += (-x * this.orbitSpeed);
+        this.rotAroundX += (-y * this.orbitSpeed);
+        this.rotAroundX = clamp(this.rotAroundX, -rotAroundXMax, rotAroundXMax);
+        this.setRotation(this.rotAroundY, this.rotAroundX);
+        this.setDistanceFromTarget(this.distance, target);
     }
 
     pan(x, y)
     {
-        const left = vec3.fromValues(-1, 0, 0);
-        this.toGlobalOrientation(left);
+        const left = vec3.fromValues(-this.transform[0], -this.transform[1], -this.transform[2]);
         vec3.scale(left, left, x * this.panSpeed);
 
-        const up = vec3.fromValues(0, 1, 0);
-        this.toGlobalOrientation(up);
+        const up = vec3.fromValues(this.transform[4], this.transform[5], this.transform[6]);
         vec3.scale(up, up, y * this.panSpeed);
 
-        vec3.add(this.target, this.target, up);
-        vec3.add(this.target, this.target, left);
+        let pos = this.getPosition();
+
+        vec3.add(pos, pos, up);
+        vec3.add(pos, pos, left);
+
+        this.setPosition(pos);
     }
 
     fitPanSpeedToScene(min, max)
@@ -130,33 +160,25 @@ class UserCamera extends gltfCamera
 
     reset()
     {
-        this.yaw = 0;
-        this.pitch = 0;
+        this.transform = mat4.create();
+        this.rotAroundX = 0;
+        this.rotAroundY = 0;
         this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     fitViewToScene(gltf, sceneIndex)
     {
+        this.transform = mat4.create();
+        this.rotAroundX = 0;
+        this.rotAroundY = 0;
         getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
-        this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
-
-        const direction = vec3.fromValues(0, 0, this.distance);
-        vec3.add(this.getPosition(), this.target, direction);
+        this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
-        this.yaw = 0;
-        this.pitch = 0;
-    }
-
-    // Converts orientation from camera space to global space
-    toGlobalOrientation(vector)
-    {
-        vec3.rotateX(vector, vector, VecZero, -this.pitch);
-        vec3.rotateY(vector, vector, VecZero, -this.yaw);
     }
 
     fitDistanceToExtents(min, max)
@@ -173,10 +195,13 @@ class UserCamera extends gltfCamera
 
     fitCameraTargetToExtents(min, max)
     {
+        let target = [0,0,0];
         for (const i of [0, 1, 2])
         {
-            this.target[i] = (max[i] + min[i]) / 2;
+            target[i] = (max[i] + min[i]) / 2;
         }
+        this.setRotation(this.rotAroundY, this.rotAroundX);
+        this.setDistanceFromTarget(this.distance, target);
     }
 
     fitCameraPlanesToExtents(min, max)

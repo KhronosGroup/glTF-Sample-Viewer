@@ -20,7 +20,10 @@ export default {
     commonjs({
 
     }),
-    glslify({include: ['../source/Renderer/shaders/*', '../source/shaders/*']}),
+    glslify({
+        include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
+        compress: false
+    }),
     resolve({
         browser: true,
         preferBuiltins: true
