@@ -30,7 +30,15 @@ class GltfState
             blurEnvironmentMap: true,
             toneMap: ToneMaps.LINEAR,
             debugOutput: DebugOutput.NONE,
-            environmentRotation: 90.0 //+X = 0 +Z = 90 -X = 180 -Z = 270
+            /**
+             * By default the front face of the environment is +Z (90)
+             * Front faces:
+             * +X = 0 
+             * +Z = 90 
+             * -X = 180 
+             * -Z = 270
+             */
+            environmentRotation: 90.0
         };
         this.userCamera = new UserCamera();
         this.sceneIndex = 0;
