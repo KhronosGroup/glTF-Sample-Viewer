@@ -8,6 +8,8 @@
 </dd>
 <dt><a href="#ResourceLoader">ResourceLoader</a></dt>
 <dd></dd>
+<dt><a href="#UserCamera">UserCamera</a></dt>
+<dd></dd>
 </dl>
 
 <a name="GltfView"></a>
@@ -193,4 +195,183 @@ initDracoLib must be called before loading gltf files with draco meshes. It is s
 | Param | Type | Description |
 | --- | --- | --- |
 | [externalDracoLib] | <code>\*</code> | path to an external draco library (for example from a CDN) |
+
+<a name="UserCamera"></a>
+
+## UserCamera
+**Kind**: global class  
+
+* [UserCamera](#UserCamera)
+    * [new UserCamera()](#new_UserCamera_new)
+    * [.setVerticalFoV(yfov)](#UserCamera+setVerticalFoV)
+    * [.getPosition()](#UserCamera+getPosition)
+    * [.getRotation()](#UserCamera+getRotation)
+    * [.getLookDirection()](#UserCamera+getLookDirection)
+    * [.getTarget()](#UserCamera+getTarget)
+    * [.lookAt(from, to)](#UserCamera+lookAt)
+    * [.setPosition(position)](#UserCamera+setPosition)
+    * [.setTarget(target)](#UserCamera+setTarget)
+    * [.setRotation(yaw, pitch)](#UserCamera+setRotation)
+    * [.setDistanceFromTarget(distance, target)](#UserCamera+setDistanceFromTarget)
+    * [.zoomStep(sign)](#UserCamera+zoomStep)
+    * [.orbit(x, y)](#UserCamera+orbit)
+    * [.pan(x, y)](#UserCamera+pan)
+    * [.fitViewToScene(gltf, sceneIndex)](#UserCamera+fitViewToScene)
+
+<a name="new_UserCamera_new"></a>
+
+### new UserCamera()
+Create a new user camera
+
+<a name="UserCamera+setVerticalFoV"></a>
+
+### userCamera.setVerticalFoV(yfov)
+Sets the vertical FoV of the user camera
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| yfov | <code>number</code> | 
+
+<a name="UserCamera+getPosition"></a>
+
+### userCamera.getPosition()
+Returns the current position of the user camera as a vec3
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+<a name="UserCamera+getRotation"></a>
+
+### userCamera.getRotation()
+Returns the current rotation of the user camera as quat
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+<a name="UserCamera+getLookDirection"></a>
+
+### userCamera.getLookDirection()
+Returns the normalized direction the user camera looks at as vec3
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+<a name="UserCamera+getTarget"></a>
+
+### userCamera.getTarget()
+Returns the current target the camera looks at as vec3
+This multiplies the viewing direction with the distance.
+For distance 0 the normalized viewing direction is used.
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+<a name="UserCamera+lookAt"></a>
+
+### userCamera.lookAt(from, to)
+Look from user camera to target
+This changes the transformation of the user camera
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| from | <code>vec3</code> | 
+| to | <code>vec3</code> | 
+
+<a name="UserCamera+setPosition"></a>
+
+### userCamera.setPosition(position)
+Sets the position of the user camera
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| position | <code>vec3</code> | 
+
+<a name="UserCamera+setTarget"></a>
+
+### userCamera.setTarget(target)
+This rotates the user camera towards the target and sets the position of the user camera 
+according to the current distance
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| target | <code>vec3</code> | 
+
+<a name="UserCamera+setRotation"></a>
+
+### userCamera.setRotation(yaw, pitch)
+Sets the rotation of the camera
+Yaw and pitch should be in gradient
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| yaw | <code>number</code> | 
+| pitch | <code>number</code> | 
+
+<a name="UserCamera+setDistanceFromTarget"></a>
+
+### userCamera.setDistanceFromTarget(distance, target)
+Transforms the user camera to look at a target from a specfic distance using the current rotation
+This will only change the position of the user camera, not the rotation
+Use this function to set the distance
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| distance | <code>number</code> | 
+| target | <code>vec3</code> | 
+
+<a name="UserCamera+zoomStep"></a>
+
+### userCamera.zoomStep(sign)
+Does a logarithmic zoom step according to this.zoomFactor
+sign determines the direction of the zoom
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| sign | <code>number</code> | 
+
+<a name="UserCamera+orbit"></a>
+
+### userCamera.orbit(x, y)
+Orbit around the target
+x and y should be in radient and are added to the current rotation
+The rotation around the x-axis is limited to 180 degree
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| x | <code>number</code> | 
+| y | <code>number</code> | 
+
+<a name="UserCamera+pan"></a>
+
+### userCamera.pan(x, y)
+Pan the user camera
+x and y are added to the position
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| x | <code>number</code> | 
+| y | <code>number</code> | 
+
+<a name="UserCamera+fitViewToScene"></a>
+
+### userCamera.fitViewToScene(gltf, sceneIndex)
+Calculates a camera position which looks at the center of the scene from an appropriate distance
+This calculates near and far plane as well
+
+**Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
+
+| Param | Type |
+| --- | --- |
+| gltf | <code>Gltf</code> | 
+| sceneIndex | <code>number</code> | 
 

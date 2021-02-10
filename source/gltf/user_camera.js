@@ -9,6 +9,9 @@ const MaxNearFarRatio = 10000;
 
 class UserCamera extends gltfCamera
 {
+    /**
+     * Create a new user camera
+     */
     constructor()
     {
         super();
