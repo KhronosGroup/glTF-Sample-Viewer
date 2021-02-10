@@ -246,8 +246,6 @@ float computeLod(float pdf)
     float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
     float lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
 
-    lod += u_lodBias;
-
     return lod;
 }
 
@@ -265,6 +263,9 @@ vec3 filterColor(vec3 N)
 
         // mipmap filtered samples (GPU Gems 3, 20.4)
         float lod = computeLod(pdf);
+
+        // apply the bias to the lod
+        lod += u_lodBias;
 
         if(u_distribution == cLambertian)
         {
