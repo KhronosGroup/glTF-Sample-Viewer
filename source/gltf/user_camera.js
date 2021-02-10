@@ -87,7 +87,7 @@ class UserCamera extends gltfCamera
         this.setDistanceFromTarget(this.distance, target);
     }
 
-    rotate(yaw, pitch)
+    setRotation(yaw, pitch)
     {
         const tmpPos = this.getPosition();
         let mat4x = mat4.create();
@@ -128,11 +128,11 @@ class UserCamera extends gltfCamera
     orbit(x, y)
     {
         const target = this.getTarget();
-        const yMax = Math.PI / 2 - 0.01;
+        const rotAroundXMax = Math.PI / 2 - 0.01;
         this.rotAroundY += (x * this.orbitSpeed);
         this.rotAroundX += (y * this.orbitSpeed);
-        this.rotAroundX = clamp(this.rotAroundX, -yMax, yMax);
-        this.rotate(this.rotAroundY, this.rotAroundX);
+        this.rotAroundX = clamp(this.rotAroundX, -rotAroundXMax, rotAroundXMax);
+        this.setRotation(this.rotAroundY, this.rotAroundX);
         this.setDistanceFromTarget(this.distance, target);
     }
 
@@ -200,7 +200,7 @@ class UserCamera extends gltfCamera
         {
             target[i] = (max[i] + min[i]) / 2;
         }
-        this.rotate(this.rotAroundY, this.rotAroundX);
+        this.setRotation(this.rotAroundY, this.rotAroundX);
         this.setDistanceFromTarget(this.distance, target);
     }
 
