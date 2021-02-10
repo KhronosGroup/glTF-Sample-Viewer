@@ -276,23 +276,24 @@ vec3 filterColor(vec3 N)
             // lambertian /= MATH_PI; // convert irradiance to radiance https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
 
             color += vec4(lambertian, 1.0);
-            continue;
         }
-
-        // Note: reflect takes incident vector.
-        vec3 V = N;
-        vec3 L = normalize(reflect(-V, H));
-        float NdotL = dot(N, L);
-
-        if (NdotL > 0.0)
+        else if(u_distribution == cGGX || u_distribution == cCharlie)
         {
-            if(u_roughness == 0.0)
-            {
-                // without this the roughness=0 lod is too high (taken from original implementation)
-                lod = u_lodBias;
-            }
+            // Note: reflect takes incident vector.
+            vec3 V = N;
+            vec3 L = normalize(reflect(-V, H));
+            float NdotL = dot(N, L);
 
-            color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
+            if (NdotL > 0.0)
+            {
+                if(u_roughness == 0.0)
+                {
+                    // without this the roughness=0 lod is too high (taken from original implementation)
+                    lod = u_lodBias;
+                }
+
+                color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
+            }
         }
     }
 
