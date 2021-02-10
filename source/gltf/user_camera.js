@@ -129,8 +129,8 @@ class UserCamera extends gltfCamera
     {
         const target = this.getTarget();
         const rotAroundXMax = Math.PI / 2 - 0.01;
-        this.rotAroundY += (x * this.orbitSpeed);
-        this.rotAroundX += (y * this.orbitSpeed);
+        this.rotAroundY += (-x * this.orbitSpeed);
+        this.rotAroundX += (-y * this.orbitSpeed);
         this.rotAroundX = clamp(this.rotAroundX, -rotAroundXMax, rotAroundXMax);
         this.setRotation(this.rotAroundY, this.rotAroundX);
         this.setDistanceFromTarget(this.distance, target);
