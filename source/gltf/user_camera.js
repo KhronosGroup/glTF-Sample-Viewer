@@ -3,7 +3,7 @@ import { gltfCamera } from './camera.js';
 import { clamp } from './utils.js';
 import { getSceneExtents } from './gltf_utils.js';
 
-const VecZero = vec3.create();
+
 const PanSpeedDenominator = 1200;
 const MaxNearFarRatio = 10000;
 
@@ -13,10 +13,9 @@ class UserCamera extends gltfCamera
     {
         super();
 
-        //this.target = jsToGl(target);
         this.transform = mat4.create();
-        //this.yaw = yaw;
-        //this.pitch = pitch;
+        this.rotAroundY = 0;
+        this.rotAroundX = 0;
         this.distance = 1;
         this.zoomFactor = 1.04;
         this.orbitSpeed = 1 / 180;
@@ -88,10 +87,14 @@ class UserCamera extends gltfCamera
 
     rotate(yaw, pitch)
     {
-        let rot = mat4.create();
-        mat4.rotateY(rot, this.transform, yaw);
-        mat4.rotateX(rot, rot, pitch);
-        this.transform = rot;
+        const tmpPos = this.getPosition();
+        let mat4x = mat4.create();
+        let mat4y = mat4.create();
+        mat4.fromXRotation(mat4x, pitch);
+        mat4.fromYRotation(mat4y, yaw);
+        this.transform = mat4y;
+        this.setPosition(tmpPos);
+        mat4.multiply(this.transform, this.transform, mat4x);
     }
 
     setDistanceFromTarget(distance, target)
@@ -123,19 +126,11 @@ class UserCamera extends gltfCamera
     orbit(x, y)
     {
         const target = this.getTarget();
-        const lookDirection = this.getLookDirection();
-        let angleRadY = vec3.angle(lookDirection, vec3.fromValues(0, 0, 1));
-        let newAngleRadY = angleRadY + (y * this.orbitSpeed);
         const yMax = Math.PI / 2 - 0.01;
-        newAngleRadY = clamp(newAngleRadY, -yMax, yMax);
-        y = newAngleRadY - angleRadY;
-
-        //mat4.rotateX(this.transform, this.transform, newAngleRadY);
-        let temp = mat4.create();
-        const up = vec3.fromValues(this.transform[3], this.transform[4], this.transform[5]);
-        vec3.normalize(up, up);
-        mat4.rotateY(this.transform, this.transform, x * this.orbitSpeed);
-        mat4.rotateX(this.transform, this.transform, y * this.orbitSpeed);
+        this.rotAroundY += (x * this.orbitSpeed);
+        this.rotAroundX += (y * this.orbitSpeed);
+        this.rotAroundX = clamp(this.rotAroundX, -yMax, yMax);
+        this.rotate(this.rotAroundY, this.rotAroundX);
         this.setDistanceFromTarget(this.distance, target);
     }
 
@@ -163,19 +158,25 @@ class UserCamera extends gltfCamera
 
     reset()
     {
+        this.transform = mat4.create();
+        this.rotAroundX = 0;
+        this.rotAroundY = 0;
         this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     fitViewToScene(gltf, sceneIndex)
     {
-        mat4.fromRotation(this.transform, Math.PI * (-90 / 180), vec3.fromValues(1,0,0));
+        this.transform = mat4.create();
+        this.rotAroundX = 0;
+        this.rotAroundY = 0;
         getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
         this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+
     }
 
     fitDistanceToExtents(min, max)
@@ -197,7 +198,8 @@ class UserCamera extends gltfCamera
         {
             target[i] = (max[i] + min[i]) / 2;
         }
-        this.setTarget(target);
+        this.rotate(this.rotAroundY, this.rotAroundX);
+        this.setDistanceFromTarget(this.distance, target);
     }
 
     fitCameraPlanesToExtents(min, max)
