@@ -1,6 +1,6 @@
 import { Observable, merge, fromEvent } from 'rxjs';
 import { map, filter, startWith, pluck, takeUntil, mergeMap } from 'rxjs/operators';
-import { Gltf, GltfState } from 'gltf-viewer-source';
+import { GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
 
@@ -249,8 +249,7 @@ class UIModel
     attachGltfLoaded(glTFLoadedStateObservable)
     {
         const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(
-            map( state => state.gltf ),
-            startWith(new Gltf.glTF())
+            map( state => state.gltf )
         );
 
         // update scenes

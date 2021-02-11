@@ -18,9 +18,19 @@ import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
 
-
+/**
+ * ResourceLoader can be used to load resources for the GltfState
+ * that are then used to display the loaded data with GltfView
+ */
 class ResourceLoader
 {
+    /**
+     * ResourceLoader class that provides an interface to load resources into
+     * the view. Typically this is created with GltfView.createResourceLoader()
+     * You cannot share resource loaders between GltfViews as some of the resources
+     * are allocated directly on the WebGl2 Context
+     * @param {Object} view the GltfView for which the resources are loaded
+     */
     constructor(view)
     {
         this.view = view;
@@ -28,28 +38,137 @@ class ResourceLoader
 
     /**
      * loadGltf asynchroneously and create resources for rendering
-     * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as
-     * preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
+     * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
      * @param {File[]} [externalFiles] additional files containing resources that are referenced in the gltf
+     * @returns {Promise} a promise that fulfills when the gltf file was loaded
      */
     async loadGltf(gltfFile, externalFiles)
     {
-        return loadGltf(gltfFile, this.view, externalFiles);
+        let isGlb = undefined;
+        let buffers = undefined;
+        let json = undefined;
+        let data = undefined;
+        let filename = "";
+        if (typeof gltfFile === "string")
+        {
+            isGlb = getIsGlb(gltfFile);
+            let response = await axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" });
+            json = response.data;
+            data = response.data;
+            filename = gltfFile;
+        }
+        else if (gltfFile instanceof ArrayBuffer)
+        {
+            isGlb = externalFiles === undefined;
+            if (isGlb)
+            {
+                data = gltfFile;
+            }
+            else
+            {
+                console.error("Only .glb files can be loaded from an array buffer");
+            }
+        }
+        else if (typeof (File) !== 'undefined' && gltfFile instanceof File)
+        {
+            let fileContent = gltfFile;
+            filename = gltfFile.name;
+            isGlb = getIsGlb(filename);
+            if (isGlb)
+            {
+                data = await AsyncFileReader.readAsArrayBuffer(fileContent);
+            }
+            else
+            {
+                data = await AsyncFileReader.readAsText(fileContent);
+                json = JSON.parse(data);
+                buffers = externalFiles;
+            }
+        }
+        else
+        {
+            console.error("Passed invalid type to loadGltf " + typeof (gltfFile));
+        }
+
+        if (isGlb)
+        {
+            const glbParser = new GlbParser(data);
+            const glb = glbParser.extractGlbData();
+            json = glb.json;
+            buffers = glb.buffers;
+        }
+
+        const gltf = new glTF(filename);
+        gltf.ktxDecoder = this.view.ktxDecoder;
+        //Make sure draco decoder instance is ready
+        gltf.fromJson(json);
+
+        // because the gltf image paths are not relative
+        // to the gltf, we have to resolve all image paths before that
+        for (const image of gltf.images)
+        {
+            image.resolveRelativePath(getContainingFolder(gltf.path));
+        }
+
+        await gltfLoader.load(gltf, this.view.context, buffers);
+
+        return gltf;
     }
 
+    /**
+     * loadEnvironment asynchroneously, run IBL sampling and create resources for rendering
+     * @param {(String | ArrayBuffer | File)} environmentFile the .hdr file either as path or resource
+     * @param {Object} [lutFiles] object containing paths or resources for the environment look up textures. Keys are lut_ggx_file, lut_charlie_file and lut_sheen_E_file
+     * @returns {Promise} a promise that fulfills when the environment file was loaded
+     */
     async loadEnvironment(environmentFile, lutFiles)
     {
-        return loadEnvironment(environmentFile, this.view, lutFiles);
+        let image = undefined;
+        if (typeof environmentFile === "string")
+        {
+            let response = await axios.get(environmentFile, { responseType: "arraybuffer" });
+
+            image = await loadHDR(new Uint8Array(response.data));
+        }
+        else if (environmentFile instanceof ArrayBuffer)
+        {
+            image = await loadHDR(new Uint8Array(environmentFile));
+        }
+        else if (typeof (File) !== 'undefined' && environmentFile instanceof File)
+        {
+            const imageData = await AsyncFileReader.readAsArrayBuffer(environmentFile).catch(() =>
+            {
+                console.error("Could not load image with FileReader");
+            });
+            image = await loadHDR(new Uint8Array(imageData));
+        }
+        else
+        {
+            console.error("Passed invalid type to loadEnvironment " + typeof (gltfFile));
+        }
+        if (image === undefined)
+        {
+            return undefined;
+        }
+        return _loadEnvironmentFromPanorama(image, this.view, lutFiles);
     }
 
-    initKtxLib(ktxlib)
+    /**
+     * initKtxLib must be called before loading gltf files with ktx2 assets
+     * @param {Object} [externalKtxLib] external ktx library (for example from a CDN)
+     */
+    initKtxLib(externalKtxLib)
     {
-        this.view.ktxDecoder = new KtxDecoder(this.view.context, ktxlib);
+        this.view.ktxDecoder = new KtxDecoder(this.view.context, externalKtxLib);
     }
 
-    async initDracoLib(dracolib)
+    /**
+     * initDracoLib must be called before loading gltf files with draco meshes
+     * @param {*} [externalDracoLib] external draco library (for example from a CDN)
+     */
+    async initDracoLib(externalDracoLib)
     {
-        const dracoDecoder = new DracoDecoder(dracolib);
+        const dracoDecoder = new DracoDecoder(externalDracoLib);
         if (dracoDecoder !== undefined)
         {
             await dracoDecoder.ready();
@@ -57,110 +176,7 @@ class ResourceLoader
     }
 }
 
-async function loadGltf(file, view, additionalFiles)
-{
-    let isGlb = undefined;
-    let buffers = undefined;
-    let json = undefined;
-    let data = undefined;
-    let filename = "";
-    if (typeof file === "string")
-    {
-        isGlb = getIsGlb(file);
-        let response = await axios.get(file, { responseType: isGlb ? "arraybuffer" : "json" });
-        json = response.data;
-        data = response.data;
-        filename = file;
-    }
-    else if (file instanceof ArrayBuffer)
-    {
-        isGlb = additionalFiles === undefined;
-        if (isGlb)
-        {
-            data = file;
-        }
-        else
-        {
-            console.error("Only .glb files can be loaded from an array buffer");
-        }
-    }
-    else if (typeof (File) !== 'undefined' && file instanceof File)
-    {
-        let fileContent = file;
-        filename = file.name;
-        isGlb = getIsGlb(filename);
-        if (isGlb)
-        {
-            data = await AsyncFileReader.readAsArrayBuffer(fileContent);
-        }
-        else
-        {
-            data = await AsyncFileReader.readAsText(fileContent);
-            json = JSON.parse(data);
-            buffers = additionalFiles;
-        }
-    }
-    else
-    {
-        console.error("Passed invalid type to loadGltf " + typeof (file));
-    }
-
-    if (isGlb)
-    {
-        const glbParser = new GlbParser(data);
-        const glb = glbParser.extractGlbData();
-        json = glb.json;
-        buffers = glb.buffers;
-    }
-
-    const gltf = new glTF(filename);
-    gltf.ktxDecoder = view.ktxDecoder;
-    //Make sure draco decoder instance is ready
-    gltf.fromJson(json);
-
-    // because the gltf image paths are not relative
-    // to the gltf, we have to resolve all image paths before that
-    for (const image of gltf.images)
-    {
-        image.resolveRelativePath(getContainingFolder(gltf.path));
-    }
-
-    await gltfLoader.load(gltf, view.context, buffers);
-
-    return gltf;
-}
-
-
-async function loadEnvironment(file, view, luts)
-{
-    let image = undefined;
-    if (typeof file === "string")
-    {
-        let response = await axios.get(file, { responseType: "arraybuffer" });
-
-        image = await loadHDR(new Uint8Array(response.data));
-    }
-    else if (file instanceof ArrayBuffer)
-    {
-        image = await loadHDR(new Uint8Array(file));
-    }
-    else
-    {
-        const imageData = await AsyncFileReader.readAsArrayBuffer(file).catch(() =>
-        {
-            console.error("Could not load image with FileReader");
-        });
-        image = await loadHDR(new Uint8Array(imageData));
-    }
-    if (image === undefined)
-    {
-        return undefined;
-    }
-    return loadEnvironmentFromImage(image, view, luts);
-}
-
-
-async function loadEnvironmentFromImage(imageHDR, view, luts)
+async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
 {
     // The environment uses the same type of samplers, textures and images as used in the glTF class
     // so we just use it as a template

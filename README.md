@@ -6,6 +6,7 @@ Khronos glTF 2.0 Sample Viewer
 This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
 
+
 Table of Contents
 -----------------
 
@@ -13,14 +14,13 @@ Table of Contents
 - [Credits](#credits)
 - [Features](#features)
 - [Setup](#setup)
+- [API](#api)
 - [Web App](#web-app)
 - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
 - [Appendix A Metallic-Roughness Material](#appendix-a-metallic-roughness-material)
   - [Specular Term](#specular-term-f_specular)
   - [Diffuse Term](#diffuse-term)
 - [Appendix B FAQ](#appendix-b-faq)
-
-See also the [proposal for API and UI enhancements](documentation)
 
 Version
 -------
@@ -68,10 +68,63 @@ For local usage and debugging, please follow these instructions:
 
 This will create a new `gltf-viewer.js` and `gltf-viewer.module.js` in the `dist` directory.
 
+API
+----
+
+Gltf sample viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools).
+
+The API consists of several components that in combination allow flexible configuration of the gltf viewer.
+
+More detailed information about the API is listed in the [api documentation](API.md).
+
+### GltfView
+
+The GltfView component is associated with one WebGL2 context. In practice this means it will be associated with one HTML5 Canvas. This component manages the interaction between the canvas and the GL context. For example it therefore specifies the viewport, the swapchain and can be used to schedule frame renders. 
+
+```js
+const view = new GltfView(webGl2Context);
+```
+
+The view is also used to render frames, either on every window repaint event or on demand, e.g. when taking a frame capture.
+
+```js
+const update = () =>
+{
+    view.renderFrame(state, canvas.width, canvas.height);
+    window.requestAnimationFrame(update);
+};
+window.requestAnimationFrame(update);
+```
+
+### GltfState
+
+The GltfState encapsulates the state of the content of a GltfView. *As currently some WebGL resources are stored directly in the Gltf objects, the state cannot be shared between views.*
+
+```js
+const state = view.createState();
+state.sceneIndex = 0;
+state.animationIndices = [0, 1, 2];
+state.animationTimer.start();
+```
+
+The state is passed to the `view.renderFrame` function to specify the content that should be renderered.
+
+### ResourceLoader
+
+ResourceLoader can be used to load external resources and make them available to the renderer.
+
+```js
+state.gltf = await resourceLoader.loadGltf("path/to/some.gltf");
+```
+
 Web App
 -------
 
 You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](https://github.com/ux3d/glTF-Sample-Viewer/tree/develop/app_web). A live demo can be found at [gltf.ux3d.io](https://gltf.ux3d.io).
+
+Render Fidelity Tools
+-----------------------------
+The gltf sample viewer is integrated into Google's [render fidelity tools](https://github.com/google/model-viewer/tree/master/packages/render-fidelity-tools). This makes it possible to compare different renderers. To run the render fidelity tools follow the instructions [here](https://github.com/google/model-viewer/blob/master/README.md) and [here](https://github.com/google/model-viewer/blob/master/packages/render-fidelity-tools/README.md). For information on how the gltf sample viewer was integrated see the [pull request on github](https://github.com/google/model-viewer/pull/1962).
 
 Physically-Based Materials in glTF 2.0
 --------------------------------------
