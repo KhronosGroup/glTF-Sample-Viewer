@@ -157,7 +157,6 @@ class UserCamera extends gltfCamera
         vec3.add(pos, target, distVec);
         this.setPosition(pos);
         this.distance = distance;
-
     }
 
     /**
@@ -170,10 +169,10 @@ class UserCamera extends gltfCamera
         let target = this.getTarget();
 
         // zoom exponentially
-        let zoomDistance = Math.pow(this.distance, 1.0 / this.zoomExponent) ;
+        let zoomDistance = Math.pow(this.distance / this.baseDistance, 1.0 / this.zoomExponent);
         zoomDistance += this.zoomFactor * value;
         zoomDistance = Math.max(zoomDistance, 0.0001);
-        this.distance = Math.pow(zoomDistance, this.zoomExponent);
+        this.distance = Math.pow(zoomDistance, this.zoomExponent) * this.baseDistance;
 
         this.setDistanceFromTarget(this.distance, target);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
@@ -264,6 +263,7 @@ class UserCamera extends gltfCamera
         const xZoom = maxAxisLength / 2 / Math.tan(xfov / 2);
 
         this.distance = Math.max(xZoom, yZoom);
+        this.baseDistance = this.distance;
     }
 
     fitCameraTargetToExtents(min, max)
