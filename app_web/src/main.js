@@ -252,7 +252,7 @@ async function main()
     uiModel.pan.subscribe( pan => {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.pan(pan.deltaX, pan.deltaY);
+            state.userCamera.pan(pan.deltaX, -pan.deltaY);
         }
     });
 
