@@ -247,16 +247,16 @@ async function main()
     uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
     gltfLoadedMulticast.connect();
 
+    uiModel.orbit.subscribe( orbit => {
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.orbit(orbit.deltaPhi, orbit.deltaTheta);
+        }
+    });
+
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
-    input.onRotate = (deltaX, deltaY) =>
-    {
-        if (state.cameraIndex === undefined)
-        {
-            state.userCamera.orbit(deltaX, deltaY);
-        }
-    };
     input.onPan = (deltaX, deltaY) =>
     {
         if (state.cameraIndex === undefined)

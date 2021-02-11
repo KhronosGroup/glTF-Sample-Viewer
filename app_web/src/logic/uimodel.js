@@ -1,5 +1,5 @@
-import { Observable, merge } from 'rxjs';
-import { map, filter, startWith, pluck } from 'rxjs/operators';
+import { Observable, merge, fromEvent } from 'rxjs';
+import { map, filter, startWith, pluck, takeUntil, mergeMap } from 'rxjs/operators';
 import { Gltf, GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
@@ -150,6 +150,8 @@ class UIModel
                 app.selectedFlavour = fileExtension;
             }
         });
+
+        this.orbit = inputObservables.orbit;
     }
 
     // app has to be the vuejs app instance
@@ -190,6 +192,16 @@ class UIModel
             }),
             filter(file => file !== undefined),
         );
+
+        const move = fromEvent(document, 'mousemove');
+        const pmbdown = fromEvent(inputDomElement, 'mousedown');
+        const pmbup = fromEvent(document, 'mouseup');
+
+        observables.orbit = pmbdown.pipe(
+            mergeMap(() => move.pipe(takeUntil(pmbup))),
+            map( mouse => ({deltaPhi: mouse.movementX, deltaTheta: mouse.movementY }))
+        );
+
         return observables;
     }
 
