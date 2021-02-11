@@ -17,7 +17,9 @@ class UserCamera extends gltfCamera
         this.rotAroundY = 0;
         this.rotAroundX = 0;
         this.distance = 1;
-        this.zoomFactor = 1.04;
+        this.baseDistance = 1.0;
+        this.zoomExponent = 5.0;
+        this.zoomFactor = 0.00008;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {
@@ -107,20 +109,18 @@ class UserCamera extends gltfCamera
         vec3.add(pos, target, distVec);
         this.setPosition(pos);
         this.distance = distance;
-
     }
 
     zoomBy(value)
     {
         let target = this.getTarget();
-        if (value > 0)
-        {
-            this.distance *= this.zoomFactor;
-        }
-        else
-        {
-            this.distance /= this.zoomFactor;
-        }
+
+        // zoom exponentially
+        let zoomDistance = Math.pow(this.distance / this.baseDistance, 1.0 / this.zoomExponent);
+        zoomDistance += this.zoomFactor * value;
+        zoomDistance = Math.max(zoomDistance, 0.0001);
+        this.distance = Math.pow(zoomDistance, this.zoomExponent) * this.baseDistance;
+
         this.setDistanceFromTarget(this.distance, target);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
@@ -191,6 +191,7 @@ class UserCamera extends gltfCamera
         const xZoom = maxAxisLength / 2 / Math.tan(xfov / 2);
 
         this.distance = Math.max(xZoom, yZoom);
+        this.baseDistance = this.distance;
     }
 
     fitCameraTargetToExtents(min, max)

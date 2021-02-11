@@ -1,5 +1,5 @@
-import { Observable, merge } from 'rxjs';
-import { map, filter, startWith, pluck } from 'rxjs/operators';
+import { Observable, merge, fromEvent } from 'rxjs';
+import { map, filter, startWith, pluck, takeUntil, mergeMap } from 'rxjs/operators';
 import { Gltf, GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
@@ -150,6 +150,10 @@ class UIModel
                 app.selectedFlavour = fileExtension;
             }
         });
+
+        this.orbit = inputObservables.orbit;
+        this.pan = inputObservables.pan;
+        this.zoom = inputObservables.zoom;
     }
 
     // app has to be the vuejs app instance
@@ -190,6 +194,44 @@ class UIModel
             }),
             filter(file => file !== undefined),
         );
+
+        const move = fromEvent(document, 'mousemove');
+        const down = fromEvent(inputDomElement, 'mousedown');
+        const up = fromEvent(document, 'mouseup');
+        const leave = fromEvent(document, 'mouseleave');
+        const cancelMouse = merge(up, leave);
+        const pmbdown = down.pipe( filter( event => event.button === 0));
+
+
+        observables.orbit = pmbdown.pipe(
+            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
+            map( mouse => ({deltaPhi: mouse.movementX, deltaTheta: mouse.movementY }))
+        );
+
+        const mmbdown = down.pipe( filter( event => event.button === 1));
+
+        observables.pan = mmbdown.pipe(
+            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
+            map( mouse => ({deltaX: mouse.movementX, deltaY: mouse.movementY }))
+        );
+
+        const smbdown = down.pipe( filter( event => event.button === 2));
+
+        const mouseZoom = smbdown.pipe(
+            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
+            map( mouse => ({deltaZoom: mouse.movementY }))
+        );
+
+        const wheelZoom = fromEvent(inputDomElement, 'wheel').pipe(
+            map(wheelEvent => ({deltaZoom: wheelEvent.deltaY }))
+        );
+        inputDomElement.addEventListener('onscroll', event => event.preventDefault(), false);
+        observables.zoom = merge(mouseZoom, wheelZoom);
+
+
+        // disable context menu
+        inputDomElement.oncontextmenu = () => false;
+
         return observables;
     }
 
