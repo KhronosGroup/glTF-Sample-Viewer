@@ -4,7 +4,7 @@ import { clamp } from './utils.js';
 import { getSceneExtents } from './gltf_utils.js';
 
 
-const PanSpeedDenominator = 1200;
+const PanSpeedDenominator = 3500;
 const MaxNearFarRatio = 10000;
 
 class UserCamera extends gltfCamera
@@ -207,11 +207,11 @@ class UserCamera extends gltfCamera
     {
         const right = vec3.fromValues(this.transform[0], this.transform[1], this.transform[2]);
         vec3.normalize(right, right);
-        vec3.scale(right, right, -x * this.panSpeed);
+        vec3.scale(right, right, -x * this.panSpeed * (this.distance / this.baseDistance));
 
         const up = vec3.fromValues(this.transform[4], this.transform[5], this.transform[6]);
         vec3.normalize(up, up);
-        vec3.scale(up, up, -y * this.panSpeed);
+        vec3.scale(up, up, -y * this.panSpeed * (this.distance / this.baseDistance));
 
         let pos = this.getPosition();
 
