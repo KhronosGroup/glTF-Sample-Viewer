@@ -73,6 +73,10 @@ Web App
 
 You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](https://github.com/ux3d/glTF-Sample-Viewer/tree/develop/app_web). A live demo can be found at [gltf.ux3d.io](https://gltf.ux3d.io).
 
+Render Fidelity Tools
+-----------------------------
+The gltf sample viewer is integrated into Google's [render fidelity tools](https://github.com/google/model-viewer/tree/master/packages/render-fidelity-tools). This makes it possible to compare different renderers. To run the render fidelity tools follow the instructions [here](https://github.com/google/model-viewer/blob/master/README.md) and [here](https://github.com/google/model-viewer/blob/master/packages/render-fidelity-tools/README.md). For information on how the gltf sample viewer was integrated see the [pull request on github](https://github.com/google/model-viewer/pull/1962).
+
 Physically-Based Materials in glTF 2.0
 --------------------------------------
 
