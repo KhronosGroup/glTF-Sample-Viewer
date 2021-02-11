@@ -18,7 +18,7 @@ class UserCamera extends gltfCamera
         this.rotAroundX = 0;
         this.distance = 1;
         this.zoomExponent = 5.0;
-        this.zoomFactor = 0.001;
+        this.zoomFactor = 0.0003;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {
