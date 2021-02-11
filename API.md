@@ -63,8 +63,8 @@ environments can be loaded for the view
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [externalDracoLib] | <code>String</code> | optional URI of an external Draco library, e.g. from a CDN |
-| [externalKtxLib] | <code>String</code> | optional URI of an external KTX library, e.g. from a CDN |
+| [externalDracoLib] | <code>Object</code> | optional object of an external Draco library, e.g. from a CDN |
+| [externalKtxLib] | <code>Object</code> | optional object of an external KTX library, e.g. from a CDN |
 
 <a name="GltfView+renderFrame"></a>
 
@@ -553,18 +553,18 @@ initKtxLib must be called before loading gltf files with ktx2 assets
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [externalKtxLib] | <code>String</code> | path to an external ktx library (for example from a CDN) |
+| [externalKtxLib] | <code>Object</code> | external ktx library (for example from a CDN) |
 
 <a name="ResourceLoader+initDracoLib"></a>
 
 ### resourceLoader.initDracoLib([externalDracoLib])
-initDracoLib must be called before loading gltf files with draco meshes. It is sufficient to call this only once
+initDracoLib must be called before loading gltf files with draco meshes
 
 **Kind**: instance method of [<code>ResourceLoader</code>](#ResourceLoader)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [externalDracoLib] | <code>\*</code> | path to an external draco library (for example from a CDN) |
+| [externalDracoLib] | <code>\*</code> | external draco library (for example from a CDN) |
 
 <a name="UserCamera"></a>
 
@@ -583,7 +583,7 @@ initDracoLib must be called before loading gltf files with draco meshes. It is s
     * [.setTarget(target)](#UserCamera+setTarget)
     * [.setRotation(yaw, pitch)](#UserCamera+setRotation)
     * [.setDistanceFromTarget(distance, target)](#UserCamera+setDistanceFromTarget)
-    * [.zoomStep(sign)](#UserCamera+zoomStep)
+    * [.zoomBy(value)](#UserCamera+zoomBy)
     * [.orbit(x, y)](#UserCamera+orbit)
     * [.pan(x, y)](#UserCamera+pan)
     * [.fitViewToScene(gltf, sceneIndex)](#UserCamera+fitViewToScene)
@@ -591,12 +591,12 @@ initDracoLib must be called before loading gltf files with draco meshes. It is s
 <a name="new_UserCamera_new"></a>
 
 ### new UserCamera()
-Create a new user camera
+Create a new user camera.
 
 <a name="UserCamera+setVerticalFoV"></a>
 
 ### userCamera.setVerticalFoV(yfov)
-Sets the vertical FoV of the user camera
+Sets the vertical FoV of the user camera.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -607,25 +607,25 @@ Sets the vertical FoV of the user camera
 <a name="UserCamera+getPosition"></a>
 
 ### userCamera.getPosition()
-Returns the current position of the user camera as a vec3
+Returns the current position of the user camera as a vec3.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 <a name="UserCamera+getRotation"></a>
 
 ### userCamera.getRotation()
-Returns the current rotation of the user camera as quat
+Returns the current rotation of the user camera as quat.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 <a name="UserCamera+getLookDirection"></a>
 
 ### userCamera.getLookDirection()
-Returns the normalized direction the user camera looks at as vec3
+Returns the normalized direction the user camera looks at as vec3.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 <a name="UserCamera+getTarget"></a>
 
 ### userCamera.getTarget()
-Returns the current target the camera looks at as vec3
+Returns the current target the camera looks at as vec3.
 This multiplies the viewing direction with the distance.
 For distance 0 the normalized viewing direction is used.
 
@@ -633,8 +633,8 @@ For distance 0 the normalized viewing direction is used.
 <a name="UserCamera+lookAt"></a>
 
 ### userCamera.lookAt(from, to)
-Look from user camera to target
-This changes the transformation of the user camera
+Look from user camera to target.
+This changes the transformation of the user camera.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -646,7 +646,7 @@ This changes the transformation of the user camera
 <a name="UserCamera+setPosition"></a>
 
 ### userCamera.setPosition(position)
-Sets the position of the user camera
+Sets the position of the user camera.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -657,8 +657,8 @@ Sets the position of the user camera
 <a name="UserCamera+setTarget"></a>
 
 ### userCamera.setTarget(target)
-This rotates the user camera towards the target and sets the position of the user camera 
-according to the current distance
+This rotates the user camera towards the target and sets the position of the user camera
+according to the current distance.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -669,8 +669,8 @@ according to the current distance
 <a name="UserCamera+setRotation"></a>
 
 ### userCamera.setRotation(yaw, pitch)
-Sets the rotation of the camera
-Yaw and pitch should be in gradient
+Sets the rotation of the camera.
+Yaw and pitch should be in gradient.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -682,9 +682,9 @@ Yaw and pitch should be in gradient
 <a name="UserCamera+setDistanceFromTarget"></a>
 
 ### userCamera.setDistanceFromTarget(distance, target)
-Transforms the user camera to look at a target from a specfic distance using the current rotation
-This will only change the position of the user camera, not the rotation
-Use this function to set the distance
+Transforms the user camera to look at a target from a specfic distance using the current rotation.
+This will only change the position of the user camera, not the rotation.
+Use this function to set the distance.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -693,24 +693,24 @@ Use this function to set the distance
 | distance | <code>number</code> | 
 | target | <code>vec3</code> | 
 
-<a name="UserCamera+zoomStep"></a>
+<a name="UserCamera+zoomBy"></a>
 
-### userCamera.zoomStep(sign)
-Does a logarithmic zoom step according to this.zoomFactor
-sign determines the direction of the zoom
+### userCamera.zoomBy(value)
+Zoom exponentially according to this.zoomFactor and this.zoomExponent.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
 | Param | Type |
 | --- | --- |
-| sign | <code>number</code> | 
+| value | <code>number</code> | 
 
 <a name="UserCamera+orbit"></a>
 
 ### userCamera.orbit(x, y)
-Orbit around the target
-x and y should be in radient and are added to the current rotation
-The rotation around the x-axis is limited to 180 degree
+Orbit around the target.
+x and y should be in radient and are added to the current rotation.
+The rotation around the x-axis is limited to 180 degree.
+The axes are inverted: e.g. if y is positive the camera will look further down.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -722,8 +722,8 @@ The rotation around the x-axis is limited to 180 degree
 <a name="UserCamera+pan"></a>
 
 ### userCamera.pan(x, y)
-Pan the user camera
-x and y are added to the position
+Pan the user camera.
+The axes are inverted: e.g. if y is positive the camera will move down.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
@@ -735,8 +735,8 @@ x and y are added to the position
 <a name="UserCamera+fitViewToScene"></a>
 
 ### userCamera.fitViewToScene(gltf, sceneIndex)
-Calculates a camera position which looks at the center of the scene from an appropriate distance
-This calculates near and far plane as well
+Calculates a camera position which looks at the center of the scene from an appropriate distance.
+This calculates near and far plane as well.
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
