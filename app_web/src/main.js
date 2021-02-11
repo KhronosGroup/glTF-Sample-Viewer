@@ -1,4 +1,3 @@
-import { gltfInput } from './input.js';
 
 import { GltfView } from 'gltf-viewer-source';
 
