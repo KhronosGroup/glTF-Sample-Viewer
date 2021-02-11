@@ -219,7 +219,6 @@ class UIModel
 
         const mouseZoom = smbdown.pipe(
             mergeMap(() => move.pipe(takeUntil(cancelMouse))),
-            filter( mouse => Math.abs(mouse.movementY) > Math.abs(mouse.movementX)),
             map( mouse => ({deltaZoom: mouse.movementY }))
         );
 
