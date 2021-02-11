@@ -1,4 +1,3 @@
-import { gltfInput } from './input.js';
 
 import { GltfView } from 'gltf-viewer-source';
 
@@ -16,10 +15,6 @@ async function main()
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
-
-    resourceLoader.initDracoLib();
-    resourceLoader.initKtxLib();
-
 
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
@@ -247,30 +242,26 @@ async function main()
     uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
     gltfLoadedMulticast.connect();
 
-    const input = new gltfInput(canvas);
-    input.setupGlobalInputBindings(document);
-    input.setupCanvasInputBindings(canvas);
-    input.onRotate = (deltaX, deltaY) =>
-    {
+    uiModel.orbit.subscribe( orbit => {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.orbit(deltaX, deltaY);
+            state.userCamera.orbit(orbit.deltaPhi, orbit.deltaTheta);
         }
-    };
-    input.onPan = (deltaX, deltaY) =>
-    {
+    });
+
+    uiModel.pan.subscribe( pan => {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.pan(deltaX, deltaY);
+            state.userCamera.pan(pan.deltaX, pan.deltaY);
         }
-    };
-    input.onZoom = (delta) =>
-    {
+    });
+
+    uiModel.zoom.subscribe( zoom => {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.zoomBy(delta);
+            state.userCamera.zoomBy(zoom.deltaZoom);
         }
-    };
+    });
 
     // configure the animation loop
     const update = () =>

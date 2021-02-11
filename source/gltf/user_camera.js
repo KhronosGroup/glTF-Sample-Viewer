@@ -9,6 +9,9 @@ const MaxNearFarRatio = 10000;
 
 class UserCamera extends gltfCamera
 {
+    /**
+     * Create a new user camera.
+     */
     constructor()
     {
         super();
@@ -17,7 +20,9 @@ class UserCamera extends gltfCamera
         this.rotAroundY = 0;
         this.rotAroundX = 0;
         this.distance = 1;
-        this.zoomFactor = 1.04;
+        this.baseDistance = 1.0;
+        this.zoomExponent = 5.0;
+        this.zoomFactor = 0.00008;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {
@@ -26,11 +31,18 @@ class UserCamera extends gltfCamera
         };
     }
 
+    /**
+     * Sets the vertical FoV of the user camera.
+     * @param {number} yfov 
+     */
     setVerticalFoV(yfov)
     {
         this.yfov = yfov;
     }
 
+    /**
+     * Returns the current position of the user camera as a vec3.
+     */
     getPosition()
     {
         let pos = vec3.create();
@@ -38,6 +50,9 @@ class UserCamera extends gltfCamera
         return pos;
     }
 
+    /**
+     * Returns the current rotation of the user camera as quat.
+     */
     getRotation()
     {
         let rot = quat.create();
@@ -45,6 +60,9 @@ class UserCamera extends gltfCamera
         return rot;
     }
 
+    /**
+     * Returns the normalized direction the user camera looks at as vec3.
+     */
     getLookDirection()
     {
         let dir = [-this.transform[8], -this.transform[9], -this.transform[10]];
@@ -52,6 +70,11 @@ class UserCamera extends gltfCamera
         return dir;
     }
 
+    /**
+     * Returns the current target the camera looks at as vec3.
+     * This multiplies the viewing direction with the distance.
+     * For distance 0 the normalized viewing direction is used.
+     */
     getTarget()
     {
         const target = vec3.create();
@@ -65,12 +88,22 @@ class UserCamera extends gltfCamera
         return target;
     }
 
+    /**
+     * Look from user camera to target.
+     * This changes the transformation of the user camera.
+     * @param {vec3} from 
+     * @param {vec3} to 
+     */
     lookAt(from, to)
     {
         this.transform = mat4.create();
         mat4.lookAt(this.transform, from, to, vec3.fromValues(0, 1, 0));
     }
 
+    /**
+     * Sets the position of the user camera.
+     * @param {vec3} position 
+     */
     setPosition(position)
     {
         this.transform[12] = position[0];
@@ -78,6 +111,11 @@ class UserCamera extends gltfCamera
         this.transform[14] = position[2];
     }
 
+    /**
+     * This rotates the user camera towards the target and sets the position of the user camera
+     * according to the current distance.
+     * @param {vec3} target 
+     */
     setTarget(target)
     {
         let pos = vec3.create();
@@ -87,6 +125,12 @@ class UserCamera extends gltfCamera
         this.setDistanceFromTarget(this.distance, target);
     }
 
+    /**
+     * Sets the rotation of the camera.
+     * Yaw and pitch should be in gradient.
+     * @param {number} yaw 
+     * @param {number} pitch 
+     */
     setRotation(yaw, pitch)
     {
         const tmpPos = this.getPosition();
@@ -99,6 +143,13 @@ class UserCamera extends gltfCamera
         mat4.multiply(this.transform, this.transform, mat4x);
     }
 
+    /**
+     * Transforms the user camera to look at a target from a specfic distance using the current rotation.
+     * This will only change the position of the user camera, not the rotation.
+     * Use this function to set the distance.
+     * @param {number} distance 
+     * @param {vec3} target 
+     */
     setDistanceFromTarget(distance, target)
     {
         const lookDirection = this.getLookDirection();
@@ -107,24 +158,33 @@ class UserCamera extends gltfCamera
         vec3.add(pos, target, distVec);
         this.setPosition(pos);
         this.distance = distance;
-
     }
 
+    /**
+     * Zoom exponentially according to this.zoomFactor and this.zoomExponent.
+     * @param {number} value 
+     */
     zoomBy(value)
     {
         let target = this.getTarget();
-        if (value > 0)
-        {
-            this.distance *= this.zoomFactor;
-        }
-        else
-        {
-            this.distance /= this.zoomFactor;
-        }
+
+        // zoom exponentially
+        let zoomDistance = Math.pow(this.distance / this.baseDistance, 1.0 / this.zoomExponent);
+        zoomDistance += this.zoomFactor * value;
+        zoomDistance = Math.max(zoomDistance, 0.0001);
+        this.distance = Math.pow(zoomDistance, this.zoomExponent) * this.baseDistance;
+
         this.setDistanceFromTarget(this.distance, target);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
+    /**
+     * Orbit around the target.
+     * x and y should be in radient and are added to the current rotation.
+     * The rotation around the x-axis is limited to 180 degree.
+     * @param {number} x 
+     * @param {number} y 
+     */
     orbit(x, y)
     {
         const target = this.getTarget();
@@ -136,6 +196,12 @@ class UserCamera extends gltfCamera
         this.setDistanceFromTarget(this.distance, target);
     }
 
+    /**
+     * Pan the user camera.
+     * x and y are added to the position.
+     * @param {number} x 
+     * @param {number} y 
+     */
     pan(x, y)
     {
         const left = vec3.fromValues(-this.transform[0], -this.transform[1], -this.transform[2]);
@@ -167,6 +233,12 @@ class UserCamera extends gltfCamera
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
+    /**
+     * Calculates a camera position which looks at the center of the scene from an appropriate distance.
+     * This calculates near and far plane as well.
+     * @param {Gltf} gltf 
+     * @param {number} sceneIndex 
+     */
     fitViewToScene(gltf, sceneIndex)
     {
         this.transform = mat4.create();
@@ -191,6 +263,7 @@ class UserCamera extends gltfCamera
         const xZoom = maxAxisLength / 2 / Math.tan(xfov / 2);
 
         this.distance = Math.max(xZoom, yZoom);
+        this.baseDistance = this.distance;
     }
 
     fitCameraTargetToExtents(min, max)

@@ -38,15 +38,22 @@ class KtxDecoder {
             let astcSupported = false;
             let etcSupported = false;
             let dxtSupported = false;
+            let bptcSupported = false;
             let pvrtcSupported = false;
 
             astcSupported = !!this.gl.getExtension('WEBGL_compressed_texture_astc');
             etcSupported = !!this.gl.getExtension('WEBGL_compressed_texture_etc1');
             dxtSupported = !!this.gl.getExtension('WEBGL_compressed_texture_s3tc');
+            bptcSupported = !!this.gl.getExtension('EXT_texture_compression_bptc');
+
             pvrtcSupported = !!(this.gl.getExtension('WEBGL_compressed_texture_pvrtc')) || !!(this.gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'));
 
             if (astcSupported) {
                 format = this.libktx.TranscodeTarget.ASTC_4x4_RGBA;
+            } else if (bptcSupported) {
+                //https://github.com/KhronosGroup/KTX-Software/issues/369
+                //BC7_M5_RGBA will be mapped to KTX_TTF_BC7_RGBA in the c++ code
+                format = this.libktx.TranscodeTarget.BC7_M5_RGBA;
             } else if (dxtSupported) {
                 format = this.libktx.TranscodeTarget.BC1_OR_3;
             } else if (pvrtcSupported) {
