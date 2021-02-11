@@ -3,6 +3,7 @@ import glslify from 'rollup-plugin-glslify';
 import resolve from '@rollup/plugin-node-resolve';
 import copy from "rollup-plugin-copy";
 
+
 export default {
   input: ['source/gltf-sample-viewer.js'],
   external:['gl-matrix', 'axios', 'jpeg-js', 'fast-png'],

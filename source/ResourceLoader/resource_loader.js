@@ -155,7 +155,7 @@ class ResourceLoader
 
     /**
      * initKtxLib must be called before loading gltf files with ktx2 assets
-     * @param {String} [externalKtxLib] path to an external ktx library (for example from a CDN)
+     * @param {Object} [externalKtxLib] external ktx library (for example from a CDN)
      */
     initKtxLib(externalKtxLib)
     {
@@ -163,8 +163,8 @@ class ResourceLoader
     }
 
     /**
-     * initDracoLib must be called before loading gltf files with draco meshes. It is sufficient to call this only once
-     * @param {*} [externalDracoLib] path to an external draco library (for example from a CDN)
+     * initDracoLib must be called before loading gltf files with draco meshes
+     * @param {*} [externalDracoLib] external draco library (for example from a CDN)
      */
     async initDracoLib(externalDracoLib)
     {

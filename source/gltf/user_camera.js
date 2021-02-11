@@ -10,7 +10,7 @@ const MaxNearFarRatio = 10000;
 class UserCamera extends gltfCamera
 {
     /**
-     * Create a new user camera
+     * Create a new user camera.
      */
     constructor()
     {
@@ -20,7 +20,9 @@ class UserCamera extends gltfCamera
         this.rotAroundY = 0;
         this.rotAroundX = 0;
         this.distance = 1;
-        this.zoomFactor = 1.04;
+        this.baseDistance = 1.0;
+        this.zoomExponent = 5.0;
+        this.zoomFactor = 0.00008;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {
@@ -30,7 +32,7 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Sets the vertical FoV of the user camera
+     * Sets the vertical FoV of the user camera.
      * @param {number} yfov 
      */
     setVerticalFoV(yfov)
@@ -39,7 +41,7 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Returns the current position of the user camera as a vec3 
+     * Returns the current position of the user camera as a vec3.
      */
     getPosition()
     {
@@ -49,7 +51,7 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Returns the current rotation of the user camera as quat
+     * Returns the current rotation of the user camera as quat.
      */
     getRotation()
     {
@@ -59,7 +61,7 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Returns the normalized direction the user camera looks at as vec3
+     * Returns the normalized direction the user camera looks at as vec3.
      */
     getLookDirection()
     {
@@ -69,7 +71,7 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Returns the current target the camera looks at as vec3
+     * Returns the current target the camera looks at as vec3.
      * This multiplies the viewing direction with the distance.
      * For distance 0 the normalized viewing direction is used.
      */
@@ -87,8 +89,8 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Look from user camera to target
-     * This changes the transformation of the user camera
+     * Look from user camera to target.
+     * This changes the transformation of the user camera.
      * @param {vec3} from 
      * @param {vec3} to 
      */
@@ -99,7 +101,7 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Sets the position of the user camera
+     * Sets the position of the user camera.
      * @param {vec3} position 
      */
     setPosition(position)
@@ -110,8 +112,8 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * This rotates the user camera towards the target and sets the position of the user camera 
-     * according to the current distance
+     * This rotates the user camera towards the target and sets the position of the user camera
+     * according to the current distance.
      * @param {vec3} target 
      */
     setTarget(target)
@@ -124,8 +126,8 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Sets the rotation of the camera
-     * Yaw and pitch should be in gradient
+     * Sets the rotation of the camera.
+     * Yaw and pitch should be in gradient.
      * @param {number} yaw 
      * @param {number} pitch 
      */
@@ -142,9 +144,9 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Transforms the user camera to look at a target from a specfic distance using the current rotation
-     * This will only change the position of the user camera, not the rotation
-     * Use this function to set the distance
+     * Transforms the user camera to look at a target from a specfic distance using the current rotation.
+     * This will only change the position of the user camera, not the rotation.
+     * Use this function to set the distance.
      * @param {number} distance 
      * @param {vec3} target 
      */
@@ -156,34 +158,31 @@ class UserCamera extends gltfCamera
         vec3.add(pos, target, distVec);
         this.setPosition(pos);
         this.distance = distance;
-
     }
 
     /**
-     * Does a logarithmic zoom step according to this.zoomFactor
-     * sign determines the direction of the zoom
-     * @param {number} sign 
+     * Zoom exponentially according to this.zoomFactor and this.zoomExponent.
+     * @param {number} value 
      */
-    zoomStep(sign)
+    zoomBy(value)
     {
         let target = this.getTarget();
-        if (sign > 0)
-        {
-            this.distance *= this.zoomFactor;
-        }
-        else
-        {
-            this.distance /= this.zoomFactor;
-        }
+
+        // zoom exponentially
+        let zoomDistance = Math.pow(this.distance / this.baseDistance, 1.0 / this.zoomExponent);
+        zoomDistance += this.zoomFactor * value;
+        zoomDistance = Math.max(zoomDistance, 0.0001);
+        this.distance = Math.pow(zoomDistance, this.zoomExponent) * this.baseDistance;
+
         this.setDistanceFromTarget(this.distance, target);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
     /**
-     * Orbit around the target
-     * x and y should be in radient and are added to the current rotation
-     * The rotation around the x-axis is limited to 180 degree
-     * The axes are inverted: e.g. if y is positive the camera will look further down
+     * Orbit around the target.
+     * x and y should be in radient and are added to the current rotation.
+     * The rotation around the x-axis is limited to 180 degree.
+     * The axes are inverted: e.g. if y is positive the camera will look further down.
      * @param {number} x 
      * @param {number} y 
      */
@@ -199,8 +198,8 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Pan the user camera
-     * The axes are inverted: e.g. if y is positive the camera will move down
+     * Pan the user camera.
+     * The axes are inverted: e.g. if y is positive the camera will move down.
      * @param {number} x 
      * @param {number} y 
      */
@@ -238,8 +237,8 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Calculates a camera position which looks at the center of the scene from an appropriate distance
-     * This calculates near and far plane as well
+     * Calculates a camera position which looks at the center of the scene from an appropriate distance.
+     * This calculates near and far plane as well.
      * @param {Gltf} gltf 
      * @param {number} sceneIndex 
      */
@@ -267,6 +266,7 @@ class UserCamera extends gltfCamera
         const xZoom = maxAxisLength / 2 / Math.tan(xfov / 2);
 
         this.distance = Math.max(xZoom, yZoom);
+        this.baseDistance = this.distance;
     }
 
     fitCameraTargetToExtents(min, max)
