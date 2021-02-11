@@ -183,6 +183,7 @@ class UserCamera extends gltfCamera
      * Orbit around the target
      * x and y should be in radient and are added to the current rotation
      * The rotation around the x-axis is limited to 180 degree
+     * The axes are inverted: e.g. if y is positive the camera will look further down
      * @param {number} x 
      * @param {number} y 
      */
@@ -199,7 +200,7 @@ class UserCamera extends gltfCamera
 
     /**
      * Pan the user camera
-     * The axis are inverted: If y is positive the camera will move down
+     * The axes are inverted: e.g. if y is positive the camera will move down
      * @param {number} x 
      * @param {number} y 
      */
