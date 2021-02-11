@@ -153,6 +153,7 @@ class UIModel
 
         this.orbit = inputObservables.orbit;
         this.pan = inputObservables.pan;
+        this.zoom = inputObservables.zoom;
     }
 
     // app has to be the vuejs app instance
@@ -197,20 +198,40 @@ class UIModel
         const move = fromEvent(document, 'mousemove');
         const down = fromEvent(inputDomElement, 'mousedown');
         const up = fromEvent(document, 'mouseup');
+        const leave = fromEvent(document, 'mouseleave');
+        const cancelMouse = merge(up, leave);
         const pmbdown = down.pipe( filter( event => event.button === 0));
 
 
         observables.orbit = pmbdown.pipe(
-            mergeMap(() => move.pipe(takeUntil(up))),
+            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
             map( mouse => ({deltaPhi: mouse.movementX, deltaTheta: mouse.movementY }))
         );
 
         const mmbdown = down.pipe( filter( event => event.button === 1));
 
         observables.pan = mmbdown.pipe(
-            mergeMap(() => move.pipe(takeUntil(up))),
+            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
             map( mouse => ({deltaX: mouse.movementX, deltaY: mouse.movementY }))
         );
+
+        const smbdown = down.pipe( filter( event => event.button === 2));
+
+        const mouseZoom = smbdown.pipe(
+            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
+            filter( mouse => Math.abs(mouse.movementY) > Math.abs(mouse.movementX)),
+            map( mouse => ({deltaZoom: mouse.movementY }))
+        );
+
+        const wheelZoom = fromEvent(inputDomElement, 'wheel').pipe(
+            map(wheelEvent => ({deltaZoom: wheelEvent.deltaY }))
+        );
+        inputDomElement.addEventListener('onscroll', event => event.preventDefault(), false);
+        observables.zoom = merge(mouseZoom, wheelZoom);
+
+
+        // disable context menu
+        inputDomElement.oncontextmenu = () => false;
 
         return observables;
     }
