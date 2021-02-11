@@ -161,11 +161,10 @@ class UserCamera extends gltfCamera
     }
 
     /**
-     * Does a logarithmic zoom step according to this.zoomFactor.
-     * sign determines the direction of the zoom.
-     * @param {number} sign 
+     * Zoom exponentially according to this.zoomFactor and this.zoomExponent.
+     * @param {number} value 
      */
-    zoomStep(sign)
+    zoomBy(value)
     {
         let target = this.getTarget();
 
