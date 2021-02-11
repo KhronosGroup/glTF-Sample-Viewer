@@ -199,22 +199,24 @@ class UserCamera extends gltfCamera
 
     /**
      * Pan the user camera
-     * x and y are added to the position
+     * The axis are inverted: If y is positive the camera will move down
      * @param {number} x 
      * @param {number} y 
      */
     pan(x, y)
     {
-        const left = vec3.fromValues(-this.transform[0], -this.transform[1], -this.transform[2]);
-        vec3.scale(left, left, x * this.panSpeed);
+        const right = vec3.fromValues(this.transform[0], this.transform[1], this.transform[2]);
+        vec3.normalize(right, right);
+        vec3.scale(right, right, -x * this.panSpeed);
 
         const up = vec3.fromValues(this.transform[4], this.transform[5], this.transform[6]);
-        vec3.scale(up, up, y * this.panSpeed);
+        vec3.normalize(up, up);
+        vec3.scale(up, up, -y * this.panSpeed);
 
         let pos = this.getPosition();
 
         vec3.add(pos, pos, up);
-        vec3.add(pos, pos, left);
+        vec3.add(pos, pos, right);
 
         this.setPosition(pos);
     }

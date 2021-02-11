@@ -257,7 +257,7 @@ async function main()
     {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.pan(deltaX, deltaY);
+            state.userCamera.pan(deltaX, -deltaY);
         }
     };
     input.onZoom = (delta) =>
