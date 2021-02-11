@@ -261,16 +261,12 @@ async function main()
         }
     });
 
-    const input = new gltfInput(canvas);
-    input.setupGlobalInputBindings(document);
-    input.setupCanvasInputBindings(canvas);
-    input.onZoom = (delta) =>
-    {
+    uiModel.zoom.subscribe( zoom => {
         if (state.cameraIndex === undefined)
         {
-            state.userCamera.zoomBy(delta);
+            state.userCamera.zoomBy(zoom.deltaZoom);
         }
-    };
+    });
 
     // configure the animation loop
     const update = () =>
