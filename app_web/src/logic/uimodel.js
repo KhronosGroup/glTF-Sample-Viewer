@@ -1,8 +1,9 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
+import { vec2 } from 'gl-matrix';
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -196,38 +197,66 @@ class UIModel
         );
 
         const move = fromEvent(document, 'mousemove');
-        const down = fromEvent(inputDomElement, 'mousedown');
-        const up = fromEvent(document, 'mouseup');
-        const leave = fromEvent(document, 'mouseleave');
-        const cancelMouse = merge(up, leave);
-        const pmbdown = down.pipe( filter( event => event.button === 0));
+        const mousedown = fromEvent(inputDomElement, 'mousedown');
+        const cancelMouse = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
 
-
-        observables.orbit = pmbdown.pipe(
+        const mouseOrbit = mousedown.pipe(
+            filter( event => event.button === 0 && event.shiftKey === false),
             mergeMap(() => move.pipe(takeUntil(cancelMouse))),
             map( mouse => ({deltaPhi: mouse.movementX, deltaTheta: mouse.movementY }))
         );
 
-        const mmbdown = down.pipe( filter( event => event.button === 1));
-
-        observables.pan = mmbdown.pipe(
+        const mousePan = mousedown.pipe(
+            filter( event => event.button === 1 || event.shiftKey === true),
             mergeMap(() => move.pipe(takeUntil(cancelMouse))),
             map( mouse => ({deltaX: mouse.movementX, deltaY: mouse.movementY }))
         );
 
-        const smbdown = down.pipe( filter( event => event.button === 2));
-
-        const mouseZoom = smbdown.pipe(
+        const smbZoom = mousedown.pipe(
+            filter( event => event.button === 2),
             mergeMap(() => move.pipe(takeUntil(cancelMouse))),
             map( mouse => ({deltaZoom: mouse.movementY }))
         );
-
         const wheelZoom = fromEvent(inputDomElement, 'wheel').pipe(
             map(wheelEvent => ({deltaZoom: wheelEvent.deltaY }))
         );
         inputDomElement.addEventListener('onscroll', event => event.preventDefault(), false);
-        observables.zoom = merge(mouseZoom, wheelZoom);
+        const mouseZoom = merge(smbZoom, wheelZoom);
 
+        const touchmove = fromEvent(document, 'touchmove');
+        const touchstart = fromEvent(inputDomElement, 'touchstart');
+        const touchend = merge(fromEvent(inputDomElement, 'touchend'), fromEvent(inputDomElement, 'touchcancel'));
+        
+        const touchOrbit = touchstart.pipe(
+            filter( event => event.touches.length === 1),
+            mergeMap(() => touchmove.pipe(takeUntil(touchend))),
+            map( event => event.touches[0]),
+            pairwise(),
+            map( ([oldTouch, newTouch]) => {
+                return { 
+                    deltaPhi: newTouch.pageX - oldTouch.pageX, 
+                    deltaTheta: newTouch.pageY - oldTouch.pageY 
+                };
+            })
+        );
+
+        const touchZoom = touchstart.pipe(
+            filter( event => event.touches.length === 2),
+            mergeMap(() => touchmove.pipe(takeUntil(touchend))),
+            map( event => {
+                const pos1 = vec2.fromValues(event.touches[0].pageX, event.touches[0].pageY);
+                const pos2 = vec2.fromValues(event.touches[1].pageX, event.touches[1].pageY);
+                return vec2.dist(pos1, pos2);
+            }),
+            pairwise(),
+            map( ([oldDist, newDist]) => ({ deltaZoom: newDist - oldDist }))
+        );
+
+        inputDomElement.addEventListener('ontouchmove', event => event.preventDefault(), false);
+
+        observables.orbit = merge(mouseOrbit, touchOrbit);
+        observables.pan = mousePan;
+        observables.zoom = merge(mouseZoom, touchZoom);
 
         // disable context menu
         inputDomElement.oncontextmenu = () => false;
