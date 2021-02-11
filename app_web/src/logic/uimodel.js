@@ -152,6 +152,7 @@ class UIModel
         });
 
         this.orbit = inputObservables.orbit;
+        this.pan = inputObservables.pan;
     }
 
     // app has to be the vuejs app instance
@@ -194,12 +195,21 @@ class UIModel
         );
 
         const move = fromEvent(document, 'mousemove');
-        const pmbdown = fromEvent(inputDomElement, 'mousedown');
-        const pmbup = fromEvent(document, 'mouseup');
+        const down = fromEvent(inputDomElement, 'mousedown');
+        const up = fromEvent(document, 'mouseup');
+        const pmbdown = down.pipe( filter( event => event.button === 0));
+
 
         observables.orbit = pmbdown.pipe(
-            mergeMap(() => move.pipe(takeUntil(pmbup))),
+            mergeMap(() => move.pipe(takeUntil(up))),
             map( mouse => ({deltaPhi: mouse.movementX, deltaTheta: mouse.movementY }))
+        );
+
+        const mmbdown = down.pipe( filter( event => event.button === 1));
+
+        observables.pan = mmbdown.pipe(
+            mergeMap(() => move.pipe(takeUntil(up))),
+            map( mouse => ({deltaX: mouse.movementX, deltaY: mouse.movementY }))
         );
 
         return observables;

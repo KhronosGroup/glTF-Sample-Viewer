@@ -254,16 +254,16 @@ async function main()
         }
     });
 
+    uiModel.pan.subscribe( pan => {
+        if (state.cameraIndex === undefined)
+        {
+            state.userCamera.pan(pan.deltaX, pan.deltaY);
+        }
+    });
+
     const input = new gltfInput(canvas);
     input.setupGlobalInputBindings(document);
     input.setupCanvasInputBindings(canvas);
-    input.onPan = (deltaX, deltaY) =>
-    {
-        if (state.cameraIndex === undefined)
-        {
-            state.userCamera.pan(deltaX, deltaY);
-        }
-    };
     input.onZoom = (delta) =>
     {
         if (state.cameraIndex === undefined)
