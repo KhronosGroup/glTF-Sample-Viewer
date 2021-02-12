@@ -341,7 +341,7 @@ class gltfRenderer
         if (material.alphaMode === 'BLEND')
         {
             this.webGl.context.enable(GL.BLEND);
-            this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ZERO, GL.ONE);
             this.webGl.context.blendEquation(GL.FUNC_ADD);
         }
         else
