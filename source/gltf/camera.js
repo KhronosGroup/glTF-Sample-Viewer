@@ -175,6 +175,11 @@ class gltfCamera extends GltfObject
     // Returns a JSON object describing the user camera's current values.
     getDescription(gltf)
     {
+        const asset = {
+            "generator": "gltf-sample-viewer",
+            "version": "2.0"
+        };
+
         const camera = {
             "type": this.type
         };
@@ -196,7 +201,7 @@ class gltfCamera extends GltfObject
             {
                 camera["perspective"]["zfar"] = this.zfar;
             }
-            camera["perspective"]["ynear"] = this.ynear;
+            camera["perspective"]["znear"] = this.znear;
         }
         else if (this.type === "orthographic")
         {
@@ -204,7 +209,7 @@ class gltfCamera extends GltfObject
             camera["orthographic"]["xmag"] = this.xmag;
             camera["orthographic"]["ymag"] = this.ymag;
             camera["orthographic"]["zfar"] = this.zfar;
-            camera["orthographic"]["ynear"] = this.ynear;
+            camera["orthographic"]["znear"] = this.znear;
         }
 
         const mat = this.getViewMatrix(gltf);
@@ -223,9 +228,10 @@ class gltfCamera extends GltfObject
         }
 
         return {
-            "node": node,
-            "camera": camera
-        }
+            "asset": asset,
+            "cameras": [camera],
+            "nodes": [node]
+        };
     }
 }
 

@@ -117,7 +117,7 @@ async function main()
         return cameraDesc;
     }));
     cameraExportChangedObservable.subscribe( cameraDesc => {
-        uiModel.copyToClipboard(JSON.stringify(cameraDesc));
+        uiModel.copyToClipboard(JSON.stringify(cameraDesc, undefined, 4));
     });
 
     uiModel.captureCanvas.subscribe( () => {
