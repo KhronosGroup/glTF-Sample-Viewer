@@ -48,7 +48,7 @@ Features
 - [x] [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
 - [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
-- [ ] KHR_xmp_ld
+- [x] [KHR_xmp_json_ld](https://github.com/KhronosGroup/glTF/pull/1893)
 
 
 Setup
@@ -75,7 +75,7 @@ Gltf sample viewer can be used without the web app, for example for integration 
 
 The API consists of several components that in combination allow flexible configuration of the gltf viewer.
 
-More detailed information about the API is listed in the [api documentation](API.md).
+More detailed information about the API is listed in the [api documentation](https://github.com/ux3d/glTF-Sample-Viewer/blob/develop/API.md).
 
 ### GltfView
 
