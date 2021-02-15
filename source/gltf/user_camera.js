@@ -31,6 +31,11 @@ class UserCamera extends gltfCamera
         };
     }
 
+    getTransformMatrix()
+    {
+        return this.transform;
+    }
+
     /**
      * Sets the vertical FoV of the user camera.
      * @param {number} yfov 
