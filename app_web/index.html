@@ -315,7 +315,7 @@ function getUrlParam(parameter, defaultvalue){
                     <br>
                     <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
                     <b-field label="Current camera values" class="subtitle">
-                        <button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Copy to Clipboard</button>
+                        <button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .gltf</button>
                     </b-field>
                     <b-field label="Disable extensions" class="subtitle">
                         <b-switch class="smallerLabel" v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>

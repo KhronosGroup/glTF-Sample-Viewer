@@ -172,14 +172,30 @@ class gltfCamera extends GltfObject
         return gltf.nodes[this.node];
     }
 
+    getTransformMatrix(gltf)
+    {
+        const node = this.getNode(gltf);
+        if (node !== undefined && node.worldTransform !== undefined)
+        {
+            return node.worldTransform;
+        }
+        return mat4.create();
+
+    }
+
     // Returns a JSON object describing the user camera's current values.
     getDescription(gltf)
     {
+        const asset = {
+            "generator": "gltf-sample-viewer",
+            "version": "2.0"
+        };
+
         const camera = {
             "type": this.type
         };
 
-        if (this.name != undefined)
+        if (this.name !== undefined)
         {
             camera["name"] = this.name;
         }
@@ -187,7 +203,7 @@ class gltfCamera extends GltfObject
         if (this.type === "perspective")
         {
             camera["perspective"] = {};
-            if (this.aspectRatio != undefined)
+            if (this.aspectRatio !== undefined)
             {
                 camera["perspective"]["aspectRatio"] = this.aspectRatio;
             }
@@ -196,7 +212,7 @@ class gltfCamera extends GltfObject
             {
                 camera["perspective"]["zfar"] = this.zfar;
             }
-            camera["perspective"]["ynear"] = this.ynear;
+            camera["perspective"]["znear"] = this.znear;
         }
         else if (this.type === "orthographic")
         {
@@ -204,10 +220,10 @@ class gltfCamera extends GltfObject
             camera["orthographic"]["xmag"] = this.xmag;
             camera["orthographic"]["ymag"] = this.ymag;
             camera["orthographic"]["zfar"] = this.zfar;
-            camera["orthographic"]["ynear"] = this.ynear;
+            camera["orthographic"]["znear"] = this.znear;
         }
 
-        const mat = this.getViewMatrix(gltf);
+        const mat = this.getTransformMatrix(gltf);
 
         const node = {
             "camera": 0,
@@ -217,15 +233,16 @@ class gltfCamera extends GltfObject
                        mat[12], mat[13], mat[14], mat[15]]
         };
 
-        if (this.nodeIndex != undefined && gltf.nodes[this.nodeIndex].name != undefined)
+        if (this.nodeIndex !== undefined && gltf.nodes[this.nodeIndex].name !== undefined)
         {
             node["name"] = gltf.nodes[this.nodeIndex].name;
         }
 
         return {
-            "node": node,
-            "camera": camera
-        }
+            "asset": asset,
+            "cameras": [camera],
+            "nodes": [node]
+        };
     }
 }
 

@@ -116,17 +116,11 @@ async function main()
         const cameraDesc = camera.getDescription(state.gltf);
         return cameraDesc;
     }));
-    cameraExportChangedObservable.subscribe( cameraDesc => {
-        uiModel.copyToClipboard(JSON.stringify(cameraDesc));
-    });
 
-    uiModel.captureCanvas.subscribe( () => {
-        view.renderFrame(state, canvas.width, canvas.height);
-        const dataURL = canvas.toDataURL();
-
+    const downloadDataURL = (filename, dataURL) => {
         var element = document.createElement('a');
         element.setAttribute('href', dataURL);
-        element.setAttribute('download', "capture.png");
+        element.setAttribute('download', filename);
 
         element.style.display = 'none';
         document.body.appendChild(element);
@@ -134,6 +128,18 @@ async function main()
         element.click();
 
         document.body.removeChild(element);
+    };
+
+    cameraExportChangedObservable.subscribe( cameraDesc => {
+        const gltf = JSON.stringify(cameraDesc, undefined, 4);
+        const dataURL = 'data:text/plain;charset=utf-8,' +  encodeURIComponent(gltf);
+        downloadDataURL("camera.gltf", dataURL);
+    });
+
+    uiModel.captureCanvas.subscribe( () => {
+        view.renderFrame(state, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL();
+        downloadDataURL("capture.png", dataURL);
     });
 
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
