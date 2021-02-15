@@ -175,11 +175,12 @@ class gltfCamera extends GltfObject
     getTransformMatrix(gltf)
     {
         const node = this.getNode(gltf);
-        if (node !== undefined)
+        if (node !== undefined && node.worldTransform !== undefined)
         {
-            return node.getLocalTransform();
+            return node.worldTransform;
         }
         return mat4.create();
+
     }
 
     // Returns a JSON object describing the user camera's current values.
