@@ -87,6 +87,7 @@ class gltfWebGl
                 console.warn("Image is undefined for texture: " + gltfTex.source);
                 return false;
             }
+            // the check `GL.SRGB8_ALPHA8 === undefined` is needed as at the moment node-gles does not define it
             const internalformat = (textureInfo.linear || GL.SRGB8_ALPHA8 === undefined) ? GL.RGBA : GL.SRGB8_ALPHA8;
             this.context.texImage2D(image.type, image.miplevel, internalformat, GL.RGBA, GL.UNSIGNED_BYTE, image.image);
 
