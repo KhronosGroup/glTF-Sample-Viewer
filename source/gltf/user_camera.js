@@ -132,7 +132,7 @@ class UserCamera extends gltfCamera
 
     /**
      * Sets the rotation of the camera.
-     * Yaw and pitch should be in gradient.
+     * Yaw and pitch in euler angles (degrees).
      * @param {number} yaw 
      * @param {number} pitch 
      */

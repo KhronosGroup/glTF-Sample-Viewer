@@ -670,7 +670,7 @@ according to the current distance.
 
 ### userCamera.setRotation(yaw, pitch)
 Sets the rotation of the camera.
-Yaw and pitch should be in gradient.
+Yaw and pitch in euler angles (degrees).
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
