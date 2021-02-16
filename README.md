@@ -1,7 +1,7 @@
 Khronos glTF 2.0 Sample Viewer
 ==============================
 
-[![](assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
+[![](assets/images/ToyCar.jpg)](http://gltf.ux3d.io/)
 
 This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
 
