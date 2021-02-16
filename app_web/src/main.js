@@ -19,8 +19,8 @@ async function main()
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
-        "footprint_court_512": "Foodprint Court (512p)",
-        "footprint_court": "Foodprint Court",
+        "footprint_court_512": "Footprint Court (512p)",
+        "footprint_court": "Footprint Court",
         "pisa": "Pisa",
         "doge2": "Doge's palace",
         "ennis": "Dining room",
