@@ -5,6 +5,8 @@ import { GltfState } from 'gltf-viewer-source';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
 
+import normalizeWheel from 'normalize-wheel';
+
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
 // as close as possible
@@ -218,7 +220,8 @@ class UIModel
             map( mouse => ({deltaZoom: mouse.movementY }))
         );
         const wheelZoom = fromEvent(inputDomElement, 'wheel').pipe(
-            map(wheelEvent => ({deltaZoom: wheelEvent.deltaY }))
+            map(wheelEvent => normalizeWheel(wheelEvent)),
+            map(normalizedZoom => ({deltaZoom: normalizedZoom.spinY }))
         );
         inputDomElement.addEventListener('onscroll', event => event.preventDefault(), false);
         const mouseZoom = merge(smbZoom, wheelZoom);
