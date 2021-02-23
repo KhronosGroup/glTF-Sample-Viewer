@@ -242,10 +242,6 @@ class gltfRenderer
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
-        for (const drawable of transparentDrawables)
-        {
-            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
-        }
 
         // filter materials with transmission extension
         let transmissionDrawables = drawables
@@ -255,6 +251,11 @@ class gltfRenderer
         for (const drawable of transmissionDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
+        }
+
+        for (const drawable of transparentDrawables)
+        {
+            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
     }
 
