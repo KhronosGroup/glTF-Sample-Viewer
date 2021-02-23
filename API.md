@@ -697,6 +697,7 @@ Use this function to set the distance.
 
 ### userCamera.zoomBy(value)
 Zoom exponentially according to this.zoomFactor and this.zoomExponent.
+The default zoomFactor provides good zoom speed for values from [-1,1].
 
 **Kind**: instance method of [<code>UserCamera</code>](#UserCamera)  
 
