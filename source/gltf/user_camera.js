@@ -22,7 +22,7 @@ class UserCamera extends gltfCamera
         this.distance = 1;
         this.baseDistance = 1.0;
         this.zoomExponent = 5.0;
-        this.zoomFactor = 0.00008;
+        this.zoomFactor = 0.01;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {
@@ -167,6 +167,7 @@ class UserCamera extends gltfCamera
 
     /**
      * Zoom exponentially according to this.zoomFactor and this.zoomExponent.
+     * The default zoomFactor provides good zoom speed for values from [-1,1].
      * @param {number} value 
      */
     zoomBy(value)

@@ -29,6 +29,7 @@
     "buefy": "^0.9.4",
     "gl-matrix": "^3.2.1",
     "gltf-viewer-source": "../source",
+    "normalize-wheel": "^1.0.1",
     "path": "^0.12.7",
     "rxjs": "^6.6.3",
     "simple-dropzone": "^0.8.0",
