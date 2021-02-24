@@ -21,12 +21,13 @@ class iblSampler
         this.gl = view.context;
 
         this.textureSize = 256;
-        this.ggxSampleCount = 256;
+        this.ggxSampleCount = 512;
         this.lambertianSampleCount = 2048;
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
-        this.mipmapCount = undefined;
+        this.lowestMipLevel = 4;
 
+        this.mipmapCount = undefined;
 
         this.lambertianTextureID = undefined;
         this.ggxTextureID = undefined;
@@ -186,7 +187,7 @@ class iblSampler
         this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.sheenTextureID);
         this.gl.generateMipmap(this.gl.TEXTURE_CUBE_MAP);
 
-        this.mipmapLevels = Math.floor(Math.log2(this.textureSize))+1;
+        this.mipmapLevels = Math.floor(Math.log2(this.textureSize))+1 - this.lowestMipLevel;
     }
 
     filterAll()
@@ -316,7 +317,7 @@ class iblSampler
 
     cubeMapToGGX()
     {
-        for(var currentMipLevel = 0; currentMipLevel < this.mipmapLevels; ++currentMipLevel)
+        for(var currentMipLevel = 0; currentMipLevel <= this.mipmapLevels; ++currentMipLevel)
         {
             const roughness =  (currentMipLevel) /  (this.mipmapLevels - 1);
             this.applyFilter(
@@ -330,7 +331,7 @@ class iblSampler
 
     cubeMapToSheen()
     {
-        for(var currentMipLevel = 0; currentMipLevel < this.mipmapLevels; ++currentMipLevel)
+        for(var currentMipLevel = 0; currentMipLevel <= this.mipmapLevels; ++currentMipLevel)
         {
             const roughness =  (currentMipLevel) /  (this.mipmapLevels - 1);
             this.applyFilter(
