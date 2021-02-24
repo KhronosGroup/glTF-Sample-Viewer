@@ -26,6 +26,7 @@ class iblSampler
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
         this.lowestMipLevel = 4;
+        this.lutResolution = 1024;
 
         this.mipmapCount = undefined;
 
@@ -33,6 +34,7 @@ class iblSampler
         this.ggxTextureID = undefined;
         this.sheenTextureID = undefined;
 
+        this.ggxLutTextureID = undefined;
 
         this.inputTextureID = undefined;
         this.cubemapTextureID = undefined;
@@ -163,6 +165,31 @@ class iblSampler
         return targetTexture;
     }
 
+    createLutTexture()
+    {
+        const targetTexture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, targetTexture);
+
+        // define size and format of level 0
+        const level = 0;
+        const internalFormat = this.use8bit ? this.gl.RGBA8 : this.gl.RGBA32F;
+        const border = 0;
+        const format = this.gl.RGBA;
+        const type = this.use8bit ? this.gl.UNSIGNED_BYTE : this.gl.FLOAT;
+        const data = null;
+
+        this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat,
+            this.textureSize, this.textureSize, border,
+            format, type, data);
+
+        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR);
+        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_MAG_FILTER,  this.gl.LINEAR);
+        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_S,  this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_WRAP_T,  this.gl.CLAMP_TO_EDGE);
+
+        return targetTexture;
+    }
+
     init(panoramaImage)
     {
         if (!this.gl.getExtension('EXT_color_buffer_float'))
@@ -192,16 +219,15 @@ class iblSampler
 
     filterAll()
     {
-        this.panoramaToCubeMap();
-        this.cubeMapToLambertian();
-        this.cubeMapToGGX();
-        this.cubeMapToSheen();
+        // this.panoramaToCubeMap();
+        // this.cubeMapToLambertian();
+        // this.cubeMapToGGX();
+        // this.cubeMapToSheen();
+
+        this.sampleGGXLut();
 
         this.gl.bindFramebuffer(  this.gl.FRAMEBUFFER, null);
     }
-
-
-
 
     panoramaToCubeMap()
     {
@@ -295,6 +321,7 @@ class iblSampler
             shader.updateUniform("u_lodBias", lodBias);
             shader.updateUniform("u_distribution", distribution);
             shader.updateUniform("u_currentFace", i);
+            shader.updateUniform("u_isGeneratingLUT", 0);
 
 
             //fullscreen triangle
@@ -343,6 +370,54 @@ class iblSampler
         }
     }
 
+    sampleLut(distribution, targetTexture, currentTextureSize)
+    {
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, targetTexture, 0);
+
+        this.gl.bindTexture(this.gl.TEXTURE_2D, targetTexture);
+
+        this.gl.viewport(0, 0, currentTextureSize, currentTextureSize);
+
+        this.gl.clearColor(1.0, 0.0, 0.0, 0.0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT| this.gl.DEPTH_BUFFER_BIT);
+
+
+        const vertexHash = this.shaderCache.selectShader("fullscreen.vert", []);
+        const fragmentHash = this.shaderCache.selectShader("ibl_filtering.frag", []);
+
+        var shader = this.shaderCache.getShaderProgram(fragmentHash, vertexHash);
+        this.gl.useProgram(shader.program);
+
+
+        //  TEXTURE0 = active.
+        this.gl.activeTexture(this.gl.TEXTURE0+0);
+
+        // Bind texture ID to active texture
+        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
+
+        // map shader uniform to texture unit (TEXTURE0)
+        const location = this.gl.getUniformLocation(shader.program,"u_cubemapTexture");
+        this.gl.uniform1i(location, 0); // texture unit 0
+
+
+        shader.updateUniform("u_roughness", 0.0);
+        shader.updateUniform("u_sampleCount", 512);
+        shader.updateUniform("u_width", 0.0);
+        shader.updateUniform("u_lodBias", 0.0);
+        shader.updateUniform("u_distribution", distribution);
+        shader.updateUniform("u_currentFace", 0);
+        shader.updateUniform("u_isGeneratingLUT", 1);
+
+        //fullscreen triangle
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    }
+
+    sampleGGXLut()
+    {
+        this.ggxLutTextureID = this.createLutTexture();
+        this.sampleLut(1, this.ggxLutTextureID, this.lutResolution);
+    }
 
     destroy()
     {

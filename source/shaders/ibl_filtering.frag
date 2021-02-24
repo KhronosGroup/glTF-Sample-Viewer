@@ -12,6 +12,7 @@ const int cLambertian = 0;
 const int cGGX = 1;
 const int cCharlie = 2;
 
+
 //layout(push_constant) uniform FilterParameters {
 uniform  float u_roughness;
 uniform  int u_sampleCount;
@@ -19,7 +20,7 @@ uniform  int u_width;
 uniform  float u_lodBias;
 uniform  int u_distribution; // enum
 uniform int u_currentFace;
-
+uniform int u_isGeneratingLUT;
 
 //layout (location = 0) in vec2 inUV;
 in vec2 texCoord;
@@ -383,18 +384,26 @@ vec3 LUT(float NdotV, float roughness)
 // entry point
 void main()
 {
-    vec2 newUV = texCoord ;
+    vec3 color = vec3(0);
 
-    newUV = newUV*2.0-1.0;
+    if(u_isGeneratingLUT == 0)
+    {
+        vec2 newUV = texCoord ;
 
-    vec3 scan = uvToXYZ(u_currentFace, newUV);
+        newUV = newUV*2.0-1.0;
 
-    vec3 direction = normalize(scan);
-    direction.y = -direction.y;
+        vec3 scan = uvToXYZ(u_currentFace, newUV);
 
-    vec3 color = filterColor(direction);
-
+        vec3 direction = normalize(scan);
+        direction.y = -direction.y;
+    
+        color = filterColor(direction);
+    }
+    else
+    {
+        color = LUT(texCoord.x, texCoord.y);
+    }
+    
     fragmentColor = vec4(color,1.0);
-
 }
 
