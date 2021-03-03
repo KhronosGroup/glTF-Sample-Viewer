@@ -1,28 +1,42 @@
-import commonjs from 'rollup-plugin-commonjs';
+import commonjs from '@rollup/plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
+import copy from "rollup-plugin-copy";
+
 
 export default {
-  input: 'src/main.js',
+  input: ['source/gltf-sample-viewer.js'],
+  external:['gl-matrix', 'axios', 'jpeg-js', 'fast-png'],
   output: [
     {
-      file: 'dist/gltf-reference-viewer.js',
-      format: 'cjs'
-    },
-    {
-      file: 'dist/gltf-reference-viewer.module.js',
-      format: 'esm'
-    },
-    {
-      name: 'gltf_rv',
-      file: 'dist/gltf-reference-viewer.umd.js',
-      format: 'umd',
+      file: 'dist/gltf-viewer.js',
+      format: 'cjs',
       sourcemap: true
+    },
+    {
+        file: 'dist/gltf-viewer.module.js',
+        format: 'esm',
+        sourcemap: true,
     }
   ],
   plugins: [
     glslify(),
-    resolve(),
-    commonjs()
+    resolve({
+        browser: true,
+        preferBuiltins: false
+    }),
+    commonjs({
+        include: 'node_modules/**'
+    }),
+    copy({
+        targets: [
+            { src: [
+                "assets/images/lut_charlie.png",
+                "assets/images/lut_ggx.png",
+                "assets/images/lut_sheen_E.png",
+            ], dest: "dist/assets"},
+            { src: ["source/libs/*", "!source/libs/hdrpng.js"], dest: "dist/libs"}
+        ]
+    })
   ]
 };

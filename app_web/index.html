@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>glTF Sample Viewer</title>
+
+    <meta name="author" content="Khronos Group Inc.">
+    <meta name="description" content="The official glTF sample viewer">
+    <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="GltfSVApp.umd.css">
+    <link rel="icon" href="assets/images/gltf.png">
+
+    <!-- buefy styles -->
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <!-- load fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- vue.js-->
+    <script src="https://unpkg.com/vue"></script>
+    <!-- buefy full -->
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+
+    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+    <script src="libs/libktx.js"></script>
+
+</head>
+<script>
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+function getUrlParam(parameter, defaultvalue){
+    var urlparameter = defaultvalue;
+    if(window.location.href.indexOf(parameter) > -1){
+        urlparameter = getUrlVars()[parameter];
+        }
+    return urlparameter;
+}
+</script>
+
+<!-- vue js templates -->
+<!-- general templates -->
+<script id="toggleButtonTemplate" type="text/x-template">
+    <div>
+        <b-button v-on:click="buttonclicked" rounded>{{ name }}</b-button>
+    </div>
+</script>
+<script id="jsonToUITemplate" type="text/x-template">
+    <div>
+        <div v-for="(value, name) in data">
+            <b-collapse :class="(isinner === false) ? 'cardGrayMain' : 'cardGrayMainInner'" animation="slide"  style="word-break: break-word;">
+                <!-- header -->
+                <template #trigger="props">
+                    <div class="cardHeader" role="button">
+                        <p class="smallerLabel">
+                            {{ name }}
+                        </p>
+                        <!-- a element needed for buefy. can be removed if hover effects are made custom -->
+                        <a>
+                            <b-icon :icon="props.open ? 'menu-down' : 'menu-up'">
+                            </b-icon>
+                        </a>
+                    </div>
+                </template>
+
+                <!-- content -->
+                <!-- if value is object -->
+                <div v-if="value !== null && value !== undefined && value.constructor.name === 'Object'">
+                    <json-to-ui-template v-bind:data="value" v-bind:isinner="!isinner"></json-to-ui-template>
+                </div>
+                <!-- if value is array -->
+                <div v-else-if="Array.isArray(value)">
+                    <label v-for="arrayValue in value" class="smallestLabel" style="display: block;">{{ arrayValue }}</label>
+                </div>
+                <div v-else>
+                    <label class="smallestLabel">{{ value }}</label>
+                </div>
+            </b-collapse>
+        </div>
+    </div>
+</script>
+
+
+<body onload="SampleViewerApp.main()" class="is-flex">
+    <canvas id="canvas">No Canvas!</canvas>
+
+    <!-- UI -->
+    <div id="app">
+        <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone" style="pointer-events: none;">
+            <div class="is-overlay is-dropAreaCard is-flex" style="z-index: 999;">
+                <div class="box has-text-centered">
+                    <span class="icon is-large">
+                        <i class="fas fa-folder-open fa-4x"></i>
+                    </span>
+                    <p class="is-size-2 has-text-weight-light">
+                        Drag and drop files here
+                    </p>
+                    <p class="is-size-4">
+                        Supported files: glTF, glb & hdr
+                    </p>
+                  </div>
+             </div>
+        </div>
+        <b-tabs vertical position="is-right" v-model="activeTab" class="is-flex-wrap-nowrap" type="is-toggle" v-bind:animated="false">
+            <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable">
+                <template #header>
+                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                    <img v-bind:src="[activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
+                        v-bind:width="[activeTab === 0 ? '50px' : '30px']">
+                    <span v-bind:style="[activeTab === 0 ? {'display': 'none'} : {}]">Models</span>
+                </template>
+
+                <div class="tabContent">
+                    <h2 class="title is-spaced">Models</h2>
+                    <b-field label="Models" class="subtitle">
+                        <b-select v-model="selectedModel" v-stream:input="modelChanged$">
+                            <option v-for="(item) in models" v-bind:value="item">
+                                {{ item}}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <b-field label="Flavor">
+                    	<b-select v-model="selectedFlavour" v-stream:input="flavourChanged$">
+                        	<option v-for="(item) in flavours" v-bind:value="item">
+                                {{ item }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <b-field label="Scenes" class="subtitle">
+                        <b-select v-model="selectedScene" v-stream:input="sceneChanged$">
+                            <option v-for="(item) in scenes"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <b-field label="Cameras" class="subtitle">
+                        <b-select v-model="selectedCamera" v-stream:input="cameraChanged$">
+                            <option v-for="(item) in cameras"
+                                v-bind:value="item.index">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+
+                    <b-field label="Variants" class="subtitle" v-bind:style="[materialVariants.length <= 1 ? {'display': 'none'} : {}]">
+                        <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
+                            <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                                {{ item.title }}
+                            </b-radio>
+                        </b-field>
+                        <b-select v-model="selectedVariant" v-stream:input="variantChanged$" v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
+                            <option v-for="(item) in materialVariants"
+                                v-bind:value="item.title">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                </div>
+            </b-tab-item>
+
+
+            <b-tab-item label="Display" icon="library-music" class="tabItemScrollable tab-item">
+                <template #header>
+                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                    <img v-bind:src="[activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
+                        v-bind:width="[activeTab === 1 ? '50px' : '30px']">
+                    <span v-bind:style="[activeTab === 1 ? {'display': 'none'} : {}]">Display</span>
+                </template>
+
+                    <div class="tabContent">
+                        <h2 class="title  is-spaced">Display</h2>
+                        <b-field label="Lighting" class="subtitle">
+                            <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based</b-switch>
+                            <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
+                        </b-field>
+                        <b-field label="Background" class="subtitle">
+                            <b-switch v-model="renderEnv" v-bind:disabled="ibl === false ? true : false">Environment Map</b-switch>
+                            <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$" v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
+                            <b-field label="Background Color" class="smallerLabel"></b-field>
+                            <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
+                        </b-field>
+                        <b-field label="Select Environment Rotation" class="smallerLabel">
+                            <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
+                                <option v-for="(item) in environmentRotations"
+                                    v-bind:value="item.title">
+                                    {{ item.title }}
+                                </option>
+                            </b-select>
+                        </b-field>
+
+                    <b-field label="Image Based Lighting" class="subtitle">
+                        <button class="button is-rounded">
+                            <input class="file-input" type="file" accept=".hdr" @change="onFileChange">
+                            <i class="fas fa-plus"></i>
+                            Add New HDR
+                        </button>
+
+                        <b-field label="Active Environment" class="smallerLabel">
+                            <b-dropdown aria-role="list" v-model="selectedEnvironment">
+                                <template #trigger="{ active }">
+                                    <b-button rounded
+                                        type="is-primary"
+                                        :icon-right="active ? 'menu-up' : 'menu-down'">
+                                        {{ environments[selectedEnvironment].title }}
+                                    </b-button>
+                                </template>
+
+                                <b-dropdown-item aria-role="listitem" v-for="name in Object.keys(environments)" v-bind:key="name" :value="name">
+                                    {{ environments[name].title }}
+                                </b-dropdown-item>
+                            </b-dropdown>
+                        </b-field>
+                    </b-field>
+                </div>
+            </b-tab-item>
+
+
+            <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
+                <template #header>
+                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                    <img v-bind:src="[activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
+                    v-bind:width="[activeTab === 2 ? '50px' : '30px']">
+                    <span v-bind:style="[activeTab === 2 ? {'display': 'none'} : {}]">Animation</span>
+                </template>
+
+                <div class="tabContent">
+                    <h2 class="title is-spaced">Animation</h2>
+                    <label  class="subtitle">Animation Controls</label>
+                    <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
+
+                    <b-field label="Animations" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
+                        <b-field v-for="animation in animations" v-bind:key="animation.index">
+                            <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations" :disabled="disabledAnimations.includes(animation.index)">
+                                {{ animation.title }}
+                            </b-checkbox>
+                        </b-field>
+                    </b-field>
+                </div>
+            </b-tab-item>
+
+
+            <b-tab-item label="XMP" icon="video" class="tabItemScrollable tab-item">
+                <template #header>
+                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                    <img v-bind:src="[activeTab === 3 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
+                    v-bind:width="[activeTab === 3 ? '50px' : '30px']">
+                    <span v-bind:style="[activeTab === 3 ? {'display': 'none'} : {}]">XMP</span>
+                </template>
+
+                <div class="tabContent">
+                    <h2 class="title is-spaced">XMP</h2>
+                    <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
+                </div>
+            </b-tab-item>
+            <!--<b-tab-item label="Capture" icon="video">
+                <template #header>
+                    to get colored icons use: https://stackoverflow.com/a/43916743
+                    <img src="assets/ui/Capture 30X30.svg" width="30px" height="30px">
+                    <span>Capture</span>
+                </template>
+            </b-tab-item>-->
+
+
+            <b-tab-item label="Advanced Controls" icon="video"  class="tabItemScrollable tab-item">
+                <template #header>
+                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                    <img v-bind:src="[activeTab === 4 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
+                        v-bind:width="[activeTab === 4 ? '50px' : '30px']">
+                    <span v-bind:style="[activeTab === 4 ? {'display': 'none'} : {}]">Advanced Controls</span>
+                </template>
+
+                <div class="tabContent">
+                    <h2 class="title is-spaced">Advanced Controls</h2>
+                    <b-field label="Capture Canvas" class="smallerLabel">
+                        <button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
+                    </b-field>
+                    <b-field label="Debug Channels" class="smallerLabel">
+                        <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
+                            <option v-for="(item) in debugchannels"
+                                v-bind:value="item.title">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <label class="smallerLabel">Exposure</label>
+                    <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks
+                            v-stream:input="exposureChanged$">
+                        <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
+                        <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
+                        <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
+                        <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
+                        <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
+                        <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
+                        <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+                    </b-slider>
+                    <b-field label="Tone Map" class="smallerLabel">
+                        <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
+                            <option v-for="(item) in tonemaps" v-bind:value="item.title">
+                                {{ item.title }}
+                            </option>
+                        </b-select>
+                    </b-field>
+                    <b-switch v-model="skinning" v-stream:input="skinningChanged$">Skinning</b-switch>
+                    <br>
+                    <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
+                    <b-field label="Current camera values" class="subtitle">
+                        <button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .gltf</button>
+                    </b-field>
+                    <b-field label="Disable extensions" class="subtitle">
+                        <b-switch class="smallerLabel" v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>
+                        <b-switch class="smallerLabel" v-model="sheenEnabled" v-stream:input="sheenChanged$">Sheen</b-switch>
+                        <b-switch class="smallerLabel" v-model="transmissionEnabled" v-stream:input="transmissionChanged$">Transmission</b-switch>
+                    </b-field>
+                    <b-field label="Statistics" class="subtitle">
+                        <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false"></json-to-ui-template>
+                    </b-field>
+                </div>
+            </b-tab-item>
+        </b-tabs>
+    </div>
+</body>
+<script src="GltfSVApp.umd.js"></script>
+</html>
