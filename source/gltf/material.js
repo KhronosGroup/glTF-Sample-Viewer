@@ -490,7 +490,7 @@ class gltfMaterial extends GltfObject
 
         if (jsonSpecularGlossiness.specularGlossinessTexture !== undefined)
         {
-            const specularGlossinessTexture = new gltfTextureInfo();
+            const specularGlossinessTexture = new gltfTextureInfo(undefined, 0, false);
             specularGlossinessTexture.fromJson(jsonSpecularGlossiness.specularGlossinessTexture);
             this.specularGlossinessTexture = specularGlossinessTexture;
         }
@@ -524,7 +524,7 @@ class gltfMaterial extends GltfObject
     {
         if(jsonSheen.sheenColorTexture !== undefined)
         {
-            const sheenColorTexture = new gltfTextureInfo();
+            const sheenColorTexture = new gltfTextureInfo(undefined, 0, false);
             sheenColorTexture.fromJson(jsonSheen.sheenColorTexture);
             this.sheenColorTexture = sheenColorTexture;
         }

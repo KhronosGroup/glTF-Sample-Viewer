@@ -242,10 +242,6 @@ class gltfRenderer
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
-        for (const drawable of transparentDrawables)
-        {
-            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
-        }
 
         // filter materials with transmission extension
         let transmissionDrawables = drawables
@@ -255,6 +251,11 @@ class gltfRenderer
         for (const drawable of transmissionDrawables)
         {
             this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
+        }
+
+        for (const drawable of transparentDrawables)
+        {
+            this.drawPrimitive(state, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
     }
 
@@ -341,7 +342,7 @@ class gltfRenderer
         if (material.alphaMode === 'BLEND')
         {
             this.webGl.context.enable(GL.BLEND);
-            this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ONE, GL.ONE_MINUS_SRC_ALPHA);
             this.webGl.context.blendEquation(GL.FUNC_ADD);
         }
         else
