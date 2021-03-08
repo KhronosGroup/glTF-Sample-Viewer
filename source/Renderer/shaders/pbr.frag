@@ -372,14 +372,24 @@ void main()
     normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
     normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
 
-    f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
+    f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
+        n, 
+        v, 
+        materialInfo.perceptualRoughness, 
+        materialInfo.baseColor, 
+        materialInfo.f0, 
+        materialInfo.f90,
+        v_Position,
+        u_ViewMatrix,
+        u_ProjectionMatrix
+        );
 #endif
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
-    // apply ambient occlusion too all lighting that is not punctual
+    // apply ambient occlusion to all lighting that is not punctual
     f_specular = mix(f_specular, f_specular * ao, u_OcclusionStrength);
     f_sheen = mix(f_sheen, f_sheen * ao, u_OcclusionStrength);
     f_clearcoat = mix(f_clearcoat, f_clearcoat * ao, u_OcclusionStrength);
