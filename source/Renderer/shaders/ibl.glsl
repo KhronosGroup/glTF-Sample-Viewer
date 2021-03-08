@@ -80,7 +80,6 @@ vec3 getIBLVolumeRefraction(vec3 normal, vec3 viewDirectionW, float perceptualRo
     float NdotV = clampedDot(normal, viewDirectionW);
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;   
-      brdf= vec2(pow(brdf.xy,1.0/ vec2(2.2)));
     vec3 specularColor = f0 * brdf.x + f90 * brdf.y;
 
     vec3 transmittedLight = getTransmissionSample(refractionCoords.xy, perceptualRoughness);
