@@ -59,6 +59,9 @@ uniform vec3 u_Camera;
 uniform ivec2 u_ScreenSize;
 #endif
 
+uniform mat4 u_ViewMatrix;
+uniform mat4 u_ProjectionMatrix;
+
 struct MaterialInfo
 {
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
