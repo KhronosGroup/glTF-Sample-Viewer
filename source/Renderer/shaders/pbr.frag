@@ -59,6 +59,7 @@ uniform vec3 u_Camera;
 uniform ivec2 u_ScreenSize;
 #endif
 
+uniform mat4 u_ModelMatrix;
 uniform mat4 u_ViewMatrix;
 uniform mat4 u_ProjectionMatrix;
 
@@ -380,6 +381,7 @@ void main()
         materialInfo.f0, 
         materialInfo.f90,
         v_Position,
+        u_ModelMatrix,
         u_ViewMatrix,
         u_ProjectionMatrix
         );

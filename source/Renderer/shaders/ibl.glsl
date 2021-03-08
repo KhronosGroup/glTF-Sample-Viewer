@@ -56,18 +56,23 @@ vec3 getIBLRadianceTransmission(vec3 n, vec3 v, vec2 fragCoord, float perceptual
 
 
 vec3 getIBLVolumeRefraction(vec3 normal, vec3 viewDirectionW, float perceptualRoughness, vec3 baseColor, vec3 f0, vec3 f90,
-    vec3 worldPos, mat4 viewMatrix, mat4 projMatrix)
+    vec3 worldPos, mat4 modelMatrix, mat4 viewMatrix, mat4 projMatrix)
 {
 
     float ior = 1.5;
 
     float thicknessFactor = 0.0; // default
     //thicknessFactor = 2000.0; // underground shelter
-    thicknessFactor = 0.19; // mosquito in amber
+    thicknessFactor = 0.9; // mosquito in amber
+
+    vec3 modelScale;
+    modelScale.x = length(vec3(modelMatrix[0].xyz));
+    modelScale.y = length(vec3(modelMatrix[1].xyz));
+    modelScale.z = length(vec3(modelMatrix[2].xyz));
 
     vec3 refractionVector = refract(-viewDirectionW, normalize(normal), 1.0/ior);
 
-    vec3 refractedRayExitW = worldPos + normalize(refractionVector) * thicknessFactor;
+    vec3 refractedRayExitW = worldPos + normalize(refractionVector) * thicknessFactor * modelScale;
 
     vec4 viewPos = viewMatrix*vec4(refractedRayExitW, 1.0);
     vec4 ndcPos = projMatrix*viewPos;
