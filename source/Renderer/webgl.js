@@ -57,6 +57,35 @@ class gltfWebGl
             image.mimeType === ImageMimeType.GLTEXTURE)
         {
             gltfTex.glTexture = image.image;
+			
+			if (!gltfTex.initialized)
+			{
+				const gltfSampler = gltf.samplers[gltfTex.sampler];
+
+				if (gltfSampler === undefined)
+				{
+					console.warn("Sampler is undefined for texture: " + textureInfo.index);
+					return false;
+				}
+				this.setSampler(gltfSampler, gltfTex.type, textureInfo.generateMips);
+
+				if (textureInfo.generateMips)
+				{
+					// Until this point, images can be assumed to be power of two.
+					switch (gltfSampler.minFilter)
+					{
+					case GL.NEAREST_MIPMAP_NEAREST:
+					case GL.NEAREST_MIPMAP_LINEAR:
+					case GL.LINEAR_MIPMAP_NEAREST:
+					case GL.LINEAR_MIPMAP_LINEAR:
+						this.context.generateMipmap(gltfTex.type);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			
             gltfTex.initialized = true;
         }
 
