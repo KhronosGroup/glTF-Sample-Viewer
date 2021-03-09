@@ -249,7 +249,7 @@ float computeLod(float pdf)
 vec3 filterColor(vec3 N)
 {
     //return  textureLod(uCubeMap, N, 3.0).rgb;
-    vec4 color = vec4(0.f);
+    vec3 color = vec3(0.f);
 
     for(int i = 0; i < u_sampleCount; ++i)
     {
@@ -266,8 +266,6 @@ vec3 filterColor(vec3 N)
 
         if(u_distribution == cLambertian)
         {
-            float NdotH = clamp(dot(N, H), 0.0, 1.0);
-
             // sample lambertian at a lower resolution to avoid fireflies
             vec3 lambertian = textureLod(uCubeMap, H, lod).rgb;
 
@@ -276,7 +274,7 @@ vec3 filterColor(vec3 N)
             // lambertian /= pdf; // invert bias from importance sampling
             // lambertian /= MATH_PI; // convert irradiance to radiance https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
 
-            color += vec4(lambertian, 1.0);
+            color += lambertian;
         }
         else if(u_distribution == cGGX || u_distribution == cCharlie)
         {
@@ -292,18 +290,13 @@ vec3 filterColor(vec3 N)
                     // without this the roughness=0 lod is too high (taken from original implementation)
                     lod = u_lodBias;
                 }
-
-                color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
+                vec3 sampleColor = textureLod(uCubeMap, L, lod).rgb;
+                color += sampleColor;
             }
         }
     }
 
-    if(color.w == 0.f)
-    {
-        return color.rgb;
-    }
-
-    return color.rgb / color.w;
+    return color.rgb / float(u_sampleCount);
 }
 
 // From the filament docs. Geometric Shadowing function
