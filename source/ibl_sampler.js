@@ -21,7 +21,7 @@ class iblSampler
         this.gl = view.context;
 
         this.textureSize = 256;
-        this.ggxSampleCount = 512;
+        this.ggxSampleCount = 2048;
         this.lambertianSampleCount = 2048;
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
@@ -180,7 +180,7 @@ class iblSampler
         const data = null;
 
         this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat,
-            this.textureSize, this.textureSize, border,
+            this.lutResolution, this.lutResolution, border,
             format, type, data);
 
         this.gl.texParameteri( this.gl.TEXTURE_2D,  this.gl.TEXTURE_MIN_FILTER,  this.gl.LINEAR);
