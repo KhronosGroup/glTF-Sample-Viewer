@@ -135,9 +135,9 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
 
     // evaluate sampling equations
     float alpha = roughness * roughness;
-    ggx.cosTheta = sqrt(1.0 - alpha * alpha * xi.x / (1.0 - xi.x));
-    ggx.sinTheta = alpha * sqrt(xi.x) / (sqrt(1.0 - xi.x) * ggx.cosTheta);
-    ggx.phi = 2.0 * MATH_PI * xi.y;
+    ggx.cosTheta = sqrt(1.0 - alpha * alpha * xi.y / (1.0 - xi.y));
+    ggx.sinTheta = alpha * sqrt(xi.y) / (sqrt(1.0 - xi.y) * ggx.cosTheta);
+    ggx.phi = 2.0 * MATH_PI * xi.x;
 
     // evaluate GGX pdf (for half vector)
     ggx.probability = D_GGX(ggx.cosTheta, roughness) * ggx.cosTheta; // drop sinTheta as we are evaluating for solid angle
@@ -187,8 +187,6 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 {
     // generate a quasi monte carlo point in the unit square [0.1)^2
     vec2 xi = hammersley2d(sampleIndex, u_sampleCount);
-    float u = xi.x;
-    float v = xi.y;
 
     // declare importance sample parameters
     float phi = 0.0; // theoretically there could be a distribution that defines phi differently
@@ -202,9 +200,9 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     {
         // Cosine weighted hemisphere sampling
         // http://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#Cosine-WeightedHemisphereSampling
-        cosTheta = sqrt(1.0 - u);
-        sinTheta = sqrt(u); // equivalent to `sqrt(1.0 - cosTheta*cosTheta)`;
-        phi = 2.0 * MATH_PI * v;
+        cosTheta = sqrt(1.0 - xi.y);
+        sinTheta = sqrt(xi.y); // equivalent to `sqrt(1.0 - cosTheta*cosTheta)`;
+        phi = 2.0 * MATH_PI * xi.x;
 
         pdf = cosTheta / MATH_PI; // evaluation for solid angle, therefore drop the sinTheta
     }
@@ -213,7 +211,7 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
         // Trowbridge-Reitz / GGX microfacet model (Walter et al)
         // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
 
-        MicrofacetDistributionSample ggx = GGX(vec2(u, v), roughness);
+        MicrofacetDistributionSample ggx = GGX(xi, roughness);
         cosTheta = ggx.cosTheta;
         sinTheta = ggx.sinTheta;
         phi = ggx.phi;
@@ -223,9 +221,9 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     {
         // sheen mapping
         float alpha = roughness * roughness;
-        sinTheta = pow(u, alpha / (2.0*alpha + 1.0));
+        sinTheta = pow(xi.y, alpha / (2.0*alpha + 1.0));
         cosTheta = sqrt(1.0 - sinTheta * sinTheta);
-        phi = 2.0 * MATH_PI * v;
+        phi = 2.0 * MATH_PI * xi.x;
     }
 
     // transform the hemisphere sample to the normal coordinate frame
