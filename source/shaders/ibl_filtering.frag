@@ -113,16 +113,36 @@ mat3 generateTBN(vec3 normal)
     return mat3(tangent, bitangent, normal);
 }
 
-// NDF
-float D_GGX(float NdotH, float roughness)
+struct MicrofacetDistributionSample
 {
+    float probability;
+    float cosTheta;
+    float sinTheta;
+    float phi;
+};
+
+float D_GGX(float NdotH, float roughness) {
+    float a = NdotH * roughness;
+    float k = roughness / (1.0 - NdotH * NdotH + a * a);
+    return k * k * (1.0 / MATH_PI);
+}
+
+// GGX microfacet distribution
+// https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+MicrofacetDistributionSample GGX(vec2 xi, float roughness)
+{
+    MicrofacetDistributionSample ggx;
+
+    // evaluate sampling equations
     float alpha = roughness * roughness;
+    ggx.cosTheta = sqrt(1.0 - alpha * alpha * xi.x / (1.0 - xi.x));
+    ggx.sinTheta = alpha * sqrt(xi.x) / (sqrt(1.0 - xi.x) * ggx.cosTheta);
+    ggx.phi = 2.0 * MATH_PI * xi.y;
 
-    float alpha2 = alpha * alpha;
+    // evaluate GGX pdf (for half vector)
+    ggx.probability = D_GGX(ggx.cosTheta, roughness) * ggx.cosTheta; // drop sinTheta as we are evaluating for solid angle
 
-    float divisor = NdotH * NdotH * (alpha2 - 1.0) + 1.0;
-
-    return alpha2 / (MATH_PI * divisor * divisor);
+    return ggx;
 }
 
 // NDF
@@ -152,16 +172,8 @@ float D_Charlie(float sheenRoughness, float NdotH)
 float PDF(vec3 H, vec3 N, float roughness)
 {
     float NdotH = dot(N, H);
-    if(u_distribution == cLambertian)
-    {
-        return max(NdotH * (1.0 / MATH_PI), 0.0);
-    }
-    else if(u_distribution == cGGX)
-    {
-        float D = D_GGX(NdotH, roughness);
-        return max(D, 0.0);
-    }
-    else if(u_distribution == cCharlie)
+
+    if(u_distribution == cCharlie)
     {
         float D = D_Charlie(roughness, NdotH);
         return max(D, 0.0);
@@ -174,9 +186,9 @@ float PDF(vec3 H, vec3 N, float roughness)
 vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 {
     // generate a quasi monte carlo point in the unit square [0.1)^2
-    vec2 hammersleyPoint = hammersley2d(sampleIndex, u_sampleCount);
-    float u = hammersleyPoint.x;
-    float v = hammersleyPoint.y;
+    vec2 xi = hammersley2d(sampleIndex, u_sampleCount);
+    float u = xi.x;
+    float v = xi.y;
 
     // declare importance sample parameters
     float phi = 0.0; // theoretically there could be a distribution that defines phi differently
@@ -198,11 +210,14 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     }
     else if(u_distribution == cGGX)
     {
-        // specular mapping
-        float alpha = roughness * roughness;
-        cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
-        sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-        phi = 2.0 * MATH_PI * v;
+        // Trowbridge-Reitz / GGX microfacet model (Walter et al)
+        // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+
+        MicrofacetDistributionSample ggx = GGX(vec2(u, v), roughness);
+        cosTheta = ggx.cosTheta;
+        sinTheta = ggx.sinTheta;
+        phi = ggx.phi;
+        pdf = ggx.probability;
     }
     else if(u_distribution == cCharlie)
     {
@@ -219,7 +234,7 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     mat3 TBN = generateTBN(N);
     vec3 direction = TBN * localSpaceDirection;
 
-    if(u_distribution == cGGX || u_distribution == cCharlie)
+    if(u_distribution == cCharlie)
     {
         pdf = PDF(direction, N, roughness);
     }
