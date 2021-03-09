@@ -115,7 +115,7 @@ mat3 generateTBN(vec3 normal)
 
 struct MicrofacetDistributionSample
 {
-    float probability;
+    float pdf;
     float cosTheta;
     float sinTheta;
     float phi;
@@ -129,6 +129,7 @@ float D_GGX(float NdotH, float roughness) {
 
 // GGX microfacet distribution
 // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+// This implementation is based on https://bruop.github.io/ibl/ and https://www.tobias-franke.eu/log/2014/03/30/notes_on_importance_sampling.html
 MicrofacetDistributionSample GGX(vec2 xi, float roughness)
 {
     MicrofacetDistributionSample ggx;
@@ -146,7 +147,7 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
     // Typically you'd have the following:
     // float pdf = D_GGX(NoH, roughness) * NoH / (4.0 * VoH);
     // but since V = N => VoH == NoH
-    ggx.probability  = D_GGX(ggx.cosTheta, roughness) / 4.0 + 0.001;
+    ggx.pdf  = D_GGX(ggx.cosTheta, roughness) / 4.0 + 0.001;
 
     return ggx;
 }
@@ -181,7 +182,7 @@ float PDF(vec3 H, vec3 N, float roughness)
 
     if(u_distribution == cCharlie)
     {
-        float D = D_Charlie(roughness, NdotH);
+        float D = D_Charlie(roughness, NdotH) / 4.0 + 0.001;
         return max(D, 0.0);
     }
 
@@ -221,7 +222,7 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
         cosTheta = ggx.cosTheta;
         sinTheta = ggx.sinTheta;
         phi = ggx.phi;
-        pdf = ggx.probability;
+        pdf = ggx.pdf;
     }
     else if(u_distribution == cCharlie)
     {
@@ -314,7 +315,7 @@ vec3 filterColor(vec3 N)
             {
                 if(u_roughness == 0.0)
                 {
-                    // without this the roughness=0 lod is too high (taken from original implementation)
+                    // without this the roughness=0 lod is too high
                     lod = u_lodBias;
                 }
                 vec3 sampleColor = textureLod(uCubeMap, L, lod).rgb;
