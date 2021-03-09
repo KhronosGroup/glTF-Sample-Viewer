@@ -35,6 +35,7 @@ class iblSampler
         this.sheenTextureID = undefined;
 
         this.ggxLutTextureID = undefined;
+        this.charlieLutTextureID = undefined;
 
         this.inputTextureID = undefined;
         this.cubemapTextureID = undefined;
@@ -219,12 +220,13 @@ class iblSampler
 
     filterAll()
     {
-        // this.panoramaToCubeMap();
-        // this.cubeMapToLambertian();
-        // this.cubeMapToGGX();
-        // this.cubeMapToSheen();
+        this.panoramaToCubeMap();
+        this.cubeMapToLambertian();
+        this.cubeMapToGGX();
+        this.cubeMapToSheen();
 
         this.sampleGGXLut();
+        this.sampleCharlieLut();
 
         this.gl.bindFramebuffer(  this.gl.FRAMEBUFFER, null);
     }
@@ -417,6 +419,12 @@ class iblSampler
     {
         this.ggxLutTextureID = this.createLutTexture();
         this.sampleLut(1, this.ggxLutTextureID, this.lutResolution);
+    }
+
+    sampleCharlieLut()
+    {
+        this.charlieLutTextureID = this.createLutTexture();
+        this.sampleLut(2, this.charlieLutTextureID, this.lutResolution);
     }
 
     destroy()

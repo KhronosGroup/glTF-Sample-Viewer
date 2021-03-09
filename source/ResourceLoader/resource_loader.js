@@ -326,25 +326,36 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     if (luts === undefined)
     {
         luts = {
-            lut_ggx_file: "assets/images/lut_ggx.png",
-            lut_charlie_file: "assets/images/lut_charlie.png",
             lut_sheen_E_file: "assets/images/lut_sheen_E.png",
         };
     }
 
-    environment.images.push(new gltfImage(luts.lut_ggx_file, GL.TEXTURE_2D, 0, undefined, undefined, ImageMimeType.PNG));
+    environment.images.push(new gltfImage(
+        undefined, 
+        GL.TEXTURE_2D, 
+        0, 
+        undefined, 
+        undefined, 
+        ImageMimeType.GLTEXTURE, 
+        environmentFiltering.ggxLutTextureID));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
-    environment.lut = new gltfTextureInfo(environment.textures.length - 1);
+    environment.lut = new gltfTextureInfo(environment.textures.length - 1, 0 , true);
     environment.lut.generateMips = false;
 
     // Sheen
     // Charlie
-
-    environment.images.push(new gltfImage(luts.lut_charlie_file, GL.TEXTURE_2D, 0, undefined, undefined, ImageMimeType.PNG));
+    environment.images.push(new gltfImage(
+        undefined, 
+        GL.TEXTURE_2D, 
+        0, 
+        undefined, 
+        undefined, 
+        ImageMimeType.GLTEXTURE, 
+        environmentFiltering.charlieLutTextureID));
     environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
 
-    environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1);
+    environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.sheenLUT.generateMips = false;
 
     // Sheen E LUT
