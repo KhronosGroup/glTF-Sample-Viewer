@@ -140,7 +140,13 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
     ggx.phi = 2.0 * MATH_PI * xi.x;
 
     // evaluate GGX pdf (for half vector)
-    ggx.probability = D_GGX(ggx.cosTheta, roughness) * ggx.cosTheta; // drop sinTheta as we are evaluating for solid angle
+
+    // see https://bruop.github.io/ibl/
+    // Based off https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
+    // Typically you'd have the following:
+    // float pdf = D_GGX(NoH, roughness) * NoH / (4.0 * VoH);
+    // but since V = N => VoH == NoH
+    ggx.probability  = D_GGX(ggx.cosTheta, roughness) / 4.0 + 0.001;
 
     return ggx;
 }
@@ -250,11 +256,18 @@ float V_Ashikhmin(float NdotL, float NdotV)
 // https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-20-gpu-based-importance-sampling
 float computeLod(float pdf)
 {
-    // IBL Baker (Matt Davidson)
-    // https://github.com/derkreature/IBLBaker/blob/65d244546d2e79dd8df18a28efdabcf1f2eb7717/data/shadersD3D11/IblImportanceSamplingDiffuse.fx#L215
-    float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_sampleCount));
-    float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
-    float lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
+    // // IBL Baker (Matt Davidson)
+    // // https://github.com/derkreature/IBLBaker/blob/65d244546d2e79dd8df18a28efdabcf1f2eb7717/data/shadersD3D11/IblImportanceSamplingDiffuse.fx#L215
+    // float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_sampleCount));
+    // float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
+    // float lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
+
+    // Solid angle of current sample -- bigger for less likely samples
+    float omegaS = 1.0 / (float(u_sampleCount) * pdf);
+    // Solid angle of texel
+    float omegaP = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
+    // Mip level is determined by the ratio of our sample's solid angle to a texel's solid angle
+    float lod = max(0.5 * log2(omegaS / omegaP), 0.0);
 
     return lod;
 }
@@ -263,6 +276,7 @@ vec3 filterColor(vec3 N)
 {
     //return  textureLod(uCubeMap, N, 3.0).rgb;
     vec3 color = vec3(0.f);
+    float weight = 0.0f;
 
     for(int i = 0; i < u_sampleCount; ++i)
     {
@@ -304,12 +318,22 @@ vec3 filterColor(vec3 N)
                     lod = u_lodBias;
                 }
                 vec3 sampleColor = textureLod(uCubeMap, L, lod).rgb;
-                color += sampleColor;
+                color += sampleColor * NdotL;
+                weight += NdotL;
             }
         }
     }
 
-    return color.rgb / float(u_sampleCount);
+    if(weight != 0.0f)
+    {
+        color /= weight;
+    }
+    else
+    {
+        color /= float(u_sampleCount);
+    }
+
+    return color.rgb ;
 }
 
 // From the filament docs. Geometric Shadowing function
