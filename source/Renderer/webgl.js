@@ -53,45 +53,20 @@ class gltfWebGl
         }
 
         const image = gltf.images[gltfTex.source];
-        if (image.mimeType === ImageMimeType.KTX2 ||
-            image.mimeType === ImageMimeType.GLTEXTURE)
-        {
-            gltfTex.glTexture = image.image;
-			
-			if (!gltfTex.initialized)
-			{
-				const gltfSampler = gltf.samplers[gltfTex.sampler];
-
-				if (gltfSampler === undefined)
-				{
-					console.warn("Sampler is undefined for texture: " + textureInfo.index);
-					return false;
-				}
-				this.setSampler(gltfSampler, gltfTex.type, textureInfo.generateMips);
-
-				if (textureInfo.generateMips)
-				{
-					// Until this point, images can be assumed to be power of two.
-					switch (gltfSampler.minFilter)
-					{
-					case GL.NEAREST_MIPMAP_NEAREST:
-					case GL.NEAREST_MIPMAP_LINEAR:
-					case GL.LINEAR_MIPMAP_NEAREST:
-					case GL.LINEAR_MIPMAP_LINEAR:
-						this.context.generateMipmap(gltfTex.type);
-						break;
-					default:
-						break;
-					}
-				}
-			}
-			
-            gltfTex.initialized = true;
-        }
 
         if (gltfTex.glTexture === undefined)
         {
-            gltfTex.glTexture = this.context.createTexture();
+            if (image.mimeType === ImageMimeType.KTX2 ||
+                image.mimeType === ImageMimeType.GLTEXTURE)
+            {
+                // these image resources are directly loaded to a GPU resource by resource loader
+                gltfTex.glTexture = image.image;
+            }
+            else
+            {
+                // other images will be uploaded in a later step
+                gltfTex.glTexture = this.context.createTexture();
+            }
         }
 
         this.context.activeTexture(GL.TEXTURE0 + texSlot);
@@ -111,20 +86,25 @@ class gltfWebGl
 
             this.context.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, false);
 
-            if (image === undefined)
+            // upload images that are not directly loaded as GPU resource
+            if (image.mimeType === ImageMimeType.PNG ||
+                image.mimeType === ImageMimeType.JPEG ||
+                image.mimeType === ImageMimeType.HDR)
             {
-                console.warn("Image is undefined for texture: " + gltfTex.source);
-                return false;
+                if (image === undefined)
+                {
+                    console.warn("Image is undefined for texture: " + gltfTex.source);
+                    return false;
+                }
+                // the check `GL.SRGB8_ALPHA8 === undefined` is needed as at the moment node-gles does not define the full format enum
+                const internalformat = (textureInfo.linear || GL.SRGB8_ALPHA8 === undefined) ? GL.RGBA : GL.SRGB8_ALPHA8;
+                this.context.texImage2D(image.type, image.miplevel, internalformat, GL.RGBA, GL.UNSIGNED_BYTE, image.image);
             }
-            // the check `GL.SRGB8_ALPHA8 === undefined` is needed as at the moment node-gles does not define it
-            const internalformat = (textureInfo.linear || GL.SRGB8_ALPHA8 === undefined) ? GL.RGBA : GL.SRGB8_ALPHA8;
-            this.context.texImage2D(image.type, image.miplevel, internalformat, GL.RGBA, GL.UNSIGNED_BYTE, image.image);
 
             this.setSampler(gltfSampler, gltfTex.type, textureInfo.generateMips);
 
             if (textureInfo.generateMips)
             {
-                // Until this point, images can be assumed to be power of two.
                 switch (gltfSampler.minFilter)
                 {
                 case GL.NEAREST_MIPMAP_NEAREST:
