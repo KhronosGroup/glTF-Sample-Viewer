@@ -135,8 +135,8 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
 
     // evaluate sampling equations
     float alpha = roughness * roughness;
-    ggx.cosTheta = sqrt(1.0 - alpha * alpha * xi.y / (1.0 - xi.y));
-    ggx.sinTheta = alpha * sqrt(xi.y) / (sqrt(1.0 - xi.y) * ggx.cosTheta);
+    ggx.cosTheta = sqrt((1.0 - xi.y) / (1.0 + (alpha * alpha - 1.0) * xi.y));
+    ggx.sinTheta = sqrt(1.0 - ggx.cosTheta * ggx.cosTheta);
     ggx.phi = 2.0 * MATH_PI * xi.x;
 
     // evaluate GGX pdf (for half vector)
