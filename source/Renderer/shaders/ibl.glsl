@@ -64,6 +64,9 @@ vec3 getIBLVolumeRefraction(vec3 normal, vec3 viewDirectionW, float perceptualRo
     //thickness = 2000.0; // underground shelter
     thickness = 0.9; // mosquito in amber
 
+    vec3 attenuationColor = vec3(0.9, 0.1, 0.1);
+    float attenuationDistance = 1.0;
+
     vec3 modelScale;
     modelScale.x = length(vec3(modelMatrix[0].xyz));
     modelScale.y = length(vec3(modelMatrix[1].xyz));
@@ -89,7 +92,19 @@ vec3 getIBLVolumeRefraction(vec3 normal, vec3 viewDirectionW, float perceptualRo
 
     vec3 transmittedLight = getTransmissionSample(refractionCoords, perceptualRoughness);
 
-    return (1.0 - specularColor) * transmittedLight * baseColor;
+    vec3 attenuatedColor;
+    if (attenuationDistance == 0.0)
+    {
+        attenuatedColor = transmittedLight;
+    }
+    else
+    {
+        vec3 attenuationCoefficient = -log(attenuationColor) / attenuationDistance;
+        vec3 transmittance = exp(-attenuationCoefficient * transmissionDistance); // Beer's law
+        attenuatedColor = transmittance * transmittedLight;
+    }
+
+    return (1.0 - specularColor) * attenuatedColor * baseColor;
 }
 
 
