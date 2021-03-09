@@ -382,7 +382,7 @@ vec3 LUT(float NdotV, float roughness)
     // The PDF is simply pdf(v, h) -> NDF * <nh>.
     // To parametrize the PDF over l, use the Jacobian transform, yielding to: pdf(v, l) -> NDF * <nh> / 4<vh>
     // Since the BRDF divide through the PDF to be normalized, the 4 can be pulled out of the integral.
-    return vec3(A, B, 2.0 * MATH_PI * C) / float(u_sampleCount);
+    return vec3(4.0 * A, 4.0 * B, 4.0 * 2.0 * MATH_PI * C) / float(u_sampleCount);
 }
 
 
