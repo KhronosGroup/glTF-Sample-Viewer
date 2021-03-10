@@ -129,25 +129,28 @@ float D_GGX(float NdotH, float roughness) {
 
 // GGX microfacet distribution
 // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
-// This implementation is based on https://bruop.github.io/ibl/ and https://www.tobias-franke.eu/log/2014/03/30/notes_on_importance_sampling.html
+// This implementation is based on https://bruop.github.io/ibl/,
+//  https://www.tobias-franke.eu/log/2014/03/30/notes_on_importance_sampling.html
+// and https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
 MicrofacetDistributionSample GGX(vec2 xi, float roughness)
 {
     MicrofacetDistributionSample ggx;
 
     // evaluate sampling equations
     float alpha = roughness * roughness;
-    ggx.cosTheta = sqrt((1.0 - xi.y) / (1.0 + (alpha * alpha - 1.0) * xi.y));
+    ggx.cosTheta = saturate(sqrt((1.0 - xi.y) / (1.0 + (alpha * alpha - 1.0) * xi.y)));
     ggx.sinTheta = sqrt(1.0 - ggx.cosTheta * ggx.cosTheta);
     ggx.phi = 2.0 * MATH_PI * xi.x;
 
     // evaluate GGX pdf (for half vector)
+    ggx.pdf  = D_GGX(ggx.cosTheta, roughness);
 
+    // Apply the Jacobian to obtain a pdf that is parameterized by l
     // see https://bruop.github.io/ibl/
-    // Based off https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
     // Typically you'd have the following:
     // float pdf = D_GGX(NoH, roughness) * NoH / (4.0 * VoH);
     // but since V = N => VoH == NoH
-    ggx.pdf  = D_GGX(ggx.cosTheta, roughness) / 4.0 + 0.001;
+    ggx.pdf /= 4.0;
 
     return ggx;
 }
