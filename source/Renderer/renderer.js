@@ -414,7 +414,6 @@ class gltfRenderer
             this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureCount);
             textureCount++;
 
-            this.webGl.context.uniform2i(this.shader.getUniformLocation("u_ScreenSize"), this.currentWidth, this.currentHeight);
             this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
