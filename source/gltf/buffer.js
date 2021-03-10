@@ -27,7 +27,7 @@ class gltfBuffer extends GltfObject
         return new Promise(function(resolve)
         {
             if (!self.setBufferFromFiles(additionalFiles, resolve) &&
-                !self.sefBufferFromUri(gltf, resolve))
+                !self.setBufferFromUri(gltf, resolve))
             {
                 console.error("Was not able to resolve buffer with uri '%s'", self.uri);
                 resolve();
@@ -35,7 +35,7 @@ class gltfBuffer extends GltfObject
         });
     }
 
-    sefBufferFromUri(gltf, callback)
+    setBufferFromUri(gltf, callback)
     {
         if (this.uri === undefined)
         {
