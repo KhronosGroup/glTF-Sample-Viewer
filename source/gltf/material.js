@@ -460,6 +460,16 @@ class gltfMaterial extends GltfObject
         {
             this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
         }
+
+        if(jsonExtensions.KHR_materials_specular !== undefined)
+        {
+            this.fromJsonSpecular(jsonExtensions.KHR_materials_specular);
+        }
+
+        if(jsonExtensions.KHR_materials_volume !== undefined)
+        {
+            this.fromJsonVolume(jsonExtensions.KHR_materials_volume);
+        }
     }
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
@@ -543,6 +553,33 @@ class gltfMaterial extends GltfObject
             const transmissionTexture = new gltfTextureInfo();
             transmissionTexture.fromJson(jsonTransmission.transmissionTexture);
             this.transmissionTexture = transmissionTexture;
+        }
+    }
+
+    fromJsonSpecular(jsonSpecular)
+    {
+        if(jsonSpecular.specularTexture !== undefined)
+        {
+            const specularTexture = new gltfTextureInfo();
+            specularTexture.fromJson(jsonSpecular.specularTexture);
+            this.specularTexture = specularTexture;
+        }
+
+        if(jsonSpecular.specularTexture !== undefined)
+        {
+            const specularTexture = new gltfTextureInfo();
+            specularTexture.fromJson(jsonSpecular.specularTexture);
+            this.specularTexture = specularTexture;
+        }
+    }
+
+    fromJsonVolume(jsonVolume)
+    {
+        if(jsonVolume.thicknessTexture !== undefined)
+        {
+            const thicknessTexture = new gltfTextureInfo();
+            thicknessTexture.fromJson(jsonVolume.thicknessTexture);
+            this.thicknessTexture = thicknessTexture;
         }
     }
 }
