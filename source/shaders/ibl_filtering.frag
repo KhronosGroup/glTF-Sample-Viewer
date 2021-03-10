@@ -257,20 +257,29 @@ float V_Ashikhmin(float NdotL, float NdotV)
 
 // Mipmap Filtered Samples (GPU Gems 3, 20.4)
 // https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-20-gpu-based-importance-sampling
+// https://cgg.mff.cuni.cz/~jaroslav/papers/2007-sketch-fis/Final_sap_0073.pdf
 float computeLod(float pdf)
 {
-    // // IBL Baker (Matt Davidson)
-    // // https://github.com/derkreature/IBLBaker/blob/65d244546d2e79dd8df18a28efdabcf1f2eb7717/data/shadersD3D11/IblImportanceSamplingDiffuse.fx#L215
-    // float solidAngleTexel = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_sampleCount));
-    // float solidAngleSample = 1.0 / (float(u_sampleCount) * pdf);
-    // float lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
+    // // Solid angle of current sample -- bigger for less likely samples
+    // float omegaS = 1.0 / (float(u_sampleCount) * pdf);
+    // // Solid angle of texel
+    // // note: the factor of 4.0 * MATH_PI 
+    // float omegaP = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
+    // // Mip level is determined by the ratio of our sample's solid angle to a texel's solid angle 
+    // // note that 0.5 * log2 is equivalent to log4
+    // float lod = 0.5 * log2(omegaS / omegaP);
 
-    // Solid angle of current sample -- bigger for less likely samples
-    float omegaS = 1.0 / (float(u_sampleCount) * pdf);
-    // Solid angle of texel
-    float omegaP = 4.0 * MATH_PI / (6.0 * float(u_width) * float(u_width));
-    // Mip level is determined by the ratio of our sample's solid angle to a texel's solid angle
-    float lod = max(0.5 * log2(omegaS / omegaP), 0.0);
+    // babylon introduces a factor of K (=4) to the solid angle ratio
+    // this helps to avoid undersampling the environment map
+    // this does not appear in the original formulation by Jaroslav Krivanek and Mark Colbert
+    // log4(4) == 1
+    // lod += 1.0;
+
+    // We achieved good results by using the original formulation from Krivanek & Colbert adapted to cubemaps
+
+    // https://cgg.mff.cuni.cz/~jaroslav/papers/2007-sketch-fis/Final_sap_0073.pdf
+    float lod = 0.5 * log2( 6.0 * float(u_width) * float(u_width) / (float(u_sampleCount) * pdf));
+
 
     return lod;
 }
