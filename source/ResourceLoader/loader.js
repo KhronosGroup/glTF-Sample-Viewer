@@ -67,12 +67,20 @@ class gltfLoader
     static loadBuffers(gltf, buffers, additionalFiles)
     {
         const promises = [];
-        if (buffers)
+
+        if (buffers !== undefined && buffers[0] !== undefined) //GLB
         {
-            const count = Math.min(buffers.length, gltf.buffers.length);
-            for (let i = 0; i < count; ++i)
+            //There is only one buffer for the glb binary data 
+            //see https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
+            if (buffers.length > 1)
             {
-                gltf.buffers[i].buffer = buffers[i];
+                console.warn("Too many buffer chunks in GLB file. Only one or zero allowed");
+            }
+
+            gltf.buffers[0].buffer = buffers[0];
+            for (let i = 1; i < gltf.buffers.length; ++i)
+            {
+                promises.push(gltf.buffers[i].load(gltf, additionalFiles));
             }
         }
         else
