@@ -351,8 +351,8 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getIBLRadianceGGX(n, v, materialInfo.alphaRoughness, materialInfo.f0);
-    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.alphaRoughness, materialInfo.albedoColor, materialInfo.f0);
+    f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0);
+    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.albedoColor, materialInfo.f0);
 
     #ifdef MATERIAL_CLEARCOAT
         f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
@@ -369,7 +369,7 @@ void main()
     normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
     normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
 
-    f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.alphaRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
+    f_transmission += materialInfo.transmissionFactor * getIBLRadianceTransmission(n, u_Camera - v_Position, normalizedFragCoord, materialInfo.perceptualRoughness, materialInfo.baseColor, materialInfo.f0, materialInfo.f90);
 #endif
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading

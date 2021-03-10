@@ -21,11 +21,11 @@ class iblSampler
         this.gl = view.context;
 
         this.textureSize = 256;
-        this.ggxSampleCount = 2048;
+        this.ggxSampleCount = 1024;
         this.lambertianSampleCount = 2048;
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
-        this.lowestMipLevel = 4;
+        this.lowestMipLevel = 1;
         this.lutResolution = 1024;
 
         this.mipmapCount = undefined;
