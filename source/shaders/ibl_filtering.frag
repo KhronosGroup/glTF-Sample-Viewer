@@ -143,7 +143,7 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
     ggx.phi = 2.0 * MATH_PI * xi.x;
 
     // evaluate GGX pdf (for half vector)
-    ggx.pdf  = D_GGX(ggx.cosTheta, alpha);
+    ggx.pdf = D_GGX(ggx.cosTheta, alpha);
 
     // Apply the Jacobian to obtain a pdf that is parameterized by l
     // see https://bruop.github.io/ibl/
@@ -179,11 +179,7 @@ float D_Charlie(float sheenRoughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * MATH_PI);
 }
 
-// GGX microfacet distribution
-// https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
-// This implementation is based on https://bruop.github.io/ibl/,
-//  https://www.tobias-franke.eu/log/2014/03/30/notes_on_importance_sampling.html
-// and https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
+
 MicrofacetDistributionSample Charlie(vec2 xi, float roughness)
 {
     MicrofacetDistributionSample charlie;
@@ -202,6 +198,22 @@ MicrofacetDistributionSample Charlie(vec2 xi, float roughness)
     return charlie;
 }
 
+MicrofacetDistributionSample Lambertian(vec2 xi, float roughness)
+{
+    MicrofacetDistributionSample lambertian;
+
+    // Cosine weighted hemisphere sampling
+    // http://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#Cosine-WeightedHemisphereSampling
+    lambertian.cosTheta = sqrt(1.0 - xi.y);
+    lambertian.sinTheta = sqrt(xi.y); // equivalent to `sqrt(1.0 - cosTheta*cosTheta)`;
+    lambertian.phi = 2.0 * MATH_PI * xi.x;
+
+    lambertian.pdf = lambertian.cosTheta / MATH_PI; // evaluation for solid angle, therefore drop the sinTheta
+
+    return lambertian;
+}
+
+
 // getImportanceSample returns an importance sample direction with pdf in the .w component
 vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 {
@@ -218,13 +230,11 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     // the distribution (e.g. lambertian uses a cosine importance)
     if(u_distribution == cLambertian)
     {
-        // Cosine weighted hemisphere sampling
-        // http://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#Cosine-WeightedHemisphereSampling
-        cosTheta = sqrt(1.0 - xi.y);
-        sinTheta = sqrt(xi.y); // equivalent to `sqrt(1.0 - cosTheta*cosTheta)`;
-        phi = 2.0 * MATH_PI * xi.x;
-
-        pdf = cosTheta / MATH_PI; // evaluation for solid angle, therefore drop the sinTheta
+        MicrofacetDistributionSample lambertian = Lambertian(xi, roughness);
+        cosTheta = lambertian.cosTheta;
+        sinTheta = lambertian.sinTheta;
+        phi = lambertian.phi;
+        pdf = lambertian.pdf;
     }
     else if(u_distribution == cGGX)
     {
