@@ -143,7 +143,7 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
     ggx.phi = 2.0 * MATH_PI * xi.x;
 
     // evaluate GGX pdf (for half vector)
-    ggx.pdf  = D_GGX(ggx.cosTheta, roughness);
+    ggx.pdf  = D_GGX(ggx.cosTheta, alpha);
 
     // Apply the Jacobian to obtain a pdf that is parameterized by l
     // see https://bruop.github.io/ibl/
@@ -185,7 +185,7 @@ float PDF(vec3 H, vec3 N, float roughness)
 
     if(u_distribution == cCharlie)
     {
-        return D_Charlie(roughness, NdotH) / 4.0 + 0.001; 
+        return D_Charlie(roughness * roughness, NdotH) / 4.0 + 0.001; 
     }
 
     return 0.f;
