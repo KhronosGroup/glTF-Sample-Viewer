@@ -50,6 +50,11 @@ uniform float u_ClearcoatRoughnessFactor;
 // Transmission
 uniform float u_TransmissionFactor;
 
+// Volume
+uniform float u_ThicknessFactor;
+uniform vec3 u_AttenuationColor;
+uniform float u_AttenuationDistance;
+
 // Alpha mode
 uniform float u_AlphaCutoff;
 
@@ -87,6 +92,10 @@ struct MaterialInfo
     float clearcoatRoughness;
 
     float transmissionFactor;
+
+    float thickness;
+    vec3 attenuationColor;
+    float attenuationDistance;
 };
 
 // Get normal, tangent and bitangent vectors.
@@ -248,6 +257,22 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
 }
 #endif
 
+#ifdef MATERIAL_VOLUME
+MaterialInfo getVolumeInfo(MaterialInfo info)
+{
+    info.thickness = u_ThicknessFactor;
+    info.attenuationColor = u_AttenuationColor;
+    info.attenuationDistance = u_AttenuationDistance;
+
+    #ifdef HAS_THICKNESS_MAP
+        vec4 thicknessSample = texture(u_ThicknessSampler, getThicknessUV());
+        info.thickness *= thicknessSample.g;
+    #endif
+
+    return info;
+}
+#endif
+
 MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0_ior)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
@@ -328,6 +353,11 @@ void main()
 #ifdef MATERIAL_TRANSMISSION
     materialInfo = getTransmissionInfo(materialInfo);
 #endif
+
+#ifdef MATERIAL_VOLUME
+    materialInfo = getVolumeInfo(materialInfo);
+#endif
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -368,23 +398,18 @@ void main()
 
 #endif
 
-#if defined(MATERIAL_TRANSMISSION) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
+#if (defined(MATERIAL_TRANSMISSION) || defined(MATERIAL_VOLUME)) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
     vec2 normalizedFragCoord = vec2(0.0,0.0);
     normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
     normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
 
     f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
-        n, 
-        v, 
-        materialInfo.perceptualRoughness, 
-        materialInfo.baseColor, 
-        materialInfo.f0, 
-        materialInfo.f90,
-        v_Position,
-        u_ModelMatrix,
-        u_ViewMatrix,
-        u_ProjectionMatrix
-        );
+        n, v,
+        materialInfo.perceptualRoughness,
+        materialInfo.baseColor, materialInfo.f0, materialInfo.f90,
+        v_Position, u_ModelMatrix, u_ViewMatrix, u_ProjectionMatrix,
+        ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance
+    );
 #endif
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading

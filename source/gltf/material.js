@@ -22,6 +22,7 @@ class gltfMaterial extends GltfObject
         this.hasClearcoat = false;
         this.hasSheen = false;
         this.hasTransmission = false;
+        this.hasVolume = false;
 
         // non gltf properties
         this.type = "unlit";
@@ -72,6 +73,10 @@ class gltfMaterial extends GltfObject
         if (this.hasTransmission && renderingParameters.transmission)
         {
             defines.push("MATERIAL_TRANSMISSION 1");
+        }
+        if (this.hasVolume && renderingParameters.transmission)
+        {
+            defines.push("MATERIAL_VOLUME 1");
         }
 
         return defines;
@@ -385,6 +390,29 @@ class gltfMaterial extends GltfObject
                 }
 
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
+            }
+
+            // KHR Extension: Volume
+            if (this.extensions.KHR_materials_volume !== undefined)
+            {
+                this.hasVolume = true;
+
+                if (this.thicknessTexture !== undefined)
+                {
+                    this.thicknessTexture.samplerName = "u_ThicknessSampler";
+                    this.parseTextureInfoExtensions(this.thicknessTexture, "Thickness");
+                    this.textures.push(this.thicknessTexture);
+                    this.defines.push("HAS_THICKNESS_MAP 1");
+                    this.properties.set("u_ThicknessUVSet", this.thicknessTexture.texCoord);
+                }
+
+                let attenuationColor = jsToGl(this.extensions.KHR_materials_volume.attenuationColor ?? [1.0, 1.0, 1.0]);
+                let attenuationDistance = this.extensions.KHR_materials_volume.attenuationDistance ?? 0.0;
+                let thicknessFactor = this.extensions.KHR_materials_volume.thicknessFactor ?? 0.0;
+
+                this.properties.set("u_AttenuationColor", attenuationColor);
+                this.properties.set("u_AttenuationDistance", attenuationDistance);
+                this.properties.set("u_ThicknessFactor", thicknessFactor);
             }
         }
 

@@ -74,6 +74,11 @@ uniform mat3 u_TransmissionUVTransform;
 uniform sampler2D u_TransmissionFramebufferSampler;
 uniform ivec2 u_TransmissionFramebufferSize;
 
+// Volume Material
+uniform sampler2D u_ThicknessSampler;
+uniform int u_ThicknessUVSet;
+uniform mat3 u_ThicknessUVTransform;
+
 vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
@@ -201,6 +206,15 @@ vec2 getTransmissionUV()
     vec3 uv = vec3(u_TransmissionUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     #ifdef HAS_TRANSMISSION_UV_TRANSFORM
     uv *= u_TransmissionUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getThicknessUV()
+{
+    vec3 uv = vec3(u_ThicknessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_THICKNESS_UV_TRANSFORM
+    uv *= u_ThicknessUVTransform;
     #endif
     return uv.xy;
 }
