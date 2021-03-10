@@ -179,16 +179,27 @@ float D_Charlie(float sheenRoughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * MATH_PI);
 }
 
-float PDF(vec3 H, vec3 N, float roughness)
+// GGX microfacet distribution
+// https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+// This implementation is based on https://bruop.github.io/ibl/,
+//  https://www.tobias-franke.eu/log/2014/03/30/notes_on_importance_sampling.html
+// and https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
+MicrofacetDistributionSample Charlie(vec2 xi, float roughness)
 {
-    float NdotH = saturate(dot(N, H));
+    MicrofacetDistributionSample charlie;
 
-    if(u_distribution == cCharlie)
-    {
-        return D_Charlie(roughness * roughness, NdotH) / 4.0 + 0.001; 
-    }
+    float alpha = roughness * roughness;
+    charlie.sinTheta = pow(xi.y, alpha / (2.0*alpha + 1.0));
+    charlie.cosTheta = sqrt(1.0 - charlie.sinTheta * charlie.sinTheta);
+    charlie.phi = 2.0 * MATH_PI * xi.x;
 
-    return 0.f;
+    // evaluate Charlie pdf (for half vector)
+    charlie.pdf = D_Charlie(alpha, charlie.cosTheta);
+
+    // Apply the Jacobian to obtain a pdf that is parameterized by l
+    charlie.pdf /= 4.0;
+
+    return charlie;
 }
 
 // getImportanceSample returns an importance sample direction with pdf in the .w component
@@ -228,11 +239,11 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     }
     else if(u_distribution == cCharlie)
     {
-        // sheen mapping
-        float alpha = roughness * roughness;
-        sinTheta = pow(xi.y, alpha / (2.0*alpha + 1.0));
-        cosTheta = sqrt(1.0 - sinTheta * sinTheta);
-        phi = 2.0 * MATH_PI * xi.x;
+        MicrofacetDistributionSample charlie = Charlie(xi, roughness);
+        cosTheta = charlie.cosTheta;
+        sinTheta = charlie.sinTheta;
+        phi = charlie.phi;
+        pdf = charlie.pdf;
     }
 
     // transform the hemisphere sample to the normal coordinate frame
@@ -240,11 +251,6 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     vec3 localSpaceDirection = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
     mat3 TBN = generateTBN(N);
     vec3 direction = TBN * localSpaceDirection;
-
-    if(u_distribution == cCharlie)
-    {
-        pdf = PDF(direction, N, roughness);
-    }
 
     return vec4(direction, pdf);
 }
