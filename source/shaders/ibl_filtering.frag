@@ -181,12 +181,11 @@ float D_Charlie(float sheenRoughness, float NdotH)
 
 float PDF(vec3 H, vec3 N, float roughness)
 {
-    float NdotH = dot(N, H);
+    float NdotH = saturate(dot(N, H));
 
     if(u_distribution == cCharlie)
     {
-        float D = D_Charlie(roughness, NdotH) / 4.0 + 0.001;
-        return max(D, 0.0);
+        return D_Charlie(roughness, NdotH) / 4.0 + 0.001; 
     }
 
     return 0.f;
