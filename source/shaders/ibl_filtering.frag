@@ -220,55 +220,36 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     // generate a quasi monte carlo point in the unit square [0.1)^2
     vec2 xi = hammersley2d(sampleIndex, u_sampleCount);
 
-    // declare importance sample parameters
-    float phi = 0.0; // theoretically there could be a distribution that defines phi differently
-    float cosTheta = 0.f;
-    float sinTheta = 0.f;
-    float pdf = 0.0;
+    MicrofacetDistributionSample importanceSample;
 
     // generate the points on the hemisphere with a fitting mapping for
     // the distribution (e.g. lambertian uses a cosine importance)
     if(u_distribution == cLambertian)
     {
-        MicrofacetDistributionSample lambertian = Lambertian(xi, roughness);
-        cosTheta = lambertian.cosTheta;
-        sinTheta = lambertian.sinTheta;
-        phi = lambertian.phi;
-        pdf = lambertian.pdf;
+        importanceSample = Lambertian(xi, roughness);
     }
     else if(u_distribution == cGGX)
     {
         // Trowbridge-Reitz / GGX microfacet model (Walter et al)
         // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
-
-        MicrofacetDistributionSample ggx = GGX(xi, roughness);
-        cosTheta = ggx.cosTheta;
-        sinTheta = ggx.sinTheta;
-        phi = ggx.phi;
-        pdf = ggx.pdf;
+        importanceSample = GGX(xi, roughness);
     }
     else if(u_distribution == cCharlie)
     {
-        MicrofacetDistributionSample charlie = Charlie(xi, roughness);
-        cosTheta = charlie.cosTheta;
-        sinTheta = charlie.sinTheta;
-        phi = charlie.phi;
-        pdf = charlie.pdf;
+        importanceSample = Charlie(xi, roughness);
     }
 
     // transform the hemisphere sample to the normal coordinate frame
     // i.e. rotate the hemisphere to the normal direction
-    vec3 localSpaceDirection = normalize(vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
+    vec3 localSpaceDirection = normalize(vec3(
+        importanceSample.sinTheta * cos(importanceSample.phi), 
+        importanceSample.sinTheta * sin(importanceSample.phi), 
+        importanceSample.cosTheta
+    ));
     mat3 TBN = generateTBN(N);
     vec3 direction = TBN * localSpaceDirection;
 
-    return vec4(direction, pdf);
-}
-
-// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
-float V_Ashikhmin(float NdotL, float NdotV)
-{
-    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
+    return vec4(direction, importanceSample.pdf);
 }
 
 // Mipmap Filtered Samples (GPU Gems 3, 20.4)
@@ -373,6 +354,12 @@ float V_SmithGGXCorrelated(float NoV, float NoL, float roughness) {
     return 0.5 / (GGXV + GGXL);
 }
 
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
+float V_Ashikhmin(float NdotL, float NdotV)
+{
+    return clamp(1.0 / (4.0 * (NdotL + NdotV - NdotL * NdotV)), 0.0, 1.0);
+}
+
 // Compute LUT for GGX distribution.
 // See https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
 vec3 LUT(float NdotV, float roughness)
@@ -395,7 +382,9 @@ vec3 LUT(float NdotV, float roughness)
     for(int i = 0; i < u_sampleCount; ++i)
     {
         // Importance sampling, depending on the distribution.
-        vec3 H = getImportanceSample(i, N, roughness).xyz;
+        vec4 importanceSample = getImportanceSample(i, N, roughness);
+        vec3 H = importanceSample.xyz;
+        // float pdf = importanceSample.w;
         vec3 L = normalize(reflect(-V, H));
 
         float NdotL = saturate(L.z);
@@ -420,7 +409,6 @@ vec3 LUT(float NdotV, float roughness)
             if (u_distribution == cCharlie)
             {
                 // LUT for Charlie distribution.
-
                 float sheenDistribution = D_Charlie(roughness, NdotH);
                 float sheenVisibility = V_Ashikhmin(NdotL, NdotV);
 
