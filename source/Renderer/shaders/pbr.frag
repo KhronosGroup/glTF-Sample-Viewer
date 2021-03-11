@@ -302,12 +302,14 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0
     return info;
 }
 
+#ifdef MATERIAL_IOR
 MaterialInfo getIorInfo(MaterialInfo info)
 {
     info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2.0));
     
     return info;
 }
+#endif
 
 float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
 {
