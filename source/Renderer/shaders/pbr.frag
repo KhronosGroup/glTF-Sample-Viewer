@@ -206,7 +206,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     return info;
 }
 
-MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
+MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 {
     info.metallic = u_MetallicFactor;
     info.perceptualRoughness = u_RoughnessFactor;
@@ -220,7 +220,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
 #endif
 
     // Achromatic f0 based on IOR.
-    vec3 f0 = vec3(f0_ior);
+    vec3 f0 = info.f0;
 
     info.albedoColor = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
     info.f0 = mix(f0, info.baseColor.rgb, info.metallic);
@@ -304,7 +304,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0
 
 MaterialInfo getIorInfo(MaterialInfo info)
 {
-    info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2));
+    info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2.0));
     
     return info;
 }
@@ -339,13 +339,12 @@ void main()
 
     MaterialInfo materialInfo;
     materialInfo.baseColor = baseColor.rgb;
-
+    
     // The default index of refraction of 1.5 yields a dielectric normal incidence reflectance of 0.04.
     float ior = 1.5;
-    materialInfo.f0 = 0.04;
+    materialInfo.f0 = vec3(0.04);
 #ifdef MATERIAL_IOR
     materialInfo = getIorInfo(materialInfo);
-    ior = u_ior;
 #endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
@@ -353,7 +352,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_METALLICROUGHNESS
-    materialInfo = getMetallicRoughnessInfo(materialInfo, materialInfo.f0);
+    materialInfo = getMetallicRoughnessInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_SHEEN
