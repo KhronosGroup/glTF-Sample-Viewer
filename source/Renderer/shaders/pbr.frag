@@ -55,6 +55,9 @@ uniform float u_ThicknessFactor;
 uniform vec3 u_AttenuationColor;
 uniform float u_AttenuationDistance;
 
+//PBR Next IOR
+uniform float u_ior;
+
 // Alpha mode
 uniform float u_AlphaCutoff;
 
@@ -299,6 +302,13 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0
     return info;
 }
 
+MaterialInfo getIorInfo(MaterialInfo info)
+{
+    info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2));
+    
+    return info;
+}
+
 float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
 {
     return texture(u_SheenELUT, vec2(NdotV, sheenRoughnessFactor)).r;
@@ -332,14 +342,18 @@ void main()
 
     // The default index of refraction of 1.5 yields a dielectric normal incidence reflectance of 0.04.
     float ior = 1.5;
-    float f0_ior = 0.04;
+    materialInfo.f0 = 0.04;
+#ifdef MATERIAL_IOR
+    materialInfo = getIorInfo(materialInfo);
+    ior = u_ior;
+#endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
     materialInfo = getSpecularGlossinessInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_METALLICROUGHNESS
-    materialInfo = getMetallicRoughnessInfo(materialInfo, f0_ior);
+    materialInfo = getMetallicRoughnessInfo(materialInfo, materialInfo.f0);
 #endif
 
 #ifdef MATERIAL_SHEEN
@@ -347,7 +361,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    materialInfo = getClearCoatInfo(materialInfo, normalInfo, f0_ior);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo, materialInfo.f0);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
