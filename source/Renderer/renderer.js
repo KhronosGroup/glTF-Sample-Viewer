@@ -536,6 +536,9 @@ class gltfRenderer
         case (GltfState.ToneMaps.ACES):
             fragDefines.push("TONEMAP_ACES 1");
             break;
+        case (GltfState.ToneMaps.ACES_3D_COMMERCE):
+            fragDefines.push("TONEMAP_ACES_3D_COMMERCE 1");
+            break;
         case (GltfState.ToneMaps.NONE):
         default:
             break;
