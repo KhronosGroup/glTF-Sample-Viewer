@@ -25,7 +25,7 @@ class iblSampler
         this.lambertianSampleCount = 2048;
         this.sheenSamplCount = 64;
         this.lodBias = 0.0;
-        this.lowestMipLevel = 1;
+        this.lowestMipLevel = 4;
         this.lutResolution = 1024;
 
         this.mipmapCount = undefined;
