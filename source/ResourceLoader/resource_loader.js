@@ -228,8 +228,8 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     const diffuseTexture = new gltfTexture(
         diffuseCubeSamplerIdx,
         [imageIdx++],
-        GL.TEXTURE_CUBE_MAP,
-        environmentFiltering.lambertianTextureID);
+        GL.TEXTURE_CUBE_MAP);
+    diffuseTexture.initialized = true; // iblsampler has already initialized the texture
 
     environment.textures.push(diffuseTexture);
 
@@ -254,8 +254,8 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     const specularTexture = new gltfTexture(
         specularCubeSamplerIdx,
         [imageIdx++],
-        GL.TEXTURE_CUBE_MAP,
-        environmentFiltering.ggxTextureID);
+        GL.TEXTURE_CUBE_MAP);
+    specularTexture.initialized = true; // iblsampler has already initialized the texture
 
     environment.textures.push(specularTexture);
 
@@ -271,7 +271,7 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
         undefined,
         "Sheen",
         ImageMimeType.GLTEXTURE,
-        environmentFiltering.ggxTextureID
+        environmentFiltering.sheenTextureID
     );
 
     environment.images.push(sheenGltfImage);
@@ -279,8 +279,8 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     const sheenTexture = new gltfTexture(
         sheenCubeSamplerIdx,
         [imageIdx++],
-        GL.TEXTURE_CUBE_MAP,
-        environmentFiltering.sheenTextureID);
+        GL.TEXTURE_CUBE_MAP);
+    sheenTexture.initialized = true; // iblsampler has already initialized the texture
 
     environment.textures.push(sheenTexture);
 
@@ -338,7 +338,9 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
         undefined, 
         ImageMimeType.GLTEXTURE, 
         environmentFiltering.ggxLutTextureID));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
+    const lutTexture = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
+    lutTexture.initialized = true; // iblsampler has already initialized the texture
+    environment.textures.push(lutTexture);
 
     environment.lut = new gltfTextureInfo(environment.textures.length - 1, 0 , true);
     environment.lut.generateMips = false;
@@ -353,7 +355,9 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
         undefined, 
         ImageMimeType.GLTEXTURE, 
         environmentFiltering.charlieLutTextureID));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
+    const charlieLut = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
+    charlieLut.initialized = true; // iblsampler has already initialized the texture
+    environment.textures.push(charlieLut);
 
     environment.sheenLUT = new gltfTextureInfo(environment.textures.length - 1, 0, true);
     environment.sheenLUT.generateMips = false;
@@ -361,7 +365,9 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     // Sheen E LUT
 
     environment.images.push(new gltfImage(luts.lut_sheen_E_file, GL.TEXTURE_2D, 0, undefined, undefined, ImageMimeType.PNG));
-    environment.textures.push(new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D));
+    const sheenELut = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
+    sheenELut.initialized = true; // iblsampler has already initialized the texture
+    environment.textures.push(sheenELut);
 
     environment.sheenELUT = new gltfTextureInfo(environment.textures.length - 1);
     environment.sheenELUT.generateMips = false;
