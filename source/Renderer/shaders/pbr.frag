@@ -386,7 +386,7 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0);
-    f_diffuse += getIBLRadianceLambertian(n, materialInfo.albedoColor);
+    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.albedoColor, materialInfo.f0);
 
     #ifdef MATERIAL_CLEARCOAT
         f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
