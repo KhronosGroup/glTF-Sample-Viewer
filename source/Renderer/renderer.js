@@ -530,11 +530,11 @@ class gltfRenderer
 
         switch (state.renderingParameters.toneMap)
         {
-        case (GltfState.ToneMaps.ACES_FAST):
-            fragDefines.push("TONEMAP_ACES_FAST 1");
+        case (GltfState.ToneMaps.ACES_NARKOWICZ):
+            fragDefines.push("TONEMAP_ACES_NARKOWICZ 1");
             break;
-        case (GltfState.ToneMaps.ACES):
-            fragDefines.push("TONEMAP_ACES 1");
+        case (GltfState.ToneMaps.ACES_HILL):
+            fragDefines.push("TONEMAP_ACES_HILL 1");
             break;
         case (GltfState.ToneMaps.ACES_3D_COMMERCE):
             fragDefines.push("TONEMAP_ACES_3D_COMMERCE 1");

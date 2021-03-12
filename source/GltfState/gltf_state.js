@@ -84,12 +84,12 @@ class GltfState
 GltfState.ToneMaps = {
     /** don't apply tone mapping */
     NONE: "None",
-    /** fast implementation of the ACES sRGB RRT+ODT */
-    ACES_FAST: "ACES fast",
-    /** more accurate implementation of the ACES sRGB RRT+ODT */
-    ACES: "ACES",
-    /** aces implementation with an exposure factor of 1.0 / 0.6 */
-    ACES_3D_COMMERCE: "ACES 3D Commerce"
+    /** ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6 */
+    ACES_3D_COMMERCE: "ACES Filmic Tone Mapping (3D Commerce)",
+    /** fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation*/
+    ACES_NARKOWICZ: "ACES Filmic Tone Mapping (Narkowicz)",
+    /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
+    ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
 };
 
 /**

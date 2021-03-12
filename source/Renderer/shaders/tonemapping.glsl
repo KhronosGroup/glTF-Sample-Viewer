@@ -58,6 +58,7 @@ vec3 RRTAndODTFit(vec3 color)
     vec3 b = color * (0.983729 * color + 0.4329510) + 0.238081;
     return a / b;
 }
+// tone mapping 
 vec3 toneMapACES_Hill(vec3 color)
 {
     color = ACESInputMat * color;
@@ -77,16 +78,18 @@ vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
-#ifdef TONEMAP_ACES_FAST
+#ifdef TONEMAP_ACES_NARKOWICZ
     color = toneMapACES_Narkowicz(color);
 #endif
 
-#ifdef TONEMAP_ACES
+#ifdef TONEMAP_ACES_HILL
     color = toneMapACES_Hill(color);
 #endif
 
 #ifdef TONEMAP_ACES_3D_COMMERCE
     // boost exposure as discussed in https://github.com/mrdoob/three.js/pull/19621
+    // this factor is based on the exposure correction of Krzysztof Narkowicz in his
+    // implemetation of ACES tone mapping
     color /= 0.6;
 
     color = toneMapACES_Hill(color);
