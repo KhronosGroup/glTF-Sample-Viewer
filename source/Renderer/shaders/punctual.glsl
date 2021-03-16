@@ -65,7 +65,7 @@ vec3 getLighIntensity(Light light, vec3 pointToLight)
 }
 
 vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness,
-        vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor)
+        vec3 f0, vec3 f90, vec3 baseColor)
 {
     vec3 n = normalize(normal);           // Outward direction of surface point
     vec3 v = normalize(view);             // Direction from surface point to view
@@ -75,11 +75,10 @@ vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, 
 
     float D = D_GGX(clamp(dot(n, h), 0.0, 1.0), alphaRoughness);
     vec3 F = F_Schlick(f0, f90, clamp(dot(v, h), 0.0, 1.0));
-    float T = transmissionPercentage;
     float Vis = V_GGX(clamp(dot(n, l_mirror), 0.0, 1.0), clamp(dot(n, v), 0.0, 1.0), alphaRoughness);
 
     // Transmission BTDF
-    return (1.0 - F) * T * baseColor * D * Vis;
+    return (1.0 - F) * baseColor * D * Vis;
 }
 
 vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, float VdotH, vec3 f0, vec3 f90, float clearcoatRoughness)
