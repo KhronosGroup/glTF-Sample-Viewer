@@ -82,7 +82,7 @@ vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 base
 
     // Project refracted vector on the framebuffer, while mapping to normalized device coordinates.
     vec4 ndcPos = projMatrix * viewPos;
-    vec2 refractionCoords = ndcPos.xy / ndcPos.z;
+    vec2 refractionCoords = ndcPos.xy / ndcPos.w;
     refractionCoords += 1.0;
     refractionCoords /= 2.0;
 
