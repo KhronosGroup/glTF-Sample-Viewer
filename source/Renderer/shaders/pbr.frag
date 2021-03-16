@@ -427,26 +427,15 @@ void main()
     {
         Light light = u_Lights[i];
 
-        vec3 pointToLight = -light.direction;
-        float rangeAttenuation = 1.0;
-        float spotAttenuation = 1.0;
-
+        vec3 pointToLight;
         if(light.type != LightType_Directional)
         {
             pointToLight = light.position - v_Position;
         }
-
-        // Compute range and spot light attenuation.
-        if (light.type != LightType_Directional)
+        else
         {
-            rangeAttenuation = getRangeAttenuation(light.range, length(pointToLight));
+            pointToLight = -light.direction;
         }
-        if (light.type == LightType_Spot)
-        {
-            spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
-        }
-
-        vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
 
         vec3 l = normalize(pointToLight);   // Direction from surface point to light
         vec3 h = normalize(l + v);          // Direction of the vector between l and v, called halfway vector
@@ -460,6 +449,7 @@ void main()
         {
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+            vec3 intensity = getLighIntensity(light, pointToLight);
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
 
@@ -476,6 +466,7 @@ void main()
         }
 
         #ifdef MATERIAL_TRANSMISSION
+            vec3 intensity = getLighIntensity(light, pointToLight);
             f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor);
         #endif
     }

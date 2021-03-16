@@ -47,6 +47,23 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     return 0.0;
 }
 
+vec3 getLighIntensity(Light light, vec3 pointToLight)
+{
+    float rangeAttenuation = 1.0;
+    float spotAttenuation = 1.0;
+
+    if (light.type != LightType_Directional)
+    {
+        rangeAttenuation = getRangeAttenuation(light.range, length(pointToLight));
+    }
+    if (light.type == LightType_Spot)
+    {
+        spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
+    }
+
+    return rangeAttenuation * spotAttenuation * light.intensity * light.color;
+}
+
 vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness,
         vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor)
 {
