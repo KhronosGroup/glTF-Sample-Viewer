@@ -94,3 +94,35 @@ vec3 getPunctualRadianceSheen(vec3 sheenColor, float sheenRoughness, float NdotL
 {
     return NdotL * BRDF_specularSheen(sheenColor, sheenRoughness, NdotL, NdotV, NdotH);
 }
+
+// Compute attenuated light as it travels through a volume.
+vec3 getVolumeAttenuatedLight(float transmissionDistance, vec3 light, vec3 attenuationColor, float attenuationDistance)
+{
+    if (attenuationDistance == 0.0)
+    {
+        // Attenuation distance is +∞ (which we indicate by zero), i.e. the transmitted color is not attenuated at all.
+        return light;
+    }
+    else
+    {
+        // Compute light attenuation using Beer's law.
+        vec3 attenuationCoefficient = -log(attenuationColor) / attenuationDistance;
+        vec3 transmittance = exp(-attenuationCoefficient * transmissionDistance); // Beer's law
+        return transmittance * light;
+    }
+}
+
+vec3 getVolumeTransmissionRay(vec3 n, vec3 v, float thickness, float ior, mat4 modelMatrix)
+{
+    // Direction of refracted light.
+    vec3 refractionVector = refract(-v, normalize(n), 1.0 / ior);
+
+    // Compute rotation-independant scaling of the model matrix.
+    vec3 modelScale;
+    modelScale.x = length(vec3(modelMatrix[0].xyz));
+    modelScale.y = length(vec3(modelMatrix[1].xyz));
+    modelScale.z = length(vec3(modelMatrix[2].xyz));
+
+    // The thickness is specified in local space.
+    return normalize(refractionVector) * thickness * modelScale;
+}
