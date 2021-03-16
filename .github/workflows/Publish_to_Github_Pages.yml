@@ -1,0 +1,26 @@
+name: Deploy to github pages
+on: 
+  push:
+    branches: [develop, feature/githubPage]
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.1
+
+      - name: Install and Build
+        run: |
+          cd app_web
+          npm install
+          npm run build
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          branch: main
+          folder: app_web/dist/
+          token: ${{ secrets.BUILD_GITHUB_PAGES }}
+          repository-name: ux3d/gltf-sample-viewer-builds
+          target-folder: build
