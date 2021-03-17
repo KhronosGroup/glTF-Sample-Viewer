@@ -477,7 +477,7 @@ void main()
             vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.baseColor);
 
             #ifdef MATERIAL_VOLUME
-                transmittedLight = getVolumeAttenuatedLight(length(transmissionRay), transmittedLight, materialInfo.attenuationColor, materialInfo.attenuationDistance);
+                transmittedLight = getVolumeAttenuatedLight(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
             #endif
 
             f_transmission += materialInfo.transmissionFactor * transmittedLight;

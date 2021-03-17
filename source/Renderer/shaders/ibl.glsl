@@ -76,7 +76,7 @@ vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 base
     // Sample framebuffer to get pixel the refracted ray hits.
     vec3 transmittedLight = getTransmissionSample(refractionCoords, perceptualRoughness);
 
-    vec3 attenuatedColor = getVolumeAttenuatedLight(length(transmissionRay), transmittedLight, attenuationColor, attenuationDistance);
+    vec3 attenuatedColor = getVolumeAttenuatedLight(transmittedLight, length(transmissionRay), attenuationColor, attenuationDistance);
 
     // Sample GGX LUT to get the specular component.
     float NdotV = clampedDot(n, v);

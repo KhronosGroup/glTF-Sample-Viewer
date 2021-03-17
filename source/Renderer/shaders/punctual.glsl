@@ -95,19 +95,19 @@ vec3 getPunctualRadianceSheen(vec3 sheenColor, float sheenRoughness, float NdotL
 }
 
 // Compute attenuated light as it travels through a volume.
-vec3 getVolumeAttenuatedLight(float transmissionDistance, vec3 light, vec3 attenuationColor, float attenuationDistance)
+vec3 getVolumeAttenuatedLight(vec3 occludedRadiance, float transmissionDistance, vec3 attenuationColor, float attenuationDistance)
 {
     if (attenuationDistance == 0.0)
     {
         // Attenuation distance is +∞ (which we indicate by zero), i.e. the transmitted color is not attenuated at all.
-        return light;
+        return occludedRadiance;
     }
     else
     {
         // Compute light attenuation using Beer's law.
         vec3 attenuationCoefficient = -log(attenuationColor) / attenuationDistance;
         vec3 transmittance = exp(-attenuationCoefficient * transmissionDistance); // Beer's law
-        return transmittance * light;
+        return transmittance * occludedRadiance;
     }
 }
 
