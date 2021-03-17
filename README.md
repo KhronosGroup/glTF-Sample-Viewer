@@ -67,7 +67,7 @@ This will create a new `gltf-viewer.js` and `gltf-viewer.module.js` in the `dist
 API
 ----
 
-glTF Sample Viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools).
+glTF Sample Viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools)).
 
 The API consists of several components that in combination allow flexible configuration of the gltf viewer.
 
@@ -116,7 +116,7 @@ state.gltf = await resourceLoader.loadGltf("path/to/some.gltf");
 Web App
 -------
 
-You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](https://github.com/ux3d/glTF-Sample-Viewer/tree/develop/app_web). A live demo can be found at [gltf.ux3d.io](https://gltf.ux3d.io).
+You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](https://github.com/ux3d/glTF-Sample-Viewer/tree/develop/app_web). A live demo can be found at [gltf.ux3d.io](https://ux3d.github.io/gltf-sample-viewer-builds/).
 
 Render Fidelity Tools
 -----------------------------
