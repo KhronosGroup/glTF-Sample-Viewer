@@ -73,6 +73,7 @@ uniform mat4 u_ProjectionMatrix;
 
 struct MaterialInfo
 {
+    float ior;
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
     vec3 f0;                        // full reflectance color (n incidence angle)
 
@@ -306,6 +307,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0
 MaterialInfo getIorInfo(MaterialInfo info)
 {
     info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2.0));
+    info.ior = u_ior;
     
     return info;
 }
@@ -343,7 +345,7 @@ void main()
     materialInfo.baseColor = baseColor.rgb;
     
     // The default index of refraction of 1.5 yields a dielectric normal incidence reflectance of 0.04.
-    float ior = 1.5;
+    materialInfo.ior = 1.5;
     materialInfo.f0 = vec3(0.04);
 #ifdef MATERIAL_IOR
     materialInfo = getIorInfo(materialInfo);
@@ -423,7 +425,7 @@ void main()
         materialInfo.perceptualRoughness,
         materialInfo.baseColor, materialInfo.f0, materialInfo.f90,
         v_Position, u_ModelMatrix, u_ViewMatrix, u_ProjectionMatrix,
-        ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance
+        materialInfo.ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance
     );
 #endif
     float ao = 1.0;
@@ -491,7 +493,7 @@ void main()
         }
 
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor);
+            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor, materialInfo.ior);
         #endif
     }
 #endif // !USE_PUNCTUAL

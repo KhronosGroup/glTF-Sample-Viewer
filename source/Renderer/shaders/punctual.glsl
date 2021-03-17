@@ -48,18 +48,20 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
 }
 
 vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness,
-        vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor)
+        vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor, float ior)
 {
+    float transmissionRougness = applyIorToRoughness(alphaRoughness, ior);
+
     vec3 n = normalize(normal);           // Outward direction of surface point
     vec3 v = normalize(view);             // Direction from surface point to view
     vec3 l = normalize(pointToLight);
     vec3 l_mirror = normalize(l + 2.0*n*dot(-l, n));     // Mirror light reflection vector on surface
     vec3 h = normalize(l_mirror + v);            // Halfway vector between transmission light vector and v
 
-    float D = D_GGX(clamp(dot(n, h), 0.0, 1.0), alphaRoughness);
+    float D = D_GGX(clamp(dot(n, h), 0.0, 1.0), transmissionRougness);
     vec3 F = F_Schlick(f0, f90, clamp(dot(v, h), 0.0, 1.0));
     float T = transmissionPercentage;
-    float Vis = V_GGX(clamp(dot(n, l_mirror), 0.0, 1.0), clamp(dot(n, v), 0.0, 1.0), alphaRoughness);
+    float Vis = V_GGX(clamp(dot(n, l_mirror), 0.0, 1.0), clamp(dot(n, v), 0.0, 1.0), transmissionRougness);
 
     // Transmission BTDF
     return (1.0 - F) * T * baseColor * D * Vis;
