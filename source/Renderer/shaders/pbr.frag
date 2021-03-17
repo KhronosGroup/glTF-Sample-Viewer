@@ -266,7 +266,7 @@ MaterialInfo getVolumeInfo(MaterialInfo info)
 
     #ifdef HAS_THICKNESS_MAP
         vec4 thicknessSample = texture(u_ThicknessSampler, getThicknessUV());
-        info.thickness *= thicknessSample.x;
+        info.thickness *= thicknessSample.g;
     #endif
 
     return info;
