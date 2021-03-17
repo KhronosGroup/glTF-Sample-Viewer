@@ -4,7 +4,7 @@ on:
     branches: [develop, feature/githubPage]
       
 jobs:
-  build-and-deploy:
+  build-and-deploy-to-gtihub-pages:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,6 +18,15 @@ jobs:
           cd app_web
           npm install
           npm run build
+          
+      - name: Check build size
+        #1GB = 1073741824 bytes
+        run: |
+          SIZE = $(du -s -B 1 app_web/dist | cut -f 1)
+          if [[ $SIZE -gt 1073741824]]; then
+             echo 'dist folder exceeds limit of 1GB! Aborting'
+             exit 1
+          fi
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.0
@@ -26,4 +35,4 @@ jobs:
           folder: app_web/dist/
           token: ${{ secrets.BUILD_GITHUB_PAGES }}
           repository-name: ux3d/gltf-sample-viewer-builds
-          target-folder: build
+          target-folder: docs
