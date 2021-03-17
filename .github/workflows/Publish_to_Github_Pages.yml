@@ -22,7 +22,7 @@ jobs:
       - name: Check build size
         #1GB = 1073741824 bytes
         run: |
-          SIZE = $(du -s -B 1 app_web/dist | cut -f 1)
+          SIZE=$(du -s -B 1 app_web/dist/ | cut -f 1)
           if [[ $SIZE -gt 1073741824]]; then
              echo 'dist folder exceeds limit of 1GB! Aborting'
              exit 1
