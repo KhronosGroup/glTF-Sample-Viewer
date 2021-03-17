@@ -4,14 +4,14 @@ import { GltfObject } from './gltf_object.js';
 
 class gltfTexture extends GltfObject
 {
-    constructor(sampler = undefined, source = undefined, type = GL.TEXTURE_2D, texture = undefined)
+    constructor(sampler = undefined, source = undefined, type = GL.TEXTURE_2D)
     {
         super();
         this.sampler = sampler; // index to gltfSampler, default sampler ?
         this.source = source; // index to gltfImage
 
         // non gltf
-        this.glTexture = texture;
+        this.glTexture = undefined;
         this.type = type;
         this.initialized = false;
         this.mipLevelCount = 0;

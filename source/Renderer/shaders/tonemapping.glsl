@@ -40,7 +40,7 @@ vec4 sRGBToLinear(vec4 srgbIn)
 
 // ACES tone map (faster approximation)
 // see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
-vec3 toneMapACESFast(vec3 color)
+vec3 toneMapACES_Narkowicz(vec3 color)
 {
     const float A = 2.51;
     const float B = 0.03;
@@ -58,8 +58,8 @@ vec3 RRTAndODTFit(vec3 color)
     vec3 b = color * (0.983729 * color + 0.4329510) + 0.238081;
     return a / b;
 }
-
-vec3 toneMapACES(vec3 color)
+// tone mapping 
+vec3 toneMapACES_Hill(vec3 color)
 {
     color = ACESInputMat * color;
 
@@ -71,19 +71,28 @@ vec3 toneMapACES(vec3 color)
     // Clamp to [0, 1]
     color = clamp(color, 0.0, 1.0);
 
-    return color * 1.8;
+    return color;
 }
 
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
-#ifdef TONEMAP_ACES_FAST
-    return linearTosRGB(toneMapACESFast(color));
+#ifdef TONEMAP_ACES_NARKOWICZ
+    color = toneMapACES_Narkowicz(color);
 #endif
 
-#ifdef TONEMAP_ACES
-    return linearTosRGB(toneMapACES(color));
+#ifdef TONEMAP_ACES_HILL
+    color = toneMapACES_Hill(color);
+#endif
+
+#ifdef TONEMAP_ACES_3D_COMMERCE
+    // boost exposure as discussed in https://github.com/mrdoob/three.js/pull/19621
+    // this factor is based on the exposure correction of Krzysztof Narkowicz in his
+    // implemetation of ACES tone mapping
+    color /= 0.6;
+
+    color = toneMapACES_Hill(color);
 #endif
 
     return linearTosRGB(color);

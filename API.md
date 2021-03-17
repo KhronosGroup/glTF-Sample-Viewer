@@ -129,8 +129,9 @@ GltfState containing a state for visualization in GltfView
     * _static_
         * [.ToneMaps](#GltfState.ToneMaps)
             * [.NONE](#GltfState.ToneMaps.NONE)
-            * [.ACES_FAST](#GltfState.ToneMaps.ACES_FAST)
-            * [.ACES](#GltfState.ToneMaps.ACES)
+            * [.ACES_3D_COMMERCE](#GltfState.ToneMaps.ACES_3D_COMMERCE)
+            * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
+            * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
         * [.DebugOutput](#GltfState.DebugOutput)
             * [.NONE](#GltfState.DebugOutput.NONE)
             * [.METALLIC](#GltfState.DebugOutput.METALLIC)
@@ -333,8 +334,9 @@ by gltf sample viewer
 
 * [.ToneMaps](#GltfState.ToneMaps)
     * [.NONE](#GltfState.ToneMaps.NONE)
-    * [.ACES_FAST](#GltfState.ToneMaps.ACES_FAST)
-    * [.ACES](#GltfState.ToneMaps.ACES)
+    * [.ACES_3D_COMMERCE](#GltfState.ToneMaps.ACES_3D_COMMERCE)
+    * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
+    * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
 
 <a name="GltfState.ToneMaps.NONE"></a>
 
@@ -342,16 +344,22 @@ by gltf sample viewer
 don't apply tone mapping
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
-<a name="GltfState.ToneMaps.ACES_FAST"></a>
+<a name="GltfState.ToneMaps.ACES_3D_COMMERCE"></a>
 
-#### ToneMaps.ACES\_FAST
-fast implementation of the ACES sRGB RRT+ODT
+#### ToneMaps.ACES\_3D\_COMMERCE
+ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
-<a name="GltfState.ToneMaps.ACES"></a>
+<a name="GltfState.ToneMaps.ACES_NARKOWICZ"></a>
 
-#### ToneMaps.ACES
-more accurate implementation of the ACES sRGB RRT+ODT
+#### ToneMaps.ACES\_NARKOWICZ
+fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
+<a name="GltfState.ToneMaps.ACES_HILL"></a>
+
+#### ToneMaps.ACES\_HILL
+more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.DebugOutput"></a>

@@ -1,6 +1,6 @@
 {
   "name": "@khronosgroup/gltf-viewer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The official glTF sample viewer.",
   "main": "dist/gltf-viewer.js",
   "module": "dist/gltf-viewer.module.js",
