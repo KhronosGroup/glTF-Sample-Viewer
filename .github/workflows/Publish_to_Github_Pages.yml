@@ -1,7 +1,7 @@
 name: Deploy to github pages
 on: 
   push:
-    branches: [develop]
+    branches: [develop, feature/githubPage]
       
 jobs:
   build-and-deploy-to-gtihub-pages:
@@ -26,6 +26,7 @@ jobs:
           if [[ $SIZE -gt 1073741824 ]]; then echo 'dist folder exceeds limit of 1GB! Aborting'; exit 1; fi
                   
       - name: Deploy to Khronos repo
+        continue-on-error: true #If no changes are commited this action fails
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
           branch: main
@@ -35,6 +36,7 @@ jobs:
           target-folder: docs
 
       - name: Deploy to UX3D repo
+        continue-on-error: true #If no changes are commited this action fails
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
           branch: main
