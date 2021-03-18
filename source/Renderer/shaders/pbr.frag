@@ -47,6 +47,10 @@ uniform vec3 u_SheenColorFactor;
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
+// Specular
+uniform vec3 u_SpecularColorFactor;
+uniform float u_SpecularFactor;
+
 // Transmission
 uniform float u_TransmissionFactor;
 
@@ -90,6 +94,9 @@ struct MaterialInfo
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
+
+    vec3 specularColor;
+    float specular;
 
     float transmissionFactor;
 
@@ -243,6 +250,34 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     return info;
 }
 
+#ifdef MATERIAL_SPECULAR
+MaterialInfo getSpecularInfo(MaterialInfo info)
+{
+    info.specularColor = u_SpecularColorFactor;
+    info.specular = u_SpecularFactor;
+    
+    vec4 specularTexture = vec4(1.0);
+    #ifdef HAS_SPECULAR_MAP
+        specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
+    #endif
+    #ifdef HAS_SPECULAR_COLOR_MAP
+        specularTexture.a = texture(u_SpecularSampler, getSpecularUV()).a;
+    #endif
+
+    info.specularColor *= specularTexture.rgb;
+    info.specular *= specularTexture.a;
+
+    vec3 dielectricSpecularF0 = info.f0 * info.specularColor * info.specular;
+    float dielectricSpecularF90 = info.specular;
+
+    info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
+    info.f90 = vec3(mix(dielectricSpecularF90, 1.0, info.metallic));
+    info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
+
+    return info;
+}
+#endif
+
 #ifdef MATERIAL_TRANSMISSION
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
@@ -348,6 +383,10 @@ void main()
 
 #ifdef MATERIAL_CLEARCOAT
     materialInfo = getClearCoatInfo(materialInfo, normalInfo, f0_ior);
+#endif
+
+#ifdef MATERIAL_SPECULAR
+    materialInfo = getSpecularInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
