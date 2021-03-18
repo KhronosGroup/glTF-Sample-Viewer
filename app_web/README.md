@@ -1,15 +1,15 @@
 glTF Sample Viewer Web App
 ==============================
 
-[![](../assets/images/BoomBox.jpg)](http://gltf.ux3d.io/)
+[![](../assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer-Release/)
 
-This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
+This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/)
 
 
 Viewer
 ======
 
-Link to the live [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/).
+Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/).
 
 Usage
 -----
