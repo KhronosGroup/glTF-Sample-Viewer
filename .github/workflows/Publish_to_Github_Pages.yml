@@ -1,7 +1,7 @@
 name: Deploy to github pages
 on: 
   push:
-    branches: [develop, feature/githubPage]
+    branches: [develop]
       
 jobs:
   build-and-deploy-to-gtihub-pages:
