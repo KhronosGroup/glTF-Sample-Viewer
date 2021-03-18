@@ -49,7 +49,7 @@ uniform float u_ClearcoatRoughnessFactor;
 
 // Specular
 uniform vec3 u_SpecularColorFactor;
-uniform float u_SpecularFactor;
+uniform float u_SpecularFactor2;
 
 // Transmission
 uniform float u_TransmissionFactor;
@@ -254,7 +254,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
 MaterialInfo getSpecularInfo(MaterialInfo info)
 {
     info.specularColor = u_SpecularColorFactor;
-    info.specular = u_SpecularFactor;
+    info.specular = u_SpecularFactor2;
     
     vec4 specularTexture = vec4(1.0);
     #ifdef HAS_SPECULAR_MAP
