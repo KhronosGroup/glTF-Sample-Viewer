@@ -1,7 +1,7 @@
 name: Deploy to github pages
 on: 
   push:
-    branches: [develop]
+    branches: [develop, feature/githubPage]
       
 jobs:
   build-and-deploy-to-gtihub-pages:
@@ -24,8 +24,17 @@ jobs:
         run: |
           SIZE=$(du -s -B 1 app_web/dist/ | cut -f 1)
           if [[ $SIZE -gt 1073741824 ]]; then echo 'dist folder exceeds limit of 1GB! Aborting'; exit 1; fi
+                  
+      - name: Deploy to Khronos repo
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          branch: main
+          folder: app_web/dist/
+          token: ${{ secrets.BUILD_GITHUB_PAGES }}
+          repository-name: KhronosGroup/glTF-Sample-Viewer-Release
+          target-folder: docs
 
-      - name: Deploy
+      - name: Deploy to UX3D repo
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
           branch: main
