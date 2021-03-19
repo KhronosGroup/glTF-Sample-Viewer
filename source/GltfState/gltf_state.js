@@ -45,8 +45,12 @@ class GltfState
             sheen: true,
             /** KHR_materials_transmission */
             transmission: true,
-            /** KHR_materials_ior  */
+            /** KHR_materials_ior makes the index of refraction configurable */
             ior: true,
+            enabledExtensions: {
+                /** KHR_materials_specular allows configuring specular color (f0 color) and amount of specular reflection */
+                KHR_materials_specular: true,
+            },
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
             /** exposure factor */

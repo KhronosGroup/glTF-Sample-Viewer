@@ -83,6 +83,10 @@ class gltfMaterial extends GltfObject
         {
             defines.push("MATERIAL_IOR 1");
         }
+        if(this.hasSpecular && renderingParameters.enabledExtensions.KHR_materials_specular)
+        {
+            defines.push("MATERIAL_SPECULAR 1");
+        }
 
         return defines;
     }
