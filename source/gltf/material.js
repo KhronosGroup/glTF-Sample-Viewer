@@ -22,6 +22,7 @@ class gltfMaterial extends GltfObject
         this.hasClearcoat = false;
         this.hasSheen = false;
         this.hasTransmission = false;
+        this.hasIOR = false;
         this.hasVolume = false;
 
         // non gltf properties
@@ -77,6 +78,10 @@ class gltfMaterial extends GltfObject
         if (this.hasVolume && renderingParameters.transmission)
         {
             defines.push("MATERIAL_VOLUME 1");
+        }
+        if(this.hasIOR && renderingParameters.ior)
+        {
+            defines.push("MATERIAL_IOR 1");
         }
 
         return defines;
@@ -420,6 +425,22 @@ class gltfMaterial extends GltfObject
                 }
 
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
+            }
+
+            // KHR Extension: IOR
+            //https://github.com/DassaultSystemes-Technology/glTF/tree/KHR_materials_ior/extensions/2.0/Khronos/KHR_materials_ior
+            if (this.extensions.KHR_materials_ior !== undefined)
+            {
+                let ior = 1.5;
+
+                this.hasIOR = true;
+                
+                if(this.extensions.KHR_materials_ior.ior !== undefined)
+                {
+                    ior = this.extensions.KHR_materials_ior.ior;
+                }
+
+                this.properties.set("u_ior", ior);
             }
 
             // KHR Extension: Volume

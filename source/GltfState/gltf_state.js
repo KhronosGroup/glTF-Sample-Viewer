@@ -45,6 +45,8 @@ class GltfState
             sheen: true,
             /** KHR_materials_transmission */
             transmission: true,
+            /** KHR_materials_ior  */
+            ior: true,
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
             /** exposure factor */
@@ -69,7 +71,9 @@ class GltfState
              * -X = 180 
              * -Z = 270
              */
-            environmentRotation: 90.0
+            environmentRotation: 90.0,
+            /** If this is set to true, directional lights will be generated if IBL is disabled */
+            useDirectionalLightsWithDisabledIBL: false
         };
 
         // retain a reference to the view with which the state was created, so that it can be validated
