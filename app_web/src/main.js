@@ -15,6 +15,7 @@ async function main()
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
+    state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();

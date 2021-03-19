@@ -25,6 +25,8 @@ class gltfLight extends GltfObject
         this.name = name;
         // non gltf
         this.node = node;
+        //Can be used to overwrite direction from node
+        this.direction = undefined;
     }
 
     initGl(gltf, webGlContext)
@@ -93,6 +95,11 @@ class gltfLight extends GltfObject
             var translation = vec3.fromValues(0, 0, 0);
             mat4.getTranslation(translation, matrix);
             uLight.position = translation;
+        }
+
+        if (this.direction !== undefined)
+        {
+            uLight.direction = this.direction;
         }
 
         uLight.range = this.range;

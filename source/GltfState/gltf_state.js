@@ -69,7 +69,9 @@ class GltfState
              * -X = 180 
              * -Z = 270
              */
-            environmentRotation: 90.0
+            environmentRotation: 90.0,
+            /** If this is set to true, directional lights will be generated if IBL is disabled */
+            useDirectionalLightsWithDisabledIBL: false
         };
 
         // retain a reference to the view with which the state was created, so that it can be validated

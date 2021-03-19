@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3 } from 'gl-matrix';
+import { mat4, mat3, vec3, quat } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
@@ -15,6 +15,7 @@ import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
+import { gltfLight } from '../gltf/light.js';
 
 class gltfRenderer
 {
@@ -63,6 +64,24 @@ class gltfRenderer
         this.viewProjectionMatrix = mat4.create();
 
         this.currentCameraPosition = vec3.create();
+
+        this.lightKey = new gltfLight();
+        this.lightFill = new gltfLight();
+        this.lightFill.intensity = 0.5;
+        const quatKey = quat.fromValues(
+            -0.3535534,
+            -0.353553385,
+            -0.146446586,
+            0.8535534);
+        const quatFill = quat.fromValues(
+            -0.8535534,
+            0.146446645,
+            -0.353553325,
+            -0.353553444);
+        this.lightKey.direction = vec3.create();
+        this.lightFill.direction = vec3.create();
+        vec3.transformQuat(this.lightKey.direction, [0, 0, -1], quatKey);
+        vec3.transformQuat(this.lightFill.direction, [0, 0, -1], quatFill);
 
         this.init();
 
@@ -169,6 +188,12 @@ class gltfRenderer
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
         this.visibleLights = this.getVisibleLights(state.gltf, scene);
+        if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
+            state.renderingParameters.useDirectionalLightsWithDisabledIBL)
+        {
+            this.visibleLights.push(this.lightKey);
+            this.visibleLights.push(this.lightFill);
+        }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
