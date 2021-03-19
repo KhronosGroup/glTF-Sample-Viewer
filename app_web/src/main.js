@@ -182,6 +182,15 @@ async function main()
     uiModel.transmissionEnabled.subscribe( transmissionEnabled => {
         state.renderingParameters.transmission = transmissionEnabled;
     });
+    uiModel.volumeEnabled.subscribe( volumeEnabled => {
+        state.renderingParameters.volume = volumeEnabled;
+    });
+    uiModel.iorEnabled.subscribe( iorEnabled => {
+        state.renderingParameters.ior = iorEnabled;
+    });
+    uiModel.specularEnabled.subscribe( specularEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
+    });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;

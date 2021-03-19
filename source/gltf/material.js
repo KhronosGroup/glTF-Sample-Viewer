@@ -75,7 +75,7 @@ class gltfMaterial extends GltfObject
         {
             defines.push("MATERIAL_TRANSMISSION 1");
         }
-        if (this.hasVolume && renderingParameters.transmission)
+        if (this.hasVolume && renderingParameters.volume)
         {
             defines.push("MATERIAL_VOLUME 1");
         }

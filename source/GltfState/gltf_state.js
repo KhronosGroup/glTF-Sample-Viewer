@@ -45,6 +45,8 @@ class GltfState
             sheen: true,
             /** KHR_materials_transmission */
             transmission: true,
+            /** KHR_materials_transmission */
+            volume: true,
             /** KHR_materials_ior makes the index of refraction configurable */
             ior: true,
             enabledExtensions: {
