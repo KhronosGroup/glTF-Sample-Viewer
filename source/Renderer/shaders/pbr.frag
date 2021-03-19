@@ -486,7 +486,7 @@ void main()
         #ifdef MATERIAL_TRANSMISSION
             // If the light ray travels through the geometry, use the point it exits the geometry again.
             // That will change the angle to the light source, if the material refracts the light ray.
-            vec3 transmissionRay = getVolumeTransmissionRay(n, v, materialInfo.thickness, ior, u_ModelMatrix);
+            vec3 transmissionRay = getVolumeTransmissionRay(n, v, materialInfo.thickness, materialInfo.ior, u_ModelMatrix);
             pointToLight -= transmissionRay;
             l = normalize(pointToLight);
 
