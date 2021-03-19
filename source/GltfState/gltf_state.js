@@ -39,17 +39,18 @@ class GltfState
             morphing: true,
             /** skin / skeleton */
             skinning: true,
-            /** KHR_materials_clearcoat */
-            clearcoat: true,
-            /** KHR_materials_sheen */
-            sheen: true,
-            /** KHR_materials_transmission */
-            transmission: true,
-            /** KHR_materials_transmission */
-            volume: true,
-            /** KHR_materials_ior makes the index of refraction configurable */
-            ior: true,
+
             enabledExtensions: {
+                /** KHR_materials_clearcoat */
+                KHR_materials_clearcoat: true,
+                /** KHR_materials_sheen */
+                KHR_materials_sheen: true,
+                /** KHR_materials_transmission */
+                KHR_materials_transmission: true,
+                /** KHR_materials_volume */
+                KHR_materials_volume: true,
+                /** KHR_materials_ior makes the index of refraction configurable */
+                KHR_materials_ior: true,
                 /** KHR_materials_specular allows configuring specular color (f0 color) and amount of specular reflection */
                 KHR_materials_specular: true,
             },

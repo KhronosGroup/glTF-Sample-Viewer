@@ -432,7 +432,7 @@ class gltfRenderer
         }
 
         if(transmissionSampleTexture !== undefined && (state.renderingParameters.useIBL || state.renderingParameters.usePunctual)
-                    && state.environment && state.renderingParameters.transmission)
+                    && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
         {
             this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
