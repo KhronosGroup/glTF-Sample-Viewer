@@ -114,9 +114,6 @@ GltfState containing a state for visualization in GltfView
         * [.renderingParameters](#GltfState+renderingParameters)
             * [.morphing](#GltfState+renderingParameters.morphing)
             * [.skinning](#GltfState+renderingParameters.skinning)
-            * [.clearcoat](#GltfState+renderingParameters.clearcoat)
-            * [.sheen](#GltfState+renderingParameters.sheen)
-            * [.transmission](#GltfState+renderingParameters.transmission)
             * [.clearColor](#GltfState+renderingParameters.clearColor)
             * [.exposure](#GltfState+renderingParameters.exposure)
             * [.usePunctual](#GltfState+renderingParameters.usePunctual)
@@ -126,6 +123,7 @@ GltfState containing a state for visualization in GltfView
             * [.toneMap](#GltfState+renderingParameters.toneMap)
             * [.debugOutput](#GltfState+renderingParameters.debugOutput)
             * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+            * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
     * _static_
         * [.ToneMaps](#GltfState.ToneMaps)
             * [.NONE](#GltfState.ToneMaps.NONE)
@@ -222,9 +220,6 @@ parameters used to configure the rendering
 * [.renderingParameters](#GltfState+renderingParameters)
     * [.morphing](#GltfState+renderingParameters.morphing)
     * [.skinning](#GltfState+renderingParameters.skinning)
-    * [.clearcoat](#GltfState+renderingParameters.clearcoat)
-    * [.sheen](#GltfState+renderingParameters.sheen)
-    * [.transmission](#GltfState+renderingParameters.transmission)
     * [.clearColor](#GltfState+renderingParameters.clearColor)
     * [.exposure](#GltfState+renderingParameters.exposure)
     * [.usePunctual](#GltfState+renderingParameters.usePunctual)
@@ -234,6 +229,7 @@ parameters used to configure the rendering
     * [.toneMap](#GltfState+renderingParameters.toneMap)
     * [.debugOutput](#GltfState+renderingParameters.debugOutput)
     * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+    * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
 
 <a name="GltfState+renderingParameters.morphing"></a>
 
@@ -245,24 +241,6 @@ morphing between vertices
 
 #### renderingParameters.skinning
 skin / skeleton
-
-**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
-<a name="GltfState+renderingParameters.clearcoat"></a>
-
-#### renderingParameters.clearcoat
-KHR_materials_clearcoat
-
-**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
-<a name="GltfState+renderingParameters.sheen"></a>
-
-#### renderingParameters.sheen
-KHR_materials_sheen
-
-**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
-<a name="GltfState+renderingParameters.transmission"></a>
-
-#### renderingParameters.transmission
-KHR_materials_transmission
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState+renderingParameters.clearColor"></a>
@@ -322,6 +300,12 @@ Front faces:
 +Z = 90 
 -X = 180 
 -Z = 270
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL"></a>
+
+#### renderingParameters.useDirectionalLightsWithDisabledIBL
+If this is set to true, directional lights will be generated if IBL is disabled
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState.ToneMaps"></a>
