@@ -47,6 +47,10 @@ uniform vec3 u_SheenColorFactor;
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
+// Specular
+uniform vec3 u_KHR_materials_specular_specularColorFactor;
+uniform float u_KHR_materials_specular_specularFactor;
+
 // Transmission
 uniform float u_TransmissionFactor;
 
@@ -94,6 +98,9 @@ struct MaterialInfo
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
+
+    vec3 specularColor;
+    float specular;
 
     float transmissionFactor;
 
@@ -247,6 +254,27 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     return info;
 }
 
+#ifdef MATERIAL_SPECULAR
+MaterialInfo getSpecularInfo(MaterialInfo info)
+{   
+    vec4 specularTexture = vec4(1.0);
+    #ifdef HAS_SPECULAR_MAP
+        specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
+    #endif
+    #ifdef HAS_SPECULAR_COLOR_MAP
+        specularTexture.a = texture(u_SpecularSampler, getSpecularUV()).a;
+    #endif
+
+    vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0)) *
+                        u_KHR_materials_specular_specularFactor * specularTexture.a;
+
+    info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
+    info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
+
+    return info;
+}
+#endif
+
 #ifdef MATERIAL_TRANSMISSION
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
@@ -367,6 +395,10 @@ void main()
     materialInfo = getClearCoatInfo(materialInfo, normalInfo);
 #endif
 
+#ifdef MATERIAL_SPECULAR
+    materialInfo = getSpecularInfo(materialInfo);
+#endif
+
 #ifdef MATERIAL_TRANSMISSION
     materialInfo = getTransmissionInfo(materialInfo);
 #endif
@@ -386,7 +418,7 @@ void main()
     float reflectance = max(max(materialInfo.f0.r, materialInfo.f0.g), materialInfo.f0.b);
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
-    materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
+    materialInfo.f90 = vec3(1.0f);
 
     materialInfo.n = n;
 
