@@ -318,9 +318,12 @@ function getUrlParam(parameter, defaultvalue){
                         <button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .gltf</button>
                     </b-field>
                     <b-field label="Disable extensions" class="subtitle">
-                        <b-switch class="smallerLabel" v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">Clearcoat</b-switch>
-                        <b-switch class="smallerLabel" v-model="sheenEnabled" v-stream:input="sheenChanged$">Sheen</b-switch>
-                        <b-switch class="smallerLabel" v-model="transmissionEnabled" v-stream:input="transmissionChanged$">Transmission</b-switch>
+                        <b-switch class="smallerLabel" v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">KHR_materials_clearcoat</b-switch>
+                        <b-switch class="smallerLabel" v-model="sheenEnabled" v-stream:input="sheenChanged$">KHR_materials_sheen</b-switch>
+                        <b-switch class="smallerLabel" v-model="transmissionEnabled" v-stream:input="transmissionChanged$" @input="transmissionTriggered">KHR_materials_transmission</b-switch>
+                        <b-switch class="smallerLabel" v-bind:disabled="transmissionEnabled === false ? true : false" v-model="volumeEnabled">KHR_materials_volume</b-switch>
+                        <b-switch class="smallerLabel" v-model="iorEnabled">KHR_materials_ior</b-switch>
+                        <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular</b-switch>
                     </b-field>
                     <b-field label="Statistics" class="subtitle">
                         <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false"></json-to-ui-template>

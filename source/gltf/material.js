@@ -63,23 +63,23 @@ class gltfMaterial extends GltfObject
     {
         const defines = Array.from(this.defines);
 
-        if (this.hasClearcoat && renderingParameters.clearcoat)
+        if (this.hasClearcoat && renderingParameters.enabledExtensions.KHR_materials_clearcoat)
         {
             defines.push("MATERIAL_CLEARCOAT 1");
         }
-        if (this.hasSheen && renderingParameters.sheen)
+        if (this.hasSheen && renderingParameters.enabledExtensions.KHR_materials_sheen)
         {
             defines.push("MATERIAL_SHEEN 1");
         }
-        if (this.hasTransmission && renderingParameters.transmission)
+        if (this.hasTransmission && renderingParameters.enabledExtensions.KHR_materials_transmission)
         {
             defines.push("MATERIAL_TRANSMISSION 1");
         }
-        if (this.hasVolume && renderingParameters.transmission)
+        if (this.hasVolume && renderingParameters.enabledExtensions.KHR_materials_volume)
         {
             defines.push("MATERIAL_VOLUME 1");
         }
-        if(this.hasIOR && renderingParameters.ior)
+        if(this.hasIOR && renderingParameters.enabledExtensions.KHR_materials_ior)
         {
             defines.push("MATERIAL_IOR 1");
         }

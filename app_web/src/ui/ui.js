@@ -86,13 +86,18 @@ const app = new Vue({
             clearcoatEnabled: true,
             sheenEnabled: true,
             transmissionEnabled: true,
+            volumeEnabled: true,
+            iorEnabled: true,
+            specularEnabled: true,
 
             activeTab: 0,
             loadingComponent: {},
             showDropDownOverlay: false,
             uploadedHDR: undefined,
-            // this is a helper to reset the ui when image based lighting is reenabled
+
+            // these are handls for certain ui change related things
             environmentVisiblePrefState: true,
+            volumeEnabledPrefState: true,
         };
     },
     mounted: function()
@@ -116,6 +121,17 @@ const app = new Vue({
             }
             else{
                 this.renderEnv = this.environmentVisiblePrefState;
+            }
+        },
+        transmissionTriggered: function(value)
+        {
+            if(this.transmissionEnabled == false)
+            {
+                this.volumeEnabledPrefState = this.volumeEnabled;
+                this.volumeEnabled = false;
+            }
+            else{
+                this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
         warn(message) {
