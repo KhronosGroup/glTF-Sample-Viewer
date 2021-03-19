@@ -45,6 +45,8 @@ class GltfState
             sheen: true,
             /** KHR_materials_transmission */
             transmission: true,
+            /** KHR_materials_ior  */
+            ior: true,
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
             /** exposure factor */
