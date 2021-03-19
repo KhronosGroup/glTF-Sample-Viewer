@@ -256,10 +256,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
 
 #ifdef MATERIAL_SPECULAR
 MaterialInfo getSpecularInfo(MaterialInfo info)
-{
-    info.specularColor = u_SpecularColorFactor;
-    info.specular = u_SpecularFactor2;
-    
+{   
     vec4 specularTexture = vec4(1.0);
     #ifdef HAS_SPECULAR_MAP
         specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
@@ -268,14 +265,10 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
         specularTexture.a = texture(u_SpecularSampler, getSpecularUV()).a;
     #endif
 
-    info.specularColor *= specularTexture.rgb;
-    info.specular *= specularTexture.a;
-
-    vec3 dielectricSpecularF0 = info.f0 * info.specularColor * info.specular;
-    float dielectricSpecularF90 = info.specular;
+    vec3 dielectricSpecularF0 = min(info.f0 * u_SpecularColorFactor * specularTexture.rgb, vec3(1.0)) *
+                        u_SpecularFactor2 * specularTexture.a;
 
     info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
-    info.f90 = vec3(mix(dielectricSpecularF90, 1.0, info.metallic));
     info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
 
     return info;
@@ -425,7 +418,7 @@ void main()
     float reflectance = max(max(materialInfo.f0.r, materialInfo.f0.g), materialInfo.f0.b);
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
-    materialInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
+    materialInfo.f90 = vec3(1.0f);
 
     materialInfo.n = n;
 
