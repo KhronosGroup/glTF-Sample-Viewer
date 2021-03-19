@@ -404,8 +404,8 @@ class gltfMaterial extends GltfObject
                 let specularColorFactor = jsToGl(this.extensions.KHR_materials_specular.specularColorFactor ?? [1.0, 1.0, 1.0]);
                 let specularFactor = this.extensions.KHR_materials_specular.specularFactor ?? 1.0;
 
-                this.properties.set("u_SpecularColorFactor", specularColorFactor);
-                this.properties.set("u_SpecularFactor", specularFactor);
+                this.properties.set("u_KHR_materials_specular_specularColorFactor", specularColorFactor);
+                this.properties.set("u_KHR_materials_specular_specularFactor", specularFactor);
             }
 
             // KHR Extension: Transmission
