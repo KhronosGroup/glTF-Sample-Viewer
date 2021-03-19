@@ -48,8 +48,8 @@ uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
 // Specular
-uniform vec3 u_SpecularColorFactor;
-uniform float u_SpecularFactor2;
+uniform vec3 u_KHR_materials_specular_specularColorFactor;
+uniform float u_KHR_materials_specular_specularFactor;
 
 // Transmission
 uniform float u_TransmissionFactor;
@@ -265,8 +265,8 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
         specularTexture.a = texture(u_SpecularSampler, getSpecularUV()).a;
     #endif
 
-    vec3 dielectricSpecularF0 = min(info.f0 * u_SpecularColorFactor * specularTexture.rgb, vec3(1.0)) *
-                        u_SpecularFactor2 * specularTexture.a;
+    vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0)) *
+                        u_KHR_materials_specular_specularFactor * specularTexture.a;
 
     info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
     info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
