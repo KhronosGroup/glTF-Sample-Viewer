@@ -33,7 +33,7 @@
     "path": "^0.12.7",
     "rxjs": "^6.6.3",
     "simple-dropzone": "^0.8.0",
-    "vue": "^2.6.11",
+    "vue": "^2.6.12",
     "vue-rx": "^6.2.0"
   },
   "devDependencies": {
@@ -46,6 +46,11 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-scss": "^2.6.1",
+    "@vue/compiler-sfc": "^3.0.7",
+    "@rollup/plugin-replace": "^2.4.1",
+    "rollup-plugin-vue": "^6.0.0",
+    "vue": "^2.6.12",
+    "vue-template-compiler": "^2.6.12",
     "sass": "^1.32.8",
     "serve": "^11.3.0"
   },

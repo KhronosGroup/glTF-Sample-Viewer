@@ -4,6 +4,9 @@ import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
 import commonjs from 'rollup-plugin-commonjs';
 import copy from 'rollup-plugin-copy'
+import vue from 'rollup-plugin-vue'
+
+const replace = require('@rollup/plugin-replace')
 
 export default {
   input: 'src/main.js',
@@ -41,6 +44,10 @@ export default {
         ],
         copyOnce: true,
         verbose: true
+    }),
+    vue({compileTemplate: true}),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify( 'production' )
     })
   ]
 };
