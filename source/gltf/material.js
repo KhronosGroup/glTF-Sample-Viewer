@@ -374,6 +374,36 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_SheenColorFactor", sheenColorFactor);
             }
 
+            // KHR Extension: Specular
+            if (this.extensions.KHR_materials_specular !== undefined)
+            {
+                this.hasSpecular = true;
+
+                if (this.specularTexture !== undefined)
+                {
+                    this.specularTexture.samplerName = "u_SpecularSampler";
+                    this.parseTextureInfoExtensions(this.specularTexture, "Specular");
+                    this.textures.push(this.specularTexture);
+                    this.defines.push("HAS_SPECULAR_MAP 1");
+                    this.properties.set("u_SpecularUVSet", this.specularTexture.texCoord);
+                }
+
+                if (this.specularColorTexture !== undefined)
+                {
+                    this.specularColorTexture.samplerName = "u_SpecularColorSampler";
+                    this.parseTextureInfoExtensions(this.specularColorTexture, "SpecularColor");
+                    this.textures.push(this.specularColorTexture);
+                    this.defines.push("HAS_SPECULAR_COLOR_MAP 1");
+                    this.properties.set("u_SpecularColorUVSet", this.specularColorTexture.texCoord);
+                }
+
+                let specularColorFactor = jsToGl(this.extensions.KHR_materials_specular.specularColorFactor ?? [1.0, 1.0, 1.0]);
+                let specularFactor = this.extensions.KHR_materials_specular.specularFactor ?? 1.0;
+
+                this.properties.set("u_SpecularColorFactor", specularColorFactor);
+                this.properties.set("u_SpecularFactor", specularFactor);
+            }
+
             // KHR Extension: Transmission
             if (this.extensions.KHR_materials_transmission !== undefined)
             {
