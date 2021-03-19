@@ -71,6 +71,12 @@ class UIModel
         this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
         this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
         this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
+        this.volumeEnabled = app.$watchAsObservable('volumeEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
+        this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
+        this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
