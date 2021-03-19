@@ -46,44 +46,19 @@ vec3 getTransmissionSample(vec2 fragCoord, float roughness, float ior)
 vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 baseColor, vec3 f0, vec3 f90,
     vec3 position, mat4 modelMatrix, mat4 viewMatrix, mat4 projMatrix, float ior, float thickness, vec3 attenuationColor, float attenuationDistance)
 {
-    // Direction of refracted light.
-    vec3 refractionVector = refract(-v, normalize(n), 1.0 / ior);
-
-    // Compute rotation-independant scaling of the model matrix.
-    vec3 modelScale;
-    modelScale.x = length(vec3(modelMatrix[0].xyz));
-    modelScale.y = length(vec3(modelMatrix[1].xyz));
-    modelScale.z = length(vec3(modelMatrix[2].xyz));
-
-    // Point where the refracted light is assumed to exit the geometry again.
-    // The thickness is specified in local space.
-    vec3 refractedRayExit = position + normalize(refractionVector) * thickness * modelScale;
-    float transmissionDistance = thickness * length(modelScale);
-
-    vec4 viewPos = viewMatrix * vec4(refractedRayExit, 1.0);
+    vec3 transmissionRay = getVolumeTransmissionRay(n, v, thickness, ior, modelMatrix);
+    vec3 refractedRayExit = position + transmissionRay;
 
     // Project refracted vector on the framebuffer, while mapping to normalized device coordinates.
-    vec4 ndcPos = projMatrix * viewPos;
-    vec2 refractionCoords = ndcPos.xy / ndcPos.z;
+    vec4 ndcPos = projMatrix * viewMatrix * vec4(refractedRayExit, 1.0);
+    vec2 refractionCoords = ndcPos.xy / ndcPos.w;
     refractionCoords += 1.0;
     refractionCoords /= 2.0;
 
     // Sample framebuffer to get pixel the refracted ray hits.
     vec3 transmittedLight = getTransmissionSample(refractionCoords, perceptualRoughness, ior);
 
-    vec3 attenuatedColor;
-    if (attenuationDistance == 0.0)
-    {
-        // Attenuation distance is +∞ (which we indicate by zero), i.e. the transmitted color is not attenuated at all.
-        attenuatedColor = transmittedLight;
-    }
-    else
-    {
-        // Compute light attenuation using Beer's law.
-        vec3 attenuationCoefficient = -log(attenuationColor) / attenuationDistance;
-        vec3 transmittance = exp(-attenuationCoefficient * transmissionDistance);
-        attenuatedColor = transmittance * transmittedLight;
-    }
+    vec3 attenuatedColor = applyVolumeAttenuation(transmittedLight, length(transmissionRay), attenuationColor, attenuationDistance);
 
     // Sample GGX LUT to get the specular component.
     float NdotV = clampedDot(n, v);

@@ -444,27 +444,17 @@ void main()
     {
         Light light = u_Lights[i];
 
-        vec3 pointToLight = -light.direction;
-        float rangeAttenuation = 1.0;
-        float spotAttenuation = 1.0;
-
+        vec3 pointToLight;
         if(light.type != LightType_Directional)
         {
             pointToLight = light.position - v_Position;
         }
-
-        // Compute range and spot light attenuation.
-        if (light.type != LightType_Directional)
+        else
         {
-            rangeAttenuation = getRangeAttenuation(light.range, length(pointToLight));
-        }
-        if (light.type == LightType_Spot)
-        {
-            spotAttenuation = getSpotAttenuation(pointToLight, light.direction, light.outerConeCos, light.innerConeCos);
+            pointToLight = -light.direction;
         }
 
-        vec3 intensity = rangeAttenuation * spotAttenuation * light.intensity * light.color;
-
+        // BRDF = BDTF + BSTF:
         vec3 l = normalize(pointToLight);   // Direction from surface point to light
         vec3 h = normalize(l + v);          // Direction of the vector between l and v, called halfway vector
         float NdotL = clampedDot(n, l);
@@ -472,11 +462,11 @@ void main()
         float NdotH = clampedDot(n, h);
         float LdotH = clampedDot(l, h);
         float VdotH = clampedDot(v, h);
-
         if (NdotL > 0.0 || NdotV > 0.0)
         {
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+            vec3 intensity = getLighIntensity(light, pointToLight);
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, VdotH, NdotL, NdotV, NdotH);
 
@@ -492,8 +482,22 @@ void main()
             #endif
         }
 
+        // BDTF:
         #ifdef MATERIAL_TRANSMISSION
-            f_transmission += intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor, materialInfo.ior);
+            // If the light ray travels through the geometry, use the point it exits the geometry again.
+            // That will change the angle to the light source, if the material refracts the light ray.
+            vec3 transmissionRay = getVolumeTransmissionRay(n, v, materialInfo.thickness, ior, u_ModelMatrix);
+            pointToLight -= transmissionRay;
+            l = normalize(pointToLight);
+
+            vec3 intensity = getLighIntensity(light, pointToLight);
+            vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor, materialInfo.ior);
+
+            #ifdef MATERIAL_VOLUME
+                transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
+            #endif
+
+            f_transmission += materialInfo.transmissionFactor * transmittedLight;
         #endif
     }
 #endif // !USE_PUNCTUAL
