@@ -2,6 +2,7 @@ import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
+import commonjs from 'rollup-plugin-commonjs';
 import copy from 'rollup-plugin-copy'
 import alias from '@rollup/plugin-alias'
 
@@ -19,6 +20,9 @@ export default {
     }
   ],
   plugins: [
+    commonjs({
+
+    }),
     glslify({
         include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
         compress: false
