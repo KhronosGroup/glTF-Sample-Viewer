@@ -105,6 +105,16 @@ const app = new Vue({
         // remove input class from color picker (added by default by buefy)
         const colorPicker = document.getElementById("clearColorPicker");
         colorPicker.classList.remove("input");
+
+        // test if webgl is present
+        const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
+        if (context === undefined || context === null) {
+            this.$buefy.dialog.alert({
+                title: 'No Webgl found',
+                message: 'your browser/OS/drivers do not support WebGL2',
+                canCancel: false
+            });
+        }
     },
     methods:
     {
