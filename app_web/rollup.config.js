@@ -2,9 +2,8 @@ import glslify from 'rollup-plugin-glslify';
 import resolve from 'rollup-plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
-import commonjs from 'rollup-plugin-commonjs';
 import copy from 'rollup-plugin-copy'
-import vue from 'rollup-plugin-vue'
+import alias from '@rollup/plugin-alias'
 
 const replace = require('@rollup/plugin-replace')
 
@@ -20,9 +19,6 @@ export default {
     }
   ],
   plugins: [
-    commonjs({
-
-    }),
     glslify({
         include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
         compress: false
@@ -45,9 +41,11 @@ export default {
         copyOnce: true,
         verbose: true
     }),
-    vue({compileTemplate: true}),
     replace({
       'process.env.NODE_ENV': JSON.stringify( 'production' )
-    })
+    }),
+    alias({
+      'vue': 'vue/dist/vue.esm.js'
+    }),
   ]
 };
