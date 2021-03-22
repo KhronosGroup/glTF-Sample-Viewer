@@ -111,7 +111,7 @@ const app = new Vue({
         if (context === undefined || context === null) {
             this.$buefy.dialog.alert({
                 title: 'No Webgl found',
-                message: 'your browser/OS/drivers do not support WebGL2',
+                message: 'Your browser/OS/drivers do not support WebGL2',
                 canCancel: false
             });
         }
