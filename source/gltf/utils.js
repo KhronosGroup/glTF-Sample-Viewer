@@ -1,49 +1,38 @@
 import { glMatrix } from 'gl-matrix';
 
-function jsToGl(array)
-{
+function jsToGl(array) {
     let tensor = new glMatrix.ARRAY_TYPE(array.length);
 
-    for (let i = 0; i < array.length; ++i)
-    {
+    for (let i = 0; i < array.length; ++i) {
         tensor[i] = array[i];
     }
 
     return tensor;
 }
 
-function jsToGlSlice(array, offset, stride)
-{
+function jsToGlSlice(array, offset, stride) {
     let tensor = new glMatrix.ARRAY_TYPE(stride);
 
-    for (let i = 0; i < stride; ++i)
-    {
+    for (let i = 0; i < stride; ++i) {
         tensor[i] = array[offset + i];
     }
 
     return tensor;
 }
 
-function initGlForMembers(gltfObj, gltf, webGlContext)
-{
-    for (const name of Object.keys(gltfObj))
-    {
+function initGlForMembers(gltfObj, gltf, webGlContext) {
+    for (const name of Object.keys(gltfObj)) {
         const member = gltfObj[name];
 
-        if (member === undefined)
-        {
+        if (member === undefined) {
             continue;
         }
-        if (member.initGl !== undefined)
-        {
+        if (member.initGl !== undefined) {
             member.initGl(gltf, webGlContext);
         }
-        if (Array.isArray(member))
-        {
-            for (const element of member)
-            {
-                if (element !== null && element !== undefined && element.initGl !== undefined)
-                {
+        if (Array.isArray(member)) {
+            for (const element of member) {
+                if (element !== null && element !== undefined && element.initGl !== undefined) {
                     element.initGl(gltf, webGlContext);
                 }
             }
@@ -51,120 +40,95 @@ function initGlForMembers(gltfObj, gltf, webGlContext)
     }
 }
 
-function objectsFromJsons(jsonObjects, GltfType)
-{
-    if (jsonObjects === undefined)
-    {
+function objectsFromJsons(jsonObjects, GltfType) {
+    if (jsonObjects === undefined) {
         return [];
     }
 
     const objects = [];
-    for (const jsonObject of jsonObjects)
-    {
+    for (const jsonObject of jsonObjects) {
         objects.push(objectFromJson(jsonObject, GltfType));
     }
     return objects;
 }
 
-function objectFromJson(jsonObject, GltfType)
-{
+function objectFromJson(jsonObject, GltfType) {
     const object = new GltfType();
     object.fromJson(jsonObject);
     return object;
 }
 
-function fromKeys(target, jsonObj, ignore = [])
-{
-    for(let k of Object.keys(target))
-    {
-        if (ignore && ignore.find(function(elem){return elem == k;}) !== undefined)
-        {
+function fromKeys(target, jsonObj, ignore = []) {
+    for (let k of Object.keys(target)) {
+        if (ignore && ignore.find(function (elem) { return elem == k; }) !== undefined) {
             continue; // skip
         }
-        if (jsonObj[k] !== undefined)
-        {
+        if (jsonObj[k] !== undefined) {
             let normalizedK = k.replace("^@", "");
             target[normalizedK] = jsonObj[k];
         }
     }
 }
 
-function fromParams(parameters, target, jsonObj)
-{
-    for (let p of parameters)
-    {
-        if(jsonObj[p] !== undefined)
-        {
+function fromParams(parameters, target, jsonObj) {
+    for (let p of parameters) {
+        if (jsonObj[p] !== undefined) {
             target[p] = jsonObj[p];
         }
     }
 }
 
-function stringHash(str, seed = 0)
-{
-    for(var i = 0; i < str.length; ++i)
-    {
-        seed = Math.imul(31, seed) + str.charCodeAt(i) | 0;
+function stringHash(str, seed = 0) {
+    let hash = seed;
+    if (str.length === 0) return hash;
+    for (let i = 0; i < str.length; i++) {
+        let chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
     }
-
-    return seed;
+    return hash;
 }
 
-function combineHashes(hash1, hash2)
-{
-    return hash1 ^ (hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2));
-}
-
-function clamp(number, min, max)
-{
+function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max);
 }
 
-function getIsGlb(filename)
-{
+function getIsGlb(filename) {
     return getExtension(filename) == "glb";
 }
 
-function getIsGltf(filename)
-{
+function getIsGltf(filename) {
     return getExtension(filename) == "gltf";
 }
 
-function getIsHdr(filename)
-{
+function getIsHdr(filename) {
     return getExtension(filename) == "hdr";
 }
 
-function getExtension(filename)
-{
+function getExtension(filename) {
     const split = filename.toLowerCase().split(".");
-    if (split.length == 1)
-    {
+    if (split.length == 1) {
         return undefined;
     }
     return split[split.length - 1];
 }
 
-function getFileName(filePath)
-{
+function getFileName(filePath) {
     const split = filePath.split("/");
     return split[split.length - 1];
 }
 
-function getFileNameWithoutExtension(filePath)
-{
+function getFileNameWithoutExtension(filePath) {
     const filename = getFileName(filePath);
     const index = filename.lastIndexOf(".");
     return filename.slice(0, index);
 }
 
-function getContainingFolder(filePath)
-{
+function getContainingFolder(filePath) {
     return filePath.substring(0, filePath.lastIndexOf("/") + 1);
 }
 
-function combinePaths()
-{
+function combinePaths() {
     const parts = Array.from(arguments);
     return parts.join("/");
 }
@@ -172,84 +136,68 @@ function combinePaths()
 // marker interface used to for parsing the uniforms
 class UniformStruct { }
 
-class Timer
-{
-    constructor()
-    {
+class Timer {
+    constructor() {
         this.startTime = undefined;
         this.endTime = undefined;
         this.seconds = undefined;
     }
 
-    start()
-    {
+    start() {
         this.startTime = new Date().getTime() / 1000;
         this.endTime = undefined;
         this.seconds = undefined;
     }
 
-    stop()
-    {
+    stop() {
         this.endTime = new Date().getTime() / 1000;
         this.seconds = this.endTime - this.startTime;
     }
 }
 
-class AnimationTimer
-{
-    constructor()
-    {
+class AnimationTimer {
+    constructor() {
         this.startTime = 0;
         this.paused = true;
         this.fixedTime = null;
         this.pausedTime = 0;
     }
 
-    elapsedSec()
-    {
-        if(this.paused)
-        {
+    elapsedSec() {
+        if (this.paused) {
             return this.pausedTime / 1000;
         }
-        else
-        {
+        else {
             return this.fixedTime || (new Date().getTime() - this.startTime) / 1000;
         }
     }
 
-    toggle()
-    {
-        if(this.paused)
-        {
+    toggle() {
+        if (this.paused) {
             this.unpause();
         }
-        else
-        {
+        else {
             this.pause();
         }
     }
 
-    start()
-    {
+    start() {
         this.startTime = new Date().getTime();
         this.paused = false;
     }
 
-    pause()
-    {
+    pause() {
         this.pausedTime = new Date().getTime() - this.startTime;
         this.paused = true;
     }
 
-    unpause()
-    {
+    unpause() {
         this.startTime += new Date().getTime() - this.startTime - this.pausedTime;
         this.paused = false;
     }
 
-    reset()
-    {
-        if(!this.paused) {
+    reset() {
+        if (!this.paused) {
             // Animation is running.
             this.startTime = new Date().getTime();
         }
@@ -259,8 +207,7 @@ class AnimationTimer
         this.pausedTime = 0;
     }
 
-    setFixedTime(timeInSec)
-    {
+    setFixedTime(timeInSec) {
         this.paused = false;
         this.fixedTime = timeInSec;
     }
@@ -274,7 +221,6 @@ export {
     fromKeys,
     fromParams,
     stringHash,
-    combineHashes,
     clamp,
     getIsGlb,
     getIsGltf,

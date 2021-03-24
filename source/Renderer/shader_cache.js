@@ -1,5 +1,5 @@
 import { gltfShader } from './shader.js';
-import { stringHash, combineHashes } from '../gltf/utils.js';
+import { stringHash } from '../gltf/utils.js';
 
 // THis class generates and caches the shader source text for a given permutation
 class ShaderCache
@@ -102,7 +102,8 @@ class ShaderCache
 
     getShaderProgram(vertexShaderHash, fragmentShaderHash)
     {
-        const hash = combineHashes(vertexShaderHash, fragmentShaderHash);
+        // just use a long string for this (the javascript engine should be fast enough with comparing this)
+        const hash = String(vertexShaderHash) + "," + String(fragmentShaderHash);
 
         let program = this.programs.get(hash);
 
