@@ -76,6 +76,11 @@ class KtxDecoder {
         const texture = new this.libktx.ktxTexture(data);
         this.transcode(texture);
         let uploadResult = texture.glUpload();
+        if (uploadResult.texture == null)
+        {
+            console.error("Could not load KTX data");
+            return undefined;
+        }
         uploadResult.texture.levels = Math.log2(texture.baseWidth);
         return uploadResult.texture;
     }
@@ -85,6 +90,11 @@ class KtxDecoder {
         const texture = new this.libktx.ktxTexture(data);
         this.transcode(texture);
         const uploadResult = texture.glUpload();
+        if (uploadResult.texture == null)
+        {
+            console.error("Could not load KTX data");
+            return undefined;
+        }
         return uploadResult.texture;
     }
 }
