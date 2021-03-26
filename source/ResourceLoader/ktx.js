@@ -51,9 +51,7 @@ class KtxDecoder {
             if (astcSupported) {
                 format = this.libktx.TranscodeTarget.ASTC_4x4_RGBA;
             } else if (bptcSupported) {
-                //https://github.com/KhronosGroup/KTX-Software/issues/369
-                //BC7_M5_RGBA will be mapped to KTX_TTF_BC7_RGBA in the c++ code
-                format = this.libktx.TranscodeTarget.BC7_M5_RGBA;
+                format = this.libktx.TranscodeTarget.BC7_RGBA;
             } else if (dxtSupported) {
                 format = this.libktx.TranscodeTarget.BC1_OR_3;
             } else if (pvrtcSupported) {
@@ -76,6 +74,11 @@ class KtxDecoder {
         const texture = new this.libktx.ktxTexture(data);
         this.transcode(texture);
         let uploadResult = texture.glUpload();
+        if (uploadResult.texture == null)
+        {
+            console.error("Could not load KTX data");
+            return undefined;
+        }
         uploadResult.texture.levels = Math.log2(texture.baseWidth);
         return uploadResult.texture;
     }
@@ -85,6 +88,11 @@ class KtxDecoder {
         const texture = new this.libktx.ktxTexture(data);
         this.transcode(texture);
         const uploadResult = texture.glUpload();
+        if (uploadResult.texture == null)
+        {
+            console.error("Could not load KTX data");
+            return undefined;
+        }
         return uploadResult.texture;
     }
 }
