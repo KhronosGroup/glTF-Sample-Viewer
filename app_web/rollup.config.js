@@ -3,7 +3,9 @@ import resolve from 'rollup-plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
 import commonjs from 'rollup-plugin-commonjs';
-import copy from 'rollup-plugin-copy'
+import copy from 'rollup-plugin-copy';
+import alias from '@rollup/plugin-alias';
+import replace from '@rollup/plugin-replace';
 
 export default {
   input: 'src/main.js',
@@ -41,6 +43,12 @@ export default {
         ],
         copyOnce: true,
         verbose: true
-    })
+    }),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify( 'production' )
+    }),
+    alias({
+      'vue': 'vue/dist/vue.esm.js'
+    }),
   ]
 };

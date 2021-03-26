@@ -1,8 +1,11 @@
+import Vue from 'vue/dist/vue.esm.js'
 import VueRx from 'vue-rx';
 import { Subject } from 'rxjs';
 import './sass.scss';
+import Buefy from 'buefy';
 
 Vue.use(VueRx, { Subject });
+Vue.use(Buefy);
 
 // general components
 Vue.component('toggle-button', {
