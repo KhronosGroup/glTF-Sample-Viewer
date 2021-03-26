@@ -1,9 +1,9 @@
 Khronos glTF 2.0 Sample Viewer
 ==============================
 
-[![](assets/images/ToyCar.jpg)](http://gltf.ux3d.io/)
+[![](assets/images/ToyCar.jpg)](https://github.khronos.org/glTF-Sample-Viewer-Release/)
 
-This is the official [Khronos](https://www.khronos.org/) [glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](http://gltf.ux3d.io/)
+This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/)
 
 
 
@@ -71,7 +71,7 @@ glTF Sample Viewer can be used without the web app, for example for integration 
 
 The API consists of several components that in combination allow flexible configuration of the gltf viewer.
 
-More detailed information about the API is listed in the [api documentation](https://github.com/ux3d/glTF-Sample-Viewer/blob/develop/API.md).
+More detailed information about the API is listed in the [api documentation](API.md).
 
 ### GltfView
 
@@ -116,7 +116,18 @@ state.gltf = await resourceLoader.loadGltf("path/to/some.gltf");
 Web App
 -------
 
-You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](https://github.com/ux3d/glTF-Sample-Viewer/tree/develop/app_web). A live demo can be found at [gltf.ux3d.io](https://ux3d.github.io/gltf-sample-viewer-builds/).
+You can find an example application for the gltf viewer in the [app_web subdirectory of the sample viewer repository](app_web). A live demo can be found at [https://github.khronos.org/glTF-Sample-Viewer-Release/](https://github.khronos.org/glTF-Sample-Viewer-Release/).
+
+**Running a local version**
+
+Open a terminal window in the repository root an run the following commands
+```
+cd app_web
+npm install 
+npm run dev
+```
+
+now you can access glTF Sample Viewer with Chrome or Firefox at the URL [`http://localhost:8000`](http://localhost:8000)
 
 Render Fidelity Tools
 -----------------------------

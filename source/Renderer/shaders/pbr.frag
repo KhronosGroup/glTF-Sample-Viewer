@@ -12,7 +12,7 @@
 // [4] "An Inexpensive BRDF Model for Physically based Rendering" by Christophe Schlick
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 // [5] "KHR_materials_clearcoat"
-//     https://github.com/ux3d/glTF/tree/KHR_materials_pbrClearcoat/extensions/2.0/Khronos/KHR_materials_clearcoat
+//     https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_clearcoat
 
 precision highp float;
 
