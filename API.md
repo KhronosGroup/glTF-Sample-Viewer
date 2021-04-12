@@ -114,9 +114,6 @@ GltfState containing a state for visualization in GltfView
         * [.renderingParameters](#GltfState+renderingParameters)
             * [.morphing](#GltfState+renderingParameters.morphing)
             * [.skinning](#GltfState+renderingParameters.skinning)
-            * [.clearcoat](#GltfState+renderingParameters.clearcoat)
-            * [.sheen](#GltfState+renderingParameters.sheen)
-            * [.transmission](#GltfState+renderingParameters.transmission)
             * [.clearColor](#GltfState+renderingParameters.clearColor)
             * [.exposure](#GltfState+renderingParameters.exposure)
             * [.usePunctual](#GltfState+renderingParameters.usePunctual)
@@ -126,11 +123,13 @@ GltfState containing a state for visualization in GltfView
             * [.toneMap](#GltfState+renderingParameters.toneMap)
             * [.debugOutput](#GltfState+renderingParameters.debugOutput)
             * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+            * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
     * _static_
         * [.ToneMaps](#GltfState.ToneMaps)
             * [.NONE](#GltfState.ToneMaps.NONE)
-            * [.ACES_FAST](#GltfState.ToneMaps.ACES_FAST)
-            * [.ACES](#GltfState.ToneMaps.ACES)
+            * [.ACES_3D_COMMERCE](#GltfState.ToneMaps.ACES_3D_COMMERCE)
+            * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
+            * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
         * [.DebugOutput](#GltfState.DebugOutput)
             * [.NONE](#GltfState.DebugOutput.NONE)
             * [.METALLIC](#GltfState.DebugOutput.METALLIC)
@@ -221,9 +220,6 @@ parameters used to configure the rendering
 * [.renderingParameters](#GltfState+renderingParameters)
     * [.morphing](#GltfState+renderingParameters.morphing)
     * [.skinning](#GltfState+renderingParameters.skinning)
-    * [.clearcoat](#GltfState+renderingParameters.clearcoat)
-    * [.sheen](#GltfState+renderingParameters.sheen)
-    * [.transmission](#GltfState+renderingParameters.transmission)
     * [.clearColor](#GltfState+renderingParameters.clearColor)
     * [.exposure](#GltfState+renderingParameters.exposure)
     * [.usePunctual](#GltfState+renderingParameters.usePunctual)
@@ -233,6 +229,7 @@ parameters used to configure the rendering
     * [.toneMap](#GltfState+renderingParameters.toneMap)
     * [.debugOutput](#GltfState+renderingParameters.debugOutput)
     * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+    * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
 
 <a name="GltfState+renderingParameters.morphing"></a>
 
@@ -244,24 +241,6 @@ morphing between vertices
 
 #### renderingParameters.skinning
 skin / skeleton
-
-**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
-<a name="GltfState+renderingParameters.clearcoat"></a>
-
-#### renderingParameters.clearcoat
-KHR_materials_clearcoat
-
-**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
-<a name="GltfState+renderingParameters.sheen"></a>
-
-#### renderingParameters.sheen
-KHR_materials_sheen
-
-**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
-<a name="GltfState+renderingParameters.transmission"></a>
-
-#### renderingParameters.transmission
-KHR_materials_transmission
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState+renderingParameters.clearColor"></a>
@@ -323,6 +302,12 @@ Front faces:
 -Z = 270
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL"></a>
+
+#### renderingParameters.useDirectionalLightsWithDisabledIBL
+If this is set to true, directional lights will be generated if IBL is disabled
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState.ToneMaps"></a>
 
 ### GltfState.ToneMaps
@@ -333,8 +318,9 @@ by gltf sample viewer
 
 * [.ToneMaps](#GltfState.ToneMaps)
     * [.NONE](#GltfState.ToneMaps.NONE)
-    * [.ACES_FAST](#GltfState.ToneMaps.ACES_FAST)
-    * [.ACES](#GltfState.ToneMaps.ACES)
+    * [.ACES_3D_COMMERCE](#GltfState.ToneMaps.ACES_3D_COMMERCE)
+    * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
+    * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
 
 <a name="GltfState.ToneMaps.NONE"></a>
 
@@ -342,16 +328,22 @@ by gltf sample viewer
 don't apply tone mapping
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
-<a name="GltfState.ToneMaps.ACES_FAST"></a>
+<a name="GltfState.ToneMaps.ACES_3D_COMMERCE"></a>
 
-#### ToneMaps.ACES\_FAST
-fast implementation of the ACES sRGB RRT+ODT
+#### ToneMaps.ACES\_3D\_COMMERCE
+ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
-<a name="GltfState.ToneMaps.ACES"></a>
+<a name="GltfState.ToneMaps.ACES_NARKOWICZ"></a>
 
-#### ToneMaps.ACES
-more accurate implementation of the ACES sRGB RRT+ODT
+#### ToneMaps.ACES\_NARKOWICZ
+fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
+<a name="GltfState.ToneMaps.ACES_HILL"></a>
+
+#### ToneMaps.ACES\_HILL
+more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.DebugOutput"></a>

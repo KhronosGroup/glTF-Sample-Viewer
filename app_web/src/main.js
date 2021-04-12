@@ -15,11 +15,11 @@ async function main()
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
+    state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
-        "footprint_court_512": "Footprint Court (512p)",
         "footprint_court": "Footprint Court",
         "pisa": "Pisa",
         "doge2": "Doge's palace",
@@ -174,13 +174,22 @@ async function main()
     });
 
     uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
-        state.renderingParameters.clearcoat = clearcoatEnabled;
+        state.renderingParameters.enabledExtensions.KHR_materials_clearcoat = clearcoatEnabled;
     });
     uiModel.sheenEnabled.subscribe( sheenEnabled => {
-        state.renderingParameters.sheen = sheenEnabled;
+        state.renderingParameters.enabledExtensions.KHR_materials_sheen = sheenEnabled;
     });
     uiModel.transmissionEnabled.subscribe( transmissionEnabled => {
-        state.renderingParameters.transmission = transmissionEnabled;
+        state.renderingParameters.enabledExtensions.KHR_materials_transmission = transmissionEnabled;
+    });
+    uiModel.volumeEnabled.subscribe( volumeEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_volume = volumeEnabled;
+    });
+    uiModel.iorEnabled.subscribe( iorEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_ior = iorEnabled;
+    });
+    uiModel.specularEnabled.subscribe( specularEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {

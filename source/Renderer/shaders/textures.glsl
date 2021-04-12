@@ -67,12 +67,25 @@ uniform sampler2D u_SheenRoughnessSampler;
 uniform int u_SheenRoughnessUVSet;
 uniform mat3 u_SheenRoughnessUVTransform;
 
+// Specular Material
+uniform sampler2D u_SpecularSampler;
+uniform int u_SpecularUVSet;
+uniform mat3 u_SpecularUVTransform;
+uniform sampler2D u_SpecularColorSampler;
+uniform int u_SpecularColorUVSet;
+uniform mat3 u_SpecularColorUVTransform;
+
 // Transmission Material
 uniform sampler2D u_TransmissionSampler;
 uniform int u_TransmissionUVSet;
 uniform mat3 u_TransmissionUVTransform;
 uniform sampler2D u_TransmissionFramebufferSampler;
 uniform ivec2 u_TransmissionFramebufferSize;
+
+// Volume Material
+uniform sampler2D u_ThicknessSampler;
+uniform int u_ThicknessUVSet;
+uniform mat3 u_ThicknessUVTransform;
 
 vec2 getNormalUV()
 {
@@ -201,6 +214,33 @@ vec2 getTransmissionUV()
     vec3 uv = vec3(u_TransmissionUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     #ifdef HAS_TRANSMISSION_UV_TRANSFORM
     uv *= u_TransmissionUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getSpecularUV()
+{
+    vec3 uv = vec3(u_SpecularUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_SPECULAR_UV_TRANSFORM
+    uv *= u_SpecularUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getSpecularColorUV()
+{
+    vec3 uv = vec3(u_SpecularColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_SPECULARCOLOR_UV_TRANSFORM
+    uv *= u_SpecularColorUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getThicknessUV()
+{
+    vec3 uv = vec3(u_ThicknessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_THICKNESS_UV_TRANSFORM
+    uv *= u_ThicknessUVTransform;
     #endif
     return uv.xy;
 }

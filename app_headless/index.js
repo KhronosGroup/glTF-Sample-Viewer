@@ -23,7 +23,7 @@ async function main()
     const view = new sample_viewer.GltfView(gl);
     const state = view.createState();
 
-    const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../assets/environments/footprint_court_512.hdr")).buffer;
+    const environment_file = new Uint8Array(fs.readFileSync(__dirname + "/../assets/environments/footprint_court.hdr")).buffer;
     const luts = {
         lut_ggx_file: new Uint8Array(fs.readFileSync(__dirname + "/../assets/images/lut_ggx.png")).buffer,
         lut_charlie_file: new Uint8Array(fs.readFileSync(__dirname + "/../assets/images/lut_charlie.png")).buffer,

@@ -67,7 +67,7 @@ This will create a new `gltf-viewer.js` and `gltf-viewer.module.js` in the `dist
 API
 ----
 
-glTF Sample Viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools).
+glTF Sample Viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools)).
 
 The API consists of several components that in combination allow flexible configuration of the gltf viewer.
 

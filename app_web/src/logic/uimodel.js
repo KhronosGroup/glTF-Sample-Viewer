@@ -21,7 +21,7 @@ class UIModel
 
         const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
-            startWith("Avocado"),
+            startWith("DamagedHelmet"),
             map(value => {
                 app.flavours = this.pathProvider.getModelFlavours(value);
                 app.selectedFlavour = "glTF";
@@ -46,7 +46,7 @@ class UIModel
             pluck('newValue'),
             map( environmentName => this.app.environments[environmentName].hdr_path)
         );
-        const initialEnvironment = "footprint_court_512";
+        const initialEnvironment = "footprint_court";
         this.app.selectedEnvironment = initialEnvironment;
 
         this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => {
@@ -71,6 +71,12 @@ class UIModel
         this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
         this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
         this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
+        this.volumeEnabled = app.$watchAsObservable('volumeEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
+        this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
+        this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(

@@ -1,8 +1,11 @@
+import Vue from 'vue/dist/vue.esm.js'
 import VueRx from 'vue-rx';
 import { Subject } from 'rxjs';
 import './sass.scss';
+import Buefy from 'buefy';
 
 Vue.use(VueRx, { Subject });
+Vue.use(Buefy);
 
 // general components
 Vue.component('toggle-button', {
@@ -48,7 +51,7 @@ const app = new Vue({
         return {
             fullheight: true,
             right: true,
-            models: ["Avocado"],
+            models: ["DamagedHelmet"],
             flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
@@ -60,7 +63,7 @@ const app = new Vue({
             xmp: [{title: "xmp"}],
             statistics: [],
 
-            selectedModel: "Avocado",
+            selectedModel: "DamagedHelmet",
             selectedFlavour: "",
             selectedScene: {},
             selectedCamera: {},
@@ -86,13 +89,18 @@ const app = new Vue({
             clearcoatEnabled: true,
             sheenEnabled: true,
             transmissionEnabled: true,
+            volumeEnabled: true,
+            iorEnabled: true,
+            specularEnabled: true,
 
             activeTab: 0,
             loadingComponent: {},
             showDropDownOverlay: false,
             uploadedHDR: undefined,
-            // this is a helper to reset the ui when image based lighting is reenabled
+
+            // these are handls for certain ui change related things
             environmentVisiblePrefState: true,
+            volumeEnabledPrefState: true,
         };
     },
     mounted: function()
@@ -100,6 +108,14 @@ const app = new Vue({
         // remove input class from color picker (added by default by buefy)
         const colorPicker = document.getElementById("clearColorPicker");
         colorPicker.classList.remove("input");
+
+        // test if webgl is present
+        const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
+        if (context === undefined || context === null) {
+            this.error("The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " + 
+            "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
+            "if you believe you are seeing this message in error.", 15000);
+        }
     },
     methods:
     {
@@ -118,17 +134,28 @@ const app = new Vue({
                 this.renderEnv = this.environmentVisiblePrefState;
             }
         },
+        transmissionTriggered: function(value)
+        {
+            if(this.transmissionEnabled == false)
+            {
+                this.volumeEnabledPrefState = this.volumeEnabled;
+                this.volumeEnabled = false;
+            }
+            else{
+                this.volumeEnabled = this.volumeEnabledPrefState;
+            }
+        },
         warn(message) {
             this.$buefy.toast.open({
                 message: message,
                 type: 'is-warning'
             })
         },
-        error(message) {
+        error(message, duration = 5000) {
             this.$buefy.toast.open({
                 message: message,
                 type: 'is-danger',
-                duration: 5000
+                duration: duration
             })
         },
         goToLoadingState() {
