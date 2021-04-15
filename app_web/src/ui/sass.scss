@@ -72,6 +72,7 @@ html
 body
 {
     margin: 0;
+    height: 100%;
 }
 
 // there is no specific bulma setting for these
@@ -284,7 +285,15 @@ button.button
     justify-content: center;
     align-items: center;
 }
- 
+
+.columns {
+    height: 100%;
+    margin: 0px;
+}
+
+.column {
+    padding: 0px;
+}
 
 #canvas {
     width:  100%;
