@@ -285,8 +285,11 @@ async function main()
     // configure the animation loop
     const update = () =>
     {
-        canvas.width = window.innerWidth - ui.getBoundingClientRect().width;
-        canvas.height = window.innerHeight;
+        const devicePixelRatio = window.devicePixelRatio || 1;
+
+        // set the size of the drawingBuffer based on the size it's displayed.
+        canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
+        canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
 
         view.renderFrame(state, canvas.width, canvas.height);
         window.requestAnimationFrame(update);
