@@ -41,6 +41,10 @@ async function main()
         mergeMap( (model) =>
         {
         	uiModel.goToLoadingState();
+
+            // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
+            resourceLoader.initKtxLib();
+
             return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
