@@ -561,8 +561,8 @@ class gltfRenderer
         case (GltfState.ToneMaps.ACES_HILL):
             fragDefines.push("TONEMAP_ACES_HILL 1");
             break;
-        case (GltfState.ToneMaps.ACES_3D_COMMERCE):
-            fragDefines.push("TONEMAP_ACES_3D_COMMERCE 1");
+        case (GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST):
+            fragDefines.push("TONEMAP_ACES_HILL_EXPOSURE_BOOST 1");
             break;
         case (GltfState.ToneMaps.NONE):
         default:
