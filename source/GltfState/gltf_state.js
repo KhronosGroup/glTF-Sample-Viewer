@@ -96,7 +96,7 @@ GltfState.ToneMaps = {
     /** don't apply tone mapping */
     NONE: "None",
     /** ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6 */
-    ACES_3D_COMMERCE: "ACES Filmic Tone Mapping (3D Commerce)",
+    ACES_HILL_EXPOSURE_BOOST: "ACES Filmic Tone Mapping (Hill - Exposure Boost)",
     /** fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation*/
     ACES_NARKOWICZ: "ACES Filmic Tone Mapping (Narkowicz)",
     /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
