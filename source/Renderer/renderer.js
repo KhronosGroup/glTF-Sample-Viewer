@@ -410,8 +410,10 @@ class gltfRenderer
         {
             let info = material.textures[i];
             const location = this.shader.getUniformLocation(info.samplerName);
+
             if (location < 0)
             {
+                console.log("Unable to find uniform location of "+info.samplerName);
                 continue; // only skip this texture
             }
             if (!this.webGl.setTexture(location, state.gltf, info, i)) // binds texture and sampler

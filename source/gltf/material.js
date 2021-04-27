@@ -648,11 +648,11 @@ class gltfMaterial extends GltfObject
             this.specularTexture = specularTexture;
         }
 
-        if(jsonSpecular.specularTexture !== undefined)
+        if(jsonSpecular.specularColorTexture !== undefined)
         {
-            const specularTexture = new gltfTextureInfo();
-            specularTexture.fromJson(jsonSpecular.specularTexture);
-            this.specularTexture = specularTexture;
+            const specularColorTexture = new gltfTextureInfo();
+            specularColorTexture.fromJson(jsonSpecular.specularColorTexture);
+            this.specularColorTexture = specularColorTexture;
         }
     }
 
