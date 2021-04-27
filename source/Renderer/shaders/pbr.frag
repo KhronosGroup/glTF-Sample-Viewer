@@ -241,7 +241,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     info.sheenRoughnessFactor = u_SheenRoughnessFactor;
 
     #ifdef HAS_SHEEN_COLOR_MAP
-        vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
+        vec4 sheenColorSample = sRGBToLinear(texture(u_SheenColorSampler, getSheenColorUV()));
         info.sheenColorFactor *= sheenColorSample.rgb;
     #endif
 
