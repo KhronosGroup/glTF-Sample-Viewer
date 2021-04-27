@@ -259,10 +259,10 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
 {   
     vec4 specularTexture = vec4(1.0);
     #ifdef HAS_SPECULAR_MAP
-        specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
+        specularTexture.a = texture(u_SpecularSampler, getSpecularColorUV()).a;
     #endif
     #ifdef HAS_SPECULAR_COLOR_MAP
-        specularTexture.a = texture(u_SpecularSampler, getSpecularUV()).a;
+        specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularUV()).rgb;
     #endif
 
     vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0)) *
