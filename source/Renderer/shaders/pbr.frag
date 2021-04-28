@@ -242,7 +242,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     info.sheenRoughnessFactor = u_SheenRoughnessFactor;
 
     #ifdef HAS_SHEEN_COLOR_MAP
-        vec4 sheenColorSample = sRGBToLinear(texture(u_SheenColorSampler, getSheenColorUV()));
+        vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
         info.sheenColorFactor *= sheenColorSample.rgb;
     #endif
 
@@ -262,7 +262,7 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
         specularTexture.a = texture(u_SpecularSampler, getSpecularColorUV()).a;
     #endif
     #ifdef HAS_SPECULAR_COLOR_MAP
-        specularTexture.rgb = sRGBToLinear(texture(u_SpecularColorSampler, getSpecularUV()).rgb);
+        specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularUV()).rgb;
     #endif
 
     vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0)) *
