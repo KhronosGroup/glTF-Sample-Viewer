@@ -369,6 +369,7 @@ class gltfMaterial extends GltfObject
                 {
                     this.sheenColorTexture.samplerName = "u_SheenColorSampler";
                     this.parseTextureInfoExtensions(this.sheenColorTexture, "SheenColor");
+                    this.sheenColorTexture.linear = false;
                     this.textures.push(this.sheenColorTexture);
                     this.defines.push("HAS_SHEEN_COLOR_MAP 1");
                     this.properties.set("u_SheenColorUVSet", this.sheenColorTexture.texCoord);
@@ -396,6 +397,7 @@ class gltfMaterial extends GltfObject
                 {
                     this.specularColorTexture.samplerName = "u_SpecularColorSampler";
                     this.parseTextureInfoExtensions(this.specularColorTexture, "SpecularColor");
+                    this.specularColorTexture.linear = false;
                     this.textures.push(this.specularColorTexture);
                     this.defines.push("HAS_SPECULAR_COLOR_MAP 1");
                     this.properties.set("u_SpecularColorUVSet", this.specularColorTexture.texCoord);
