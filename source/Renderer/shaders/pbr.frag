@@ -82,7 +82,7 @@ struct MaterialInfo
     vec3 f0;                        // full reflectance color (n incidence angle)
 
     float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
-    vec3 albedoColor;
+    vec3 c_diff;
 
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
@@ -208,7 +208,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
 
     info.perceptualRoughness = 1.0 - info.perceptualRoughness; // 1 - glossiness
-    info.albedoColor = info.baseColor.rgb * (1.0 - max(max(info.f0.r, info.f0.g), info.f0.b));
+    info.c_diff = info.baseColor.rgb * (1.0 - max(max(info.f0.r, info.f0.g), info.f0.b));
 
     return info;
 }
@@ -229,7 +229,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
     // Achromatic f0 based on IOR.
     vec3 f0 = info.f0;
 
-    info.albedoColor = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
+    info.c_diff = mix(info.baseColor.rgb * (vec3(1.0) - f0),  vec3(0), info.metallic);
     info.f0 = mix(f0, info.baseColor.rgb, info.metallic);
 
     return info;
@@ -269,7 +269,7 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
 
     info.specularWeight = u_KHR_materials_specular_specularFactor * specularTexture.a;
     
-    info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
+    info.c_diff = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
 
     return info;
 }
@@ -435,7 +435,7 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
-    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.albedoColor, materialInfo.f0, materialInfo.specularWeight);
+    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
 
     #ifdef MATERIAL_CLEARCOAT
         f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0, 1.0);
@@ -495,7 +495,7 @@ void main()
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
-            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.albedoColor, materialInfo.specularWeight, VdotH);
+            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
 
             #ifdef MATERIAL_SHEEN
