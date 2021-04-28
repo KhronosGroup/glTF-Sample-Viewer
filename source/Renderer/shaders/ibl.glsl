@@ -13,7 +13,7 @@ vec4 getSheenSample(vec3 reflection, float lod)
     return textureLod(u_CharlieEnvSampler, u_envRotation * reflection, lod);
 }
 
-vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness, vec3 F0)
+vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness, vec3 F0, float specularWeight)
 {
     float NdotV = clampedDot(n, v);
     float lod = roughness * float(u_MipCount - 1);
@@ -31,7 +31,7 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness, vec3 F0)
     vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
     vec3 FssEss = k_S * f_ab.x + f_ab.y;
 
-    return specularLight * FssEss;
+    return specularWeight * specularLight * FssEss;
 }
 
 vec3 getTransmissionSample(vec2 fragCoord, float roughness, float ior)
@@ -69,28 +69,29 @@ vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 base
     return (1.0 - specularColor) * attenuatedColor * baseColor;
 }
 
-
-vec3 getIBLRadianceLambertian(vec3 n, vec3 v, float roughness, vec3 diffuseColor, vec3 F0)
+// specularWeight is introduced with KHR_materials_specular
+vec3 getIBLRadianceLambertian(vec3 n, vec3 v, float roughness, vec3 diffuseColor, vec3 F0, float specularWeight)
 {
     float NdotV = clampedDot(n, v);
     vec2 brdfSamplePoint = clamp(vec2(NdotV, roughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
     vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
 
-    vec3 diffuseLight = getDiffuseLight(n);
+    vec3 irradiance = getDiffuseLight(n);
 
     // see https://bruop.github.io/ibl/#single_scattering_results at Single Scattering Results
     // Roughness dependent fresnel, from Fdez-Aguera
+
     vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
     vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
-    vec3 FssEss = k_S * f_ab.x + f_ab.y;
+    vec3 FssEss = specularWeight * k_S * f_ab.x + f_ab.y; // <--- GGX / specular light contribution (scale it down if the specularWeight is low)
 
     // Multiple scattering, from Fdez-Aguera
     float Ems = (1.0 - (f_ab.x + f_ab.y));
-    vec3 F_avg = F0 + (1.0 - F0) / 21.0;
+    vec3 F_avg = specularWeight * (F0 + (1.0 - F0) / 21.0);
     vec3 FmsEms = Ems * FssEss * F_avg / (1.0 - F_avg * Ems);
-    vec3 k_D = diffuseColor * (1.0 - FssEss - FmsEms);
+    vec3 k_D = diffuseColor * (1.0 - FssEss + FmsEms) * irradiance; // TODO: check if we need to use 1.0 - FssEss - FmsEms instead
 
-    return (FmsEms + k_D) * diffuseLight ;
+    return FmsEms + k_D;
 }
 
 vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
