@@ -87,8 +87,7 @@ struct MaterialInfo
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
 
-    vec3 n;
-    vec3 baseColor; // getBaseColor()
+    vec3 baseColor;
 
     float sheenRoughnessFactor;
     vec3 sheenColorFactor;
@@ -419,8 +418,6 @@ void main()
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     materialInfo.f90 = vec3(1.0f);
-
-    materialInfo.n = n;
 
     // LIGHTING
     vec3 f_specular = vec3(0.0);
