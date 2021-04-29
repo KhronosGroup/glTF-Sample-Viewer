@@ -60,7 +60,7 @@ uniform vec3 u_AttenuationColor;
 uniform float u_AttenuationDistance;
 
 //PBR Next IOR
-uniform float u_ior;
+uniform float u_Ior;
 
 // Alpha mode
 uniform float u_AlphaCutoff;
@@ -333,8 +333,8 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 #ifdef MATERIAL_IOR
 MaterialInfo getIorInfo(MaterialInfo info)
 {
-    info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2.0));
-    info.ior = u_ior;
+    info.f0 = vec3(pow(( u_Ior - 1.0f) /  (u_Ior + 1.0f),2.0));
+    info.ior = u_Ior;
     
     return info;
 }

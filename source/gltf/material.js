@@ -444,7 +444,7 @@ class gltfMaterial extends GltfObject
                     ior = this.extensions.KHR_materials_ior.ior;
                 }
 
-                this.properties.set("u_ior", ior);
+                this.properties.set("u_Ior", ior);
             }
 
             // KHR Extension: Volume
