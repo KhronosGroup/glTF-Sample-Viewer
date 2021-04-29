@@ -1,5 +1,5 @@
-in vec2 v_UVCoord1;
-in vec2 v_UVCoord2;
+in vec2 v_texcoord_0;
+in vec2 v_texcoord_1;
 
 // IBL
 uniform int u_MipCount;
@@ -89,7 +89,7 @@ uniform mat3 u_ThicknessUVTransform;
 
 vec2 getNormalUV()
 {
-    vec3 uv = vec3(u_NormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_NormalUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_NORMAL_UV_TRANSFORM
     uv *= u_NormalUVTransform;
@@ -100,7 +100,7 @@ vec2 getNormalUV()
 
 vec2 getEmissiveUV()
 {
-    vec3 uv = vec3(u_EmissiveUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_EmissiveUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_EMISSIVE_UV_TRANSFORM
     uv *= u_EmissiveUVTransform;
@@ -111,7 +111,7 @@ vec2 getEmissiveUV()
 
 vec2 getOcclusionUV()
 {
-    vec3 uv = vec3(u_OcclusionUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_OcclusionUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_OCCLUSION_UV_TRANSFORM
     uv *= u_OcclusionUVTransform;
@@ -122,7 +122,7 @@ vec2 getOcclusionUV()
 
 vec2 getBaseColorUV()
 {
-    vec3 uv = vec3(u_BaseColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_BaseColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_BASECOLOR_UV_TRANSFORM
     uv *= u_BaseColorUVTransform;
@@ -133,7 +133,7 @@ vec2 getBaseColorUV()
 
 vec2 getMetallicRoughnessUV()
 {
-    vec3 uv = vec3(u_MetallicRoughnessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_MetallicRoughnessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_METALLICROUGHNESS_UV_TRANSFORM
     uv *= u_MetallicRoughnessUVTransform;
@@ -144,7 +144,7 @@ vec2 getMetallicRoughnessUV()
 
 vec2 getSpecularGlossinessUV()
 {
-    vec3 uv = vec3(u_SpecularGlossinessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_SpecularGlossinessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_SPECULARGLOSSINESS_UV_TRANSFORM
     uv *= u_SpecularGlossinessUVTransform;
@@ -155,7 +155,7 @@ vec2 getSpecularGlossinessUV()
 
 vec2 getDiffuseUV()
 {
-    vec3 uv = vec3(u_DiffuseUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_DiffuseUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
     #ifdef HAS_DIFFUSE_UV_TRANSFORM
     uv *= u_DiffuseUVTransform;
@@ -166,7 +166,7 @@ vec2 getDiffuseUV()
 
 vec2 getClearcoatUV()
 {
-    vec3 uv = vec3(u_ClearcoatUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_ClearcoatUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_CLEARCOAT_UV_TRANSFORM
     uv *= u_ClearcoatUVTransform;
     #endif
@@ -175,7 +175,7 @@ vec2 getClearcoatUV()
 
 vec2 getClearcoatRoughnessUV()
 {
-    vec3 uv = vec3(u_ClearcoatRoughnessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_ClearcoatRoughnessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_CLEARCOATROUGHNESS_UV_TRANSFORM
     uv *= u_ClearcoatRoughnessUVTransform;
     #endif
@@ -184,7 +184,7 @@ vec2 getClearcoatRoughnessUV()
 
 vec2 getClearcoatNormalUV()
 {
-    vec3 uv = vec3(u_ClearcoatNormalUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_ClearcoatNormalUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_CLEARCOATNORMAL_UV_TRANSFORM
     uv *= u_ClearcoatNormalUVTransform;
     #endif
@@ -193,7 +193,7 @@ vec2 getClearcoatNormalUV()
 
 vec2 getSheenColorUV()
 {
-    vec3 uv = vec3(u_SheenColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_SheenColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_SHEENCOLOR_UV_TRANSFORM
     uv *= u_SheenColorUVTransform;
     #endif
@@ -202,7 +202,7 @@ vec2 getSheenColorUV()
 
 vec2 getSheenRoughnessUV()
 {
-    vec3 uv = vec3(u_SheenRoughnessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_SheenRoughnessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_SHEENROUGHNESS_UV_TRANSFORM
     uv *= u_SheenRoughnessUVTransform;
     #endif
@@ -211,7 +211,7 @@ vec2 getSheenRoughnessUV()
 
 vec2 getTransmissionUV()
 {
-    vec3 uv = vec3(u_TransmissionUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_TransmissionUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_TRANSMISSION_UV_TRANSFORM
     uv *= u_TransmissionUVTransform;
     #endif
@@ -220,7 +220,7 @@ vec2 getTransmissionUV()
 
 vec2 getSpecularUV()
 {
-    vec3 uv = vec3(u_SpecularUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_SpecularUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_SPECULAR_UV_TRANSFORM
     uv *= u_SpecularUVTransform;
     #endif
@@ -229,7 +229,7 @@ vec2 getSpecularUV()
 
 vec2 getSpecularColorUV()
 {
-    vec3 uv = vec3(u_SpecularColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_SpecularColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_SPECULARCOLOR_UV_TRANSFORM
     uv *= u_SpecularColorUVTransform;
     #endif
@@ -238,7 +238,7 @@ vec2 getSpecularColorUV()
 
 vec2 getThicknessUV()
 {
-    vec3 uv = vec3(u_ThicknessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    vec3 uv = vec3(u_ThicknessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
     #ifdef HAS_THICKNESS_UV_TRANSFORM
     uv *= u_ThicknessUVTransform;
     #endif

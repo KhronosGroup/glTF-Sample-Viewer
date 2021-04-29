@@ -73,57 +73,39 @@ class gltfPrimitive extends GltfObject
             }
 
             const idx = this.attributes[attribute];
+            this.glAttributes.push({ attribute: attribute, name: "a_" + attribute.toLowerCase(), accessor: idx });
+            this.defines.push(`HAS_${attribute}_${gltf.accessors[idx].type} 1`);
             switch (attribute)
             {
             case "POSITION":
                 this.skip = false;
-                this.glAttributes.push({ attribute: attribute, name: "a_Position", accessor: idx });
                 break;
             case "NORMAL":
                 this.hasNormals = true;
-                this.defines.push("HAS_NORMALS 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Normal", accessor: idx });
                 break;
             case "TANGENT":
                 this.hasTangents = true;
-                this.defines.push("HAS_TANGENTS 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Tangent", accessor: idx });
                 break;
             case "TEXCOORD_0":
                 this.hasTexcoord = true;
-                this.defines.push("HAS_UV_SET1 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_UV1", accessor: idx });
                 break;
             case "TEXCOORD_1":
                 this.hasTexcoord = true;
-                this.defines.push("HAS_UV_SET2 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_UV2", accessor: idx });
                 break;
             case "COLOR_0":
                 this.hasColor = true;
-                const accessor = gltf.accessors[idx];
-                this.defines.push("HAS_VERTEX_COLOR_" + accessor.type + " 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Color", accessor: idx });
                 break;
             case "JOINTS_0":
                 this.hasJoints = true;
-                this.defines.push("HAS_JOINT_SET1 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Joint1", accessor: idx });
                 break;
             case "WEIGHTS_0":
                 this.hasWeights = true;
-                this.defines.push("HAS_WEIGHT_SET1 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Weight1", accessor: idx });
                 break;
             case "JOINTS_1":
                 this.hasJoints = true;
-                this.defines.push("HAS_JOINT_SET2 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Joint2", accessor: idx });
                 break;
             case "WEIGHTS_1":
                 this.hasWeights = true;
-                this.defines.push("HAS_WEIGHT_SET2 1");
-                this.glAttributes.push({ attribute: attribute, name: "a_Weight2", accessor: idx });
                 break;
             default:
                 console.log("Unknown attribute: " + attribute);

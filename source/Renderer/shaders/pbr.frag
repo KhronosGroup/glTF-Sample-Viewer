@@ -121,7 +121,7 @@ NormalInfo getNormalInfo(vec3 v)
     vec3 n, t, b, ng;
 
     // Compute geometrical TBN:
-    #ifdef HAS_TANGENTS
+    #ifdef HAS_TANGENT_VEC3
         // Trivial TBN computation, present as vertex attribute.
         // Normalize eigenvectors as matrix is linearly interpolated.
         t = normalize(v_TBN[0]);
@@ -129,7 +129,7 @@ NormalInfo getNormalInfo(vec3 v)
         ng = normalize(v_TBN[2]);
     #else
         // Normals are either present as vertex attributes or approximated.
-        #ifdef HAS_NORMALS
+        #ifdef HAS_NORMAL_VEC3
             ng = normalize(v_Normal);
         #else
             ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
