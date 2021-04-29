@@ -445,10 +445,6 @@ void main()
 #endif
 
 #if (defined(MATERIAL_TRANSMISSION) || defined(MATERIAL_VOLUME)) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
-    vec2 normalizedFragCoord = vec2(0.0,0.0);
-    normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
-    normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
-
     f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
