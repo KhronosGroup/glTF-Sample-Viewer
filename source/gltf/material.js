@@ -315,7 +315,7 @@ class gltfMaterial extends GltfObject
                     this.clearcoatTexture.samplerName = "u_ClearcoatSampler";
                     this.parseTextureInfoExtensions(this.clearcoatTexture, "Clearcoat");
                     this.textures.push(this.clearcoatTexture);
-                    this.defines.push("HAS_CLEARCOAT_TEXTURE_MAP 1");
+                    this.defines.push("HAS_CLEARCOAT_MAP 1");
                     this.properties.set("u_ClearcoatUVSet", this.clearcoatTexture.texCoord);
                 }
                 if (this.clearcoatRoughnessTexture !== undefined)

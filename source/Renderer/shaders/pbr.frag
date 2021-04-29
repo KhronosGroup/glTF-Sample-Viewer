@@ -311,7 +311,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
     info.clearcoatF0 = vec3(info.f0);
     info.clearcoatF90 = vec3(1.0);
 
-    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
+    #ifdef HAS_CLEARCOAT_MAP
         vec4 clearcoatSample = texture(u_ClearcoatSampler, getClearcoatUV());
         info.clearcoatFactor *= clearcoatSample.r;
     #endif
