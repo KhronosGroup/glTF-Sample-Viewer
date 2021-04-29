@@ -63,7 +63,7 @@ class EnvironmentRenderer
         mat4.rotateY(rotMatrix4, rotMatrix4,  state.renderingParameters.environmentRotation / 180.0 * Math.PI);
         let rotMatrix3 = mat3.create();
         mat3.fromMat4(rotMatrix3, rotMatrix4);
-        shader.updateUniform("u_envRotation", rotMatrix3);
+        shader.updateUniform("u_EnvRotation", rotMatrix3);
 
         gl.frontFace(gl.CCW);
         gl.enable(gl.CULL_FACE);

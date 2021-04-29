@@ -669,7 +669,7 @@ class gltfRenderer
         mat4.rotateY(rotMatrix4, rotMatrix4,  state.renderingParameters.environmentRotation / 180.0 * Math.PI);
         let rotMatrix3 = mat3.create();
         mat3.fromMat4(rotMatrix3, rotMatrix4);
-        this.shader.updateUniform("u_envRotation", rotMatrix3);
+        this.shader.updateUniform("u_EnvRotation", rotMatrix3);
 
         return texSlotOffset;
     }

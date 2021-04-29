@@ -9,7 +9,7 @@ uniform sampler2D u_GGXLUT;
 uniform samplerCube u_CharlieEnvSampler;
 uniform sampler2D u_CharlieLUT;
 uniform sampler2D u_SheenELUT;
-uniform mat3 u_envRotation;
+uniform mat3 u_EnvRotation;
 
 // General Material
 uniform sampler2D u_NormalSampler;
