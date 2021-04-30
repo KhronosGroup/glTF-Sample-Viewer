@@ -127,7 +127,7 @@ GltfState containing a state for visualization in GltfView
     * _static_
         * [.ToneMaps](#GltfState.ToneMaps)
             * [.NONE](#GltfState.ToneMaps.NONE)
-            * [.ACES_3D_COMMERCE](#GltfState.ToneMaps.ACES_3D_COMMERCE)
+            * [.ACES_HILL_EXPOSURE_BOOST](#GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST)
             * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
             * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
         * [.DebugOutput](#GltfState.DebugOutput)
@@ -318,7 +318,7 @@ by gltf sample viewer
 
 * [.ToneMaps](#GltfState.ToneMaps)
     * [.NONE](#GltfState.ToneMaps.NONE)
-    * [.ACES_3D_COMMERCE](#GltfState.ToneMaps.ACES_3D_COMMERCE)
+    * [.ACES_HILL_EXPOSURE_BOOST](#GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST)
     * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
     * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
 
@@ -328,9 +328,9 @@ by gltf sample viewer
 don't apply tone mapping
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
-<a name="GltfState.ToneMaps.ACES_3D_COMMERCE"></a>
+<a name="GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST"></a>
 
-#### ToneMaps.ACES\_3D\_COMMERCE
+#### ToneMaps.ACES\_HILL\_EXPOSURE\_BOOST
 ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
