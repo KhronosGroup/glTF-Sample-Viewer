@@ -1,7 +1,7 @@
 name: Deploy to github pages
 on: 
   push:
-    branches: [develop]
+    branches: [master]
       
 jobs:
   build-and-deploy-to-gtihub-pages:
@@ -33,14 +33,4 @@ jobs:
           folder: app_web/dist/
           token: ${{ secrets.BUILD_GITHUB_PAGES }}
           repository-name: KhronosGroup/glTF-Sample-Viewer-Release
-          target-folder: docs
-
-      - name: Deploy to UX3D repo
-        continue-on-error: true #If no changes are commited this action fails
-        uses: JamesIves/github-pages-deploy-action@4.1.0
-        with:
-          branch: main
-          folder: app_web/dist/
-          token: ${{ secrets.BUILD_GITHUB_PAGES }}
-          repository-name: ux3d/gltf-sample-viewer-builds
           target-folder: docs
