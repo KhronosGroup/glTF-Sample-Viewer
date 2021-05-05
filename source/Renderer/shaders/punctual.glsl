@@ -13,8 +13,6 @@ struct Light
 
     float outerConeCos;
     int type;
-    float padding1;
-    float padding2;
 };
 
 const int LightType_Directional = 0;
