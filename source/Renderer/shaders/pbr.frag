@@ -561,31 +561,33 @@ void main()
     color = f_sheen + color * albedoSheenScaling;
     color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
 
-#ifndef DEBUG_OUTPUT // no debug
+    #if DEBUG == DEBUG_NONE
 
-#ifdef ALPHAMODE_MASK
+    #ifdef ALPHAMODE_MASK
     // Late discard to avaoid samplig artifacts. See https://github.com/KhronosGroup/glTF-Sample-Viewer/issues/267
     if(baseColor.a < u_AlphaCutoff)
     {
         discard;
     }
     baseColor.a = 1.0;
-#endif
+    #endif
 
     // regular shading
     g_finalColor = vec4(toneMap(color), baseColor.a);
+    
+    #else
+    g_finalColor.a = 1.0;
+    #endif
 
-#else // debug output
-
-    #ifdef DEBUG_METALLIC
+    #if DEBUG == DEBUG_METALLIC
         g_finalColor.rgb = vec3(materialInfo.metallic);
     #endif
 
-    #ifdef DEBUG_ROUGHNESS
+    #if DEBUG == DEBUG_ROUGHNESS
         g_finalColor.rgb = vec3(materialInfo.perceptualRoughness);
     #endif
 
-    #ifdef DEBUG_NORMAL
+    #if DEBUG == DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
             g_finalColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
         #else
@@ -593,63 +595,59 @@ void main()
         #endif
     #endif
 
-    #ifdef DEBUG_GEOMETRY_NORMAL
+    #if DEBUG == DEBUG_NORMAL_GEOMETRY
         g_finalColor.rgb = (normalInfo.ng + 1.0) / 2.0;
     #endif
 
-    #ifdef DEBUG_WORLDSPACE_NORMAL
+    #if DEBUG == DEBUG_NORMAL_WORLD
         g_finalColor.rgb = (n + 1.0) / 2.0;
     #endif
 
-    #ifdef DEBUG_TANGENT
+    #if DEBUG == DEBUG_TANGENT
         g_finalColor.rgb = t * 0.5 + vec3(0.5);
     #endif
 
-    #ifdef DEBUG_BITANGENT
+    #if DEBUG == DEBUG_BITANGENT
         g_finalColor.rgb = b * 0.5 + vec3(0.5);
     #endif
 
-    #ifdef DEBUG_BASECOLOR
+    #if DEBUG == DEBUG_BASE_COLOR_SRGB
         g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
     #endif
 
-    #ifdef DEBUG_OCCLUSION
+    #if DEBUG == DEBUG_OCCLUSION
         g_finalColor.rgb = vec3(ao);
     #endif
 
-    #ifdef DEBUG_F0
+    #if DEBUG == DEBUG_F0
         g_finalColor.rgb = materialInfo.f0;
     #endif
 
-    #ifdef DEBUG_FEMISSIVE
+    #if DEBUG == DEBUG_EMISSIVE_SRGB
         g_finalColor.rgb = linearTosRGB(f_emissive);
     #endif
 
-    #ifdef DEBUG_FSPECULAR
+    #if DEBUG == DEBUG_SPECULAR_SRGB
         g_finalColor.rgb = linearTosRGB(f_specular);
     #endif
 
-    #ifdef DEBUG_FDIFFUSE
+    #if DEBUG == DEBUG_DIFFUSE_SRGB
         g_finalColor.rgb = linearTosRGB(f_diffuse);
     #endif
 
-    #ifdef DEBUG_FCLEARCOAT
+    #if DEBUG == DEBUG_CLEARCOAT_SRGB
         g_finalColor.rgb = linearTosRGB(f_clearcoat);
     #endif
 
-    #ifdef DEBUG_FSHEEN
+    #if DEBUG == DEBUG_SHEEN_SRGB
         g_finalColor.rgb = linearTosRGB(f_sheen);
     #endif
 
-    #ifdef DEBUG_FTRANSMISSION
+    #if DEBUG == DEBUG_TRANSMISSION_SRGB
         g_finalColor.rgb = linearTosRGB(f_transmission);
     #endif
 
-    #ifdef DEBUG_ALPHA
+    #if DEBUG == DEBUG_ALPHA
         g_finalColor.rgb = vec3(baseColor.a);
     #endif
-
-    g_finalColor.a = 1.0;
-
-#endif // !DEBUG_OUTPUT
 }
