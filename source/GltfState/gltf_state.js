@@ -117,15 +117,15 @@ GltfState.DebugOutput = {
     /** output the normal map value in TBN space */
     NORMAL: "Normal",
     /** output the world space normals (i.e. with TBN applied) */
-    NORMAL_WORLD: "Worldspace Normal",
+    WORLDSPACENORMAL: "Worldspace Normal",
     /** output the normal from the TBN*/
-    NORMAL_GEOMETRY: "Geometry Normal",
+    GEOMETRYNORMAL: "Geometry Normal",
     /** output the tangent from the TBN*/
     TANGENT: "Tangent",
     /** output the bitangent from the TBN */
     BITANGENT: "Bitangent",
     /** output the base color value */
-    BASE_COLOR: "Base Color",
+    BASECOLOR: "Base Color",
     /** output the occlusion value */
     OCCLUSION: "Occlusion",
     /** output the emissive value */

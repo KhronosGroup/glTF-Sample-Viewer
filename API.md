@@ -135,11 +135,11 @@ GltfState containing a state for visualization in GltfView
             * [.METALLIC](#GltfState.DebugOutput.METALLIC)
             * [.ROUGHNESS](#GltfState.DebugOutput.ROUGHNESS)
             * [.NORMAL](#GltfState.DebugOutput.NORMAL)
-            * [.NORMAL_WORLD](#GltfState.DebugOutput.NORMAL_WORLD)
-            * [.NORMAL_GEOMETRY](#GltfState.DebugOutput.NORMAL_GEOMETRY)
+            * [.WORLDSPACENORMAL](#GltfState.DebugOutput.WORLDSPACENORMAL)
+            * [.GEOMETRYNORMAL](#GltfState.DebugOutput.GEOMETRYNORMAL)
             * [.TANGENT](#GltfState.DebugOutput.TANGENT)
             * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
-            * [.BASE_COLOR](#GltfState.DebugOutput.BASE_COLOR)
+            * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
             * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
             * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
             * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
@@ -359,11 +359,11 @@ such as "NORMAL"
     * [.METALLIC](#GltfState.DebugOutput.METALLIC)
     * [.ROUGHNESS](#GltfState.DebugOutput.ROUGHNESS)
     * [.NORMAL](#GltfState.DebugOutput.NORMAL)
-    * [.NORMAL_WORLD](#GltfState.DebugOutput.NORMAL_WORLD)
-    * [.NORMAL_GEOMETRY](#GltfState.DebugOutput.NORMAL_GEOMETRY)
+    * [.WORLDSPACENORMAL](#GltfState.DebugOutput.WORLDSPACENORMAL)
+    * [.GEOMETRYNORMAL](#GltfState.DebugOutput.GEOMETRYNORMAL)
     * [.TANGENT](#GltfState.DebugOutput.TANGENT)
     * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
-    * [.BASE_COLOR](#GltfState.DebugOutput.BASE_COLOR)
+    * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
     * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
     * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
     * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
@@ -398,15 +398,15 @@ output the roughness value from pbr metallic roughness
 output the normal map value in TBN space
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.NORMAL_WORLD"></a>
+<a name="GltfState.DebugOutput.WORLDSPACENORMAL"></a>
 
-#### DebugOutput.NORMAL_WORLD
+#### DebugOutput.WORLDSPACENORMAL
 output the world space normals (i.e. with TBN applied)
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.NORMAL_GEOMETRY"></a>
+<a name="GltfState.DebugOutput.GEOMETRYNORMAL"></a>
 
-#### DebugOutput.NORMAL_GEOMETRY
+#### DebugOutput.GEOMETRYNORMAL
 output the normal from the TBN
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
@@ -422,9 +422,9 @@ output the tangent from the TBN
 output the bitangent from the TBN
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.BASE_COLOR"></a>
+<a name="GltfState.DebugOutput.BASECOLOR"></a>
 
-#### DebugOutput.BASE_COLOR
+#### DebugOutput.BASECOLOR
 output the base color value
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
