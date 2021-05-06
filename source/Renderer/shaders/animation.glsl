@@ -1,64 +1,64 @@
-#ifdef HAS_TARGET_POSITION_0_VEC4
+#ifdef HAS_TARGET_POSITION_0_VEC3
 in vec3 a_target_position0;
 #endif
 
-#ifdef HAS_TARGET_POSITION_1_VEC4
+#ifdef HAS_TARGET_POSITION_1_VEC3
 in vec3 a_target_position1;
 #endif
 
-#ifdef HAS_TARGET_POSITION_2_VEC4
+#ifdef HAS_TARGET_POSITION_2_VEC3
 in vec3 a_target_position2;
 #endif
 
-#ifdef HAS_TARGET_POSITION_3_VEC4
+#ifdef HAS_TARGET_POSITION_3_VEC3
 in vec3 a_target_position3;
 #endif
 
-#ifdef HAS_TARGET_POSITION_4_VEC4
+#ifdef HAS_TARGET_POSITION_4_VEC3
 in vec3 a_target_position4;
 #endif
 
-#ifdef HAS_TARGET_POSITION_5_VEC4
+#ifdef HAS_TARGET_POSITION_5_VEC3
 in vec3 a_target_position5;
 #endif
 
-#ifdef HAS_TARGET_POSITION_6_VEC4
+#ifdef HAS_TARGET_POSITION_6_VEC3
 in vec3 a_target_position6;
 #endif
 
-#ifdef HAS_TARGET_POSITION_7_VEC4
+#ifdef HAS_TARGET_POSITION_7_VEC3
 in vec3 a_target_position7;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_0_VEC4
+#ifdef HAS_TARGET_NORMAL_0_VEC3
 in vec3 a_target_normal0;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_1_VEC4
+#ifdef HAS_TARGET_NORMAL_1_VEC3
 in vec3 a_target_normal1;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_2_VEC4
+#ifdef HAS_TARGET_NORMAL_2_VEC3
 in vec3 a_target_normal2;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_3_VEC4
+#ifdef HAS_TARGET_NORMAL_3_VEC3
 in vec3 a_target_normal3;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_0_VEC4
+#ifdef HAS_TARGET_TANGENT_0_VEC3
 in vec3 a_target_tangent0;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_1_VEC4
+#ifdef HAS_TARGET_TANGENT_1_VEC3
 in vec3 a_target_tangent1;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_2_VEC4
+#ifdef HAS_TARGET_TANGENT_2_VEC3
 in vec3 a_target_tangent2;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_3_VEC4
+#ifdef HAS_TARGET_TANGENT_3_VEC3
 in vec3 a_target_tangent3;
 #endif
 
@@ -140,35 +140,35 @@ vec4 getTargetPosition()
 {
     vec4 pos = vec4(0);
 
-#ifdef HAS_TARGET_POSITION_0_VEC4
+#ifdef HAS_TARGET_POSITION_0_VEC3
     pos.xyz += u_morphWeights[0] * a_target_position0;
 #endif
 
-#ifdef HAS_TARGET_POSITION_1_VEC4
+#ifdef HAS_TARGET_POSITION_1_VEC3
     pos.xyz += u_morphWeights[1] * a_target_position1;
 #endif
 
-#ifdef HAS_TARGET_POSITION_2_VEC4
+#ifdef HAS_TARGET_POSITION_2_VEC3
     pos.xyz += u_morphWeights[2] * a_target_position2;
 #endif
 
-#ifdef HAS_TARGET_POSITION_3_VEC4
+#ifdef HAS_TARGET_POSITION_3_VEC3
     pos.xyz += u_morphWeights[3] * a_target_position3;
 #endif
 
-#ifdef HAS_TARGET_POSITION_4_VEC4
+#ifdef HAS_TARGET_POSITION_4_VEC3
     pos.xyz += u_morphWeights[4] * a_target_position4;
 #endif
 
-#ifdef HAS_TARGET_POSITION_5_VEC4
+#ifdef HAS_TARGET_POSITION_5_VEC3
     pos.xyz += u_morphWeights[4] * a_target_position5;
 #endif
 
-#ifdef HAS_TARGET_POSITION_6_VEC4
+#ifdef HAS_TARGET_POSITION_6_VEC3
     pos.xyz += u_morphWeights[4] * a_target_position6;
 #endif
 
-#ifdef HAS_TARGET_POSITION_7_VEC4
+#ifdef HAS_TARGET_POSITION_7_VEC3
     pos.xyz += u_morphWeights[4] * a_target_position7;
 #endif
 
@@ -179,23 +179,23 @@ vec3 getTargetNormal()
 {
     vec3 normal = vec3(0);
 
-#ifdef HAS_TARGET_NORMAL_0_VEC4
+#ifdef HAS_TARGET_NORMAL_0_VEC3
     normal += u_morphWeights[0] * a_target_normal0;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_1_VEC4
+#ifdef HAS_TARGET_NORMAL_1_VEC3
     normal += u_morphWeights[1] * a_target_normal1;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_2_VEC4
+#ifdef HAS_TARGET_NORMAL_2_VEC3
     normal += u_morphWeights[2] * a_target_normal2;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_3_VEC4
+#ifdef HAS_TARGET_NORMAL_3_VEC3
     normal += u_morphWeights[3] * a_target_normal3;
 #endif
 
-#ifdef HAS_TARGET_NORMAL_4_VEC4
+#ifdef HAS_TARGET_NORMAL_4_VEC3
     normal += u_morphWeights[4] * a_target_normal4;
 #endif
 
@@ -206,23 +206,23 @@ vec3 getTargetTangent()
 {
     vec3 tangent = vec3(0);
 
-#ifdef HAS_TARGET_TANGENT_0_VEC4
+#ifdef HAS_TARGET_TANGENT_0_VEC3
     tangent += u_morphWeights[0] * a_target_tangent0;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_1_VEC4
+#ifdef HAS_TARGET_TANGENT_1_VEC3
     tangent += u_morphWeights[1] * a_target_tangent1;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_2_VEC4
+#ifdef HAS_TARGET_TANGENT_2_VEC3
     tangent += u_morphWeights[2] * a_target_tangent2;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_3_VEC4
+#ifdef HAS_TARGET_TANGENT_3_VEC3
     tangent += u_morphWeights[3] * a_target_tangent3;
 #endif
 
-#ifdef HAS_TARGET_TANGENT_4_VEC4
+#ifdef HAS_TARGET_TANGENT_4_VEC3
     tangent += u_morphWeights[4] * a_target_tangent4;
 #endif
 

@@ -133,6 +133,7 @@ class gltfPrimitive extends GltfObject
                     {
                     case "POSITION":
                         this.defines.push(`HAS_TARGET_POSITION_${i}_${type}`);
+                        console.log(`HAS_TARGET_POSITION_${i}_${type}`)
                         this.glAttributes.push({ attribute: attribute, name: "a_target_position" + i, accessor: idx });
                         break;
                     case "NORMAL":
