@@ -132,16 +132,16 @@ class gltfPrimitive extends GltfObject
                     switch (attribute)
                     {
                     case "POSITION":
-                        this.defines.push(`HAS_TARGET_POSITION_${i}_${type}`);
+                        this.defines.push(`HAS_TARGET_POSITION${i}_${type}`);
                         console.log(`HAS_TARGET_POSITION_${i}_${type}`)
                         this.glAttributes.push({ attribute: attribute, name: "a_target_position" + i, accessor: idx });
                         break;
                     case "NORMAL":
-                        this.defines.push(`HAS_TARGET_NORMAL_${i}_${type}`);
+                        this.defines.push(`HAS_TARGET_NORMAL${i}_${type}`);
                         this.glAttributes.push({ attribute: attribute, name: "a_target_normal" + i, accessor: idx });
                         break;
                     case "TANGENT":
-                        this.defines.push(`HAS_TARGET_TANGENT_${i}_${type}`);
+                        this.defines.push(`HAS_TARGET_TANGENT${i}_${type}`);
                         this.glAttributes.push({ attribute: attribute, name: "a_target_tangent" + i, accessor: idx });
                         break;
                     }
