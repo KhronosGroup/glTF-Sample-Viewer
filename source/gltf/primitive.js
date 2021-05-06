@@ -127,20 +127,21 @@ class gltfPrimitive extends GltfObject
                 for (const attribute of Object.keys(target))
                 {
                     const idx = target[attribute];
+                    const type = gltf.accessors[idx].type;
 
                     switch (attribute)
                     {
                     case "POSITION":
-                        this.defines.push("HAS_TARGET_POSITION" + i + " 1");
-                        this.glAttributes.push({ attribute: attribute, name: "a_Target_Position" + i, accessor: idx });
+                        this.defines.push(`HAS_TARGET_POSITION_${i}_${type}`);
+                        this.glAttributes.push({ attribute: attribute, name: "a_target_position" + i, accessor: idx });
                         break;
                     case "NORMAL":
-                        this.defines.push("HAS_TARGET_NORMAL" + i + " 1");
-                        this.glAttributes.push({ attribute: attribute, name: "a_Target_Normal" + i, accessor: idx });
+                        this.defines.push(`HAS_TARGET_NORMAL_${i}_${type}`);
+                        this.glAttributes.push({ attribute: attribute, name: "a_target_normal" + i, accessor: idx });
                         break;
                     case "TANGENT":
-                        this.defines.push("HAS_TARGET_TANGENT" + i + " 1");
-                        this.glAttributes.push({ attribute: attribute, name: "a_Target_Tangent" + i, accessor: idx });
+                        this.defines.push(`HAS_TARGET_TANGENT_${i}_${type}`);
+                        this.glAttributes.push({ attribute: attribute, name: "a_target_tangent" + i, accessor: idx });
                         break;
                     }
                 }
