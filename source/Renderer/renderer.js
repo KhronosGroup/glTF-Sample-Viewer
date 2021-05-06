@@ -649,8 +649,6 @@ class gltfRenderer
             fragDefines.push("DEBUG DEBUG_TRANSMISSION_SRGB");
             break;
         }
-
-        fragDefines.push("DEBUG_ANY (DEBUG != DEBUG_NONE)");
     }
 
     applyLights(gltf)
