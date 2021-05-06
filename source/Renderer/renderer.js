@@ -600,10 +600,10 @@ class gltfRenderer
         case GltfState.DebugOutput.NORMAL:
             fragDefines.push("DEBUG DEBUG_NORMAL");
             break;
-        case GltfState.DebugOutput.WORLDSPACENORMAL:
+        case GltfState.DebugOutput.NORMAL_WORLD:
             fragDefines.push("DEBUG DEBUG_NORMAL_WORLD");
             break;
-        case GltfState.DebugOutput.GEOMETRYNORMAL:
+        case GltfState.DebugOutput.NORMAL_GEOMETRY:
             fragDefines.push("DEBUG DEBUG_NORMAL_GEOMETRY");
             break;
         case GltfState.DebugOutput.TANGENT:
@@ -618,7 +618,7 @@ class gltfRenderer
         case GltfState.DebugOutput.METALLIC:
             fragDefines.push("DEBUG DEBUG_METALLIC");
             break;
-        case GltfState.DebugOutput.BASECOLOR:
+        case GltfState.DebugOutput.BASE_COLOR:
             fragDefines.push("DEBUG DEBUG_BASE_COLOR_SRGB");
             break;
         case GltfState.DebugOutput.OCCLUSION:
