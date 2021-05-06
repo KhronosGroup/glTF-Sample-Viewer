@@ -66,20 +66,20 @@ in vec3 a_Target_Tangent3;
 uniform float u_morphWeights[WEIGHT_COUNT];
 #endif
 
-#ifdef HAS_JOINT_SET1
-in vec4 a_Joint1;
+#ifdef HAS_JOINTS_0_VEC4
+in vec4 a_joints_0;
 #endif
 
-#ifdef HAS_JOINT_SET2
-in vec4 a_Joint2;
+#ifdef HAS_JOINTS_1_VEC4
+in vec4 a_joints_1;
 #endif
 
-#ifdef HAS_WEIGHT_SET1
-in vec4 a_Weight1;
+#ifdef HAS_WEIGHTS_0_VEC4
+in vec4 a_weights_0;
 #endif
 
-#ifdef HAS_WEIGHT_SET2
-in vec4 a_Weight2;
+#ifdef HAS_WEIGHTS_1_VEC4
+in vec4 a_weights_1;
 #endif
 
 #ifdef USE_SKINNING
@@ -92,20 +92,20 @@ mat4 getSkinningMatrix()
 {
     mat4 skin = mat4(0);
 
-    #if defined(HAS_WEIGHT_SET1) && defined(HAS_JOINT_SET1)
+    #if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
     skin +=
-        a_Weight1.x * u_jointMatrix[int(a_Joint1.x)] +
-        a_Weight1.y * u_jointMatrix[int(a_Joint1.y)] +
-        a_Weight1.z * u_jointMatrix[int(a_Joint1.z)] +
-        a_Weight1.w * u_jointMatrix[int(a_Joint1.w)];
+        a_weights_0.x * u_jointMatrix[int(a_joints_0.x)] +
+        a_weights_0.y * u_jointMatrix[int(a_joints_0.y)] +
+        a_weights_0.z * u_jointMatrix[int(a_joints_0.z)] +
+        a_weights_0.w * u_jointMatrix[int(a_joints_0.w)];
     #endif
 
-    #if defined(HAS_WEIGHT_SET2) && defined(HAS_JOINT_SET2)
+    #if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
     skin +=
-        a_Weight2.x * u_jointMatrix[int(a_Joint2.x)] +
-        a_Weight2.y * u_jointMatrix[int(a_Joint2.y)] +
-        a_Weight2.z * u_jointMatrix[int(a_Joint2.z)] +
-        a_Weight2.w * u_jointMatrix[int(a_Joint2.w)];
+        a_weights_1.x * u_jointMatrix[int(a_joints_1.x)] +
+        a_weights_1.y * u_jointMatrix[int(a_joints_1.y)] +
+        a_weights_1.z * u_jointMatrix[int(a_joints_1.z)] +
+        a_weights_1.w * u_jointMatrix[int(a_joints_1.w)];
     #endif
 
     return skin;
@@ -115,20 +115,20 @@ mat4 getSkinningNormalMatrix()
 {
     mat4 skin = mat4(0);
 
-    #if defined(HAS_WEIGHT_SET1) && defined(HAS_JOINT_SET1)
+    #if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
     skin +=
-        a_Weight1.x * u_jointNormalMatrix[int(a_Joint1.x)] +
-        a_Weight1.y * u_jointNormalMatrix[int(a_Joint1.y)] +
-        a_Weight1.z * u_jointNormalMatrix[int(a_Joint1.z)] +
-        a_Weight1.w * u_jointNormalMatrix[int(a_Joint1.w)];
+        a_weights_0.x * u_jointNormalMatrix[int(a_joints_0.x)] +
+        a_weights_0.y * u_jointNormalMatrix[int(a_joints_0.y)] +
+        a_weights_0.z * u_jointNormalMatrix[int(a_joints_0.z)] +
+        a_weights_0.w * u_jointNormalMatrix[int(a_joints_0.w)];
     #endif
 
-    #if defined(HAS_WEIGHT_SET2) && defined(HAS_JOINT_SET2)
+    #if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
     skin +=
-        a_Weight2.x * u_jointNormalMatrix[int(a_Joint2.x)] +
-        a_Weight2.y * u_jointNormalMatrix[int(a_Joint2.y)] +
-        a_Weight2.z * u_jointNormalMatrix[int(a_Joint2.z)] +
-        a_Weight2.w * u_jointNormalMatrix[int(a_Joint2.w)];
+        a_weights_1.x * u_jointNormalMatrix[int(a_joints_1.x)] +
+        a_weights_1.y * u_jointNormalMatrix[int(a_joints_1.y)] +
+        a_weights_1.z * u_jointNormalMatrix[int(a_joints_1.z)] +
+        a_weights_1.w * u_jointNormalMatrix[int(a_joints_1.w)];
     #endif
 
     return skin;
