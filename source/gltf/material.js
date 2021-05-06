@@ -220,14 +220,16 @@ class gltfMaterial extends GltfObject
             this.properties.set("u_SpecularGlossinessUVSet", this.specularGlossinessTexture.texCoord);
         }
 
+        this.defines.push("ALPHAMODE_OPAQUE 0");
+        this.defines.push("ALPHAMODE_MASK 1");
         if(this.alphaMode === 'MASK') // only set cutoff value for mask material
         {
-            this.defines.push("ALPHAMODE_MASK 1");
+            this.defines.push("ALPHAMODE ALPHAMODE_MASK");
             this.properties.set("u_AlphaCutoff", this.alphaCutoff);
         }
         else if (this.alphaMode === 'OPAQUE')
         {
-            this.defines.push("ALPHAMODE_OPAQUE 1");
+            this.defines.push("ALPHAMODE ALPHAMODE_OPAQUE");
         }
 
         if (this.pbrMetallicRoughness !== undefined && this.type !== "SG")
