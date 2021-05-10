@@ -60,7 +60,7 @@ uniform vec3 u_AttenuationColor;
 uniform float u_AttenuationDistance;
 
 //PBR Next IOR
-uniform float u_ior;
+uniform float u_Ior;
 
 // Alpha mode
 uniform float u_AlphaCutoff;
@@ -87,8 +87,7 @@ struct MaterialInfo
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
 
-    vec3 n;
-    vec3 baseColor; // getBaseColor()
+    vec3 baseColor;
 
     float sheenRoughnessFactor;
     vec3 sheenColorFactor;
@@ -122,7 +121,7 @@ NormalInfo getNormalInfo(vec3 v)
     vec3 n, t, b, ng;
 
     // Compute geometrical TBN:
-    #ifdef HAS_TANGENTS
+    #ifdef HAS_TANGENT_VEC4
         // Trivial TBN computation, present as vertex attribute.
         // Normalize eigenvectors as matrix is linearly interpolated.
         t = normalize(v_TBN[0]);
@@ -130,7 +129,7 @@ NormalInfo getNormalInfo(vec3 v)
         ng = normalize(v_TBN[2]);
     #else
         // Normals are either present as vertex attributes or approximated.
-        #ifdef HAS_NORMALS
+        #ifdef HAS_NORMAL_VEC3
             ng = normalize(v_Normal);
         #else
             ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
@@ -313,7 +312,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
     info.clearcoatF0 = vec3(info.f0);
     info.clearcoatF90 = vec3(1.0);
 
-    #ifdef HAS_CLEARCOAT_TEXTURE_MAP
+    #ifdef HAS_CLEARCOAT_MAP
         vec4 clearcoatSample = texture(u_ClearcoatSampler, getClearcoatUV());
         info.clearcoatFactor *= clearcoatSample.r;
     #endif
@@ -335,8 +334,8 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 #ifdef MATERIAL_IOR
 MaterialInfo getIorInfo(MaterialInfo info)
 {
-    info.f0 = vec3(pow(( u_ior - 1.0f) /  (u_ior + 1.0f),2.0));
-    info.ior = u_ior;
+    info.f0 = vec3(pow(( u_Ior - 1.0f) /  (u_Ior + 1.0f),2.0));
+    info.ior = u_Ior;
     
     return info;
 }
@@ -351,7 +350,7 @@ void main()
 {
     vec4 baseColor = getBaseColor();
 
-#ifdef ALPHAMODE_OPAQUE
+#if ALPHAMODE == ALPHAMODE_OPAQUE
     baseColor.a = 1.0;
 #endif
 
@@ -423,8 +422,6 @@ void main()
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
     materialInfo.f90 = vec3(1.0f);
 
-    materialInfo.n = n;
-
     // LIGHTING
     vec3 f_specular = vec3(0.0);
     vec3 f_diffuse = vec3(0.0);
@@ -451,10 +448,6 @@ void main()
 #endif
 
 #if (defined(MATERIAL_TRANSMISSION) || defined(MATERIAL_VOLUME)) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
-    vec2 normalizedFragCoord = vec2(0.0,0.0);
-    normalizedFragCoord.x = gl_FragCoord.x/float(u_ScreenSize.x);
-    normalizedFragCoord.y = gl_FragCoord.y/float(u_ScreenSize.y);
-
     f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
@@ -526,7 +519,7 @@ void main()
             l = normalize(pointToLight);
 
             vec3 intensity = getLighIntensity(light, pointToLight);
-            vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.transmissionFactor, materialInfo.baseColor, materialInfo.ior);
+            vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.baseColor, materialInfo.ior);
 
             #ifdef MATERIAL_VOLUME
                 transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
@@ -568,31 +561,33 @@ void main()
     color = f_sheen + color * albedoSheenScaling;
     color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
 
-#ifndef DEBUG_OUTPUT // no debug
+    #if DEBUG == DEBUG_NONE
 
-#ifdef ALPHAMODE_MASK
+    #if ALPHAMODE == ALPHAMODE_MASK
     // Late discard to avaoid samplig artifacts. See https://github.com/KhronosGroup/glTF-Sample-Viewer/issues/267
     if(baseColor.a < u_AlphaCutoff)
     {
         discard;
     }
     baseColor.a = 1.0;
-#endif
+    #endif
 
     // regular shading
     g_finalColor = vec4(toneMap(color), baseColor.a);
+    
+    #else
+    g_finalColor.a = 1.0;
+    #endif
 
-#else // debug output
-
-    #ifdef DEBUG_METALLIC
+    #if DEBUG == DEBUG_METALLIC
         g_finalColor.rgb = vec3(materialInfo.metallic);
     #endif
 
-    #ifdef DEBUG_ROUGHNESS
+    #if DEBUG == DEBUG_ROUGHNESS
         g_finalColor.rgb = vec3(materialInfo.perceptualRoughness);
     #endif
 
-    #ifdef DEBUG_NORMAL
+    #if DEBUG == DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
             g_finalColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
         #else
@@ -600,63 +595,59 @@ void main()
         #endif
     #endif
 
-    #ifdef DEBUG_GEOMETRY_NORMAL
+    #if DEBUG == DEBUG_NORMAL_GEOMETRY
         g_finalColor.rgb = (normalInfo.ng + 1.0) / 2.0;
     #endif
 
-    #ifdef DEBUG_WORLDSPACE_NORMAL
+    #if DEBUG == DEBUG_NORMAL_WORLD
         g_finalColor.rgb = (n + 1.0) / 2.0;
     #endif
 
-    #ifdef DEBUG_TANGENT
+    #if DEBUG == DEBUG_TANGENT
         g_finalColor.rgb = t * 0.5 + vec3(0.5);
     #endif
 
-    #ifdef DEBUG_BITANGENT
+    #if DEBUG == DEBUG_BITANGENT
         g_finalColor.rgb = b * 0.5 + vec3(0.5);
     #endif
 
-    #ifdef DEBUG_BASECOLOR
+    #if DEBUG == DEBUG_BASE_COLOR_SRGB
         g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
     #endif
 
-    #ifdef DEBUG_OCCLUSION
+    #if DEBUG == DEBUG_OCCLUSION
         g_finalColor.rgb = vec3(ao);
     #endif
 
-    #ifdef DEBUG_F0
+    #if DEBUG == DEBUG_F0
         g_finalColor.rgb = materialInfo.f0;
     #endif
 
-    #ifdef DEBUG_FEMISSIVE
+    #if DEBUG == DEBUG_EMISSIVE_SRGB
         g_finalColor.rgb = linearTosRGB(f_emissive);
     #endif
 
-    #ifdef DEBUG_FSPECULAR
+    #if DEBUG == DEBUG_SPECULAR_SRGB
         g_finalColor.rgb = linearTosRGB(f_specular);
     #endif
 
-    #ifdef DEBUG_FDIFFUSE
+    #if DEBUG == DEBUG_DIFFUSE_SRGB
         g_finalColor.rgb = linearTosRGB(f_diffuse);
     #endif
 
-    #ifdef DEBUG_FCLEARCOAT
+    #if DEBUG == DEBUG_CLEARCOAT_SRGB
         g_finalColor.rgb = linearTosRGB(f_clearcoat);
     #endif
 
-    #ifdef DEBUG_FSHEEN
+    #if DEBUG == DEBUG_SHEEN_SRGB
         g_finalColor.rgb = linearTosRGB(f_sheen);
     #endif
 
-    #ifdef DEBUG_FTRANSMISSION
+    #if DEBUG == DEBUG_TRANSMISSION_SRGB
         g_finalColor.rgb = linearTosRGB(f_transmission);
     #endif
 
-    #ifdef DEBUG_ALPHA
+    #if DEBUG == DEBUG_ALPHA
         g_finalColor.rgb = vec3(baseColor.a);
     #endif
-
-    g_finalColor.a = 1.0;
-
-#endif // !DEBUG_OUTPUT
 }

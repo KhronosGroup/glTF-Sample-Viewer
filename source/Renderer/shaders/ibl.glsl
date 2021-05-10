@@ -1,16 +1,16 @@
 vec3 getDiffuseLight(vec3 n)
 {
-    return texture(u_LambertianEnvSampler, u_envRotation * n).rgb;
+    return texture(u_LambertianEnvSampler, u_EnvRotation * n).rgb;
 }
 
 vec4 getSpecularSample(vec3 reflection, float lod)
 {
-    return textureLod(u_GGXEnvSampler, u_envRotation * reflection, lod);
+    return textureLod(u_GGXEnvSampler, u_EnvRotation * reflection, lod);
 }
 
 vec4 getSheenSample(vec3 reflection, float lod)
 {
-    return textureLod(u_CharlieEnvSampler, u_envRotation * reflection, lod);
+    return textureLod(u_CharlieEnvSampler, u_EnvRotation * reflection, lod);
 }
 
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness, vec3 F0, float specularWeight)
@@ -34,6 +34,8 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness, vec3 F0, float specularW
     return specularWeight * specularLight * FssEss;
 }
 
+
+#ifdef MATERIAL_TRANSMISSION
 vec3 getTransmissionSample(vec2 fragCoord, float roughness, float ior)
 {
     float framebufferLod = log2(float(u_TransmissionFramebufferSize.x)) * applyIorToRoughness(roughness, ior);
@@ -41,8 +43,10 @@ vec3 getTransmissionSample(vec2 fragCoord, float roughness, float ior)
     transmittedLight = sRGBToLinear(transmittedLight);
     return transmittedLight;
 }
+#endif
 
 
+#ifdef MATERIAL_TRANSMISSION
 vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 baseColor, vec3 f0, vec3 f90,
     vec3 position, mat4 modelMatrix, mat4 viewMatrix, mat4 projMatrix, float ior, float thickness, vec3 attenuationColor, float attenuationDistance)
 {
@@ -63,11 +67,12 @@ vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 base
     // Sample GGX LUT to get the specular component.
     float NdotV = clampedDot(n, v);
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;   
+    vec2 brdf = texture(u_GGXLUT, brdfSamplePoint).rg;
     vec3 specularColor = f0 * brdf.x + f90 * brdf.y;
 
     return (1.0 - specularColor) * attenuatedColor * baseColor;
 }
+#endif
 
 // specularWeight is introduced with KHR_materials_specular
 vec3 getIBLRadianceLambertian(vec3 n, vec3 v, float roughness, vec3 diffuseColor, vec3 F0, float specularWeight)

@@ -149,8 +149,6 @@ class UniformLight extends UniformStruct
 
         this.outerConeCos = Math.PI / 4;
         this.type = Type_Directional;
-        this.padding1 = 0.0;
-        this.padding2 = 0.0;
     }
 }
 

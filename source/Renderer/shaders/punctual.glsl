@@ -13,8 +13,6 @@ struct Light
 
     float outerConeCos;
     int type;
-    float padding1;
-    float padding2;
 };
 
 const int LightType_Directional = 0;
@@ -65,7 +63,7 @@ vec3 getLighIntensity(Light light, vec3 pointToLight)
 }
 
 vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness,
-        vec3 f0, vec3 f90, float transmissionPercentage, vec3 baseColor, float ior)
+        vec3 f0, vec3 f90, vec3 baseColor, float ior)
 {
     float transmissionRougness = applyIorToRoughness(alphaRoughness, ior);
 
@@ -77,7 +75,6 @@ vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, 
 
     float D = D_GGX(clamp(dot(n, h), 0.0, 1.0), transmissionRougness);
     vec3 F = F_Schlick(f0, f90, clamp(dot(v, h), 0.0, 1.0));
-    float T = transmissionPercentage;
     float Vis = V_GGX(clamp(dot(n, l_mirror), 0.0, 1.0), clamp(dot(n, v), 0.0, 1.0), transmissionRougness);
 
     // Transmission BTDF

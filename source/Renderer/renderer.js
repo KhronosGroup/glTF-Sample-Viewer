@@ -570,70 +570,83 @@ class gltfRenderer
         default:
             break;
         }
-
-        if (state.renderingParameters.debugOutput !== GltfState.DebugOutput.NONE)
-        {
-            fragDefines.push("DEBUG_OUTPUT 1");
-        }
+        
+        fragDefines.push("DEBUG_NONE 0");
+        fragDefines.push("DEBUG_NORMAL 1");
+        fragDefines.push("DEBUG_NORMAL_WORLD 2");
+        fragDefines.push("DEBUG_NORMAL_GEOMETRY 3");
+        fragDefines.push("DEBUG_TANGENT 4");
+        fragDefines.push("DEBUG_BITANGENT 5");
+        fragDefines.push("DEBUG_ROUGHNESS 6");
+        fragDefines.push("DEBUG_METALLIC 7");
+        fragDefines.push("DEBUG_BASE_COLOR_SRGB 8");
+        fragDefines.push("DEBUG_BASE_COLOR_LINEAR 9");
+        fragDefines.push("DEBUG_OCCLUSION 10");
+        fragDefines.push("DEBUG_EMISSIVE_SRGB 11");
+        fragDefines.push("DEBUG_EMISSIVE_LINEAR 12");
+        fragDefines.push("DEBUG_F0 13");
+        fragDefines.push("DEBUG_ALPHA 14");
+        fragDefines.push("DEBUG_DIFFUSE_SRGB 15");
+        fragDefines.push("DEBUG_SPECULAR_SRGB 16");
+        fragDefines.push("DEBUG_CLEARCOAT_SRGB 17");
+        fragDefines.push("DEBUG_SHEEN_SRGB 18");
+        fragDefines.push("DEBUG_TRANSMISSION_SRGB 19");
 
         switch (state.renderingParameters.debugOutput)
         {
-        case (GltfState.DebugOutput.METALLIC):
-            fragDefines.push("DEBUG_METALLIC 1");
+        default:
+            fragDefines.push("DEBUG DEBUG_NONE");
             break;
-        case (GltfState.DebugOutput.ROUGHNESS):
-            fragDefines.push("DEBUG_ROUGHNESS 1");
+        case GltfState.DebugOutput.NORMAL:
+            fragDefines.push("DEBUG DEBUG_NORMAL");
             break;
-        case (GltfState.DebugOutput.NORMAL):
-            fragDefines.push("DEBUG_NORMAL 1");
+        case GltfState.DebugOutput.WORLDSPACENORMAL:
+            fragDefines.push("DEBUG DEBUG_NORMAL_WORLD");
             break;
-        case (GltfState.DebugOutput.WORLDSPACENORMAL):
-            fragDefines.push("DEBUG_WORLDSPACE_NORMAL 1");
+        case GltfState.DebugOutput.GEOMETRYNORMAL:
+            fragDefines.push("DEBUG DEBUG_NORMAL_GEOMETRY");
             break;
-        case (GltfState.DebugOutput.GEOMETRYNORMAL):
-            fragDefines.push("DEBUG_GEOMETRY_NORMAL 1");
+        case GltfState.DebugOutput.TANGENT:
+            fragDefines.push("DEBUG DEBUG_TANGENT");
             break;
-        case (GltfState.DebugOutput.TANGENT):
-            fragDefines.push("DEBUG_TANGENT 1");
+        case GltfState.DebugOutput.BITANGENT:
+            fragDefines.push("DEBUG DEBUG_BITANGENT");
             break;
-        case (GltfState.DebugOutput.BITANGENT):
-            fragDefines.push("DEBUG_BITANGENT 1");
+        case GltfState.DebugOutput.ROUGHNESS:
+            fragDefines.push("DEBUG DEBUG_ROUGHNESS");
             break;
-        case (GltfState.DebugOutput.BASECOLOR):
-            fragDefines.push("DEBUG_BASECOLOR 1");
+        case GltfState.DebugOutput.METALLIC:
+            fragDefines.push("DEBUG DEBUG_METALLIC");
             break;
-        case (GltfState.DebugOutput.OCCLUSION):
-            fragDefines.push("DEBUG_OCCLUSION 1");
+        case GltfState.DebugOutput.BASECOLOR:
+            fragDefines.push("DEBUG DEBUG_BASE_COLOR_SRGB");
             break;
-        case (GltfState.DebugOutput.EMISSIVE):
-            fragDefines.push("DEBUG_FEMISSIVE 1");
+        case GltfState.DebugOutput.OCCLUSION:
+            fragDefines.push("DEBUG DEBUG_OCCLUSION");
             break;
-        case (GltfState.DebugOutput.SPECULAR):
-            fragDefines.push("DEBUG_FSPECULAR 1");
+        case GltfState.DebugOutput.EMISSIVE:
+            fragDefines.push("DEBUG DEBUG_EMISSIVE_SRGB");
             break;
-        case (GltfState.DebugOutput.DIFFUSE):
-            fragDefines.push("DEBUG_FDIFFUSE 1");
+        case GltfState.DebugOutput.F0:
+            fragDefines.push("DEBUG DEBUG_F0");
             break;
-        case (GltfState.DebugOutput.THICKNESS):
-            fragDefines.push("DEBUG_THICKNESS 1");
+        case GltfState.DebugOutput.ALPHA:
+            fragDefines.push("DEBUG DEBUG_ALPHA");
             break;
-        case (GltfState.DebugOutput.CLEARCOAT):
-            fragDefines.push("DEBUG_FCLEARCOAT 1");
+        case GltfState.DebugOutput.DIFFUSE:
+            fragDefines.push("DEBUG DEBUG_DIFFUSE_SRGB");
             break;
-        case (GltfState.DebugOutput.SHEEN):
-            fragDefines.push("DEBUG_FSHEEN 1");
+        case GltfState.DebugOutput.SPECULAR:
+            fragDefines.push("DEBUG DEBUG_SPECULAR_SRGB");
             break;
-        case (GltfState.DebugOutput.SUBSURFACE):
-            fragDefines.push("DEBUG_FSUBSURFACE 1");
+        case GltfState.DebugOutput.CLEARCOAT:
+            fragDefines.push("DEBUG DEBUG_CLEARCOAT_SRGB");
             break;
-        case (GltfState.DebugOutput.TRANSMISSION):
-            fragDefines.push("DEBUG_FTRANSMISSION 1");
+        case GltfState.DebugOutput.SHEEN:
+            fragDefines.push("DEBUG DEBUG_SHEEN_SRGB");
             break;
-        case (GltfState.DebugOutput.F0):
-            fragDefines.push("DEBUG_F0 1");
-            break;
-        case (GltfState.DebugOutput.ALPHA):
-            fragDefines.push("DEBUG_ALPHA 1");
+        case GltfState.DebugOutput.TRANSMISSION:
+            fragDefines.push("DEBUG DEBUG_TRANSMISSION_SRGB");
             break;
         }
     }
@@ -669,7 +682,7 @@ class gltfRenderer
         mat4.rotateY(rotMatrix4, rotMatrix4,  state.renderingParameters.environmentRotation / 180.0 * Math.PI);
         let rotMatrix3 = mat3.create();
         mat3.fromMat4(rotMatrix3, rotMatrix4);
-        this.shader.updateUniform("u_envRotation", rotMatrix3);
+        this.shader.updateUniform("u_EnvRotation", rotMatrix3);
 
         return texSlotOffset;
     }
