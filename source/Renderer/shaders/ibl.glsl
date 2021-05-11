@@ -40,7 +40,6 @@ vec3 getTransmissionSample(vec2 fragCoord, float roughness, float ior)
 {
     float framebufferLod = log2(float(u_TransmissionFramebufferSize.x)) * applyIorToRoughness(roughness, ior);
     vec3 transmittedLight = textureLod(u_TransmissionFramebufferSampler, fragCoord.xy, framebufferLod).rgb;
-    transmittedLight = sRGBToLinear(transmittedLight);
     return transmittedLight;
 }
 #endif
