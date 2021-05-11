@@ -19,6 +19,12 @@ const int LightType_Directional = 0;
 const int LightType_Point = 1;
 const int LightType_Spot = 2;
 
+
+#ifdef USE_PUNCTUAL
+uniform Light u_Lights[LIGHT_COUNT + 1]; //Array [0] is not allowed
+#endif
+
+
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#range-property
 float getRangeAttenuation(float range, float distance)
 {
