@@ -1,8 +1,8 @@
-// textures.glsl needs to be included
-
 const float M_PI = 3.141592653589793;
 
+
 in vec3 v_Position;
+
 
 #ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
@@ -12,6 +12,7 @@ in vec3 v_Normal;
 #endif
 #endif
 
+
 #ifdef HAS_COLOR_0_VEC3
 in vec3 v_Color;
 #endif
@@ -19,19 +20,21 @@ in vec3 v_Color;
 in vec4 v_Color;
 #endif
 
+
 vec4 getVertexColor()
 {
    vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
 
-#ifdef HAS_COLOR_0_VEC3
+    #ifdef HAS_COLOR_0_VEC3
     color.rgb = v_Color.rgb;
-#endif
-#ifdef HAS_COLOR_0_VEC4
+    #endif
+    #ifdef HAS_COLOR_0_VEC4
     color = v_Color;
-#endif
+    #endif
 
    return color;
 }
+
 
 struct NormalInfo {
     vec3 ng;   // Geometric normal
@@ -40,10 +43,12 @@ struct NormalInfo {
     vec3 b;    // Pertubed bitangent
 };
 
+
 float clampedDot(vec3 x, vec3 y)
 {
     return clamp(dot(x, y), 0.0, 1.0);
 }
+
 
 float max3(vec3 v)
 {

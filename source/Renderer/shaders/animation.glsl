@@ -120,6 +120,7 @@ uniform mat4 u_jointNormalMatrix[JOINT_COUNT];
 #endif
 
 #ifdef USE_SKINNING
+
 mat4 getSkinningMatrix()
 {
     mat4 skin = mat4(0);
@@ -143,6 +144,7 @@ mat4 getSkinningMatrix()
     return skin;
 }
 
+
 mat4 getSkinningNormalMatrix()
 {
     mat4 skin = mat4(0);
@@ -165,44 +167,47 @@ mat4 getSkinningNormalMatrix()
 
     return skin;
 }
+
 #endif // !USE_SKINNING
 
+
 #ifdef USE_MORPHING
+
 vec4 getTargetPosition()
 {
     vec4 pos = vec4(0);
 
-#ifdef HAS_TARGET_POSITION0_VEC3
+    #ifdef HAS_TARGET_POSITION0_VEC3
     pos.xyz += u_morphWeights[0] * a_target_position0;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION1_VEC3
+    #ifdef HAS_TARGET_POSITION1_VEC3
     pos.xyz += u_morphWeights[1] * a_target_position1;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION2_VEC3
+    #ifdef HAS_TARGET_POSITION2_VEC3
     pos.xyz += u_morphWeights[2] * a_target_position2;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION3_VEC3
+    #ifdef HAS_TARGET_POSITION3_VEC3
     pos.xyz += u_morphWeights[3] * a_target_position3;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION4_VEC3
+    #ifdef HAS_TARGET_POSITION4_VEC3
     pos.xyz += u_morphWeights[4] * a_target_position4;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION5_VEC3
+    #ifdef HAS_TARGET_POSITION5_VEC3
     pos.xyz += u_morphWeights[5] * a_target_position5;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION6_VEC3
+    #ifdef HAS_TARGET_POSITION6_VEC3
     pos.xyz += u_morphWeights[6] * a_target_position6;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_POSITION7_VEC3
+    #ifdef HAS_TARGET_POSITION7_VEC3
     pos.xyz += u_morphWeights[7] * a_target_position7;
-#endif
+    #endif
 
     return pos;
 }
@@ -211,76 +216,77 @@ vec3 getTargetNormal()
 {
     vec3 normal = vec3(0);
 
-#ifdef HAS_TARGET_NORMAL0_VEC3
+    #ifdef HAS_TARGET_NORMAL0_VEC3
     normal += u_morphWeights[0] * a_target_normal0;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL1_VEC3
+    #ifdef HAS_TARGET_NORMAL1_VEC3
     normal += u_morphWeights[1] * a_target_normal1;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL2_VEC3
+    #ifdef HAS_TARGET_NORMAL2_VEC3
     normal += u_morphWeights[2] * a_target_normal2;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL3_VEC3
+    #ifdef HAS_TARGET_NORMAL3_VEC3
     normal += u_morphWeights[3] * a_target_normal3;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL4_VEC3
+    #ifdef HAS_TARGET_NORMAL4_VEC3
     normal += u_morphWeights[4] * a_target_normal4;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL5_VEC3
+    #ifdef HAS_TARGET_NORMAL5_VEC3
     normal += u_morphWeights[5] * a_target_normal5;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL6_VEC3
+    #ifdef HAS_TARGET_NORMAL6_VEC3
     normal += u_morphWeights[6] * a_target_normal6;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_NORMAL7_VEC3
+    #ifdef HAS_TARGET_NORMAL7_VEC3
     normal += u_morphWeights[7] * a_target_normal7;
-#endif
+    #endif
 
     return normal;
 }
+
 
 vec3 getTargetTangent()
 {
     vec3 tangent = vec3(0);
 
-#ifdef HAS_TARGET_TANGENT0_VEC3
+    #ifdef HAS_TARGET_TANGENT0_VEC3
     tangent += u_morphWeights[0] * a_target_tangent0;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT1_VEC3
+    #ifdef HAS_TARGET_TANGENT1_VEC3
     tangent += u_morphWeights[1] * a_target_tangent1;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT2_VEC3
+    #ifdef HAS_TARGET_TANGENT2_VEC3
     tangent += u_morphWeights[2] * a_target_tangent2;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT3_VEC3
+    #ifdef HAS_TARGET_TANGENT3_VEC3
     tangent += u_morphWeights[3] * a_target_tangent3;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT4_VEC3
+    #ifdef HAS_TARGET_TANGENT4_VEC3
     tangent += u_morphWeights[4] * a_target_tangent4;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT5_VEC3
+    #ifdef HAS_TARGET_TANGENT5_VEC3
     tangent += u_morphWeights[5] * a_target_tangent5;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT6_VEC3
+    #ifdef HAS_TARGET_TANGENT6_VEC3
     tangent += u_morphWeights[6] * a_target_tangent6;
-#endif
+    #endif
 
-#ifdef HAS_TARGET_TANGENT7_VEC3
+    #ifdef HAS_TARGET_TANGENT7_VEC3
     tangent += u_morphWeights[7] * a_target_tangent7;
-#endif
+    #endif
 
     return tangent;
 }

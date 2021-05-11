@@ -1,13 +1,17 @@
 precision highp float;
 
+
 #include <tonemapping.glsl>
+
 
 uniform samplerCube u_specularEnvSampler;
 uniform float u_envBlurNormalized;
 uniform int u_MipCount;
 
+
 out vec4 FragColor;
 in vec3 TexCoords;
+
 
 void main()
 {

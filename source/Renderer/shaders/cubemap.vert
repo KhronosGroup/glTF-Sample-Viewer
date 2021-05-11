@@ -1,8 +1,10 @@
+uniform mat4 u_ViewProjectionMatrix;
+uniform mat3 u_EnvRotation;
+
+
 in vec3 a_position;
 out vec3 TexCoords;
 
-uniform mat4 u_ViewProjectionMatrix;
-uniform mat3 u_EnvRotation;
 
 void main()
 {

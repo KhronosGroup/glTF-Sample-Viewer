@@ -15,6 +15,7 @@ struct Light
     int type;
 };
 
+
 const int LightType_Directional = 0;
 const int LightType_Point = 1;
 const int LightType_Spot = 2;
@@ -36,6 +37,7 @@ float getRangeAttenuation(float range, float distance)
     return max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
+
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles
 float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeCos, float innerConeCos)
 {
@@ -50,6 +52,7 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     }
     return 0.0;
 }
+
 
 vec3 getLighIntensity(Light light, vec3 pointToLight)
 {
@@ -68,8 +71,9 @@ vec3 getLighIntensity(Light light, vec3 pointToLight)
     return rangeAttenuation * spotAttenuation * light.intensity * light.color;
 }
 
+
 vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, float alphaRoughness,
-        vec3 f0, vec3 f90, vec3 baseColor, float ior)
+    vec3 f0, vec3 f90, vec3 baseColor, float ior)
 {
     float transmissionRougness = applyIorToRoughness(alphaRoughness, ior);
 
@@ -87,6 +91,7 @@ vec3 getPunctualRadianceTransmission(vec3 normal, vec3 view, vec3 pointToLight, 
     return (1.0 - F) * baseColor * D * Vis;
 }
 
+
 vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, float VdotH, vec3 f0, vec3 f90, float clearcoatRoughness)
 {
     float NdotL = clampedDot(clearcoatNormal, l);
@@ -95,10 +100,12 @@ vec3 getPunctualRadianceClearCoat(vec3 clearcoatNormal, vec3 v, vec3 l, vec3 h, 
     return NdotL * BRDF_specularGGX(f0, f90, clearcoatRoughness * clearcoatRoughness, 1.0, VdotH, NdotL, NdotV, NdotH);
 }
 
+
 vec3 getPunctualRadianceSheen(vec3 sheenColor, float sheenRoughness, float NdotL, float NdotV, float NdotH)
 {
     return NdotL * BRDF_specularSheen(sheenColor, sheenRoughness, NdotL, NdotV, NdotH);
 }
+
 
 // Compute attenuated light as it travels through a volume.
 vec3 applyVolumeAttenuation(vec3 radiance, float transmissionDistance, vec3 attenuationColor, float attenuationDistance)
@@ -116,6 +123,7 @@ vec3 applyVolumeAttenuation(vec3 radiance, float transmissionDistance, vec3 atte
         return transmittance * radiance;
     }
 }
+
 
 vec3 getVolumeTransmissionRay(vec3 n, vec3 v, float thickness, float ior, mat4 modelMatrix)
 {

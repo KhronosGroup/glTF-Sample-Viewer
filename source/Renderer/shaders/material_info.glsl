@@ -44,6 +44,7 @@ uniform mat4 u_ModelMatrix;
 uniform mat4 u_ViewMatrix;
 uniform mat4 u_ProjectionMatrix;
 
+
 struct MaterialInfo
 {
     float ior;
@@ -76,6 +77,7 @@ struct MaterialInfo
     vec3 attenuationColor;
     float attenuationDistance;
 };
+
 
 // Get normal, tangent and bitangent vectors.
 NormalInfo getNormalInfo(vec3 v)
@@ -133,6 +135,7 @@ NormalInfo getNormalInfo(vec3 v)
     return info;
 }
 
+
 vec3 getClearcoatNormal(NormalInfo normalInfo)
 {
     #ifdef HAS_CLEARCOAT_NORMAL_MAP
@@ -165,6 +168,7 @@ vec4 getBaseColor()
     return baseColor * getVertexColor();
 }
 
+
 MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 {
     info.f0 = u_SpecularFactor;
@@ -181,6 +185,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 
     return info;
 }
+
 
 MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 {
@@ -204,6 +209,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
     return info;
 }
 
+
 MaterialInfo getSheenInfo(MaterialInfo info)
 {
     info.sheenColorFactor = u_SheenColorFactor;
@@ -221,6 +227,7 @@ MaterialInfo getSheenInfo(MaterialInfo info)
 
     return info;
 }
+
 
 #ifdef MATERIAL_SPECULAR
 MaterialInfo getSpecularInfo(MaterialInfo info)
@@ -244,6 +251,7 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
 }
 #endif
 
+
 #ifdef MATERIAL_TRANSMISSION
 MaterialInfo getTransmissionInfo(MaterialInfo info)
 {
@@ -257,6 +265,7 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
     return info;
 }
 #endif
+
 
 #ifdef MATERIAL_VOLUME
 MaterialInfo getVolumeInfo(MaterialInfo info)
@@ -273,6 +282,7 @@ MaterialInfo getVolumeInfo(MaterialInfo info)
     return info;
 }
 #endif
+
 
 MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 {
@@ -300,6 +310,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
     return info;
 }
 
+
 #ifdef MATERIAL_IOR
 MaterialInfo getIorInfo(MaterialInfo info)
 {
@@ -309,6 +320,7 @@ MaterialInfo getIorInfo(MaterialInfo info)
     return info;
 }
 #endif
+
 
 float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
 {

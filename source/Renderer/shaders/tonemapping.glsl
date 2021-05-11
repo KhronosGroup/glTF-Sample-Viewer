@@ -1,7 +1,9 @@
 uniform float u_Exposure;
 
+
 const float GAMMA = 2.2;
 const float INV_GAMMA = 1.0 / GAMMA;
+
 
 // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
 const mat3 ACESInputMat = mat3
@@ -11,6 +13,7 @@ const mat3 ACESInputMat = mat3
     0.04823, 0.01566, 0.83777
 );
 
+
 // ODT_SAT => XYZ => D60_2_D65 => sRGB
 const mat3 ACESOutputMat = mat3
 (
@@ -19,12 +22,14 @@ const mat3 ACESOutputMat = mat3
     -0.07367, -0.00605,  1.07602
 );
 
+
 // linear to sRGB approximation
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 vec3 linearTosRGB(vec3 color)
 {
     return pow(color, vec3(INV_GAMMA));
 }
+
 
 // sRGB to linear approximation
 // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
@@ -33,10 +38,12 @@ vec3 sRGBToLinear(vec3 srgbIn)
     return vec3(pow(srgbIn.xyz, vec3(GAMMA)));
 }
 
+
 vec4 sRGBToLinear(vec4 srgbIn)
 {
     return vec4(sRGBToLinear(srgbIn.xyz), srgbIn.w);
 }
+
 
 // ACES tone map (faster approximation)
 // see: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
@@ -50,6 +57,7 @@ vec3 toneMapACES_Narkowicz(vec3 color)
     return clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0);
 }
 
+
 // ACES filmic tone map approximation
 // see https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
 vec3 RRTAndODTFit(vec3 color)
@@ -58,6 +66,8 @@ vec3 RRTAndODTFit(vec3 color)
     vec3 b = color * (0.983729 * color + 0.4329510) + 0.238081;
     return a / b;
 }
+
+
 // tone mapping 
 vec3 toneMapACES_Hill(vec3 color)
 {
@@ -74,26 +84,25 @@ vec3 toneMapACES_Hill(vec3 color)
     return color;
 }
 
+
 vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
-#ifdef TONEMAP_ACES_NARKOWICZ
+    #ifdef TONEMAP_ACES_NARKOWICZ
     color = toneMapACES_Narkowicz(color);
-#endif
+    #endif
 
-#ifdef TONEMAP_ACES_HILL
+    #ifdef TONEMAP_ACES_HILL
     color = toneMapACES_Hill(color);
-#endif
+    #endif
 
-#ifdef TONEMAP_ACES_HILL_EXPOSURE_BOOST
+    #ifdef TONEMAP_ACES_HILL_EXPOSURE_BOOST
     // boost exposure as discussed in https://github.com/mrdoob/three.js/pull/19621
     // this factor is based on the exposure correction of Krzysztof Narkowicz in his
     // implemetation of ACES tone mapping
-    color /= 0.6;
-
-    color = toneMapACES_Hill(color);
-#endif
+    color = toneMapACES_Hill(color / 6.0);
+    #endif
 
     return linearTosRGB(color);
 }
