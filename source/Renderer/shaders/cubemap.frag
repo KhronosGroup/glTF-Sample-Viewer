@@ -4,17 +4,17 @@ precision highp float;
 #include <tonemapping.glsl>
 
 
-uniform samplerCube u_specularEnvSampler;
-uniform float u_envBlurNormalized;
+uniform float u_EnvIntensity;
+uniform float u_EnvBlurNormalized;
 uniform int u_MipCount;
-
+uniform samplerCube u_GGXEnvSampler;
 
 out vec4 FragColor;
-in vec3 TexCoords;
+in vec3 v_TexCoords;
 
 
 void main()
 {
-    vec4 color = textureLod(u_specularEnvSampler, TexCoords, u_envBlurNormalized * float(u_MipCount - 1));
-    FragColor = vec4(toneMap(color.rgb), color.a);
+    vec4 color = textureLod(u_GGXEnvSampler, v_TexCoords, u_EnvBlurNormalized * float(u_MipCount - 1)) * u_EnvIntensity;
+    FragColor = vec4(toneMap(color.rgb), 1);
 }

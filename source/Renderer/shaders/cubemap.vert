@@ -3,12 +3,12 @@ uniform mat3 u_EnvRotation;
 
 
 in vec3 a_position;
-out vec3 TexCoords;
+out vec3 v_TexCoords;
 
 
 void main()
 {
-    TexCoords = u_EnvRotation * a_position;
+    v_TexCoords = u_EnvRotation * a_position;
     mat4 mat = u_ViewProjectionMatrix;
     mat[3] = vec4(0.0, 0.0, 0.0, 0.1);
     vec4 pos = mat * vec4(a_position, 1.0);
