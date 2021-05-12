@@ -23,14 +23,14 @@ in vec4 v_Color;
 
 vec4 getVertexColor()
 {
-   vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
+   vec4 color = vec4(1.0);
 
-    #ifdef HAS_COLOR_0_VEC3
+#ifdef HAS_COLOR_0_VEC3
     color.rgb = v_Color.rgb;
-    #endif
-    #ifdef HAS_COLOR_0_VEC4
+#endif
+#ifdef HAS_COLOR_0_VEC4
     color = v_Color;
-    #endif
+#endif
 
    return color;
 }

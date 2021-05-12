@@ -60,7 +60,7 @@ float lambdaSheenNumericHelper(float x, float alphaG)
 
 float lambdaSheen(float cosTheta, float alphaG)
 {
-    if(abs(cosTheta) < 0.5)
+    if (abs(cosTheta) < 0.5)
     {
         return exp(lambdaSheenNumericHelper(cosTheta, alphaG));
     }

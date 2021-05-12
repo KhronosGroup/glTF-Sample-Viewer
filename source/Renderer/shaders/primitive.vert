@@ -51,13 +51,13 @@ vec4 getPosition()
 {
     vec4 pos = vec4(a_position, 1.0);
 
-    #ifdef USE_MORPHING
+#ifdef USE_MORPHING
     pos += getTargetPosition();
-    #endif
+#endif
 
-    #ifdef USE_SKINNING
+#ifdef USE_SKINNING
     pos = getSkinningMatrix() * pos;
-    #endif
+#endif
 
     return pos;
 }
@@ -68,13 +68,13 @@ vec3 getNormal()
 {
     vec3 normal = a_normal;
 
-    #ifdef USE_MORPHING
+#ifdef USE_MORPHING
     normal += getTargetNormal();
-    #endif
+#endif
 
-    #ifdef USE_SKINNING
+#ifdef USE_SKINNING
     normal = mat3(getSkinningNormalMatrix()) * normal;
-    #endif
+#endif
 
     return normalize(normal);
 }
@@ -86,13 +86,13 @@ vec3 getTangent()
 {
     vec3 tangent = a_tangent.xyz;
 
-    #ifdef USE_MORPHING
+#ifdef USE_MORPHING
     tangent += getTargetTangent();
-    #endif
+#endif
 
-    #ifdef USE_SKINNING
+#ifdef USE_SKINNING
     tangent = mat3(getSkinningMatrix()) * tangent;
-    #endif
+#endif
 
     return normalize(tangent);
 }
@@ -104,32 +104,32 @@ void main()
     vec4 pos = u_ModelMatrix * getPosition();
     v_Position = vec3(pos.xyz) / pos.w;
 
-    #ifdef HAS_NORMAL_VEC3
-    #ifdef HAS_TANGENT_VEC4
+#ifdef HAS_NORMAL_VEC3
+#ifdef HAS_TANGENT_VEC4
     vec3 tangent = getTangent();
     vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
     vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
     vec3 bitangentW = cross(normalW, tangentW) * a_tangent.w;
     v_TBN = mat3(tangentW, bitangentW, normalW);
-    #else
+#else
     v_Normal = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
-    #endif
-    #endif
+#endif
+#endif
 
     v_texcoord_0 = vec2(0.0, 0.0);
     v_texcoord_1 = vec2(0.0, 0.0);
 
-    #ifdef HAS_TEXCOORD_0_VEC2
+#ifdef HAS_TEXCOORD_0_VEC2
     v_texcoord_0 = a_texcoord_0;
-    #endif
+#endif
 
-    #ifdef HAS_TEXCOORD_1_VEC2
+#ifdef HAS_TEXCOORD_1_VEC2
     v_texcoord_1 = a_texcoord_1;
-    #endif
+#endif
 
-    #if defined(HAS_COLOR_0_VEC3) || defined(HAS_COLOR_0_VEC4)
+#if defined(HAS_COLOR_0_VEC3) || defined(HAS_COLOR_0_VEC4)
     v_Color = a_color_0;
-    #endif
+#endif
 
     gl_Position = u_ViewProjectionMatrix * pos;
 }

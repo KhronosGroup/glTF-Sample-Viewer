@@ -89,20 +89,20 @@ vec3 toneMap(vec3 color)
 {
     color *= u_Exposure;
 
-    #ifdef TONEMAP_ACES_NARKOWICZ
+#ifdef TONEMAP_ACES_NARKOWICZ
     color = toneMapACES_Narkowicz(color);
-    #endif
+#endif
 
-    #ifdef TONEMAP_ACES_HILL
+#ifdef TONEMAP_ACES_HILL
     color = toneMapACES_Hill(color);
-    #endif
+#endif
 
-    #ifdef TONEMAP_ACES_HILL_EXPOSURE_BOOST
+#ifdef TONEMAP_ACES_HILL_EXPOSURE_BOOST
     // boost exposure as discussed in https://github.com/mrdoob/three.js/pull/19621
     // this factor is based on the exposure correction of Krzysztof Narkowicz in his
     // implemetation of ACES tone mapping
     color = toneMapACES_Hill(color / 6.0);
-    #endif
+#endif
 
     return linearTosRGB(color);
 }

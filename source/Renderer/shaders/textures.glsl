@@ -38,9 +38,9 @@ vec2 getNormalUV()
 {
     vec3 uv = vec3(u_NormalUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_NORMAL_UV_TRANSFORM
+#ifdef HAS_NORMAL_UV_TRANSFORM
     uv *= u_NormalUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -50,9 +50,9 @@ vec2 getEmissiveUV()
 {
     vec3 uv = vec3(u_EmissiveUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_EMISSIVE_UV_TRANSFORM
+#ifdef HAS_EMISSIVE_UV_TRANSFORM
     uv *= u_EmissiveUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -62,9 +62,9 @@ vec2 getOcclusionUV()
 {
     vec3 uv = vec3(u_OcclusionUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_OCCLUSION_UV_TRANSFORM
+#ifdef HAS_OCCLUSION_UV_TRANSFORM
     uv *= u_OcclusionUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -87,9 +87,9 @@ vec2 getBaseColorUV()
 {
     vec3 uv = vec3(u_BaseColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_BASECOLOR_UV_TRANSFORM
+#ifdef HAS_BASECOLOR_UV_TRANSFORM
     uv *= u_BaseColorUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -98,9 +98,9 @@ vec2 getMetallicRoughnessUV()
 {
     vec3 uv = vec3(u_MetallicRoughnessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_METALLICROUGHNESS_UV_TRANSFORM
+#ifdef HAS_METALLICROUGHNESS_UV_TRANSFORM
     uv *= u_MetallicRoughnessUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -126,9 +126,9 @@ vec2 getSpecularGlossinessUV()
 {
     vec3 uv = vec3(u_SpecularGlossinessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_SPECULARGLOSSINESS_UV_TRANSFORM
+#ifdef HAS_SPECULARGLOSSINESS_UV_TRANSFORM
     uv *= u_SpecularGlossinessUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -137,9 +137,9 @@ vec2 getDiffuseUV()
 {
     vec3 uv = vec3(u_DiffuseUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 
-    #ifdef HAS_DIFFUSE_UV_TRANSFORM
+#ifdef HAS_DIFFUSE_UV_TRANSFORM
     uv *= u_DiffuseUVTransform;
-    #endif
+#endif
 
     return uv.xy;
 }
@@ -169,27 +169,27 @@ uniform float u_ClearcoatNormalScale;
 vec2 getClearcoatUV()
 {
     vec3 uv = vec3(u_ClearcoatUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_CLEARCOAT_UV_TRANSFORM
+#ifdef HAS_CLEARCOAT_UV_TRANSFORM
     uv *= u_ClearcoatUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
 vec2 getClearcoatRoughnessUV()
 {
     vec3 uv = vec3(u_ClearcoatRoughnessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_CLEARCOATROUGHNESS_UV_TRANSFORM
+#ifdef HAS_CLEARCOATROUGHNESS_UV_TRANSFORM
     uv *= u_ClearcoatRoughnessUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
 vec2 getClearcoatNormalUV()
 {
     vec3 uv = vec3(u_ClearcoatNormalUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_CLEARCOATNORMAL_UV_TRANSFORM
+#ifdef HAS_CLEARCOATNORMAL_UV_TRANSFORM
     uv *= u_ClearcoatNormalUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
@@ -212,18 +212,18 @@ uniform mat3 u_SheenRoughnessUVTransform;
 vec2 getSheenColorUV()
 {
     vec3 uv = vec3(u_SheenColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_SHEENCOLOR_UV_TRANSFORM
+#ifdef HAS_SHEENCOLOR_UV_TRANSFORM
     uv *= u_SheenColorUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
 vec2 getSheenRoughnessUV()
 {
     vec3 uv = vec3(u_SheenRoughnessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_SHEENROUGHNESS_UV_TRANSFORM
+#ifdef HAS_SHEENROUGHNESS_UV_TRANSFORM
     uv *= u_SheenRoughnessUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
@@ -246,18 +246,18 @@ uniform mat3 u_SpecularColorUVTransform;
 vec2 getSpecularUV()
 {
     vec3 uv = vec3(u_SpecularUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_SPECULAR_UV_TRANSFORM
+#ifdef HAS_SPECULAR_UV_TRANSFORM
     uv *= u_SpecularUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
 vec2 getSpecularColorUV()
 {
     vec3 uv = vec3(u_SpecularColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_SPECULARCOLOR_UV_TRANSFORM
+#ifdef HAS_SPECULARCOLOR_UV_TRANSFORM
     uv *= u_SpecularColorUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
@@ -279,9 +279,9 @@ uniform ivec2 u_TransmissionFramebufferSize;
 vec2 getTransmissionUV()
 {
     vec3 uv = vec3(u_TransmissionUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_TRANSMISSION_UV_TRANSFORM
+#ifdef HAS_TRANSMISSION_UV_TRANSFORM
     uv *= u_TransmissionUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
@@ -301,9 +301,9 @@ uniform mat3 u_ThicknessUVTransform;
 vec2 getThicknessUV()
 {
     vec3 uv = vec3(u_ThicknessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
-    #ifdef HAS_THICKNESS_UV_TRANSFORM
+#ifdef HAS_THICKNESS_UV_TRANSFORM
     uv *= u_ThicknessUVTransform;
-    #endif
+#endif
     return uv.xy;
 }
 
