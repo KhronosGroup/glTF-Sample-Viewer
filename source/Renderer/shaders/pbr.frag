@@ -561,22 +561,27 @@ void main()
     color = f_sheen + color * albedoSheenScaling;
     color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
 
+
     #if DEBUG == DEBUG_NONE
 
-    #if ALPHAMODE == ALPHAMODE_MASK
-    // Late discard to avaoid samplig artifacts. See https://github.com/KhronosGroup/glTF-Sample-Viewer/issues/267
-    if(baseColor.a < u_AlphaCutoff)
-    {
-        discard;
-    }
-    baseColor.a = 1.0;
-    #endif
+        #if ALPHAMODE == ALPHAMODE_MASK
+            // Late discard to avaoid samplig artifacts. See https://github.com/KhronosGroup/glTF-Sample-Viewer/issues/267
+            if(baseColor.a < u_AlphaCutoff)
+            {
+                discard;
+            }
+            baseColor.a = 1.0;
+        #endif
 
-    // regular shading
-    g_finalColor = vec4(toneMap(color), baseColor.a);
+        #ifdef LINEAR_OUTPUT
+            g_finalColor = vec4(color.rgb, baseColor.a);
+        #else
+            // regular shading
+            g_finalColor = vec4(toneMap(color), baseColor.a);
+        #endif
     
     #else
-    g_finalColor.a = 1.0;
+        g_finalColor.a = 1.0;
     #endif
 
     #if DEBUG == DEBUG_METALLIC
