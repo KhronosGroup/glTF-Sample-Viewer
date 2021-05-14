@@ -205,12 +205,14 @@ class gltfWebGl
             const messages = this.context.getShaderInfoLog(shader).split("\n");
             for(const message of messages)
             {
-                info += message + "\n";
-                const matches = message.match(/(?:(?:WARNING)|(?:ERROR)): [0-9]*:([0-9]*).*/i);
-                if (matches && matches.length > 1)
+                
+                const matches = message.match(/(WARNING|ERROR): ([0-9]*):([0-9]*):(.*)/i);
+                if (matches && matches.length == 5)
                 {
-                    const lineNumber = parseInt(matches[1]) - 1;
+                    const lineNumber = parseInt(matches[3]) - 1;
                     const lines = shaderSource.split("\n");
+
+                    info += `${matches[1]}: ${shaderIdentifier}+includes:${lineNumber}: ${matches[4]}`;
 
                     for(let i = Math.max(0, lineNumber - 2); i < Math.min(lines.length, lineNumber + 3); i++)
                     {
@@ -220,6 +222,10 @@ class gltfWebGl
                         }
                         info += "\t" + lines[i] + "\n";
                     }
+                }
+                else
+                {
+                    info += message + "\n";
                 }
             }
 
