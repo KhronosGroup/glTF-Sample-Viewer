@@ -72,7 +72,7 @@ class gltfShader
         return uniform.loc;
     }
 
-    updateUniform(objectName, object, log = true)
+    updateUniform(objectName, object, log = false)
     {
         if (object instanceof UniformStruct)
         {
