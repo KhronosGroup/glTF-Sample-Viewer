@@ -61,35 +61,35 @@ void main()
     materialInfo.specularWeight = 1.0;
     
 #ifdef MATERIAL_IOR
-    getIorInfo(materialInfo);
+    materialInfo = getIorInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
-    getSpecularGlossinessInfo(materialInfo);
+    materialInfo = getSpecularGlossinessInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_METALLICROUGHNESS
-    getMetallicRoughnessInfo(materialInfo);
+    materialInfo = getMetallicRoughnessInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_SHEEN
-    getSheenInfo(materialInfo);
+    materialInfo = getSheenInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-    getClearCoatInfo(materialInfo, normalInfo);
+    materialInfo = getClearCoatInfo(materialInfo, normalInfo);
 #endif
 
 #ifdef MATERIAL_SPECULAR
-    getSpecularInfo(materialInfo);
+    materialInfo = getSpecularInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
-    getTransmissionInfo(materialInfo);
+    materialInfo = getTransmissionInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_VOLUME
-    getVolumeInfo(materialInfo);
+    materialInfo = getVolumeInfo(materialInfo);
 #endif
 
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
