@@ -120,54 +120,59 @@ uniform mat4 u_jointNormalMatrix[JOINT_COUNT];
 #endif
 
 #ifdef USE_SKINNING
+
 mat4 getSkinningMatrix()
 {
     mat4 skin = mat4(0);
 
-    #if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
+#if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
     skin +=
         a_weights_0.x * u_jointMatrix[int(a_joints_0.x)] +
         a_weights_0.y * u_jointMatrix[int(a_joints_0.y)] +
         a_weights_0.z * u_jointMatrix[int(a_joints_0.z)] +
         a_weights_0.w * u_jointMatrix[int(a_joints_0.w)];
-    #endif
+#endif
 
-    #if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
+#if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
     skin +=
         a_weights_1.x * u_jointMatrix[int(a_joints_1.x)] +
         a_weights_1.y * u_jointMatrix[int(a_joints_1.y)] +
         a_weights_1.z * u_jointMatrix[int(a_joints_1.z)] +
         a_weights_1.w * u_jointMatrix[int(a_joints_1.w)];
-    #endif
+#endif
 
     return skin;
 }
+
 
 mat4 getSkinningNormalMatrix()
 {
     mat4 skin = mat4(0);
 
-    #if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
+#if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
     skin +=
         a_weights_0.x * u_jointNormalMatrix[int(a_joints_0.x)] +
         a_weights_0.y * u_jointNormalMatrix[int(a_joints_0.y)] +
         a_weights_0.z * u_jointNormalMatrix[int(a_joints_0.z)] +
         a_weights_0.w * u_jointNormalMatrix[int(a_joints_0.w)];
-    #endif
+#endif
 
-    #if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
+#if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
     skin +=
         a_weights_1.x * u_jointNormalMatrix[int(a_joints_1.x)] +
         a_weights_1.y * u_jointNormalMatrix[int(a_joints_1.y)] +
         a_weights_1.z * u_jointNormalMatrix[int(a_joints_1.z)] +
         a_weights_1.w * u_jointNormalMatrix[int(a_joints_1.w)];
-    #endif
+#endif
 
     return skin;
 }
+
 #endif // !USE_SKINNING
 
+
 #ifdef USE_MORPHING
+
 vec4 getTargetPosition()
 {
     vec4 pos = vec4(0);
@@ -245,6 +250,7 @@ vec3 getTargetNormal()
 
     return normal;
 }
+
 
 vec3 getTargetTangent()
 {

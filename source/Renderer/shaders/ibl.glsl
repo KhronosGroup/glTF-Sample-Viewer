@@ -3,15 +3,18 @@ vec3 getDiffuseLight(vec3 n)
     return texture(u_LambertianEnvSampler, u_EnvRotation * n).rgb;
 }
 
+
 vec4 getSpecularSample(vec3 reflection, float lod)
 {
     return textureLod(u_GGXEnvSampler, u_EnvRotation * reflection, lod);
 }
 
+
 vec4 getSheenSample(vec3 reflection, float lod)
 {
     return textureLod(u_CharlieEnvSampler, u_EnvRotation * reflection, lod);
 }
+
 
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness, vec3 F0, float specularWeight)
 {
@@ -73,6 +76,7 @@ vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 base
 }
 #endif
 
+
 // specularWeight is introduced with KHR_materials_specular
 vec3 getIBLRadianceLambertian(vec3 n, vec3 v, float roughness, vec3 diffuseColor, vec3 F0, float specularWeight)
 {
@@ -97,6 +101,7 @@ vec3 getIBLRadianceLambertian(vec3 n, vec3 v, float roughness, vec3 diffuseColor
 
     return (FmsEms + k_D) * irradiance;
 }
+
 
 vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
 {

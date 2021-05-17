@@ -13,6 +13,7 @@ vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
     return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
+
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
 // see Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. Journal of Computer Graphics Techniques, 3
@@ -33,6 +34,7 @@ float V_GGX(float NdotL, float NdotV, float alphaRoughness)
     return 0.0;
 }
 
+
 // The following equation(s) model the distribution of microfacet normals across the area being drawn (aka D())
 // Implementation from "Average Irregularity Representation of a Roughened Surface for Ray Reflection" by T. S. Trowbridge, and K. P. Reitz
 // Follows the distribution function recommended in the SIGGRAPH 2013 course notes from EPIC Games [1], Equation 3.
@@ -42,6 +44,7 @@ float D_GGX(float NdotH, float alphaRoughness)
     float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
     return alphaRoughnessSq / (M_PI * f * f);
 }
+
 
 float lambdaSheenNumericHelper(float x, float alphaG)
 {
@@ -54,9 +57,10 @@ float lambdaSheenNumericHelper(float x, float alphaG)
     return a / (1.0 + b * pow(x, c)) + d * x + e;
 }
 
+
 float lambdaSheen(float cosTheta, float alphaG)
 {
-    if(abs(cosTheta) < 0.5)
+    if (abs(cosTheta) < 0.5)
     {
         return exp(lambdaSheenNumericHelper(cosTheta, alphaG));
     }
@@ -66,6 +70,7 @@ float lambdaSheen(float cosTheta, float alphaG)
     }
 }
 
+
 float V_Sheen(float NdotL, float NdotV, float sheenRoughness)
 {
     sheenRoughness = max(sheenRoughness, 0.000001); //clamp (0,1]
@@ -74,6 +79,7 @@ float V_Sheen(float NdotL, float NdotV, float sheenRoughness)
     return clamp(1.0 / ((1.0 + lambdaSheen(NdotV, alphaG) + lambdaSheen(NdotL, alphaG)) *
         (4.0 * NdotV * NdotL)), 0.0, 1.0);
 }
+
 
 //Sheen implementation-------------------------------------------------------------------------------------
 // See  https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
@@ -89,12 +95,14 @@ float D_Charlie(float sheenRoughness, float NdotH)
     return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * M_PI);
 }
 
+
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 BRDF_lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float specularWeight, float VdotH)
 {
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
     return (1.0 - specularWeight * F_Schlick(f0, f90, VdotH)) * (diffuseColor / M_PI);
 }
+
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float specularWeight, float VdotH, float NdotL, float NdotV, float NdotH)
@@ -105,6 +113,7 @@ vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float specularWei
 
     return specularWeight * F * Vis * D;
 }
+
 
 // f_sheen
 vec3 BRDF_specularSheen(vec3 sheenColor, float sheenRoughness, float NdotL, float NdotV, float NdotH)

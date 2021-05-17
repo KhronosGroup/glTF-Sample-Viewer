@@ -230,7 +230,7 @@ class gltfMaterial extends GltfObject
 
         this.defines.push("ALPHAMODE_OPAQUE 0");
         this.defines.push("ALPHAMODE_MASK 1");
-        this.defines.push("ALPHAMODE_BLEND 2")
+        this.defines.push("ALPHAMODE_BLEND 2");
         if(this.alphaMode === 'MASK') // only set cutoff value for mask material
         {
             this.defines.push("ALPHAMODE ALPHAMODE_MASK");
@@ -242,7 +242,7 @@ class gltfMaterial extends GltfObject
         }
         else
         {
-            this.defines.push("ALPHAMODE ALPHAMODE_BLEND")
+            this.defines.push("ALPHAMODE ALPHAMODE_BLEND");
         }
 
         if (this.pbrMetallicRoughness !== undefined && this.type !== "SG")
