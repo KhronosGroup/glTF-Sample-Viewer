@@ -126,10 +126,14 @@ GltfState.DebugOutput = {
     BITANGENT: "Bitangent",
     /** output the base color value */
     BASECOLOR: "Base Color",
+    /** output the linear base color value */
+    BASECOLOR_LINEAR: "Base Color (Linear)",
     /** output the occlusion value */
     OCCLUSION: "Occlusion",
     /** output the emissive value */
     EMISSIVE: "Emissive",
+    /** output the linear emissive value */
+    EMISSIVE_LINEAR: "Emissive (Linear)",
     /** output diffuse lighting */
     DIFFUSE: "Diffuse",
     /** output specular lighting */

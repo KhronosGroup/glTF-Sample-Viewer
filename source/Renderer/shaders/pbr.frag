@@ -297,6 +297,10 @@ void main()
     g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
 #endif
 
+#if DEBUG == DEBUG_BASE_COLOR_LINEAR
+    g_finalColor.rgb = materialInfo.baseColor;
+#endif
+
 #if DEBUG == DEBUG_OCCLUSION
     g_finalColor.rgb = vec3(ao);
 #endif
@@ -307,6 +311,10 @@ void main()
 
 #if DEBUG == DEBUG_EMISSIVE_SRGB
     g_finalColor.rgb = linearTosRGB(f_emissive);
+#endif
+
+#if DEBUG == DEBUG_EMISSIVE_LINEAR
+    g_finalColor.rgb = f_emissive;
 #endif
 
 #if DEBUG == DEBUG_SPECULAR_SRGB
