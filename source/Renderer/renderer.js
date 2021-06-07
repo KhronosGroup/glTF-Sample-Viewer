@@ -636,11 +636,17 @@ class gltfRenderer
         case GltfState.DebugOutput.BASECOLOR:
             fragDefines.push("DEBUG DEBUG_BASE_COLOR_SRGB");
             break;
+        case GltfState.DebugOutput.BASECOLOR_LINEAR:
+            fragDefines.push("DEBUG DEBUG_BASE_COLOR_LINEAR");
+            break;
         case GltfState.DebugOutput.OCCLUSION:
             fragDefines.push("DEBUG DEBUG_OCCLUSION");
             break;
         case GltfState.DebugOutput.EMISSIVE:
             fragDefines.push("DEBUG DEBUG_EMISSIVE_SRGB");
+            break;
+        case GltfState.DebugOutput.EMISSIVE_LINEAR:
+            fragDefines.push("DEBUG DEBUG_EMISSIVE_LINEAR");
             break;
         case GltfState.DebugOutput.F0:
             fragDefines.push("DEBUG DEBUG_F0");
