@@ -145,6 +145,13 @@ async function main()
         const dataURL = canvas.toDataURL();
         downloadDataURL("capture.png", dataURL);
     });
+    
+    uiModel.scene.pipe(filter(scene => scene === -1)).subscribe( () => {
+        state.sceneIndex = undefined;
+    });
+    uiModel.scene.pipe(filter(scene => scene !== -1)).subscribe( scene => {
+        state.sceneIndex = scene;
+    });
 
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
         state.cameraIndex = undefined;
