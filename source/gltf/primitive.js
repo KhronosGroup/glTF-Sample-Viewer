@@ -1,6 +1,11 @@
 import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
+import { gltfImage } from './image.js';
+import { ImageMimeType } from './image_mime_type.js';
+import { gltfTexture } from './texture.js';
+import { gltfTextureInfo } from './texture.js';
+import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
@@ -18,6 +23,7 @@ class gltfPrimitive extends GltfObject
 
         // non gltf
         this.glAttributes = [];
+        this.morphTargetTextureInfo = undefined;
         this.defines = [];
         this.skip = true;
         this.hasWeights = false;
@@ -113,42 +119,119 @@ class gltfPrimitive extends GltfObject
         }
 
         // MORPH TARGETS
-        if (this.targets !== undefined)
+        if (this.targets !== undefined && this.targets.length > 0)
         {
+            // check which attributes are affected by morph targets and 
+            // define offsets for the attributes in the morph target texture
+            const attributes = Object.keys(this.targets[0]);
+            const attributeOffset = {};
+            let offset = 0;
+            for (const attribute in attributes)
+            {
+                // add morph target defines
+                this.defines.push(`HAS_MORPH_TARGET_${attribute}`);
+                this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
+                // store the attribute offset so that later the 
+                // morph target texture can be assembled
+                attributeOffset[attribute] = offset;
+                offset += this.targets.length();
+            }
+            this.defines.push(`NUM_MORPH_TARGETS ${this.targets.length}`);
+            this.defines.push("HAS_MORPH_TARGETS");
+
+            // allocate the texture buffer. Note that all target attributes must be vec3 types
+            const vertexCount = this.attributes[attributes[0]].count;
+            const morphTargetTextureArray = new Float32Array(attributes.length * this.targets.length * vertexCount * 3);
+
+            // now assemble the texture from the accessors
             let i = 0;
             for (const target of this.targets)
             {
-                if(this.glAttributes.length + 3 > maxAttributes)
-                {
-                    console.error("To many vertex attributes for this primitive, skipping target " + i);
-                    break;
-                }
-
                 for (const attribute of Object.keys(target))
                 {
-                    const idx = target[attribute];
-                    const type = gltf.accessors[idx].type;
-
-                    switch (attribute)
-                    {
-                    case "POSITION":
-                        this.defines.push(`HAS_TARGET_POSITION${i}_${type}`);
-                        console.log(`HAS_TARGET_POSITION_${i}_${type}`)
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_position" + i, accessor: idx });
-                        break;
-                    case "NORMAL":
-                        this.defines.push(`HAS_TARGET_NORMAL${i}_${type}`);
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_normal" + i, accessor: idx });
-                        break;
-                    case "TANGENT":
-                        this.defines.push(`HAS_TARGET_TANGENT${i}_${type}`);
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_tangent" + i, accessor: idx });
-                        break;
-                    }
+                    const accessor = gltf.accessors[target[attribute]];
+                    const data = accessor.getNormalizedTypedView(gltf);
+                    const offset = attributeOffset[attribute] + i * vertexCount * 3;
+                    morphTargetTextureArray.set(data, offset);
                 }
 
                 ++i;
             }
+
+            // add the morph target texture
+            let texture = this.gl.createTexture();
+
+            this.gl.bindTexture( this.gl.TEXTURE_2D, texture);
+    
+            let internalFormat = this.gl.RGB32F;
+            let format = this.gl.RGB;
+            let type = this.gl.FLOAT;
+            let data = undefined;
+    
+            if (typeof(this.gl.RGB32F) !== 'undefined')
+            {
+                internalFormat = this.gl.RGB32F;
+                format = this.gl.RGB;
+                type = this.gl.FLOAT;
+                data = morphTargetTextureArray;
+            }
+            else
+            {
+                // workaround for node-gles not supporting RGB32F
+                internalFormat = this.gl.RGBA32F;
+                format = this.gl.RGBA;
+                type = this.gl.FLOAT;
+    
+                const numPixels = morphTargetTextureArray.length / 3;
+                data = new Float32Array(numPixels * 4);
+                for(let i = 0; i < numPixels; ++i)
+                {
+                    // copy the pixels and padd the alpha channel
+                    data[i] = morphTargetTextureArray[i];
+                    data[i+1] = morphTargetTextureArray[i+1];
+                    data[i+2] = morphTargetTextureArray[i+2];
+                    data[i+3] = 0;
+                }
+            }
+
+            const width = attributes.length * this.targets.length;
+            const height = vertexCount;
+    
+            this.gl.texImage2D(
+                this.gl.TEXTURE_2D,
+                0, //level
+                internalFormat,
+                width,
+                height,
+                0, //border
+                format,
+                type,
+                data);
+
+            const morphTargetImage = new gltfImage(
+                undefined,
+                GL.TEXTURE_2D,
+                0,
+                undefined,
+                "MorphTargets",
+                ImageMimeType.GLTEXTURE,
+                texture
+            );
+
+            gltf.images.push(morphTargetImage);
+
+            gltf.samplers.push(new gltfSampler(GL.NEAREST, GL.NEAREST, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "MorphTargetsSampler"));
+
+            const morphTargetTexture = new gltfTexture(
+                gltf.samplers.length - 1,
+                gltf.images.length - 1,
+                GL.TEXTURE_2D);
+            morphTargetTexture.initialized = true; // primitive has already initialized the texture
+
+            gltf.textures.push(morphTargetTexture);
+
+            this.morphTargetTextureInfo = new gltfTextureInfo(gltf.textures.length - 1, 0, true);
+            this.morphTargetTextureInfo.generateMips = false;
         }
 
         this.computeCentroid(gltf);

@@ -421,9 +421,10 @@ class gltfRenderer
             this.shader.updateUniform(uniform, val, false);
         }
 
-        for (let i = 0; i < material.textures.length; ++i)
+        let textureIndex = 0;
+        for (let textureIndex = 0; textureIndex < material.textures.length; ++textureIndex)
         {
-            let info = material.textures[i];
+            let info = material.textures[textureIndex];
             const location = this.shader.getUniformLocation(info.samplerName);
 
             if (location < 0)
@@ -431,7 +432,24 @@ class gltfRenderer
                 console.log("Unable to find uniform location of "+info.samplerName);
                 continue; // only skip this texture
             }
-            if (!this.webGl.setTexture(location, state.gltf, info, i)) // binds texture and sampler
+            if (!this.webGl.setTexture(location, state.gltf, info, textureIndex)) // binds texture and sampler
+            {
+                return; // skip this material
+            }
+        }
+
+        // set the morph target texture
+        if (primitive.morphTargetTextureInfo !== undefined) 
+        {
+            textureIndex++;
+            let texture = material.textures[textureIndex];
+            const location = this.shader.getUniformLocation(texture.samplerName);
+
+            if (location < 0)
+            {
+                console.log("Unable to find uniform location of " + texture.samplerName);
+            }
+            if (!this.webGl.setTexture(location, state.gltf, texture, textureIndex)) // binds texture and sampler
             {
                 return; // skip this material
             }
