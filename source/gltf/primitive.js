@@ -133,14 +133,14 @@ class gltfPrimitive extends GltfObject
                 this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
                 // store the attribute offset so that later the 
                 // morph target texture can be assembled
-                attributeOffset[attribute] = offset;
-                offset += this.targets.length();
+                attributeOffset[attributes[attribute]] = offset;
+                offset += this.targets.length;
             }
             this.defines.push(`NUM_MORPH_TARGETS ${this.targets.length}`);
             this.defines.push("HAS_MORPH_TARGETS");
 
             // allocate the texture buffer. Note that all target attributes must be vec3 types
-            const vertexCount = this.attributes[attributes[0]].count;
+            const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
             const morphTargetTextureArray = new Float32Array(attributes.length * this.targets.length * vertexCount * 3);
 
             // now assemble the texture from the accessors
@@ -159,28 +159,28 @@ class gltfPrimitive extends GltfObject
             }
 
             // add the morph target texture
-            let texture = this.gl.createTexture();
+            let texture = webGlContext.createTexture();
 
-            this.gl.bindTexture( this.gl.TEXTURE_2D, texture);
+            webGlContext.bindTexture( webGlContext.TEXTURE_2D, texture);
     
-            let internalFormat = this.gl.RGB32F;
-            let format = this.gl.RGB;
-            let type = this.gl.FLOAT;
+            let internalFormat = webGlContext.RGB32F;
+            let format = webGlContext.RGB;
+            let type = webGlContext.FLOAT;
             let data = undefined;
     
-            if (typeof(this.gl.RGB32F) !== 'undefined')
+            if (typeof(webGlContext.RGB32F) !== 'undefined')
             {
-                internalFormat = this.gl.RGB32F;
-                format = this.gl.RGB;
-                type = this.gl.FLOAT;
+                internalFormat = webGlContext.RGB32F;
+                format = webGlContext.RGB;
+                type = webGlContext.FLOAT;
                 data = morphTargetTextureArray;
             }
             else
             {
                 // workaround for node-gles not supporting RGB32F
-                internalFormat = this.gl.RGBA32F;
-                format = this.gl.RGBA;
-                type = this.gl.FLOAT;
+                internalFormat = webGlContext.RGBA32F;
+                format = webGlContext.RGBA;
+                type = webGlContext.FLOAT;
     
                 const numPixels = morphTargetTextureArray.length / 3;
                 data = new Float32Array(numPixels * 4);
@@ -197,8 +197,8 @@ class gltfPrimitive extends GltfObject
             const width = attributes.length * this.targets.length;
             const height = vertexCount;
     
-            this.gl.texImage2D(
-                this.gl.TEXTURE_2D,
+            webGlContext.texImage2D(
+                webGlContext.TEXTURE_2D,
                 0, //level
                 internalFormat,
                 width,
@@ -207,6 +207,11 @@ class gltfPrimitive extends GltfObject
                 format,
                 type,
                 data);
+
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_S,  GL.CLAMP_TO_EDGE);
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_T,  GL.CLAMP_TO_EDGE);
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MIN_FILTER,  GL.NEAREST);
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MAG_FILTER,  GL.NEAREST);
 
             const morphTargetImage = new gltfImage(
                 undefined,
@@ -231,6 +236,7 @@ class gltfPrimitive extends GltfObject
             gltf.textures.push(morphTargetTexture);
 
             this.morphTargetTextureInfo = new gltfTextureInfo(gltf.textures.length - 1, 0, true);
+            this.morphTargetTextureInfo.samplerName = "u_MorphTargetsSampler";
             this.morphTargetTextureInfo.generateMips = false;
         }
 

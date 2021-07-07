@@ -442,14 +442,12 @@ class gltfRenderer
         if (primitive.morphTargetTextureInfo !== undefined) 
         {
             textureIndex++;
-            let texture = material.textures[textureIndex];
-            const location = this.shader.getUniformLocation(texture.samplerName);
-
+            const location = this.shader.getUniformLocation(primitive.morphTargetTextureInfo.samplerName);
             if (location < 0)
             {
-                console.log("Unable to find uniform location of " + texture.samplerName);
+                console.log("Unable to find uniform location of " + primitive.morphTargetTextureInfo.samplerName);
             }
-            if (!this.webGl.setTexture(location, state.gltf, texture, textureIndex)) // binds texture and sampler
+            if (!this.webGl.setTexture(location, state.gltf, primitive.morphTargetTextureInfo, textureIndex)) // binds texture and sampler
             {
                 return; // skip this material
             }
