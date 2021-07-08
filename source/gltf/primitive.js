@@ -125,7 +125,7 @@ class gltfPrimitive extends GltfObject
             // define offsets for the attributes in the morph target texture.
             const attributeOffset = {};
             let offset = 0;
-            // gather used attributes from all targets (some targets might
+            // Gather used attributes from all targets (some targets might
             // use more attributes than others)
             const attributes = Array.from(this.targets.reduce((acc, target) => {
                 Object.keys(target).map(val => acc.add(val));
@@ -133,22 +133,23 @@ class gltfPrimitive extends GltfObject
             }, new Set()));
             for (const attribute of attributes)
             {
-                // add morph target defines
+                // Add morph target defines
                 this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
                 this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
-                // store the attribute offset so that later the 
-                // morph target texture can be assembled
+                // Store the attribute offset so that later the 
+                // morph target texture can be assembled.
                 attributeOffset[attribute] = offset;
                 offset += this.targets.length;
             }
             this.defines.push(`NUM_MORPH_TARGETS ${this.targets.length}`);
             this.defines.push("HAS_MORPH_TARGETS 1");
 
-            // allocate the texture buffer. Note that all target attributes must be vec3 types
+            // Allocate the texture buffer. Note that all target attributes must be vec3 types and
+            // all must have the same vertex count as the primitives other attributes.
             const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
             const morphTargetTextureArray = new Float32Array(attributes.length * this.targets.length * vertexCount * 3);
 
-            // now assemble the texture from the accessors
+            // Now assemble the texture from the accessors.
             let i = 0;
             for (const target of this.targets)
             {
@@ -156,6 +157,19 @@ class gltfPrimitive extends GltfObject
                 {
                     const accessor = gltf.accessors[target[attribute]];
                     const data = accessor.getNormalizedDeinterlacedView(gltf);
+                    // The data in the morph target texture is structured like this:
+                    // POSITION_0 
+                    // POSITION_1
+                    // ...
+                    // POSITION_N
+                    // NORMAL_0
+                    // NORMAL_1
+                    // ...
+                    // NORMAL_N
+                    // TANGENT_0
+                    // TANGENT_1
+                    // ...
+                    // TANGENT_N
                     const offset = (attributeOffset[attribute] + i) * vertexCount * 3;
                     morphTargetTextureArray.set(data, offset);
                 }
@@ -163,31 +177,31 @@ class gltfPrimitive extends GltfObject
                 ++i;
             }
 
-            // add the morph target texture,
-            // we have to create a WebGL2 texture as the format of the
+            // Add the morph target texture.
+            // We have to create a WebGL2 texture as the format of the
             // morph target texture has to be explicitly specified 
-            // (gltf image would assume uint8)
+            // (gltf image would assume uint8).
             let texture = webGlContext.createTexture();
             webGlContext.bindTexture( webGlContext.TEXTURE_2D, texture);
-            // set texture format and upload data
+            // Set texture format and upload data.
             let internalFormat = webGlContext.RGB32F;
             let format = webGlContext.RGB;
             let type = webGlContext.FLOAT;
             let data = morphTargetTextureArray;
             const width = vertexCount;
             const height = attributes.length * this.targets.length;
-            // workaround for node-gles not supporting RGB32F
+            // Workaround for node-gles not supporting RGB32F.
             if(typeof(webGlContext.RGB32F) === 'undefined')
             {
                 internalFormat = webGlContext.RGBA32F;
                 format = webGlContext.RGBA;
                 type = webGlContext.FLOAT;
-    
+                // Restructure the array to use Vec4 instead of Vec3.
                 const numPixels = morphTargetTextureArray.length / 3;
                 data = new Float32Array(numPixels * 4);
                 for(let i = 0; i < numPixels; ++i)
                 {
-                    // copy the pixels and padd the alpha channel
+                    // Copy the pixels and padd the alpha channel.
                     data[i] = morphTargetTextureArray[i];
                     data[i+1] = morphTargetTextureArray[i+1];
                     data[i+2] = morphTargetTextureArray[i+2];
@@ -204,22 +218,22 @@ class gltfPrimitive extends GltfObject
                 format,
                 type,
                 data);
-            // ensure mipmapping is disabled and the sampler is configured correctly
+            // Ensure mipmapping is disabled and the sampler is configured correctly.
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_S,  GL.CLAMP_TO_EDGE);
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_T,  GL.CLAMP_TO_EDGE);
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MIN_FILTER,  GL.NEAREST);
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MAG_FILTER,  GL.NEAREST);
             
-            // now we add the morph target texture as a gltf texture info resource, so that 
-            // we can just call webGl.setTexture(..., gltfTextureInfo, ...) in the renderer
+            // Now we add the morph target texture as a gltf texture info resource, so that 
+            // we can just call webGl.setTexture(..., gltfTextureInfo, ...) in the renderer.
             const morphTargetImage = new gltfImage(
-                undefined,
-                GL.TEXTURE_2D,
-                0,
-                undefined,
-                undefined,
-                ImageMimeType.GLTEXTURE,
-                texture
+                undefined, // uri
+                GL.TEXTURE_2D, // type
+                0, // mip level
+                undefined, // buffer view
+                undefined, // name
+                ImageMimeType.GLTEXTURE, // mimeType
+                texture // image
             );
             gltf.images.push(morphTargetImage);
 
@@ -229,8 +243,8 @@ class gltfPrimitive extends GltfObject
                 gltf.samplers.length - 1,
                 gltf.images.length - 1,
                 GL.TEXTURE_2D);
-            // the webgl texture is already initialized -> this flag informs
-            // webgl.setTexture about this
+            // The webgl texture is already initialized -> this flag informs
+            // webgl.setTexture about this.
             morphTargetTexture.initialized = true;
 
             gltf.textures.push(morphTargetTexture);
