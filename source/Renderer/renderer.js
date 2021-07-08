@@ -422,7 +422,7 @@ class gltfRenderer
         }
 
         let textureIndex = 0;
-        for (let textureIndex = 0; textureIndex < material.textures.length; ++textureIndex)
+        for (; textureIndex < material.textures.length; ++textureIndex)
         {
             let info = material.textures[textureIndex];
             const location = this.shader.getUniformLocation(info.samplerName);
@@ -441,19 +441,17 @@ class gltfRenderer
         // set the morph target texture
         if (primitive.morphTargetTextureInfo !== undefined) 
         {
-            textureIndex++;
             const location = this.shader.getUniformLocation(primitive.morphTargetTextureInfo.samplerName);
             if (location < 0)
             {
                 console.log("Unable to find uniform location of " + primitive.morphTargetTextureInfo.samplerName);
             }
-            if (!this.webGl.setTexture(location, state.gltf, primitive.morphTargetTextureInfo, textureIndex)) // binds texture and sampler
-            {
-                return; // skip this material
-            }
+
+            this.webGl.setTexture(location, state.gltf, primitive.morphTargetTextureInfo, textureIndex); // binds texture and sampler
+            textureIndex++;
         }
 
-        let textureCount = material.textures.length;
+        let textureCount = textureIndex;
         if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
             textureCount = this.applyEnvironmentMap(state, textureCount);
