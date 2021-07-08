@@ -158,16 +158,19 @@ class gltfPrimitive extends GltfObject
                 ++i;
             }
 
-            // add the morph target texture
+            // add the morph target texture,
+            // we have to create a WebGL2 texture as the format of the
+            // morph target texture has to be explicitly specified 
+            // (gltf image would assume uint8)
             let texture = webGlContext.createTexture();
-
             webGlContext.bindTexture( webGlContext.TEXTURE_2D, texture);
-    
+            // set texture format and upload data
             let internalFormat = webGlContext.RGB32F;
             let format = webGlContext.RGB;
             let type = webGlContext.FLOAT;
             let data = morphTargetTextureArray;
-    
+            const width = vertexCount;
+            const height = attributes.length * this.targets.length;
             // workaround for node-gles not supporting RGB32F
             if(typeof(webGlContext.RGB32F) === 'undefined')
             {
@@ -186,10 +189,6 @@ class gltfPrimitive extends GltfObject
                     data[i+3] = 0;
                 }
             }
-
-            const width = vertexCount;
-            const height = attributes.length * this.targets.length;
-            
             webGlContext.texImage2D(
                 webGlContext.TEXTURE_2D,
                 0, //level
@@ -200,12 +199,14 @@ class gltfPrimitive extends GltfObject
                 format,
                 type,
                 data);
-
+            // ensure mipmapping is disabled and the sampler is configured correctly
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_S,  GL.CLAMP_TO_EDGE);
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_T,  GL.CLAMP_TO_EDGE);
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MIN_FILTER,  GL.NEAREST);
             webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MAG_FILTER,  GL.NEAREST);
-
+            
+            // now we add the morph target texture as a gltf texture info resource, so that 
+            // we can just call webGl.setTexture(..., gltfTextureInfo, ...) in the renderer
             const morphTargetImage = new gltfImage(
                 undefined,
                 GL.TEXTURE_2D,
@@ -215,7 +216,6 @@ class gltfPrimitive extends GltfObject
                 ImageMimeType.GLTEXTURE,
                 texture
             );
-
             gltf.images.push(morphTargetImage);
 
             gltf.samplers.push(new gltfSampler(GL.NEAREST, GL.NEAREST, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, undefined));
@@ -224,7 +224,9 @@ class gltfPrimitive extends GltfObject
                 gltf.samplers.length - 1,
                 gltf.images.length - 1,
                 GL.TEXTURE_2D);
-            morphTargetTexture.initialized = true; // primitive has already initialized the texture
+            // the webgl texture is already initialized -> this flag informs
+            // webgl.setTexture about this
+            morphTargetTexture.initialized = true;
 
             gltf.textures.push(morphTargetTexture);
 
