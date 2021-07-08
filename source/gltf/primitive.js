@@ -170,6 +170,10 @@ class gltfPrimitive extends GltfObject
                     // TANGENT_1
                     // ...
                     // TANGENT_N
+                    // The order of POSITION, NORMAL, TANGENT might differ as it depends on the 
+                    // order in the primitives morph targets.
+                    // Also if some  primitive doesn't define one of these attributes 
+                    // in its morph targets the attribute will be omitted from the morph texture.
                     const offset = (attributeOffset[attribute] + i) * vertexCount * 3;
                     morphTargetTextureArray.set(data, offset);
                 }
