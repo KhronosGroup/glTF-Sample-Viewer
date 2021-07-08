@@ -564,9 +564,10 @@ class gltfRenderer
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = state.gltf.meshes[node.mesh];
-            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
+            const weightsAnimated = mesh.getWeightsAnimated();
+            if (weightsAnimated !== undefined && weightsAnimated.length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", mesh.getWeightsAnimated());
+                this.shader.updateUniformArray("u_morphWeights", weightsAnimated);
             }
         }
     }
