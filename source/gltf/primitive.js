@@ -150,8 +150,8 @@ class gltfPrimitive extends GltfObject
                 for (const attribute of Object.keys(target))
                 {
                     const accessor = gltf.accessors[target[attribute]];
-                    const data = accessor.getNormalizedTypedView(gltf);
-                    const offset = attributeOffset[attribute] + i * vertexCount * 3;
+                    const data = accessor.getNormalizedDeinterlacedView(gltf);
+                    const offset = (attributeOffset[attribute] + i) * vertexCount * 3;
                     morphTargetTextureArray.set(data, offset);
                 }
 
