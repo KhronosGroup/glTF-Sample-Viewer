@@ -121,11 +121,16 @@ class gltfPrimitive extends GltfObject
         // MORPH TARGETS
         if (this.targets !== undefined && this.targets.length > 0)
         {
-            // check which attributes are affected by morph targets and 
-            // define offsets for the attributes in the morph target texture
-            const attributes = Object.keys(this.targets[0]);
+            // Check which attributes are affected by morph targets and 
+            // define offsets for the attributes in the morph target texture.
             const attributeOffset = {};
             let offset = 0;
+            // gather used attributes from all targets (some targets might
+            // use more attributes than others)
+            const attributes = Array.from(this.targets.reduce((acc, target) => {
+                Object.keys(target).map(val => acc.add(val));
+                return acc;
+            }, new Set()));
             for (const attribute of attributes)
             {
                 // add morph target defines
