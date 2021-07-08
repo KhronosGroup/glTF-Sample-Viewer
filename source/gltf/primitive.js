@@ -126,14 +126,14 @@ class gltfPrimitive extends GltfObject
             const attributes = Object.keys(this.targets[0]);
             const attributeOffset = {};
             let offset = 0;
-            for (const attribute in attributes)
+            for (const attribute of attributes)
             {
                 // add morph target defines
                 this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
                 this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
                 // store the attribute offset so that later the 
                 // morph target texture can be assembled
-                attributeOffset[attributes[attribute]] = offset;
+                attributeOffset[attribute] = offset;
                 offset += this.targets.length;
             }
             this.defines.push(`NUM_MORPH_TARGETS ${this.targets.length}`);
