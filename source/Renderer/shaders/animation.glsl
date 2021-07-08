@@ -88,7 +88,7 @@ vec4 getTargetPosition()
 #ifdef HAS_MORPH_TARGET_POSITION
     for(int i = 0; i < NUM_MORPH_TARGETS; i++)
     {
-        ivec2 mophTargetCoordinate = ivec2(i + MORPH_TARGET_POSITION_OFFSET, gl_VertexID);
+        ivec2 mophTargetCoordinate = ivec2(gl_VertexID, i + MORPH_TARGET_POSITION_OFFSET);
         vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
         pos.xyz += u_morphWeights[i] * displacement;
     }

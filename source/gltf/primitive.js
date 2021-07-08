@@ -187,9 +187,9 @@ class gltfPrimitive extends GltfObject
                 }
             }
 
-            const width = attributes.length * this.targets.length;
-            const height = vertexCount;
-    
+            const width = vertexCount;
+            const height = attributes.length * this.targets.length;
+            
             webGlContext.texImage2D(
                 webGlContext.TEXTURE_2D,
                 0, //level
