@@ -129,7 +129,7 @@ class gltfPrimitive extends GltfObject
             for (const attribute in attributes)
             {
                 // add morph target defines
-                this.defines.push(`HAS_MORPH_TARGET_${attribute}`);
+                this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
                 this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
                 // store the attribute offset so that later the 
                 // morph target texture can be assembled
@@ -137,7 +137,7 @@ class gltfPrimitive extends GltfObject
                 offset += this.targets.length;
             }
             this.defines.push(`NUM_MORPH_TARGETS ${this.targets.length}`);
-            this.defines.push("HAS_MORPH_TARGETS");
+            this.defines.push("HAS_MORPH_TARGETS 1");
 
             // allocate the texture buffer. Note that all target attributes must be vec3 types
             const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
@@ -166,18 +166,11 @@ class gltfPrimitive extends GltfObject
             let internalFormat = webGlContext.RGB32F;
             let format = webGlContext.RGB;
             let type = webGlContext.FLOAT;
-            let data = undefined;
+            let data = morphTargetTextureArray;
     
-            if (typeof(webGlContext.RGB32F) !== 'undefined')
+            // workaround for node-gles not supporting RGB32F
+            if(typeof(webGlContext.RGB32F) === 'undefined')
             {
-                internalFormat = webGlContext.RGB32F;
-                format = webGlContext.RGB;
-                type = webGlContext.FLOAT;
-                data = morphTargetTextureArray;
-            }
-            else
-            {
-                // workaround for node-gles not supporting RGB32F
                 internalFormat = webGlContext.RGBA32F;
                 format = webGlContext.RGBA;
                 type = webGlContext.FLOAT;
@@ -218,14 +211,14 @@ class gltfPrimitive extends GltfObject
                 GL.TEXTURE_2D,
                 0,
                 undefined,
-                "MorphTargets",
+                undefined,
                 ImageMimeType.GLTEXTURE,
                 texture
             );
 
             gltf.images.push(morphTargetImage);
 
-            gltf.samplers.push(new gltfSampler(GL.NEAREST, GL.NEAREST, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, "MorphTargetsSampler"));
+            gltf.samplers.push(new gltfSampler(GL.NEAREST, GL.NEAREST, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, undefined));
 
             const morphTargetTexture = new gltfTexture(
                 gltf.samplers.length - 1,
