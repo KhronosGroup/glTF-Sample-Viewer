@@ -245,32 +245,35 @@ class gltfMaterial extends GltfObject
             this.defines.push("ALPHAMODE ALPHAMODE_BLEND");
         }
 
-        if (this.pbrMetallicRoughness !== undefined && this.type !== "SG")
+        // if we have SG, we prefer SG (best practice) but if we have neither objects we use MR default values
+        if(this.type !== "SG" )
         {
             this.defines.push("MATERIAL_METALLICROUGHNESS 1");
+            this.properties.set("u_BaseColorFactor", vec4.fromValues(1, 1, 1, 1));
+            this.properties.set("u_MetallicFactor", 1);
+            this.properties.set("u_RoughnessFactor", 1);
+        }
 
-            let baseColorFactor = vec4.fromValues(1, 1, 1, 1);
-            let metallicFactor = 1;
-            let roughnessFactor = 1;
-
+        if (this.pbrMetallicRoughness !== undefined && this.type !== "SG")
+        {
             if (this.pbrMetallicRoughness.baseColorFactor !== undefined)
             {
-                baseColorFactor = jsToGl(this.pbrMetallicRoughness.baseColorFactor);
+                let baseColorFactor = jsToGl(this.pbrMetallicRoughness.baseColorFactor);
+                this.properties.set("u_BaseColorFactor", baseColorFactor);
             }
 
             if (this.pbrMetallicRoughness.metallicFactor !== undefined)
             {
-                metallicFactor = this.pbrMetallicRoughness.metallicFactor;
+                let metallicFactor = this.pbrMetallicRoughness.metallicFactor;
+                this.properties.set("u_MetallicFactor", metallicFactor);
             }
 
             if (this.pbrMetallicRoughness.roughnessFactor !== undefined)
             {
-                roughnessFactor = this.pbrMetallicRoughness.roughnessFactor;
+                let roughnessFactor = this.pbrMetallicRoughness.roughnessFactor;
+                this.properties.set("u_RoughnessFactor", roughnessFactor);
             }
 
-            this.properties.set("u_BaseColorFactor", baseColorFactor);
-            this.properties.set("u_MetallicFactor", metallicFactor);
-            this.properties.set("u_RoughnessFactor", roughnessFactor);
         }
 
         if (this.extensions !== undefined)
