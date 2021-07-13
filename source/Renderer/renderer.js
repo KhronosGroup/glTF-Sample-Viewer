@@ -543,7 +543,7 @@ class gltfRenderer
             if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.getWeightsAnimated().length, 8));
+                vertDefines.push("WEIGHT_COUNT " + mesh.getWeightsAnimated().length);
             }
         }
     }

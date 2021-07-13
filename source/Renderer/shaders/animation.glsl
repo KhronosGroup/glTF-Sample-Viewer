@@ -84,11 +84,12 @@ mat4 getSkinningNormalMatrix()
 vec4 getTargetPosition()
 {
     vec4 pos = vec4(0);
-
 #ifdef HAS_MORPH_TARGET_POSITION
-    for(int i = 0; i < NUM_MORPH_TARGETS; i++)
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        ivec2 mophTargetCoordinate = ivec2(gl_VertexID, i + MORPH_TARGET_POSITION_OFFSET);
+        int offset = MORPH_TARGET_POSITION_OFFSET + i * NUM_VERTICIES + vertexID;
+        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
         vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
         pos.xyz += u_morphWeights[i] * displacement;
     }
@@ -102,9 +103,11 @@ vec3 getTargetNormal()
     vec3 normal = vec3(0);
 
 #ifdef HAS_MORPH_TARGET_NORMAL
-    for(int i = 0; i < NUM_MORPH_TARGETS; i++)
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        ivec2 mophTargetCoordinate = ivec2(i + MORPH_TARGET_NORMAL_OFFSET, gl_VertexID);
+        int offset = MORPH_TARGET_NORMAL_OFFSET + i * NUM_VERTICIES + gl_VertexID;
+        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
         vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
         normal.xyz += u_morphWeights[i] * displacement;
     }
@@ -119,9 +122,11 @@ vec3 getTargetTangent()
     vec3 tangent = vec3(0);
 
 #ifdef HAS_MORPH_TARGET_TANGENT
-    for(int i = 0; i < NUM_MORPH_TARGETS; i++)
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        ivec2 mophTargetCoordinate = ivec2(i + MORPH_TARGET_TANGENT_OFFSET, gl_VertexID);
+        int offset = MORPH_TARGET_TANGENT_OFFSET + i * NUM_VERTICIES + gl_VertexID;
+        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
         vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
         tangent.xyz += u_morphWeights[i] * displacement;
     }

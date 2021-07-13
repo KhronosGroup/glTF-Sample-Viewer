@@ -121,6 +121,7 @@ class gltfPrimitive extends GltfObject
         // MORPH TARGETS
         if (this.targets !== undefined && this.targets.length > 0)
         {
+            const max2DTextureSize = Math.pow(webGlContext.getParameter(GL.MAX_TEXTURE_SIZE), 2);
             // Check which attributes are affected by morph targets and 
             // define offsets for the attributes in the morph target texture.
             const attributeOffset = {};
@@ -131,31 +132,39 @@ class gltfPrimitive extends GltfObject
                 Object.keys(target).map(val => acc.add(val));
                 return acc;
             }, new Set()));
+
+            const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
+            this.defines.push(`NUM_VERTICIES ${vertexCount}`);
+            let targetCount = this.targets.length;
+            if (targetCount * attributes.length * vertexCount > max2DTextureSize)
+            {
+                targetCount = Math.floor(max2DTextureSize / (attributes.length * vertexCount));
+                console.warn(`Morph targets exceed texture size limit. Only ${targetCount} of ${this.targets.length} are used.`);
+            }
+
             for (const attribute of attributes)
             {
                 // Add morph target defines
-                this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
+                this.defines.push(`HAS_MORPH_TARGET_${attribute} 0`);
                 this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
                 // Store the attribute offset so that later the 
                 // morph target texture can be assembled.
                 attributeOffset[attribute] = offset;
-                offset += this.targets.length;
+                offset += targetCount;
             }
-            this.defines.push(`NUM_MORPH_TARGETS ${this.targets.length}`);
             this.defines.push("HAS_MORPH_TARGETS 1");
 
             // Allocate the texture buffer. Note that all target attributes must be vec3 types and
             // all must have the same vertex count as the primitives other attributes.
-            const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
-            const morphTargetTextureArray = new Float32Array(attributes.length * this.targets.length * vertexCount * 3);
+            const width = Math.ceil(Math.sqrt(attributes.length * targetCount * vertexCount));
+            const morphTargetTextureArray = new Float32Array(Math.pow(width, 2) * 3);
 
             // Now assemble the texture from the accessors.
-            let i = 0;
-            for (const target of this.targets)
+            for (let i = 0; i < targetCount; ++i)
             {
-                for (const attribute of Object.keys(target))
+                for (const attribute of Object.keys(this.targets[i]))
                 {
-                    const accessor = gltf.accessors[target[attribute]];
+                    const accessor = gltf.accessors[(this.targets[i])[attribute]];
                     const data = accessor.getNormalizedDeinterlacedView(gltf);
                     // The data in the morph target texture is structured like this:
                     // POSITION_0 
@@ -177,9 +186,8 @@ class gltfPrimitive extends GltfObject
                     const offset = (attributeOffset[attribute] + i) * vertexCount * 3;
                     morphTargetTextureArray.set(data, offset);
                 }
-
-                ++i;
             }
+
 
             // Add the morph target texture.
             // We have to create a WebGL2 texture as the format of the
@@ -192,8 +200,6 @@ class gltfPrimitive extends GltfObject
             let format = webGlContext.RGB;
             let type = webGlContext.FLOAT;
             let data = morphTargetTextureArray;
-            const width = vertexCount;
-            const height = attributes.length * this.targets.length;
             // Workaround for node-gles not supporting RGB32F.
             if(typeof(webGlContext.RGB32F) === 'undefined')
             {
@@ -217,7 +223,7 @@ class gltfPrimitive extends GltfObject
                 0, //level
                 internalFormat,
                 width,
-                height,
+                width,
                 0, //border
                 format,
                 type,
