@@ -88,7 +88,7 @@ vec4 getTargetPosition()
     int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
     for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        int offset = MORPH_TARGET_POSITION_OFFSET + i * NUM_VERTICIES + vertexID;
+        int offset = MORPH_TARGET_POSITION_OFFSET + i * NUM_VERTICIES + gl_VertexID;
         ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
         vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
         pos.xyz += u_morphWeights[i] * displacement;
