@@ -52,7 +52,7 @@ vec4 getPosition()
     vec4 pos = vec4(a_position, 1.0);
 
 #ifdef USE_MORPHING
-    pos += getTargetPosition();
+    pos += getTargetPosition(gl_VertexID);
 #endif
 
 #ifdef USE_SKINNING
@@ -69,7 +69,7 @@ vec3 getNormal()
     vec3 normal = a_normal;
 
 #ifdef USE_MORPHING
-    normal += getTargetNormal();
+    normal += getTargetNormal(gl_VertexID);
 #endif
 
 #ifdef USE_SKINNING
@@ -87,7 +87,7 @@ vec3 getTangent()
     vec3 tangent = a_tangent.xyz;
 
 #ifdef USE_MORPHING
-    tangent += getTargetTangent();
+    tangent += getTargetTangent(gl_VertexID);
 #endif
 
 #ifdef USE_SKINNING
