@@ -145,7 +145,7 @@ class gltfPrimitive extends GltfObject
             for (const attribute of attributes)
             {
                 // Add morph target defines
-                this.defines.push(`HAS_MORPH_TARGET_${attribute} 0`);
+                this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
                 this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
                 // Store the attribute offset so that later the 
                 // morph target texture can be assembled.
