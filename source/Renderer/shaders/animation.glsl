@@ -117,7 +117,7 @@ vec3 getTargetNormal(int vertexID)
 }
 
 
-vec3 getTargetTangent(int VertexID)
+vec3 getTargetTangent(int vertexID)
 {
     vec3 tangent = vec3(0);
 
