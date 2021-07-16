@@ -1,97 +1,5 @@
-#ifdef HAS_TARGET_POSITION0_VEC3
-in vec3 a_target_position0;
-#endif
-
-#ifdef HAS_TARGET_POSITION1_VEC3
-in vec3 a_target_position1;
-#endif
-
-#ifdef HAS_TARGET_POSITION2_VEC3
-in vec3 a_target_position2;
-#endif
-
-#ifdef HAS_TARGET_POSITION3_VEC3
-in vec3 a_target_position3;
-#endif
-
-#ifdef HAS_TARGET_POSITION4_VEC3
-in vec3 a_target_position4;
-#endif
-
-#ifdef HAS_TARGET_POSITION5_VEC3
-in vec3 a_target_position5;
-#endif
-
-#ifdef HAS_TARGET_POSITION6_VEC3
-in vec3 a_target_position6;
-#endif
-
-#ifdef HAS_TARGET_POSITION7_VEC3
-in vec3 a_target_position7;
-#endif
-
-#ifdef HAS_TARGET_NORMAL0_VEC3
-in vec3 a_target_normal0;
-#endif
-
-#ifdef HAS_TARGET_NORMAL1_VEC3
-in vec3 a_target_normal1;
-#endif
-
-#ifdef HAS_TARGET_NORMAL2_VEC3
-in vec3 a_target_normal2;
-#endif
-
-#ifdef HAS_TARGET_NORMAL3_VEC3
-in vec3 a_target_normal3;
-#endif
-
-#ifdef HAS_TARGET_NORMAL4_VEC3
-in vec3 a_target_normal4;
-#endif
-
-#ifdef HAS_TARGET_NORMAL5_VEC3
-in vec3 a_target_normal5;
-#endif
-
-#ifdef HAS_TARGET_NORMAL6_VEC3
-in vec3 a_target_normal6;
-#endif
-
-#ifdef HAS_TARGET_NORMAL7_VEC3
-in vec3 a_target_normal7;
-#endif
-
-#ifdef HAS_TARGET_TANGENT0_VEC3
-in vec3 a_target_tangent0;
-#endif
-
-#ifdef HAS_TARGET_TANGENT1_VEC3
-in vec3 a_target_tangent1;
-#endif
-
-#ifdef HAS_TARGET_TANGENT2_VEC3
-in vec3 a_target_tangent2;
-#endif
-
-#ifdef HAS_TARGET_TANGENT3_VEC3
-in vec3 a_target_tangent3;
-#endif
-
-#ifdef HAS_TARGET_TANGENT4_VEC3
-in vec3 a_target_tangent4;
-#endif
-
-#ifdef HAS_TARGET_TANGENT5_VEC3
-in vec3 a_target_tangent5;
-#endif
-
-#ifdef HAS_TARGET_TANGENT6_VEC3
-in vec3 a_target_tangent6;
-#endif
-
-#ifdef HAS_TARGET_TANGENT7_VEC3
-in vec3 a_target_tangent7;
+#ifdef HAS_MORPH_TARGETS
+uniform sampler2D u_MorphTargetsSampler;
 #endif
 
 #ifdef USE_MORPHING
@@ -173,119 +81,55 @@ mat4 getSkinningNormalMatrix()
 
 #ifdef USE_MORPHING
 
-vec4 getTargetPosition()
+vec4 getTargetPosition(int vertexID)
 {
     vec4 pos = vec4(0);
-
-#ifdef HAS_TARGET_POSITION0_VEC3
-    pos.xyz += u_morphWeights[0] * a_target_position0;
-#endif
-
-#ifdef HAS_TARGET_POSITION1_VEC3
-    pos.xyz += u_morphWeights[1] * a_target_position1;
-#endif
-
-#ifdef HAS_TARGET_POSITION2_VEC3
-    pos.xyz += u_morphWeights[2] * a_target_position2;
-#endif
-
-#ifdef HAS_TARGET_POSITION3_VEC3
-    pos.xyz += u_morphWeights[3] * a_target_position3;
-#endif
-
-#ifdef HAS_TARGET_POSITION4_VEC3
-    pos.xyz += u_morphWeights[4] * a_target_position4;
-#endif
-
-#ifdef HAS_TARGET_POSITION5_VEC3
-    pos.xyz += u_morphWeights[5] * a_target_position5;
-#endif
-
-#ifdef HAS_TARGET_POSITION6_VEC3
-    pos.xyz += u_morphWeights[6] * a_target_position6;
-#endif
-
-#ifdef HAS_TARGET_POSITION7_VEC3
-    pos.xyz += u_morphWeights[7] * a_target_position7;
+#ifdef HAS_MORPH_TARGET_POSITION
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
+    {
+        int offset = MORPH_TARGET_POSITION_OFFSET + i * NUM_VERTICIES + vertexID;
+        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
+        vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
+        pos.xyz += u_morphWeights[i] * displacement;
+    }
 #endif
 
     return pos;
 }
 
-vec3 getTargetNormal()
+vec3 getTargetNormal(int vertexID)
 {
     vec3 normal = vec3(0);
 
-#ifdef HAS_TARGET_NORMAL0_VEC3
-    normal += u_morphWeights[0] * a_target_normal0;
-#endif
-
-#ifdef HAS_TARGET_NORMAL1_VEC3
-    normal += u_morphWeights[1] * a_target_normal1;
-#endif
-
-#ifdef HAS_TARGET_NORMAL2_VEC3
-    normal += u_morphWeights[2] * a_target_normal2;
-#endif
-
-#ifdef HAS_TARGET_NORMAL3_VEC3
-    normal += u_morphWeights[3] * a_target_normal3;
-#endif
-
-#ifdef HAS_TARGET_NORMAL4_VEC3
-    normal += u_morphWeights[4] * a_target_normal4;
-#endif
-
-#ifdef HAS_TARGET_NORMAL5_VEC3
-    normal += u_morphWeights[5] * a_target_normal5;
-#endif
-
-#ifdef HAS_TARGET_NORMAL6_VEC3
-    normal += u_morphWeights[6] * a_target_normal6;
-#endif
-
-#ifdef HAS_TARGET_NORMAL7_VEC3
-    normal += u_morphWeights[7] * a_target_normal7;
+#ifdef HAS_MORPH_TARGET_NORMAL
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
+    {
+        int offset = MORPH_TARGET_NORMAL_OFFSET + i * NUM_VERTICIES + vertexID;
+        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
+        vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
+        normal.xyz += u_morphWeights[i] * displacement;
+    }
 #endif
 
     return normal;
 }
 
 
-vec3 getTargetTangent()
+vec3 getTargetTangent(int vertexID)
 {
     vec3 tangent = vec3(0);
 
-#ifdef HAS_TARGET_TANGENT0_VEC3
-    tangent += u_morphWeights[0] * a_target_tangent0;
-#endif
-
-#ifdef HAS_TARGET_TANGENT1_VEC3
-    tangent += u_morphWeights[1] * a_target_tangent1;
-#endif
-
-#ifdef HAS_TARGET_TANGENT2_VEC3
-    tangent += u_morphWeights[2] * a_target_tangent2;
-#endif
-
-#ifdef HAS_TARGET_TANGENT3_VEC3
-    tangent += u_morphWeights[3] * a_target_tangent3;
-#endif
-
-#ifdef HAS_TARGET_TANGENT4_VEC3
-    tangent += u_morphWeights[4] * a_target_tangent4;
-#endif
-
-#ifdef HAS_TARGET_TANGENT5_VEC3
-    tangent += u_morphWeights[5] * a_target_tangent5;
-#endif
-
-#ifdef HAS_TARGET_TANGENT6_VEC3
-    tangent += u_morphWeights[6] * a_target_tangent6;
-#endif
-
-#ifdef HAS_TARGET_TANGENT7_VEC3
-    tangent += u_morphWeights[7] * a_target_tangent7;
+#ifdef HAS_MORPH_TARGET_TANGENT
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
+    {
+        int offset = MORPH_TARGET_TANGENT_OFFSET + i * NUM_VERTICIES + vertexID;
+        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
+        vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
+        tangent.xyz += u_morphWeights[i] * displacement;
+    }
 #endif
 
     return tangent;

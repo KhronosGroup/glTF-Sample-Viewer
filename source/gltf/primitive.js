@@ -1,6 +1,11 @@
 import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
+import { gltfImage } from './image.js';
+import { ImageMimeType } from './image_mime_type.js';
+import { gltfTexture } from './texture.js';
+import { gltfTextureInfo } from './texture.js';
+import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
@@ -18,6 +23,7 @@ class gltfPrimitive extends GltfObject
 
         // non gltf
         this.glAttributes = [];
+        this.morphTargetTextureInfo = undefined;
         this.defines = [];
         this.skip = true;
         this.hasWeights = false;
@@ -113,42 +119,149 @@ class gltfPrimitive extends GltfObject
         }
 
         // MORPH TARGETS
-        if (this.targets !== undefined)
+        if (this.targets !== undefined && this.targets.length > 0)
         {
-            let i = 0;
-            for (const target of this.targets)
+            const max2DTextureSize = Math.pow(webGlContext.getParameter(GL.MAX_TEXTURE_SIZE), 2);
+            // Check which attributes are affected by morph targets and 
+            // define offsets for the attributes in the morph target texture.
+            const attributeOffset = {};
+            let offset = 0;
+            // Gather used attributes from all targets (some targets might
+            // use more attributes than others)
+            const attributes = Array.from(this.targets.reduce((acc, target) => {
+                Object.keys(target).map(val => acc.add(val));
+                return acc;
+            }, new Set()));
+
+            const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
+            this.defines.push(`NUM_VERTICIES ${vertexCount}`);
+            let targetCount = this.targets.length;
+            if (targetCount * attributes.length * vertexCount > max2DTextureSize)
             {
-                if(this.glAttributes.length + 3 > maxAttributes)
-                {
-                    console.error("To many vertex attributes for this primitive, skipping target " + i);
-                    break;
-                }
-
-                for (const attribute of Object.keys(target))
-                {
-                    const idx = target[attribute];
-                    const type = gltf.accessors[idx].type;
-
-                    switch (attribute)
-                    {
-                    case "POSITION":
-                        this.defines.push(`HAS_TARGET_POSITION${i}_${type}`);
-                        console.log(`HAS_TARGET_POSITION_${i}_${type}`)
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_position" + i, accessor: idx });
-                        break;
-                    case "NORMAL":
-                        this.defines.push(`HAS_TARGET_NORMAL${i}_${type}`);
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_normal" + i, accessor: idx });
-                        break;
-                    case "TANGENT":
-                        this.defines.push(`HAS_TARGET_TANGENT${i}_${type}`);
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_tangent" + i, accessor: idx });
-                        break;
-                    }
-                }
-
-                ++i;
+                targetCount = Math.floor(max2DTextureSize / (attributes.length * vertexCount));
+                console.warn(`Morph targets exceed texture size limit. Only ${targetCount} of ${this.targets.length} are used.`);
             }
+
+            for (const attribute of attributes)
+            {
+                // Add morph target defines
+                this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
+                this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${offset}`);
+                // Store the attribute offset so that later the 
+                // morph target texture can be assembled.
+                attributeOffset[attribute] = offset;
+                offset += targetCount;
+            }
+            this.defines.push("HAS_MORPH_TARGETS 1");
+
+            // Allocate the texture buffer. Note that all target attributes must be vec3 types and
+            // all must have the same vertex count as the primitives other attributes.
+            const width = Math.ceil(Math.sqrt(attributes.length * targetCount * vertexCount));
+            const morphTargetTextureArray = new Float32Array(Math.pow(width, 2) * 3);
+
+            // Now assemble the texture from the accessors.
+            for (let i = 0; i < targetCount; ++i)
+            {
+                for (const attribute of Object.keys(this.targets[i]))
+                {
+                    const accessor = gltf.accessors[(this.targets[i])[attribute]];
+                    const data = accessor.getNormalizedDeinterlacedView(gltf);
+                    // The data in the morph target texture is structured like this:
+                    // POSITION_0 
+                    // POSITION_1
+                    // ...
+                    // POSITION_N
+                    // NORMAL_0
+                    // NORMAL_1
+                    // ...
+                    // NORMAL_N
+                    // TANGENT_0
+                    // TANGENT_1
+                    // ...
+                    // TANGENT_N
+                    // The order of POSITION, NORMAL, TANGENT might differ as it depends on the 
+                    // order in the primitives morph targets.
+                    // Also if some  primitive doesn't define one of these attributes 
+                    // in its morph targets the attribute will be omitted from the morph texture.
+                    const offset = (attributeOffset[attribute] + i) * vertexCount * 3;
+                    morphTargetTextureArray.set(data, offset);
+                }
+            }
+
+
+            // Add the morph target texture.
+            // We have to create a WebGL2 texture as the format of the
+            // morph target texture has to be explicitly specified 
+            // (gltf image would assume uint8).
+            let texture = webGlContext.createTexture();
+            webGlContext.bindTexture( webGlContext.TEXTURE_2D, texture);
+            // Set texture format and upload data.
+            let internalFormat = webGlContext.RGB32F;
+            let format = webGlContext.RGB;
+            let type = webGlContext.FLOAT;
+            let data = morphTargetTextureArray;
+            // Workaround for node-gles not supporting RGB32F.
+            if(typeof(webGlContext.RGB32F) === 'undefined')
+            {
+                internalFormat = webGlContext.RGBA32F;
+                format = webGlContext.RGBA;
+                type = webGlContext.FLOAT;
+                // Restructure the array to use Vec4 instead of Vec3.
+                const numPixels = morphTargetTextureArray.length / 3;
+                data = new Float32Array(numPixels * 4);
+                for(let i = 0; i < numPixels; ++i)
+                {
+                    // Copy the pixels and padd the alpha channel.
+                    data[i] = morphTargetTextureArray[i];
+                    data[i+1] = morphTargetTextureArray[i+1];
+                    data[i+2] = morphTargetTextureArray[i+2];
+                    data[i+3] = 0;
+                }
+            }
+            webGlContext.texImage2D(
+                webGlContext.TEXTURE_2D,
+                0, //level
+                internalFormat,
+                width,
+                width,
+                0, //border
+                format,
+                type,
+                data);
+            // Ensure mipmapping is disabled and the sampler is configured correctly.
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_S,  GL.CLAMP_TO_EDGE);
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_WRAP_T,  GL.CLAMP_TO_EDGE);
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MIN_FILTER,  GL.NEAREST);
+            webGlContext.texParameteri( GL.TEXTURE_2D,  GL.TEXTURE_MAG_FILTER,  GL.NEAREST);
+            
+            // Now we add the morph target texture as a gltf texture info resource, so that 
+            // we can just call webGl.setTexture(..., gltfTextureInfo, ...) in the renderer.
+            const morphTargetImage = new gltfImage(
+                undefined, // uri
+                GL.TEXTURE_2D, // type
+                0, // mip level
+                undefined, // buffer view
+                undefined, // name
+                ImageMimeType.GLTEXTURE, // mimeType
+                texture // image
+            );
+            gltf.images.push(morphTargetImage);
+
+            gltf.samplers.push(new gltfSampler(GL.NEAREST, GL.NEAREST, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, undefined));
+
+            const morphTargetTexture = new gltfTexture(
+                gltf.samplers.length - 1,
+                gltf.images.length - 1,
+                GL.TEXTURE_2D);
+            // The webgl texture is already initialized -> this flag informs
+            // webgl.setTexture about this.
+            morphTargetTexture.initialized = true;
+
+            gltf.textures.push(morphTargetTexture);
+
+            this.morphTargetTextureInfo = new gltfTextureInfo(gltf.textures.length - 1, 0, true);
+            this.morphTargetTextureInfo.samplerName = "u_MorphTargetsSampler";
+            this.morphTargetTextureInfo.generateMips = false;
         }
 
         this.computeCentroid(gltf);
