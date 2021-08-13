@@ -313,7 +313,7 @@ class iblSampler
             this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
 
             // map shader uniform to texture unit (TEXTURE0)
-            const location = this.gl.getUniformLocation(shader.program,"u_cubemapTexture");
+            const location = this.gl.getUniformLocation(shader.program,"uCubeMap");
             this.gl.uniform1i(location, 0); // texture unit 0
 
 
