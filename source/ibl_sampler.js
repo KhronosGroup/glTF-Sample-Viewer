@@ -84,13 +84,13 @@ class iblSampler
 
             const numPixels = image.dataFloat.length / 3;
             data = new Float32Array(numPixels * 4);
-            for(let i = 0; i < numPixels; ++i)
+            for(let i = 0, src = 0, dst = 0; i < numPixels; ++i, src += 3, dst += 4)
             {
-                // copy the pixels and padd the alpha channel
-                data[i] = image.dataFloat[i];
-                data[i+1] = image.dataFloat[i+1];
-                data[i+2] = image.dataFloat[i+2];
-                data[i+3] = 0;
+                // copy the pixels and pad the alpha channel
+                data[dst] = image.dataFloat[src];
+                data[dst+1] = image.dataFloat[src+1];
+                data[dst+2] = image.dataFloat[src+2];
+                data[dst+3] = 0;
             }
         }
         else if (typeof(Image) !== 'undefined' && image instanceof Image)
