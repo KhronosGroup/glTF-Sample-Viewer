@@ -75,6 +75,8 @@ class UIModel
                                             map( ({ newValue, oldValue }) => newValue));
         this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
+        this.iridescenceEnabled = app.$watchAsObservable('iridescenceEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));

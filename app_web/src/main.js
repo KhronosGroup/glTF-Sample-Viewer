@@ -199,6 +199,9 @@ async function main()
     uiModel.iorEnabled.subscribe( iorEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_ior = iorEnabled;
     });
+    uiModel.iridescenceEnabled.subscribe( iridescenceEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled;
+    });
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
