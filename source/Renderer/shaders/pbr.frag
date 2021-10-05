@@ -25,6 +25,10 @@ precision highp float;
 #include <ibl.glsl>
 #include <material_info.glsl>
 
+#ifdef MATERIAL_IRIDESCENCE
+#include <iridescence.glsl>
+#endif
+
 
 out vec4 g_finalColor;
 
@@ -92,6 +96,10 @@ void main()
     materialInfo = getVolumeInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_IRIDESCENCE
+    materialInfo = getIridescenceInfo(materialInfo);
+#endif
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -114,6 +122,16 @@ void main()
     vec3 f_transmission = vec3(0.0);
 
     float albedoSheenScaling = 1.0;
+
+#ifdef MATERIAL_IRIDESCENCE
+    if (materialInfo.iridescenceFactor > 0.0) {
+        float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
+        float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
+
+        vec3 iridescenceFilmF0 = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0, materialInfo.metallic);
+        materialInfo.f0 = mix(materialInfo.f0, iridescenceFilmF0, materialInfo.iridescenceFactor);
+    }
+#endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL

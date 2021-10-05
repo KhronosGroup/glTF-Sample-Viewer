@@ -6,6 +6,7 @@ import { EnvironmentRenderer } from './environment_renderer.js'
 
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
+import iridescenceShader from './shaders/iridescence.glsl';
 import materialInfoShader from './shaders/material_info.glsl';
 import iblShader from './shaders/ibl.glsl';
 import punctualShader from './shaders/punctual.glsl';
@@ -41,6 +42,7 @@ class gltfRenderer
         shaderSources.set("pbr.frag", pbrShader);
         shaderSources.set("material_info.glsl", materialInfoShader);
         shaderSources.set("brdf.glsl", brdfShader);
+        shaderSources.set("iridescence.glsl", iridescenceShader);
         shaderSources.set("ibl.glsl", iblShader);
         shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
