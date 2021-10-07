@@ -124,18 +124,22 @@ void main()
     float albedoSheenScaling = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
+    vec3 iridescenceFresnel = vec3(0.0);
     if (materialInfo.iridescenceFactor > 0.0) {
         float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
         float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
 
-        vec3 iridescenceFilmF0 = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0, materialInfo.metallic);
-        materialInfo.f0 = mix(materialInfo.f0, iridescenceFilmF0, materialInfo.iridescenceFactor);
+        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0, materialInfo.metallic);
     }
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
+#ifdef MATERIAL_IRIDESCENCE
+    f_specular += getIBLRadianceGGXIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.f0, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.specularWeight);
+#else
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
+#endif
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
 
 #ifdef MATERIAL_CLEARCOAT
@@ -196,7 +200,11 @@ void main()
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+#ifdef MATERIAL_IRIDESCENCE
+            f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+#else
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+#endif
 
 #ifdef MATERIAL_SHEEN
             f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
