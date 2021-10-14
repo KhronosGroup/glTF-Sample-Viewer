@@ -157,7 +157,7 @@ class gltfPrimitive extends GltfObject
     computeCentroid(gltf)
     {
         const positionsAccessor = gltf.accessors[this.attributes.POSITION];
-        const positions = positionsAccessor.getTypedView(gltf);
+        const positions = positionsAccessor.getNormalizedTypedView(gltf);
 
         if(this.indices !== undefined)
         {
