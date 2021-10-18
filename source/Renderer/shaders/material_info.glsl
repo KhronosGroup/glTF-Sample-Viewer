@@ -135,6 +135,7 @@ NormalInfo getNormalInfo(vec3 v)
 }
 
 
+#ifdef MATERIAL_CLEARCOAT
 vec3 getClearcoatNormal(NormalInfo normalInfo)
 {
 #ifdef HAS_CLEARCOAT_NORMAL_MAP
@@ -146,6 +147,7 @@ vec3 getClearcoatNormal(NormalInfo normalInfo)
     return normalInfo.ng;
 #endif
 }
+#endif
 
 
 vec4 getBaseColor()
