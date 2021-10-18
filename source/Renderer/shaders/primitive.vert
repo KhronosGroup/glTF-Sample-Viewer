@@ -13,12 +13,9 @@ out vec3 v_Position;
 in vec3 a_normal;
 #endif
 
-#ifdef HAS_TANGENT_VEC4
-in vec4 a_tangent;
-#endif
-
 #ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
+in vec4 a_tangent;
 out mat3 v_TBN;
 #else
 out vec3 v_Normal;
@@ -80,7 +77,7 @@ vec3 getNormal()
 }
 #endif
 
-
+#ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
 vec3 getTangent()
 {
@@ -96,6 +93,7 @@ vec3 getTangent()
 
     return normalize(tangent);
 }
+#endif
 #endif
 
 
