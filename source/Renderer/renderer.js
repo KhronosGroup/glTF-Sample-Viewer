@@ -138,6 +138,20 @@ class gltfRenderer
                             null);
         context.bindTexture(context.TEXTURE_2D, null);
 
+
+        this.colorRenderBuffer = context.createRenderbuffer();
+        context.bindRenderbuffer(context.RENDERBUFFER, this.colorRenderBuffer);
+        context.renderbufferStorageMultisample( context.RENDERBUFFER,
+                                                context.getParameter(context.MAX_SAMPLES),
+                                                context.RGBA8, 
+                                                this.currentHeight,
+                                                this.currentHeight);
+
+        this.opaqueFramebufferMSAA = context.createFramebuffer();
+        context.bindFramebuffer(context.FRAMEBUFFER, this,this.opaqueFramebufferMSAA);
+        context.framebufferRenderbuffer(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.RENDERBUFFER, this.colorRenderBuffer);
+
+
         this.opaqueFramebuffer = context.createFramebuffer();
         context.bindFramebuffer(context.FRAMEBUFFER, this.opaqueFramebuffer);
         context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.opaqueRenderTexture, 0);
