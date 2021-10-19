@@ -94,7 +94,7 @@ const app = new Vue({
             specularEnabled: true,
 
             activeTab: 0,
-            loadingComponent: {},
+            loadingComponent: undefined,
             showDropDownOverlay: false,
             uploadedHDR: undefined,
 
@@ -159,7 +159,7 @@ const app = new Vue({
             })
         },
         goToLoadingState() {
-            if(this.loadingComponent === undefined)
+            if(this.loadingComponent !== undefined)
             {
                 return;
             }
@@ -174,6 +174,7 @@ const app = new Vue({
                 return;
             }
             this.loadingComponent.close();
+            this.loadingComponent = undefined;
         },
         onFileChange(e) {
             const file = e.target.files[0];
