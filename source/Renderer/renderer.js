@@ -29,6 +29,7 @@ class gltfRenderer
 
         this.webGl = new gltfWebGl(context);
         this.initialized = false;
+        this.samples = 4;
 
         // create render target for non transmission materials
         this.opaqueRenderTexture = 0;
@@ -95,7 +96,7 @@ class gltfRenderer
     init(state)
     {
         const context = this.webGl.context;
-        const maxSamples = context.getParameter(context.MAX_SAMPLES)
+        const maxSamples = context.getParameter(context.MAX_SAMPLES);
         const samples = state.internalMSAA < maxSamples ? state.internalMSAA : maxSamples;
         if (!this.initialized){
 
@@ -156,6 +157,8 @@ class gltfRenderer
                 this.opaqueFramebufferWidth,
                 this.opaqueFramebufferHeight);
 
+            this.samples = samples;
+
             this.opaqueFramebufferMSAA = context.createFramebuffer();
             context.bindFramebuffer(context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
             context.framebufferRenderbuffer(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.RENDERBUFFER, this.colorRenderBuffer);
@@ -174,19 +177,23 @@ class gltfRenderer
             this.environmentRenderer = new EnvironmentRenderer(this.webGl);
         }
         else {
-            context.bindRenderbuffer(context.RENDERBUFFER, this.colorRenderBuffer);
-            context.renderbufferStorageMultisample( context.RENDERBUFFER,
-                samples,
-                context.RGBA8, 
-                this.opaqueFramebufferWidth,
-                this.opaqueFramebufferHeight);
-            
-            context.bindRenderbuffer(context.RENDERBUFFER, this.depthRenderBuffer);
-            context.renderbufferStorageMultisample( context.RENDERBUFFER,
-                samples,
-                context.DEPTH_COMPONENT16, 
-                this.opaqueFramebufferWidth,
-                this.opaqueFramebufferHeight);
+            if (this.samples != samples)
+            {
+                this.samples = samples;
+                context.bindRenderbuffer(context.RENDERBUFFER, this.colorRenderBuffer);
+                context.renderbufferStorageMultisample( context.RENDERBUFFER,
+                    samples,
+                    context.RGBA8, 
+                    this.opaqueFramebufferWidth,
+                    this.opaqueFramebufferHeight);
+                
+                context.bindRenderbuffer(context.RENDERBUFFER, this.depthRenderBuffer);
+                context.renderbufferStorageMultisample( context.RENDERBUFFER,
+                    samples,
+                    context.DEPTH_COMPONENT16, 
+                    this.opaqueFramebufferWidth,
+                    this.opaqueFramebufferHeight);
+            }
         }
     }
 
