@@ -318,15 +318,8 @@ class gltfRenderer
         //Reset Viewport
         this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
 
-        
-
         //Create Framebuffer Mipmaps
         this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-
-
-
-        // render the top layer to the frame buffer as well
-        //this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
 
         this.webGl.context.generateMipmap(this.webGl.context.TEXTURE_2D);
 

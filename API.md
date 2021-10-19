@@ -124,6 +124,7 @@ GltfState containing a state for visualization in GltfView
             * [.debugOutput](#GltfState+renderingParameters.debugOutput)
             * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
             * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
+            * [.internalMSAA](#GltfState+renderingParameters.internalMSAA)
     * _static_
         * [.ToneMaps](#GltfState.ToneMaps)
             * [.NONE](#GltfState.ToneMaps.NONE)
@@ -232,6 +233,7 @@ parameters used to configure the rendering
     * [.debugOutput](#GltfState+renderingParameters.debugOutput)
     * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
     * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
+    * [.internalMSAA](#GltfState+renderingParameters.internalMSAA)
 
 <a name="GltfState+renderingParameters.morphing"></a>
 
@@ -308,6 +310,12 @@ Front faces:
 
 #### renderingParameters.useDirectionalLightsWithDisabledIBL
 If this is set to true, directional lights will be generated if IBL is disabled
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.internalMSAA"></a>
+
+#### renderingParameters.internalMSAA
+MSAA used for cases which are not handled by the browser (e.g. Transmission)
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState.ToneMaps"></a>
