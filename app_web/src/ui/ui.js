@@ -97,6 +97,7 @@ const app = new Vue({
             loadingComponent: {},
             showDropDownOverlay: false,
             uploadedHDR: undefined,
+            
 
             // these are handls for certain ui change related things
             environmentVisiblePrefState: true,
@@ -144,6 +145,14 @@ const app = new Vue({
             else{
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
+        },
+        collapseActiveTab : function(event, item) {
+            if (item === this.activeTab)
+            {
+                this.activeTab = -1;
+                event.stopPropagation();
+            }
+            console.log(this.activeTab);
         },
         warn(message) {
             this.$buefy.toast.open({
