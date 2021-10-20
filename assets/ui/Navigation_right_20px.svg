@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icon/ Navigation/ right_20px</title>
+    <defs>
+        <path d="M8.69187796,8 L5.66736755,11.0245104 C5.44421082,11.2476671 5.44421082,11.6094757 5.66736755,11.8326324 C5.89052429,12.0557892 6.25233285,12.0557892 6.47548959,11.8326324 L9.90406102,8.40406102 C10.1272178,8.18090428 10.1272178,7.81909572 9.90406102,7.59593898 L6.47548959,4.16736755 C6.25233285,3.94421082 5.89052429,3.94421082 5.66736755,4.16736755 C5.44421082,4.39052429 5.44421082,4.75233285 5.66736755,4.97548959 L8.69187796,8 Z" id="path-1"></path>
+    </defs>
+    <g id="Icon/-Navigation/-right_20px" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Shape" fill="#F4F4F4" xlink:href="#path-1"></use>
+    </g>
+</svg>

@@ -119,6 +119,12 @@ nav.tabs
     display: table;
 }
 
+// hide tab content if
+.hideTabs section
+{
+    display: none !important;
+}
+
 // handle options placement
 .tabs li:first-child
 {
@@ -127,10 +133,7 @@ nav.tabs
 .tabs li:nth-child(5)
 {
     margin-top: auto;
-}
-.tabs li:last-child
-{
-    margin-bottom: calc(100vh * 0.07);
+    margin-bottom: calc(100vh * 0.02);
 }
 
 .tabs li a

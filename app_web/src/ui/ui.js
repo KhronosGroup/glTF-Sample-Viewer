@@ -94,6 +94,7 @@ const app = new Vue({
             specularEnabled: true,
 
             activeTab: 0,
+            tabsHidden: false,
             loadingComponent: {},
             showDropDownOverlay: false,
             uploadedHDR: undefined,
@@ -117,6 +118,21 @@ const app = new Vue({
             "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
             "if you believe you are seeing this message in error.", 15000);
         }
+
+        // add github logo to navbar
+        this.$nextTick(function () {
+            // Code that will run only after the
+            // entire view has been rendered
+            var a = document.createElement('a');
+            a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
+            var img = document.createElement('img');
+            img.src ="assets/ui/GitHub-Mark-Light-32px.png";
+            img.style.width = "22px";
+            img.style.height = "22px";
+            document.getElementById("tabsContainer").childNodes[0].childNodes[0].appendChild(a);
+            a.appendChild(img);
+        })
+
     },
     methods:
     {
@@ -149,10 +165,28 @@ const app = new Vue({
         collapseActiveTab : function(event, item) {
             if (item === this.activeTab)
             {
-                this.activeTab = -1;
-                event.stopPropagation();
+                this.tabsHidden = !this.tabsHidden;
+                
+                if(this.tabsHidden) {
+                    // remove is-active class if tabs are hidden
+                    event.stopPropagation();
+                    
+                    let navElements = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes;
+                    for(let elem of navElements) {
+                        elem.classList.remove('is-active');
+                    }
+                } else {
+                    // add is-active class to correct element
+                    let activeNavElement = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes[item];
+                    activeNavElement.classList.add('is-active');
+                }
+                return;
             }
-            console.log(this.activeTab);
+            else {
+                // reset tab visibility
+                this.tabsHidden = false;
+            }
+            
         },
         warn(message) {
             this.$buefy.toast.open({
