@@ -6,6 +6,7 @@ import commonjs from 'rollup-plugin-commonjs';
 import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
+import json from '@rollup/plugin-json';
 
 export default {
   input: 'src/main.js',
@@ -19,6 +20,7 @@ export default {
     }
   ],
   plugins: [
+    json(),
     commonjs({
 
     }),
