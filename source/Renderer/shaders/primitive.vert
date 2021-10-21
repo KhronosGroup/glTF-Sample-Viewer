@@ -101,6 +101,7 @@ vec3 getTangent()
 
 void main()
 {
+    gl_PointSize = 1.0f;
     vec4 pos = u_ModelMatrix * getPosition();
     v_Position = vec3(pos.xyz) / pos.w;
 
