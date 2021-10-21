@@ -312,6 +312,20 @@ button.button
     background: rgb(51, 51, 51);
 }
 
+.canvasUIMaximize {
+    float: right;
+    margin-top: -50px;
+    padding-right: 20px;
+    overflow: overlay;
+    z-index: 2;
+}
+.canvasUIMaximize:hover {
+    overflow: visible;
+}
+.maximizeCanvasIcon:hover {
+    transform: scale(1.2);
+}
+
 .dg li.gui-stats:not(.folder) {
     height: 48px;
 }

@@ -98,6 +98,7 @@ const app = new Vue({
             loadingComponent: {},
             showDropDownOverlay: false,
             uploadedHDR: undefined,
+            uiVisible: true,
             
 
             // these are handls for certain ui change related things
@@ -222,8 +223,46 @@ const app = new Vue({
             const file = e.target.files[0];
             this.uploadedHDR = file;
         },
+        hide() {
+            this.uiVisible = false;
+        },
+        show() {
+            this.uiVisible = true;
+        },
     }
 }).$mount('#app');
+
+const canvasUI = new Vue({
+    data() {
+        return {
+            fullscreen: false,
+            timer: null
+        };
+    },
+    methods:
+    {
+        toggleFullscreen() {
+            if(this.fullscreen) {
+                app.show();
+            } else {
+                app.hide();
+            }
+            this.fullscreen = !this.fullscreen;
+        },
+        mouseMove() {
+            this.$refs.fullscreenIcon.style.display = "block";
+            this.setFullscreenIconTimer();
+        },
+        setFullscreenIconTimer() {
+            clearTimeout(this.timer);
+            this.timer = window.setTimeout( () => {
+                this.$refs.fullscreenIcon.style.display = "none";
+            }, 1000);
+        }
+    }
+
+}).$mount('#canvasUI');
+
 
 export { app };
 

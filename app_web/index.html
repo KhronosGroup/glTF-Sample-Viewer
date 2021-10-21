@@ -90,12 +90,18 @@
 <body onload="SampleViewerApp.main()" class="is-flex">
 
     <div class="columns">
-        <div class="column">
-            <canvas id="canvas">No Canvas!</canvas>
+        <div class="column" id="canvasUI">
+            <canvas id="canvas" @mousemove="mouseMove">No
+                Canvas!</canvas>
+            <div class="canvasUIMaximize">
+                <img v-bind:src="[fullscreen ? 'assets/ui/Icon_Collapse.svg' : 'assets/ui/Icon_Expand.svg']"
+                    @click="toggleFullscreen()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px">
+            </div>
         </div>
+
         <div class="column is-narrow is-hidden-mobile">
             <!-- UI -->
-            <div id="app">
+            <div id="app" v-bind:class="[uiVisible ? '' : 'is-hidden']">
                 <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone"
                     style="pointer-events: none;">
                     <div class="is-overlay is-dropAreaCard is-flex" style="z-index: 999;">
