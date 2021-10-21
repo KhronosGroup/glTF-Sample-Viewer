@@ -126,7 +126,12 @@ void main()
 #ifdef MATERIAL_IRIDESCENCE
     vec3 iridescenceFresnel = vec3(0.0);
     if (materialInfo.iridescenceFactor > 0.0) {
+#ifdef MATERIAL_CLEARCOAT
         float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
+#else
+        float topIOR = 1.0;
+#endif
+
         float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
 
         iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0, materialInfo.metallic);
