@@ -28,8 +28,9 @@ async function main()
         "helipad": "Helipad Goldenhour",
         "papermill": "Papermill Ruins",
         "neutral": "Studio Neutral",
-        "chromatic": "Studio Chromatic",
-        "directional": "Studio Directional",
+        "Cannon_Exterior": "Cannon Exterior",
+        "Colorful_Studio": "Colorful Studio",
+        "Wide_Street" : "Wide Street",
     }, "assets/environments/");
 
     const uiModel = new UIModel(app, pathProvider, environmentPaths);
