@@ -105,9 +105,9 @@ NormalInfo getNormalInfo(vec3 v)
 #endif
 #else
     ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
+#endif
     t = normalize(t_ - ng * dot(ng, t_));
     b = cross(ng, t);
-#endif
 
     // For a back-facing surface, the tangential basis vectors are negated.
     if (gl_FrontFacing == false)
