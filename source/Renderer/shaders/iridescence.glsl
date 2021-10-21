@@ -79,11 +79,11 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     vec3 eta_3, kappa_3;
     artisticIor(baseF0, mix(vec3(0.0), baseF0, metallic), eta_3, kappa_3);
 
-    vec3 R12p, T121p, R23p, R12s, T121s, R23s, ct2;
-    for(int i = 0; i < 3; ++i) {
+    vec3 R12p, T121p, R23p, R12s, T121s, R23s, cosTheta2;
+    for (int i = 0; i < 3; ++i) {
         // Reflected and transmitted parts in the thin film
-        // Note: This part needs to compute the new ray direction ct2[i]
-        //       as ct2[i] is wavelength dependent.
+        // Note: This part needs to compute the new ray direction cosTheta2[i]
+        //       as cosTheta2[i] is wavelength dependent.
         float scale = eta_1[i] / eta_2[i]; //(cosTheta1 > 0) ? eta_1 / eta_2 : eta_2 / eta_1;
         float cosThetaTSqr = 1.0 - (1.0 - sq(cosTheta1)) * sq(scale);
 
@@ -96,11 +96,11 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
             T121p[i] = 0.0;
             T121s[i] = 0.0;
         } else {
-            ct2[i] = sqrt(cosThetaTSqr);
+            cosTheta2[i] = sqrt(cosThetaTSqr);
             fresnelConductorExact(cosTheta1, eta_2[i] / eta_1[i], 0.0, R12p[i], R12s[i]);
 
             // Reflected part by the base
-            fresnelConductorExact(ct2[i], eta_3[i] / eta_2[i], kappa_3[i] / eta_2[i], R23p[i], R23s[i]);
+            fresnelConductorExact(cosTheta2[i], eta_3[i] / eta_2[i], kappa_3[i] / eta_2[i], R23p[i], R23s[i]);
 
             // Compute the transmission coefficients
             T121p[i] = 1.0 - R12p[i];
@@ -108,22 +108,19 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
         }
     }
 
-    vec3 wavelengths = vec3(580.0, 550.0, 450.0);
-
     // Optical Path Difference
-    vec3 D    = 2.0 * eta_2 * Dinc * ct2;
-    vec3 Dphi = 2.0 * PI * D / wavelengths;
+    vec3 D = 2.0 * eta_2 * Dinc * cosTheta2;
 
     // Variables
     vec3 phi21p = vec3(0.0);
     vec3 phi21s = vec3(0.0);
     vec3 phi23p = vec3(0.0);
     vec3 phi23s = vec3(0.0);
-    vec3 r123s, r123p, Rs, cosP, irid;
+    vec3 r123s, r123p, Rs;
 
     // Evaluate the phase shift
     fresnelPhaseExact(vec3(cosTheta1), eta_1, eta_2, vec3(0.0), phi21p, phi21s);
-    fresnelPhaseExact(ct2, eta_2, eta_3, kappa_3, phi23p, phi23s);
+    fresnelPhaseExact(cosTheta2, eta_2, eta_3, kappa_3, phi23p, phi23s);
     phi21p = vec3(PI) - phi21p;
     phi21s = vec3(PI) - phi21s;
 
