@@ -53,10 +53,18 @@ function getSceneExtents(gltf, sceneIndex, outMin, outMax)
 function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
 {
     const boxMin = vec3.create();
-    vec3.transformMat4(boxMin, jsToGl(accessor.min), worldTransform);
+    let min = jsToGl(accessor.min);
+    if (accessor.normalized){
+        vec3.normalize(min, min);
+    }
+    vec3.transformMat4(boxMin, min, worldTransform);
 
     const boxMax = vec3.create();
-    vec3.transformMat4(boxMax, jsToGl(accessor.max), worldTransform);
+    let max = jsToGl(accessor.max);
+    if (accessor.normalized){
+        vec3.normalize(max, max);
+    }
+    vec3.transformMat4(boxMax, max, worldTransform);
 
     const center = vec3.create();
     vec3.add(center, boxMax, boxMin);
