@@ -164,9 +164,9 @@ class UIModel
         );
 
         if (modelURL !== null){
-            let test = new Observable(subscriber => { subscriber.next({mainFile: modelURL, additionalFiles: undefined});});
-            dropedGLtfFileName = merge(dropedGLtfFileName, test.pipe(map((data) => {return data.mainFile;} )));
-            this.model = merge(this.model, test);
+            let loadFromUrlObservable = new Observable(subscriber => { subscriber.next({mainFile: modelURL, additionalFiles: undefined});});
+            dropedGLtfFileName = merge(dropedGLtfFileName, loadFromUrlObservable.pipe(map((data) => {return data.mainFile;} )));
+            this.model = merge(this.model, loadFromUrlObservable);
         }
 
         dropedGLtfFileName.subscribe( (filename) => {
