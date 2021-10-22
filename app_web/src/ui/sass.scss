@@ -119,6 +119,12 @@ nav.tabs
     display: table;
 }
 
+// hide tab content if
+.hideTabs section
+{
+    display: none !important;
+}
+
 // handle options placement
 .tabs li:first-child
 {
@@ -127,10 +133,7 @@ nav.tabs
 .tabs li:nth-child(5)
 {
     margin-top: auto;
-}
-.tabs li:last-child
-{
-    margin-bottom: calc(100vh * 0.07);
+    margin-bottom: calc(100vh * 0.02);
 }
 
 .tabs li a
@@ -141,6 +144,8 @@ nav.tabs
     padding-left: unset;
     padding-right: unset;
     width: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 .tabs li a span, .tabs li a img
 {
@@ -305,6 +310,20 @@ button.button
     border: 0px;
     padding: 0px;
     background: rgb(51, 51, 51);
+}
+
+.canvasUIMaximize {
+    float: right;
+    margin-top: -50px;
+    padding-right: 20px;
+    overflow: overlay;
+    z-index: 2;
+}
+.canvasUIMaximize:hover {
+    overflow: visible;
+}
+.maximizeCanvasIcon:hover {
+    transform: scale(1.2);
 }
 
 .dg li.gui-stats:not(.folder) {

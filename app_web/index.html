@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -26,21 +27,21 @@
 
 </head>
 <script>
-function getUrlVars() {
-    var vars = {};
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-        vars[key] = value;
-    });
-    return vars;
-}
+    function getUrlVars() {
+        var vars = {};
+        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+            vars[key] = value;
+        });
+        return vars;
+    }
 
-function getUrlParam(parameter, defaultvalue){
-    var urlparameter = defaultvalue;
-    if(window.location.href.indexOf(parameter) > -1){
-        urlparameter = getUrlVars()[parameter];
+    function getUrlParam(parameter, defaultvalue) {
+        var urlparameter = defaultvalue;
+        if (window.location.href.indexOf(parameter) > -1) {
+            urlparameter = getUrlVars()[parameter];
         }
-    return urlparameter;
-}
+        return urlparameter;
+    }
 </script>
 
 <!-- vue js templates -->
@@ -89,13 +90,20 @@ function getUrlParam(parameter, defaultvalue){
 <body onload="SampleViewerApp.main()" class="is-flex">
 
     <div class="columns">
-        <div class="column">
-            <canvas id="canvas">No Canvas!</canvas>
+        <div class="column" id="canvasUI">
+            <canvas id="canvas" @mousemove="mouseMove">No
+                Canvas!</canvas>
+            <div class="canvasUIMaximize">
+                <img v-bind:src="[fullscreen ? 'assets/ui/Icon_Collapse.svg' : 'assets/ui/Icon_Expand.svg']"
+                    @click="toggleFullscreen()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px">
+            </div>
         </div>
+
         <div class="column is-narrow is-hidden-mobile">
             <!-- UI -->
-            <div id="app">
-                <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone" style="pointer-events: none;">
+            <div id="app" v-bind:class="[uiVisible ? '' : 'is-hidden']">
+                <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone"
+                    style="pointer-events: none;">
                     <div class="is-overlay is-dropAreaCard is-flex" style="z-index: 999;">
                         <div class="box has-text-centered">
                             <span class="icon is-large">
@@ -110,16 +118,26 @@ function getUrlParam(parameter, defaultvalue){
                         </div>
                     </div>
                 </div>
-                <b-tabs vertical position="is-right" v-model="activeTab" class="is-flex-wrap-nowrap" type="is-toggle" v-bind:animated="false">
+                <b-tabs id="tabsContainer" vertical position="is-right" v-model="activeTab"
+                    v-bind:class="[tabsHidden ? 'is-flex-wrap-nowrap hideTabs' : 'is-flex-wrap-nowrap']"
+                    type="is-toggle" v-bind:animated="false">
+
                     <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable">
                         <template #header>
-                            <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
-                                v-bind:width="[activeTab === 0 ? '50px' : '30px']">
-                            <span v-bind:style="[activeTab === 0 ? {'display': 'none'} : {}]">Models</span>
+                            <div @click="collapseActiveTab($event, 0)"
+                                v-bind:style="[tabsHidden === false && activeTab === 0 ? {'height': '100%'} : {}]">
+                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                                <img v-bind:src="[tabsHidden === false && activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
+                                    v-bind:width="[tabsHidden === false && activeTab === 0 ? '50px' : '30px']"
+                                    v-bind:style="[tabsHidden === false && activeTab === 0 ? {'height': '100%'} : {}]">
+                                <span
+                                    v-bind:style="[tabsHidden === false && activeTab === 0 ? {'display': 'none'} : {}]">Models</span>
+                            </div>
                         </template>
 
                         <div class="tabContent">
+                            <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                @click="collapseActiveTab($event, 0)">
                             <h2 class="title is-spaced">Models</h2>
                             <b-field label="Models" class="subtitle">
                                 <b-select v-model="selectedModel" v-stream:input="modelChanged$">
@@ -137,30 +155,31 @@ function getUrlParam(parameter, defaultvalue){
                             </b-field>
                             <b-field label="Scenes" class="subtitle">
                                 <b-select v-model="selectedScene" v-stream:input="sceneChanged$">
-                                    <option v-for="(item) in scenes"
-                                        v-bind:value="item.index">
+                                    <option v-for="(item) in scenes" v-bind:value="item.index">
                                         {{ item.title }}
                                     </option>
                                 </b-select>
                             </b-field>
                             <b-field label="Cameras" class="subtitle">
                                 <b-select v-model="selectedCamera" v-stream:input="cameraChanged$">
-                                    <option v-for="(item) in cameras"
-                                        v-bind:value="item.index">
+                                    <option v-for="(item) in cameras" v-bind:value="item.index">
                                         {{ item.title }}
                                     </option>
                                 </b-select>
                             </b-field>
 
-                            <b-field label="Variants" class="subtitle" v-bind:style="[materialVariants.length <= 1 ? {'display': 'none'} : {}]">
-                                <b-field v-for="item in materialVariants" v-bind:key="item.titel" v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
-                                    <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$" v-model="selectedVariant">
+                            <b-field label="Variants" class="subtitle"
+                                v-bind:style="[materialVariants.length <= 1 ? {'display': 'none'} : {}]">
+                                <b-field v-for="item in materialVariants" v-bind:key="item.titel"
+                                    v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
+                                    <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$"
+                                        v-model="selectedVariant">
                                         {{ item.title }}
                                     </b-radio>
                                 </b-field>
-                                <b-select v-model="selectedVariant" v-stream:input="variantChanged$" v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
-                                    <option v-for="(item) in materialVariants"
-                                        v-bind:value="item.title">
+                                <b-select v-model="selectedVariant" v-stream:input="variantChanged$"
+                                    v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
+                                    <option v-for="(item) in materialVariants" v-bind:value="item.title">
                                         {{ item.title }}
                                     </option>
                                 </b-select>
@@ -171,32 +190,44 @@ function getUrlParam(parameter, defaultvalue){
 
                     <b-tab-item label="Display" icon="library-music" class="tabItemScrollable tab-item">
                         <template #header>
-                            <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
-                                v-bind:width="[activeTab === 1 ? '50px' : '30px']">
-                            <span v-bind:style="[activeTab === 1 ? {'display': 'none'} : {}]">Display</span>
+                            <div @click="collapseActiveTab($event, 1)"
+                                v-bind:style="[tabsHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
+                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                                <img v-bind:src="[tabsHidden === false && activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
+                                    v-bind:width="[tabsHidden === false && activeTab === 1 ? '50px' : '30px']"
+                                    v-bind:style="[tabsHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
+                                <span
+                                    v-bind:style="[tabsHidden === false && activeTab === 1 ? {'display': 'none'} : {}]">Display</span>
+                            </div>
                         </template>
 
-                            <div class="tabContent">
-                                <h2 class="title  is-spaced">Display</h2>
-                                <b-field label="Lighting" class="subtitle">
-                                    <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based</b-switch>
-                                    <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual Lighting</b-switch>
-                                </b-field>
-                                <b-field label="Background" class="subtitle">
-                                    <b-switch v-model="renderEnv" v-bind:disabled="ibl === false ? true : false">Environment Map</b-switch>
-                                    <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$" v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
-                                    <b-field label="Background Color" class="smallerLabel"></b-field>
-                                    <b-input type="color" id="clearColorPicker" custom-class="colorInput" v-stream:input="colorChanged$" v-model="clearColor"></b-input>
-                                </b-field>
-                                <b-field label="Select Environment Rotation" class="smallerLabel">
-                                    <b-select v-stream:input="environmentRotationChanged$" v-model="selectedEnvironmentRotation">
-                                        <option v-for="(item) in environmentRotations"
-                                            v-bind:value="item.title">
-                                            {{ item.title }}
-                                        </option>
-                                    </b-select>
-                                </b-field>
+                        <div class="tabContent">
+                            <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                @click="collapseActiveTab($event, 1)">
+                            <h2 class="title  is-spaced">Display</h2>
+                            <b-field label="Lighting" class="subtitle">
+                                <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based
+                                </b-switch>
+                                <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual
+                                    Lighting</b-switch>
+                            </b-field>
+                            <b-field label="Background" class="subtitle">
+                                <b-switch v-model="renderEnv" v-bind:disabled="ibl === false ? true : false">Environment
+                                    Map</b-switch>
+                                <b-switch v-model="blurEnv" v-stream:input="blurEnvChanged$"
+                                    v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
+                                <b-field label="Background Color" class="smallerLabel"></b-field>
+                                <b-input type="color" id="clearColorPicker" custom-class="colorInput"
+                                    v-stream:input="colorChanged$" v-model="clearColor"></b-input>
+                            </b-field>
+                            <b-field label="Select Environment Rotation" class="smallerLabel">
+                                <b-select v-stream:input="environmentRotationChanged$"
+                                    v-model="selectedEnvironmentRotation">
+                                    <option v-for="(item) in environmentRotations" v-bind:value="item.title">
+                                        {{ item.title }}
+                                    </option>
+                                </b-select>
+                            </b-field>
 
                             <b-field label="Image Based Lighting" class="subtitle">
                                 <button class="button is-rounded">
@@ -208,14 +239,14 @@ function getUrlParam(parameter, defaultvalue){
                                 <b-field label="Active Environment" class="smallerLabel">
                                     <b-dropdown aria-role="list" v-model="selectedEnvironment">
                                         <template #trigger="{ active }">
-                                            <b-button rounded
-                                                type="is-primary"
+                                            <b-button rounded type="is-primary"
                                                 :icon-right="active ? 'menu-up' : 'menu-down'">
                                                 {{ environments[selectedEnvironment].title }}
                                             </b-button>
                                         </template>
 
-                                        <b-dropdown-item aria-role="listitem" v-for="name in Object.keys(environments)" v-bind:key="name" :value="name">
+                                        <b-dropdown-item aria-role="listitem" v-for="name in Object.keys(environments)"
+                                            v-bind:key="name" :value="name">
                                             {{ environments[name].title }}
                                         </b-dropdown-item>
                                     </b-dropdown>
@@ -227,20 +258,30 @@ function getUrlParam(parameter, defaultvalue){
 
                     <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
-                            <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
-                            v-bind:width="[activeTab === 2 ? '50px' : '30px']">
-                            <span v-bind:style="[activeTab === 2 ? {'display': 'none'} : {}]">Animation</span>
+                            <div @click="collapseActiveTab($event, 2)"
+                                v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                                <img v-bind:src="[tabsHidden === false && activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
+                                    v-bind:width="[tabsHidden === false && activeTab === 2 ? '50px' : '30px']"
+                                    v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                                <span
+                                    v-bind:style="[tabsHidden === false && activeTab === 2 ? {'display': 'none'} : {}]">Animation</span>
+                            </div>
                         </template>
 
                         <div class="tabContent">
+                            <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                @click="collapseActiveTab($event, 2)">
                             <h2 class="title is-spaced">Animation</h2>
-                            <label  class="subtitle">Animation Controls</label>
-                            <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play" ref="animationState"></toggle-button>
+                            <label class="subtitle">Animation Controls</label>
+                            <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play"
+                                ref="animationState"></toggle-button>
 
-                            <b-field label="Animations" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
+                            <b-field label="Animations"
+                                v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                 <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                    <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations" :disabled="disabledAnimations.includes(animation.index)">
+                                    <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations"
+                                        :disabled="disabledAnimations.includes(animation.index)">
                                         {{ animation.title }}
                                     </b-checkbox>
                                 </b-field>
@@ -251,13 +292,20 @@ function getUrlParam(parameter, defaultvalue){
 
                     <b-tab-item label="XMP" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
-                            <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[activeTab === 3 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
-                            v-bind:width="[activeTab === 3 ? '50px' : '30px']">
-                            <span v-bind:style="[activeTab === 3 ? {'display': 'none'} : {}]">XMP</span>
+                            <div @click="collapseActiveTab($event, 3)"
+                                v-bind:style="[tabsHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
+                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                                <img v-bind:src="[tabsHidden === false && activeTab === 3 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
+                                    v-bind:width="[tabsHidden === false && activeTab === 3 ? '50px' : '30px']"
+                                    v-bind:style="[tabsHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
+                                <span
+                                    v-bind:style="[tabsHidden === false && activeTab === 3 ? {'display': 'none'} : {}]">XMP</span>
+                            </div>
                         </template>
 
                         <div class="tabContent">
+                            <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                @click="collapseActiveTab($event, 3)">
                             <h2 class="title is-spaced">XMP</h2>
                             <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
                         </div>
@@ -271,30 +319,38 @@ function getUrlParam(parameter, defaultvalue){
                     </b-tab-item>-->
 
 
-                    <b-tab-item label="Advanced Controls" icon="video"  class="tabItemScrollable tab-item">
+                    <b-tab-item label="Advanced Controls" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
-                            <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[activeTab === 4 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
-                                v-bind:width="[activeTab === 4 ? '50px' : '30px']">
-                            <span v-bind:style="[activeTab === 4 ? {'display': 'none'} : {}]">Advanced Controls</span>
+                            <div @click="collapseActiveTab($event, 4)"
+                                v-bind:style="[tabsHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
+                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                                <img v-bind:src="[tabsHidden === false && activeTab === 4 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
+                                    v-bind:width="[tabsHidden === false && activeTab === 4 ? '50px' : '30px']"
+                                    v-bind:style="[tabsHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
+                                <span
+                                    v-bind:style="[tabsHidden === false && activeTab === 4 ? {'display': 'none'} : {}]">Advanced
+                                    Controls</span>
+                            </div>
                         </template>
 
                         <div class="tabContent">
+                            <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                @click="collapseActiveTab($event, 4)">
                             <h2 class="title is-spaced">Advanced Controls</h2>
                             <b-field label="Capture Canvas" class="smallerLabel">
-                                <button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .png</button>
+                                <button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i
+                                        class="fa fa-download downloadIcon"></i>Download as .png</button>
                             </b-field>
                             <b-field label="Debug Channels" class="smallerLabel">
                                 <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
-                                    <option v-for="(item) in debugchannels"
-                                        v-bind:value="item.title">
+                                    <option v-for="(item) in debugchannels" v-bind:value="item.title">
                                         {{ item.title }}
                                     </option>
                                 </b-select>
                             </b-field>
                             <label class="smallerLabel">Exposure</label>
-                            <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333 class="exposureSlider" ticks
-                                    v-stream:input="exposureChanged$">
+                            <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333
+                                class="exposureSlider" ticks v-stream:input="exposureChanged$">
                                 <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
                                 <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
                                 <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
@@ -314,25 +370,37 @@ function getUrlParam(parameter, defaultvalue){
                             <br>
                             <b-switch v-model="morphing" v-stream:input="morphingChanged$">Morphing</b-switch>
                             <b-field label="Current camera values" class="subtitle">
-                                <button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i class="fa fa-download downloadIcon"></i>Download as .gltf</button>
+                                <button v-stream:click="cameraExport$" type="button" class="button is-rounded"><i
+                                        class="fa fa-download downloadIcon"></i>Download as .gltf</button>
                             </b-field>
                             <b-field label="Disable extensions" class="subtitle">
-                                <b-switch class="smallerLabel" v-model="clearcoatEnabled" v-stream:input="clearcoatChanged$">KHR_materials_clearcoat</b-switch>
-                                <b-switch class="smallerLabel" v-model="sheenEnabled" v-stream:input="sheenChanged$">KHR_materials_sheen</b-switch>
-                                <b-switch class="smallerLabel" v-model="transmissionEnabled" v-stream:input="transmissionChanged$" @input="transmissionTriggered">KHR_materials_transmission</b-switch>
-                                <b-switch class="smallerLabel" v-bind:disabled="transmissionEnabled === false ? true : false" v-model="volumeEnabled">KHR_materials_volume</b-switch>
+                                <b-switch class="smallerLabel" v-model="clearcoatEnabled"
+                                    v-stream:input="clearcoatChanged$">KHR_materials_clearcoat</b-switch>
+                                <b-switch class="smallerLabel" v-model="sheenEnabled" v-stream:input="sheenChanged$">
+                                    KHR_materials_sheen</b-switch>
+                                <b-switch class="smallerLabel" v-model="transmissionEnabled"
+                                    v-stream:input="transmissionChanged$" @input="transmissionTriggered">
+                                    KHR_materials_transmission</b-switch>
+                                <b-switch class="smallerLabel"
+                                    v-bind:disabled="transmissionEnabled === false ? true : false"
+                                    v-model="volumeEnabled">KHR_materials_volume</b-switch>
                                 <b-switch class="smallerLabel" v-model="iorEnabled">KHR_materials_ior</b-switch>
-                                <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular</b-switch>
+                                <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular
+                                </b-switch>
                             </b-field>
                             <b-field label="Statistics" class="subtitle">
-                                <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false"></json-to-ui-template>
+                                <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false">
+                                </json-to-ui-template>
                             </b-field>
                         </div>
                     </b-tab-item>
+
                 </b-tabs>
             </div>
         </div>
     </div>
 </body>
+
 <script src="GltfSVApp.umd.js"></script>
+
 </html>
