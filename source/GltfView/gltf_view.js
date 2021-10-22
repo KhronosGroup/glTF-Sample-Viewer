@@ -57,6 +57,7 @@ class GltfView
      */
     renderFrame(state, width, height)
     {
+        this.renderer.init(state);
         this._animate(state);
 
         this.renderer.resize(width, height);
