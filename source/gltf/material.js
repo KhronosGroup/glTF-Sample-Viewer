@@ -23,6 +23,7 @@ class gltfMaterial extends GltfObject
         this.hasSheen = false;
         this.hasTransmission = false;
         this.hasIOR = false;
+        this.hasEmissiveStrength = false;
         this.hasVolume = false;
         this.hasIridescence = false;
 
@@ -91,6 +92,10 @@ class gltfMaterial extends GltfObject
         if(this.hasIridescence && renderingParameters.enabledExtensions.KHR_materials_iridescence)
         {
             defines.push("MATERIAL_IRIDESCENCE 1");
+        }
+        if(this.hasEmissiveStrength && renderingParameters.enabledExtensions.KHR_materials_emissive_strength)
+        {
+            defines.push("MATERIAL_EMISSIVE_STRENGTH 1");
         }
 
         return defines;
@@ -431,6 +436,16 @@ class gltfMaterial extends GltfObject
 
                 this.properties.set("u_KHR_materials_specular_specularColorFactor", specularColorFactor);
                 this.properties.set("u_KHR_materials_specular_specularFactor", specularFactor);
+            }
+
+            // KHR Extension: Emissive strength
+            if (this.extensions.KHR_materials_emissive_strength !== undefined)
+            {
+                this.hasEmissiveStrength = true;
+
+                let emissiveStrength = this.extensions.KHR_materials_emissive_strength.emissiveStrength ?? 1.0;
+
+                this.properties.set("u_EmissiveStrength", emissiveStrength);
             }
 
             // KHR Extension: Transmission

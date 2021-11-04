@@ -218,6 +218,9 @@ async function main()
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
+    uiModel.emissiveStrengthEnabled.subscribe( enabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
+    });
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);

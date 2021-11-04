@@ -34,7 +34,10 @@ uniform float u_IridescenceIOR;
 uniform float u_IridescenceThicknessMinimum;
 uniform float u_IridescenceThicknessMaximum;
 
-//PBR Next IOR
+// Emissive Strength
+uniform float u_EmissiveStrength;
+
+// PBR Next IOR
 uniform float u_Ior;
 
 // Alpha mode

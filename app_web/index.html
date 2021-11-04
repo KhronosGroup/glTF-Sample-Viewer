@@ -386,10 +386,9 @@
                                     v-bind:disabled="transmissionEnabled === false ? true : false"
                                     v-model="volumeEnabled">KHR_materials_volume</b-switch>
                                 <b-switch class="smallerLabel" v-model="iorEnabled">KHR_materials_ior</b-switch>
-                                <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular
-                                </b-switch>
-                                <b-switch class="smallerLabel" v-model="iridescenceEnabled">
-                                    KHR_materials_iridescence</b-switch>
+                                <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular</b-switch>
+                                <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled">KHR_materials_emissive_strength</b-switch>
+                                <b-switch class="smallerLabel" v-model="iridescenceEnabled">KHR_materials_iridescence</b-switch>
                             </b-field>
                             <b-field label="Statistics" class="subtitle">
                                 <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false">
