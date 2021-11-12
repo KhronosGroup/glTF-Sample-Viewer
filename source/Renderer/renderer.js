@@ -296,44 +296,42 @@ class gltfRenderer
             }
         }
 
-        // Render transmission sample texture
-        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
-        this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+        // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
+        if (this.transmissionDrawables.length > 0) {
+            // Render transmission sample texture
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
+            this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
-        // Render environment for the transmission background
-        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, ["LINEAR_OUTPUT 1"]);
+            // Render environment for the transmission background
+            this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, ["LINEAR_OUTPUT 1"]);
 
-        for (const drawable of this.opaqueDrawables)
-        {
-            var renderpassConfiguration = {};
-            renderpassConfiguration.linearOutput = true;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            for (const drawable of this.opaqueDrawables)
+            {
+                var renderpassConfiguration = {};
+                renderpassConfiguration.linearOutput = true;
+                this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            }
+
+            this.transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transparentDrawables);
+            for (const drawable of this.transparentDrawables)
+            {
+                var renderpassConfiguration = {};
+                renderpassConfiguration.linearOutput = true;
+                this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            }
+
+            // "blit" the multisampled opaque texture into the color buffer, which adds antialiasing
+            this.webGl.context.bindFramebuffer(this.webGl.context.READ_FRAMEBUFFER, this.opaqueFramebufferMSAA);
+            this.webGl.context.bindFramebuffer(this.webGl.context.DRAW_FRAMEBUFFER, this.opaqueFramebuffer);
+            this.webGl.context.blitFramebuffer(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
+                                0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
+                                this.webGl.context.COLOR_BUFFER_BIT, this.webGl.context.NEAREST);
+
+            // Create Framebuffer Mipmaps
+            this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
+
+            this.webGl.context.generateMipmap(this.webGl.context.TEXTURE_2D);
         }
-
-        this.transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transparentDrawables);
-        for (const drawable of this.transparentDrawables)
-        {
-            var renderpassConfiguration = {};
-            renderpassConfiguration.linearOutput = true;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
-        }
-
-        // "blit" the multisampled opaque texture into the color buffer, which adds antialiasing
-        this.webGl.context.bindFramebuffer(this.webGl.context.READ_FRAMEBUFFER, this.opaqueFramebufferMSAA);
-        this.webGl.context.bindFramebuffer(this.webGl.context.DRAW_FRAMEBUFFER, this.opaqueFramebuffer);
-        this.webGl.context.blitFramebuffer(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
-                            0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
-                            this.webGl.context.COLOR_BUFFER_BIT, this.webGl.context.NEAREST);
-
-        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
-
-        //Reset Viewport
-        this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
-
-        //Create Framebuffer Mipmaps
-        this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-
-        this.webGl.context.generateMipmap(this.webGl.context.TEXTURE_2D);
 
         // Render to canvas
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
