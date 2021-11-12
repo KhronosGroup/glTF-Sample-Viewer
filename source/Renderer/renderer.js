@@ -223,9 +223,43 @@ class gltfRenderer
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
 
+    prepareScene(state, scene) {
+        this.nodes = scene.gatherNodes(state.gltf);
+
+        // collect drawables by essentially zipping primitives (for geometry and material)
+        // and nodes for the transform
+        const drawables = this.nodes
+            .filter(node => node.mesh !== undefined)
+            .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
+                return  {node: node, primitive: primitive};
+            })), [])
+            .filter(({node, primitive}) => primitive.material !== undefined);
+
+        // opaque drawables don't need sorting
+        this.opaqueDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND"
+                && (state.gltf.materials[primitive.material].extensions === undefined
+                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
+
+        // transparent drawables need sorting before they can be drawn
+        this.transparentDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode === "BLEND"
+                && (state.gltf.materials[primitive.material].extensions === undefined
+                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
+
+        this.transmissionDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
+                && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+    }
+
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {
+        if (this.preparedScene !== scene) {
+            this.prepareScene(state, scene)
+            this.preparedScene = scene
+        }
+
         let currentCamera = undefined;
 
         if (state.cameraIndex === undefined)
@@ -253,38 +287,14 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        const nodes = scene.gatherNodes(state.gltf);
-
         // Update skins.
-        for (const node of nodes)
+        for (const node of this.nodes)
         {
             if (node.mesh !== undefined && node.skin !== undefined)
             {
                 this.updateSkin(state, node);
             }
         }
-
-        // collect drawables by essentially zipping primitives (for geometry and material)
-        // and nodes for the transform
-        const drawables = nodes
-            .filter(node => node.mesh !== undefined)
-            .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
-                return  {node: node, primitive: primitive};
-            })), [])
-            .filter(({node, primitive}) => primitive.material !== undefined);
-
-        // opaque drawables don't need sorting
-        const opaqueDrawables = drawables
-            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND"
-                && (state.gltf.materials[primitive.material].extensions === undefined
-                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
-
-        // transparent drawables need sorting before they can be drawn
-        let transparentDrawables = drawables
-            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode === "BLEND"
-                && (state.gltf.materials[primitive.material].extensions === undefined
-                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
-        transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, transparentDrawables);
 
         // Render transmission sample texture
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
@@ -293,13 +303,15 @@ class gltfRenderer
         // Render environment for the transmission background
         this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, ["LINEAR_OUTPUT 1"]);
 
-        for (const drawable of opaqueDrawables)
+        for (const drawable of this.opaqueDrawables)
         {
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = true;
             this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
         }
-        for (const drawable of transparentDrawables)
+
+        this.transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transparentDrawables);
+        for (const drawable of this.transparentDrawables)
         {
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = true;
@@ -332,7 +344,7 @@ class gltfRenderer
         this.pushFragParameterDefines(fragDefines, state);
         this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
 
-        for (const drawable of opaqueDrawables)
+        for (const drawable of this.opaqueDrawables)
         {  
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
@@ -340,18 +352,15 @@ class gltfRenderer
         }
 
         // filter materials with transmission extension
-        let transmissionDrawables = drawables
-            .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
-                && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
-        transmissionDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, transmissionDrawables);
-        for (const drawable of transmissionDrawables)
+        this.transmissionDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transmissionDrawables);
+        for (const drawable of this.transmissionDrawables)
         {
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
             this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
         }
 
-        for (const drawable of transparentDrawables)
+        for (const drawable of this.transparentDrawables)
         {
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
@@ -391,11 +400,11 @@ class gltfRenderer
 
         let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
         if(renderpassConfiguration.linearOutput === true)
-        { 
+        {
            fragDefines.push("LINEAR_OUTPUT 1");
         }
         this.pushFragParameterDefines(fragDefines, state);
-
+        
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
 
@@ -525,7 +534,6 @@ class gltfRenderer
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
-
         }
 
         if (drawIndexed)
