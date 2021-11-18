@@ -285,9 +285,10 @@ async function main()
     uiModel.hdr.subscribe( hdrFile => {
         resourceLoader.loadEnvironment(hdrFile).then( (environment) => {
             state.environment = environment;
+            //We neeed to wait until the environment is loaded to redraw
+            redraw = true
         });
     });
-    listenForRedraw(uiModel.hdr);
 
     uiModel.attachGltfLoaded(gltfLoadedMulticast);
     uiModel.updateStatistics(statisticsUpdateObservable);
