@@ -223,9 +223,43 @@ class gltfRenderer
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
 
+    prepareScene(state, scene) {
+        this.nodes = scene.gatherNodes(state.gltf);
+
+        // collect drawables by essentially zipping primitives (for geometry and material)
+        // and nodes for the transform
+        const drawables = this.nodes
+            .filter(node => node.mesh !== undefined)
+            .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
+                return  {node: node, primitive: primitive};
+            })), [])
+            .filter(({node, primitive}) => primitive.material !== undefined);
+
+        // opaque drawables don't need sorting
+        this.opaqueDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND"
+                && (state.gltf.materials[primitive.material].extensions === undefined
+                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
+
+        // transparent drawables need sorting before they can be drawn
+        this.transparentDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode === "BLEND"
+                && (state.gltf.materials[primitive.material].extensions === undefined
+                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
+
+        this.transmissionDrawables = drawables
+            .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
+                && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+    }
+
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {
+        if (this.preparedScene !== scene) {
+            this.prepareScene(state, scene)
+            this.preparedScene = scene
+        }
+
         let currentCamera = undefined;
 
         if (state.cameraIndex === undefined)
@@ -253,10 +287,8 @@ class gltfRenderer
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
-        const nodes = scene.gatherNodes(state.gltf);
-
         // Update skins.
-        for (const node of nodes)
+        for (const node of this.nodes)
         {
             if (node.mesh !== undefined && node.skin !== undefined)
             {
@@ -264,64 +296,42 @@ class gltfRenderer
             }
         }
 
-        // collect drawables by essentially zipping primitives (for geometry and material)
-        // and nodes for the transform
-        const drawables = nodes
-            .filter(node => node.mesh !== undefined)
-            .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
-                return  {node: node, primitive: primitive};
-            })), [])
-            .filter(({node, primitive}) => primitive.material !== undefined);
+        // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
+        if (this.transmissionDrawables.length > 0) {
+            // Render transmission sample texture
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
+            this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
-        // opaque drawables don't need sorting
-        const opaqueDrawables = drawables
-            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND"
-                && (state.gltf.materials[primitive.material].extensions === undefined
-                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
+            // Render environment for the transmission background
+            this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, ["LINEAR_OUTPUT 1"]);
 
-        // transparent drawables need sorting before they can be drawn
-        let transparentDrawables = drawables
-            .filter(({node, primitive}) => state.gltf.materials[primitive.material].alphaMode === "BLEND"
-                && (state.gltf.materials[primitive.material].extensions === undefined
-                    || state.gltf.materials[primitive.material].extensions.KHR_materials_transmission === undefined));
-        transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, transparentDrawables);
+            for (const drawable of this.opaqueDrawables)
+            {
+                var renderpassConfiguration = {};
+                renderpassConfiguration.linearOutput = true;
+                this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            }
 
-        // Render transmission sample texture
-        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
-        this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+            this.transparentDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transparentDrawables);
+            for (const drawable of this.transparentDrawables)
+            {
+                var renderpassConfiguration = {};
+                renderpassConfiguration.linearOutput = true;
+                this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            }
 
-        // Render environment for the transmission background
-        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, ["LINEAR_OUTPUT 1"]);
+            // "blit" the multisampled opaque texture into the color buffer, which adds antialiasing
+            this.webGl.context.bindFramebuffer(this.webGl.context.READ_FRAMEBUFFER, this.opaqueFramebufferMSAA);
+            this.webGl.context.bindFramebuffer(this.webGl.context.DRAW_FRAMEBUFFER, this.opaqueFramebuffer);
+            this.webGl.context.blitFramebuffer(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
+                                0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
+                                this.webGl.context.COLOR_BUFFER_BIT, this.webGl.context.NEAREST);
 
-        for (const drawable of opaqueDrawables)
-        {
-            var renderpassConfiguration = {};
-            renderpassConfiguration.linearOutput = true;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            // Create Framebuffer Mipmaps
+            this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
+
+            this.webGl.context.generateMipmap(this.webGl.context.TEXTURE_2D);
         }
-        for (const drawable of transparentDrawables)
-        {
-            var renderpassConfiguration = {};
-            renderpassConfiguration.linearOutput = true;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
-        }
-
-        // "blit" the multisampled opaque texture into the color buffer, which adds antialiasing
-        this.webGl.context.bindFramebuffer(this.webGl.context.READ_FRAMEBUFFER, this.opaqueFramebufferMSAA);
-        this.webGl.context.bindFramebuffer(this.webGl.context.DRAW_FRAMEBUFFER, this.opaqueFramebuffer);
-        this.webGl.context.blitFramebuffer(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
-                            0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight,
-                            this.webGl.context.COLOR_BUFFER_BIT, this.webGl.context.NEAREST);
-
-        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
-
-        //Reset Viewport
-        this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
-
-        //Create Framebuffer Mipmaps
-        this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-
-        this.webGl.context.generateMipmap(this.webGl.context.TEXTURE_2D);
 
         // Render to canvas
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
@@ -332,7 +342,7 @@ class gltfRenderer
         this.pushFragParameterDefines(fragDefines, state);
         this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
 
-        for (const drawable of opaqueDrawables)
+        for (const drawable of this.opaqueDrawables)
         {  
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
@@ -340,18 +350,15 @@ class gltfRenderer
         }
 
         // filter materials with transmission extension
-        let transmissionDrawables = drawables
-            .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
-                && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
-        transmissionDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, transmissionDrawables);
-        for (const drawable of transmissionDrawables)
+        this.transmissionDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transmissionDrawables);
+        for (const drawable of this.transmissionDrawables)
         {
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
             this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
         }
 
-        for (const drawable of transparentDrawables)
+        for (const drawable of this.transparentDrawables)
         {
             var renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
@@ -391,11 +398,11 @@ class gltfRenderer
 
         let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
         if(renderpassConfiguration.linearOutput === true)
-        { 
+        {
            fragDefines.push("LINEAR_OUTPUT 1");
         }
         this.pushFragParameterDefines(fragDefines, state);
-
+        
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
         const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
 
@@ -525,7 +532,6 @@ class gltfRenderer
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
-
         }
 
         if (drawIndexed)

@@ -146,6 +146,10 @@ async function main()
         const dataURL = canvas.toDataURL();
         downloadDataURL("capture.png", dataURL);
     });
+
+    // Only redraw glTF view upon user inputs, or when an animation is playing.
+    let redraw = false;
+    const listenForRedraw = stream => stream.subscribe(() => redraw = true);
     
     uiModel.scene.pipe(filter(scene => scene === -1)).subscribe( () => {
         state.sceneIndex = undefined;
@@ -153,6 +157,7 @@ async function main()
     uiModel.scene.pipe(filter(scene => scene !== -1)).subscribe( scene => {
         state.sceneIndex = scene;
     });
+    listenForRedraw(uiModel.scene);
 
     uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
         state.cameraIndex = undefined;
@@ -160,30 +165,37 @@ async function main()
     uiModel.camera.pipe(filter(camera => camera !== -1)).subscribe( camera => {
         state.cameraIndex = camera;
     });
+    listenForRedraw(uiModel.camera);
 
     uiModel.variant.subscribe( variant => {
         state.variant = variant;
     });
+    listenForRedraw(uiModel.variant);
 
     uiModel.tonemap.subscribe( tonemap => {
         state.renderingParameters.toneMap = tonemap;
     });
+    listenForRedraw(uiModel.tonemap);
 
     uiModel.debugchannel.subscribe( debugchannel => {
         state.renderingParameters.debugOutput = debugchannel;
     });
+    listenForRedraw(uiModel.debugchannel);
 
     uiModel.skinningEnabled.subscribe( skinningEnabled => {
         state.renderingParameters.skinning = skinningEnabled;
     });
+    listenForRedraw(uiModel.skinningEnabled);
 
     uiModel.exposurecompensation.subscribe( exposurecompensation => {
         state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
     });
+    listenForRedraw(uiModel.exposurecompensation);
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
         state.renderingParameters.morphing = morphingEnabled;
     });
+    listenForRedraw(uiModel.morphingEnabled);
 
     uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_clearcoat = clearcoatEnabled;
@@ -203,10 +215,17 @@ async function main()
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
+    listenForRedraw(uiModel.clearcoatEnabled);
+    listenForRedraw(uiModel.sheenEnabled);
+    listenForRedraw(uiModel.transmissionEnabled);
+    listenForRedraw(uiModel.volumeEnabled);
+    listenForRedraw(uiModel.iorEnabled);
+    listenForRedraw(uiModel.specularEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
     });
+    listenForRedraw(uiModel.iblEnabled);
 
     uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
         state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
@@ -214,10 +233,13 @@ async function main()
     uiModel.blurEnvEnabled.subscribe( blurEnvEnabled => {
         state.renderingParameters.blurEnvironmentMap = blurEnvEnabled;
     });
+    listenForRedraw(uiModel.renderEnvEnabled);
+    listenForRedraw(uiModel.blurEnvEnabled);
 
     uiModel.punctualLightsEnabled.subscribe( punctualLightsEnabled => {
         state.renderingParameters.usePunctual = punctualLightsEnabled;
     });
+    listenForRedraw(uiModel.punctualLightsEnabled);
 
     uiModel.environmentRotation.subscribe( environmentRotation => {
         switch (environmentRotation)
@@ -236,11 +258,13 @@ async function main()
             break;
         }
     });
+    listenForRedraw(uiModel.environmentRotation);
 
 
     uiModel.clearColor.subscribe( clearColor => {
         state.renderingParameters.clearColor = clearColor;
     });
+    listenForRedraw(uiModel.clearColor);
 
     uiModel.animationPlay.subscribe( animationPlay => {
         if(animationPlay)
@@ -256,10 +280,13 @@ async function main()
     uiModel.activeAnimations.subscribe( animations => {
         state.animationIndices = animations;
     });
+    listenForRedraw(uiModel.activeAnimations);
 
     uiModel.hdr.subscribe( hdrFile => {
         resourceLoader.loadEnvironment(hdrFile).then( (environment) => {
             state.environment = environment;
+            //We neeed to wait until the environment is loaded to redraw
+            redraw = true
         });
     });
 
@@ -275,6 +302,7 @@ async function main()
             state.userCamera.orbit(orbit.deltaPhi, orbit.deltaTheta);
         }
     });
+    listenForRedraw(uiModel.orbit);
 
     uiModel.pan.subscribe( pan => {
         if (state.cameraIndex === undefined)
@@ -282,6 +310,7 @@ async function main()
             state.userCamera.pan(pan.deltaX, -pan.deltaY);
         }
     });
+    listenForRedraw(uiModel.pan);
 
     uiModel.zoom.subscribe( zoom => {
         if (state.cameraIndex === undefined)
@@ -289,8 +318,10 @@ async function main()
             state.userCamera.zoomBy(zoom.deltaZoom);
         }
     });
+    listenForRedraw(uiModel.zoom);
 
     // configure the animation loop
+    const past = {};
     const update = () =>
     {
         const devicePixelRatio = window.devicePixelRatio || 1;
@@ -298,8 +329,16 @@ async function main()
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
+        redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |= past.width != canvas.width || past.height != canvas.height;
+        past.width = canvas.width;
+        past.height = canvas.height;
+        
+        if (redraw) {
+            view.renderFrame(state, canvas.width, canvas.height);
+            redraw = false;
+        }
 
-        view.renderFrame(state, canvas.width, canvas.height);
         window.requestAnimationFrame(update);
     };
 
