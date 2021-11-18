@@ -112,44 +112,74 @@ GltfState.ToneMaps = {
 GltfState.DebugOutput = {
     /** standard rendering - debug output is disabled */
     NONE: "None",
-    /** output the metallic value from pbr metallic roughness */
-    METALLIC: "Metallic",
-    /** output the roughness value from pbr metallic roughness */
-    ROUGHNESS: "Roughness",
-    /** output the normal map value in TBN space */
-    NORMAL: "Normal",
+
+    SPACE_NONE: "",
+
+    UV_COORDS_0: "Texture Coordinates 0",
+    UV_COORDS_1: "Texture Coordinates 1",
+    
     /** output the world space normals (i.e. with TBN applied) */
-    WORLDSPACENORMAL: "Worldspace Normal",
+    NORMAL: "Normal Texture",
+
     /** output the normal from the TBN*/
     GEOMETRYNORMAL: "Geometry Normal",
     /** output the tangent from the TBN*/
-    TANGENT: "Tangent",
+    TANGENT: "Geometry Tangent",
     /** output the bitangent from the TBN */
-    BITANGENT: "Bitangent",
-    /** output the base color value */
-    BASECOLOR: "Base Color",
-    /** output the linear base color value */
-    BASECOLOR_LINEAR: "Base Color (Linear)",
+    BITANGENT: "Geometry Bitangent",
+
+    /** output the world space normals (i.e. with TBN applied) */
+    WORLDSPACENORMAL: "Shading Normal",
+    /** output the alpha value */
+    ALPHA: "Alpha",
+
+
+    SPACE_0: "",
+
     /** output the occlusion value */
     OCCLUSION: "Occlusion",
     /** output the emissive value */
     EMISSIVE: "Emissive",
     /** output the linear emissive value */
     EMISSIVE_LINEAR: "Emissive (Linear)",
-    /** output diffuse lighting */
-    DIFFUSE: "Diffuse",
-    /** output specular lighting */
-    SPECULAR: "Specular",
+
+    SPACE_1: "",
+    METALLIC_ROUGHNESS: "Metallic Roughness",
+    /** output the base color value */
+    BASECOLOR: "Base Color",
+    /** output the linear base color value */
+    BASECOLOR_LINEAR: "Base Color (Linear)",
+    /** output the metallic value from pbr metallic roughness */
+    METALLIC: "Metallic",
+    /** output the roughness value from pbr metallic roughness */
+    ROUGHNESS: "    Roughness",
+    
+    SPACE_2: "",
+
     /** output clearcoat lighting */
     CLEARCOAT: "ClearCoat",
+    CLEARCOAT_FACTOR: "ClearCoat Factor",
+    CLEARCOAT_ROUGHNESS: "ClearCoat Roughness",
+    CLEARCOAT_NORMAL: "ClearCoat Normal",
+    SPACE_3: "",
+
     /** output sheen lighting */
     SHEEN: "Sheen",
+    SHEEN_COLOR: "Sheen Color",
+    SHEEN_ROUGHNESS: "Sheen Roughness",
+    SPACE_4: "",
+
+    /** output specular lighting */
+    SPECULAR: "Specular",
+    SPECULAR_FACTOR: "Specular Factor",
+    SPECULAR_COLOR: "Specular Color",
+    SPACE_5: "",
+
     /** output tranmission lighting */
-    TRANSMISSION: "Transmission",
-    /** output the alpha value */
-    ALPHA: "Alpha",
-    /** output computed F0 */
-    F0: "F0"
+    TRANSMISSION_VOLUME: "Transmission/Volume",
+    TRANSMISSION_FACTOR: "Transmission Factor",
+    VOLUME_THICKNESS: "Volume Thickness",
+
 };
 
 export { GltfState };
