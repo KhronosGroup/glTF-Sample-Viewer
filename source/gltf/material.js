@@ -24,6 +24,7 @@ class gltfMaterial extends GltfObject
         this.hasTransmission = false;
         this.hasIOR = false;
         this.hasVolume = false;
+        this.hasIridescence = false;
 
         // non gltf properties
         this.type = "unlit";
@@ -86,6 +87,10 @@ class gltfMaterial extends GltfObject
         if(this.hasSpecular && renderingParameters.enabledExtensions.KHR_materials_specular)
         {
             defines.push("MATERIAL_SPECULAR 1");
+        }
+        if(this.hasIridescence && renderingParameters.enabledExtensions.KHR_materials_iridescence)
+        {
+            defines.push("MATERIAL_IRIDESCENCE 1");
         }
 
         return defines;
@@ -494,6 +499,8 @@ class gltfMaterial extends GltfObject
             // See https://github.com/ux3d/glTF/tree/extensions/KHR_materials_iridescence/extensions/2.0/Khronos/KHR_materials_iridescence
             if(this.extensions.KHR_materials_iridescence !== undefined)
             {
+                this.hasIridescence = true;
+
                 let factor = this.extensions.KHR_materials_iridescence.iridescenceFactor;
                 let iridescenceIOR = this.extensions.KHR_materials_iridescence.iridescenceIOR;
                 let thicknessMinimum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMinimum;
@@ -515,8 +522,6 @@ class gltfMaterial extends GltfObject
                 {
                     thicknessMaximum = 1200.0;
                 }
-
-                this.defines.push("MATERIAL_IRIDESCENCE 1");
 
                 if (this.iridescenceTexture !== undefined)
                 {
