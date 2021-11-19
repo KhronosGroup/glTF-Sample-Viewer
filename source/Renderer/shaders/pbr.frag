@@ -307,7 +307,7 @@ void main()
     // MR:
 #ifdef MATERIAL_METALLICROUGHNESS
 #if DEBUG == DEBUG_METALLIC_ROUGHNESS
-    // TODO
+    g_finalColor.rgb = f_diffuse + f_specular;
 #endif
 #if DEBUG == DEBUG_METALLIC
     g_finalColor.rgb = vec3(materialInfo.metallic);
@@ -370,7 +370,7 @@ void main()
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE_SRGB
-    // TODO
+    g_finalColor.rgb = f_diffuse + f_specular;
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = vec3(materialInfo.iridescenceFactor);
