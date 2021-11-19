@@ -276,7 +276,7 @@ void main()
 #if DEBUG == DEBUG_UV_1 && defined(HAS_TEXCOORD_1_VEC2)
     g_finalColor.rgb = vec3(v_texcoord_1, 0);
 #endif
-#if DEBUG == DEBUG_NORMAL_TEXTURE
+#if DEBUG == DEBUG_NORMAL_TEXTURE && defined(HAS_NORMAL_MAP)
     g_finalColor.rgb = (normalInfo.ntex + 1.0) / 2.0;
 #endif
 #if DEBUG == DEBUG_NORMAL_SHADING
