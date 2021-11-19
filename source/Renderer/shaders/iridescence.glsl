@@ -43,11 +43,16 @@ void fresnelConductorExact(float cosThetaI,
     float term2 = 2.0 * a * cosThetaI;
 
     Rs2 = (term1 - term2) / (term1 + term2);
-
+    if(Rs2 < 0.0f){   
+        Rs2 = 0.0f;
+    }
     float term3 = a2pb2 * cosThetaI2 + sinThetaI4;
     float term4 = term2 * sinThetaI2;
 
     Rp2 = Rs2 * (term3 - term4) / (term3 + term4);
+    if(Rp2 < 0.0f){
+        Rp2 = 0.0f;
+    }
 }
 
 /* Phase shift due to a conducting material.
@@ -59,8 +64,8 @@ void fresnelPhaseExact(vec3 cost, vec3 eta1,
     vec3 sinThetaSqr = vec3(1.0) - sq(cost);
     vec3 A = sq(eta2) * (vec3(1.0) - sq(kappa2)) - sq(eta1) * sinThetaSqr;
     vec3 B = sqrt(sq(A) + sq(2.0 * sq(eta2) * kappa2));
-    vec3 U = sqrt((A + B) / 2.0);
-    vec3 V = sqrt((B - A) / 2.0);
+    vec3 U = sqrt(max(A + B, vec3(0)) / 2.0);
+    vec3 V = sqrt(max(B - A, vec3(0)) / 2.0);
 
     phiS = atan(2.0 * eta1 * V * cost, sq(U) + sq(V) - sq(eta1 * cost));
     phiP = atan(2.0 * eta1 * sq(eta2) * cost * (2.0 * kappa2 * U - (vec3(1.0) - sq(kappa2)) * V),
