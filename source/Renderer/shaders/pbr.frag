@@ -270,10 +270,10 @@ void main()
     // Debug views:
 
     // Generic:
-#if DEBUG == DEBUG_UV_0
+#if DEBUG == DEBUG_UV_0 && defined(HAS_TEXCOORD_0_VEC2)
     g_finalColor.rgb = vec3(v_texcoord_0, 0);
 #endif
-#if DEBUG == DEBUG_UV_1
+#if DEBUG == DEBUG_UV_1 && defined(HAS_TEXCOORD_1_VEC2)
     g_finalColor.rgb = vec3(v_texcoord_1, 0);
 #endif
 #if DEBUG == DEBUG_NORMAL_TEXTURE
