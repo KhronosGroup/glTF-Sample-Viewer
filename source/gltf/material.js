@@ -516,11 +516,11 @@ class gltfMaterial extends GltfObject
                 }
                 if (thicknessMinimum === undefined)
                 {
-                    thicknessMinimum = 400.0;
+                    thicknessMinimum = 100.0;
                 }
                 if (thicknessMaximum === undefined)
                 {
-                    thicknessMaximum = 1200.0;
+                    thicknessMaximum = 400.0;
                 }
 
                 if (this.iridescenceTexture !== undefined)
