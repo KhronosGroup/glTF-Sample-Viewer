@@ -658,24 +658,41 @@ class gltfRenderer
 
         let debugOutputMapping = [
             {debugOutput: GltfState.DebugOutput.NONE, shaderDefine: "DEBUG_NONE"},
-            {debugOutput: GltfState.DebugOutput.NORMAL, shaderDefine: "DEBUG_NORMAL"},
+            {debugOutput: GltfState.DebugOutput.WORLDSPACENORMAL, shaderDefine: "DEBUG_NORMAL_SHADING"},
+            {debugOutput: GltfState.DebugOutput.NORMAL, shaderDefine: "DEBUG_NORMAL_TEXTURE"},
             {debugOutput: GltfState.DebugOutput.GEOMETRYNORMAL, shaderDefine: "DEBUG_NORMAL_GEOMETRY"},
             {debugOutput: GltfState.DebugOutput.TANGENT, shaderDefine: "DEBUG_TANGENT"},
             {debugOutput: GltfState.DebugOutput.BITANGENT, shaderDefine: "DEBUG_BITANGENT"},
-            {debugOutput: GltfState.DebugOutput.WORLDSPACENORMAL, shaderDefine: "DEBUG_NORMAL_WORLD"},
             {debugOutput: GltfState.DebugOutput.ALPHA, shaderDefine: "DEBUG_ALPHA"},
+            {debugOutput: GltfState.DebugOutput.UV_COORDS_0, shaderDefine: "DEBUG_UV_0"},
+            {debugOutput: GltfState.DebugOutput.UV_COORDS_1, shaderDefine: "DEBUG_UV_1"},
             {debugOutput: GltfState.DebugOutput.OCCLUSION, shaderDefine: "DEBUG_OCCLUSION"},
             {debugOutput: GltfState.DebugOutput.EMISSIVE, shaderDefine: "DEBUG_EMISSIVE_SRGB"},
             {debugOutput: GltfState.DebugOutput.EMISSIVE_LINEAR, shaderDefine: "DEBUG_EMISSIVE_LINEAR"},
+
             {debugOutput: GltfState.DebugOutput.METALLIC_ROUGHNESS, shaderDefine: "DEBUG_METALLIC_ROUGHNESS"},
             {debugOutput: GltfState.DebugOutput.BASECOLOR, shaderDefine: "DEBUG_BASE_COLOR_SRGB"},
             {debugOutput: GltfState.DebugOutput.BASECOLOR_LINEAR, shaderDefine: "DEBUG_BASE_COLOR_LINEAR"},
             {debugOutput: GltfState.DebugOutput.ROUGHNESS, shaderDefine: "DEBUG_ROUGHNESS"},
             {debugOutput: GltfState.DebugOutput.METALLIC, shaderDefine: "DEBUG_METALLIC"},
+            
             {debugOutput: GltfState.DebugOutput.CLEARCOAT, shaderDefine: "DEBUG_CLEARCOAT_SRGB"},
+            {debugOutput: GltfState.DebugOutput.CLEARCOAT_FACTOR, shaderDefine: "DEBUG_CLEARCOAT_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.CLEARCOAT_ROUGHNESS, shaderDefine: "DEBUG_CLEARCOAT_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.CLEARCOAT_NORMAL, shaderDefine: "DEBUG_CLEARCOAT_NORMAL"},
+            
             {debugOutput: GltfState.DebugOutput.SHEEN, shaderDefine: "DEBUG_SHEEN_SRGB"},
+            {debugOutput: GltfState.DebugOutput.SHEEN_COLOR, shaderDefine: "DEBUG_SHEEN_COLOR"},
+            {debugOutput: GltfState.DebugOutput.SHEEN_ROUGHNESS, shaderDefine: "DEBUG_SHEEN_ROUGHNESS"},
+
             {debugOutput: GltfState.DebugOutput.SPECULAR, shaderDefine: "DEBUG_SPECULAR_SRGB"},
-            {debugOutput: GltfState.DebugOutput.TRANSMISSION_VOLUME, shaderDefine: "DEBUG_TRANSMISSION_SRGB"},
+            {debugOutput: GltfState.DebugOutput.SPECULAR_FACTOR, shaderDefine: "DEBUG_SPECULAR_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.SPECULAR_COLOR, shaderDefine: "DEBUG_SPECULAR_COLOR"},
+
+            {debugOutput: GltfState.DebugOutput.TRANSMISSION_VOLUME, shaderDefine: "DEBUG_TRANSMISSION_VOLUME_SRGB"},
+            {debugOutput: GltfState.DebugOutput.TRANSMISSION_FACTOR, shaderDefine: "DEBUG_TRANSMISSION_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.VOLUME_THICKNESS, shaderDefine: "DEBUG_VOLUME_THICKNESS"},
+
             {debugOutput: GltfState.DebugOutput.F0, shaderDefine: "DEBUG_F0"},
             {debugOutput: GltfState.DebugOutput.DIFFUSE, shaderDefine: "DEBUG_DIFFUSE_SRGB"},
         ];

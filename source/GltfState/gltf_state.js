@@ -113,8 +113,6 @@ GltfState.DebugOutput = {
     /** standard rendering - debug output is disabled */
     NONE: "None",
 
-    SPACE_NONE: "",
-
     UV_COORDS_0: "Texture Coordinates 0",
     UV_COORDS_1: "Texture Coordinates 1",
     
@@ -134,7 +132,7 @@ GltfState.DebugOutput = {
     ALPHA: "Alpha",
 
 
-    SPACE_0: "",
+    SPACE_0: "--------------------",
 
     /** output the occlusion value */
     OCCLUSION: "Occlusion",
@@ -143,7 +141,8 @@ GltfState.DebugOutput = {
     /** output the linear emissive value */
     EMISSIVE_LINEAR: "Emissive (Linear)",
 
-    SPACE_1: "",
+    SPACE_1: "--------------------",
+
     METALLIC_ROUGHNESS: "Metallic Roughness",
     /** output the base color value */
     BASECOLOR: "Base Color",
@@ -154,31 +153,37 @@ GltfState.DebugOutput = {
     /** output the roughness value from pbr metallic roughness */
     ROUGHNESS: "    Roughness",
     
-    SPACE_2: "",
+    SPACE_2: "--------------------",
 
     /** output clearcoat lighting */
     CLEARCOAT: "ClearCoat",
     CLEARCOAT_FACTOR: "ClearCoat Factor",
     CLEARCOAT_ROUGHNESS: "ClearCoat Roughness",
     CLEARCOAT_NORMAL: "ClearCoat Normal",
-    SPACE_3: "",
+
+    SPACE_3: "--------------------",
 
     /** output sheen lighting */
     SHEEN: "Sheen",
     SHEEN_COLOR: "Sheen Color",
     SHEEN_ROUGHNESS: "Sheen Roughness",
-    SPACE_4: "",
+
+    SPACE_4: "--------------------",
 
     /** output specular lighting */
     SPECULAR: "Specular",
     SPECULAR_FACTOR: "Specular Factor",
     SPECULAR_COLOR: "Specular Color",
-    SPACE_5: "",
+
+    SPACE_5: "--------------------",
 
     /** output tranmission lighting */
     TRANSMISSION_VOLUME: "Transmission/Volume",
     TRANSMISSION_FACTOR: "Transmission Factor",
     VOLUME_THICKNESS: "Volume Thickness",
+
+    F0: "F0",
+    DIFFUSE: "DIFFUSE",
 
 };
 
