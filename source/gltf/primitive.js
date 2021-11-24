@@ -270,7 +270,7 @@ class gltfPrimitive extends GltfObject
     computeCentroid(gltf)
     {
         const positionsAccessor = gltf.accessors[this.attributes.POSITION];
-        const positions = positionsAccessor.getTypedView(gltf);
+        const positions = positionsAccessor.getNormalizedTypedView(gltf);
 
         if(this.indices !== undefined)
         {
@@ -361,8 +361,10 @@ class gltfPrimitive extends GltfObject
     {
         // indices
         let indexBuffer = dracoGeometry.index.array;
-        this.loadBufferIntoGltf(indexBuffer, gltf, this.indices, 34963,
-            "index buffer view");
+        if (this.indices !== undefined){
+            this.loadBufferIntoGltf(indexBuffer, gltf, this.indices, 34963,
+                "index buffer view");
+        }
 
         // Position
         if(dracoGeometry.attributes.POSITION !== undefined)
