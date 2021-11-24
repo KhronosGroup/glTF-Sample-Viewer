@@ -114,11 +114,16 @@ class gltfNode extends GltfObject
     {
         if(this.transform === undefined || this.changed)
         {
-            this.transform = mat4.create();
-            const translation = this.animationTranslation !== undefined ? this.animationTranslation : this.translation;
-            const rotation = this.animationRotation !== undefined ? this.animationRotation : this.rotation;
-            const scale = this.animationScale !== undefined ? this.animationScale : this.scale;
-            mat4.fromRotationTranslationScale(this.transform, rotation, translation, scale);
+            // if no animation is applied and the transform matrix is present use it directly
+            if(this.animationTranslation === undefined && this.animationRotation === undefined && this.animationScale === undefined && this.matrix !== undefined) {
+                this.transform = mat4.clone(this.matrix);
+            } else {
+                this.transform = mat4.create();
+                const translation = this.animationTranslation !== undefined ? this.animationTranslation : this.translation;
+                const rotation = this.animationRotation !== undefined ? this.animationRotation : this.rotation;
+                const scale = this.animationScale !== undefined ? this.animationScale : this.scale;
+                mat4.fromRotationTranslationScale(this.transform, rotation, translation, scale);
+            }
             this.changed = false;
         }
 

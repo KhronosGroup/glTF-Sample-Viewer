@@ -19,16 +19,34 @@ class UIModel
 
         this.app.models = this.pathProvider.getAllKeys();
 
-        const dropdownGltfChanged = app.modelChanged$.pipe(
-            pluck("event", "msg"),
-            startWith("DamagedHelmet"),
-            map(value => {
-                app.flavours = this.pathProvider.getModelFlavours(value);
-                app.selectedFlavour = "glTF";
-                return this.pathProvider.resolve(value, app.selectedFlavour);
-            }),
-            map( value => ({mainFile: value, additionalFiles: undefined})),
-        );
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const modelURL = urlParams.get("model");
+
+        let dropdownGltfChanged = undefined;
+        if (modelURL === null)
+        {
+            dropdownGltfChanged = app.modelChanged$.pipe(
+                pluck("event", "msg"),
+                startWith("DamagedHelmet"),
+                map(value => {
+                    app.flavours = this.pathProvider.getModelFlavours(value);
+                    app.selectedFlavour = "glTF";
+                    return this.pathProvider.resolve(value, app.selectedFlavour);
+                }),
+                map( value => ({mainFile: value, additionalFiles: undefined})),
+            );
+        } else {
+            dropdownGltfChanged = app.modelChanged$.pipe(
+                pluck("event", "msg"),
+                map(value => {
+                    app.flavours = this.pathProvider.getModelFlavours(value);
+                    app.selectedFlavour = "glTF";
+                    return this.pathProvider.resolve(value, app.selectedFlavour);
+                }),
+                map( value => ({mainFile: value, additionalFiles: undefined})),
+            );
+        }       
 
         const dropdownFlavourChanged = app.flavourChanged$.pipe(
             pluck("event", "msg"),
@@ -141,11 +159,18 @@ class UIModel
             }
         });
 
-        const dropedGLtfFileName = inputObservables.gltfDropped.pipe(
+        let dropedGLtfFileName = inputObservables.gltfDropped.pipe(
             map( (data) => {
                 return data.mainFile.name;
             })
         );
+
+        if (modelURL !== null){
+            let loadFromUrlObservable = new Observable(subscriber => { subscriber.next({mainFile: modelURL, additionalFiles: undefined});});
+            dropedGLtfFileName = merge(dropedGLtfFileName, loadFromUrlObservable.pipe(map((data) => {return data.mainFile;} )));
+            this.model = merge(this.model, loadFromUrlObservable);
+        }
+
         dropedGLtfFileName.subscribe( (filename) => {
             if(filename !== undefined)
             {

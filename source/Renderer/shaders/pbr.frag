@@ -42,6 +42,12 @@ void main()
 #endif
 
 #ifdef MATERIAL_UNLIT
+#if ALPHAMODE == ALPHAMODE_MASK
+    if (baseColor.a < u_AlphaCutoff)
+    {
+        discard;
+    }
+#endif
     g_finalColor = (vec4(linearTosRGB(baseColor.rgb), baseColor.a));
     return;
 #endif

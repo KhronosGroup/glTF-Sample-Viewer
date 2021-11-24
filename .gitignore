@@ -16,3 +16,4 @@ debug.log
 /1053c4edd3398f26.wasm
 npm_package/*.map
 /.vscode/settings.json
+out

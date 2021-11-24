@@ -103,6 +103,7 @@ NormalInfo getNormalInfo(vec3 v)
     vec3 n, t, b, ng;
 
     // Compute geometrical TBN:
+#ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
     // Trivial TBN computation, present as vertex attribute.
     // Normalize eigenvectors as matrix is linearly interpolated.
@@ -111,14 +112,13 @@ NormalInfo getNormalInfo(vec3 v)
     ng = normalize(v_TBN[2]);
 #else
     // Normals are either present as vertex attributes or approximated.
-#ifdef HAS_NORMAL_VEC3
     ng = normalize(v_Normal);
+#endif
 #else
     ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
 #endif
     t = normalize(t_ - ng * dot(ng, t_));
     b = cross(ng, t);
-#endif
 
     // For a back-facing surface, the tangential basis vectors are negated.
     if (gl_FrontFacing == false)
@@ -146,6 +146,7 @@ NormalInfo getNormalInfo(vec3 v)
 }
 
 
+#ifdef MATERIAL_CLEARCOAT
 vec3 getClearcoatNormal(NormalInfo normalInfo)
 {
 #ifdef HAS_CLEARCOAT_NORMAL_MAP
@@ -157,6 +158,7 @@ vec3 getClearcoatNormal(NormalInfo normalInfo)
     return normalInfo.ng;
 #endif
 }
+#endif
 
 
 vec4 getBaseColor()

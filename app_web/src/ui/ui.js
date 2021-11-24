@@ -95,9 +95,12 @@ const app = new Vue({
             specularEnabled: true,
 
             activeTab: 0,
-            loadingComponent: {},
+            tabsHidden: false,
+            loadingComponent: undefined,
             showDropDownOverlay: false,
             uploadedHDR: undefined,
+            uiVisible: true,
+            
 
             // these are handls for certain ui change related things
             environmentVisiblePrefState: true,
@@ -117,6 +120,21 @@ const app = new Vue({
             "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
             "if you believe you are seeing this message in error.", 15000);
         }
+
+        // add github logo to navbar
+        this.$nextTick(function () {
+            // Code that will run only after the
+            // entire view has been rendered
+            var a = document.createElement('a');
+            a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
+            var img = document.createElement('img');
+            img.src ="assets/ui/GitHub-Mark-Light-32px.png";
+            img.style.width = "22px";
+            img.style.height = "22px";
+            document.getElementById("tabsContainer").childNodes[0].childNodes[0].appendChild(a);
+            a.appendChild(img);
+        })
+
     },
     methods:
     {
@@ -146,6 +164,32 @@ const app = new Vue({
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
+        collapseActiveTab : function(event, item) {
+            if (item === this.activeTab)
+            {
+                this.tabsHidden = !this.tabsHidden;
+                
+                if(this.tabsHidden) {
+                    // remove is-active class if tabs are hidden
+                    event.stopPropagation();
+                    
+                    let navElements = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes;
+                    for(let elem of navElements) {
+                        elem.classList.remove('is-active');
+                    }
+                } else {
+                    // add is-active class to correct element
+                    let activeNavElement = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes[item];
+                    activeNavElement.classList.add('is-active');
+                }
+                return;
+            }
+            else {
+                // reset tab visibility
+                this.tabsHidden = false;
+            }
+            
+        },
         warn(message) {
             this.$buefy.toast.open({
                 message: message,
@@ -160,7 +204,7 @@ const app = new Vue({
             })
         },
         goToLoadingState() {
-            if(this.loadingComponent === undefined)
+            if(this.loadingComponent !== undefined)
             {
                 return;
             }
@@ -175,13 +219,52 @@ const app = new Vue({
                 return;
             }
             this.loadingComponent.close();
+            this.loadingComponent = undefined;
         },
         onFileChange(e) {
             const file = e.target.files[0];
             this.uploadedHDR = file;
         },
+        hide() {
+            this.uiVisible = false;
+        },
+        show() {
+            this.uiVisible = true;
+        },
     }
 }).$mount('#app');
+
+const canvasUI = new Vue({
+    data() {
+        return {
+            fullscreen: false,
+            timer: null
+        };
+    },
+    methods:
+    {
+        toggleFullscreen() {
+            if(this.fullscreen) {
+                app.show();
+            } else {
+                app.hide();
+            }
+            this.fullscreen = !this.fullscreen;
+        },
+        mouseMove() {
+            this.$refs.fullscreenIcon.style.display = "block";
+            this.setFullscreenIconTimer();
+        },
+        setFullscreenIconTimer() {
+            clearTimeout(this.timer);
+            this.timer = window.setTimeout( () => {
+                this.$refs.fullscreenIcon.style.display = "none";
+            }, 1000);
+        }
+    }
+
+}).$mount('#canvasUI');
+
 
 export { app };
 
