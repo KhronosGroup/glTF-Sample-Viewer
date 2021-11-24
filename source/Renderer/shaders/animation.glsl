@@ -1,5 +1,5 @@
 #ifdef HAS_MORPH_TARGETS
-uniform sampler2D u_MorphTargetsSampler;
+uniform highp sampler2DArray u_MorphTargetsSampler;
 #endif
 
 #ifdef USE_MORPHING
@@ -81,6 +81,16 @@ mat4 getSkinningNormalMatrix()
 
 #ifdef USE_MORPHING
 
+#ifdef HAS_MORPH_TARGETS
+vec4 getDisplacement(int vertexID, int targetIndex, int texSize)
+{
+    int y = int(floor(float(vertexID) / float(texSize)));
+    int x = vertexID - y * texSize;
+    return texelFetch(u_MorphTargetsSampler, ivec3(x, y, targetIndex), 0);
+}
+#endif
+
+
 vec4 getTargetPosition(int vertexID)
 {
     vec4 pos = vec4(0);
@@ -88,10 +98,8 @@ vec4 getTargetPosition(int vertexID)
     int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
     for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        int offset = MORPH_TARGET_POSITION_OFFSET + i * NUM_VERTICIES + vertexID;
-        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
-        vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
-        pos.xyz += u_morphWeights[i] * displacement;
+        vec4 displacement = getDisplacement(vertexID, MORPH_TARGET_POSITION_OFFSET + i, texSize);
+        pos += u_morphWeights[i] * displacement;
     }
 #endif
 
@@ -106,10 +114,8 @@ vec3 getTargetNormal(int vertexID)
     int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
     for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        int offset = MORPH_TARGET_NORMAL_OFFSET + i * NUM_VERTICIES + vertexID;
-        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
-        vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
-        normal.xyz += u_morphWeights[i] * displacement;
+        vec3 displacement = getDisplacement(vertexID, MORPH_TARGET_NORMAL_OFFSET + i, texSize).xyz;
+        normal += u_morphWeights[i] * displacement;
     }
 #endif
 
@@ -125,14 +131,60 @@ vec3 getTargetTangent(int vertexID)
     int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
     for(int i = 0; i < WEIGHT_COUNT; i++)
     {
-        int offset = MORPH_TARGET_TANGENT_OFFSET + i * NUM_VERTICIES + vertexID;
-        ivec2 mophTargetCoordinate = ivec2(offset % texSize, offset / texSize);
-        vec3 displacement = texelFetch(u_MorphTargetsSampler, mophTargetCoordinate, 0).xyz;
-        tangent.xyz += u_morphWeights[i] * displacement;
+        vec3 displacement = getDisplacement(vertexID, MORPH_TARGET_TANGENT_OFFSET + i, texSize).xyz;
+        tangent += u_morphWeights[i] * displacement;
     }
 #endif
 
     return tangent;
+}
+
+vec2 getTargetTexCoord0(int vertexID)
+{
+    vec2 uv = vec2(0);
+
+#ifdef HAS_MORPH_TARGET_TEXCOORD_0
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
+    {
+        vec2 displacement = getDisplacement(vertexID, MORPH_TARGET_TEXCOORD_0_OFFSET + i, texSize).xy;
+        uv += u_morphWeights[i] * displacement;
+    }
+#endif
+
+    return uv;
+}
+
+vec2 getTargetTexCoord1(int vertexID)
+{
+    vec2 uv = vec2(0);
+
+#ifdef HAS_MORPH_TARGET_TEXCOORD_1
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
+    {
+        vec2 displacement = getDisplacement(vertexID, MORPH_TARGET_TEXCOORD_1_OFFSET + i, texSize).xy;
+        uv += u_morphWeights[i] * displacement;
+    }
+#endif
+
+    return uv;
+}
+
+vec4 getTargetColor0(int vertexID)
+{
+    vec4 color = vec4(0);
+
+#ifdef HAS_MORPH_TARGET_COLOR_0
+    int texSize = textureSize(u_MorphTargetsSampler, 0)[0];
+    for(int i = 0; i < WEIGHT_COUNT; i++)
+    {
+        vec4 displacement = getDisplacement(vertexID, MORPH_TARGET_COLOR_0_OFFSET + i, texSize);
+        color += u_morphWeights[i] * displacement;
+    }
+#endif
+
+    return color;
 }
 
 #endif // !USE_MORPHING

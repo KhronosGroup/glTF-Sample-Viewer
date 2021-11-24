@@ -126,8 +126,16 @@ void main()
     v_texcoord_1 = a_texcoord_1;
 #endif
 
+#ifdef USE_MORPHING
+    v_texcoord_0 += getTargetTexCoord0(gl_VertexID);
+    v_texcoord_1 += getTargetTexCoord1(gl_VertexID);
+#endif
+
 #if defined(HAS_COLOR_0_VEC3) || defined(HAS_COLOR_0_VEC4)
     v_Color = a_color_0;
+#ifdef USE_MORPHING
+    v_Color = clamp(v_Color + getTargetColor0(gl_VertexID), 0.0f, 1.0f);
+#endif
 #endif
 
     gl_Position = u_ViewProjectionMatrix * pos;
