@@ -264,7 +264,9 @@ void main()
 #endif
 
 #else
+    // In case of missing data for a debug view, render a magenta stripe pattern.
     g_finalColor = vec4(1, 0, 1, 1);
+    g_finalColor.rb = vec2(max(2.0 * sin(0.1 * (gl_FragCoord.x + gl_FragCoord.y)), 0.0) + 0.3);
 #endif
 
     // Debug views:
