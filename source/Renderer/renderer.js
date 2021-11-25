@@ -522,6 +522,20 @@ class gltfRenderer
             textureIndex++;
         }
 
+        // set the joints texture
+        if (state.renderingParameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints) 
+        {
+            const skin = state.gltf.skins[node.skin];
+            const location = this.shader.getUniformLocation(skin.jointTextureInfo.samplerName);
+            if (location < 0)
+            {
+                console.log("Unable to find uniform location of " + skin.jointTextureInfo.samplerName);
+            }
+
+            this.webGl.setTexture(location, state.gltf, skin.jointTextureInfo, textureIndex); // binds texture and sampler
+            textureIndex++;
+        }
+
         let textureCount = textureIndex;
         if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
@@ -591,7 +605,7 @@ class gltfRenderer
         if (state.renderingParameters.skinning && state.gltf.skins !== undefined)
         {
             const skin = state.gltf.skins[node.skin];
-            skin.computeJoints(state.gltf, node);
+            skin.computeJoints(state.gltf, node, this.webGl.context);
         }
     }
 
@@ -600,10 +614,7 @@ class gltfRenderer
         // skinning
         if (parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
-            const skin = gltf.skins[node.skin];
-
             vertDefines.push("USE_SKINNING 1");
-            vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
         }
 
         // morphing
@@ -620,17 +631,6 @@ class gltfRenderer
 
     updateAnimationUniforms(state, node, primitive)
     {
-        if (state.renderingParameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
-        {
-            const skin = state.gltf.skins[node.skin];
-
-            this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
-            if(primitive.hasNormals)
-            {
-                this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
-            }
-        }
-
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = state.gltf.meshes[node.mesh];

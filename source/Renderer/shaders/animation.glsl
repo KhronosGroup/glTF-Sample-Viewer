@@ -23,11 +23,24 @@ in vec4 a_weights_1;
 #endif
 
 #ifdef USE_SKINNING
-uniform mat4 u_jointMatrix[JOINT_COUNT];
-uniform mat4 u_jointNormalMatrix[JOINT_COUNT];
+uniform sampler2D u_jointsSampler;
 #endif
 
 #ifdef USE_SKINNING
+
+mat4 getMatrixFromTexture(sampler2D s, int index)
+{
+    mat4 result = mat4(1);
+    int texSize = textureSize(s, 0)[0];
+    int pixelIndex = index * 4;
+    for (int i = 0; i < 4; ++i)
+    {
+        int y = int(float((pixelIndex + i)) / float(texSize));
+        int x = (pixelIndex + i) - y * texSize;
+        result[i] = texelFetch(s, ivec2(x,y), 0);
+    }
+    return result;
+}
 
 mat4 getSkinningMatrix()
 {
@@ -35,18 +48,18 @@ mat4 getSkinningMatrix()
 
 #if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
     skin +=
-        a_weights_0.x * u_jointMatrix[int(a_joints_0.x)] +
-        a_weights_0.y * u_jointMatrix[int(a_joints_0.y)] +
-        a_weights_0.z * u_jointMatrix[int(a_joints_0.z)] +
-        a_weights_0.w * u_jointMatrix[int(a_joints_0.w)];
+        a_weights_0.x * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.x) * 2) +
+        a_weights_0.y * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.y) * 2) +
+        a_weights_0.z * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.z) * 2) +
+        a_weights_0.w * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.w) * 2);
 #endif
 
 #if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
     skin +=
-        a_weights_1.x * u_jointMatrix[int(a_joints_1.x)] +
-        a_weights_1.y * u_jointMatrix[int(a_joints_1.y)] +
-        a_weights_1.z * u_jointMatrix[int(a_joints_1.z)] +
-        a_weights_1.w * u_jointMatrix[int(a_joints_1.w)];
+        a_weights_1.x * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.x) * 2) +
+        a_weights_1.y * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.y) * 2) +
+        a_weights_1.z * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.z) * 2) +
+        a_weights_1.w * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.w) * 2);
 #endif
 
     return skin;
@@ -59,18 +72,18 @@ mat4 getSkinningNormalMatrix()
 
 #if defined(HAS_WEIGHTS_0_VEC4) && defined(HAS_JOINTS_0_VEC4)
     skin +=
-        a_weights_0.x * u_jointNormalMatrix[int(a_joints_0.x)] +
-        a_weights_0.y * u_jointNormalMatrix[int(a_joints_0.y)] +
-        a_weights_0.z * u_jointNormalMatrix[int(a_joints_0.z)] +
-        a_weights_0.w * u_jointNormalMatrix[int(a_joints_0.w)];
+        a_weights_0.x * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.x) * 2 + 1) +
+        a_weights_0.y * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.y) * 2 + 1) +
+        a_weights_0.z * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.z) * 2 + 1) +
+        a_weights_0.w * getMatrixFromTexture(u_jointsSampler, int(a_joints_0.w) * 2 + 1);
 #endif
 
 #if defined(HAS_WEIGHTS_1_VEC4) && defined(HAS_JOINTS_1_VEC4)
     skin +=
-        a_weights_1.x * u_jointNormalMatrix[int(a_joints_1.x)] +
-        a_weights_1.y * u_jointNormalMatrix[int(a_joints_1.y)] +
-        a_weights_1.z * u_jointNormalMatrix[int(a_joints_1.z)] +
-        a_weights_1.w * u_jointNormalMatrix[int(a_joints_1.w)];
+        a_weights_1.x * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.x) * 2 + 1) +
+        a_weights_1.y * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.y) * 2 + 1) +
+        a_weights_1.z * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.z) * 2 + 1) +
+        a_weights_1.w * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.w) * 2 + 1);
 #endif
 
     return skin;
@@ -84,7 +97,7 @@ mat4 getSkinningNormalMatrix()
 #ifdef HAS_MORPH_TARGETS
 vec4 getDisplacement(int vertexID, int targetIndex, int texSize)
 {
-    int y = int(floor(float(vertexID) / float(texSize)));
+    int y = int(float(vertexID) / float(texSize));
     int x = vertexID - y * texSize;
     return texelFetch(u_MorphTargetsSampler, ivec3(x, y, targetIndex), 0);
 }
