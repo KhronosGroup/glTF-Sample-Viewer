@@ -692,9 +692,6 @@ class gltfRenderer
             {debugOutput: GltfState.DebugOutput.TRANSMISSION_VOLUME, shaderDefine: "DEBUG_TRANSMISSION_VOLUME_SRGB"},
             {debugOutput: GltfState.DebugOutput.TRANSMISSION_FACTOR, shaderDefine: "DEBUG_TRANSMISSION_FACTOR"},
             {debugOutput: GltfState.DebugOutput.VOLUME_THICKNESS, shaderDefine: "DEBUG_VOLUME_THICKNESS"},
-
-            {debugOutput: GltfState.DebugOutput.F0, shaderDefine: "DEBUG_F0"},
-            {debugOutput: GltfState.DebugOutput.DIFFUSE, shaderDefine: "DEBUG_DIFFUSE_SRGB"},
         ];
 
         let mappingCount = 0;

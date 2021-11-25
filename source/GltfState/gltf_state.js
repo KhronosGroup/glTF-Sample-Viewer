@@ -181,10 +181,6 @@ GltfState.DebugOutput = {
     TRANSMISSION_VOLUME: "Transmission/Volume",
     TRANSMISSION_FACTOR: "Transmission Factor",
     VOLUME_THICKNESS: "Volume Thickness",
-
-    F0: "F0",
-    DIFFUSE: "DIFFUSE",
-
 };
 
 export { GltfState };
