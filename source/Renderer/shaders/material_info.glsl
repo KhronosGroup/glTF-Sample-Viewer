@@ -245,7 +245,7 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
     vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
     info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
     info.specularWeight = u_KHR_materials_specular_specularFactor * specularTexture.a;
-    info.c_diff = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
+    info.c_diff = mix(info.baseColor.rgb, vec3(0), info.metallic);
     return info;
 }
 #endif
