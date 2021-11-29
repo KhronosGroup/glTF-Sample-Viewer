@@ -35,8 +35,10 @@ mat4 getMatrixFromTexture(sampler2D s, int index)
     int pixelIndex = index * 4;
     for (int i = 0; i < 4; ++i)
     {
-        int y = int(float((pixelIndex + i)) / float(texSize));
-        int x = (pixelIndex + i) - y * texSize;
+        int x = (pixelIndex + i) % texSize;
+        //Rounding mode of integers is undefined:
+        //https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf (section 12.33)
+        int y = (pixelIndex + i - x) / texSize; 
         result[i] = texelFetch(s, ivec2(x,y), 0);
     }
     return result;
@@ -97,8 +99,10 @@ mat4 getSkinningNormalMatrix()
 #ifdef HAS_MORPH_TARGETS
 vec4 getDisplacement(int vertexID, int targetIndex, int texSize)
 {
-    int y = int(float(vertexID) / float(texSize));
-    int x = vertexID - y * texSize;
+    int x = vertexID % texSize;
+    //Rounding mode of integers is undefined:
+    //https://www.khronos.org/registry/OpenGL/specs/es/3.0/GLSL_ES_Specification_3.00.pdf (section 12.33)
+    int y = (vertexID - x) / texSize; 
     return texelFetch(u_MorphTargetsSampler, ivec3(x, y, targetIndex), 0);
 }
 #endif
