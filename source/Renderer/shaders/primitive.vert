@@ -131,9 +131,17 @@ void main()
     v_texcoord_1 += getTargetTexCoord1(gl_VertexID);
 #endif
 
-#if defined(HAS_COLOR_0_VEC3) || defined(HAS_COLOR_0_VEC4)
+
+#if defined(HAS_COLOR_0_VEC3) 
     v_Color = a_color_0;
-#ifdef USE_MORPHING
+#if defined(USE_MORPHING)
+    v_Color = clamp(v_Color + getTargetColor0(gl_VertexID).xyz, 0.0f, 1.0f);
+#endif
+#endif
+
+#if defined(HAS_COLOR_0_VEC4) 
+    v_Color = a_color_0;
+#if defined(USE_MORPHING)
     v_Color = clamp(v_Color + getTargetColor0(gl_VertexID), 0.0f, 1.0f);
 #endif
 #endif
