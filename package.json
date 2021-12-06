@@ -11,7 +11,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "prepare": "npm run build && npm run build_docs",
+    "prepublishOnly": "npm run build && npm run build_docs",
     "build_docs": "rm API.md; ./node_modules/.bin/jsdoc2md source/gltf-sample-viewer.js source/GltfView/gltf_view.js source/GltfState/gltf_state.js source/ResourceLoader/resource_loader.js source/gltf/user_camera.js > API.md",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
