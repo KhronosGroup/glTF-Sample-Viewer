@@ -354,6 +354,24 @@ void main()
 #endif
 #endif
 
+    // Specular:
+ #ifdef MATERIAL_SPECULAR
+ #if DEBUG == DEBUG_SPECULAR_SRGB
+     g_finalColor.rgb = linearTosRGB(f_specular);
+ #endif
+ #if DEBUG == DEBUG_SPECULAR_FACTOR
+     g_finalColor.rgb = vec3(materialInfo.specularWeight);
+ #endif
+
+ #if DEBUG == DEBUG_SPECULAR_COLOR
+ vec3 specularTexture = vec3(1.0);
+ #ifdef HAS_SPECULAR_COLOR_MAP
+     specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
+ #endif
+     g_finalColor.rgb = u_KHR_materials_specular_specularColorFactor * specularTexture.rgb;
+ #endif
+ #endif
+
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
 #if DEBUG == DEBUG_TRANSMISSION_VOLUME_SRGB
