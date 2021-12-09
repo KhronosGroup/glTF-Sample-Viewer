@@ -294,10 +294,10 @@ void main()
     g_finalColor.rgb = (normalInfo.b + 1.0) / 2.0;
 #endif
 #if DEBUG == DEBUG_ALPHA
-    g_finalColor.rgb = vec3(baseColor.a);
+    g_finalColor.rgb = linearTosRGB(vec3(baseColor.a));
 #endif
 #if DEBUG == DEBUG_OCCLUSION && defined(HAS_OCCLUSION_MAP)
-    g_finalColor.rgb = vec3(ao);
+    g_finalColor.rgb = linearTosRGB(vec3(ao));
 #endif
 #if DEBUG == DEBUG_EMISSIVE_SRGB
     g_finalColor.rgb = linearTosRGB(f_emissive);
@@ -309,13 +309,13 @@ void main()
     // MR:
 #ifdef MATERIAL_METALLICROUGHNESS
 #if DEBUG == DEBUG_METALLIC_ROUGHNESS
-    g_finalColor.rgb = f_diffuse + f_specular;
+    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
 #endif
 #if DEBUG == DEBUG_METALLIC
-    g_finalColor.rgb = vec3(materialInfo.metallic);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.metallic));
 #endif
 #if DEBUG == DEBUG_ROUGHNESS
-    g_finalColor.rgb = vec3(materialInfo.perceptualRoughness);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.perceptualRoughness));
 #endif
 #if DEBUG == DEBUG_BASE_COLOR_SRGB
     g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
@@ -331,10 +331,10 @@ void main()
     g_finalColor.rgb = linearTosRGB(f_clearcoat);
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_FACTOR
-    g_finalColor.rgb = vec3(materialInfo.clearcoatFactor);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.clearcoatFactor));
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_ROUGHNESS
-    g_finalColor.rgb = vec3(materialInfo.clearcoatRoughness);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.clearcoatRoughness));
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_NORMAL
     g_finalColor.rgb = (materialInfo.clearcoatNormal + vec3(1)) / 2.0;
@@ -347,10 +347,10 @@ void main()
     g_finalColor.rgb = linearTosRGB(f_sheen);
 #endif
 #if DEBUG == DEBUG_SHEEN_COLOR
-    g_finalColor.rgb = materialInfo.sheenColorFactor;
+    g_finalColor.rgb = linearTosRGB(materialInfo.sheenColorFactor);
 #endif
 #if DEBUG == DEBUG_SHEEN_ROUGHNESS
-    g_finalColor.rgb = vec3(materialInfo.sheenRoughnessFactor);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.sheenRoughnessFactor));
 #endif
 #endif
 
@@ -378,25 +378,25 @@ void main()
     g_finalColor.rgb = linearTosRGB(f_transmission);
 #endif
 #if DEBUG == DEBUG_TRANSMISSION_FACTOR
-    g_finalColor.rgb = vec3(materialInfo.transmissionFactor);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.transmissionFactor));
 #endif
 #endif
 #ifdef MATERIAL_VOLUME
 #if DEBUG == DEBUG_VOLUME_THICKNESS
-    g_finalColor.rgb = vec3(materialInfo.thickness);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.thickness));
 #endif
 #endif
 
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE_SRGB
-    g_finalColor.rgb = f_diffuse + f_specular;
+    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
-    g_finalColor.rgb = vec3(materialInfo.iridescenceFactor);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceFactor));
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_THICKNESS
-    g_finalColor.rgb = vec3(materialInfo.iridescenceThickness);
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness));
 #endif
 #endif
 }
