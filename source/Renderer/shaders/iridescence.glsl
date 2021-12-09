@@ -21,7 +21,10 @@ vec3 evalSensitivity(vec3 opd, vec3 shift) {
 
     vec3 xyz = val * sqrt(2.0 * PI * var) * cos(pos * phase + shift) * exp(-sq(phase) * var);
     xyz.x += 9.7470e-14 * sqrt(2.0 * PI * 4.5282e+09) * cos(2.2399e+06 * phase[0] + shift[0]) * exp(-4.5282e+09 * sq(phase[0]));
-    return xyz / 1.0685e-7;
+    xyz /= 1.0685e-7;
+
+    vec3 srgb = XYZ_TO_REC709 * xyz;
+    return srgb;
 }
 
 /* Polarized Fresnel Term
@@ -114,7 +117,7 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     }
 
     // Optical Path Difference
-    vec3 D = 2.0 * eta_2 * Dinc * cosTheta2;
+    vec3 OPD = 2.0 * eta_2 * Dinc * cosTheta2;
 
     // Variables
     vec3 phi21p = vec3(0.0);
@@ -145,7 +148,7 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     Cm = Rs - T121p;
     for (int m = 1; m <= 2; ++m){
         Cm *= r123p;
-        Sm  = 2.0 * evalSensitivity(float(m) * D, float(m) * (phi23p + phi21p));
+        Sm  = 2.0 * evalSensitivity(float(m) * OPD, float(m) * (phi23p + phi21p));
         I  += Cm * Sm;
     }
 
@@ -159,12 +162,12 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     Cm = Rs - T121s ;
     for (int m = 1; m <= 2; ++m){
         Cm *= r123s;
-        Sm  = 2.0 * evalSensitivity(float(m) * D, float(m) * (phi23s + phi21s));
+        Sm  = 2.0 * evalSensitivity(float(m) * OPD, float(m) * (phi23s + phi21s));
         I  += Cm * Sm;
     }
 
     // Ensure that the BRDF is non negative and convert it to RGB
-    I = max(XYZ_TO_REC709 * I, vec3(0.0, 0.0, 0.0));
+    I = max(I, vec3(0.0, 0.0, 0.0));
 
     return 0.5 * I;
 }
