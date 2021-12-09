@@ -46,16 +46,31 @@ void fresnelConductorExact(float cosThetaI,
     float term2 = 2.0 * a * cosThetaI;
 
     Rs2 = (term1 - term2) / (term1 + term2);
-    if(Rs2 < 0.0f){   
-        Rs2 = 0.0f;
+    if (Rs2 < 0.0) {
+        Rs2 = 0.0;
     }
     float term3 = a2pb2 * cosThetaI2 + sinThetaI4;
     float term4 = term2 * sinThetaI2;
 
     Rp2 = Rs2 * (term3 - term4) / (term3 + term4);
-    if(Rp2 < 0.0f){
-        Rp2 = 0.0f;
+    if (Rp2 < 0.0) {
+        Rp2 = 0.0;
     }
+}
+
+// Add continuous atan implementation at (0.0, 0.0) for special case eta_2 == 1.0
+vec3 continuousAtan(vec3 y, vec3 x) {
+    if (y[0] == 0.0 && x[0] == 0.0) {
+        x[0] = 1.0;
+    }
+    if (y[1] == 0.0 && x[1] == 0.0) {
+        x[1] = 1.0;
+    }
+    if (y[2] == 0.0 && x[2] == 0.0) {
+        x[2] = 1.0;
+    }
+
+    return atan(y, x);
 }
 
 /* Phase shift due to a conducting material.
@@ -70,9 +85,12 @@ void fresnelPhaseExact(vec3 cost, vec3 eta1,
     vec3 U = sqrt(max(A + B, vec3(0)) / 2.0);
     vec3 V = sqrt(max(B - A, vec3(0)) / 2.0);
 
-    phiS = atan(2.0 * eta1 * V * cost, sq(U) + sq(V) - sq(eta1 * cost));
-    phiP = atan(2.0 * eta1 * sq(eta2) * cost * (2.0 * kappa2 * U - (vec3(1.0) - sq(kappa2)) * V),
-           sq(sq(eta2) * (vec3(1.0) + sq(kappa2)) * cost) - sq(eta1) * (sq(U) + sq(V)));
+    vec3 C = 2.0 * eta1 * V * cost;
+    vec3 D = sq(U) + sq(V) - sq(eta1 * cost);
+    phiS = continuousAtan(C, D);
+    vec3 E = 2.0 * eta1 * sq(eta2) * cost * (2.0 * kappa2 * U - (vec3(1.0) - sq(kappa2)) * V);
+    vec3 F = sq(sq(eta2) * (vec3(1.0) + sq(kappa2)) * cost) - sq(eta1) * (sq(U) + sq(V));
+    phiP = continuousAtan(E, F);
 }
 
 // Main function expected by BRDF Explorer
