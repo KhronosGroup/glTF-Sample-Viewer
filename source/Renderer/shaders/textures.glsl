@@ -328,7 +328,7 @@ vec2 getIridescenceUV()
 {
     vec3 uv = vec3(u_IridescenceUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 #ifdef HAS_IRIDESCENCE_UV_TRANSFORM
-    uv *= u_IridescenceUVTransform;
+    uv = u_IridescenceUVTransform * uv;
 #endif
     return uv.xy;
 }
@@ -337,7 +337,7 @@ vec2 getIridescenceThicknessUV()
 {
     vec3 uv = vec3(u_IridescenceThicknessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
 #ifdef HAS_IRIDESCENCETHICKNESS_UV_TRANSFORM
-    uv *= u_IridescenceThicknessUVTransform;
+    uv = u_IridescenceThicknessUVTransform * uv;
 #endif
     return uv.xy;
 }
