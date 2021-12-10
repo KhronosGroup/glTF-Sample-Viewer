@@ -299,11 +299,8 @@ void main()
 #if DEBUG == DEBUG_OCCLUSION && defined(HAS_OCCLUSION_MAP)
     g_finalColor.rgb = linearTosRGB(vec3(ao));
 #endif
-#if DEBUG == DEBUG_EMISSIVE_SRGB
+#if DEBUG == DEBUG_EMISSIVE
     g_finalColor.rgb = linearTosRGB(f_emissive);
-#endif
-#if DEBUG == DEBUG_EMISSIVE_LINEAR
-    g_finalColor.rgb = f_emissive;
 #endif
 
     // MR:
@@ -317,17 +314,14 @@ void main()
 #if DEBUG == DEBUG_ROUGHNESS
     g_finalColor.rgb = linearTosRGB(vec3(materialInfo.perceptualRoughness));
 #endif
-#if DEBUG == DEBUG_BASE_COLOR_SRGB
+#if DEBUG == DEBUG_BASE_COLOR
     g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
-#endif
-#if DEBUG == DEBUG_BASE_COLOR_LINEAR
-    g_finalColor.rgb = materialInfo.baseColor;
 #endif
 #endif
 
     // Clearcoat:
 #ifdef MATERIAL_CLEARCOAT
-#if DEBUG == DEBUG_CLEARCOAT_SRGB
+#if DEBUG == DEBUG_CLEARCOAT
     g_finalColor.rgb = linearTosRGB(f_clearcoat);
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_FACTOR
@@ -343,7 +337,7 @@ void main()
 
     // Sheen:
 #ifdef MATERIAL_SHEEN
-#if DEBUG == DEBUG_SHEEN_SRGB
+#if DEBUG == DEBUG_SHEEN
     g_finalColor.rgb = linearTosRGB(f_sheen);
 #endif
 #if DEBUG == DEBUG_SHEEN_COLOR
@@ -354,27 +348,9 @@ void main()
 #endif
 #endif
 
-    // Specular:
- #ifdef MATERIAL_SPECULAR
- #if DEBUG == DEBUG_SPECULAR_SRGB
-     g_finalColor.rgb = linearTosRGB(f_specular);
- #endif
- #if DEBUG == DEBUG_SPECULAR_FACTOR
-     g_finalColor.rgb = vec3(materialInfo.specularWeight);
- #endif
-
- #if DEBUG == DEBUG_SPECULAR_COLOR
- vec3 specularTexture = vec3(1.0);
- #ifdef HAS_SPECULAR_COLOR_MAP
-     specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
- #endif
-     g_finalColor.rgb = u_KHR_materials_specular_specularColorFactor * specularTexture.rgb;
- #endif
- #endif
-
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
-#if DEBUG == DEBUG_TRANSMISSION_VOLUME_SRGB
+#if DEBUG == DEBUG_TRANSMISSION_VOLUME
     g_finalColor.rgb = linearTosRGB(f_transmission);
 #endif
 #if DEBUG == DEBUG_TRANSMISSION_FACTOR
@@ -389,7 +365,7 @@ void main()
 
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
-#if DEBUG == DEBUG_IRIDESCENCE_SRGB
+#if DEBUG == DEBUG_IRIDESCENCE
     g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR

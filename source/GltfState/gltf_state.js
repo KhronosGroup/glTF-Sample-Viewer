@@ -132,16 +132,12 @@ GltfState.DebugOutput = {
         OCCLUSION: "Occlusion",
         /** output the emissive value */
         EMISSIVE: "Emissive",
-        /** output the linear emissive value */
-        EMISSIVE_LINEAR: "Emissive (Linear)",
     },
 
     mr: {
         METALLIC_ROUGHNESS: "Metallic Roughness",
         /** output the base color value */
         BASECOLOR: "Base Color",
-        /** output the linear base color value */
-        BASECOLOR_LINEAR: "Base Color (Linear)",
         /** output the metallic value from pbr metallic roughness */
         METALLIC: "Metallic",
         /** output the roughness value from pbr metallic roughness */
