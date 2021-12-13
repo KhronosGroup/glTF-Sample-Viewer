@@ -131,6 +131,11 @@ void main()
 
 #ifdef MATERIAL_IRIDESCENCE
     vec3 iridescenceFresnel = materialInfo.f0;
+
+    if (materialInfo.iridescenceThickness == 0.0) {
+        materialInfo.iridescenceFactor = 0.0;
+    }
+
     if (materialInfo.iridescenceFactor > 0.0) {
 #ifdef MATERIAL_CLEARCOAT
         float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
