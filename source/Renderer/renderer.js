@@ -670,91 +670,58 @@ class gltfRenderer
         default:
             break;
         }
-        
-        fragDefines.push("DEBUG_NONE 0");
-        fragDefines.push("DEBUG_NORMAL 1");
-        fragDefines.push("DEBUG_NORMAL_WORLD 2");
-        fragDefines.push("DEBUG_NORMAL_GEOMETRY 3");
-        fragDefines.push("DEBUG_TANGENT 4");
-        fragDefines.push("DEBUG_BITANGENT 5");
-        fragDefines.push("DEBUG_ROUGHNESS 6");
-        fragDefines.push("DEBUG_METALLIC 7");
-        fragDefines.push("DEBUG_BASE_COLOR_SRGB 8");
-        fragDefines.push("DEBUG_BASE_COLOR_LINEAR 9");
-        fragDefines.push("DEBUG_OCCLUSION 10");
-        fragDefines.push("DEBUG_EMISSIVE_SRGB 11");
-        fragDefines.push("DEBUG_EMISSIVE_LINEAR 12");
-        fragDefines.push("DEBUG_F0 13");
-        fragDefines.push("DEBUG_ALPHA 14");
-        fragDefines.push("DEBUG_DIFFUSE_SRGB 15");
-        fragDefines.push("DEBUG_SPECULAR_SRGB 16");
-        fragDefines.push("DEBUG_CLEARCOAT_SRGB 17");
-        fragDefines.push("DEBUG_SHEEN_SRGB 18");
-        fragDefines.push("DEBUG_TRANSMISSION_SRGB 19");
 
-        switch (state.renderingParameters.debugOutput)
-        {
-        default:
-            fragDefines.push("DEBUG DEBUG_NONE");
-            break;
-        case GltfState.DebugOutput.NORMAL:
-            fragDefines.push("DEBUG DEBUG_NORMAL");
-            break;
-        case GltfState.DebugOutput.WORLDSPACENORMAL:
-            fragDefines.push("DEBUG DEBUG_NORMAL_WORLD");
-            break;
-        case GltfState.DebugOutput.GEOMETRYNORMAL:
-            fragDefines.push("DEBUG DEBUG_NORMAL_GEOMETRY");
-            break;
-        case GltfState.DebugOutput.TANGENT:
-            fragDefines.push("DEBUG DEBUG_TANGENT");
-            break;
-        case GltfState.DebugOutput.BITANGENT:
-            fragDefines.push("DEBUG DEBUG_BITANGENT");
-            break;
-        case GltfState.DebugOutput.ROUGHNESS:
-            fragDefines.push("DEBUG DEBUG_ROUGHNESS");
-            break;
-        case GltfState.DebugOutput.METALLIC:
-            fragDefines.push("DEBUG DEBUG_METALLIC");
-            break;
-        case GltfState.DebugOutput.BASECOLOR:
-            fragDefines.push("DEBUG DEBUG_BASE_COLOR_SRGB");
-            break;
-        case GltfState.DebugOutput.BASECOLOR_LINEAR:
-            fragDefines.push("DEBUG DEBUG_BASE_COLOR_LINEAR");
-            break;
-        case GltfState.DebugOutput.OCCLUSION:
-            fragDefines.push("DEBUG DEBUG_OCCLUSION");
-            break;
-        case GltfState.DebugOutput.EMISSIVE:
-            fragDefines.push("DEBUG DEBUG_EMISSIVE_SRGB");
-            break;
-        case GltfState.DebugOutput.EMISSIVE_LINEAR:
-            fragDefines.push("DEBUG DEBUG_EMISSIVE_LINEAR");
-            break;
-        case GltfState.DebugOutput.F0:
-            fragDefines.push("DEBUG DEBUG_F0");
-            break;
-        case GltfState.DebugOutput.ALPHA:
-            fragDefines.push("DEBUG DEBUG_ALPHA");
-            break;
-        case GltfState.DebugOutput.DIFFUSE:
-            fragDefines.push("DEBUG DEBUG_DIFFUSE_SRGB");
-            break;
-        case GltfState.DebugOutput.SPECULAR:
-            fragDefines.push("DEBUG DEBUG_SPECULAR_SRGB");
-            break;
-        case GltfState.DebugOutput.CLEARCOAT:
-            fragDefines.push("DEBUG DEBUG_CLEARCOAT_SRGB");
-            break;
-        case GltfState.DebugOutput.SHEEN:
-            fragDefines.push("DEBUG DEBUG_SHEEN_SRGB");
-            break;
-        case GltfState.DebugOutput.TRANSMISSION:
-            fragDefines.push("DEBUG DEBUG_TRANSMISSION_SRGB");
-            break;
+        let debugOutputMapping = [
+            {debugOutput: GltfState.DebugOutput.NONE, shaderDefine: "DEBUG_NONE"},
+            
+            {debugOutput: GltfState.DebugOutput.generic.WORLDSPACENORMAL, shaderDefine: "DEBUG_NORMAL_SHADING"},
+            {debugOutput: GltfState.DebugOutput.generic.NORMAL, shaderDefine: "DEBUG_NORMAL_TEXTURE"},
+            {debugOutput: GltfState.DebugOutput.generic.GEOMETRYNORMAL, shaderDefine: "DEBUG_NORMAL_GEOMETRY"},
+            {debugOutput: GltfState.DebugOutput.generic.TANGENT, shaderDefine: "DEBUG_TANGENT"},
+            {debugOutput: GltfState.DebugOutput.generic.BITANGENT, shaderDefine: "DEBUG_BITANGENT"},
+            {debugOutput: GltfState.DebugOutput.generic.ALPHA, shaderDefine: "DEBUG_ALPHA"},
+            {debugOutput: GltfState.DebugOutput.generic.UV_COORDS_0, shaderDefine: "DEBUG_UV_0"},
+            {debugOutput: GltfState.DebugOutput.generic.UV_COORDS_1, shaderDefine: "DEBUG_UV_1"},
+            {debugOutput: GltfState.DebugOutput.generic.OCCLUSION, shaderDefine: "DEBUG_OCCLUSION"},
+            {debugOutput: GltfState.DebugOutput.generic.EMISSIVE, shaderDefine: "DEBUG_EMISSIVE"},
+
+            {debugOutput: GltfState.DebugOutput.mr.METALLIC_ROUGHNESS, shaderDefine: "DEBUG_METALLIC_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.mr.BASECOLOR, shaderDefine: "DEBUG_BASE_COLOR"},
+            {debugOutput: GltfState.DebugOutput.mr.ROUGHNESS, shaderDefine: "DEBUG_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.mr.METALLIC, shaderDefine: "DEBUG_METALLIC"},
+            
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT, shaderDefine: "DEBUG_CLEARCOAT"},
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR, shaderDefine: "DEBUG_CLEARCOAT_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS, shaderDefine: "DEBUG_CLEARCOAT_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL, shaderDefine: "DEBUG_CLEARCOAT_NORMAL"},
+            
+            {debugOutput: GltfState.DebugOutput.sheen.SHEEN, shaderDefine: "DEBUG_SHEEN"},
+            {debugOutput: GltfState.DebugOutput.sheen.SHEEN_COLOR, shaderDefine: "DEBUG_SHEEN_COLOR"},
+            {debugOutput: GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS, shaderDefine: "DEBUG_SHEEN_ROUGHNESS"},
+
+            {debugOutput: GltfState.DebugOutput.specular.SPECULAR, shaderDefine: "DEBUG_SPECULAR"},
+            {debugOutput: GltfState.DebugOutput.specular.SPECULAR_FACTOR, shaderDefine: "DEBUG_SPECULAR_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.specular.SPECULAR_COLOR, shaderDefine: "DEBUG_SPECULAR_COLOR"},
+
+            {debugOutput: GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME, shaderDefine: "DEBUG_TRANSMISSION_VOLUME"},
+            {debugOutput: GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR, shaderDefine: "DEBUG_TRANSMISSION_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.transmission.VOLUME_THICKNESS, shaderDefine: "DEBUG_VOLUME_THICKNESS"},
+        ];
+
+        let mappingCount = 0;
+        let mappingFound = false;
+        for (let mapping of debugOutputMapping) {
+            fragDefines.push(mapping.shaderDefine+" "+mappingCount++);
+            if(state.renderingParameters.debugOutput == mapping.debugOutput){
+                fragDefines.push("DEBUG "+mapping.shaderDefine);
+                mappingFound = true;
+            }
         }
+
+        if(mappingFound == false) { // fallback
+            fragDefines.push("DEBUG DEBUG_NONE");
+        }
+
     }
 
     applyLights(gltf)

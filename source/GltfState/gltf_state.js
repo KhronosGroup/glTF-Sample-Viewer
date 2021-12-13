@@ -112,44 +112,66 @@ GltfState.ToneMaps = {
 GltfState.DebugOutput = {
     /** standard rendering - debug output is disabled */
     NONE: "None",
-    /** output the metallic value from pbr metallic roughness */
-    METALLIC: "Metallic",
-    /** output the roughness value from pbr metallic roughness */
-    ROUGHNESS: "Roughness",
-    /** output the normal map value in TBN space */
-    NORMAL: "Normal",
-    /** output the world space normals (i.e. with TBN applied) */
-    WORLDSPACENORMAL: "Worldspace Normal",
-    /** output the normal from the TBN*/
-    GEOMETRYNORMAL: "Geometry Normal",
-    /** output the tangent from the TBN*/
-    TANGENT: "Tangent",
-    /** output the bitangent from the TBN */
-    BITANGENT: "Bitangent",
-    /** output the base color value */
-    BASECOLOR: "Base Color",
-    /** output the linear base color value */
-    BASECOLOR_LINEAR: "Base Color (Linear)",
-    /** output the occlusion value */
-    OCCLUSION: "Occlusion",
-    /** output the emissive value */
-    EMISSIVE: "Emissive",
-    /** output the linear emissive value */
-    EMISSIVE_LINEAR: "Emissive (Linear)",
-    /** output diffuse lighting */
-    DIFFUSE: "Diffuse",
-    /** output specular lighting */
-    SPECULAR: "Specular",
+
+    generic: {
+        UV_COORDS_0: "Texture Coordinates 0",
+        UV_COORDS_1: "Texture Coordinates 1",
+        /** output the world space normals (i.e. with TBN applied) */
+        NORMAL: "Normal Texture",
+        /** output the normal from the TBN*/
+        GEOMETRYNORMAL: "Geometry Normal",
+        /** output the tangent from the TBN*/
+        TANGENT: "Geometry Tangent",
+        /** output the bitangent from the TBN */
+        BITANGENT: "Geometry Bitangent",
+        /** output the world space normals (i.e. with TBN applied) */
+        WORLDSPACENORMAL: "Shading Normal",
+        /** output the alpha value */
+        ALPHA: "Alpha",
+        /** output the occlusion value */
+        OCCLUSION: "Occlusion",
+        /** output the emissive value */
+        EMISSIVE: "Emissive",
+    },
+
+    mr: {
+        METALLIC_ROUGHNESS: "Metallic Roughness",
+        /** output the base color value */
+        BASECOLOR: "Base Color",
+        /** output the metallic value from pbr metallic roughness */
+        METALLIC: "Metallic",
+        /** output the roughness value from pbr metallic roughness */
+        ROUGHNESS: "Roughness",
+    },
+
     /** output clearcoat lighting */
-    CLEARCOAT: "ClearCoat",
+    clearcoat: {
+        CLEARCOAT: "ClearCoat",
+        CLEARCOAT_FACTOR: "ClearCoat Factor",
+        CLEARCOAT_ROUGHNESS: "ClearCoat Roughness",
+        CLEARCOAT_NORMAL: "ClearCoat Normal",    
+    },
+
     /** output sheen lighting */
-    SHEEN: "Sheen",
+    sheen: {
+        SHEEN: "Sheen",
+        SHEEN_COLOR: "Sheen Color",
+        SHEEN_ROUGHNESS: "Sheen Roughness",
+    },
+
+    /** output specular lighting */
+    specular: {
+        SPECULAR: "Specular",
+        SPECULAR_FACTOR: "Specular Factor",
+        SPECULAR_COLOR: "Specular Color",
+    },
+
     /** output tranmission lighting */
-    TRANSMISSION: "Transmission",
-    /** output the alpha value */
-    ALPHA: "Alpha",
-    /** output computed F0 */
-    F0: "F0"
+    transmission: {
+        TRANSMISSION_VOLUME: "Transmission/Volume",
+        TRANSMISSION_FACTOR: "Transmission Factor",
+        VOLUME_THICKNESS: "Volume Thickness",
+    },
 };
 
 export { GltfState };

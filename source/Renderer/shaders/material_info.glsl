@@ -117,20 +117,19 @@ NormalInfo getNormalInfo(vec3 v)
         ng *= -1.0;
     }
 
-    // Compute pertubed normals:
-#ifdef HAS_NORMAL_MAP
-    n = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
-    n *= vec3(u_NormalScale, u_NormalScale, 1.0);
-    n = mat3(t, b, ng) * normalize(n);
-#else
-    n = ng;
-#endif
-
+    // Compute normals:
     NormalInfo info;
     info.ng = ng;
+#ifdef HAS_NORMAL_MAP
+    info.ntex = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
+    info.ntex *= vec3(u_NormalScale, u_NormalScale, 1.0);
+    info.ntex = normalize(info.ntex);
+    info.n = normalize(mat3(t, b, ng) * info.ntex);
+#else
+    info.n = ng;
+#endif
     info.t = t;
     info.b = b;
-    info.n = n;
     return info;
 }
 

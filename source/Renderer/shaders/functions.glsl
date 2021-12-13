@@ -37,10 +37,11 @@ vec4 getVertexColor()
 
 
 struct NormalInfo {
-    vec3 ng;   // Geometric normal
-    vec3 n;    // Pertubed normal
-    vec3 t;    // Pertubed tangent
-    vec3 b;    // Pertubed bitangent
+    vec3 ng;   // Geometry normal
+    vec3 t;    // Geometry tangent
+    vec3 b;    // Geometry bitangent
+    vec3 n;    // Shading normal
+    vec3 ntex; // Normal from texture, scaling is accounted for.
 };
 
 
