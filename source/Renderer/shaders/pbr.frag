@@ -130,7 +130,7 @@ void main()
     float albedoSheenScaling = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
-    vec3 iridescenceFresnel = vec3(0.0);
+    vec3 iridescenceFresnel = materialInfo.f0;
     if (materialInfo.iridescenceFactor > 0.0) {
 #ifdef MATERIAL_CLEARCOAT
         float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
