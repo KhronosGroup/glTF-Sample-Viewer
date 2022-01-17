@@ -420,13 +420,13 @@ vec3 specularTexture = vec3(1.0);
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE
-    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
+    g_finalColor.rgb = linearTosRGB(iridescenceFresnel);
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceFactor));
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_THICKNESS
-    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness));
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness / 1200.0));
 #endif
 #endif
 }
