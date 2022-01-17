@@ -145,7 +145,7 @@ void main()
 
         float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
 
-        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0, materialInfo.metallic);
+        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
     }
 #endif
 
