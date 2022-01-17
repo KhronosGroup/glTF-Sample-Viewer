@@ -113,12 +113,15 @@ NormalInfo getNormalInfo(vec3 v)
 #else
     // Normals are either present as vertex attributes or approximated.
     ng = normalize(v_Normal);
+    t = normalize(t_ - ng * dot(ng, t_));
+    b = cross(ng, t);
 #endif
 #else
     ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
-#endif
     t = normalize(t_ - ng * dot(ng, t_));
     b = cross(ng, t);
+#endif
+
 
     // For a back-facing surface, the tangential basis vectors are negated.
     if (gl_FrontFacing == false)
@@ -128,20 +131,19 @@ NormalInfo getNormalInfo(vec3 v)
         ng *= -1.0;
     }
 
-    // Compute pertubed normals:
-#ifdef HAS_NORMAL_MAP
-    n = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
-    n *= vec3(u_NormalScale, u_NormalScale, 1.0);
-    n = mat3(t, b, ng) * normalize(n);
-#else
-    n = ng;
-#endif
-
+    // Compute normals:
     NormalInfo info;
     info.ng = ng;
+#ifdef HAS_NORMAL_MAP
+    info.ntex = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
+    info.ntex *= vec3(u_NormalScale, u_NormalScale, 1.0);
+    info.ntex = normalize(info.ntex);
+    info.n = normalize(mat3(t, b, ng) * info.ntex);
+#else
+    info.n = ng;
+#endif
     info.t = t;
     info.b = b;
-    info.n = n;
     return info;
 }
 
@@ -215,7 +217,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 #endif
 
     // Achromatic f0 based on IOR.
-    info.c_diff = mix(info.baseColor.rgb * (vec3(1.0) - info.f0),  vec3(0), info.metallic);
+    info.c_diff = mix(info.baseColor.rgb,  vec3(0), info.metallic);
     info.f0 = mix(info.f0, info.baseColor.rgb, info.metallic);
     return info;
 }
@@ -256,7 +258,7 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
     vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
     info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
     info.specularWeight = u_KHR_materials_specular_specularFactor * specularTexture.a;
-    info.c_diff = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
+    info.c_diff = mix(info.baseColor.rgb, vec3(0), info.metallic);
     return info;
 }
 #endif

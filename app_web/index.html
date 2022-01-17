@@ -343,9 +343,10 @@
                             </b-field>
                             <b-field label="Debug Channels" class="smallerLabel">
                                 <b-select v-stream:input="debugchannelChanged$" v-model="debugChannel">
-                                    <option v-for="(item) in debugchannels" v-bind:value="item.title">
-                                        {{ item.title }}
-                                    </option>
+                                    <option v-if="typeof(item.title) == 'string'" v-for="item in debugchannels" v-bind:value="item.title" v-bind:label="item.title"></option>
+                                    <optgroup v-if="typeof(item.title) == 'object'" v-for="item in debugchannels">
+                                        <option v-for="subitem of item.title" v-bind:value="subitem" v-bind:label="subitem"></option>
+                                    </optgroup>
                                 </b-select>
                             </b-field>
                             <label class="smallerLabel">Exposure</label>

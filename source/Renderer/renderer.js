@@ -494,9 +494,10 @@ class gltfRenderer
             this.shader.updateUniform(uniform, val, false);
         }
 
-        for (let i = 0; i < material.textures.length; ++i)
+        let textureIndex = 0;
+        for (; textureIndex < material.textures.length; ++textureIndex)
         {
-            let info = material.textures[i];
+            let info = material.textures[textureIndex];
             const location = this.shader.getUniformLocation(info.samplerName);
 
             if (location < 0)
@@ -504,13 +505,40 @@ class gltfRenderer
                 console.log("Unable to find uniform location of "+info.samplerName);
                 continue; // only skip this texture
             }
-            if (!this.webGl.setTexture(location, state.gltf, info, i)) // binds texture and sampler
+            if (!this.webGl.setTexture(location, state.gltf, info, textureIndex)) // binds texture and sampler
             {
                 return; // skip this material
             }
         }
 
-        let textureCount = material.textures.length;
+        // set the morph target texture
+        if (primitive.morphTargetTextureInfo !== undefined) 
+        {
+            const location = this.shader.getUniformLocation(primitive.morphTargetTextureInfo.samplerName);
+            if (location < 0)
+            {
+                console.log("Unable to find uniform location of " + primitive.morphTargetTextureInfo.samplerName);
+            }
+
+            this.webGl.setTexture(location, state.gltf, primitive.morphTargetTextureInfo, textureIndex); // binds texture and sampler
+            textureIndex++;
+        }
+
+        // set the joints texture
+        if (state.renderingParameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints) 
+        {
+            const skin = state.gltf.skins[node.skin];
+            const location = this.shader.getUniformLocation(skin.jointTextureInfo.samplerName);
+            if (location < 0)
+            {
+                console.log("Unable to find uniform location of " + skin.jointTextureInfo.samplerName);
+            }
+
+            this.webGl.setTexture(location, state.gltf, skin.jointTextureInfo, textureIndex); // binds texture and sampler
+            textureIndex++;
+        }
+
+        let textureCount = textureIndex;
         if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
             textureCount = this.applyEnvironmentMap(state, textureCount);
@@ -579,7 +607,7 @@ class gltfRenderer
         if (state.renderingParameters.skinning && state.gltf.skins !== undefined)
         {
             const skin = state.gltf.skins[node.skin];
-            skin.computeJoints(state.gltf, node);
+            skin.computeJoints(state.gltf, node, this.webGl.context);
         }
     }
 
@@ -588,10 +616,7 @@ class gltfRenderer
         // skinning
         if (parameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
         {
-            const skin = gltf.skins[node.skin];
-
             vertDefines.push("USE_SKINNING 1");
-            vertDefines.push("JOINT_COUNT " + skin.jointMatrices.length);
         }
 
         // morphing
@@ -601,30 +626,20 @@ class gltfRenderer
             if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + Math.min(mesh.getWeightsAnimated().length, 8));
+                vertDefines.push("WEIGHT_COUNT " + mesh.getWeightsAnimated().length);
             }
         }
     }
 
     updateAnimationUniforms(state, node, primitive)
     {
-        if (state.renderingParameters.skinning && node.skin !== undefined && primitive.hasWeights && primitive.hasJoints)
-        {
-            const skin = state.gltf.skins[node.skin];
-
-            this.shader.updateUniform("u_jointMatrix", skin.jointMatrices);
-            if(primitive.hasNormals)
-            {
-                this.shader.updateUniform("u_jointNormalMatrix", skin.jointNormalMatrices);
-            }
-        }
-
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = state.gltf.meshes[node.mesh];
-            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
+            const weightsAnimated = mesh.getWeightsAnimated();
+            if (weightsAnimated !== undefined && weightsAnimated.length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", mesh.getWeightsAnimated());
+                this.shader.updateUniformArray("u_morphWeights", weightsAnimated);
             }
         }
     }
@@ -657,91 +672,58 @@ class gltfRenderer
         default:
             break;
         }
-        
-        fragDefines.push("DEBUG_NONE 0");
-        fragDefines.push("DEBUG_NORMAL 1");
-        fragDefines.push("DEBUG_NORMAL_WORLD 2");
-        fragDefines.push("DEBUG_NORMAL_GEOMETRY 3");
-        fragDefines.push("DEBUG_TANGENT 4");
-        fragDefines.push("DEBUG_BITANGENT 5");
-        fragDefines.push("DEBUG_ROUGHNESS 6");
-        fragDefines.push("DEBUG_METALLIC 7");
-        fragDefines.push("DEBUG_BASE_COLOR_SRGB 8");
-        fragDefines.push("DEBUG_BASE_COLOR_LINEAR 9");
-        fragDefines.push("DEBUG_OCCLUSION 10");
-        fragDefines.push("DEBUG_EMISSIVE_SRGB 11");
-        fragDefines.push("DEBUG_EMISSIVE_LINEAR 12");
-        fragDefines.push("DEBUG_F0 13");
-        fragDefines.push("DEBUG_ALPHA 14");
-        fragDefines.push("DEBUG_DIFFUSE_SRGB 15");
-        fragDefines.push("DEBUG_SPECULAR_SRGB 16");
-        fragDefines.push("DEBUG_CLEARCOAT_SRGB 17");
-        fragDefines.push("DEBUG_SHEEN_SRGB 18");
-        fragDefines.push("DEBUG_TRANSMISSION_SRGB 19");
 
-        switch (state.renderingParameters.debugOutput)
-        {
-        default:
-            fragDefines.push("DEBUG DEBUG_NONE");
-            break;
-        case GltfState.DebugOutput.NORMAL:
-            fragDefines.push("DEBUG DEBUG_NORMAL");
-            break;
-        case GltfState.DebugOutput.WORLDSPACENORMAL:
-            fragDefines.push("DEBUG DEBUG_NORMAL_WORLD");
-            break;
-        case GltfState.DebugOutput.GEOMETRYNORMAL:
-            fragDefines.push("DEBUG DEBUG_NORMAL_GEOMETRY");
-            break;
-        case GltfState.DebugOutput.TANGENT:
-            fragDefines.push("DEBUG DEBUG_TANGENT");
-            break;
-        case GltfState.DebugOutput.BITANGENT:
-            fragDefines.push("DEBUG DEBUG_BITANGENT");
-            break;
-        case GltfState.DebugOutput.ROUGHNESS:
-            fragDefines.push("DEBUG DEBUG_ROUGHNESS");
-            break;
-        case GltfState.DebugOutput.METALLIC:
-            fragDefines.push("DEBUG DEBUG_METALLIC");
-            break;
-        case GltfState.DebugOutput.BASECOLOR:
-            fragDefines.push("DEBUG DEBUG_BASE_COLOR_SRGB");
-            break;
-        case GltfState.DebugOutput.BASECOLOR_LINEAR:
-            fragDefines.push("DEBUG DEBUG_BASE_COLOR_LINEAR");
-            break;
-        case GltfState.DebugOutput.OCCLUSION:
-            fragDefines.push("DEBUG DEBUG_OCCLUSION");
-            break;
-        case GltfState.DebugOutput.EMISSIVE:
-            fragDefines.push("DEBUG DEBUG_EMISSIVE_SRGB");
-            break;
-        case GltfState.DebugOutput.EMISSIVE_LINEAR:
-            fragDefines.push("DEBUG DEBUG_EMISSIVE_LINEAR");
-            break;
-        case GltfState.DebugOutput.F0:
-            fragDefines.push("DEBUG DEBUG_F0");
-            break;
-        case GltfState.DebugOutput.ALPHA:
-            fragDefines.push("DEBUG DEBUG_ALPHA");
-            break;
-        case GltfState.DebugOutput.DIFFUSE:
-            fragDefines.push("DEBUG DEBUG_DIFFUSE_SRGB");
-            break;
-        case GltfState.DebugOutput.SPECULAR:
-            fragDefines.push("DEBUG DEBUG_SPECULAR_SRGB");
-            break;
-        case GltfState.DebugOutput.CLEARCOAT:
-            fragDefines.push("DEBUG DEBUG_CLEARCOAT_SRGB");
-            break;
-        case GltfState.DebugOutput.SHEEN:
-            fragDefines.push("DEBUG DEBUG_SHEEN_SRGB");
-            break;
-        case GltfState.DebugOutput.TRANSMISSION:
-            fragDefines.push("DEBUG DEBUG_TRANSMISSION_SRGB");
-            break;
+        let debugOutputMapping = [
+            {debugOutput: GltfState.DebugOutput.NONE, shaderDefine: "DEBUG_NONE"},
+            
+            {debugOutput: GltfState.DebugOutput.generic.WORLDSPACENORMAL, shaderDefine: "DEBUG_NORMAL_SHADING"},
+            {debugOutput: GltfState.DebugOutput.generic.NORMAL, shaderDefine: "DEBUG_NORMAL_TEXTURE"},
+            {debugOutput: GltfState.DebugOutput.generic.GEOMETRYNORMAL, shaderDefine: "DEBUG_NORMAL_GEOMETRY"},
+            {debugOutput: GltfState.DebugOutput.generic.TANGENT, shaderDefine: "DEBUG_TANGENT"},
+            {debugOutput: GltfState.DebugOutput.generic.BITANGENT, shaderDefine: "DEBUG_BITANGENT"},
+            {debugOutput: GltfState.DebugOutput.generic.ALPHA, shaderDefine: "DEBUG_ALPHA"},
+            {debugOutput: GltfState.DebugOutput.generic.UV_COORDS_0, shaderDefine: "DEBUG_UV_0"},
+            {debugOutput: GltfState.DebugOutput.generic.UV_COORDS_1, shaderDefine: "DEBUG_UV_1"},
+            {debugOutput: GltfState.DebugOutput.generic.OCCLUSION, shaderDefine: "DEBUG_OCCLUSION"},
+            {debugOutput: GltfState.DebugOutput.generic.EMISSIVE, shaderDefine: "DEBUG_EMISSIVE"},
+
+            {debugOutput: GltfState.DebugOutput.mr.METALLIC_ROUGHNESS, shaderDefine: "DEBUG_METALLIC_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.mr.BASECOLOR, shaderDefine: "DEBUG_BASE_COLOR"},
+            {debugOutput: GltfState.DebugOutput.mr.ROUGHNESS, shaderDefine: "DEBUG_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.mr.METALLIC, shaderDefine: "DEBUG_METALLIC"},
+            
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT, shaderDefine: "DEBUG_CLEARCOAT"},
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR, shaderDefine: "DEBUG_CLEARCOAT_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS, shaderDefine: "DEBUG_CLEARCOAT_ROUGHNESS"},
+            {debugOutput: GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL, shaderDefine: "DEBUG_CLEARCOAT_NORMAL"},
+            
+            {debugOutput: GltfState.DebugOutput.sheen.SHEEN, shaderDefine: "DEBUG_SHEEN"},
+            {debugOutput: GltfState.DebugOutput.sheen.SHEEN_COLOR, shaderDefine: "DEBUG_SHEEN_COLOR"},
+            {debugOutput: GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS, shaderDefine: "DEBUG_SHEEN_ROUGHNESS"},
+
+            {debugOutput: GltfState.DebugOutput.specular.SPECULAR, shaderDefine: "DEBUG_SPECULAR"},
+            {debugOutput: GltfState.DebugOutput.specular.SPECULAR_FACTOR, shaderDefine: "DEBUG_SPECULAR_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.specular.SPECULAR_COLOR, shaderDefine: "DEBUG_SPECULAR_COLOR"},
+
+            {debugOutput: GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME, shaderDefine: "DEBUG_TRANSMISSION_VOLUME"},
+            {debugOutput: GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR, shaderDefine: "DEBUG_TRANSMISSION_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.transmission.VOLUME_THICKNESS, shaderDefine: "DEBUG_VOLUME_THICKNESS"},
+        ];
+
+        let mappingCount = 0;
+        let mappingFound = false;
+        for (let mapping of debugOutputMapping) {
+            fragDefines.push(mapping.shaderDefine+" "+mappingCount++);
+            if(state.renderingParameters.debugOutput == mapping.debugOutput){
+                fragDefines.push("DEBUG "+mapping.shaderDefine);
+                mappingFound = true;
+            }
         }
+
+        if(mappingFound == false) { // fallback
+            fragDefines.push("DEBUG DEBUG_NONE");
+        }
+
     }
 
     applyLights(gltf)

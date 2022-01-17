@@ -141,10 +141,8 @@ GltfState containing a state for visualization in GltfView
             * [.TANGENT](#GltfState.DebugOutput.TANGENT)
             * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
             * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
-            * [.BASECOLOR_LINEAR](#GltfState.DebugOutput.BASECOLOR_LINEAR)
             * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
             * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
-            * [.EMISSIVE_LINEAR](#GltfState.DebugOutput.EMISSIVE_LINEAR)
             * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
             * [.SPECULAR](#GltfState.DebugOutput.SPECULAR)
             * [.CLEARCOAT](#GltfState.DebugOutput.CLEARCOAT)
@@ -374,10 +372,8 @@ such as "NORMAL"
     * [.TANGENT](#GltfState.DebugOutput.TANGENT)
     * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
     * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
-    * [.BASECOLOR_LINEAR](#GltfState.DebugOutput.BASECOLOR_LINEAR)
     * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
     * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
-    * [.EMISSIVE_LINEAR](#GltfState.DebugOutput.EMISSIVE_LINEAR)
     * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
     * [.SPECULAR](#GltfState.DebugOutput.SPECULAR)
     * [.CLEARCOAT](#GltfState.DebugOutput.CLEARCOAT)
@@ -440,12 +436,6 @@ output the bitangent from the TBN
 output the base color value
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.BASECOLOR_LINEAR"></a>
-
-#### DebugOutput.BASECOLOR\_LINEAR
-output the linear base color value
-
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
 <a name="GltfState.DebugOutput.OCCLUSION"></a>
 
 #### DebugOutput.OCCLUSION
@@ -456,12 +446,6 @@ output the occlusion value
 
 #### DebugOutput.EMISSIVE
 output the emissive value
-
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.EMISSIVE_LINEAR"></a>
-
-#### DebugOutput.EMISSIVE\_LINEAR
-output the linear emissive value
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
 <a name="GltfState.DebugOutput.DIFFUSE"></a>

@@ -1,6 +1,11 @@
 import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
+import { gltfImage } from './image.js';
+import { ImageMimeType } from './image_mime_type.js';
+import { gltfTexture } from './texture.js';
+import { gltfTextureInfo } from './texture.js';
+import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
@@ -18,6 +23,7 @@ class gltfPrimitive extends GltfObject
 
         // non gltf
         this.glAttributes = [];
+        this.morphTargetTextureInfo = undefined;
         this.defines = [];
         this.skip = true;
         this.hasWeights = false;
@@ -113,42 +119,152 @@ class gltfPrimitive extends GltfObject
         }
 
         // MORPH TARGETS
-        if (this.targets !== undefined)
+        if (this.targets !== undefined && this.targets.length > 0)
         {
-            let i = 0;
-            for (const target of this.targets)
+            const max2DTextureSize = Math.pow(webGlContext.getParameter(GL.MAX_TEXTURE_SIZE), 2);
+            const maxTextureArraySize = webGlContext.getParameter(GL.MAX_ARRAY_TEXTURE_LAYERS);
+            // Check which attributes are affected by morph targets and 
+            // define offsets for the attributes in the morph target texture.
+            const attributeOffsets = {};
+            let attributeOffset = 0;
+
+            // Gather used attributes from all targets (some targets might
+            // use more attributes than others)
+            const attributes = Array.from(this.targets.reduce((acc, target) => {
+                Object.keys(target).map(val => acc.add(val));
+                return acc;
+            }, new Set()));
+
+            const vertexCount = gltf.accessors[this.attributes[attributes[0]]].count;
+            this.defines.push(`NUM_VERTICIES ${vertexCount}`);
+            let targetCount = this.targets.length;
+            if (targetCount * attributes.length > maxTextureArraySize)
             {
-                if(this.glAttributes.length + 3 > maxAttributes)
-                {
-                    console.error("To many vertex attributes for this primitive, skipping target " + i);
-                    break;
-                }
+                targetCount = Math.floor(maxTextureArraySize / attributes.length);
+                console.warn(`Morph targets exceed texture size limit. Only ${targetCount} of ${this.targets.length} are used.`);
+            }
 
-                for (const attribute of Object.keys(target))
-                {
-                    const idx = target[attribute];
-                    const type = gltf.accessors[idx].type;
+            for (const attribute of attributes)
+            {
+                // Add morph target defines
+                this.defines.push(`HAS_MORPH_TARGET_${attribute} 1`);
+                this.defines.push(`MORPH_TARGET_${attribute}_OFFSET ${attributeOffset}`);
+                // Store the attribute offset so that later the 
+                // morph target texture can be assembled.
+                attributeOffsets[attribute] = attributeOffset;
+                attributeOffset += targetCount;
+            }
+            this.defines.push("HAS_MORPH_TARGETS 1");
 
-                    switch (attribute)
-                    {
-                    case "POSITION":
-                        this.defines.push(`HAS_TARGET_POSITION${i}_${type}`);
-                        console.log(`HAS_TARGET_POSITION_${i}_${type}`)
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_position" + i, accessor: idx });
-                        break;
-                    case "NORMAL":
-                        this.defines.push(`HAS_TARGET_NORMAL${i}_${type}`);
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_normal" + i, accessor: idx });
-                        break;
-                    case "TANGENT":
-                        this.defines.push(`HAS_TARGET_TANGENT${i}_${type}`);
-                        this.glAttributes.push({ attribute: attribute, name: "a_target_tangent" + i, accessor: idx });
-                        break;
+            if (vertexCount <= max2DTextureSize) {
+                // Allocate the texture buffer. Note that all target attributes must be vec3 types and
+                // all must have the same vertex count as the primitives other attributes.
+                const width = Math.ceil(Math.sqrt(vertexCount));
+                const singleTextureSize = Math.pow(width, 2) * 4;
+                const morphTargetTextureArray = new Float32Array(singleTextureSize * targetCount * attributes.length);
+
+                // Now assemble the texture from the accessors.
+                for (let i = 0; i < targetCount; ++i)
+                {
+                    let target = this.targets[i];
+                    for (let [attributeName, offsetRef] of Object.entries(attributeOffsets)){
+                        if (target[attributeName] != undefined) {
+                            const accessor = gltf.accessors[target[attributeName]];
+                            const offset = offsetRef * singleTextureSize;
+                            if (accessor.componentType != GL.FLOAT && accessor.normalized == false){
+                                console.warn("Unsupported component type for morph targets");
+                                attributeOffsets[attributeName] = offsetRef + 1;
+                                continue;
+                            }
+                            const data = accessor.getNormalizedDeinterlacedView(gltf);
+                            switch(accessor.type)
+                            {
+                            case "VEC2":
+                            case "VEC3":
+                            {
+                                // Add padding to fit vec2/vec3 into rgba
+                                let paddingOffset = 0;
+                                let accessorOffset = 0;
+                                const componentCount = accessor.getComponentCount(accessor.type);
+                                for (let j = 0; j < accessor.count; ++j) {
+                                    morphTargetTextureArray.set(data.subarray(accessorOffset, accessorOffset + componentCount), offset + paddingOffset);
+                                    paddingOffset += 4;
+                                    accessorOffset += componentCount;
+                                }
+                                break;
+                            }
+                            case "VEC4":
+                                morphTargetTextureArray.set(data, offset);
+                                break;
+                            default:
+                                console.warn("Unsupported attribute type for morph targets");
+                                break;
+                            }
+                        }
+                        attributeOffsets[attributeName] = offsetRef + 1;
                     }
                 }
 
-                ++i;
-            }
+
+                // Add the morph target texture.
+                // We have to create a WebGL2 texture as the format of the
+                // morph target texture has to be explicitly specified 
+                // (gltf image would assume uint8).
+                let texture = webGlContext.createTexture();
+                webGlContext.bindTexture( webGlContext.TEXTURE_2D_ARRAY, texture);
+                // Set texture format and upload data.
+                let internalFormat = webGlContext.RGBA32F;
+                let format = webGlContext.RGBA;
+                let type = webGlContext.FLOAT;
+                let data = morphTargetTextureArray;
+                webGlContext.texImage3D(
+                    webGlContext.TEXTURE_2D_ARRAY,
+                    0, //level
+                    internalFormat,
+                    width,
+                    width,
+                    targetCount * attributes.length, //Layer count
+                    0, //border
+                    format,
+                    type,
+                    data);
+                // Ensure mipmapping is disabled and the sampler is configured correctly.
+                webGlContext.texParameteri( GL.TEXTURE_2D_ARRAY,  GL.TEXTURE_WRAP_S,  GL.CLAMP_TO_EDGE);
+                webGlContext.texParameteri( GL.TEXTURE_2D_ARRAY,  GL.TEXTURE_WRAP_T,  GL.CLAMP_TO_EDGE);
+                webGlContext.texParameteri( GL.TEXTURE_2D_ARRAY,  GL.TEXTURE_MIN_FILTER,  GL.NEAREST);
+                webGlContext.texParameteri( GL.TEXTURE_2D_ARRAY,  GL.TEXTURE_MAG_FILTER,  GL.NEAREST);
+                
+                // Now we add the morph target texture as a gltf texture info resource, so that 
+                // we can just call webGl.setTexture(..., gltfTextureInfo, ...) in the renderer.
+                const morphTargetImage = new gltfImage(
+                    undefined, // uri
+                    GL.TEXTURE_2D_ARRAY, // type
+                    0, // mip level
+                    undefined, // buffer view
+                    undefined, // name
+                    ImageMimeType.GLTEXTURE, // mimeType
+                    texture // image
+                );
+                gltf.images.push(morphTargetImage);
+
+                gltf.samplers.push(new gltfSampler(GL.NEAREST, GL.NEAREST, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, undefined));
+
+                const morphTargetTexture = new gltfTexture(
+                    gltf.samplers.length - 1,
+                    gltf.images.length - 1,
+                    GL.TEXTURE_2D_ARRAY);
+                // The webgl texture is already initialized -> this flag informs
+                // webgl.setTexture about this.
+                morphTargetTexture.initialized = true;
+
+                gltf.textures.push(morphTargetTexture);
+
+                this.morphTargetTextureInfo = new gltfTextureInfo(gltf.textures.length - 1, 0, true);
+                this.morphTargetTextureInfo.samplerName = "u_MorphTargetsSampler";
+                this.morphTargetTextureInfo.generateMips = false;
+            } else {
+                console.warn("Mesh of Morph targets too big. Cannot apply morphing.");
+            }         
         }
 
         this.computeCentroid(gltf);

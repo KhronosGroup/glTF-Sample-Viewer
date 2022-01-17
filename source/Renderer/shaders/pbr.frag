@@ -300,86 +300,133 @@ void main()
 #endif
 
 #else
-    g_finalColor.a = 1.0;
+    // In case of missing data for a debug view, render a magenta stripe pattern.
+    g_finalColor = vec4(1, 0, 1, 1);
+    g_finalColor.rb = vec2(max(2.0 * sin(0.1 * (gl_FragCoord.x + gl_FragCoord.y)), 0.0) + 0.3);
 #endif
 
-#if DEBUG == DEBUG_METALLIC
-    g_finalColor.rgb = vec3(materialInfo.metallic);
-#endif
+    // Debug views:
 
-#if DEBUG == DEBUG_ROUGHNESS
-    g_finalColor.rgb = vec3(materialInfo.perceptualRoughness);
+    // Generic:
+#if DEBUG == DEBUG_UV_0 && defined(HAS_TEXCOORD_0_VEC2)
+    g_finalColor.rgb = vec3(v_texcoord_0, 0);
 #endif
-
-#if DEBUG == DEBUG_NORMAL
-#ifdef HAS_NORMAL_MAP
-    g_finalColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
-#else
-    g_finalColor.rgb = vec3(0.5, 0.5, 1.0);
+#if DEBUG == DEBUG_UV_1 && defined(HAS_TEXCOORD_1_VEC2)
+    g_finalColor.rgb = vec3(v_texcoord_1, 0);
 #endif
+#if DEBUG == DEBUG_NORMAL_TEXTURE && defined(HAS_NORMAL_MAP)
+    g_finalColor.rgb = (normalInfo.ntex + 1.0) / 2.0;
 #endif
-
+#if DEBUG == DEBUG_NORMAL_SHADING
+    g_finalColor.rgb = (n + 1.0) / 2.0;
+#endif
 #if DEBUG == DEBUG_NORMAL_GEOMETRY
     g_finalColor.rgb = (normalInfo.ng + 1.0) / 2.0;
 #endif
-
-#if DEBUG == DEBUG_NORMAL_WORLD
-    g_finalColor.rgb = (n + 1.0) / 2.0;
-#endif
-
 #if DEBUG == DEBUG_TANGENT
-    g_finalColor.rgb = t * 0.5 + vec3(0.5);
+    g_finalColor.rgb = (normalInfo.t + 1.0) / 2.0;
 #endif
-
 #if DEBUG == DEBUG_BITANGENT
-    g_finalColor.rgb = b * 0.5 + vec3(0.5);
+    g_finalColor.rgb = (normalInfo.b + 1.0) / 2.0;
 #endif
-
-#if DEBUG == DEBUG_BASE_COLOR_SRGB
-    g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
+#if DEBUG == DEBUG_ALPHA
+    g_finalColor.rgb = linearTosRGB(vec3(baseColor.a));
 #endif
-
-#if DEBUG == DEBUG_BASE_COLOR_LINEAR
-    g_finalColor.rgb = materialInfo.baseColor;
+#if DEBUG == DEBUG_OCCLUSION && defined(HAS_OCCLUSION_MAP)
+    g_finalColor.rgb = linearTosRGB(vec3(ao));
 #endif
-
-#if DEBUG == DEBUG_OCCLUSION
-    g_finalColor.rgb = vec3(ao);
-#endif
-
-#if DEBUG == DEBUG_F0
-    g_finalColor.rgb = materialInfo.f0;
-#endif
-
-#if DEBUG == DEBUG_EMISSIVE_SRGB
+#if DEBUG == DEBUG_EMISSIVE
     g_finalColor.rgb = linearTosRGB(f_emissive);
 #endif
 
-#if DEBUG == DEBUG_EMISSIVE_LINEAR
-    g_finalColor.rgb = f_emissive;
+    // MR:
+#ifdef MATERIAL_METALLICROUGHNESS
+#if DEBUG == DEBUG_METALLIC_ROUGHNESS
+    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
+#endif
+#if DEBUG == DEBUG_METALLIC
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.metallic));
+#endif
+#if DEBUG == DEBUG_ROUGHNESS
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.perceptualRoughness));
+#endif
+#if DEBUG == DEBUG_BASE_COLOR
+    g_finalColor.rgb = linearTosRGB(materialInfo.baseColor);
+#endif
 #endif
 
-#if DEBUG == DEBUG_SPECULAR_SRGB
-    g_finalColor.rgb = linearTosRGB(f_specular);
-#endif
-
-#if DEBUG == DEBUG_DIFFUSE_SRGB
-    g_finalColor.rgb = linearTosRGB(f_diffuse);
-#endif
-
-#if DEBUG == DEBUG_CLEARCOAT_SRGB
+    // Clearcoat:
+#ifdef MATERIAL_CLEARCOAT
+#if DEBUG == DEBUG_CLEARCOAT
     g_finalColor.rgb = linearTosRGB(f_clearcoat);
 #endif
+#if DEBUG == DEBUG_CLEARCOAT_FACTOR
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.clearcoatFactor));
+#endif
+#if DEBUG == DEBUG_CLEARCOAT_ROUGHNESS
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.clearcoatRoughness));
+#endif
+#if DEBUG == DEBUG_CLEARCOAT_NORMAL
+    g_finalColor.rgb = (materialInfo.clearcoatNormal + vec3(1)) / 2.0;
+#endif
+#endif
 
-#if DEBUG == DEBUG_SHEEN_SRGB
+    // Sheen:
+#ifdef MATERIAL_SHEEN
+#if DEBUG == DEBUG_SHEEN
     g_finalColor.rgb = linearTosRGB(f_sheen);
 #endif
-
-#if DEBUG == DEBUG_TRANSMISSION_SRGB
-    g_finalColor.rgb = linearTosRGB(f_transmission);
+#if DEBUG == DEBUG_SHEEN_COLOR
+    g_finalColor.rgb = linearTosRGB(materialInfo.sheenColorFactor);
+#endif
+#if DEBUG == DEBUG_SHEEN_ROUGHNESS
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.sheenRoughnessFactor));
+#endif
 #endif
 
-#if DEBUG == DEBUG_ALPHA
-    g_finalColor.rgb = vec3(baseColor.a);
+    // Specular:
+#ifdef MATERIAL_SPECULAR
+#if DEBUG == DEBUG_SPECULAR
+    g_finalColor.rgb = linearTosRGB(f_specular);
+#endif
+#if DEBUG == DEBUG_SPECULAR_FACTOR
+    g_finalColor.rgb = vec3(materialInfo.specularWeight);
+#endif
+
+#if DEBUG == DEBUG_SPECULAR_COLOR
+vec3 specularTexture = vec3(1.0);
+#ifdef HAS_SPECULAR_COLOR_MAP
+    specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
+#endif
+    g_finalColor.rgb = u_KHR_materials_specular_specularColorFactor * specularTexture.rgb;
+#endif
+#endif
+
+    // Transmission, Volume:
+#ifdef MATERIAL_TRANSMISSION
+#if DEBUG == DEBUG_TRANSMISSION_VOLUME
+    g_finalColor.rgb = linearTosRGB(f_transmission);
+#endif
+#if DEBUG == DEBUG_TRANSMISSION_FACTOR
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.transmissionFactor));
+#endif
+#endif
+#ifdef MATERIAL_VOLUME
+#if DEBUG == DEBUG_VOLUME_THICKNESS
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.thickness));
+#endif
+#endif
+
+    // Iridescence:
+#ifdef MATERIAL_IRIDESCENCE
+#if DEBUG == DEBUG_IRIDESCENCE
+    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
+#endif
+#if DEBUG == DEBUG_IRIDESCENCE_FACTOR
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceFactor));
+#endif
+#if DEBUG == DEBUG_IRIDESCENCE_THICKNESS
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness));
+#endif
 #endif
 }

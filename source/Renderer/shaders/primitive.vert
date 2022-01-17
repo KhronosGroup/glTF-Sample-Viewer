@@ -49,7 +49,7 @@ vec4 getPosition()
     vec4 pos = vec4(a_position, 1.0);
 
 #ifdef USE_MORPHING
-    pos += getTargetPosition();
+    pos += getTargetPosition(gl_VertexID);
 #endif
 
 #ifdef USE_SKINNING
@@ -66,7 +66,7 @@ vec3 getNormal()
     vec3 normal = a_normal;
 
 #ifdef USE_MORPHING
-    normal += getTargetNormal();
+    normal += getTargetNormal(gl_VertexID);
 #endif
 
 #ifdef USE_SKINNING
@@ -84,7 +84,7 @@ vec3 getTangent()
     vec3 tangent = a_tangent.xyz;
 
 #ifdef USE_MORPHING
-    tangent += getTargetTangent();
+    tangent += getTargetTangent(gl_VertexID);
 #endif
 
 #ifdef USE_SKINNING
@@ -126,8 +126,24 @@ void main()
     v_texcoord_1 = a_texcoord_1;
 #endif
 
-#if defined(HAS_COLOR_0_VEC3) || defined(HAS_COLOR_0_VEC4)
+#ifdef USE_MORPHING
+    v_texcoord_0 += getTargetTexCoord0(gl_VertexID);
+    v_texcoord_1 += getTargetTexCoord1(gl_VertexID);
+#endif
+
+
+#if defined(HAS_COLOR_0_VEC3) 
     v_Color = a_color_0;
+#if defined(USE_MORPHING)
+    v_Color = clamp(v_Color + getTargetColor0(gl_VertexID).xyz, 0.0f, 1.0f);
+#endif
+#endif
+
+#if defined(HAS_COLOR_0_VEC4) 
+    v_Color = a_color_0;
+#if defined(USE_MORPHING)
+    v_Color = clamp(v_Color + getTargetColor0(gl_VertexID), 0.0f, 1.0f);
+#endif
 #endif
 
     gl_Position = u_ViewProjectionMatrix * pos;
