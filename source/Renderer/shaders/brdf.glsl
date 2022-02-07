@@ -13,6 +13,34 @@ vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
     return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
+float F_Schlick(float f0, float f90, float VdotH)
+{
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = x * x2 * x2;
+    return f0 + (f90 - f0) * x5;
+}
+
+float F_Schlick(float f0, float VdotH)
+{
+    float f90 = 1.0; //clamp(50.0 * f0, 0.0, 1.0);
+    return F_Schlick(f0, f90, VdotH);
+}
+
+vec3 F_Schlick(vec3 f0, float f90, float VdotH)
+{
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = x * x2 * x2;
+    return f0 + (f90 - f0) * x5;
+}
+
+vec3 F_Schlick(vec3 f0, float VdotH)
+{
+    float f90 = 1.0; //clamp(dot(f0, vec3(50.0 * 0.33)), 0.0, 1.0);
+    return F_Schlick(f0, f90, VdotH);
+}
+
 
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
