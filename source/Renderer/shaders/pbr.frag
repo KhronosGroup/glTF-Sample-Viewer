@@ -171,7 +171,7 @@ void main()
     f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
-        materialInfo.baseColor, materialInfo.f0, materialInfo.f90,
+        materialInfo.c_diff, materialInfo.f0, materialInfo.f90,
         v_Position, u_ModelMatrix, u_ViewMatrix, u_ProjectionMatrix,
         materialInfo.ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
@@ -243,7 +243,7 @@ void main()
         l = normalize(pointToLight);
 
         vec3 intensity = getLighIntensity(light, pointToLight);
-        vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.baseColor, materialInfo.ior);
+        vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
 
 #ifdef MATERIAL_VOLUME
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
