@@ -45,7 +45,11 @@ void main()
     }
 #endif
     g_finalColor = (vec4(linearTosRGB(baseColor.rgb), baseColor.a));
+
+#if DEBUG == DEBUG_NONE
     return;
+#endif
+
 #endif
 
     vec3 v = normalize(u_Camera - v_Position);
