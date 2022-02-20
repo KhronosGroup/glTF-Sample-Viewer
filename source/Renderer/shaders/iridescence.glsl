@@ -39,7 +39,6 @@ vec3 evalSensitivity(vec3 opd, vec3 shift) {
     return srgb;
 }
 
-// Main function expected by BRDF Explorer
 vec3 evalIridescence(float eta_1, float eta2, float cosTheta1, float Dinc, vec3 baseF0) {
     vec3 I;
 
