@@ -512,7 +512,7 @@ class gltfMaterial extends GltfObject
                 }
                 if (iridescenceIOR === undefined)
                 {
-                    iridescenceIOR = 1.8;
+                    iridescenceIOR = 1.3;
                 }
                 if (thicknessMinimum === undefined)
                 {
