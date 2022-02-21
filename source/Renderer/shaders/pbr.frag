@@ -37,21 +37,6 @@ void main()
     baseColor.a = 1.0;
 #endif
 
-#ifdef MATERIAL_UNLIT
-#if ALPHAMODE == ALPHAMODE_MASK
-    if (baseColor.a < u_AlphaCutoff)
-    {
-        discard;
-    }
-#endif
-    g_finalColor = (vec4(linearTosRGB(baseColor.rgb), baseColor.a));
-
-#if DEBUG == DEBUG_NONE
-    return;
-#endif
-
-#endif
-
     vec3 v = normalize(u_Camera - v_Position);
     NormalInfo normalInfo = getNormalInfo(v);
     vec3 n = normalInfo.n;
@@ -227,8 +212,6 @@ void main()
     f_emissive *= texture(u_EmissiveSampler, getEmissiveUV()).rgb;
 #endif
 
-    vec3 color = vec3(0);
-
     // Layer blending
 
     float clearcoatFactor = 0.0;
@@ -246,9 +229,14 @@ void main()
     vec3 diffuse = f_diffuse;
 #endif
 
+    vec3 color = vec3(0);
+#ifdef MATERIAL_UNLIT
+    color = baseColor.rgb;
+#else
     color = f_emissive + diffuse + f_specular;
     color = f_sheen + color * albedoSheenScaling;
     color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
+#endif
 
 #if DEBUG == DEBUG_NONE
 
