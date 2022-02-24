@@ -127,6 +127,41 @@ vec3 getIBLRadianceLambertian(vec3 n, vec3 v, float roughness, vec3 diffuseColor
 }
 
 
+#ifdef MATERIAL_IRIDESCENCE
+// specularWeight is introduced with KHR_materials_specular
+vec3 getIBLRadianceLambertianIridescence(vec3 n, vec3 v, float roughness, vec3 diffuseColor, vec3 F0, vec3 iridescenceF0, float iridescenceFactor, float specularWeight)
+{
+    float NdotV = clampedDot(n, v);
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, roughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
+
+    vec3 irradiance = getDiffuseLight(n);
+
+    // Use the luminance value of the approximated iridescence F0
+    // Luminance is used instead of the RGB value to not get inverse colors for the diffuse BRDF
+    vec3 iridescenceF0Lum = vec3(0.2126 * iridescenceF0.r + 0.7152 * iridescenceF0.g + 0.0722 * iridescenceF0.b);
+
+    // Blend between base F0 and iridescence F0
+    vec3 mixedF0 = mix(F0, iridescenceF0Lum, iridescenceFactor);
+
+    // see https://bruop.github.io/ibl/#single_scattering_results at Single Scattering Results
+    // Roughness dependent fresnel, from Fdez-Aguera
+
+    vec3 Fr = max(vec3(1.0 - roughness), mixedF0) - mixedF0;
+    vec3 k_S = mixedF0 + Fr * pow(1.0 - NdotV, 5.0);
+    vec3 FssEss = specularWeight * k_S * f_ab.x + f_ab.y; // <--- GGX / specular light contribution (scale it down if the specularWeight is low)
+
+    // Multiple scattering, from Fdez-Aguera
+    float Ems = (1.0 - (f_ab.x + f_ab.y));
+    vec3 F_avg = specularWeight * (mixedF0 + (1.0 - mixedF0) / 21.0);
+    vec3 FmsEms = Ems * FssEss * F_avg / (1.0 - F_avg * Ems);
+    vec3 k_D = diffuseColor * (1.0 - FssEss + FmsEms); // we use +FmsEms as indicated by the formula in the blog post (might be a typo in the implementation)
+
+    return (FmsEms + k_D) * irradiance;
+}
+#endif
+
+
 vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
 {
     float NdotV = clampedDot(n, v);

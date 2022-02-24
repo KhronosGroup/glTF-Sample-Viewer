@@ -41,6 +41,30 @@ vec3 F_Schlick(vec3 f0, float VdotH)
     return F_Schlick(f0, f90, VdotH);
 }
 
+vec3 Schlick_to_F0(vec3 f, vec3 f90, float VdotH) {
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = clamp(x * x2 * x2, 0.0, 0.9999);
+
+    return (f - f90 * x5) / (1.0 - x5);
+}
+
+float Schlick_to_F0(float f, float f90, float VdotH) {
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = clamp(x * x2 * x2, 0.0, 0.9999);
+
+    return (f - f90 * x5) / (1.0 - x5);
+}
+
+vec3 Schlick_to_F0(vec3 f, float VdotH) {
+    return Schlick_to_F0(f, vec3(1.0), VdotH);
+}
+
+float Schlick_to_F0(float f, float VdotH) {
+    return Schlick_to_F0(f, 1.0, VdotH);
+}
+
 
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
@@ -130,6 +154,25 @@ vec3 BRDF_lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float specularWeight,
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
     return (1.0 - specularWeight * F_Schlick(f0, f90, VdotH)) * (diffuseColor / M_PI);
 }
+
+
+#ifdef MATERIAL_IRIDESCENCE
+//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+vec3 BRDF_lambertianIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, float iridescenceFactor, vec3 diffuseColor, float specularWeight, float VdotH)
+{
+    // Use the luminance value of the iridescence Fresnel color
+    // Luminance is used instead of the RGB value to not get inverse colors for the diffuse BRDF
+    vec3 iridescenceFresnelLum = vec3(0.2126 * iridescenceFresnel.r + 0.7152 * iridescenceFresnel.g + 0.0722 * iridescenceFresnel.b);
+
+    vec3 schlickFresnel = F_Schlick(f0, f90, VdotH);
+
+    // Blend default specular Fresnel with iridescence Fresnel
+    vec3 F = mix(schlickFresnel, iridescenceFresnelLum, iridescenceFactor)
+
+    // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+    return (1.0 - specularWeight * F) * (diffuseColor / M_PI);
+}
+#endif
 
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB

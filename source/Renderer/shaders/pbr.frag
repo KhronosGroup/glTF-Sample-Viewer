@@ -136,7 +136,7 @@ void main()
 
 #ifdef MATERIAL_IRIDESCENCE
     vec3 iridescenceFresnel = materialInfo.f0;
-    vec3 iridescenceFresnelMax = materialInfo.f0;
+    vec3 iridescenceF0 = materialInfo.f0;
 
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
@@ -152,7 +152,7 @@ void main()
         float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(outsideIOR));
 
         iridescenceFresnel = evalIridescence(outsideIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
-        iridescenceFresnelMax = vec3(max(max(iridescenceFresnel.r, iridescenceFresnel.g), iridescenceFresnel.b));
+        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, viewAngle);
     }
 #endif
 
@@ -160,7 +160,7 @@ void main()
 #ifdef USE_IBL
 #ifdef MATERIAL_IRIDESCENCE
     f_specular += getIBLRadianceGGXIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.f0, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.specularWeight);
-    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, mix(materialInfo.f0, iridescenceFresnelMax, materialInfo.iridescenceFactor), materialInfo.specularWeight);
+    f_diffuse += getIBLRadianceLambertianIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, iridescenceF0, materialInfo.iridescenceFactor, materialInfo.specularWeight);
 #else
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
@@ -224,7 +224,7 @@ void main()
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
 #ifdef MATERIAL_IRIDESCENCE
-            f_diffuse += intensity * NdotL *  BRDF_lambertian(mix(materialInfo.f0, iridescenceFresnelMax, materialInfo.iridescenceFactor), materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            f_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
 #else
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
