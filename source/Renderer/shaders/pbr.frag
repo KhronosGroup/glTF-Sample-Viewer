@@ -282,7 +282,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
-    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor * (1.0 - materialInfo.metallic));
+    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
 #else
     vec3 diffuse = f_diffuse;
 #endif
