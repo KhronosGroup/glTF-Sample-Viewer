@@ -167,7 +167,7 @@ vec3 BRDF_lambertianIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, floa
     vec3 schlickFresnel = F_Schlick(f0, f90, VdotH);
 
     // Blend default specular Fresnel with iridescence Fresnel
-    vec3 F = mix(schlickFresnel, iridescenceFresnelLum, iridescenceFactor)
+    vec3 F = mix(schlickFresnel, iridescenceFresnelLum, iridescenceFactor);
 
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
     return (1.0 - specularWeight * F) * (diffuseColor / M_PI);
