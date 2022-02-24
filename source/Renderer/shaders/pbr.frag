@@ -143,14 +143,14 @@ void main()
 
     if (materialInfo.iridescenceFactor > 0.0) {
 #ifdef MATERIAL_CLEARCOAT
-        float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
+        float outsideIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
 #else
-        float topIOR = 1.0;
+        float outsideIOR = 1.0;
 #endif
 
-        float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
+        float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(outsideIOR));
 
-        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceFresnel = evalIridescence(outsideIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
     }
 #endif
 
