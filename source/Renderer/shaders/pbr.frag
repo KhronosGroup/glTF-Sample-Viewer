@@ -132,16 +132,8 @@ void main()
     }
 
     if (materialInfo.iridescenceFactor > 0.0) {
-#ifdef MATERIAL_CLEARCOAT
-        float outsideIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
-#else
-        float outsideIOR = 1.0;
-#endif
-
-        float cosTheta1 = sqrt(1.0 - sq(1.0 / outsideIOR) * (1.0 - sq(NdotV)));
-
-        iridescenceFresnel = evalIridescence(outsideIOR, materialInfo.iridescenceIOR, cosTheta1, materialInfo.iridescenceThickness, materialInfo.f0);
-        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, cosTheta1);
+        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIOR, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
     }
 #endif
 
