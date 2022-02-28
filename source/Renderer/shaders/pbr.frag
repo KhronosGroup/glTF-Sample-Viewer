@@ -138,10 +138,10 @@ void main()
         float outsideIOR = 1.0;
 #endif
 
-        float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(outsideIOR));
+        float cosTheta1 = sqrt(1.0 - sq(1.0 / outsideIOR) * (1.0 - sq(NdotV)));
 
-        iridescenceFresnel = evalIridescence(outsideIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
-        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, viewAngle);
+        iridescenceFresnel = evalIridescence(outsideIOR, materialInfo.iridescenceIOR, cosTheta1, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, cosTheta1);
     }
 #endif
 
