@@ -160,14 +160,14 @@ vec3 BRDF_lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float specularWeight,
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 BRDF_lambertianIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, float iridescenceFactor, vec3 diffuseColor, float specularWeight, float VdotH)
 {
-    // Use the luminance value of the iridescence Fresnel color
-    // Luminance is used instead of the RGB value to not get inverse colors for the diffuse BRDF
-    vec3 iridescenceFresnelLum = vec3(0.2126 * iridescenceFresnel.r + 0.7152 * iridescenceFresnel.g + 0.0722 * iridescenceFresnel.b);
+    // Use the maximum component of the iridescence Fresnel color
+    // Maximum is used instead of the RGB value to not get inverse colors for the diffuse BRDF
+    vec3 iridescenceFresnelMax = vec3(max(max(iridescenceFresnel.r, iridescenceFresnel.g), iridescenceFresnel.b));
 
     vec3 schlickFresnel = F_Schlick(f0, f90, VdotH);
 
     // Blend default specular Fresnel with iridescence Fresnel
-    vec3 F = mix(schlickFresnel, iridescenceFresnelLum, iridescenceFactor);
+    vec3 F = mix(schlickFresnel, iridescenceFresnelMax, iridescenceFactor);
 
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
     return (1.0 - specularWeight * F) * (diffuseColor / M_PI);

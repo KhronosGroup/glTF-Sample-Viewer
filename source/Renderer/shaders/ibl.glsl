@@ -137,12 +137,12 @@ vec3 getIBLRadianceLambertianIridescence(vec3 n, vec3 v, float roughness, vec3 d
 
     vec3 irradiance = getDiffuseLight(n);
 
-    // Use the luminance value of the approximated iridescence F0
-    // Luminance is used instead of the RGB value to not get inverse colors for the diffuse BRDF
-    vec3 iridescenceF0Lum = vec3(0.2126 * iridescenceF0.r + 0.7152 * iridescenceF0.g + 0.0722 * iridescenceF0.b);
+    // Use the maximum component of the iridescence Fresnel color
+    // Maximum is used instead of the RGB value to not get inverse colors for the diffuse BRDF
+    vec3 iridescenceF0Max = vec3(max(max(iridescenceF0.r, iridescenceF0.g), iridescenceF0.b));
 
     // Blend between base F0 and iridescence F0
-    vec3 mixedF0 = mix(F0, iridescenceF0Lum, iridescenceFactor);
+    vec3 mixedF0 = mix(F0, iridescenceF0Max, iridescenceFactor);
 
     // see https://bruop.github.io/ibl/#single_scattering_results at Single Scattering Results
     // Roughness dependent fresnel, from Fdez-Aguera
