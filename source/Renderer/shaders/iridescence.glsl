@@ -50,53 +50,51 @@ vec3 evalIridescence(float outsideIOR, float eta2, float cosTheta1, float thinFi
     // Handle TIR:
     float cosTheta2Sq = 1.0 - sinTheta2Sq;
     if (cosTheta2Sq < 0.0) {
-        I = vec3(1.0, 1.0, 1.0);
-    } else {
-        float cosTheta2 = sqrt(cosTheta2Sq);
-
-        // First interface
-        float R0 = IorToFresnel0(iridescenceIOR, outsideIOR);
-        float R12 = F_Schlick(R0, cosTheta1);
-        float R21 = R12;
-        float T121 = 1.0 - R12;
-        float phi12 = 0.0;
-        if (iridescenceIOR < outsideIOR) phi12 = M_PI;
-        float phi21 = M_PI - phi12;
-
-        // Second interface
-        vec3 baseIOR = Fresnel0ToIor(baseF0 + 0.0001); // guard against 1.0
-        vec3 R1 = IorToFresnel0(baseIOR, iridescenceIOR);
-        vec3 R23 = F_Schlick(R1, cosTheta2);
-        vec3 phi23 = vec3(0.0);
-        if (baseIOR[0] < iridescenceIOR) phi23[0] = M_PI;
-        if (baseIOR[1] < iridescenceIOR) phi23[1] = M_PI;
-        if (baseIOR[2] < iridescenceIOR) phi23[2] = M_PI;
-
-        // Phase shift
-        float OPD = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
-        vec3 phi = vec3(phi21) + phi23;
-
-        // Compound terms
-        vec3 R123 = clamp(R12 * R23, 1e-5, 0.9999);
-        vec3 r123 = sqrt(R123);
-        vec3 Rs = sq(T121) * R23 / (vec3(1.0) - R123);
-
-        // Reflectance term for m = 0 (DC term amplitude)
-        vec3 C0 = R12 + Rs;
-        I = C0;
-
-        // Reflectance term for m > 0 (pairs of diracs)
-        vec3 Cm = Rs - T121;
-        for (int m = 1; m <= 2; ++m)
-        {
-            Cm *= r123;
-            vec3 Sm = 2.0 * evalSensitivity(float(m) * OPD, float(m) * phi);
-            I += Cm * Sm;
-        }
-
-        // Since out of gamut colors might be produced, negative color values are clamped to 0.
-        I = max(I, vec3(0.0));
+        return vec3(1.0);
     }
 
-    return I;
+    float cosTheta2 = sqrt(cosTheta2Sq);
+
+    // First interface
+    float R0 = IorToFresnel0(iridescenceIOR, outsideIOR);
+    float R12 = F_Schlick(R0, cosTheta1);
+    float R21 = R12;
+    float T121 = 1.0 - R12;
+    float phi12 = 0.0;
+    if (iridescenceIOR < outsideIOR) phi12 = M_PI;
+    float phi21 = M_PI - phi12;
+
+    // Second interface
+    vec3 baseIOR = Fresnel0ToIor(clamp(baseF0, 0.0, 0.9999)); // guard against 1.0
+    vec3 R1 = IorToFresnel0(baseIOR, iridescenceIOR);
+    vec3 R23 = F_Schlick(R1, cosTheta2);
+    vec3 phi23 = vec3(0.0);
+    if (baseIOR[0] < iridescenceIOR) phi23[0] = M_PI;
+    if (baseIOR[1] < iridescenceIOR) phi23[1] = M_PI;
+    if (baseIOR[2] < iridescenceIOR) phi23[2] = M_PI;
+
+    // Phase shift
+    float OPD = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
+    vec3 phi = vec3(phi21) + phi23;
+
+    // Compound terms
+    vec3 R123 = clamp(R12 * R23, 1e-5, 0.9999);
+    vec3 r123 = sqrt(R123);
+    vec3 Rs = sq(T121) * R23 / (vec3(1.0) - R123);
+
+    // Reflectance term for m = 0 (DC term amplitude)
+    vec3 C0 = R12 + Rs;
+    I = C0;
+
+    // Reflectance term for m > 0 (pairs of diracs)
+    vec3 Cm = Rs - T121;
+    for (int m = 1; m <= 2; ++m)
+    {
+        Cm *= r123;
+        vec3 Sm = 2.0 * evalSensitivity(float(m) * OPD, float(m) * phi);
+        I += Cm * Sm;
+    }
+
+    // Since out of gamut colors might be produced, negative color values are clamped to 0.
+    return max(I, vec3(0.0));
 }
