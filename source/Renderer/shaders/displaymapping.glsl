@@ -14,7 +14,7 @@ vec3 aperture(float lightIn, vec3 colorIn)
 vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma) 
 {  
     vec3 nonlinear;
-    if (any(lessThanEqual (color ,vec3(0.0003024f)))) 
+    if (all(lessThanEqual(color, vec3(0.0003024f)))) 
     {  
         nonlinear = 267.84 * color;  
     }
@@ -29,7 +29,7 @@ vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma)
 vec3 OOTF(vec3 apertureAjustedColor)
 {
 
-    bool framebufferFormatIsSRGB = true;
+    bool framebufferFormatIsSRGB = false;
     bool displayIsSDR = true;
 
     vec3 color;
@@ -51,17 +51,30 @@ vec3 OOTF(vec3 apertureAjustedColor)
     } 
     else 
     {
-        color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, GAMMA);
+        color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
     }
     return color;
+}
+
+
+vec3 BT_2100_OETF(vec3 color) 
+{
+    float m1 = 2610.0/16384.0;
+    float m2 = 2523.0/4096.0 * 128.0;
+    float c1 = 3424.0/4096.0;
+    float c2 = 2413.0/4096.0 * 32.0;
+    float c3 = 2392.0/4096.0 * 32.0;
+
+    vec3 Ypow = pow(color / 10000.0, vec3(m1));
+    return pow((c1 + c2 * Ypow) / (1.0 + c3 * Ypow), vec3(m2)); 
 }
 
 // Called by pbr.fraq
 vec3 displaymapping(vec3 color) 
 {   
-    float lightIn=u_MaxSceneIntensity;
-    vec3 apertureAdjustedColor = aperture(lightIn, color);
+    float lightIn = u_MaxSceneIntensity;
+    vec3 apertureAdjustedColor = aperture(lightIn, color/u_MaxSceneIntensity);
     vec3 ootf = OOTF(apertureAdjustedColor);
-
-    return ootf;
+    vec3 oetf = BT_2100_OETF(ootf);
+    return oetf;
 }
