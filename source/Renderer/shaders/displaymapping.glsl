@@ -72,8 +72,9 @@ vec3 BT_2100_OETF(vec3 color)
 // Called by pbr.fraq
 vec3 displaymapping(vec3 color) 
 {   
+    vec3 colorScaled = color / maxComponent; // 10000 cd/m2 is used as maximum output brightness
     float lightIn = u_MaxSceneIntensity;
-    vec3 apertureAdjustedColor = aperture(lightIn, color/u_MaxSceneIntensity);
+    vec3 apertureAdjustedColor = aperture(lightIn, colorScaled);
     vec3 ootf = OOTF(apertureAdjustedColor);
     vec3 oetf = BT_2100_OETF(ootf);
     return oetf;
