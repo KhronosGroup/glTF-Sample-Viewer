@@ -253,7 +253,13 @@ void main()
 #ifdef LINEAR_OUTPUT
     g_finalColor = vec4(color.rgb, baseColor.a);
 #else
-    g_finalColor = vec4(toneMap(color), baseColor.a);
+
+#ifdef KHR_DISPLAYMAPPING_PQ
+    color = max(displaymapping(color), 0.0);
+    g_finalColor = vec4(color, baseColor.a);
+#else
+    g_finalColor = vec4(toneMap(color), baseColor.a); 
+#endif
 #endif
 
 #else

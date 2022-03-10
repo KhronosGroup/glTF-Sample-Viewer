@@ -70,6 +70,8 @@ class glTF extends GltfObject
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+        this.displaymapping = hasDisplaymappingFromExtension(json.extensions);
+        console.log("this.displaymapping "+this.displaymapping);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -194,6 +196,19 @@ function getJsonVariantsFromExtension(extensions)
         return [];
     }
     return extensions.KHR_materials_variants.variants;
+}
+
+function hasDisplaymappingFromExtension(extensions)
+{
+    if (extensions === undefined)
+    {console.log("extensions ");
+        return false;
+    }
+    if (extensions.KHR_displaymapping_pq === undefined)
+    {console.log("KHR_displaymapping_pq " );
+        return false;
+    }
+    return true;
 }
 
 function enforceVariantsUniqueness(variants)

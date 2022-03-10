@@ -657,6 +657,11 @@ class gltfRenderer
             fragDefines.push("USE_IBL 1");
         }
 
+        if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
+        {
+            fragDefines.push("KHR_DISPLAYMAPPING_PQ 1");
+        }
+
         switch (state.renderingParameters.toneMap)
         {
         case (GltfState.ToneMaps.ACES_NARKOWICZ):
