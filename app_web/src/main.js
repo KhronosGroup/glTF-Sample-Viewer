@@ -215,12 +215,16 @@ async function main()
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
+    uiModel.displaymappingEnabled.subscribe( displaymappingEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_displaymapping_pq = displaymappingEnabled;
+    });
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
     listenForRedraw(uiModel.volumeEnabled);
     listenForRedraw(uiModel.iorEnabled);
     listenForRedraw(uiModel.specularEnabled);
+    listenForRedraw(uiModel.displaymappingEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;

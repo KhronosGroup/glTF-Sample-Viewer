@@ -92,6 +92,7 @@ const app = new Vue({
             volumeEnabled: true,
             iorEnabled: true,
             specularEnabled: true,
+            displaymappingEnabled: true,
 
             activeTab: 0,
             tabsHidden: false,

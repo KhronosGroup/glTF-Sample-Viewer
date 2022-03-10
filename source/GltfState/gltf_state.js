@@ -53,6 +53,8 @@ class GltfState
                 KHR_materials_ior: true,
                 /** KHR_materials_specular allows configuring specular color (f0 color) and amount of specular reflection */
                 KHR_materials_specular: true,
+                /** KHR_displaymapping_pq */
+                KHR_displaymapping_pq: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
