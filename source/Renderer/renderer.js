@@ -12,6 +12,7 @@ import punctualShader from './shaders/punctual.glsl';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from './shaders/tonemapping.glsl';
+import displaymappingShader from './shaders/displaymapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
@@ -46,6 +47,7 @@ class gltfRenderer
         shaderSources.set("ibl.glsl", iblShader);
         shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
+        shaderSources.set("displaymapping.glsl", displaymappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);

@@ -24,6 +24,7 @@ precision highp float;
 #include <punctual.glsl>
 #include <ibl.glsl>
 #include <material_info.glsl>
+#include <displaymapping.glsl>
 
 
 out vec4 g_finalColor;
