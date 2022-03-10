@@ -1,5 +1,5 @@
 // lightIn = max(max(light.r, light.g), light.b)
-float u_MaxSceneIntensity = 10000.0;  // Measured in the scene
+uniform float u_MaxSceneIntensity;  // Measured in the scene
 
 const float maxComponent = 10000.0;
 

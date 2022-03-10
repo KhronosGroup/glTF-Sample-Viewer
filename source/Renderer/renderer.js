@@ -564,6 +564,11 @@ class gltfRenderer
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
         }
 
+        if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
+        {
+            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_MaxSceneIntensity"), state.gltf.maxIntensityValue);
+        }
+
         if (drawIndexed)
         {
             const indexAccessor = state.gltf.accessors[primitive.indices];

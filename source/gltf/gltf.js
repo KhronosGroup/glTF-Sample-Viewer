@@ -71,10 +71,11 @@ class glTF extends GltfObject
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
         this.displaymapping = hasDisplaymappingFromExtension(json.extensions);
-        console.log("this.displaymapping "+this.displaymapping);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
+
+        this.maxIntensityValue = this.computeMaxIntensityValue();
 
         if (json.scenes !== undefined)
         {
@@ -89,6 +90,27 @@ class glTF extends GltfObject
         }
 
         this.computeDisjointAnimations();
+    }
+
+    // Computes indices of animations which are disjoint and can be played simultaneously.
+    computeMaxIntensityValue()
+    {
+        let maxIntensity = 0.0;
+
+        for (const light of this.lights)
+        {
+            let maxComponent = 1.0; //Default value
+            if(light.color !== undefined)
+            {
+                maxComponent = Math.max(Math.max(Math.max(maxComponent, light.color[0]), light.color[1]), light.color[2]);
+            }
+            if(light.intensity !== undefined)
+            {
+                maxComponent *= light.intensity;
+            }
+            maxIntensity = Math.max(maxComponent, maxIntensity);
+        }
+        return maxIntensity;
     }
 
     // Computes indices of animations which are disjoint and can be played simultaneously.
@@ -201,11 +223,11 @@ function getJsonVariantsFromExtension(extensions)
 function hasDisplaymappingFromExtension(extensions)
 {
     if (extensions === undefined)
-    {console.log("extensions ");
+    {
         return false;
     }
     if (extensions.KHR_displaymapping_pq === undefined)
-    {console.log("KHR_displaymapping_pq " );
+    {
         return false;
     }
     return true;
