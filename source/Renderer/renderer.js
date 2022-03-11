@@ -304,7 +304,8 @@ class gltfRenderer
             }
         }
 
-        this.maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights)
+        const maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights)
+        this.apertureFactor = this.aperture(maxSceneIntensity);
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
@@ -574,7 +575,7 @@ class gltfRenderer
 
         if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
         {
-            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_MaxSceneIntensity"), this.maxSceneIntensity);
+            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_ApertureFactor"), this.apertureFactor);
         }
 
         if (drawIndexed)
@@ -618,6 +619,14 @@ class gltfRenderer
         }
         return maxIntensity;
     }
+
+    // Used to calculate aperture factor for KHR_displaymapping_pq
+    aperture(lightIn) {
+        const maxComponent = 10000;
+        const value = Math.min(lightIn, maxComponent); 
+        const factor = value / lightIn;
+        return factor;
+    }	
 
     // returns all lights that are relevant for rendering or the default light if there are none
     getVisibleLights(gltf, scene)

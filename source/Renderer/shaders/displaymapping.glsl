@@ -1,8 +1,9 @@
-// lightIn = max(max(light.r, light.g), light.b)
-uniform float u_MaxSceneIntensity;  // Measured in the scene
+// KHR_displaymapping_pq
+
+
+uniform float u_ApertureFactor;  // Calculated by using max light intensity value of the scene
 
 const float maxComponent = 10000.0;
-
 
 vec3 aperture(float lightIn, vec3 colorIn) 
 {
@@ -56,8 +57,7 @@ vec3 BT_2100_OETF(vec3 color)
 vec3 displaymapping(vec3 color) 
 {   
     vec3 colorScaled = color / maxComponent; // 10000 cd/m2 is used as maximum output brightness
-    float lightIn = u_MaxSceneIntensity;
-    vec3 apertureAdjustedColor = aperture(lightIn, colorScaled);
+    vec3 apertureAdjustedColor = colorScaled * u_ApertureFactor;
     vec3 ootf = OOTF(apertureAdjustedColor);
     vec3 oetf = BT_2100_OETF(ootf);
     return oetf;
