@@ -206,7 +206,7 @@
                                 @click="collapseActiveTab($event, 1)">
                             <h2 class="title  is-spaced">Display</h2>
                             <b-field label="Lighting" class="subtitle">
-                                <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based
+                                <b-switch v-model="ibl" @input="iblTriggered">Image Based
                                 </b-switch>
                                 <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual
                                     Lighting</b-switch>
@@ -388,7 +388,8 @@
                                 <b-switch class="smallerLabel" v-model="iorEnabled">KHR_materials_ior</b-switch>
                                 <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular
                                 </b-switch>
-                                <b-switch class="smallerLabel" v-model="displaymappingEnabled">
+                                <b-switch class="smallerLabel" v-model="displaymappingEnabled"
+                                    v-stream:input="displaymappingChanged$" @input="displaymappingTriggered">
                                     KHR_displaymapping_pq </b-switch>
                             </b-field>
                             <b-field label="Statistics" class="subtitle">

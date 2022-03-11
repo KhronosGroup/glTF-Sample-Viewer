@@ -43,9 +43,9 @@ Vue.component('json-to-ui-template', {
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-        'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
+        'punctualLightsChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
-        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
+        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$","displaymappingChanged$",
         'cameraExport$', 'captureCanvas$'],
     data() {
         return {
@@ -163,6 +163,9 @@ const app = new Vue({
             else{
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
+        },
+        displaymappingTriggered: function(value)
+        {
         },
         collapseActiveTab : function(event, item) {
             if (item === this.activeTab)

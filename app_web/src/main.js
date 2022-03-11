@@ -11,7 +11,6 @@ async function main()
 {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
-    const ui = document.getElementById("app");
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
@@ -72,6 +71,12 @@ async function main()
                         }
                     }
                     state.animationTimer.start();
+
+                    if(state.gltf.displaymapping===true)
+                    {                    
+                        app.ibl = false;
+                        app.iblTriggered();
+                    }
                 }
 
                 uiModel.exitLoadingState();
