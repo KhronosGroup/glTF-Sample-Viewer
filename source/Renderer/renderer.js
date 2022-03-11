@@ -283,8 +283,8 @@ class gltfRenderer
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
-            this.visibleLights.push(this.lightKey);
-            this.visibleLights.push(this.lightFill);
+            this.visibleLights.push(Object.create(this.lightKey));
+            this.visibleLights.push(Object.create(this.lightFill));
 
             if(state.gltf.displaymapping === true)
             {
