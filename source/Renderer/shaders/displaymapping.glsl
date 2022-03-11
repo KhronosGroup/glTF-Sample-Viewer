@@ -1,17 +1,11 @@
 // KHR_displaymapping_pq
 
-
 uniform float u_ApertureFactor;  // Calculated by using max light intensity value of the scene
 
 const float maxComponent = 10000.0;
+const bool displayIsSDR = true;
 
-vec3 aperture(float lightIn, vec3 colorIn) 
-{
-	float value = min(lightIn, maxComponent); 
-	float factor = value / lightIn;
-	return colorIn * factor;
-}	
-
+// Reference PQ OOTF of ITU BT.2100: https://www.itu.int/rec/R-REC-BT.2100/en
 vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma) 
 {  
     vec3 nonlinear = 1.099 * pow(rangeExponent * color, vec3(0.45)) - 0.099;  
@@ -21,9 +15,6 @@ vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma)
 
 vec3 OOTF(vec3 apertureAjustedColor)
 {
-    const bool displayIsSDR = true;
-
-    vec3 color;
     float rangeExponent;
 
     if(displayIsSDR)
@@ -35,12 +26,10 @@ vec3 OOTF(vec3 apertureAjustedColor)
         rangeExponent = 59.5208; // HDR Display
     }
 
-    color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
-
-    return color;
+    return BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
 }
 
-
+// Reference PQ OETF of ITU BT.2100: https://www.itu.int/rec/R-REC-BT.2100/en
 vec3 BT_2100_OETF(vec3 color) 
 {
     float m1 = 2610.0/16384.0;
