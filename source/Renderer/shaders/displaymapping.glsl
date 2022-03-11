@@ -13,24 +13,14 @@ vec3 aperture(float lightIn, vec3 colorIn)
 
 vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma) 
 {  
-    vec3 nonlinear;
-    if (all(lessThanEqual(color, vec3(0.0003024f)))) 
-    {  
-        nonlinear = 267.84 * color;  
-    }
-    else 
-    {  
-        nonlinear = 1.099 * pow(rangeExponent * color, vec3(0.45)) - 0.099;  
-    }  
+    vec3 nonlinear = 1.099 * pow(rangeExponent * color, vec3(0.45)) - 0.099;  
     return 100.0 * pow(nonlinear, vec3(gamma));
 }  
 
 
 vec3 OOTF(vec3 apertureAjustedColor)
 {
-
-    bool framebufferFormatIsSRGB = false;
-    bool displayIsSDR = true;
+    const bool displayIsSDR = true;
 
     vec3 color;
     float rangeExponent;
@@ -44,15 +34,8 @@ vec3 OOTF(vec3 apertureAjustedColor)
         rangeExponent = 59.5208; // HDR Display
     }
 
-    //If framebuffer uses sRGB transfer function the gamma does not need to be applied here
-    if (framebufferFormatIsSRGB) 
-    {
-        color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 1.0);
-    } 
-    else 
-    {
-        color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
-    }
+    color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
+
     return color;
 }
 
