@@ -75,8 +75,6 @@ class glTF extends GltfObject
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
 
-        this.maxIntensityValue = this.computeMaxIntensityValue();
-
         if (json.scenes !== undefined)
         {
             if (json.scene === undefined && json.scenes.length > 0)
@@ -92,26 +90,6 @@ class glTF extends GltfObject
         this.computeDisjointAnimations();
     }
 
-    // Computes indices of animations which are disjoint and can be played simultaneously.
-    computeMaxIntensityValue()
-    {
-        let maxIntensity = 0.0;
-
-        for (const light of this.lights)
-        {
-            let maxComponent = 1.0; //Default value
-            if(light.color !== undefined)
-            {
-                maxComponent = Math.max(Math.max(Math.max(maxComponent, light.color[0]), light.color[1]), light.color[2]);
-            }
-            if(light.intensity !== undefined)
-            {
-                maxComponent *= light.intensity;
-            }
-            maxIntensity = Math.max(maxComponent, maxIntensity);
-        }
-        return maxIntensity;
-    }
 
     // Computes indices of animations which are disjoint and can be played simultaneously.
     computeDisjointAnimations()

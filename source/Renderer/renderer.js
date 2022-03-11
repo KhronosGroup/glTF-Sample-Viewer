@@ -285,6 +285,12 @@ class gltfRenderer
         {
             this.visibleLights.push(this.lightKey);
             this.visibleLights.push(this.lightFill);
+
+            if(state.gltf.displaymapping === true)
+            {
+                this.visibleLights[0].intensity = 7000;
+                this.visibleLights[1].intensity = 100;
+            }
         }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
@@ -297,6 +303,8 @@ class gltfRenderer
                 this.updateSkin(state, node);
             }
         }
+
+        this.maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights)
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
@@ -566,7 +574,7 @@ class gltfRenderer
 
         if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
         {
-            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_MaxSceneIntensity"), state.gltf.maxIntensityValue);
+            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_MaxSceneIntensity"), this.maxSceneIntensity);
         }
 
         if (drawIndexed)
@@ -588,6 +596,27 @@ class gltfRenderer
             }
             this.webGl.context.disableVertexAttribArray(location);
         }
+    }
+
+    // Computes indices of animations which are disjoint and can be played simultaneously.
+    computeMaxIntensityValue(lights)
+    {
+        let maxIntensity = 0.0;
+
+        for (const light of lights)
+        {
+            let maxComponent = 1.0; //Default value
+            if(light.color !== undefined)
+            {
+                maxComponent = Math.max(Math.max(Math.max(maxComponent, light.color[0]), light.color[1]), light.color[2]);
+            }
+            if(light.intensity !== undefined)
+            {
+                maxComponent *= light.intensity;
+            }
+            maxIntensity = Math.max(maxComponent, maxIntensity);
+        }
+        return maxIntensity;
     }
 
     // returns all lights that are relevant for rendering or the default light if there are none
