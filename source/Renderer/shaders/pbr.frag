@@ -25,6 +25,10 @@ precision highp float;
 #include <ibl.glsl>
 #include <material_info.glsl>
 
+#ifdef MATERIAL_IRIDESCENCE
+#include <iridescence.glsl>
+#endif
+
 
 out vec4 g_finalColor;
 
@@ -54,7 +58,12 @@ void main()
     materialInfo.ior = 1.5;
     materialInfo.f0 = vec3(0.04);
     materialInfo.specularWeight = 1.0;
-    
+
+    // If the MR debug output is selected, we have to enforce evaluation of the non-iridescence BRDF functions.
+#if DEBUG == DEBUG_METALLIC_ROUGHNESS
+#undef MATERIAL_IRIDESCENCE
+#endif
+
 #ifdef MATERIAL_IOR
     materialInfo = getIorInfo(materialInfo);
 #endif
@@ -87,6 +96,10 @@ void main()
     materialInfo = getVolumeInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_IRIDESCENCE
+    materialInfo = getIridescenceInfo(materialInfo);
+#endif
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -110,10 +123,29 @@ void main()
 
     float albedoSheenScaling = 1.0;
 
+#ifdef MATERIAL_IRIDESCENCE
+    vec3 iridescenceFresnel = materialInfo.f0;
+    vec3 iridescenceF0 = materialInfo.f0;
+
+    if (materialInfo.iridescenceThickness == 0.0) {
+        materialInfo.iridescenceFactor = 0.0;
+    }
+
+    if (materialInfo.iridescenceFactor > 0.0) {
+        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIOR, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
+    }
+#endif
+
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
+#ifdef MATERIAL_IRIDESCENCE
+    f_specular += getIBLRadianceGGXIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.f0, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.specularWeight);
+    f_diffuse += getIBLRadianceLambertianIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, iridescenceF0, materialInfo.iridescenceFactor, materialInfo.specularWeight);
+#else
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
+#endif
 
 #ifdef MATERIAL_CLEARCOAT
     f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0, 1.0);
@@ -172,8 +204,13 @@ void main()
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
+#ifdef MATERIAL_IRIDESCENCE
+            f_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+#else
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+#endif
 
 #ifdef MATERIAL_SHEEN
             f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
@@ -376,13 +413,13 @@ vec3 specularTexture = vec3(1.0);
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE
-    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
+    g_finalColor.rgb = linearTosRGB(iridescenceFresnel);
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceFactor));
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_THICKNESS
-    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness));
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness / 1200.0));
 #endif
 #endif
 }

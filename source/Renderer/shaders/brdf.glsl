@@ -13,6 +13,58 @@ vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
     return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
+float F_Schlick(float f0, float f90, float VdotH)
+{
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = x * x2 * x2;
+    return f0 + (f90 - f0) * x5;
+}
+
+float F_Schlick(float f0, float VdotH)
+{
+    float f90 = 1.0; //clamp(50.0 * f0, 0.0, 1.0);
+    return F_Schlick(f0, f90, VdotH);
+}
+
+vec3 F_Schlick(vec3 f0, float f90, float VdotH)
+{
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = x * x2 * x2;
+    return f0 + (f90 - f0) * x5;
+}
+
+vec3 F_Schlick(vec3 f0, float VdotH)
+{
+    float f90 = 1.0; //clamp(dot(f0, vec3(50.0 * 0.33)), 0.0, 1.0);
+    return F_Schlick(f0, f90, VdotH);
+}
+
+vec3 Schlick_to_F0(vec3 f, vec3 f90, float VdotH) {
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = clamp(x * x2 * x2, 0.0, 0.9999);
+
+    return (f - f90 * x5) / (1.0 - x5);
+}
+
+float Schlick_to_F0(float f, float f90, float VdotH) {
+    float x = clamp(1.0 - VdotH, 0.0, 1.0);
+    float x2 = x * x;
+    float x5 = clamp(x * x2 * x2, 0.0, 0.9999);
+
+    return (f - f90 * x5) / (1.0 - x5);
+}
+
+vec3 Schlick_to_F0(vec3 f, float VdotH) {
+    return Schlick_to_F0(f, vec3(1.0), VdotH);
+}
+
+float Schlick_to_F0(float f, float VdotH) {
+    return Schlick_to_F0(f, 1.0, VdotH);
+}
+
 
 // Smith Joint GGX
 // Note: Vis = G / (4 * NdotL * NdotV)
@@ -104,6 +156,25 @@ vec3 BRDF_lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float specularWeight,
 }
 
 
+#ifdef MATERIAL_IRIDESCENCE
+//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
+vec3 BRDF_lambertianIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, float iridescenceFactor, vec3 diffuseColor, float specularWeight, float VdotH)
+{
+    // Use the maximum component of the iridescence Fresnel color
+    // Maximum is used instead of the RGB value to not get inverse colors for the diffuse BRDF
+    vec3 iridescenceFresnelMax = vec3(max(max(iridescenceFresnel.r, iridescenceFresnel.g), iridescenceFresnel.b));
+
+    vec3 schlickFresnel = F_Schlick(f0, f90, VdotH);
+
+    // Blend default specular Fresnel with iridescence Fresnel
+    vec3 F = mix(schlickFresnel, iridescenceFresnelMax, iridescenceFactor);
+
+    // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+    return (1.0 - specularWeight * F) * (diffuseColor / M_PI);
+}
+#endif
+
+
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
 vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float specularWeight, float VdotH, float NdotL, float NdotV, float NdotH)
 {
@@ -113,6 +184,18 @@ vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float specularWei
 
     return specularWeight * F * Vis * D;
 }
+
+
+#ifdef MATERIAL_IRIDESCENCE
+vec3 BRDF_specularGGXIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, float alphaRoughness, float iridescenceFactor, float specularWeight, float VdotH, float NdotL, float NdotV, float NdotH)
+{
+    vec3 F = mix(F_Schlick(f0, f90, VdotH), iridescenceFresnel, iridescenceFactor);
+    float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
+    float D = D_GGX(NdotH, alphaRoughness);
+
+    return specularWeight * F * Vis * D;
+}
+#endif
 
 
 // f_sheen

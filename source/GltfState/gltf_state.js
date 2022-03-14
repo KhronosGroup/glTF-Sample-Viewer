@@ -53,6 +53,8 @@ class GltfState
                 KHR_materials_ior: true,
                 /** KHR_materials_specular allows configuring specular color (f0 color) and amount of specular reflection */
                 KHR_materials_specular: true,
+                /** KHR_materials_iridescence adds a thin-film iridescence effect */
+                KHR_materials_iridescence: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
@@ -171,6 +173,13 @@ GltfState.DebugOutput = {
         TRANSMISSION_VOLUME: "Transmission/Volume",
         TRANSMISSION_FACTOR: "Transmission Factor",
         VOLUME_THICKNESS: "Volume Thickness",
+    },
+
+    /** output tranmission lighting */
+    iridescence: {
+        IRIDESCENCE: "Iridescence",
+        IRIDESCENCE_FACTOR: "Iridescence Factor",
+        IRIDESCENCE_THICKNESS: "Iridescence Thickness",
     },
 };
 

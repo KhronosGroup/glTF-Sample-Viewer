@@ -6,6 +6,7 @@ import { EnvironmentRenderer } from './environment_renderer.js'
 
 import pbrShader from './shaders/pbr.frag';
 import brdfShader from './shaders/brdf.glsl';
+import iridescenceShader from './shaders/iridescence.glsl';
 import materialInfoShader from './shaders/material_info.glsl';
 import iblShader from './shaders/ibl.glsl';
 import punctualShader from './shaders/punctual.glsl';
@@ -43,6 +44,7 @@ class gltfRenderer
         shaderSources.set("pbr.frag", pbrShader);
         shaderSources.set("material_info.glsl", materialInfoShader);
         shaderSources.set("brdf.glsl", brdfShader);
+        shaderSources.set("iridescence.glsl", iridescenceShader);
         shaderSources.set("ibl.glsl", iblShader);
         shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
@@ -706,6 +708,10 @@ class gltfRenderer
             {debugOutput: GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME, shaderDefine: "DEBUG_TRANSMISSION_VOLUME"},
             {debugOutput: GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR, shaderDefine: "DEBUG_TRANSMISSION_FACTOR"},
             {debugOutput: GltfState.DebugOutput.transmission.VOLUME_THICKNESS, shaderDefine: "DEBUG_VOLUME_THICKNESS"},
+
+            {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE, shaderDefine: "DEBUG_IRIDESCENCE"},
+            {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR, shaderDefine: "DEBUG_IRIDESCENCE_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS, shaderDefine: "DEBUG_IRIDESCENCE_THICKNESS"},
         ];
 
         let mappingCount = 0;
