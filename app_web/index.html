@@ -360,6 +360,17 @@
                                 <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
                                 <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
                             </b-slider>
+                            <b-tooltip label="If the scene is not illuminated, this light intensity is used instead" multilined position="is-top">
+                            <label class="smallerLabel">Compensatory light intensity</label>
+                            </b-tooltip>
+                            <b-slider v-model="punctualLightsIntensity" :min="0" v-bind:max="4" :step=0.1 :custom-formatter="val => Math.round(Math.pow(10,val))"
+                                class="punctualLightsIntensitySlider" ticks v-stream:input="punctualLightsIntensityChanged$">
+                                <b-slider-tick :value="0" class="punctualLightsIntensitySliderMarker">1</b-slider-tick>
+                                <b-slider-tick :value="1" class="punctualLightsIntensitySliderMarker">10</b-slider-tick>
+                                <b-slider-tick :value="2" class="punctualLightsIntensitySliderMarker">100</b-slider-tick>
+                                <b-slider-tick :value="3" class="punctualLightsIntensitySliderMarker">1000</b-slider-tick>
+                                <b-slider-tick :value="4" class="punctualLightsIntensitySliderMarker">10000</b-slider-tick>
+                            </b-slider>
                             <b-field label="Tone Map" class="smallerLabel">
                                 <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
                                     <option v-for="(item) in tonemaps" v-bind:value="item.title">
