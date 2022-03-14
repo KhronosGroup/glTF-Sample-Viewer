@@ -284,13 +284,9 @@ class gltfRenderer
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
             this.visibleLights.push(Object.create(this.lightKey));
-            this.visibleLights.push(Object.create(this.lightFill));
+            // this.visibleLights.push(Object.create(this.lightFill)); // only use key light
 
-            if(state.gltf.displaymapping === true)
-            {
-                this.visibleLights[0].intensity = 7000;
-                this.visibleLights[1].intensity = 100;
-            }
+            this.visibleLights[0].intensity = state.renderingParameters.punctualLightsIntensity;
         }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
@@ -304,7 +300,7 @@ class gltfRenderer
             }
         }
 
-        const maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights)
+        const maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights);
         this.apertureFactor = this.aperture(maxSceneIntensity);
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.

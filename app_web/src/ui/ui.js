@@ -45,7 +45,7 @@ const app = new Vue({
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'punctualLightsChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
-        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$","displaymappingChanged$",
+        'variantChanged$', 'exposureChanged$', 'punctualLightsIntensityChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$","displaymappingChanged$",
         'cameraExport$', 'captureCanvas$'],
     data() {
         return {
@@ -73,6 +73,7 @@ const app = new Vue({
 
             ibl: true,
             punctualLights: true,
+            punctualLightsIntensity: 0,
             renderEnv: true,
             blurEnv: true,
             clearColor: "",

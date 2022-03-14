@@ -197,6 +197,11 @@ async function main()
     });
     listenForRedraw(uiModel.exposurecompensation);
 
+    uiModel.punctualLightsIntensity.subscribe( punctualLightsIntensity => {
+        state.renderingParameters.punctualLightsIntensity = Math.pow(10, punctualLightsIntensity);
+    });
+    listenForRedraw(uiModel.punctualLightsIntensity);
+
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
         state.renderingParameters.morphing = morphingEnabled;
     });

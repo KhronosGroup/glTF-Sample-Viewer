@@ -64,6 +64,8 @@ class GltfState
             usePunctual: true,
             /** image based lighting */
             useIBL: true,
+            /** correction factor for punctual lights */
+            punctualLightsIntensity: 1.0,
             /** render the environment map in the background */
             renderEnvironmentMap: true,
             /** apply blur to the background environment map */
