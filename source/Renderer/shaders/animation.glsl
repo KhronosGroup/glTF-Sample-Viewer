@@ -63,7 +63,9 @@ mat4 getSkinningMatrix()
         a_weights_1.z * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.z) * 2) +
         a_weights_1.w * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.w) * 2);
 #endif
-
+    if (skin == mat4(0)) { 
+        return mat4(1); 
+    }
     return skin;
 }
 
@@ -87,7 +89,9 @@ mat4 getSkinningNormalMatrix()
         a_weights_1.z * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.z) * 2 + 1) +
         a_weights_1.w * getMatrixFromTexture(u_jointsSampler, int(a_joints_1.w) * 2 + 1);
 #endif
-
+    if (skin == mat4(0)) { 
+        return mat4(1); 
+    }
     return skin;
 }
 
