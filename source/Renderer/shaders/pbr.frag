@@ -245,6 +245,9 @@ void main()
 #endif
 
     f_emissive = u_EmissiveFactor;
+#ifdef MATERIAL_EMISSIVE_STRENGTH
+    f_emissive *= u_EmissiveStrength;
+#endif
 #ifdef HAS_EMISSIVE_MAP
     f_emissive *= texture(u_EmissiveSampler, getEmissiveUV()).rgb;
 #endif

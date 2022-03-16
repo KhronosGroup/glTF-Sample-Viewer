@@ -97,6 +97,8 @@ class UIModel
                                             map( ({ newValue, oldValue }) => newValue));
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
+        this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
