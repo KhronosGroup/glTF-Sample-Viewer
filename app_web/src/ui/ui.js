@@ -45,7 +45,8 @@ const app = new Vue({
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'punctualLightsChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
-        'variantChanged$', 'exposureChanged$', 'punctualLightsIntensityChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$","displaymappingChanged$",
+        'variantChanged$', 'exposureChanged$', 'punctualLightsIntensityChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
+        "displaymappingChanged$","forceDisplaymappingChanged$",
         'cameraExport$', 'captureCanvas$'],
     data() {
         return {
@@ -94,6 +95,7 @@ const app = new Vue({
             iorEnabled: true,
             specularEnabled: true,
             displaymappingEnabled: true,
+            forceDisplaymapping: false,
 
             activeTab: 0,
             tabsHidden: false,
@@ -167,6 +169,13 @@ const app = new Vue({
         },
         displaymappingTriggered: function(value)
         {
+        },
+        forceDisplaymappingTriggered: function(value)
+        {      
+            if(this.forceDisplaymapping == true) {
+                this.ibl = false;
+                this.iblTriggered();
+            }
         },
         collapseActiveTab : function(event, item) {
             if (item === this.activeTab)

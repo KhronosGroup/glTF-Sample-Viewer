@@ -97,6 +97,7 @@ class UIModel
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.displaymappingEnabled = app.displaymappingChanged$.pipe(pluck("event", "msg"));
+        this.forceDisplaymapping = app.forceDisplaymappingChanged$.pipe(pluck("event", "msg"));
         this.iblEnabled = app.$watchAsObservable('ibl').pipe(
                                             map(({ newValue, oldValue }) => newValue));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));

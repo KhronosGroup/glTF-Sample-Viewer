@@ -371,6 +371,10 @@
                                 <b-slider-tick :value="3" class="punctualLightsIntensitySliderMarker">1000</b-slider-tick>
                                 <b-slider-tick :value="4" class="punctualLightsIntensitySliderMarker">10000</b-slider-tick>
                             </b-slider>
+                            <b-switch class="smallerLabel" v-model="forceDisplaymapping"
+                            v-stream:input="forceDisplaymappingChanged$" @input="forceDisplaymappingTriggered">
+                            Force Displaymapping PQ </b-switch>
+                            <br>
                             <b-field label="Tone Map" class="smallerLabel">
                                 <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
                                     <option v-for="(item) in tonemaps" v-bind:value="item.title">
