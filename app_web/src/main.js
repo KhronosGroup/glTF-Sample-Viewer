@@ -228,6 +228,7 @@ async function main()
     listenForRedraw(uiModel.iorEnabled);
     listenForRedraw(uiModel.specularEnabled);
     listenForRedraw(uiModel.iridescenceEnabled);
+    listenForRedraw(uiModel.emissiveStrengthEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
