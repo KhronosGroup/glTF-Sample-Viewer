@@ -47,7 +47,8 @@ vec3 displaymapping(vec3 color)
 {   
     vec3 colorScaled = color / maxComponent; // 10000 cd/m2 is used as maximum output brightness
     vec3 apertureAdjustedColor = colorScaled * u_ApertureFactor;
-    vec3 ootf = OOTF(apertureAdjustedColor);
+    vec3 tonemapped = toneMapLinear(apertureAdjustedColor);
+    vec3 ootf = OOTF(tonemapped);
     vec3 oetf = BT_2100_OETF(ootf);
     return oetf;
 }
