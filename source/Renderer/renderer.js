@@ -573,6 +573,7 @@ class gltfRenderer
             (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.renderingParameters.forceDisplaymapping))
         {
             this.webGl.context.uniform1f(this.shader.getUniformLocation("u_ApertureFactor"), this.apertureFactor);
+            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_RangeExponent"),  46.42); //SDR display
         }
 
         if (drawIndexed)
