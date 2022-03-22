@@ -1,5 +1,6 @@
 # top level directories
 .git/
+.github/
 .vscode/
 app_headless/
 app_web/
@@ -20,4 +21,5 @@ package-lock.json
 npm-debug.log
 yarn.lock
 *.map
+*.log
 
