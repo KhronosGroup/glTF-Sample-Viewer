@@ -300,9 +300,6 @@ class gltfRenderer
             }
         }
 
-        const maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights);
-        this.apertureFactor = this.aperture(maxSceneIntensity);
-
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
             // Render transmission sample texture
@@ -569,13 +566,6 @@ class gltfRenderer
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
         }
 
-        if ((state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping) ||
-            (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.renderingParameters.forceDisplaymapping))
-        {
-            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_ApertureFactor"), this.apertureFactor);
-            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_RangeExponent"),  46.42); //SDR display
-        }
-
         if (drawIndexed)
         {
             const indexAccessor = state.gltf.accessors[primitive.indices];
@@ -596,35 +586,6 @@ class gltfRenderer
             this.webGl.context.disableVertexAttribArray(location);
         }
     }
-
-    // Computes indices of animations which are disjoint and can be played simultaneously.
-    computeMaxIntensityValue(lights)
-    {
-        let maxIntensity = 0.0;
-
-        for (const light of lights)
-        {
-            let maxComponent = 1.0; //Default value
-            if(light.color !== undefined)
-            {
-                maxComponent = Math.max(Math.max(Math.max(maxComponent, light.color[0]), light.color[1]), light.color[2]);
-            }
-            if(light.intensity !== undefined)
-            {
-                maxComponent *= light.intensity;
-            }
-            maxIntensity = Math.max(maxComponent, maxIntensity);
-        }
-        return maxIntensity;
-    }
-
-    // Used to calculate aperture factor for KHR_displaymapping_pq
-    aperture(lightIn) {
-        const maxComponent = 10000;
-        const value = Math.min(lightIn, maxComponent); 
-        const factor = value / lightIn;
-        return factor;
-    }	
 
     // returns all lights that are relevant for rendering or the default light if there are none
     getVisibleLights(gltf, scene)
