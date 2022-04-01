@@ -350,15 +350,14 @@
                                 </b-select>
                             </b-field>
                             <label class="smallerLabel">Exposure</label>
-                            <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333
-                                class="exposureSlider" ticks v-stream:input="exposureChanged$">
-                                <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
-                                <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
-                                <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
-                                <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
-                                <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
-                                <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
-                                <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+
+                            <b-slider v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
+                            :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-stream:input="exposureChanged$">
+                                <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
+                                <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
+                                <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
+                                <b-slider-tick :value="21" class="exposureSliderMarker">0</b-slider-tick>
+
                             </b-slider>
                             <b-field label="Tone Map" class="smallerLabel">
                                 <b-select v-stream:input="tonemapChanged$" v-model="toneMap">

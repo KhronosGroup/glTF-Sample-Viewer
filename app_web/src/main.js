@@ -187,10 +187,10 @@ async function main()
     });
     listenForRedraw(uiModel.skinningEnabled);
 
-    uiModel.exposurecompensation.subscribe( exposurecompensation => {
-        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
+    uiModel.exposure.subscribe( exposure => {
+        state.renderingParameters.exposure = (1.0 / Math.pow(2.0, exposure));
     });
-    listenForRedraw(uiModel.exposurecompensation);
+    listenForRedraw(uiModel.exposure);
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
         state.renderingParameters.morphing = morphingEnabled;
