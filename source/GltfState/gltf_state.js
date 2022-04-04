@@ -55,6 +55,9 @@ class GltfState
                 KHR_materials_specular: true,
                 /** KHR_displaymapping_pq */
                 KHR_displaymapping_pq: true,
+                /** KHR_materials_iridescence adds a thin-film iridescence effect */
+                KHR_materials_iridescence: true,
+                KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
@@ -119,8 +122,11 @@ GltfState.DebugOutput = {
     /** standard rendering - debug output is disabled */
     NONE: "None",
 
+    /** generic debug outputs */
     generic: {
+        /** output the texture coordinates 0 */
         UV_COORDS_0: "Texture Coordinates 0",
+        /** output the texture coordinates 1 */
         UV_COORDS_1: "Texture Coordinates 1",
         /** output the world space normals (i.e. with TBN applied) */
         NORMAL: "Normal Texture",
@@ -140,7 +146,9 @@ GltfState.DebugOutput = {
         EMISSIVE: "Emissive",
     },
 
+    /** output metallic roughness */
     mr: {
+        /** output the combined metallic roughness */
         METALLIC_ROUGHNESS: "Metallic Roughness",
         /** output the base color value */
         BASECOLOR: "Base Color",
@@ -152,31 +160,54 @@ GltfState.DebugOutput = {
 
     /** output clearcoat lighting */
     clearcoat: {
+        /** output the combined clear coat */
         CLEARCOAT: "ClearCoat",
+        /** output the clear coat factor */
         CLEARCOAT_FACTOR: "ClearCoat Factor",
+        /** output the clear coat roughness */
         CLEARCOAT_ROUGHNESS: "ClearCoat Roughness",
+        /** output the clear coat normal */
         CLEARCOAT_NORMAL: "ClearCoat Normal",    
     },
 
     /** output sheen lighting */
     sheen: {
+        /** output the combined sheen */
         SHEEN: "Sheen",
+        /** output the sheen color*/
         SHEEN_COLOR: "Sheen Color",
+        /** output the sheen roughness*/
         SHEEN_ROUGHNESS: "Sheen Roughness",
     },
 
     /** output specular lighting */
     specular: {
+        /** output the combined specular */
         SPECULAR: "Specular",
+        /** output the specular factor*/
         SPECULAR_FACTOR: "Specular Factor",
+        /** output the specular color*/
         SPECULAR_COLOR: "Specular Color",
     },
 
     /** output tranmission lighting */
     transmission: {
+        /** output the combined transmission/volume */
         TRANSMISSION_VOLUME: "Transmission/Volume",
+        /** output the transmission factor*/
         TRANSMISSION_FACTOR: "Transmission Factor",
+        /** output the volume thickness*/
         VOLUME_THICKNESS: "Volume Thickness",
+    },
+
+    /** output tranmission lighting */
+    iridescence: {
+        /** output the combined iridescence */
+        IRIDESCENCE: "Iridescence",
+        /** output the iridescence factor*/
+        IRIDESCENCE_FACTOR: "Iridescence Factor",
+        /** output the iridescence thickness*/
+        IRIDESCENCE_THICKNESS: "Iridescence Thickness",
     },
 };
 

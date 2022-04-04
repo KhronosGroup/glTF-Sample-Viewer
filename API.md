@@ -133,23 +133,43 @@ GltfState containing a state for visualization in GltfView
             * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
         * [.DebugOutput](#GltfState.DebugOutput)
             * [.NONE](#GltfState.DebugOutput.NONE)
-            * [.METALLIC](#GltfState.DebugOutput.METALLIC)
-            * [.ROUGHNESS](#GltfState.DebugOutput.ROUGHNESS)
-            * [.NORMAL](#GltfState.DebugOutput.NORMAL)
-            * [.WORLDSPACENORMAL](#GltfState.DebugOutput.WORLDSPACENORMAL)
-            * [.GEOMETRYNORMAL](#GltfState.DebugOutput.GEOMETRYNORMAL)
-            * [.TANGENT](#GltfState.DebugOutput.TANGENT)
-            * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
-            * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
-            * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
-            * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
-            * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
-            * [.SPECULAR](#GltfState.DebugOutput.SPECULAR)
-            * [.CLEARCOAT](#GltfState.DebugOutput.CLEARCOAT)
-            * [.SHEEN](#GltfState.DebugOutput.SHEEN)
-            * [.TRANSMISSION](#GltfState.DebugOutput.TRANSMISSION)
-            * [.ALPHA](#GltfState.DebugOutput.ALPHA)
-            * [.F0](#GltfState.DebugOutput.F0)
+            * [.generic](#GltfState.DebugOutput.generic)
+                * [.UV_COORDS_0](#GltfState.DebugOutput.generic.UV_COORDS_0)
+                * [.UV_COORDS_1](#GltfState.DebugOutput.generic.UV_COORDS_1)
+                * [.NORMAL](#GltfState.DebugOutput.generic.NORMAL)
+                * [.GEOMETRYNORMAL](#GltfState.DebugOutput.generic.GEOMETRYNORMAL)
+                * [.TANGENT](#GltfState.DebugOutput.generic.TANGENT)
+                * [.BITANGENT](#GltfState.DebugOutput.generic.BITANGENT)
+                * [.WORLDSPACENORMAL](#GltfState.DebugOutput.generic.WORLDSPACENORMAL)
+                * [.ALPHA](#GltfState.DebugOutput.generic.ALPHA)
+                * [.OCCLUSION](#GltfState.DebugOutput.generic.OCCLUSION)
+                * [.EMISSIVE](#GltfState.DebugOutput.generic.EMISSIVE)
+            * [.mr](#GltfState.DebugOutput.mr)
+                * [.METALLIC_ROUGHNESS](#GltfState.DebugOutput.mr.METALLIC_ROUGHNESS)
+                * [.BASECOLOR](#GltfState.DebugOutput.mr.BASECOLOR)
+                * [.METALLIC](#GltfState.DebugOutput.mr.METALLIC)
+                * [.ROUGHNESS](#GltfState.DebugOutput.mr.ROUGHNESS)
+            * [.clearcoat](#GltfState.DebugOutput.clearcoat)
+                * [.CLEARCOAT](#GltfState.DebugOutput.clearcoat.CLEARCOAT)
+                * [.CLEARCOAT_FACTOR](#GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR)
+                * [.CLEARCOAT_ROUGHNESS](#GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS)
+                * [.CLEARCOAT_NORMAL](#GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL)
+            * [.sheen](#GltfState.DebugOutput.sheen)
+                * [.SHEEN](#GltfState.DebugOutput.sheen.SHEEN)
+                * [.SHEEN_COLOR](#GltfState.DebugOutput.sheen.SHEEN_COLOR)
+                * [.SHEEN_ROUGHNESS](#GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS)
+            * [.specular](#GltfState.DebugOutput.specular)
+                * [.SPECULAR](#GltfState.DebugOutput.specular.SPECULAR)
+                * [.SPECULAR_FACTOR](#GltfState.DebugOutput.specular.SPECULAR_FACTOR)
+                * [.SPECULAR_COLOR](#GltfState.DebugOutput.specular.SPECULAR_COLOR)
+            * [.transmission](#GltfState.DebugOutput.transmission)
+                * [.TRANSMISSION_VOLUME](#GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME)
+                * [.TRANSMISSION_FACTOR](#GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR)
+                * [.VOLUME_THICKNESS](#GltfState.DebugOutput.transmission.VOLUME_THICKNESS)
+            * [.iridescence](#GltfState.DebugOutput.iridescence)
+                * [.IRIDESCENCE](#GltfState.DebugOutput.iridescence.IRIDESCENCE)
+                * [.IRIDESCENCE_FACTOR](#GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR)
+                * [.IRIDESCENCE_THICKNESS](#GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS)
 
 <a name="new_GltfState_new"></a>
 
@@ -364,23 +384,43 @@ such as "NORMAL"
 
 * [.DebugOutput](#GltfState.DebugOutput)
     * [.NONE](#GltfState.DebugOutput.NONE)
-    * [.METALLIC](#GltfState.DebugOutput.METALLIC)
-    * [.ROUGHNESS](#GltfState.DebugOutput.ROUGHNESS)
-    * [.NORMAL](#GltfState.DebugOutput.NORMAL)
-    * [.WORLDSPACENORMAL](#GltfState.DebugOutput.WORLDSPACENORMAL)
-    * [.GEOMETRYNORMAL](#GltfState.DebugOutput.GEOMETRYNORMAL)
-    * [.TANGENT](#GltfState.DebugOutput.TANGENT)
-    * [.BITANGENT](#GltfState.DebugOutput.BITANGENT)
-    * [.BASECOLOR](#GltfState.DebugOutput.BASECOLOR)
-    * [.OCCLUSION](#GltfState.DebugOutput.OCCLUSION)
-    * [.EMISSIVE](#GltfState.DebugOutput.EMISSIVE)
-    * [.DIFFUSE](#GltfState.DebugOutput.DIFFUSE)
-    * [.SPECULAR](#GltfState.DebugOutput.SPECULAR)
-    * [.CLEARCOAT](#GltfState.DebugOutput.CLEARCOAT)
-    * [.SHEEN](#GltfState.DebugOutput.SHEEN)
-    * [.TRANSMISSION](#GltfState.DebugOutput.TRANSMISSION)
-    * [.ALPHA](#GltfState.DebugOutput.ALPHA)
-    * [.F0](#GltfState.DebugOutput.F0)
+    * [.generic](#GltfState.DebugOutput.generic)
+        * [.UV_COORDS_0](#GltfState.DebugOutput.generic.UV_COORDS_0)
+        * [.UV_COORDS_1](#GltfState.DebugOutput.generic.UV_COORDS_1)
+        * [.NORMAL](#GltfState.DebugOutput.generic.NORMAL)
+        * [.GEOMETRYNORMAL](#GltfState.DebugOutput.generic.GEOMETRYNORMAL)
+        * [.TANGENT](#GltfState.DebugOutput.generic.TANGENT)
+        * [.BITANGENT](#GltfState.DebugOutput.generic.BITANGENT)
+        * [.WORLDSPACENORMAL](#GltfState.DebugOutput.generic.WORLDSPACENORMAL)
+        * [.ALPHA](#GltfState.DebugOutput.generic.ALPHA)
+        * [.OCCLUSION](#GltfState.DebugOutput.generic.OCCLUSION)
+        * [.EMISSIVE](#GltfState.DebugOutput.generic.EMISSIVE)
+    * [.mr](#GltfState.DebugOutput.mr)
+        * [.METALLIC_ROUGHNESS](#GltfState.DebugOutput.mr.METALLIC_ROUGHNESS)
+        * [.BASECOLOR](#GltfState.DebugOutput.mr.BASECOLOR)
+        * [.METALLIC](#GltfState.DebugOutput.mr.METALLIC)
+        * [.ROUGHNESS](#GltfState.DebugOutput.mr.ROUGHNESS)
+    * [.clearcoat](#GltfState.DebugOutput.clearcoat)
+        * [.CLEARCOAT](#GltfState.DebugOutput.clearcoat.CLEARCOAT)
+        * [.CLEARCOAT_FACTOR](#GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR)
+        * [.CLEARCOAT_ROUGHNESS](#GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS)
+        * [.CLEARCOAT_NORMAL](#GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL)
+    * [.sheen](#GltfState.DebugOutput.sheen)
+        * [.SHEEN](#GltfState.DebugOutput.sheen.SHEEN)
+        * [.SHEEN_COLOR](#GltfState.DebugOutput.sheen.SHEEN_COLOR)
+        * [.SHEEN_ROUGHNESS](#GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS)
+    * [.specular](#GltfState.DebugOutput.specular)
+        * [.SPECULAR](#GltfState.DebugOutput.specular.SPECULAR)
+        * [.SPECULAR_FACTOR](#GltfState.DebugOutput.specular.SPECULAR_FACTOR)
+        * [.SPECULAR_COLOR](#GltfState.DebugOutput.specular.SPECULAR_COLOR)
+    * [.transmission](#GltfState.DebugOutput.transmission)
+        * [.TRANSMISSION_VOLUME](#GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME)
+        * [.TRANSMISSION_FACTOR](#GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR)
+        * [.VOLUME_THICKNESS](#GltfState.DebugOutput.transmission.VOLUME_THICKNESS)
+    * [.iridescence](#GltfState.DebugOutput.iridescence)
+        * [.IRIDESCENCE](#GltfState.DebugOutput.iridescence.IRIDESCENCE)
+        * [.IRIDESCENCE_FACTOR](#GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR)
+        * [.IRIDESCENCE_THICKNESS](#GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS)
 
 <a name="GltfState.DebugOutput.NONE"></a>
 
@@ -388,108 +428,279 @@ such as "NORMAL"
 standard rendering - debug output is disabled
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.METALLIC"></a>
+<a name="GltfState.DebugOutput.generic"></a>
 
-#### DebugOutput.METALLIC
-output the metallic value from pbr metallic roughness
-
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.ROUGHNESS"></a>
-
-#### DebugOutput.ROUGHNESS
-output the roughness value from pbr metallic roughness
+#### DebugOutput.generic
+generic debug outputs
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.NORMAL"></a>
 
-#### DebugOutput.NORMAL
-output the normal map value in TBN space
+* [.generic](#GltfState.DebugOutput.generic)
+    * [.UV_COORDS_0](#GltfState.DebugOutput.generic.UV_COORDS_0)
+    * [.UV_COORDS_1](#GltfState.DebugOutput.generic.UV_COORDS_1)
+    * [.NORMAL](#GltfState.DebugOutput.generic.NORMAL)
+    * [.GEOMETRYNORMAL](#GltfState.DebugOutput.generic.GEOMETRYNORMAL)
+    * [.TANGENT](#GltfState.DebugOutput.generic.TANGENT)
+    * [.BITANGENT](#GltfState.DebugOutput.generic.BITANGENT)
+    * [.WORLDSPACENORMAL](#GltfState.DebugOutput.generic.WORLDSPACENORMAL)
+    * [.ALPHA](#GltfState.DebugOutput.generic.ALPHA)
+    * [.OCCLUSION](#GltfState.DebugOutput.generic.OCCLUSION)
+    * [.EMISSIVE](#GltfState.DebugOutput.generic.EMISSIVE)
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.WORLDSPACENORMAL"></a>
+<a name="GltfState.DebugOutput.generic.UV_COORDS_0"></a>
 
-#### DebugOutput.WORLDSPACENORMAL
+##### generic.UV\_COORDS\_0
+output the texture coordinates 0
+
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.UV_COORDS_1"></a>
+
+##### generic.UV\_COORDS\_1
+output the texture coordinates 1
+
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.NORMAL"></a>
+
+##### generic.NORMAL
 output the world space normals (i.e. with TBN applied)
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.GEOMETRYNORMAL"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.GEOMETRYNORMAL"></a>
 
-#### DebugOutput.GEOMETRYNORMAL
+##### generic.GEOMETRYNORMAL
 output the normal from the TBN
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.TANGENT"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.TANGENT"></a>
 
-#### DebugOutput.TANGENT
+##### generic.TANGENT
 output the tangent from the TBN
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.BITANGENT"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.BITANGENT"></a>
 
-#### DebugOutput.BITANGENT
+##### generic.BITANGENT
 output the bitangent from the TBN
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.BASECOLOR"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.WORLDSPACENORMAL"></a>
 
-#### DebugOutput.BASECOLOR
-output the base color value
+##### generic.WORLDSPACENORMAL
+output the world space normals (i.e. with TBN applied)
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.OCCLUSION"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.ALPHA"></a>
 
-#### DebugOutput.OCCLUSION
+##### generic.ALPHA
+output the alpha value
+
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.OCCLUSION"></a>
+
+##### generic.OCCLUSION
 output the occlusion value
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.EMISSIVE"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.generic.EMISSIVE"></a>
 
-#### DebugOutput.EMISSIVE
+##### generic.EMISSIVE
 output the emissive value
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.DIFFUSE"></a>
+**Kind**: static property of [<code>generic</code>](#GltfState.DebugOutput.generic)  
+<a name="GltfState.DebugOutput.mr"></a>
 
-#### DebugOutput.DIFFUSE
-output diffuse lighting
-
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.SPECULAR"></a>
-
-#### DebugOutput.SPECULAR
-output specular lighting
+#### DebugOutput.mr
+output metallic roughness
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.CLEARCOAT"></a>
 
-#### DebugOutput.CLEARCOAT
+* [.mr](#GltfState.DebugOutput.mr)
+    * [.METALLIC_ROUGHNESS](#GltfState.DebugOutput.mr.METALLIC_ROUGHNESS)
+    * [.BASECOLOR](#GltfState.DebugOutput.mr.BASECOLOR)
+    * [.METALLIC](#GltfState.DebugOutput.mr.METALLIC)
+    * [.ROUGHNESS](#GltfState.DebugOutput.mr.ROUGHNESS)
+
+<a name="GltfState.DebugOutput.mr.METALLIC_ROUGHNESS"></a>
+
+##### mr.METALLIC\_ROUGHNESS
+output the combined metallic roughness
+
+**Kind**: static property of [<code>mr</code>](#GltfState.DebugOutput.mr)  
+<a name="GltfState.DebugOutput.mr.BASECOLOR"></a>
+
+##### mr.BASECOLOR
+output the base color value
+
+**Kind**: static property of [<code>mr</code>](#GltfState.DebugOutput.mr)  
+<a name="GltfState.DebugOutput.mr.METALLIC"></a>
+
+##### mr.METALLIC
+output the metallic value from pbr metallic roughness
+
+**Kind**: static property of [<code>mr</code>](#GltfState.DebugOutput.mr)  
+<a name="GltfState.DebugOutput.mr.ROUGHNESS"></a>
+
+##### mr.ROUGHNESS
+output the roughness value from pbr metallic roughness
+
+**Kind**: static property of [<code>mr</code>](#GltfState.DebugOutput.mr)  
+<a name="GltfState.DebugOutput.clearcoat"></a>
+
+#### DebugOutput.clearcoat
 output clearcoat lighting
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.SHEEN"></a>
 
-#### DebugOutput.SHEEN
+* [.clearcoat](#GltfState.DebugOutput.clearcoat)
+    * [.CLEARCOAT](#GltfState.DebugOutput.clearcoat.CLEARCOAT)
+    * [.CLEARCOAT_FACTOR](#GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR)
+    * [.CLEARCOAT_ROUGHNESS](#GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS)
+    * [.CLEARCOAT_NORMAL](#GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL)
+
+<a name="GltfState.DebugOutput.clearcoat.CLEARCOAT"></a>
+
+##### clearcoat.CLEARCOAT
+output the combined clear coat
+
+**Kind**: static property of [<code>clearcoat</code>](#GltfState.DebugOutput.clearcoat)  
+<a name="GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR"></a>
+
+##### clearcoat.CLEARCOAT\_FACTOR
+output the clear coat factor
+
+**Kind**: static property of [<code>clearcoat</code>](#GltfState.DebugOutput.clearcoat)  
+<a name="GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS"></a>
+
+##### clearcoat.CLEARCOAT\_ROUGHNESS
+output the clear coat roughness
+
+**Kind**: static property of [<code>clearcoat</code>](#GltfState.DebugOutput.clearcoat)  
+<a name="GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL"></a>
+
+##### clearcoat.CLEARCOAT\_NORMAL
+output the clear coat normal
+
+**Kind**: static property of [<code>clearcoat</code>](#GltfState.DebugOutput.clearcoat)  
+<a name="GltfState.DebugOutput.sheen"></a>
+
+#### DebugOutput.sheen
 output sheen lighting
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.TRANSMISSION"></a>
 
-#### DebugOutput.TRANSMISSION
+* [.sheen](#GltfState.DebugOutput.sheen)
+    * [.SHEEN](#GltfState.DebugOutput.sheen.SHEEN)
+    * [.SHEEN_COLOR](#GltfState.DebugOutput.sheen.SHEEN_COLOR)
+    * [.SHEEN_ROUGHNESS](#GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS)
+
+<a name="GltfState.DebugOutput.sheen.SHEEN"></a>
+
+##### sheen.SHEEN
+output the combined sheen
+
+**Kind**: static property of [<code>sheen</code>](#GltfState.DebugOutput.sheen)  
+<a name="GltfState.DebugOutput.sheen.SHEEN_COLOR"></a>
+
+##### sheen.SHEEN\_COLOR
+output the sheen color
+
+**Kind**: static property of [<code>sheen</code>](#GltfState.DebugOutput.sheen)  
+<a name="GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS"></a>
+
+##### sheen.SHEEN\_ROUGHNESS
+output the sheen roughness
+
+**Kind**: static property of [<code>sheen</code>](#GltfState.DebugOutput.sheen)  
+<a name="GltfState.DebugOutput.specular"></a>
+
+#### DebugOutput.specular
+output specular lighting
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+
+* [.specular](#GltfState.DebugOutput.specular)
+    * [.SPECULAR](#GltfState.DebugOutput.specular.SPECULAR)
+    * [.SPECULAR_FACTOR](#GltfState.DebugOutput.specular.SPECULAR_FACTOR)
+    * [.SPECULAR_COLOR](#GltfState.DebugOutput.specular.SPECULAR_COLOR)
+
+<a name="GltfState.DebugOutput.specular.SPECULAR"></a>
+
+##### specular.SPECULAR
+output the combined specular
+
+**Kind**: static property of [<code>specular</code>](#GltfState.DebugOutput.specular)  
+<a name="GltfState.DebugOutput.specular.SPECULAR_FACTOR"></a>
+
+##### specular.SPECULAR\_FACTOR
+output the specular factor
+
+**Kind**: static property of [<code>specular</code>](#GltfState.DebugOutput.specular)  
+<a name="GltfState.DebugOutput.specular.SPECULAR_COLOR"></a>
+
+##### specular.SPECULAR\_COLOR
+output the specular color
+
+**Kind**: static property of [<code>specular</code>](#GltfState.DebugOutput.specular)  
+<a name="GltfState.DebugOutput.transmission"></a>
+
+#### DebugOutput.transmission
 output tranmission lighting
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.ALPHA"></a>
 
-#### DebugOutput.ALPHA
-output the alpha value
+* [.transmission](#GltfState.DebugOutput.transmission)
+    * [.TRANSMISSION_VOLUME](#GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME)
+    * [.TRANSMISSION_FACTOR](#GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR)
+    * [.VOLUME_THICKNESS](#GltfState.DebugOutput.transmission.VOLUME_THICKNESS)
+
+<a name="GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME"></a>
+
+##### transmission.TRANSMISSION\_VOLUME
+output the combined transmission/volume
+
+**Kind**: static property of [<code>transmission</code>](#GltfState.DebugOutput.transmission)  
+<a name="GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR"></a>
+
+##### transmission.TRANSMISSION\_FACTOR
+output the transmission factor
+
+**Kind**: static property of [<code>transmission</code>](#GltfState.DebugOutput.transmission)  
+<a name="GltfState.DebugOutput.transmission.VOLUME_THICKNESS"></a>
+
+##### transmission.VOLUME\_THICKNESS
+output the volume thickness
+
+**Kind**: static property of [<code>transmission</code>](#GltfState.DebugOutput.transmission)  
+<a name="GltfState.DebugOutput.iridescence"></a>
+
+#### DebugOutput.iridescence
+output tranmission lighting
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
-<a name="GltfState.DebugOutput.F0"></a>
 
-#### DebugOutput.F0
-output computed F0
+* [.iridescence](#GltfState.DebugOutput.iridescence)
+    * [.IRIDESCENCE](#GltfState.DebugOutput.iridescence.IRIDESCENCE)
+    * [.IRIDESCENCE_FACTOR](#GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR)
+    * [.IRIDESCENCE_THICKNESS](#GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS)
 
-**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+<a name="GltfState.DebugOutput.iridescence.IRIDESCENCE"></a>
+
+##### iridescence.IRIDESCENCE
+output the combined iridescence
+
+**Kind**: static property of [<code>iridescence</code>](#GltfState.DebugOutput.iridescence)  
+<a name="GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR"></a>
+
+##### iridescence.IRIDESCENCE\_FACTOR
+output the iridescence factor
+
+**Kind**: static property of [<code>iridescence</code>](#GltfState.DebugOutput.iridescence)  
+<a name="GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS"></a>
+
+##### iridescence.IRIDESCENCE\_THICKNESS
+output the iridescence thickness
+
+**Kind**: static property of [<code>iridescence</code>](#GltfState.DebugOutput.iridescence)  
 <a name="ResourceLoader"></a>
 
 ## ResourceLoader

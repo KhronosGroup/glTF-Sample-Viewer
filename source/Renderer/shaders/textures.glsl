@@ -308,3 +308,38 @@ vec2 getThicknessUV()
 }
 
 #endif
+
+
+// Iridescence
+
+
+#ifdef MATERIAL_IRIDESCENCE
+
+uniform sampler2D u_IridescenceSampler;
+uniform int u_IridescenceUVSet;
+uniform mat3 u_IridescenceUVTransform;
+
+uniform sampler2D u_IridescenceThicknessSampler;
+uniform int u_IridescenceThicknessUVSet;
+uniform mat3 u_IridescenceThicknessUVTransform;
+
+
+vec2 getIridescenceUV()
+{
+    vec3 uv = vec3(u_IridescenceUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
+#ifdef HAS_IRIDESCENCE_UV_TRANSFORM
+    uv = u_IridescenceUVTransform * uv;
+#endif
+    return uv.xy;
+}
+
+vec2 getIridescenceThicknessUV()
+{
+    vec3 uv = vec3(u_IridescenceThicknessUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
+#ifdef HAS_IRIDESCENCETHICKNESS_UV_TRANSFORM
+    uv = u_IridescenceThicknessUVTransform * uv;
+#endif
+    return uv.xy;
+}
+
+#endif

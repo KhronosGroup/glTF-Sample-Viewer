@@ -28,7 +28,16 @@ uniform float u_ThicknessFactor;
 uniform vec3 u_AttenuationColor;
 uniform float u_AttenuationDistance;
 
-//PBR Next IOR
+// Iridescence
+uniform float u_IridescenceFactor;
+uniform float u_IridescenceIOR;
+uniform float u_IridescenceThicknessMinimum;
+uniform float u_IridescenceThicknessMaximum;
+
+// Emissive Strength
+uniform float u_EmissiveStrength;
+
+// PBR Next IOR
 uniform float u_Ior;
 
 // Alpha mode
@@ -76,6 +85,11 @@ struct MaterialInfo
     float thickness;
     vec3 attenuationColor;
     float attenuationDistance;
+
+    // KHR_materials_iridescence
+    float iridescenceFactor;
+    float iridescenceIOR;
+    float iridescenceThickness;
 };
 
 
@@ -278,6 +292,28 @@ MaterialInfo getVolumeInfo(MaterialInfo info)
     vec4 thicknessSample = texture(u_ThicknessSampler, getThicknessUV());
     info.thickness *= thicknessSample.g;
 #endif
+    return info;
+}
+#endif
+
+
+#ifdef MATERIAL_IRIDESCENCE
+MaterialInfo getIridescenceInfo(MaterialInfo info)
+{
+    info.iridescenceFactor = u_IridescenceFactor;
+    info.iridescenceIOR = u_IridescenceIOR;
+    info.iridescenceThickness = u_IridescenceThicknessMaximum;
+
+    #ifdef HAS_IRIDESCENCE_MAP
+        info.iridescenceFactor *= texture(u_IridescenceSampler, getIridescenceUV()).r;
+    #endif
+
+    #ifdef HAS_IRIDESCENCE_THICKNESS_MAP
+        float thicknessSampled = texture(u_IridescenceThicknessSampler, getIridescenceThicknessUV()).g;
+        float thickness = mix(u_IridescenceThicknessMinimum, u_IridescenceThicknessMaximum, thicknessSampled);
+        info.iridescenceThickness = thickness;
+    #endif
+
     return info;
 }
 #endif

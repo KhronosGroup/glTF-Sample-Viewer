@@ -222,6 +222,9 @@ async function main()
     uiModel.iorEnabled.subscribe( iorEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_ior = iorEnabled;
     });
+    uiModel.iridescenceEnabled.subscribe( iridescenceEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled;
+    });
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
@@ -231,6 +234,9 @@ async function main()
     uiModel.forceDisplaymapping.subscribe( forceDisplaymapping => {
         state.renderingParameters.forceDisplaymapping = forceDisplaymapping;
     });
+    uiModel.emissiveStrengthEnabled.subscribe( enabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
+    });
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
@@ -239,6 +245,8 @@ async function main()
     listenForRedraw(uiModel.specularEnabled);
     listenForRedraw(uiModel.displaymappingEnabled);
     listenForRedraw(uiModel.forceDisplaymapping);
+    listenForRedraw(uiModel.iridescenceEnabled);
+    listenForRedraw(uiModel.emissiveStrengthEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;

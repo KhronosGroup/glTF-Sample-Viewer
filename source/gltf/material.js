@@ -23,7 +23,9 @@ class gltfMaterial extends GltfObject
         this.hasSheen = false;
         this.hasTransmission = false;
         this.hasIOR = false;
+        this.hasEmissiveStrength = false;
         this.hasVolume = false;
+        this.hasIridescence = false;
 
         // non gltf properties
         this.type = "unlit";
@@ -86,6 +88,14 @@ class gltfMaterial extends GltfObject
         if(this.hasSpecular && renderingParameters.enabledExtensions.KHR_materials_specular)
         {
             defines.push("MATERIAL_SPECULAR 1");
+        }
+        if(this.hasIridescence && renderingParameters.enabledExtensions.KHR_materials_iridescence)
+        {
+            defines.push("MATERIAL_IRIDESCENCE 1");
+        }
+        if(this.hasEmissiveStrength && renderingParameters.enabledExtensions.KHR_materials_emissive_strength)
+        {
+            defines.push("MATERIAL_EMISSIVE_STRENGTH 1");
         }
 
         return defines;
@@ -428,6 +438,16 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_KHR_materials_specular_specularFactor", specularFactor);
             }
 
+            // KHR Extension: Emissive strength
+            if (this.extensions.KHR_materials_emissive_strength !== undefined)
+            {
+                this.hasEmissiveStrength = true;
+
+                let emissiveStrength = this.extensions.KHR_materials_emissive_strength.emissiveStrength ?? 1.0;
+
+                this.properties.set("u_EmissiveStrength", emissiveStrength);
+            }
+
             // KHR Extension: Transmission
             if (this.extensions.KHR_materials_transmission !== undefined)
             {
@@ -488,6 +508,62 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_AttenuationColor", attenuationColor);
                 this.properties.set("u_AttenuationDistance", attenuationDistance);
                 this.properties.set("u_ThicknessFactor", thicknessFactor);
+            }
+
+            // KHR Extension: Iridescence
+            // See https://github.com/ux3d/glTF/tree/extensions/KHR_materials_iridescence/extensions/2.0/Khronos/KHR_materials_iridescence
+            if(this.extensions.KHR_materials_iridescence !== undefined)
+            {
+                this.hasIridescence = true;
+
+                let factor = this.extensions.KHR_materials_iridescence.iridescenceFactor;
+                let iridescenceIOR = this.extensions.KHR_materials_iridescence.iridescenceIOR;
+                let thicknessMinimum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMinimum;
+                let thicknessMaximum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMaximum;
+
+                if (factor === undefined)
+                {
+                    factor = 0.0;
+                }
+                if (iridescenceIOR === undefined)
+                {
+                    iridescenceIOR = 1.3;
+                }
+                if (thicknessMinimum === undefined)
+                {
+                    thicknessMinimum = 100.0;
+                }
+                if (thicknessMaximum === undefined)
+                {
+                    thicknessMaximum = 400.0;
+                }
+
+                if (this.iridescenceTexture !== undefined)
+                {
+                    this.iridescenceTexture.samplerName = "u_IridescenceSampler";
+                    this.parseTextureInfoExtensions(this.iridescenceTexture, "Iridescence");
+                    this.textures.push(this.iridescenceTexture);
+                    this.defines.push("HAS_IRIDESCENCE_MAP 1");
+                    this.properties.set("u_IridescenceUVSet", this.iridescenceTexture.texCoord);
+                }
+
+                if (this.iridescenceThicknessTexture !== undefined)
+                {
+                    this.iridescenceThicknessTexture.samplerName = "u_IridescenceThicknessSampler";
+                    this.parseTextureInfoExtensions(this.iridescenceThicknessTexture, "IridescenceThickness");
+                    this.textures.push(this.iridescenceThicknessTexture);
+                    this.defines.push("HAS_IRIDESCENCE_THICKNESS_MAP 1");
+                    this.properties.set("u_IridescenceThicknessUVSet", this.iridescenceThicknessTexture.texCoord);
+
+                    // The thickness minimum is only required when there is a thickness texture present.
+                    // Because 1.0 is the default value for the thickness, no texture implies that only the
+                    // maximum thickness is ever read in the shader.
+                    this.properties.set("u_IridescenceThicknessMinimum", thicknessMinimum);
+                }
+
+                this.properties.set("u_IridescenceFactor", factor);
+                this.properties.set("u_IridescenceIOR", iridescenceIOR);
+                this.properties.set("u_IridescenceThicknessMaximum", thicknessMaximum);
             }
         }
 
@@ -572,6 +648,11 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_volume !== undefined)
         {
             this.fromJsonVolume(jsonExtensions.KHR_materials_volume);
+        }
+
+        if(jsonExtensions.KHR_materials_iridescence !== undefined)
+        {
+            this.fromJsonIridescence(jsonExtensions.KHR_materials_iridescence);
         }
     }
 
@@ -683,6 +764,23 @@ class gltfMaterial extends GltfObject
             const thicknessTexture = new gltfTextureInfo();
             thicknessTexture.fromJson(jsonVolume.thicknessTexture);
             this.thicknessTexture = thicknessTexture;
+        }
+    }
+
+    fromJsonIridescence(jsonIridescence)
+    {
+        if(jsonIridescence.iridescenceTexture !== undefined)
+        {
+            const iridescenceTexture = new gltfTextureInfo();
+            iridescenceTexture.fromJson(jsonIridescence.iridescenceTexture);
+            this.iridescenceTexture = iridescenceTexture;
+        }
+
+        if(jsonIridescence.iridescenceThicknessTexture !== undefined)
+        {
+            const iridescenceThicknessTexture = new gltfTextureInfo();
+            iridescenceThicknessTexture.fromJson(jsonIridescence.iridescenceThicknessTexture);
+            this.iridescenceThicknessTexture = iridescenceThicknessTexture;
         }
     }
 }
