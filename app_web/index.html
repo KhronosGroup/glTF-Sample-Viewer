@@ -206,7 +206,7 @@
                                 @click="collapseActiveTab($event, 1)">
                             <h2 class="title  is-spaced">Display</h2>
                             <b-field label="Lighting" class="subtitle">
-                                <b-switch v-model="ibl" v-stream:input="iblChanged$" @input="iblTriggered">Image Based
+                                <b-switch v-model="ibl" @input="iblTriggered">Image Based
                                 </b-switch>
                                 <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual
                                     Lighting</b-switch>
@@ -360,6 +360,21 @@
                                 <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
                                 <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
                             </b-slider>
+                            <b-tooltip label="If the scene is not illuminated, this light intensity is used instead" multilined position="is-top">
+                            <label class="smallerLabel">Compensatory light intensity</label>
+                            </b-tooltip>
+                            <b-slider v-model="punctualLightsIntensity" :min="0" v-bind:max="4" :step=0.1 :custom-formatter="val => Math.round(Math.pow(10,val))"
+                                class="punctualLightsIntensitySlider" ticks v-stream:input="punctualLightsIntensityChanged$">
+                                <b-slider-tick :value="0" class="punctualLightsIntensitySliderMarker">1</b-slider-tick>
+                                <b-slider-tick :value="1" class="punctualLightsIntensitySliderMarker">10</b-slider-tick>
+                                <b-slider-tick :value="2" class="punctualLightsIntensitySliderMarker">100</b-slider-tick>
+                                <b-slider-tick :value="3" class="punctualLightsIntensitySliderMarker">1000</b-slider-tick>
+                                <b-slider-tick :value="4" class="punctualLightsIntensitySliderMarker">10000</b-slider-tick>
+                            </b-slider>
+                            <b-switch class="smallerLabel" v-model="forceDisplaymapping"
+                            v-stream:input="forceDisplaymappingChanged$" @input="forceDisplaymappingTriggered">
+                            Force Displaymapping PQ </b-switch>
+                            <br>
                             <b-field label="Tone Map" class="smallerLabel">
                                 <b-select v-stream:input="tonemapChanged$" v-model="toneMap">
                                     <option v-for="(item) in tonemaps" v-bind:value="item.title">
@@ -386,7 +401,11 @@
                                     v-bind:disabled="transmissionEnabled === false ? true : false"
                                     v-model="volumeEnabled">KHR_materials_volume</b-switch>
                                 <b-switch class="smallerLabel" v-model="iorEnabled">KHR_materials_ior</b-switch>
-                                <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular</b-switch>
+                                <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular
+                                </b-switch>
+                                <b-switch class="smallerLabel" v-model="displaymappingEnabled"
+                                    v-stream:input="displaymappingChanged$" @input="displaymappingTriggered">
+                                    KHR_displaymapping_pq </b-switch>
                                 <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled">KHR_materials_emissive_strength</b-switch>
                                 <b-switch class="smallerLabel" v-model="iridescenceEnabled">KHR_materials_iridescence</b-switch>
                             </b-field>

@@ -70,6 +70,7 @@ class glTF extends GltfObject
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+        this.displaymapping = hasDisplaymappingFromExtension(json.extensions);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -88,6 +89,7 @@ class glTF extends GltfObject
 
         this.computeDisjointAnimations();
     }
+
 
     // Computes indices of animations which are disjoint and can be played simultaneously.
     computeDisjointAnimations()
@@ -194,6 +196,19 @@ function getJsonVariantsFromExtension(extensions)
         return [];
     }
     return extensions.KHR_materials_variants.variants;
+}
+
+function hasDisplaymappingFromExtension(extensions)
+{
+    if (extensions === undefined)
+    {
+        return false;
+    }
+    if (extensions.KHR_displaymapping_pq === undefined)
+    {
+        return false;
+    }
+    return true;
 }
 
 function enforceVariantsUniqueness(variants)

@@ -11,7 +11,6 @@ async function main()
 {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
-    const ui = document.getElementById("app");
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
@@ -72,6 +71,12 @@ async function main()
                         }
                     }
                     state.animationTimer.start();
+
+                    if(state.gltf.displaymapping===true)
+                    {                    
+                        app.ibl = false;
+                        app.iblTriggered();
+                    }
                 }
 
                 uiModel.exitLoadingState();
@@ -192,6 +197,11 @@ async function main()
     });
     listenForRedraw(uiModel.exposurecompensation);
 
+    uiModel.punctualLightsIntensity.subscribe( punctualLightsIntensity => {
+        state.renderingParameters.punctualLightsIntensity = Math.pow(10, punctualLightsIntensity);
+    });
+    listenForRedraw(uiModel.punctualLightsIntensity);
+
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
         state.renderingParameters.morphing = morphingEnabled;
     });
@@ -218,6 +228,12 @@ async function main()
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
+    uiModel.displaymappingEnabled.subscribe( displaymappingEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_displaymapping_pq = displaymappingEnabled;
+    });
+    uiModel.forceDisplaymapping.subscribe( forceDisplaymapping => {
+        state.renderingParameters.forceDisplaymapping = forceDisplaymapping;
+    });
     uiModel.emissiveStrengthEnabled.subscribe( enabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
     });
@@ -227,6 +243,8 @@ async function main()
     listenForRedraw(uiModel.volumeEnabled);
     listenForRedraw(uiModel.iorEnabled);
     listenForRedraw(uiModel.specularEnabled);
+    listenForRedraw(uiModel.displaymappingEnabled);
+    listenForRedraw(uiModel.forceDisplaymapping);
     listenForRedraw(uiModel.iridescenceEnabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 

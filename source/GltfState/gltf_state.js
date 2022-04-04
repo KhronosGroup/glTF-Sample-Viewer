@@ -53,6 +53,8 @@ class GltfState
                 KHR_materials_ior: true,
                 /** KHR_materials_specular allows configuring specular color (f0 color) and amount of specular reflection */
                 KHR_materials_specular: true,
+                /** KHR_displaymapping_pq */
+                KHR_displaymapping_pq: true,
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
                 KHR_materials_emissive_strength: true,
@@ -65,6 +67,8 @@ class GltfState
             usePunctual: true,
             /** image based lighting */
             useIBL: true,
+            /** correction factor for punctual lights */
+            punctualLightsIntensity: 1.0,
             /** render the environment map in the background */
             renderEnvironmentMap: true,
             /** apply blur to the background environment map */
@@ -84,6 +88,8 @@ class GltfState
             environmentRotation: 90.0,
             /** If this is set to true, directional lights will be generated if IBL is disabled */
             useDirectionalLightsWithDisabledIBL: false,
+            /** Enables KHR_displaymapping_pq even though the extension is not set in the glTF */
+            forceDisplaymapping: false,
             /** MSAA used for cases which are not handled by the browser (e.g. Transmission)*/
             internalMSAA: 4
         };

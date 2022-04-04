@@ -84,6 +84,7 @@ class UIModel
         );
 
         this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
+        this.punctualLightsIntensity = app.punctualLightsIntensityChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
@@ -97,9 +98,12 @@ class UIModel
                                             map( ({ newValue, oldValue }) => newValue));
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
+        this.displaymappingEnabled = app.displaymappingChanged$.pipe(pluck("event", "msg"));
+        this.forceDisplaymapping = app.forceDisplaymappingChanged$.pipe(pluck("event", "msg"));
+        this.iblEnabled = app.$watchAsObservable('ibl').pipe(
+                                            map(({ newValue, oldValue }) => newValue));
         this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
-        this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
                                             map( ({ newValue, oldValue }) => newValue));

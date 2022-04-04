@@ -43,9 +43,10 @@ Vue.component('json-to-ui-template', {
 const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-        'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
+        'punctualLightsChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
-        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
+        'variantChanged$', 'exposureChanged$', 'punctualLightsIntensityChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
+        "displaymappingChanged$","forceDisplaymappingChanged$",
         'cameraExport$', 'captureCanvas$'],
     data() {
         return {
@@ -73,6 +74,7 @@ const app = new Vue({
 
             ibl: true,
             punctualLights: true,
+            punctualLightsIntensity: 0,
             renderEnv: true,
             blurEnv: true,
             clearColor: "",
@@ -93,6 +95,8 @@ const app = new Vue({
             iorEnabled: true,
             iridescenceEnabled: true,
             specularEnabled: true,
+            displaymappingEnabled: true,
+            forceDisplaymapping: false,
             emissiveStrengthEnabled: true,
 
             activeTab: 0,
@@ -163,6 +167,16 @@ const app = new Vue({
             }
             else{
                 this.volumeEnabled = this.volumeEnabledPrefState;
+            }
+        },
+        displaymappingTriggered: function(value)
+        {
+        },
+        forceDisplaymappingTriggered: function(value)
+        {      
+            if(this.forceDisplaymapping == true) {
+                this.ibl = false;
+                this.iblTriggered();
             }
         },
         collapseActiveTab : function(event, item) {

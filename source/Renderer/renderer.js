@@ -13,6 +13,7 @@ import punctualShader from './shaders/punctual.glsl';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from './shaders/tonemapping.glsl';
+import displaymappingShader from './shaders/displaymapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
@@ -48,6 +49,7 @@ class gltfRenderer
         shaderSources.set("ibl.glsl", iblShader);
         shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
+        shaderSources.set("displaymapping.glsl", displaymappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
@@ -283,8 +285,10 @@ class gltfRenderer
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
-            this.visibleLights.push(this.lightKey);
-            this.visibleLights.push(this.lightFill);
+            this.visibleLights.push(Object.create(this.lightKey));
+            // this.visibleLights.push(Object.create(this.lightFill)); // only use key light
+
+            this.visibleLights[0].intensity = state.renderingParameters.punctualLightsIntensity;
         }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
@@ -655,6 +659,12 @@ class gltfRenderer
         if (state.renderingParameters.useIBL && state.environment)
         {
             fragDefines.push("USE_IBL 1");
+        }
+
+        if ((state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping) ||
+            (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.renderingParameters.forceDisplaymapping))
+        {
+            fragDefines.push("KHR_DISPLAYMAPPING_PQ 1");
         }
 
         switch (state.renderingParameters.toneMap)
