@@ -100,6 +100,7 @@ class UIModel
         this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
+        this.iblIntensity = app.iblIntensityChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
                                             map( ({ newValue, oldValue }) => newValue));

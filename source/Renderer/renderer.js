@@ -763,6 +763,8 @@ class gltfRenderer
         mat3.fromMat4(rotMatrix3, rotMatrix4);
         this.shader.updateUniform("u_EnvRotation", rotMatrix3);
 
+        this.shader.updateUniform("u_EnvIntensity", state.renderingParameters.iblIntensity);
+
         return texSlotOffset;
     }
 

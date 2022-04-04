@@ -235,6 +235,11 @@ async function main()
     });
     listenForRedraw(uiModel.iblEnabled);
 
+    uiModel.iblIntensity.subscribe( iblIntensity => {
+        state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity);
+    });
+    listenForRedraw(uiModel.iblIntensity);
+
     uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
         state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
     });
