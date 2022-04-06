@@ -157,7 +157,7 @@ void main()
 #endif
 
 #if defined(MATERIAL_TRANSMISSION) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
-    f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
+    f_transmission += getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
         materialInfo.c_diff, materialInfo.f0, materialInfo.f90,
@@ -239,7 +239,7 @@ void main()
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
-        f_transmission += materialInfo.transmissionFactor * transmittedLight;
+        f_transmission += transmittedLight;
 #endif
     }
 #endif
