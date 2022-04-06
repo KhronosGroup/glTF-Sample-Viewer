@@ -83,7 +83,7 @@ class UIModel
             startWith(GltfState.DebugOutput.NONE)
         );
 
-        this.exposurecompensation = app.exposureChanged$.pipe(pluck("event", "msg"));
+        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
         this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
@@ -100,6 +100,7 @@ class UIModel
         this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
+        this.iblIntensity = app.iblIntensityChanged$.pipe(pluck("event", "msg"));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
                                             map( ({ newValue, oldValue }) => newValue));

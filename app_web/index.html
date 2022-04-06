@@ -211,6 +211,15 @@
                                 <b-switch v-model="punctualLights" v-stream:input="punctualLightsChanged$">Punctual
                                     Lighting</b-switch>
                             </b-field>
+                            <b-field label="IBL Intensity" class="smallerLabel">
+                                <b-slider rounded v-model="iblIntensity" :min="-2" v-bind:max="5" :step=0.01 :custom-formatter="val => Math.round(Math.pow(10,val)*100.0)/100.0"
+                                    class="iblIntensitySlider" v-stream:input="iblIntensityChanged$">
+                                    <b-slider-tick :value="-2" class="iblIntensitySliderMarker">0.01</b-slider-tick>
+                                    <b-slider-tick :value="0" class="iblIntensitySliderMarker">1</b-slider-tick>
+                                    <b-slider-tick :value="2" class="iblIntensitySliderMarker">100</b-slider-tick>                               
+                                    <b-slider-tick :value="4" class="iblIntensitySliderMarker">10000</b-slider-tick>
+                                </b-slider>
+                            </b-field>
                             <b-field label="Background" class="subtitle">
                                 <b-switch v-model="renderEnv" v-bind:disabled="ibl === false ? true : false">Environment
                                     Map</b-switch>
@@ -350,15 +359,14 @@
                                 </b-select>
                             </b-field>
                             <label class="smallerLabel">Exposure</label>
-                            <b-slider v-model="exposureSetting" :min="-3" v-bind:max="3" :step=0.3333333
-                                class="exposureSlider" ticks v-stream:input="exposureChanged$">
-                                <b-slider-tick :value="-3" class="exposureSliderMarker">-3</b-slider-tick>
-                                <b-slider-tick :value="-2" class="exposureSliderMarker">-2</b-slider-tick>
-                                <b-slider-tick :value="-1" class="exposureSliderMarker">-1</b-slider-tick>
-                                <b-slider-tick :value="0" class="exposureSliderMarker">0</b-slider-tick>
-                                <b-slider-tick :value="1" class="exposureSliderMarker">+1</b-slider-tick>
-                                <b-slider-tick :value="2" class="exposureSliderMarker">+2</b-slider-tick>
-                                <b-slider-tick :value="3" class="exposureSliderMarker">+3</b-slider-tick>
+
+                            <b-slider rounded v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
+                            :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-stream:input="exposureChanged$">
+                                <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
+                                <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
+                                <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
+                                <b-slider-tick :value="21" class="exposureSliderMarker">0</b-slider-tick>
+
                             </b-slider>
                             <b-field label="Tone Map" class="smallerLabel">
                                 <b-select v-stream:input="tonemapChanged$" v-model="toneMap">

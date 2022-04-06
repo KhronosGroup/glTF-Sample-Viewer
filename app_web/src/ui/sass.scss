@@ -260,12 +260,23 @@ div .field.has-addons
 /* make html recognize exposure slider full height  */
 .b-slider.exposureSlider
 {
+    margin-left: 10px;
+    margin-right: 10px;
     margin-bottom: 50px;
+    width: auto;
 }
 
 .b-slider-tick-label
 {
     margin-top: 8px;
+}
+
+.b-slider.iblIntensitySlider
+{    
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 50px;
+    width: auto;
 }
 
 /* buttons */
