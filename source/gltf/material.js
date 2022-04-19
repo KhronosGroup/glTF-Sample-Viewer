@@ -517,7 +517,7 @@ class gltfMaterial extends GltfObject
                 this.hasIridescence = true;
 
                 let factor = this.extensions.KHR_materials_iridescence.iridescenceFactor;
-                let iridescenceIOR = this.extensions.KHR_materials_iridescence.iridescenceIOR;
+                let iridescenceIor = this.extensions.KHR_materials_iridescence.iridescenceIor;
                 let thicknessMinimum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMinimum;
                 let thicknessMaximum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMaximum;
 
@@ -525,9 +525,9 @@ class gltfMaterial extends GltfObject
                 {
                     factor = 0.0;
                 }
-                if (iridescenceIOR === undefined)
+                if (iridescenceIor === undefined)
                 {
-                    iridescenceIOR = 1.3;
+                    iridescenceIor = 1.3;
                 }
                 if (thicknessMinimum === undefined)
                 {
@@ -562,7 +562,7 @@ class gltfMaterial extends GltfObject
                 }
 
                 this.properties.set("u_IridescenceFactor", factor);
-                this.properties.set("u_IridescenceIOR", iridescenceIOR);
+                this.properties.set("u_IridescenceIor", iridescenceIor);
                 this.properties.set("u_IridescenceThicknessMaximum", thicknessMaximum);
             }
         }

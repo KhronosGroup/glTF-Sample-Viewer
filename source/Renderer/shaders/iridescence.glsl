@@ -42,10 +42,10 @@ vec3 evalSensitivity(float OPD, vec3 shift) {
 vec3 evalIridescence(float outsideIOR, float eta2, float cosTheta1, float thinFilmThickness, vec3 baseF0) {
     vec3 I;
 
-    // Force iridescenceIOR -> outsideIOR when thinFilmThickness -> 0.0
-    float iridescenceIOR = mix(outsideIOR, eta2, smoothstep(0.0, 0.03, thinFilmThickness));
+    // Force iridescenceIor -> outsideIOR when thinFilmThickness -> 0.0
+    float iridescenceIor = mix(outsideIOR, eta2, smoothstep(0.0, 0.03, thinFilmThickness));
     // Evaluate the cosTheta on the base layer (Snell law)
-    float sinTheta2Sq = sq(outsideIOR / iridescenceIOR) * (1.0 - sq(cosTheta1));
+    float sinTheta2Sq = sq(outsideIOR / iridescenceIor) * (1.0 - sq(cosTheta1));
 
     // Handle TIR:
     float cosTheta2Sq = 1.0 - sinTheta2Sq;
@@ -56,25 +56,25 @@ vec3 evalIridescence(float outsideIOR, float eta2, float cosTheta1, float thinFi
     float cosTheta2 = sqrt(cosTheta2Sq);
 
     // First interface
-    float R0 = IorToFresnel0(iridescenceIOR, outsideIOR);
+    float R0 = IorToFresnel0(iridescenceIor, outsideIOR);
     float R12 = F_Schlick(R0, cosTheta1);
     float R21 = R12;
     float T121 = 1.0 - R12;
     float phi12 = 0.0;
-    if (iridescenceIOR < outsideIOR) phi12 = M_PI;
+    if (iridescenceIor < outsideIOR) phi12 = M_PI;
     float phi21 = M_PI - phi12;
 
     // Second interface
     vec3 baseIOR = Fresnel0ToIor(clamp(baseF0, 0.0, 0.9999)); // guard against 1.0
-    vec3 R1 = IorToFresnel0(baseIOR, iridescenceIOR);
+    vec3 R1 = IorToFresnel0(baseIOR, iridescenceIor);
     vec3 R23 = F_Schlick(R1, cosTheta2);
     vec3 phi23 = vec3(0.0);
-    if (baseIOR[0] < iridescenceIOR) phi23[0] = M_PI;
-    if (baseIOR[1] < iridescenceIOR) phi23[1] = M_PI;
-    if (baseIOR[2] < iridescenceIOR) phi23[2] = M_PI;
+    if (baseIOR[0] < iridescenceIor) phi23[0] = M_PI;
+    if (baseIOR[1] < iridescenceIor) phi23[1] = M_PI;
+    if (baseIOR[2] < iridescenceIor) phi23[2] = M_PI;
 
     // Phase shift
-    float OPD = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
+    float OPD = 2.0 * iridescenceIor * thinFilmThickness * cosTheta2;
     vec3 phi = vec3(phi21) + phi23;
 
     // Compound terms
