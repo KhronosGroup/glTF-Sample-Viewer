@@ -30,7 +30,7 @@ uniform float u_AttenuationDistance;
 
 // Iridescence
 uniform float u_IridescenceFactor;
-uniform float u_IridescenceIOR;
+uniform float u_IridescenceIor;
 uniform float u_IridescenceThicknessMinimum;
 uniform float u_IridescenceThicknessMaximum;
 
@@ -88,7 +88,7 @@ struct MaterialInfo
 
     // KHR_materials_iridescence
     float iridescenceFactor;
-    float iridescenceIOR;
+    float iridescenceIor;
     float iridescenceThickness;
 };
 
@@ -301,7 +301,7 @@ MaterialInfo getVolumeInfo(MaterialInfo info)
 MaterialInfo getIridescenceInfo(MaterialInfo info)
 {
     info.iridescenceFactor = u_IridescenceFactor;
-    info.iridescenceIOR = u_IridescenceIOR;
+    info.iridescenceIor = u_IridescenceIor;
     info.iridescenceThickness = u_IridescenceThicknessMaximum;
 
     #ifdef HAS_IRIDESCENCE_MAP

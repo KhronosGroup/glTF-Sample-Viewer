@@ -132,7 +132,7 @@ void main()
     }
 
     if (materialInfo.iridescenceFactor > 0.0) {
-        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIOR, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
         iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
     }
 #endif
