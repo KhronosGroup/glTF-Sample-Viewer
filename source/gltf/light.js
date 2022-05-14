@@ -12,8 +12,7 @@ class gltfLight extends GltfObject
         innerConeAngle = 0,
         outerConeAngle = Math.PI / 4,
         range = -1,
-        name = undefined,
-        node = undefined)
+        name = undefined)
     {
         super();
         this.type = type;
@@ -23,8 +22,7 @@ class gltfLight extends GltfObject
         this.outerConeAngle = outerConeAngle;
         this.range = range;
         this.name = name;
-        // non gltf
-        this.node = node;
+
         //Can be used to overwrite direction from node
         this.direction = undefined;
     }
@@ -32,28 +30,6 @@ class gltfLight extends GltfObject
     initGl(gltf, webGlContext)
     {
         super.initGl(gltf, webGlContext);
-
-        for (let i = 0; i < gltf.nodes.length; i++)
-        {
-            const nodeExtensions = gltf.nodes[i].extensions;
-            if (nodeExtensions === undefined)
-            {
-                continue;
-            }
-
-            const lightsExtension = nodeExtensions.KHR_lights_punctual;
-            if (lightsExtension === undefined)
-            {
-                continue;
-            }
-
-            const lightIndex = lightsExtension.light;
-            if (gltf.lights[lightIndex] === this)
-            {
-                this.node = i;
-                break;
-            }
-        }
     }
 
     fromJson(jsonLight)
@@ -66,36 +42,32 @@ class gltfLight extends GltfObject
         }
     }
 
-    toUniform(gltf)
+    toUniform(node)
     {
+        const matrix = node?.worldTransform ?? mat4.identity;
+
+        // To extract a correct rotation, the scaling component must be eliminated.
+        var scale = vec3.fromValues(1, 1, 1);
+        mat4.getScaling(scale, matrix);
+        const mn = mat4.create();
+        for(const col of [0, 1, 2])
+        {
+            mn[col] = matrix[col] / scale[0];
+            mn[col + 4] = matrix[col + 4] / scale[1];
+            mn[col + 8] = matrix[col + 8] / scale[2];
+        }
+        var rotation = quat.create();
+        mat4.getRotation(rotation, mn);
+        quat.normalize(rotation, rotation);
+
         const uLight = new UniformLight();
 
-        if (this.node !== undefined)
-        {
-            const matrix = gltf.nodes[this.node].worldTransform;
+        const alongNegativeZ = vec3.fromValues(0, 0, -1);
+        vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
 
-            var scale = vec3.fromValues(1, 1, 1);
-            mat4.getScaling(scale, matrix);
-
-            // To extract a correct rotation, the scaling component must be eliminated.
-            const mn = mat4.create();
-            for(const col of [0, 1, 2])
-            {
-                mn[col] = matrix[col] / scale[0];
-                mn[col + 4] = matrix[col + 4] / scale[1];
-                mn[col + 8] = matrix[col + 8] / scale[2];
-            }
-            var rotation = quat.create();
-            mat4.getRotation(rotation, mn);
-            quat.normalize(rotation, rotation);
-
-            const alongNegativeZ = vec3.fromValues(0, 0, -1);
-            vec3.transformQuat(uLight.direction, alongNegativeZ, rotation);
-
-            var translation = vec3.fromValues(0, 0, 0);
-            mat4.getTranslation(translation, matrix);
-            uLight.position = translation;
-        }
+        var translation = vec3.fromValues(0, 0, 0);
+        mat4.getTranslation(translation, matrix);
+        uLight.position = translation;
 
         if (this.direction !== undefined)
         {
