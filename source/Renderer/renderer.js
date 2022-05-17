@@ -283,8 +283,8 @@ class gltfRenderer
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
-            this.visibleLights.push(this.lightKey);
-            this.visibleLights.push(this.lightFill);
+            this.visibleLights.push([null, this.lightKey]);
+            this.visibleLights.push([null, this.lightFill]);
         }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
@@ -585,21 +585,20 @@ class gltfRenderer
         }
     }
 
-    // returns all lights that are relevant for rendering or the default light if there are none
+    /// Compute a list of lights instantiated by one or more nodes as a list of node-light tuples.
     getVisibleLights(gltf, scene)
     {
-        let lights = [];
-        for (let light of gltf.lights)
-        {
-            if (light.node !== undefined)
-            {
-                if (scene.includesNode(gltf, light.node))
-                {
-                    lights.push(light);
-                }
+        const nodeLights = [];
+        for (const nodeIndex of scene.nodes) {
+            const node = gltf.nodes[nodeIndex];
+            const lightIndex = node.extensions?.KHR_lights_punctual?.light;
+            if (lightIndex === undefined) {
+                continue;
             }
+            const light = gltf.lights[lightIndex];
+            nodeLights.push([node, light]);
         }
-        return lights;
+        return nodeLights;
     }
 
     updateSkin(state, node)
@@ -649,7 +648,7 @@ class gltfRenderer
         if (state.renderingParameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");
-            fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
+            fragDefines.push(`LIGHT_COUNT ${this.visibleLights.length}`);
         }
 
         if (state.renderingParameters.useIBL && state.environment)
@@ -732,15 +731,14 @@ class gltfRenderer
 
     applyLights(gltf)
     {
-        let uniformLights = [];
-        for (let light of this.visibleLights)
+        const uniforms = [];
+        for (const [node, light] of this.visibleLights)
         {
-            uniformLights.push(light.toUniform(gltf));
+            uniforms.push(light.toUniform(node));
         }
-
-        if (uniformLights.length > 0)
+        if (uniforms.length > 0)
         {
-            this.shader.updateUniform("u_Lights", uniformLights);
+            this.shader.updateUniform("u_Lights", uniforms);
         }
     }
 
