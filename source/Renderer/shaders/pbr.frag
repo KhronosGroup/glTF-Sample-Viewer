@@ -156,6 +156,13 @@ void main()
 #endif
 #endif
 
+#if DEBUG == DEBUG_SPEC_RADIANCE
+    vec3 spec_radiance = f_specular;
+#endif
+#if DEBUG ==  DEBUG_DIFFUSE_RADIANCE
+    vec3 diffuse_radiance = f_diffuse;
+#endif
+
 #if defined(MATERIAL_TRANSMISSION) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
     f_transmission += getIBLVolumeRefraction(
         n, v,
@@ -333,6 +340,49 @@ void main()
 #endif
 #if DEBUG == DEBUG_EMISSIVE
     g_finalColor.rgb = linearTosRGB(f_emissive);
+#endif
+
+    // Misc:
+#if DEBUG == DEBUG_DIFFUSE_IRRADIANCE
+{
+    vec3 irradiance = getDiffuseLight(n);
+    g_finalColor.rgb = linearTosRGB(irradiance);
+}
+#endif
+#if DEBUG == DEBUG_DIFFUSE_RADIANCE
+    g_finalColor.rgb = linearTosRGB(diffuse_radiance);
+#endif
+#if DEBUG == DEBUG_DIFFUSE_FINAL
+    g_finalColor.rgb = linearTosRGB(f_diffuse);
+#endif
+#if DEBUG == DEBUG_SPEC_REFLECTION
+// getSpecularSample() // return reflection probe
+{
+    float lod = materialInfo.perceptualRoughness * float(u_MipCount - 1);
+    vec3 reflection = normalize(reflect(-v, n));
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    vec4 specularSample = getSpecularSample(reflection, lod);
+    g_finalColor.rgb = linearTosRGB(specularSample.rgb);
+}
+#endif
+#if DEBUG == DEBUG_SPEC_RADIANCE
+    g_finalColor.rgb = linearTosRGB(spec_radiance);
+#endif
+#if DEBUG == DEBUG_GGXLUT
+{
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, materialInfo.perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
+    g_finalColor.rgb = linearTosRGB(vec3(f_ab,0));
+}
+#endif
+#if DEBUG == DEBUG_DOT_NV
+    g_finalColor.rgb = linearTosRGB(vec3(NdotV));
+#endif
+#if DEBUG == DEBUG_DOT_TV
+    g_finalColor.rgb = linearTosRGB(vec3(TdotV));
+#endif
+#if DEBUG == DEBUG_DOT_BV
+    g_finalColor.rgb = linearTosRGB(vec3(BdotV));
 #endif
 
     // MR:
