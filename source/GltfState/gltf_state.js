@@ -144,15 +144,17 @@ GltfState.DebugOutput = {
 
     /** miscellaneous calculations */
     misc: {
-        DIFFUSE_IRRADIANCE: "Diffuse (Light)",
-        DIFFUSE_RADIANCE  : "Diffuse (Radiance)",
-        DIFFUSE_FINAL     : "Diffuse (Final)",
-        SPEC_REFLECTION   : "Spec (Reflection)",
-        SPEC_RADIANCE     : "Spec (Radiance)",
-        GGXLUT            : "GGX (Scale Bias) LUT",
-        DOT_NV            : "dot(Normal,ViewDir)",
-        DOT_TV            : "dot(Tangent,ViewDir)",
-        DOT_BV            : "dot(Bitangent,ViewDir)",
+        DIFFUSE_IRRADIANCE : "Diffuse (Irradiance)",
+        DIFFUSE_RADIANCE   : "Diffuse (Radiance)",
+        DIFFUSE_REFLECTANCE: "Diffuse (Reflectance)",
+        DIFFUSE_FINAL      : "Diffuse (Final)",
+        SPEC_REFLECTION    : "Spec (Reflection)",
+        SPEC_RADIANCE      : "Spec (Radiance)",
+        GGXLUT             : "GGX (Scale Bias) LUT",
+        DOT_NV             : "dot(Normal,ViewDir)",
+        DOT_TV             : "dot(Tangent,ViewDir)",
+        DOT_BV             : "dot(Bitangent,ViewDir)",
+        IOR                : "Index of Refraction",
     },
 
     /** output metallic roughness */

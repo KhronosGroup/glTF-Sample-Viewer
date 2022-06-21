@@ -352,10 +352,14 @@ void main()
 #if DEBUG == DEBUG_DIFFUSE_RADIANCE
     g_finalColor.rgb = linearTosRGB(diffuse_radiance);
 #endif
+#if DEBUG == DEBUG_DIFFUSE_REFLECTANCE
+    g_finalColor.rgb = linearTosRGB(vec3(reflectance));
+#endif
 #if DEBUG == DEBUG_DIFFUSE_FINAL
     g_finalColor.rgb = linearTosRGB(f_diffuse);
 #endif
 #if DEBUG == DEBUG_SPEC_REFLECTION
+// Debug: getIBLRadianceGGX
 // getSpecularSample() // return reflection probe
 {
     float lod = materialInfo.perceptualRoughness * float(u_MipCount - 1);
@@ -383,6 +387,9 @@ void main()
 #endif
 #if DEBUG == DEBUG_DOT_BV
     g_finalColor.rgb = linearTosRGB(vec3(BdotV));
+#endif
+#if DEBUG == DEBUG_IOR
+    g_finalColor.rgb = vec3( u_Ior );
 #endif
 
     // MR:
