@@ -146,3 +146,21 @@ With the change from glTF 1.0 to glTF 2.0, one of the largest changes included c
 A good reference about Physically-Based Materials and its workflow can be found on the [THE PBR GUIDE - PART 1](https://academy.allegorithmic.com/courses/the-pbr-guide-part-1) and [THE PBR GUIDE - PART 2](https://academy.allegorithmic.com/courses/the-pbr-guide-part-2) from [allegorithmic](https://www.allegorithmic.com).
 
 For implementation details and further theory, please find more information in the [Real Shading in Unreal Engine 4](https://blog.selfshadow.com/publications/s2013-shading-course/) presentation from the SIGGRAPH 2013 course.
+
+Debug Channels
+--------------
+In the Advanced menu there are 11 misc. debug channels to help view the PBR pipeline:
+
+* Diffuse (Irradiance)
+* Diffuse (Radiance)
+* Diffuse (Reflectance)
+* Diffuse (Final)
+* Spec (Reflection)
+* Spec (Radiance)
+* GGX (Scale Bias) LUT
+* dot( normal, view dir )
+* dot( tangent, view dir )
+* dot( bitangent, view dir )
+* Index of Refraction
+
+![Misc Debug Channels](assets/images/misc_debug_channels.png)
