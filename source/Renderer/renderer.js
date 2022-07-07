@@ -622,10 +622,11 @@ class gltfRenderer
         if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = gltf.meshes[node.mesh];
-            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
+            const weights = mesh.weights.value();
+            if (weights !== undefined && weights.length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + mesh.getWeightsAnimated().length);
+                vertDefines.push("WEIGHT_COUNT " + weights.length);
             }
         }
     }
@@ -635,10 +636,10 @@ class gltfRenderer
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
             const mesh = state.gltf.meshes[node.mesh];
-            const weightsAnimated = mesh.getWeightsAnimated();
-            if (weightsAnimated !== undefined && weightsAnimated.length > 0)
+            const weights = mesh.weights.value();
+            if (weights !== undefined && weights.length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", weightsAnimated);
+                this.shader.updateUniformArray("u_morphWeights", weights);
             }
         }
     }

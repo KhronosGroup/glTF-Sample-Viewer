@@ -71,28 +71,28 @@ class gltfAnimation extends GltfObject
             const interpolator = this.interpolators[i];
 
             const node = gltf.nodes[channel.target.node];
+            let property = `/nodes/${channel.target.node}`;
 
-            let property = null;
             let interpolant = null;
 
             switch(channel.target.path)
             {
             case InterpolationPath.TRANSLATION:
                 interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
-                property = "/translation";
+                property += "/translation";
                 break;
             case InterpolationPath.ROTATION:
                 interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime);
-                property = "/rotation";
+                property += "/rotation";
                 break;
             case InterpolationPath.SCALE:
                 interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
-                property = "/scale";
+                property += "/scale";
                 break;
             case InterpolationPath.WEIGHTS:
             {
-                const mesh = gltf.meshes[node.mesh];
-                mesh.weightsAnimated = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length, this.maxTime);
+                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, gltf.meshes[node.mesh].weights.value().length, this.maxTime);
+                property = `/meshes/${node.mesh}/weights`;
                 break;
             }
             case InterpolationPath.POINTER:
@@ -100,7 +100,7 @@ class gltfAnimation extends GltfObject
             }
 
             if (property != null) {
-                let animatedProperty = JsonPointer.get(node, property);
+                let animatedProperty = JsonPointer.get(gltf, property);
                 animatedProperty.animate(interpolant);
             }
         }
