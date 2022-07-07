@@ -70,36 +70,33 @@ class gltfAnimation extends GltfObject
             const sampler = this.samplers[channel.sampler];
             const interpolator = this.interpolators[i];
 
-            const node = gltf.nodes[channel.target.node];
             let property = null;
-            let interpolant = null;
-
             switch(channel.target.path)
             {
             case InterpolationPath.TRANSLATION:
-                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
                 property = `/nodes/${channel.target.node}/translation`;
                 break;
             case InterpolationPath.ROTATION:
-                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime);
                 property = `/nodes/${channel.target.node}/rotation`;
                 break;
             case InterpolationPath.SCALE:
-                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
                 property = `/nodes/${channel.target.node}/scale`;
                 break;
             case InterpolationPath.WEIGHTS:
-            {
-                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, gltf.meshes[node.mesh].weights.value().length, this.maxTime);
-                property = `/meshes/${node.mesh}/weights`;
+                property = `/meshes/${gltf.nodes[channel.target.node].mesh}/weights`;
                 break;
-            }
             case InterpolationPath.POINTER:
+                property = channel.target.extensions.KHR_animation_pointer.pointer;
                 break;
             }
 
             if (property != null) {
-                let animatedProperty = JsonPointer.get(gltf, property);
+                const animatedProperty = JsonPointer.get(gltf, property);
+                if (animatedProperty?.restValue === undefined) {
+                    continue;
+                }
+                const stride = animatedProperty.restValue.length ?? 1;
+                const interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, stride, this.maxTime);
                 animatedProperty.animate(interpolant);
             }
         }
