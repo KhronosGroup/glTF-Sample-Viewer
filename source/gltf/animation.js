@@ -87,6 +87,8 @@ class gltfAnimation extends GltfObject
                 mesh.weightsAnimated = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length, this.maxTime);
                 break;
             }
+            case InterpolationPath.POINTER:
+                break;
             }
         }
     }

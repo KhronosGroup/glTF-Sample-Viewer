@@ -32,7 +32,8 @@ const InterpolationPath =
     TRANSLATION: "translation",
     ROTATION: "rotation",
     SCALE: "scale",
-    WEIGHTS: "weights"
+    WEIGHTS: "weights",
+    POINTER: "pointer",
 };
 
 export { gltfAnimationChannel, gltfAnimationTarget, InterpolationPath };
