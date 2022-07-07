@@ -1,6 +1,7 @@
 import { fromKeys, initGlForMembers } from './utils.js';
 import { GL } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
+import { AnimatableProperty } from './animation.js';
 
 class gltfTexture extends GltfObject
 {
@@ -59,7 +60,7 @@ class gltfTextureInfo
         this.linear = linear;
         this.samplerName = samplerName;
         this.strength = 1.0; // occlusion
-        this.scale = 1.0; // normal
+        this.scale = new AnimatableProperty(1.0); // normal
         this.generateMips = generateMips;
 
         this.extensions = undefined;

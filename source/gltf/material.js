@@ -2,6 +2,7 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
+import { AnimatableProperty } from './animation.js';
 
 class gltfMaterial extends GltfObject
 {
@@ -30,8 +31,9 @@ class gltfMaterial extends GltfObject
         // non gltf properties
         this.type = "unlit";
         this.textures = [];
-        this.properties = new Map();
+        this.textureTransforms = [];
         this.defines = [];
+        this.properties = new Map();
     }
 
     static createDefault()
@@ -95,68 +97,71 @@ class gltfMaterial extends GltfObject
         return this.properties;
     }
 
-    getTextures()
+    updateTextureTransforms()
     {
-        return this.textures;
-    }
-
-    parseTextureInfoExtensions(textureInfo, textureKey)
-    {
-        if(textureInfo.extensions === undefined)
-        {
-            return;
-        }
-
-        if(textureInfo.extensions.KHR_texture_transform !== undefined)
-        {
-            const uvTransform = textureInfo.extensions.KHR_texture_transform;
-
-            // override uvset
-            if(uvTransform.texCoord !== undefined)
-            {
-                textureInfo.texCoord = uvTransform.texCoord;
-            }
-
+        for (const { key, uv } of this.textureTransforms) {
             let rotation = mat3.create();
             let scale = mat3.create();
             let translation = mat3.create();
 
-            if(uvTransform.rotation !== undefined)
+            if (uv.rotation.value() !== undefined)
             {
-                const s =  Math.sin(uvTransform.rotation);
-                const c =  Math.cos(uvTransform.rotation);
-
+                const s =  Math.sin(uv.rotation.value());
+                const c =  Math.cos(uv.rotation.value());
                 rotation = jsToGl([
                     c, -s, 0.0,
                     s, c, 0.0,
                     0.0, 0.0, 1.0]);
             }
 
-            if(uvTransform.scale !== undefined)
+            if (uv.scale.value() !== undefined)
             {
                 scale = jsToGl([
-                    uvTransform.scale[0], 0, 0, 
-                    0, uvTransform.scale[1], 0, 
+                    uv.scale.value()[0], 0, 0, 
+                    0, uv.scale.value()[1], 0, 
                     0, 0, 1
                 ]);
             }
 
-            if(uvTransform.offset !== undefined)
+            if (uv.offset.value() !== undefined)
             {
                 translation = jsToGl([
                     1, 0, 0, 
                     0, 1, 0, 
-                    uvTransform.offset[0], uvTransform.offset[1], 1
+                    uv.offset.value()[0], uv.offset.value()[1], 1
                 ]);
             }
 
             let uvMatrix = mat3.create();
             mat3.multiply(uvMatrix, translation, rotation);
             mat3.multiply(uvMatrix, uvMatrix, scale);
-
-            this.defines.push("HAS_" + textureKey.toUpperCase() + "_UV_TRANSFORM 1");
-            this.properties.set("u_" + textureKey + "UVTransform", uvMatrix);
+            this.properties.set("u_" + key + "UVTransform", uvMatrix);
         }
+    }
+
+    parseTextureInfoExtensions(textureInfo, textureKey)
+    {
+        if (textureInfo.extensions?.KHR_texture_transform === undefined)
+        {
+            return;
+        }
+
+        const uv = textureInfo.extensions.KHR_texture_transform;
+        uv.offset = new AnimatableProperty(uv.offset ?? [0, 0]);
+        uv.scale = new AnimatableProperty(uv.scale ?? [1, 1]);
+        uv.rotation = new AnimatableProperty(uv.rotation ?? 0);
+
+        this.textureTransforms.push({
+            key: textureKey,
+            uv: uv
+        });
+
+        if(uv.texCoord !== undefined)
+        {
+            textureInfo.texCoord = uv.texCoord;
+        }
+
+        this.defines.push("HAS_" + textureKey.toUpperCase() + "_UV_TRANSFORM 1");
     }
 
     initGl(gltf, webGlContext)
@@ -167,7 +172,7 @@ class gltfMaterial extends GltfObject
             this.parseTextureInfoExtensions(this.normalTexture, "Normal");
             this.textures.push(this.normalTexture);
             this.defines.push("HAS_NORMAL_MAP 1");
-            this.properties.set("u_NormalScale", this.normalTexture.scale);
+            this.properties.set("u_NormalScale", this.normalTexture.scale.value());
             this.properties.set("u_NormalUVSet", this.normalTexture.texCoord);
         }
 

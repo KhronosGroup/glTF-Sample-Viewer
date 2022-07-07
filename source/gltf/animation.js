@@ -19,6 +19,8 @@ class gltfAnimation extends GltfObject
         this.interpolators = [];
         this.maxTime = 0;
         this.disjointAnimations = [];
+
+        this.errors = [];
     }
 
     fromJson(jsonAnimation)
@@ -92,7 +94,18 @@ class gltfAnimation extends GltfObject
 
             if (property != null) {
                 const animatedProperty = JsonPointer.get(gltf, property);
-                if (animatedProperty?.restValue === undefined) {
+                if (animatedProperty === undefined || !animatedProperty instanceof AnimatableProperty) {
+                    if (!this.errors.includes(property)) {
+                        console.log(`Cannot animate ${property}`);
+                        this.errors.push(property);
+                    }
+                    continue;
+                }
+                if (animatedProperty.restValue === undefined) {
+                    if (!this.errors.includes(property)) {
+                        console.log(`Rest value is undefined for ${property}`);
+                        this.errors.push(property);
+                    }
                     continue;
                 }
                 const stride = animatedProperty.restValue.length ?? 1;

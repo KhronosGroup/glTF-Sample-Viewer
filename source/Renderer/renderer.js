@@ -398,8 +398,10 @@ class gltfRenderer
         this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
         vertDefines = primitive.defines.concat(vertDefines);
 
+        material.updateTextureTransforms();
+
         let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
-        if(renderpassConfiguration.linearOutput === true)
+        if (renderpassConfiguration.linearOutput)
         {
            fragDefines.push("LINEAR_OUTPUT 1");
         }
