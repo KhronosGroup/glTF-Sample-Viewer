@@ -6,7 +6,7 @@ import copy from "rollup-plugin-copy";
 
 export default {
   input: ['source/gltf-sample-viewer.js'],
-  external:['gl-matrix', 'axios', 'jpeg-js', 'fast-png'],
+  external:['gl-matrix', 'axios', 'jpeg-js', 'fast-png', 'json-ptr'],
   output: [
     {
       file: 'dist/gltf-viewer.js',

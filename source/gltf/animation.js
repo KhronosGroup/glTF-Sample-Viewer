@@ -3,6 +3,8 @@ import { objectsFromJsons } from './utils.js';
 import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAnimationSampler } from './animation_sampler.js';
 import { gltfInterpolator } from './interpolator.js';
+// import { JsonPointer } from 'json-ptr';
+import { JsonPointer } from '../../node_modules/json-ptr/dist/esm/index.js';
 
 class gltfAnimation extends GltfObject
 {
@@ -70,16 +72,22 @@ class gltfAnimation extends GltfObject
 
             const node = gltf.nodes[channel.target.node];
 
+            let property = null;
+            let interpolant = null;
+
             switch(channel.target.path)
             {
             case InterpolationPath.TRANSLATION:
-                node.applyTranslationAnimation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime));
+                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
+                property = "/translation";
                 break;
             case InterpolationPath.ROTATION:
-                node.applyRotationAnimation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime));
+                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime);
+                property = "/rotation";
                 break;
             case InterpolationPath.SCALE:
-                node.applyScaleAnimation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime));
+                interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
+                property = "/scale";
                 break;
             case InterpolationPath.WEIGHTS:
             {
@@ -90,8 +98,40 @@ class gltfAnimation extends GltfObject
             case InterpolationPath.POINTER:
                 break;
             }
+
+            if (property != null) {
+                let animatedProperty = JsonPointer.get(node, property);
+                animatedProperty.animate(interpolant);
+            }
         }
     }
 }
 
-export { gltfAnimation };
+class AnimatableProperty {
+    constructor(value) {
+        this.restValue = value;
+        this.animatedValue = null;
+    }
+
+    restAt(value) {
+        this.restValue = value;
+    }
+
+    animate(value) {
+        this.animatedValue = value;
+    }
+
+    rest() {
+        this.animatedValue = null;
+    }
+
+    value() {
+        return this.animatedValue ?? this.restValue;
+    }
+
+    isDefined() {
+        return this.restValue !== undefined;
+    }
+}
+
+export { gltfAnimation, AnimatableProperty };
