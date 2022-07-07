@@ -50,17 +50,6 @@ class gltfMaterial extends GltfObject
         return defaultMaterial;
     }
 
-    getShaderIdentifier()
-    {
-        switch (this.type)
-        {
-        default:
-        case "SG": // fall through till we sparate shaders
-        case "MR": return "pbr.frag";
-            //case "SG": return "specular-glossiness.frag" ;
-        }
-    }
-
     getDefines(renderingParameters)
     {
         const defines = Array.from(this.defines);

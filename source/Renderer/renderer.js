@@ -396,7 +396,7 @@ class gltfRenderer
 
         let vertDefines = [];
         this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
-        vertDefines = primitive.getDefines().concat(vertDefines);
+        vertDefines = primitive.defines.concat(vertDefines);
 
         let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
         if(renderpassConfiguration.linearOutput === true)
@@ -405,8 +405,8 @@ class gltfRenderer
         }
         this.pushFragParameterDefines(fragDefines, state);
         
-        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
+        const fragmentHash = this.shaderCache.selectShader("pbr.frag", fragDefines);
+        const vertexHash = this.shaderCache.selectShader("primitive.vert", vertDefines);
 
         if (fragmentHash && vertexHash)
         {
