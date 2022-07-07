@@ -27,10 +27,6 @@ class gltfNode extends GltfObject
         this.normalMatrix = mat4.create();
         this.light = undefined;
         this.changed = true;
-
-        this.animationRotation = undefined;
-        this.animationTranslation = undefined;
-        this.animationScale = undefined;
     }
 
     initGl()
@@ -84,21 +80,32 @@ class gltfNode extends GltfObject
     // vec3
     applyTranslationAnimation(translation)
     {
-        this.animationTranslation = translation;
+        this.translation = translation;
         this.changed = true;
     }
 
     // quat
     applyRotationAnimation(rotation)
     {
-        this.animationRotation = rotation;
+        if (rotation != undefined) {
+            if (this.rotation?.original === undefined) {
+                this.rotation = { original: this.rotation, animated: rotation };
+            }
+            else {
+                this.rotation.animated = rotation;
+            }
+        }
+        else {
+            this.rotation = this.rotation?.original;
+        }
+
         this.changed = true;
     }
 
     // vec3
     applyScaleAnimation(scale)
     {
-        this.animationScale = scale;
+        this.scale = scale;
         this.changed = true;
     }
 
@@ -114,16 +121,9 @@ class gltfNode extends GltfObject
     {
         if(this.transform === undefined || this.changed)
         {
-            // if no animation is applied and the transform matrix is present use it directly
-            if(this.animationTranslation === undefined && this.animationRotation === undefined && this.animationScale === undefined && this.matrix !== undefined) {
-                this.transform = mat4.clone(this.matrix);
-            } else {
-                this.transform = mat4.create();
-                const translation = this.animationTranslation !== undefined ? this.animationTranslation : this.translation;
-                const rotation = this.animationRotation !== undefined ? this.animationRotation : this.rotation;
-                const scale = this.animationScale !== undefined ? this.animationScale : this.scale;
-                mat4.fromRotationTranslationScale(this.transform, rotation, translation, scale);
-            }
+            let rotation = this.rotation?.animated ?? this.rotation;
+            this.transform = mat4.create();
+            mat4.fromRotationTranslationScale(this.transform, rotation, this.translation, this.scale);
             this.changed = false;
         }
 
