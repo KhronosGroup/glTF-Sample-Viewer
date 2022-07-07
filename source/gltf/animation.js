@@ -71,23 +71,22 @@ class gltfAnimation extends GltfObject
             const interpolator = this.interpolators[i];
 
             const node = gltf.nodes[channel.target.node];
-            let property = `/nodes/${channel.target.node}`;
-
+            let property = null;
             let interpolant = null;
 
             switch(channel.target.path)
             {
             case InterpolationPath.TRANSLATION:
                 interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
-                property += "/translation";
+                property = `/nodes/${channel.target.node}/translation`;
                 break;
             case InterpolationPath.ROTATION:
                 interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime);
-                property += "/rotation";
+                property = `/nodes/${channel.target.node}/rotation`;
                 break;
             case InterpolationPath.SCALE:
                 interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime);
-                property += "/scale";
+                property = `/nodes/${channel.target.node}/scale`;
                 break;
             case InterpolationPath.WEIGHTS:
             {
