@@ -1,12 +1,29 @@
 import { GltfObject } from './gltf_object.js';
+import { objectFromJson } from './utils.js';
 
 class gltfAnimationChannel extends GltfObject
 {
     constructor()
     {
         super();
-        this.target = {node: undefined, path: undefined};
+        this.target = undefined;
         this.sampler = undefined;
+    }
+
+    fromJson(jsonChannel)
+    {
+        super.fromJson(jsonChannel);
+        this.target = objectFromJson(jsonChannel.target, gltfAnimationTarget);
+    }
+}
+
+class gltfAnimationTarget extends GltfObject
+{
+    constructor()
+    {
+        super();
+        this.node = undefined;
+        this.path = undefined;
     }
 }
 
@@ -18,4 +35,4 @@ const InterpolationPath =
     WEIGHTS: "weights"
 };
 
-export { gltfAnimationChannel, InterpolationPath };
+export { gltfAnimationChannel, gltfAnimationTarget, InterpolationPath };
