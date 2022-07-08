@@ -1,7 +1,7 @@
 import { gltfPrimitive } from './primitive.js';
 import { objectsFromJsons } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty } from './animation.js';
+import { AnimatableProperty, makeAnimatable } from './animation.js';
 
 class gltfMesh extends GltfObject
 {
@@ -24,10 +24,7 @@ class gltfMesh extends GltfObject
 
         this.primitives = objectsFromJsons(jsonMesh.primitives, gltfPrimitive);
 
-        if(jsonMesh.weights !== undefined)
-        {
-            this.weights = new AnimatableProperty(jsonMesh.weights);
-        }
+        makeAnimatable(this, jsonMesh, { "weights": [] });
     }
 }
 

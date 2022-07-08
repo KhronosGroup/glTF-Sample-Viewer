@@ -1,7 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty } from './animation.js';
+import { AnimatableProperty, makeAnimatable } from './animation.js';
 
 // contain:
 // transform
@@ -26,6 +26,23 @@ class gltfNode extends GltfObject
         this.inverseWorldTransform = mat4.create();
         this.normalMatrix = mat4.create();
         this.light = undefined;
+    }
+
+    fromJson(json)
+    {
+        super.fromJson(json);
+        makeAnimatable(this, json, { "weights": [] });
+        console.log(this)
+    }
+
+    getWeights(gltf)
+    {
+        if (this.weights.isDefined()) {
+            return this.weights;
+        }
+        else {
+            return gltf.meshes[this.mesh].weights;
+        }
     }
 
     // TODO: Not called. What about nodes which only define a matrix?

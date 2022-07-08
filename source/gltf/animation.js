@@ -104,9 +104,33 @@ class gltfAnimation extends GltfObject
                 if (animatedProperty.restValue === undefined) {
                     continue;
                 }
-                const stride = animatedProperty.restValue.length ?? 1;
+
+                let stride = (
+                    animatedProperty.animatedValue ??
+                    animatedProperty.restValue)?.length ?? 1;
+
+                if (property.endsWith("/weights")) {
+                    // console.log(property, stride)
+                }
+
+                // if (property.endsWith("/weights")) {
+                //     if (property.startsWith("/nodes")) {
+                //     }
+                // }
+
+                if (property == "/nodes/16/weights") {
+                    stride = 2;
+                }
+                
                 const interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, stride, this.maxTime);
                 animatedProperty.animate(interpolant);
+
+                if (property == "/nodes/16/weights") {
+                    const node = gltf.nodes[16];
+                    const mesh = gltf.meshes[node.mesh];
+                    const targets = mesh.primitives[0].targets;
+                    console.log(animatedProperty);
+                }
             }
         }
     }
