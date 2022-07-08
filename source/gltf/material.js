@@ -397,9 +397,7 @@ class gltfMaterial extends GltfObject
             {
                 this.hasEmissiveStrength = true;
 
-                let emissiveStrength = this.extensions.KHR_materials_emissive_strength.emissiveStrength ?? 1.0;
-
-                this.properties.set("u_EmissiveStrength", emissiveStrength);
+                this.properties.set("u_EmissiveStrength", this.extensions.KHR_materials_emissive_strength.emissiveStrength);
             }
 
             // KHR Extension: Transmission
@@ -500,11 +498,6 @@ class gltfMaterial extends GltfObject
     {
         super.fromJson(jsonMaterial);
 
-        if (jsonMaterial.emissiveFactor !== undefined)
-        {
-            this.emissiveFactor = jsToGl(jsonMaterial.emissiveFactor);
-        }
-
         if (jsonMaterial.normalTexture !== undefined)
         {
             const normalTexture = new gltfTextureInfo();
@@ -579,6 +572,11 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_iridescence !== undefined)
         {
             this.fromJsonIridescence(jsonExtensions.KHR_materials_iridescence);
+        }
+
+        if(jsonExtensions.KHR_materials_emissive_strength !== undefined)
+        {
+            this.fromJsonEmissiveStrength(jsonExtensions.KHR_materials_emissive_strength);
         }
     }
 
@@ -715,6 +713,13 @@ class gltfMaterial extends GltfObject
             thicknessTexture.fromJson(jsonVolume.thicknessTexture);
             this.thicknessTexture = thicknessTexture;
         }
+    }
+
+    fromJsonEmissiveStrength(json)
+    {
+        makeAnimatable(this.extensions.KHR_materials_emissive_strength, json, {
+            "emissiveStrength": 1,
+        });
     }
 
     fromJsonIridescence(jsonIridescence)
