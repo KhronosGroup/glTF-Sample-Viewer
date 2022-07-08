@@ -293,19 +293,10 @@ class gltfMaterial extends GltfObject
             // Clearcoat is part of the default metallic-roughness shader
             if(this.extensions.KHR_materials_clearcoat !== undefined)
             {
-                let clearcoatFactor = 0.0;
-                let clearcoatRoughnessFactor = 0.0;
-
                 this.hasClearcoat = true;
 
-                if(this.extensions.KHR_materials_clearcoat.clearcoatFactor !== undefined)
-                {
-                    clearcoatFactor = this.extensions.KHR_materials_clearcoat.clearcoatFactor;
-                }
-                if(this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor !== undefined)
-                {
-                    clearcoatRoughnessFactor = this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor;
-                }
+                this.properties.set("u_ClearcoatFactor", this.extensions.KHR_materials_clearcoat.clearcoatFactor);
+                this.properties.set("u_ClearcoatRoughnessFactor", this.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor);
 
                 if (this.clearcoatTexture !== undefined)
                 {
@@ -332,8 +323,6 @@ class gltfMaterial extends GltfObject
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
                     this.properties.set("u_ClearcoatNormalScale", this.clearcoatNormalTexture.scale);
                 }
-                this.properties.set("u_ClearcoatFactor", clearcoatFactor);
-                this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
             }
 
             // Sheen material extension
@@ -666,6 +655,11 @@ class gltfMaterial extends GltfObject
 
     fromJsonClearcoat(jsonClearcoat)
     {
+        makeAnimatable(this.pbrMetallicRoughness, jsonMetallicRoughness, {
+            "clearcoatFactor": 0,
+            "clearcoatRoughnessFactor": 0,
+        })
+
         if(jsonClearcoat.clearcoatTexture !== undefined)
         {
             const clearcoatTexture = new gltfTextureInfo();
