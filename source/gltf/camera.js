@@ -13,18 +13,18 @@ class gltfCamera extends GltfObject
         xmag = 1.0,
         ymag = 1.0,
         name = undefined,
-        nodeIndex = undefined)
+        node = undefined)
     {
         super();
         this.type = type;
         this.znear = znear;
         this.zfar = zfar;
-        this.yfov = yfov; // radians
+        this.yfov = yfov;
         this.xmag = xmag;
         this.ymag = ymag;
         this.aspectRatio = aspectRatio;
         this.name = name;
-        this.node = nodeIndex;
+        this.node = node;
     }
 
     initGl(gltf, webGlContext)
@@ -231,9 +231,9 @@ class gltfCamera extends GltfObject
                        mat[12], mat[13], mat[14], mat[15]]
         };
 
-        if (this.nodeIndex !== undefined && gltf.nodes[this.nodeIndex].name !== undefined)
+        if (this.node !== undefined && gltf.nodes[this.node].name !== undefined)
         {
-            node["name"] = gltf.nodes[this.nodeIndex].name;
+            node["name"] = gltf.nodes[this.node].name;
         }
 
         return {
