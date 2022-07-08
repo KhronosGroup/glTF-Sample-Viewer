@@ -169,7 +169,7 @@ class gltfMaterial extends GltfObject
             this.parseTextureInfoExtensions(this.normalTexture, "Normal");
             this.textures.push(this.normalTexture);
             this.defines.push("HAS_NORMAL_MAP 1");
-            this.properties.set("u_NormalScale", this.normalTexture.scale.value());
+            this.properties.set("u_NormalScale", this.normalTexture.scale);
             this.properties.set("u_NormalUVSet", this.normalTexture.texCoord);
         }
 
@@ -179,7 +179,7 @@ class gltfMaterial extends GltfObject
             this.parseTextureInfoExtensions(this.occlusionTexture, "Occlusion");
             this.textures.push(this.occlusionTexture);
             this.defines.push("HAS_OCCLUSION_MAP 1");
-            this.properties.set("u_OcclusionStrength", this.occlusionTexture.strength.value());
+            this.properties.set("u_OcclusionStrength", this.occlusionTexture.strength);
             this.properties.set("u_OcclusionUVSet", this.occlusionTexture.texCoord);
         }
 

@@ -117,12 +117,6 @@ class gltfAnimation extends GltfObject
                 
                 const interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, stride, this.maxTime);
                 animatedProperty.animate(interpolant);
-
-                if (property == "/nodes/16/weights") {
-                    const node = gltf.nodes[16];
-                    const mesh = gltf.meshes[node.mesh];
-                    const targets = mesh.primitives[0].targets;
-                }
             }
         }
     }
