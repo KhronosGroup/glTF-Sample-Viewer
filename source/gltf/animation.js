@@ -105,21 +105,13 @@ class gltfAnimation extends GltfObject
                     continue;
                 }
 
-                let stride = (
-                    animatedProperty.animatedValue ??
-                    animatedProperty.restValue)?.length ?? 1;
+                let stride = animatedProperty.restValue?.length ?? 1;
 
-                if (property.endsWith("/weights")) {
-                    // console.log(property, stride)
-                }
-
-                // if (property.endsWith("/weights")) {
-                //     if (property.startsWith("/nodes")) {
-                //     }
-                // }
-
-                if (property == "/nodes/16/weights") {
-                    stride = 2;
+                if (property.endsWith("/weights") && stride == 0) {
+                    const parent = JsonPointer.get(gltf, property.substring(0, property.length - "/weights".length));
+                    const mesh = property.startsWith("/nodes") ? gltf.meshes[parent.mesh] : parent;
+                    const targets = mesh.primitives[0]?.targets ?? 0;
+                    stride = targets?.length ?? 0;
                 }
                 
                 const interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, stride, this.maxTime);
@@ -129,7 +121,6 @@ class gltfAnimation extends GltfObject
                     const node = gltf.nodes[16];
                     const mesh = gltf.meshes[node.mesh];
                     const targets = mesh.primitives[0].targets;
-                    console.log(animatedProperty);
                 }
             }
         }

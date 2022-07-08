@@ -32,7 +32,6 @@ class gltfNode extends GltfObject
     {
         super.fromJson(json);
         makeAnimatable(this, json, { "weights": [] });
-        console.log(this)
     }
 
     getWeights(gltf)
