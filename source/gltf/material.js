@@ -473,27 +473,9 @@ class gltfMaterial extends GltfObject
             {
                 this.hasIridescence = true;
 
-                let factor = this.extensions.KHR_materials_iridescence.iridescenceFactor;
-                let iridescenceIor = this.extensions.KHR_materials_iridescence.iridescenceIor;
-                let thicknessMinimum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMinimum;
-                let thicknessMaximum = this.extensions.KHR_materials_iridescence.iridescenceThicknessMaximum;
-
-                if (factor === undefined)
-                {
-                    factor = 0.0;
-                }
-                if (iridescenceIor === undefined)
-                {
-                    iridescenceIor = 1.3;
-                }
-                if (thicknessMinimum === undefined)
-                {
-                    thicknessMinimum = 100.0;
-                }
-                if (thicknessMaximum === undefined)
-                {
-                    thicknessMaximum = 400.0;
-                }
+                this.properties.set("u_IridescenceFactor", this.extensions.KHR_materials_iridescence.iridescenceFactor);
+                this.properties.set("u_IridescenceIor", this.extensions.KHR_materials_iridescence.iridescenceIor);
+                this.properties.set("u_IridescenceThicknessMaximum", this.extensions.KHR_materials_iridescence.iridescenceThicknessMaximum);
 
                 if (this.iridescenceTexture !== undefined)
                 {
@@ -515,12 +497,8 @@ class gltfMaterial extends GltfObject
                     // The thickness minimum is only required when there is a thickness texture present.
                     // Because 1.0 is the default value for the thickness, no texture implies that only the
                     // maximum thickness is ever read in the shader.
-                    this.properties.set("u_IridescenceThicknessMinimum", thicknessMinimum);
+                    this.properties.set("u_IridescenceThicknessMinimum", this.extensions.KHR_materials_iridescence.iridescenceThicknessMinimum);
                 }
-
-                this.properties.set("u_IridescenceFactor", factor);
-                this.properties.set("u_IridescenceIor", iridescenceIor);
-                this.properties.set("u_IridescenceThicknessMaximum", thicknessMaximum);
             }
         }
 
@@ -729,7 +707,8 @@ class gltfMaterial extends GltfObject
     {
         makeAnimatable(this.extensions.KHR_materials_volume, jsonVolume, {
             "thicknessFactor": 0,
-        })
+        });
+
         if(jsonVolume.thicknessTexture !== undefined)
         {
             const thicknessTexture = new gltfTextureInfo();
@@ -740,6 +719,13 @@ class gltfMaterial extends GltfObject
 
     fromJsonIridescence(jsonIridescence)
     {
+        makeAnimatable(this.extensions.KHR_materials_iridescence, jsonIridescence, {
+            "factor": 0,
+            "iridescenceIor": 1.3,
+            "iridescenceThicknessMinimum": 100,
+            "iridescenceThicknessMaximum": 400,
+        });
+
         if(jsonIridescence.iridescenceTexture !== undefined)
         {
             const iridescenceTexture = new gltfTextureInfo();
