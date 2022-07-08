@@ -2,7 +2,7 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty, makeAnimatable } from './animation.js';
+import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfMaterial extends GltfObject
 {

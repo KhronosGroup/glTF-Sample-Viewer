@@ -1,7 +1,7 @@
 import { gltfPrimitive } from './primitive.js';
 import { objectsFromJsons } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty, makeAnimatable } from './animation.js';
+import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfMesh extends GltfObject
 {

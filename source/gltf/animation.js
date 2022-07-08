@@ -3,6 +3,7 @@ import { objectsFromJsons } from './utils.js';
 import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAnimationSampler } from './animation_sampler.js';
 import { gltfInterpolator } from './interpolator.js';
+import { AnimatableProperty } from './animatable_property.js';
 // import { JsonPointer } from 'json-ptr';
 import { JsonPointer } from '../../node_modules/json-ptr/dist/esm/index.js';
 
@@ -127,37 +128,4 @@ class gltfAnimation extends GltfObject
     }
 }
 
-class AnimatableProperty {
-    constructor(value) {
-        this.restValue = value;
-        this.animatedValue = null;
-    }
-
-    restAt(value) {
-        this.restValue = value;
-    }
-
-    animate(value) {
-        this.animatedValue = value;
-    }
-
-    rest() {
-        this.animatedValue = null;
-    }
-
-    value() {
-        return this.animatedValue ?? this.restValue;
-    }
-
-    isDefined() {
-        return this.restValue !== undefined;
-    }
-}
-
-const makeAnimatable = (object, json, properties) => {
-    for (const property in properties) {
-        object[property] = new AnimatableProperty(json[property] ?? properties[property]);
-    }
-}
-
-export { gltfAnimation, AnimatableProperty, makeAnimatable };
+export { gltfAnimation };

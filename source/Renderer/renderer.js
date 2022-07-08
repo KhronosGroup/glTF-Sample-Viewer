@@ -18,7 +18,7 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
-import { AnimatableProperty } from '../gltf/animation.js';
+import { AnimatableProperty } from '../gltf/animatable_property.js';
 import { jsToGl } from '../gltf/utils.js';
 
 class gltfRenderer
@@ -275,7 +275,7 @@ class gltfRenderer
             currentCamera = state.gltf.cameras[state.cameraIndex].clone();
         }
 
-        currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
+        currentCamera.perspective.aspectRatio.restValue = this.currentWidth / this.currentHeight;
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);

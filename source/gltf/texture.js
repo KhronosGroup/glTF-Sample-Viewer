@@ -1,7 +1,7 @@
 import { fromKeys, initGlForMembers } from './utils.js';
 import { GL } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty } from './animation.js';
+import { AnimatableProperty } from './animatable_property.js';
 
 class gltfTexture extends GltfObject
 {

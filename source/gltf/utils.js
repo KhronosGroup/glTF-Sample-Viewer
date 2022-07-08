@@ -1,5 +1,5 @@
 import { glMatrix } from 'gl-matrix';
-import { AnimatableProperty } from './animation';
+import { AnimatableProperty } from './animatable_property.js';
 
 function jsToGl(array) {
     let tensor = new glMatrix.ARRAY_TYPE(array.length);
