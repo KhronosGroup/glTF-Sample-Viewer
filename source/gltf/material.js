@@ -329,19 +329,11 @@ class gltfMaterial extends GltfObject
             // https://github.com/sebavan/glTF/tree/KHR_materials_sheen/extensions/2.0/Khronos/KHR_materials_sheen
             if(this.extensions.KHR_materials_sheen !== undefined)
             {
-                let sheenRoughnessFactor = 0.0;
-                let sheenColorFactor =  vec3.fromValues(1.0, 1.0, 1.0);
-
                 this.hasSheen = true;
 
-                if(this.extensions.KHR_materials_sheen.sheenRoughnessFactor !== undefined)
-                {
-                    sheenRoughnessFactor = this.extensions.KHR_materials_sheen.sheenRoughnessFactor;
-                }
-                if(this.extensions.KHR_materials_sheen.sheenColorFactor !== undefined)
-                {
-                    sheenColorFactor = jsToGl(this.extensions.KHR_materials_sheen.sheenColorFactor);
-                }
+                this.properties.set("u_SheenRoughnessFactor", this.extensions.KHR_materials_sheen.sheenRoughnessFactor);
+                this.properties.set("u_SheenColorFactor", this.extensions.KHR_materials_sheen.sheenColorFactor);
+                
                 if (this.sheenRoughnessTexture !== undefined)
                 {
                     this.sheenRoughnessTexture.samplerName = "u_sheenRoughnessSampler";
@@ -350,6 +342,7 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_SHEEN_ROUGHNESS_MAP 1");
                     this.properties.set("u_SheenRoughnessUVSet", this.sheenRoughnessTexture.texCoord);
                 }
+                
                 if (this.sheenColorTexture !== undefined)
                 {
                     this.sheenColorTexture.samplerName = "u_SheenColorSampler";
@@ -359,9 +352,6 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_SHEEN_COLOR_MAP 1");
                     this.properties.set("u_SheenColorUVSet", this.sheenColorTexture.texCoord);
                 }
-
-                this.properties.set("u_SheenRoughnessFactor", sheenRoughnessFactor);
-                this.properties.set("u_SheenColorFactor", sheenColorFactor);
             }
 
             // KHR Extension: Specular
@@ -651,6 +641,11 @@ class gltfMaterial extends GltfObject
 
     fromJsonSheen(jsonSheen)
     {
+        makeAnimatable(this.extensions.KHR_materials_sheen, jsonSheen, {
+            "sheenRoughnessFactor": 0,
+            "sheenColorFactor": [1, 1, 1],
+        });
+        
         if(jsonSheen.sheenColorTexture !== undefined)
         {
             const sheenColorTexture = new gltfTextureInfo(undefined, 0, false);
