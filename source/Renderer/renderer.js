@@ -75,7 +75,7 @@ class gltfRenderer
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
-        this.lightFill.intensity = 0.5;
+        this.lightFill.intensity.restValue = 0.5;
         const quatKey = quat.fromValues(
             -0.3535534,
             -0.353553385,
@@ -426,7 +426,7 @@ class gltfRenderer
 
         if (state.renderingParameters.usePunctual)
         {
-            this.applyLights(state.gltf);
+            this.applyLights();
         }
 
         // update model dependant matrices once per node
@@ -741,7 +741,7 @@ class gltfRenderer
 
     }
 
-    applyLights(gltf)
+    applyLights()
     {
         const uniforms = [];
         for (const [node, light] of this.visibleLights)
