@@ -15,13 +15,15 @@ class gltfLight extends GltfObject
         name = undefined)
     {
         super();
+        this.name = name;
         this.type = type;
         this.color = color;
         this.intensity = intensity;
-        this.innerConeAngle = innerConeAngle;
-        this.outerConeAngle = outerConeAngle;
         this.range = range;
-        this.name = name;
+        this.spot = {
+            innerConeAngle: innerConeAngle,
+            outerConeAngle: outerConeAngle,
+        };
 
         //Can be used to overwrite direction from node
         this.direction = undefined;
@@ -35,11 +37,6 @@ class gltfLight extends GltfObject
     fromJson(jsonLight)
     {
         super.fromJson(jsonLight);
-
-        if(jsonLight.spot !== undefined)
-        {
-            fromKeys(this, jsonLight.spot);
-        }
     }
 
     toUniform(node)
@@ -78,8 +75,8 @@ class gltfLight extends GltfObject
         uLight.color = jsToGl(this.color);
         uLight.intensity = this.intensity;
 
-        uLight.innerConeCos = Math.cos(this.innerConeAngle);
-        uLight.outerConeCos = Math.cos(this.outerConeAngle);
+        uLight.innerConeCos = Math.cos(this.spot.innerConeAngle);
+        uLight.outerConeCos = Math.cos(this.spot.outerConeAngle);
 
         switch(this.type)
         {
