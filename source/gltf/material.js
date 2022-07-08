@@ -405,14 +405,10 @@ class gltfMaterial extends GltfObject
             // KHR Extension: Transmission
             if (this.extensions.KHR_materials_transmission !== undefined)
             {
-                let transmissionFactor = 0.0;
-
                 this.hasTransmission = true;
 
-                if (transmissionFactor !== undefined)
-                {
-                    transmissionFactor = this.extensions.KHR_materials_transmission.transmissionFactor;
-                }
+                this.properties.set("u_TransmissionFactor", this.extensions.KHR_materials_transmission.transmissionFactor);
+
                 if (this.transmissionTexture !== undefined)
                 {
                     this.transmissionTexture.samplerName = "u_TransmissionSampler";
@@ -421,8 +417,6 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_TRANSMISSION_MAP 1");
                     this.properties.set("u_TransmissionUVSet", this.transmissionTexture.texCoord);
                 }
-
-                this.properties.set("u_TransmissionFactor", transmissionFactor);
             }
 
             // KHR Extension: IOR
@@ -675,6 +669,10 @@ class gltfMaterial extends GltfObject
 
     fromJsonTransmission(jsonTransmission)
     {
+        makeAnimatable(this.extensions.KHR_materials_transmission, jsonTransmission, {
+            "transmissionFactor": 0,
+        });
+
         if(jsonTransmission.transmissionTexture !== undefined)
         {
             const transmissionTexture = new gltfTextureInfo();
