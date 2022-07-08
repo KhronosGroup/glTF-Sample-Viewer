@@ -96,16 +96,12 @@ class gltfAnimation extends GltfObject
                 const animatedProperty = JsonPointer.get(gltf, property);
                 if (animatedProperty === undefined || !animatedProperty instanceof AnimatableProperty) {
                     if (!this.errors.includes(property)) {
-                        console.log(`Cannot animate ${property}`);
+                        console.warn(`Cannot animate ${property}`);
                         this.errors.push(property);
                     }
                     continue;
                 }
                 if (animatedProperty.restValue === undefined) {
-                    if (!this.errors.includes(property)) {
-                        console.log(`Rest value is undefined for ${property}`);
-                        this.errors.push(property);
-                    }
                     continue;
                 }
                 const stride = animatedProperty.restValue.length ?? 1;
@@ -143,4 +139,10 @@ class AnimatableProperty {
     }
 }
 
-export { gltfAnimation, AnimatableProperty };
+const makeAnimatable = (object, json, properties) => {
+    for (const property in properties) {
+        object[property] = new AnimatableProperty(json[property] ?? properties[property]);
+    }
+}
+
+export { gltfAnimation, AnimatableProperty, makeAnimatable };

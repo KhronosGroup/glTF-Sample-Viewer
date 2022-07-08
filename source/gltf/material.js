@@ -2,7 +2,7 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty } from './animation.js';
+import { AnimatableProperty, makeAnimatable } from './animation.js';
 
 class gltfMaterial extends GltfObject
 {
@@ -14,9 +14,9 @@ class gltfMaterial extends GltfObject
         this.normalTexture = undefined;
         this.occlusionTexture = undefined;
         this.emissiveTexture = undefined;
-        this.emissiveFactor = vec3.fromValues(0, 0, 0);
+        this.emissiveFactor = new AnimatableProperty(vec3.fromValues(0, 0, 0));
         this.alphaMode = "OPAQUE";
-        this.alphaCutoff = 0.5;
+        this.alphaCutoff = new AnimatableProperty(0.5);
         this.doubleSided = false;
 
         // pbr next extension toggles
@@ -247,34 +247,12 @@ class gltfMaterial extends GltfObject
         }
 
         // if we have SG, we prefer SG (best practice) but if we have neither objects we use MR default values
-        if(this.type !== "SG" )
+        if (this.type !== "SG")
         {
             this.defines.push("MATERIAL_METALLICROUGHNESS 1");
-            this.properties.set("u_BaseColorFactor", vec4.fromValues(1, 1, 1, 1));
-            this.properties.set("u_MetallicFactor", 1);
-            this.properties.set("u_RoughnessFactor", 1);
-        }
-
-        if (this.pbrMetallicRoughness !== undefined && this.type !== "SG")
-        {
-            if (this.pbrMetallicRoughness.baseColorFactor !== undefined)
-            {
-                let baseColorFactor = jsToGl(this.pbrMetallicRoughness.baseColorFactor);
-                this.properties.set("u_BaseColorFactor", baseColorFactor);
-            }
-
-            if (this.pbrMetallicRoughness.metallicFactor !== undefined)
-            {
-                let metallicFactor = this.pbrMetallicRoughness.metallicFactor;
-                this.properties.set("u_MetallicFactor", metallicFactor);
-            }
-
-            if (this.pbrMetallicRoughness.roughnessFactor !== undefined)
-            {
-                let roughnessFactor = this.pbrMetallicRoughness.roughnessFactor;
-                this.properties.set("u_RoughnessFactor", roughnessFactor);
-            }
-
+            this.properties.set("u_BaseColorFactor", this.pbrMetallicRoughness?.baseColorFactor);
+            this.properties.set("u_MetallicFactor", this.pbrMetallicRoughness?.metallicFactor);
+            this.properties.set("u_RoughnessFactor", this.pbrMetallicRoughness?.roughnessFactor);
         }
 
         if (this.extensions !== undefined)
@@ -353,7 +331,6 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_CLEARCOAT_NORMAL_MAP 1");
                     this.properties.set("u_ClearcoatNormalUVSet", this.clearcoatNormalTexture.texCoord);
                     this.properties.set("u_ClearcoatNormalScale", this.clearcoatNormalTexture.scale);
-
                 }
                 this.properties.set("u_ClearcoatFactor", clearcoatFactor);
                 this.properties.set("u_ClearcoatRoughnessFactor", clearcoatRoughnessFactor);
@@ -649,6 +626,12 @@ class gltfMaterial extends GltfObject
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
     {
+        makeAnimatable(this.pbrMetallicRoughness, jsonMetallicRoughness, {
+            "baseColorFactor": vec4.fromValues(1, 1, 1, 1),
+            "metallicFactor": 1,
+            "roughnessFactor": 1,
+        })
+
         if (jsonMetallicRoughness.baseColorTexture !== undefined)
         {
             const baseColorTexture = new gltfTextureInfo(undefined, 0, false);
@@ -750,6 +733,9 @@ class gltfMaterial extends GltfObject
 
     fromJsonVolume(jsonVolume)
     {
+        makeAnimatable(this.extensions.KHR_materials_volume, jsonVolume, {
+            "thicknessFactor": 0,
+        })
         if(jsonVolume.thicknessTexture !== undefined)
         {
             const thicknessTexture = new gltfTextureInfo();

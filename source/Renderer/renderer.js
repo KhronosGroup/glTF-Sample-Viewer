@@ -18,6 +18,8 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
+import { AnimatableProperty } from '../gltf/animation.js';
+import { jsToGl } from '../gltf/utils.js';
 
 class gltfRenderer
 {
@@ -493,6 +495,15 @@ class gltfRenderer
 
         for (let [uniform, val] of material.getProperties().entries())
         {
+            if (val instanceof AnimatableProperty) {
+                val = val.value();
+            }
+            if (val instanceof Array) {
+                val = jsToGl(val);
+            }
+            if (val === undefined) {
+                continue;
+            }
             this.shader.updateUniform(uniform, val, false);
         }
 
