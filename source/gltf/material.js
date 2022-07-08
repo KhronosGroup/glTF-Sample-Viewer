@@ -369,6 +369,9 @@ class gltfMaterial extends GltfObject
             {
                 this.hasSpecular = true;
 
+                this.properties.set("u_KHR_materials_specular_specularColorFactor", this.extensions.KHR_materials_specular.specularColorFactor);
+                this.properties.set("u_KHR_materials_specular_specularFactor", this.extensions.KHR_materials_specular.specularFactor);
+
                 if (this.specularTexture !== undefined)
                 {
                     this.specularTexture.samplerName = "u_SpecularSampler";
@@ -387,12 +390,6 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_SPECULAR_COLOR_MAP 1");
                     this.properties.set("u_SpecularColorUVSet", this.specularColorTexture.texCoord);
                 }
-
-                let specularColorFactor = jsToGl(this.extensions.KHR_materials_specular.specularColorFactor ?? [1.0, 1.0, 1.0]);
-                let specularFactor = this.extensions.KHR_materials_specular.specularFactor ?? 1.0;
-
-                this.properties.set("u_KHR_materials_specular_specularColorFactor", specularColorFactor);
-                this.properties.set("u_KHR_materials_specular_specularFactor", specularFactor);
             }
 
             // KHR Extension: Emissive strength
@@ -688,6 +685,11 @@ class gltfMaterial extends GltfObject
 
     fromJsonSpecular(jsonSpecular)
     {
+        makeAnimatable(this.extensions.KHR_materials_specular, jsonSpecular, {
+            "specularColorFactor": [1, 1, 1],
+            "specularFactor": 1,
+        });
+
         if(jsonSpecular.specularTexture !== undefined)
         {
             const specularTexture = new gltfTextureInfo();
