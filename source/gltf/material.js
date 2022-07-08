@@ -428,6 +428,10 @@ class gltfMaterial extends GltfObject
             {
                 this.hasVolume = true;
 
+                this.properties.set("u_AttenuationColor", this.extensions.KHR_materials_volume.attenuationColor);
+                this.properties.set("u_AttenuationDistance", this.extensions.KHR_materials_volume.attenuationDistance);
+                this.properties.set("u_ThicknessFactor", this.extensions.KHR_materials_volume.thicknessFactor);
+
                 if (this.thicknessTexture !== undefined)
                 {
                     this.thicknessTexture.samplerName = "u_ThicknessSampler";
@@ -436,14 +440,6 @@ class gltfMaterial extends GltfObject
                     this.defines.push("HAS_THICKNESS_MAP 1");
                     this.properties.set("u_ThicknessUVSet", this.thicknessTexture.texCoord);
                 }
-
-                let attenuationColor = jsToGl(this.extensions.KHR_materials_volume.attenuationColor ?? [1.0, 1.0, 1.0]);
-                let attenuationDistance = this.extensions.KHR_materials_volume.attenuationDistance ?? 0.0;
-                let thicknessFactor = this.extensions.KHR_materials_volume.thicknessFactor ?? 0.0;
-
-                this.properties.set("u_AttenuationColor", attenuationColor);
-                this.properties.set("u_AttenuationDistance", attenuationDistance);
-                this.properties.set("u_ThicknessFactor", thicknessFactor);
             }
 
             // KHR Extension: Iridescence
@@ -700,6 +696,9 @@ class gltfMaterial extends GltfObject
     {
         makeAnimatable(this.extensions.KHR_materials_volume, jsonVolume, {
             "thicknessFactor": 0,
+            "attenuationColor": [1, 1, 1],
+            "attenuationDistance": 0,
+
         });
 
         if(jsonVolume.thicknessTexture !== undefined)
