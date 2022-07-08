@@ -147,9 +147,6 @@ class gltfMaterial extends GltfObject
         }
 
         const uv = textureInfo.extensions.KHR_texture_transform;
-        uv.offset = new AnimatableProperty(uv.offset ?? [0, 0]);
-        uv.scale = new AnimatableProperty(uv.scale ?? [1, 1]);
-        uv.rotation = new AnimatableProperty(uv.rotation ?? 0);
 
         this.textureTransforms.push({
             key: textureKey,
@@ -182,7 +179,7 @@ class gltfMaterial extends GltfObject
             this.parseTextureInfoExtensions(this.occlusionTexture, "Occlusion");
             this.textures.push(this.occlusionTexture);
             this.defines.push("HAS_OCCLUSION_MAP 1");
-            this.properties.set("u_OcclusionStrength", this.occlusionTexture.strength);
+            this.properties.set("u_OcclusionStrength", this.occlusionTexture.strength.value());
             this.properties.set("u_OcclusionUVSet", this.occlusionTexture.texCoord);
         }
 

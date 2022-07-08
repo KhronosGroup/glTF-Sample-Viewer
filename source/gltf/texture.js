@@ -59,7 +59,7 @@ class gltfTextureInfo
         this.texCoord = texCoord; // which UV set to use
         this.linear = linear;
         this.samplerName = samplerName;
-        this.strength = 1.0; // occlusion
+        this.strength = new AnimatableProperty(1.0); // occlusion
         this.scale = new AnimatableProperty(1.0); // normal
         this.generateMips = generateMips;
 
@@ -74,6 +74,14 @@ class gltfTextureInfo
     fromJson(jsonTextureInfo)
     {
         fromKeys(this, jsonTextureInfo);
+
+        if (this.extensions?.KHR_texture_transform !== undefined)
+        {
+            const uv = this.extensions.KHR_texture_transform;
+            uv.offset = new AnimatableProperty(uv.offset ?? [0, 0]);
+            uv.scale = new AnimatableProperty(uv.scale ?? [1, 1]);
+            uv.rotation = new AnimatableProperty(uv.rotation ?? 0);
+        }
     }
 }
 
