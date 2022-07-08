@@ -1,7 +1,7 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { jsToGl, UniformStruct } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty } from './animatable_property.js';
+import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfLight extends GltfObject
 {
@@ -20,6 +20,24 @@ class gltfLight extends GltfObject
 
         // Used to override direction from node
         this.direction = undefined;
+    }
+
+    fromJson(json)
+    {
+        super.fromJson(json);
+
+        makeAnimatable(this, json, {
+            "color": [1, 1, 1],
+            "intensity": 1,
+            "range": -1,
+        });
+        if (json.spot !== undefined)
+        {
+            makeAnimatable(this.spot, json.spot, {
+                "innerConeAngle": 0,
+                "outerConeAngle": Math.PI / 4,
+            });
+        }
     }
 
     toUniform(node)
