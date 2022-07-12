@@ -1,6 +1,6 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty } from './animatable_property.js';
+import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfCamera extends GltfObject
 {
@@ -22,6 +22,30 @@ class gltfCamera extends GltfObject
             znear: new AnimatableProperty(0.01),
             zfar: new AnimatableProperty(Infinity),
         };
+    }
+
+    fromJson(json)
+    {
+        super.fromJson(json);
+
+        if (json.perspective !== undefined)
+        {
+            makeAnimatable(this.perspective, json.perspective, {
+                "yfov": 45 * Math.PI / 180,            
+                "aspectRatio": 1.0,
+                "znear": 0.01,
+                "zfar": Infinity,
+            });
+        }
+        if (json.orthographic !== undefined)
+        {
+            makeAnimatable(this.orthographic, json.orthographic, {
+                "xmag": 1,
+                "ymag": 1,
+                "znear": 0.01,
+                "zfar": Infinity,
+            });
+        }
     }
 
     initGl(gltf, webGlContext)
