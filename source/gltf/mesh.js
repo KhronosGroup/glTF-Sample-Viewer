@@ -24,7 +24,7 @@ class gltfMesh extends GltfObject
 
         this.primitives = objectsFromJsons(jsonMesh.primitives, gltfPrimitive);
 
-        makeAnimatable(this.weights, jsonMesh, { "weights": [] });
+        makeAnimatable(this, jsonMesh, { "weights": [] });
     }
 }
 

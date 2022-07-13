@@ -20,7 +20,7 @@ class gltfNode extends GltfObject
         this.name = undefined;
         this.mesh = undefined;
         this.skin = undefined;
-        this.weights = new AnimatableProperty();
+        this.weights = new AnimatableProperty(undefined);
 
         // non gltf
         this.worldTransform = mat4.create();
@@ -32,12 +32,12 @@ class gltfNode extends GltfObject
     fromJson(json)
     {
         super.fromJson(json);
-        makeAnimatable(this.weights, json, { "weights": [] });
+        makeAnimatable(this, json, { "weights": [] });
     }
 
     getWeights(gltf)
     {
-        if (this.weights.isDefined()) {
+        if (this.weights.value()  !== undefined && this.weights.value().length > 0) {
             return this.weights;
         }
         else {
