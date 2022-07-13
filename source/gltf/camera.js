@@ -106,19 +106,22 @@ class gltfCamera extends GltfObject
         {
             mat4.perspective(
                 projection,
-                this.perspective.yfov.value(),
-                this.perspective.aspectRatio.value(),
-                this.perspective.znear.value(),
-                this.perspective.zfar.value()
+                this.perspective.yfov.value()*1.0,
+                this.perspective.aspectRatio.value()*1.0,
+                this.perspective.znear.value()*1.0,
+                this.perspective.zfar.value()*1.0
             );
+       
         }
         else if (this.type === "orthographic")
         {
-            projection[0]  = 1.0 / this.orthographic.xmag.value();
-            projection[5]  = 1.0 / this.orthographic.ymag.value();
-            projection[10] = 2.0 / (this.orthographic.znear.value() - this.orthographic.zfar.value());
-            projection[14] = (this.orthographic.zfar.value() + this.orthographic.znear.value()) /
-                (this.orthographic.znear.value() - this.orthographic.zfar.value());
+            const znear = this.orthographic.znear.value()*1.0;
+            const zfar = this.orthographic.zfar.value()*1.0;
+
+            projection[0]  = 1.0 / this.orthographic.xmag.value()*1.0;
+            projection[5]  = 1.0 / this.orthographic.ymag.value()*1.0;
+            projection[10] = 2.0 / (znear - zfar);
+            projection[14] = (zfar + znear) / (znear - zfar);
         }
 
         return projection;
