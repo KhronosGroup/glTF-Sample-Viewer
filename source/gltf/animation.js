@@ -4,8 +4,7 @@ import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAnimationSampler } from './animation_sampler.js';
 import { gltfInterpolator } from './interpolator.js';
 import { AnimatableProperty } from './animatable_property.js';
-// import { JsonPointer } from 'json-ptr';
-import { JsonPointer } from '../../node_modules/json-ptr/dist/esm/index.js';
+import { JsonPointer } from 'json-ptr';
 
 class gltfAnimation extends GltfObject
 {
