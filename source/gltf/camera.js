@@ -214,12 +214,12 @@ class gltfCamera extends GltfObject
         if (this.type === "perspective")
         {
             camera["perspective"] = {};
-            if (this.perspective.aspectRatio !== undefined)
+            if (this.perspective.aspectRatio.isDefined())
             {
                 camera["perspective"]["aspectRatio"] = this.perspective.aspectRatio.value();
             }
             camera["perspective"]["yfov"] = this.perspective.yfov.value();
-            if (this.perspective.zfar != Infinity)
+            if (this.perspective.zfar.isDefined() && this.perspective.zfar.value() != Infinity)
             {
                 camera["perspective"]["zfar"] = this.perspective.zfar.value();
             }

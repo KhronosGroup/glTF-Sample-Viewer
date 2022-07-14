@@ -59,7 +59,7 @@ async function main()
                     }
                     const scene = state.gltf.scenes[state.sceneIndex];
                     scene.applyTransformHierarchy(state.gltf);
-                    state.userCamera.aspectRatio = canvas.width / canvas.height;
+                    state.userCamera.perspective.aspectRatio.restValue = canvas.width / canvas.height;
                     state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
                     // Try to start as many animations as possible without generating conficts.
