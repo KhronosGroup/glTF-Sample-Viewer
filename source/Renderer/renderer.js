@@ -274,6 +274,11 @@ class gltfRenderer
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
+        if(currentCamera.aspectRatio > 1.0) {
+            currentCamera.xmag = currentCamera.ymag * currentCamera.aspectRatio; 
+        } else {
+            currentCamera.ymag = currentCamera.xmag / currentCamera.aspectRatio; 
+        }
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
