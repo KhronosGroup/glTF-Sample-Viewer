@@ -276,6 +276,11 @@ class gltfRenderer
         }
 
         currentCamera.perspective.aspectRatio.restValue = this.currentWidth / this.currentHeight;
+        if(currentCamera.perspective.aspectRatio.restValue > 1.0) {
+            currentCamera.orthographic.xmag.restValue = currentCamera.orthographic.ymag.restValue * currentCamera.perspective.aspectRatio.restValue; 
+        } else {
+            currentCamera.orthographic.ymag.restValue = currentCamera.orthographic.xmag.restValue / currentCamera.perspective.aspectRatio.restValue; 
+        }
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
