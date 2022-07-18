@@ -156,7 +156,7 @@ void main()
 #endif
 #endif
 
-#if defined(MATERIAL_TRANSMISSION) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
+#if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
     f_transmission += getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
