@@ -118,14 +118,6 @@ class ResourceLoader
 
         await gltfLoader.load(gltf, this.view.context, buffers);
 
-        // DEBUG: Play audio source 0 immediately 
-        if(gltf.audioSources!==undefined && gltf.audioSources.length!=0){
-            const context = new AudioContext();
-            const source = context.createBufferSource();
-            source.buffer = gltf.audioSources[0].decodedAudio;
-            source.connect(context.destination);
-            source.start();
-        }
         return gltf;
     }
 

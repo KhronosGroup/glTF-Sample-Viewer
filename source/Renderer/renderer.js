@@ -32,6 +32,8 @@ class gltfRenderer
         this.initialized = false;
         this.samples = 4;
 
+        this.audioContext =  new AudioContext();
+
         // create render target for non transmission materials
         this.opaqueRenderTexture = 0;
         this.opaqueFramebuffer = 0;
@@ -252,6 +254,31 @@ class gltfRenderer
         this.transmissionDrawables = drawables
             .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
                 && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+    }
+
+    handleAudio(state, scene)
+    {
+        if (this.preparedScene !== scene) 
+        {
+            this.prepareScene(state, scene)
+            this.preparedScene = scene
+        }
+
+        if( scene.extensions !== undefined 
+            && scene.extensions.KHR_audio !== undefined)
+        { 
+            for(const emitterReference of scene.extensions.KHR_audio.emitters){
+                const emitter = state.gltf.audioEmitters[emitterReference]
+                const source = state.gltf.audioSources[emitter.source]
+                const audioBufferSourceNode = audioContext.createBufferSource();
+                audioBufferSourceNode.buffer = source.decodedAudio;
+                audioBufferSourceNode.connect(audioContext.destination);
+                audioBufferSourceNode.start();
+            }
+        }
+
+
+        
     }
 
     // render complete gltf scene with given camera

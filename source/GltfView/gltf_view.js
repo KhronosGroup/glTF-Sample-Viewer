@@ -79,6 +79,7 @@ class GltfView
         scene.applyTransformHierarchy(state.gltf);
 
         this.renderer.drawScene(state, scene);
+        this.renderer.handleAudio(state, scene);
     }
 
     /**
