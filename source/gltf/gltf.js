@@ -18,6 +18,7 @@ import { gltfAnimation } from './animation.js';
 import { gltfSkin } from './skin.js';
 import { gltfVariant } from './variant.js';
 import { gltfAudioSource } from './audio_source';
+import { gltfAudioEmitter } from './audio_emitter.js';
 
 class glTF extends GltfObject
 {
@@ -73,6 +74,7 @@ class glTF extends GltfObject
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
         this.audioSources = objectsFromJsons(getJsonAudioSourcesFromExtensions(json.extensions), gltfAudioSource);
+        this.audioEmitters = objectsFromJsons(getJsonAudioEmittersFromExtensions(json.extensions), gltfAudioEmitter);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -212,6 +214,19 @@ function getJsonAudioSourcesFromExtensions(extensions)
     return extensions.KHR_audio.sources;
 }
 
+function getJsonAudioEmittersFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_audio === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_audio.emitters;
+}
+
 function enforceVariantsUniqueness(variants)
 {
     for(let i=0;i<variants.length;i++)
@@ -249,4 +264,5 @@ export {
     gltfSkin,
     gltfVariant,
     gltfAudioSource,
+    gltfAudioEmitter,
 };
