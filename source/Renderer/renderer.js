@@ -275,10 +275,18 @@ class gltfRenderer
                     continue;
                 }
                 console.log(" audioContext.createBufferSource();")
+                // emitterSourceNode -> gainNode -> globalDestination
+                emitter.gainNode = this.audioContext.createGain()
+                emitter.gainNode.connect(this.audioContext.destination)
+                emitter.gainNode.gain.setValueAtTime(emitter.gain, this.audioContext.currentTime);
                 emitter.audioBufferSourceNode = this.audioContext.createBufferSource();
                 emitter.audioBufferSourceNode.buffer = source.decodedAudio;
-                emitter.audioBufferSourceNode.connect(this.audioContext.destination);
-                emitter.audioBufferSourceNode.start();
+                emitter.audioBufferSourceNode.connect(emitter.gainNode);
+                if(emitter.playing == true)
+                {
+                    emitter.audioBufferSourceNode.start();
+                }
+                emitter.audioBufferSourceNode.loop = emitter.loop;
             }
         }
 

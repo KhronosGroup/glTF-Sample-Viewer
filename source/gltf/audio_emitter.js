@@ -24,6 +24,7 @@ class gltfAudioEmitter extends GltfObject
 
         // non gltf:
         this.audioBufferSourceNode = undefined;
+        this.gainNode = undefined;
     }
 
     fromJson(jsonAudioEmitter)
