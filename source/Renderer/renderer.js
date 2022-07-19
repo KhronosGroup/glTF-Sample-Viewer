@@ -254,6 +254,9 @@ class gltfRenderer
         this.transmissionDrawables = drawables
             .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
                 && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+
+        this.audioEmitterNodes = this.nodes
+        .filter(node => node.extensions !== undefined && node.extensions.KHR_audio !== undefined && node.extensions.KHR_audio.emitter !== undefined);
     }
 
     handleAudio(state, scene)
@@ -269,12 +272,15 @@ class gltfRenderer
         { 
             for(const emitterReference of scene.extensions.KHR_audio.emitters){
                 let emitter = state.gltf.audioEmitters[emitterReference]
-                const source = state.gltf.audioSources[emitter.source]
+                if(emitter.type !== "global") // only global emitters can be used in a scene
+                {
+                    continue;
+                }
                 if(emitter.audioBufferSourceNode !== undefined)
                 {
                     continue;
                 }
-                console.log(" audioContext.createBufferSource();")
+                const source = state.gltf.audioSources[emitter.source]
                 // emitterSourceNode -> gainNode -> globalDestination
                 emitter.gainNode = this.audioContext.createGain()
                 emitter.gainNode.connect(this.audioContext.destination)
@@ -289,7 +295,20 @@ class gltfRenderer
                 emitter.audioBufferSourceNode.loop = emitter.loop;
             }
         }
-
+        for(const node of this.audioEmitterNodes) {
+            console.log("emitter node")
+            const emitterReference = node.extensions.KHR_audio.emitter;
+            let emitter = state.gltf.audioEmitters[emitterReference]
+            if(emitter.type !== "positional") // only positional emitters can be used in a node
+            {
+                continue;
+            }
+            if(emitter.audioBufferSourceNode !== undefined)
+            {
+                continue;
+            }
+        }
+        
 
         
     }
