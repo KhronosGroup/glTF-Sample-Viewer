@@ -20,7 +20,10 @@ class gltfAudioEmitter extends GltfObject
             maxDistance: 10000.0,
             refDistance: 1.0,
             rolloffFactor: 1.0,
-        };  
+        };
+
+        // non gltf:
+        this.audioBufferSourceNode = undefined;
     }
 
     fromJson(jsonAudioEmitter)

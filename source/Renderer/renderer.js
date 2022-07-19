@@ -268,12 +268,17 @@ class gltfRenderer
             && scene.extensions.KHR_audio !== undefined)
         { 
             for(const emitterReference of scene.extensions.KHR_audio.emitters){
-                const emitter = state.gltf.audioEmitters[emitterReference]
+                let emitter = state.gltf.audioEmitters[emitterReference]
                 const source = state.gltf.audioSources[emitter.source]
-                const audioBufferSourceNode = audioContext.createBufferSource();
-                audioBufferSourceNode.buffer = source.decodedAudio;
-                audioBufferSourceNode.connect(audioContext.destination);
-                audioBufferSourceNode.start();
+                if(emitter.audioBufferSourceNode !== undefined)
+                {
+                    continue;
+                }
+                console.log(" audioContext.createBufferSource();")
+                emitter.audioBufferSourceNode = this.audioContext.createBufferSource();
+                emitter.audioBufferSourceNode.buffer = source.decodedAudio;
+                emitter.audioBufferSourceNode.connect(this.audioContext.destination);
+                emitter.audioBufferSourceNode.start();
             }
         }
 
