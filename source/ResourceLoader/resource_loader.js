@@ -9,6 +9,7 @@ import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
 import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
+import { gltfAudioSource } from "../gltf/audio_source.js";
 
 
 import { AsyncFileReader } from './async_file_reader.js';
@@ -110,8 +111,20 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
+        for (const audio of gltf.audioSources)
+        {
+            audio.resolveRelativePath(getContainingFolder(gltf.path));
+        }
+
         await gltfLoader.load(gltf, this.view.context, buffers);
 
+        if(gltf.audioSources!==undefined && gltf.audioSources.length!=0){
+            const context = new AudioContext();
+            const source = context.createBufferSource();
+            source.buffer = gltf.audioSources[0].decodedAudio;
+            source.connect(context.destination);
+            source.start();
+        }
         return gltf;
     }
 
