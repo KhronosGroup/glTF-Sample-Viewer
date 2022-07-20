@@ -72,6 +72,8 @@ class gltfRenderer
         this.viewProjectionMatrix = mat4.create();
 
         this.currentCameraPosition = vec3.create();
+        this.currentCameraLookDirection = vec3.create();
+        this.currentCameraUpDirection = vec3.create();
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
@@ -259,19 +261,6 @@ class gltfRenderer
         .filter(node => node.extensions !== undefined && node.extensions.KHR_audio !== undefined && node.extensions.KHR_audio.emitter !== undefined);
     }
 
-    getDistanceModelGain(emitter)
-    {
-        let distance = vec3.distance(emitter.position, this.currentCameraPosition);
-        
-/*
-        if (emitter.positional.distanceModel == AudioEmitter::DistanceModel::Linear) {
-            finalGain *= 1.0f - audioEmitter->rollofFactor * (distance - audioEmitter->refDistance) / (audioEmitter->maxDistance - audioEmitter->refDistance);
-        } else if (audioEmitter->distanceModel == AudioEmitter::DistanceModel::Inverse) {
-            finalGain *= audioEmitter->refDistance / (audioEmitter->refDistance + audioEmitter->rollofFactor * (math::max(distance, audioEmitter->refDistance) - audioEmitter->refDistance));
-        } else if (audioEmitter->distanceModel == AudioEmitter::DistanceModel::Exponential) {
-            finalGain *= powf(math::max(distance, audioEmitter->refDistance) / audioEmitter->refDistance, -audioEmitter->rollofFactor);
-        }*/
-    }
 
     updateAudioEmitter(state, emitter)
     {
@@ -350,6 +339,7 @@ class gltfRenderer
         {
             emitter.pannerNode.setPosition(emitter.position[0],emitter.position[1],emitter.position[2]);
         }
+        console.log("emitter.position = "+emitter.position)
 
         emitter.audioBufferSourceNode.loop = emitter.loop;
     }
@@ -359,28 +349,35 @@ class gltfRenderer
         var listener = this.audioContext.listener;
 
         if(listener.forwardX) {
-            listener.forwardX.setValueAtTime(0, this.audioContext.currentTime);
-            listener.forwardY.setValueAtTime(0, this.audioContext.currentTime);
-            listener.forwardZ.setValueAtTime(-1, this.audioContext.currentTime);
-            listener.upX.setValueAtTime(0, this.audioContext.currentTime);
-            listener.upY.setValueAtTime(1, this.audioContext.currentTime);
-            listener.upZ.setValueAtTime(0, this.audioContext.currentTime);
+            listener.forwardX.setValueAtTime(this.currentCameraLookDirection[0], this.audioContext.currentTime);
+            listener.forwardY.setValueAtTime(this.currentCameraLookDirection[1], this.audioContext.currentTime);
+            listener.forwardZ.setValueAtTime(this.currentCameraLookDirection[2], this.audioContext.currentTime);
+            listener.upX.setValueAtTime(this.currentCameraUpDirection[0], this.audioContext.currentTime);
+            listener.upY.setValueAtTime(this.currentCameraUpDirection[1], this.audioContext.currentTime);
+            listener.upZ.setValueAtTime(this.currentCameraUpDirection[2], this.audioContext.currentTime);
         } 
         else 
         {
-            listener.setOrientation(0,0,-1,0,1,0);
+            listener.setOrientation(
+                this.currentCameraLookDirection[0],
+                this.currentCameraLookDirection[1],
+                this.currentCameraLookDirection[2],
+                this.currentCameraUpDirection[0],
+                this.currentCameraUpDirection[1],
+                this.currentCameraUpDirection[2]);
         }
 
         if(listener.positionX) 
         { 
             console.log(" listener.positionX.setValueAtTime")
-            listener.positionX.setValueAtTime( this.currentCameraPosition[0], this.audioContext.currentTime);
-            listener.positionY.setValueAtTime( this.currentCameraPosition[1], this.audioContext.currentTime);
-            listener.positionZ.setValueAtTime( this.currentCameraPosition[2], this.audioContext.currentTime);
+            listener.positionX.setValueAtTime(this.currentCameraPosition[0], this.audioContext.currentTime);
+            listener.positionY.setValueAtTime(this.currentCameraPosition[1], this.audioContext.currentTime);
+            listener.positionZ.setValueAtTime(this.currentCameraPosition[2], this.audioContext.currentTime);
         } 
         else 
-        {   console.log(" listener.setPosition") // Firefox
-            listener.setPosition(this.currentCameraPosition[0],this.currentCameraPosition[1],this.currentCameraPosition[2]);
+        {   
+            console.log("listener.setPosition "+this.currentCameraPosition) // Firefox
+            listener.setPosition(this.currentCameraPosition[0], this.currentCameraPosition[1], this.currentCameraPosition[2]);
         }
     }
 
@@ -404,9 +401,7 @@ class gltfRenderer
                     continue;
                 }
 
-                //
                 this.updateAudioEmitter(state, emitter);
-                //
             }
         }
         for(const node of this.audioEmitterNodes) {
@@ -466,6 +461,8 @@ class gltfRenderer
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
+        this.currentCameraLookDirection = currentCamera.getLookDirection(state.gltf);
+        this.currentCameraUpDirection = currentCamera.getUpDirection(state.gltf);
 
         this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&

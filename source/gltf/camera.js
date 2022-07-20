@@ -142,6 +142,14 @@ class gltfCamera extends GltfObject
         vec3.transformQuat(direction, vec3.fromValues(0, 0, -1), rotation);
         return direction;
     }
+    
+    getUpDirection(gltf)
+    {
+        const direction = vec3.create();
+        const rotation = this.getRotation(gltf);
+        vec3.transformQuat(direction, vec3.fromValues(0, 1, 0), rotation);
+        return direction;
+    }
 
     getRotation(gltf)
     {
