@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3, quat } from 'gl-matrix';
+import { mat4, mat3, vec3, quat, vec4 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
@@ -296,7 +296,7 @@ class gltfRenderer
             }
         }
         for(const node of this.audioEmitterNodes) {
-            console.log("emitter node")
+            
             const emitterReference = node.extensions.KHR_audio.emitter;
             let emitter = state.gltf.audioEmitters[emitterReference]
             if(emitter.type !== "positional") // only positional emitters can be used in a node
@@ -307,6 +307,16 @@ class gltfRenderer
             {
                 continue;
             }
+
+            const worldTransform = node.worldTransform;
+            
+            mat4.getTranslation(emitter.position, worldTransform);
+            console.log("emitter.position = "+emitter.position)
+            let resultTransform = vec4.create();
+            vec4.transformMat4(resultTransform, vec4.fromValues(0, 0, -1, 0), worldTransform)
+            vec3.normalize(emitter.orientation,vec3.fromValues(resultTransform[0], resultTransform[1], resultTransform[2]));
+            console.log("emitter.orientation = "+emitter.orientation)
+
         }
         
 

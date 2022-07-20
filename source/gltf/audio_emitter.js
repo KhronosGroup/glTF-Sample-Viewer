@@ -1,6 +1,6 @@
 import { GltfObject } from './gltf_object.js';
 import { fromKeys } from './utils.js';
-
+import { vec3 } from 'gl-matrix';
 class gltfAudioEmitter extends GltfObject
 {
     constructor()
@@ -25,6 +25,8 @@ class gltfAudioEmitter extends GltfObject
         // non gltf:
         this.audioBufferSourceNode = undefined;
         this.gainNode = undefined;
+        this.position = vec3.create();
+        this.orientation = vec3.create();
     }
 
     fromJson(jsonAudioEmitter)
