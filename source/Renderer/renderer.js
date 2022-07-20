@@ -259,6 +259,36 @@ class gltfRenderer
         .filter(node => node.extensions !== undefined && node.extensions.KHR_audio !== undefined && node.extensions.KHR_audio.emitter !== undefined);
     }
 
+    updateAudioEmitter(state, emitter)
+    {
+        // emitterSourceNode -> gainNode -> globalDestination
+
+        const source = state.gltf.audioSources[emitter.source]
+
+        // create audio nodes if available
+        if(emitter.gainNode === undefined)
+        {
+            emitter.gainNode = this.audioContext.createGain()
+            emitter.gainNode.connect(this.audioContext.destination)
+        }
+                
+        if(emitter.audioBufferSourceNode === undefined)
+        {
+            emitter.audioBufferSourceNode = this.audioContext.createBufferSource();
+            emitter.audioBufferSourceNode.buffer = source.decodedAudio;
+            emitter.audioBufferSourceNode.connect(emitter.gainNode);
+            if(emitter.playing === true)
+            {
+                emitter.audioBufferSourceNode.start();
+            }
+
+        }
+
+        emitter.gainNode.gain.setValueAtTime(emitter.gain, this.audioContext.currentTime);
+
+        emitter.audioBufferSourceNode.loop = emitter.loop;
+    } 
+
     handleAudio(state, scene)
     {
         if (this.preparedScene !== scene) 
@@ -276,23 +306,10 @@ class gltfRenderer
                 {
                     continue;
                 }
-                if(emitter.audioBufferSourceNode !== undefined)
-                {
-                    continue;
-                }
-                const source = state.gltf.audioSources[emitter.source]
-                // emitterSourceNode -> gainNode -> globalDestination
-                emitter.gainNode = this.audioContext.createGain()
-                emitter.gainNode.connect(this.audioContext.destination)
-                emitter.gainNode.gain.setValueAtTime(emitter.gain, this.audioContext.currentTime);
-                emitter.audioBufferSourceNode = this.audioContext.createBufferSource();
-                emitter.audioBufferSourceNode.buffer = source.decodedAudio;
-                emitter.audioBufferSourceNode.connect(emitter.gainNode);
-                if(emitter.playing == true)
-                {
-                    emitter.audioBufferSourceNode.start();
-                }
-                emitter.audioBufferSourceNode.loop = emitter.loop;
+
+                //
+                this.updateAudioEmitter(state, emitter);
+                //
             }
         }
         for(const node of this.audioEmitterNodes) {
@@ -300,10 +317,6 @@ class gltfRenderer
             const emitterReference = node.extensions.KHR_audio.emitter;
             let emitter = state.gltf.audioEmitters[emitterReference]
             if(emitter.type !== "positional") // only positional emitters can be used in a node
-            {
-                continue;
-            }
-            if(emitter.audioBufferSourceNode !== undefined)
             {
                 continue;
             }
@@ -317,6 +330,9 @@ class gltfRenderer
             vec3.normalize(emitter.orientation,vec3.fromValues(resultTransform[0], resultTransform[1], resultTransform[2]));
             console.log("emitter.orientation = "+emitter.orientation)
 
+            
+            this.updateAudioEmitter(state, emitter);
+            
         }
         
 
