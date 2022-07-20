@@ -259,24 +259,57 @@ class gltfRenderer
         .filter(node => node.extensions !== undefined && node.extensions.KHR_audio !== undefined && node.extensions.KHR_audio.emitter !== undefined);
     }
 
+    getDistanceModelGain(emitter)
+    {
+        let distance = vec3.distance(emitter.position, this.currentCameraPosition);
+        
+/*
+        if (emitter.positional.distanceModel == AudioEmitter::DistanceModel::Linear) {
+            finalGain *= 1.0f - audioEmitter->rollofFactor * (distance - audioEmitter->refDistance) / (audioEmitter->maxDistance - audioEmitter->refDistance);
+        } else if (audioEmitter->distanceModel == AudioEmitter::DistanceModel::Inverse) {
+            finalGain *= audioEmitter->refDistance / (audioEmitter->refDistance + audioEmitter->rollofFactor * (math::max(distance, audioEmitter->refDistance) - audioEmitter->refDistance));
+        } else if (audioEmitter->distanceModel == AudioEmitter::DistanceModel::Exponential) {
+            finalGain *= powf(math::max(distance, audioEmitter->refDistance) / audioEmitter->refDistance, -audioEmitter->rollofFactor);
+        }*/
+    }
+
     updateAudioEmitter(state, emitter)
     {
-        // emitterSourceNode -> gainNode -> globalDestination
+        // emitterSourceNode -> [optional: pannerNode] -> gainNode -> globalDestination
 
         const source = state.gltf.audioSources[emitter.source]
 
-        // create audio nodes if available
+        // At first create audio nodes if they are undefined
+
+        // controls emitter gain
         if(emitter.gainNode === undefined)
         {
             emitter.gainNode = this.audioContext.createGain()
             emitter.gainNode.connect(this.audioContext.destination)
         }
-                
+           
+        if(emitter.pannerNode === undefined) 
+        {                          
+            emitter.pannerNode = this.audioContext.createPanner();
+           
+        }
+    
+        // audio source node
         if(emitter.audioBufferSourceNode === undefined)
         {
             emitter.audioBufferSourceNode = this.audioContext.createBufferSource();
             emitter.audioBufferSourceNode.buffer = source.decodedAudio;
-            emitter.audioBufferSourceNode.connect(emitter.gainNode);
+            if(emitter.type === "global")
+            {   
+                // skip panner node if we have a global emitter
+                emitter.audioBufferSourceNode.connect(emitter.gainNode);
+            }
+            else
+            {
+                emitter.audioBufferSourceNode.connect(emitter.pannerNode);
+                emitter.pannerNode.connect(emitter.gainNode)
+            }
+
             if(emitter.playing === true)
             {
                 emitter.audioBufferSourceNode.start();
@@ -284,10 +317,73 @@ class gltfRenderer
 
         }
 
+        // Update values:
         emitter.gainNode.gain.setValueAtTime(emitter.gain, this.audioContext.currentTime);
 
+        emitter.pannerNode.distanceModel = emitter.positional.distanceModel;
+        console.log("emitter.positional.refDistance "+  emitter.positional.refDistance)
+        emitter.pannerNode.refDistance = emitter.positional.refDistance;
+        emitter.pannerNode.maxDistance = emitter.positional.maxDistance;
+        emitter.pannerNode.rolloffFactor = emitter.positional.rolloffFactor;
+        // pannerNode angles are given in degrees. glTF values are given in radians
+        emitter.pannerNode.coneInnerAngle = emitter.positional.coneInnerAngle * 180.0 / Math.PI;
+        emitter.pannerNode.coneOuterAngle = emitter.positional.coneOuterAngle * 180.0 / Math.PI;
+        emitter.pannerNode.coneOuterGain = emitter.positional.coneOuterGain;
+
+        if(emitter.pannerNode.orientationX) 
+        {
+            emitter.pannerNode.orientationX.setValueAtTime(emitter.orientation[0], this.audioContext.currentTime);
+            emitter.pannerNode.orientationY.setValueAtTime(emitter.orientation[1], this.audioContext.currentTime);
+            emitter.pannerNode.orientationZ.setValueAtTime(emitter.orientation[2], this.audioContext.currentTime);
+        } 
+        else 
+        {
+            emitter.pannerNode.setOrientation(emitter.orientation[0],emitter.orientation[1],emitter.orientation[2]);
+        }
+
+        if(emitter.pannerNode.positionX) 
+        {
+            emitter.pannerNode.positionX.setValueAtTime(emitter.position[0], this.audioContext.currentTime);
+            emitter.pannerNode.positionY.setValueAtTime(emitter.position[1], this.audioContext.currentTime);
+            emitter.pannerNode.positionZ.setValueAtTime(emitter.position[2], this.audioContext.currentTime);
+        } 
+        else 
+        {
+            emitter.pannerNode.setPosition(emitter.position[0],emitter.position[1],emitter.position[2]);
+        }
+
         emitter.audioBufferSourceNode.loop = emitter.loop;
-    } 
+    }
+
+    updateAudioListener()
+    {
+        var listener = this.audioContext.listener;
+
+        if(listener.forwardX) {
+            listener.forwardX.setValueAtTime(0, this.audioContext.currentTime);
+            listener.forwardY.setValueAtTime(0, this.audioContext.currentTime);
+            listener.forwardZ.setValueAtTime(-1, this.audioContext.currentTime);
+            listener.upX.setValueAtTime(0, this.audioContext.currentTime);
+            listener.upY.setValueAtTime(1, this.audioContext.currentTime);
+            listener.upZ.setValueAtTime(0, this.audioContext.currentTime);
+        } 
+        else 
+        {
+            listener.setOrientation(0,0,-1,0,1,0);
+        }
+
+        if(listener.positionX) 
+        { 
+            console.log(" listener.positionX.setValueAtTime")
+            listener.positionX.setValueAtTime( this.currentCameraPosition[0], this.audioContext.currentTime);
+            listener.positionY.setValueAtTime( this.currentCameraPosition[1], this.audioContext.currentTime);
+            listener.positionZ.setValueAtTime( this.currentCameraPosition[2], this.audioContext.currentTime);
+        } 
+        else 
+        {   console.log(" listener.setPosition") // Firefox
+            listener.setPosition(this.currentCameraPosition[0],this.currentCameraPosition[1],this.currentCameraPosition[2]);
+        }
+    }
 
     handleAudio(state, scene)
     {
@@ -296,6 +392,8 @@ class gltfRenderer
             this.prepareScene(state, scene)
             this.preparedScene = scene
         }
+        
+        this.updateAudioListener();
 
         if( scene.extensions !== undefined 
             && scene.extensions.KHR_audio !== undefined)
@@ -332,7 +430,8 @@ class gltfRenderer
 
             
             this.updateAudioEmitter(state, emitter);
-            
+
+
         }
         
 

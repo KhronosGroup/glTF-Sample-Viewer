@@ -25,14 +25,14 @@ class gltfAudioEmitter extends GltfObject
         // non gltf:
         this.audioBufferSourceNode = undefined;
         this.gainNode = undefined;
+        this.pannerNode = undefined; // used for positional audio effects
+
         this.position = vec3.create();
         this.orientation = vec3.create();
     }
 
     fromJson(jsonAudioEmitter)
     {
-        super.fromJson(jsonAudioEmitter);
-
         if(jsonAudioEmitter.positional !== undefined)
         {
             fromKeys(this.positional, jsonAudioEmitter.positional);
