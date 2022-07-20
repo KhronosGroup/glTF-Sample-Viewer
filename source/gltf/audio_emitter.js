@@ -33,10 +33,12 @@ class gltfAudioEmitter extends GltfObject
 
     fromJson(jsonAudioEmitter)
     {
+        super.fromJson(jsonAudioEmitter,["positional"]);
+
         if(jsonAudioEmitter.positional !== undefined)
         {
             fromKeys(this.positional, jsonAudioEmitter.positional);
-        }
+        } 
     }
 }
 

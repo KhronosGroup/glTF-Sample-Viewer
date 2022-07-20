@@ -321,7 +321,6 @@ class gltfRenderer
         emitter.gainNode.gain.setValueAtTime(emitter.gain, this.audioContext.currentTime);
 
         emitter.pannerNode.distanceModel = emitter.positional.distanceModel;
-        console.log("emitter.positional.refDistance "+  emitter.positional.refDistance)
         emitter.pannerNode.refDistance = emitter.positional.refDistance;
         emitter.pannerNode.maxDistance = emitter.positional.maxDistance;
         emitter.pannerNode.rolloffFactor = emitter.positional.rolloffFactor;
