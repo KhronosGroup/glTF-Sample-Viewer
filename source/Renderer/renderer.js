@@ -32,7 +32,7 @@ class gltfRenderer
         this.initialized = false;
         this.samples = 4;
 
-        this.audioContext =  new AudioContext();
+        this.audioContext = undefined;
 
         // create render target for non transmission materials
         this.opaqueRenderTexture = 0;
@@ -259,6 +259,13 @@ class gltfRenderer
 
         this.audioEmitterNodes = this.nodes
         .filter(node => node.extensions !== undefined && node.extensions.KHR_audio !== undefined && node.extensions.KHR_audio.emitter !== undefined);
+
+        if(this.audioContext !== undefined)
+        {
+            this.audioContext.close()
+        }
+        
+        this.audioContext = new AudioContext();
     }
 
 
@@ -280,7 +287,6 @@ class gltfRenderer
         if(emitter.pannerNode === undefined) 
         {                          
             emitter.pannerNode = this.audioContext.createPanner();
-           
         }
     
         // audio source node
@@ -326,6 +332,7 @@ class gltfRenderer
         } 
         else 
         {
+            // Firefox
             emitter.pannerNode.setOrientation(emitter.orientation[0],emitter.orientation[1],emitter.orientation[2]);
         }
 
@@ -336,11 +343,10 @@ class gltfRenderer
             emitter.pannerNode.positionZ.setValueAtTime(emitter.position[2], this.audioContext.currentTime);
         } 
         else 
-        {
-            emitter.pannerNode.setPosition(emitter.position[0],emitter.position[1],emitter.position[2]);
+        {   
+            // Firefox
+            emitter.pannerNode.setPosition(emitter.position[0], emitter.position[1], emitter.position[2]);
         }
-        console.log("emitter.position = "+emitter.position)
-
         emitter.audioBufferSourceNode.loop = emitter.loop;
     }
 
@@ -358,6 +364,7 @@ class gltfRenderer
         } 
         else 
         {
+            // Firefox requires deprecated function
             listener.setOrientation(
                 this.currentCameraLookDirection[0],
                 this.currentCameraLookDirection[1],
@@ -369,14 +376,13 @@ class gltfRenderer
 
         if(listener.positionX) 
         { 
-            console.log(" listener.positionX.setValueAtTime")
             listener.positionX.setValueAtTime(this.currentCameraPosition[0], this.audioContext.currentTime);
             listener.positionY.setValueAtTime(this.currentCameraPosition[1], this.audioContext.currentTime);
             listener.positionZ.setValueAtTime(this.currentCameraPosition[2], this.audioContext.currentTime);
         } 
         else 
         {   
-            console.log("listener.setPosition "+this.currentCameraPosition) // Firefox
+            // Firefox requires deprecated function
             listener.setPosition(this.currentCameraPosition[0], this.currentCameraPosition[1], this.currentCameraPosition[2]);
         }
     }
@@ -404,6 +410,7 @@ class gltfRenderer
                 this.updateAudioEmitter(state, emitter);
             }
         }
+
         for(const node of this.audioEmitterNodes) {
             
             const emitterReference = node.extensions.KHR_audio.emitter;
@@ -416,20 +423,13 @@ class gltfRenderer
             const worldTransform = node.worldTransform;
             
             mat4.getTranslation(emitter.position, worldTransform);
-            console.log("emitter.position = "+emitter.position)
             let resultTransform = vec4.create();
             vec4.transformMat4(resultTransform, vec4.fromValues(0, 0, -1, 0), worldTransform)
             vec3.normalize(emitter.orientation,vec3.fromValues(resultTransform[0], resultTransform[1], resultTransform[2]));
-            console.log("emitter.orientation = "+emitter.orientation)
-
             
             this.updateAudioEmitter(state, emitter);
+        }     
 
-
-        }
-        
-
-        
     }
 
     // render complete gltf scene with given camera
@@ -961,6 +961,10 @@ class gltfRenderer
     destroy()
     {
         this.shaderCache.destroy();
+        if(audioContext !== undefined)
+        {
+            this.audioContext.close()
+        }
     }
 }
 
