@@ -14,8 +14,10 @@ class gltfAudio extends GltfObject
         this.uri = uri;
         this.bufferView = bufferView;
         this.mimeType = mimeType;
-        this.decodedAudio = decodedAudio;  
         this.name = name;  
+
+        // non glTF
+        this.decodedAudio = decodedAudio;  
     }
 
     resolveRelativePath(basePath)

@@ -43,7 +43,7 @@ class gltfAudioRenderer
         {                          
             emitter.pannerNode = this.audioContext.createPanner();
         }
-        
+
         if(emitter.type === "global")
         {   
             // skip panner node if we have a global emitter
@@ -59,7 +59,6 @@ class gltfAudioRenderer
         // audio source node
         for (let sourceRef of emitter.sources)
         {
-            console.log("sourceRef = "+sourceRef)
             let source = state.gltf.audioSources[sourceRef];
             if(source.gainNode === undefined)
             {
@@ -72,10 +71,15 @@ class gltfAudioRenderer
                 // Set audio data
                 source.audioBufferSourceNode = this.audioContext.createBufferSource();
                 const audio = state.gltf.audio[source.audio];
-                console.log("audioRef = "+source.audio)
+
+                if(audio.decodedAudio === undefined)
+                {
+                    console.log("Unable to play audio source");
+                }
+
                 source.audioBufferSourceNode.buffer = audio.decodedAudio;
 
-                if(source.playing === true)
+                if(source.autoPlay === true)
                 {
                     source.audioBufferSourceNode.start();
                 }
