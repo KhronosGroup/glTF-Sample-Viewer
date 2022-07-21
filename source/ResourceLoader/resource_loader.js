@@ -111,7 +111,7 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
-        for (const audio of gltf.audioSources)
+        for (const audio of gltf.audio)
         {
             audio.resolveRelativePath(getContainingFolder(gltf.path));
         }

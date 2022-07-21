@@ -29,9 +29,7 @@ class gltfAudioRenderer
 
     updateAudioEmitter(state, emitter)
     {
-        // emitterSourceNode -> [optional: pannerNode] -> gainNode -> globalDestination
-
-        const source = state.gltf.audioSources[emitter.source];
+        // emitterSourceNode -> source.gainNode -> emitter.gainNode -> [optional: pannerNode] -> globalDestination
 
         // At first create audio nodes if they are undefined
 
@@ -39,38 +37,60 @@ class gltfAudioRenderer
         if(emitter.gainNode === undefined)
         {
             emitter.gainNode = this.audioContext.createGain();
-            emitter.gainNode.connect(this.audioContext.destination);
         }
            
         if(emitter.pannerNode === undefined) 
         {                          
             emitter.pannerNode = this.audioContext.createPanner();
         }
-    
-        // audio source node
-        if(emitter.audioBufferSourceNode === undefined)
+        
+        if(emitter.type === "global")
+        {   
+            // skip panner node if we have a global emitter
+            emitter.gainNode.connect(this.audioContext.destination);
+        }
+        else
         {
-            emitter.audioBufferSourceNode = this.audioContext.createBufferSource();
-            emitter.audioBufferSourceNode.buffer = source.decodedAudio;
-            if(emitter.type === "global")
-            {   
-                // skip panner node if we have a global emitter
-                emitter.audioBufferSourceNode.connect(emitter.gainNode);
-            }
-            else
+            // add panner node between gain and destination for positional emitter
+            emitter.gainNode.connect(emitter.pannerNode);
+            emitter.pannerNode.connect(this.audioContext.destination);
+        }
+
+        // audio source node
+        for (let sourceRef of emitter.sources)
+        {
+            console.log("sourceRef = "+sourceRef)
+            let source = state.gltf.audioSources[sourceRef];
+            if(source.gainNode === undefined)
             {
-                emitter.audioBufferSourceNode.connect(emitter.pannerNode);
-                emitter.pannerNode.connect(emitter.gainNode);
+                source.gainNode = this.audioContext.createGain();
+                source.gainNode.connect(emitter.gainNode);
             }
 
-            if(emitter.playing === true)
+            if(source.audioBufferSourceNode === undefined)
             {
-                emitter.audioBufferSourceNode.start();
+                // Set audio data
+                source.audioBufferSourceNode = this.audioContext.createBufferSource();
+                const audio = state.gltf.audio[source.audio];
+                console.log("audioRef = "+source.audio)
+                source.audioBufferSourceNode.buffer = audio.decodedAudio;
+
+                if(source.playing === true)
+                {
+                    source.audioBufferSourceNode.start();
+                }
+
+                source.audioBufferSourceNode.connect(source.gainNode);
+                
             }
+            // Update values of sources
+            source.audioBufferSourceNode.loop = source.loop;   
+            source.gainNode.gain.setValueAtTime(source.gain, this.audioContext.currentTime);
 
         }
 
-        // Update values:
+
+        // Update values of emitter:
         emitter.gainNode.gain.setValueAtTime(emitter.gain, this.audioContext.currentTime);
 
         emitter.pannerNode.distanceModel = emitter.positional.distanceModel;
@@ -105,7 +125,6 @@ class gltfAudioRenderer
             // Firefox
             emitter.pannerNode.setPosition(emitter.position[0], emitter.position[1], emitter.position[2]);
         }
-        emitter.audioBufferSourceNode.loop = emitter.loop;
     }
 
     updateAudioListener()

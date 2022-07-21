@@ -8,9 +8,7 @@ class gltfAudioEmitter extends GltfObject
         super();
         this.type = undefined, // "global" or "positional"
         this.gain = 1.0,
-        this.loop = false,
-        this.playing = false,
-        this.source = undefined,
+        this.sources = [],
         this.name = undefined,
         this.positional = {
             coneInnerAngle: 6.283185307179586,
@@ -23,7 +21,6 @@ class gltfAudioEmitter extends GltfObject
         };
 
         // non gltf:
-        this.audioBufferSourceNode = undefined;
         this.gainNode = undefined;
         this.pannerNode = undefined; // used for positional audio effects
 
