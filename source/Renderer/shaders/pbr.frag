@@ -441,4 +441,17 @@ vec3 specularTexture = vec3(1.0);
     g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness / 1200.0));
 #endif
 #endif
+
+    // Diffuse Transmission:
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+#if DEBUG == DEBUG_DIFFUSE_TRANSMISSION
+    g_finalColor.rgb = linearTosRGB(f_diffuse_transmission);
+#endif
+#if DEBUG == DEBUG_DIFFUSE_TRANSMISSION_FACTOR
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.diffuseTransmissionFactor));
+#endif
+#if DEBUG == DEBUG_DIFFUSE_TRANSMISSION_COLOR_FACTOR
+    g_finalColor.rgb = linearTosRGB(materialInfo.diffuseTransmissionColorFactor);
+#endif
+#endif
 }
