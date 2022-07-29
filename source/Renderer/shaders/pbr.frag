@@ -123,7 +123,8 @@ void main()
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
-    vec3 f_transmission = vec3(0.0);
+    vec3 f_specular_transmission = vec3(0.0);
+    vec3 f_diffuse_transmission = vec3(0.0);
 
     float albedoSheenScaling = 1.0;
 
@@ -161,7 +162,7 @@ void main()
 #endif
 
 #if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
-    f_transmission += getIBLVolumeRefraction(
+    f_specular_transmission += getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
         materialInfo.c_diff, materialInfo.f0, materialInfo.f90,
@@ -228,6 +229,8 @@ void main()
 #endif
         }
 
+        vec3 intensity = getLighIntensity(light, pointToLight);
+
         // BDTF
 #ifdef MATERIAL_TRANSMISSION
         // If the light ray travels through the geometry, use the point it exits the geometry again.
@@ -236,14 +239,17 @@ void main()
         pointToLight -= transmissionRay;
         l = normalize(pointToLight);
 
-        vec3 intensity = getLighIntensity(light, pointToLight);
         vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
 
 #ifdef MATERIAL_VOLUME
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
-        f_transmission += transmittedLight;
+        f_specular_transmission += transmittedLight;
+#endif
+
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+        f_diffuse_transmission += intensity * clampedDot(-n, l) *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
 #endif
     }
 #endif
@@ -267,10 +273,12 @@ void main()
     f_clearcoat = f_clearcoat * clearcoatFactor;
 #endif
 
-#ifdef MATERIAL_TRANSMISSION
-    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
-#else
     vec3 diffuse = f_diffuse;
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+    diffuse = mix(diffuse, f_diffuse_transmission, materialInfo.diffuseTransmissionFactor);
+#endif
+#ifdef MATERIAL_TRANSMISSION
+    diffuse = mix(diffuse, f_specular_transmission, materialInfo.transmissionFactor);
 #endif
 
     vec3 color = vec3(0);
@@ -405,7 +413,7 @@ vec3 specularTexture = vec3(1.0);
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
 #if DEBUG == DEBUG_TRANSMISSION_VOLUME
-    g_finalColor.rgb = linearTosRGB(f_transmission);
+    g_finalColor.rgb = linearTosRGB(f_specular_transmission);
 #endif
 #if DEBUG == DEBUG_TRANSMISSION_FACTOR
     g_finalColor.rgb = linearTosRGB(vec3(materialInfo.transmissionFactor));
