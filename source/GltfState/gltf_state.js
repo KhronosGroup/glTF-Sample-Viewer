@@ -205,6 +205,16 @@ GltfState.DebugOutput = {
         /** output the iridescence thickness*/
         IRIDESCENCE_THICKNESS: "Iridescence Thickness",
     },
+
+    /** output diffuse tranmission lighting */
+    diffuseTransmission: {
+        /** output the combined diffuse tranmission */
+        DIFFUSE_TRANSMISSION: "Diffuse Transmission",
+        /** output the diffuse tranmission factor */
+        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Factor",
+        /** output the diffuse tranmission color factor */
+        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color Factor",
+    }
 };
 
 export { GltfState };
