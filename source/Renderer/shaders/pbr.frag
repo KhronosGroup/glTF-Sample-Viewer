@@ -153,7 +153,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
-    f_diffuse_transmission += getIBLRadianceLambertian(-n, -v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
+    f_diffuse_transmission += materialInfo.diffuseTransmissionColorFactor * getIBLRadianceLambertian(-n, -v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
@@ -253,7 +253,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
-        f_diffuse_transmission += intensity * clampedDot(-n, l) *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+        f_diffuse_transmission += materialInfo.diffuseTransmissionColorFactor * intensity * clampedDot(-n, l) *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
 #endif
     }
 #endif
