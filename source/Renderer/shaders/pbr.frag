@@ -152,6 +152,10 @@ void main()
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
 #endif
 
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+    f_diffuse_transmission += getIBLRadianceLambertian(-n, -v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
+#endif
+
 #ifdef MATERIAL_CLEARCOAT
     f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0, 1.0);
 #endif
