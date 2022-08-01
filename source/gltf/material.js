@@ -483,6 +483,8 @@ class gltfMaterial extends GltfObject
                 }
             }
 
+            // KHR Extension: Diffuse Transmission
+
             if(this.extensions.KHR_materials_diffuse_transmission !== undefined)
             {
                 const extension = this.extensions.KHR_materials_diffuse_transmission;
@@ -494,7 +496,7 @@ class gltfMaterial extends GltfObject
 
                 if (this.diffuseTransmissionTexture !== undefined)
                 {
-                    this.diffuseTransmissionTexture.samplerName = "u_DiffuseTransmission";
+                    this.diffuseTransmissionTexture.samplerName = "u_DiffuseTransmissionSampler";
                     this.parseTextureInfoExtensions(this.diffuseTransmissionTexture, "DiffuseTransmission");
                     this.textures.push(this.diffuseTransmissionTexture);
                     this.defines.push("HAS_DIFFUSE_TRANSMISSION_MAP 1");
@@ -503,7 +505,7 @@ class gltfMaterial extends GltfObject
 
                 if (this.diffuseTransmissionColorTexture !== undefined)
                 {
-                    this.diffuseTransmissionColorTexture.samplerName = "u_DiffuseTransmissionColor";
+                    this.diffuseTransmissionColorTexture.samplerName = "u_DiffuseTransmissionColorSampler";
                     this.parseTextureInfoExtensions(this.diffuseTransmissionColorTexture, "DiffuseTransmissionColor");
                     this.textures.push(this.diffuseTransmissionColorTexture);
                     this.defines.push("HAS_DIFFUSE_TRANSMISSION_COLOR_MAP 1");
