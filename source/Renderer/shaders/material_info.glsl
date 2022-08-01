@@ -337,7 +337,7 @@ MaterialInfo getDiffuseTransmissionInfo(MaterialInfo info)
     #endif
 
     #ifdef HAS_DIFFUSE_TRANSMISSION_COLOR_MAP
-        info.diffuseTransmissionColorFactor *= texture(u_DiffuseColorTransmission, getDiffuseTransmissionColorUV()).rgb;
+        info.diffuseTransmissionColorFactor *= texture(u_DiffuseTransmissionColorSampler, getDiffuseTransmissionColorUV()).rgb;
     #endif
 
     return info;

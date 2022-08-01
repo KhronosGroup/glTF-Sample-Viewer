@@ -495,7 +495,7 @@ class gltfMaterial extends GltfObject
                 if (this.diffuseTransmissionTexture !== undefined)
                 {
                     this.diffuseTransmissionTexture.samplerName = "u_DiffuseTransmission";
-                    this.parseTextureInfoExtensions(this.diffuseTransmissionTexture, "Iridescence");
+                    this.parseTextureInfoExtensions(this.diffuseTransmissionTexture, "DiffuseTransmission");
                     this.textures.push(this.diffuseTransmissionTexture);
                     this.defines.push("HAS_DIFFUSE_TRANSMISSION_MAP 1");
                     this.properties.set("u_DiffuseTransmissionUVSet", this.diffuseTransmissionTexture.texCoord);
@@ -504,7 +504,7 @@ class gltfMaterial extends GltfObject
                 if (this.diffuseTransmissionColorTexture !== undefined)
                 {
                     this.diffuseTransmissionColorTexture.samplerName = "u_DiffuseTransmissionColor";
-                    this.parseTextureInfoExtensions(this.diffuseTransmissionColorTexture, "Iridescence");
+                    this.parseTextureInfoExtensions(this.diffuseTransmissionColorTexture, "DiffuseTransmissionColor");
                     this.textures.push(this.diffuseTransmissionColorTexture);
                     this.defines.push("HAS_DIFFUSE_TRANSMISSION_COLOR_MAP 1");
                     this.properties.set("u_DiffuseTransmissionColorUVSet", this.diffuseTransmissionColorTexture.texCoord);
