@@ -16,7 +16,7 @@ export default {
       file: 'dist/GltfSVApp.umd.js',
       format: 'umd',
       sourcemap: true,
-      external: [ 'gl-matrix', 'axios', 'jpeg-js', 'fast-png']
+      external: [ 'gl-matrix', 'axios', 'jpeg-js', 'fast-png', 'json-ptr']
     }
   ],
   plugins: [

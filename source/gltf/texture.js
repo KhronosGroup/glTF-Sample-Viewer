@@ -1,6 +1,7 @@
 import { fromKeys, initGlForMembers } from './utils.js';
 import { GL } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
+import { AnimatableProperty } from './animatable_property.js';
 
 class gltfTexture extends GltfObject
 {
@@ -58,8 +59,8 @@ class gltfTextureInfo
         this.texCoord = texCoord; // which UV set to use
         this.linear = linear;
         this.samplerName = samplerName;
-        this.strength = 1.0; // occlusion
-        this.scale = 1.0; // normal
+        this.strength = new AnimatableProperty(1.0); // occlusion
+        this.scale = new AnimatableProperty(1.0); // normal
         this.generateMips = generateMips;
 
         this.extensions = undefined;
@@ -73,6 +74,14 @@ class gltfTextureInfo
     fromJson(jsonTextureInfo)
     {
         fromKeys(this, jsonTextureInfo);
+
+        if (this.extensions?.KHR_texture_transform !== undefined)
+        {
+            const uv = this.extensions.KHR_texture_transform;
+            uv.offset = new AnimatableProperty(uv.offset ?? [0, 0]);
+            uv.scale = new AnimatableProperty(uv.scale ?? [1, 1]);
+            uv.rotation = new AnimatableProperty(uv.rotation ?? 0);
+        }
     }
 }
 

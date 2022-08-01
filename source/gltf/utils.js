@@ -1,4 +1,5 @@
 import { glMatrix } from 'gl-matrix';
+import { AnimatableProperty } from './animatable_property.js';
 
 function jsToGl(array) {
     let tensor = new glMatrix.ARRAY_TYPE(array.length);
@@ -65,7 +66,12 @@ function fromKeys(target, jsonObj, ignore = []) {
         }
         if (jsonObj[k] !== undefined) {
             let normalizedK = k.replace("^@", "");
-            target[normalizedK] = jsonObj[k];
+            if (target[normalizedK] instanceof AnimatableProperty) {
+                target[normalizedK].restAt(jsonObj[k]);
+            }
+            else {
+                target[normalizedK] = jsonObj[k];
+            }
         }
     }
 }
