@@ -608,7 +608,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonClearcoat(jsonClearcoat)
     {
-        makeAnimatable(this.pbrMetallicRoughness, jsonMetallicRoughness, {
+        makeAnimatable(this.extensions.KHR_materials_clearcoat, jsonClearcoat, {
             "clearcoatFactor": 0,
             "clearcoatRoughnessFactor": 0,
         })
