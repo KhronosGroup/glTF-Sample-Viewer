@@ -34,6 +34,10 @@ uniform float u_IridescenceIor;
 uniform float u_IridescenceThicknessMinimum;
 uniform float u_IridescenceThicknessMaximum;
 
+// Diffuse Transmission
+uniform float u_DiffuseTransmissionFactor;
+uniform vec3 u_DiffuseTransmissionColorFactor;
+
 // Emissive Strength
 uniform float u_EmissiveStrength;
 
@@ -90,6 +94,9 @@ struct MaterialInfo
     float iridescenceFactor;
     float iridescenceIor;
     float iridescenceThickness;
+
+    float diffuseTransmissionFactor;
+    vec3 diffuseTransmissionColorFactor;
 };
 
 
@@ -312,6 +319,25 @@ MaterialInfo getIridescenceInfo(MaterialInfo info)
         float thicknessSampled = texture(u_IridescenceThicknessSampler, getIridescenceThicknessUV()).g;
         float thickness = mix(u_IridescenceThicknessMinimum, u_IridescenceThicknessMaximum, thicknessSampled);
         info.iridescenceThickness = thickness;
+    #endif
+
+    return info;
+}
+#endif
+
+
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+MaterialInfo getDiffuseTransmissionInfo(MaterialInfo info)
+{
+    info.diffuseTransmissionFactor = u_DiffuseTransmissionFactor;
+    info.diffuseTransmissionColorFactor = u_DiffuseTransmissionColorFactor;
+
+    #ifdef HAS_DIFFUSE_TRANSMISSION_MAP
+        info.diffuseTransmissionFactor *= texture(u_DiffuseTransmissionSampler, getDiffuseTransmissionUV()).a;
+    #endif
+
+    #ifdef HAS_DIFFUSE_TRANSMISSION_COLOR_MAP
+        info.diffuseTransmissionColorFactor *= texture(u_DiffuseTransmissionColorSampler, getDiffuseTransmissionColorUV()).rgb;
     #endif
 
     return info;

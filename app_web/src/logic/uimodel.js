@@ -95,6 +95,8 @@ class UIModel
                                             map( ({ newValue, oldValue }) => newValue));
         this.iridescenceEnabled = app.$watchAsObservable('iridescenceEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
+        this.diffuseTransmissionEnabled = app.$watchAsObservable('diffuseTransmissionEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(

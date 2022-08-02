@@ -55,6 +55,7 @@ class GltfState
                 KHR_materials_specular: true,
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
+                KHR_materials_diffuse_transmission: true,
                 KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
@@ -205,6 +206,16 @@ GltfState.DebugOutput = {
         /** output the iridescence thickness*/
         IRIDESCENCE_THICKNESS: "Iridescence Thickness",
     },
+
+    /** output diffuse tranmission lighting */
+    diffuseTransmission: {
+        /** output the combined diffuse tranmission */
+        DIFFUSE_TRANSMISSION: "Diffuse Transmission",
+        /** output the diffuse tranmission factor */
+        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Factor",
+        /** output the diffuse tranmission color factor */
+        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color Factor",
+    }
 };
 
 export { GltfState };

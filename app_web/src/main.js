@@ -215,6 +215,9 @@ async function main()
     uiModel.iridescenceEnabled.subscribe( iridescenceEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled;
     });
+    uiModel.diffuseTransmissionEnabled.subscribe( diffuseTransmissionEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission = diffuseTransmissionEnabled;
+    });
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
@@ -228,6 +231,7 @@ async function main()
     listenForRedraw(uiModel.iorEnabled);
     listenForRedraw(uiModel.specularEnabled);
     listenForRedraw(uiModel.iridescenceEnabled);
+    listenForRedraw(uiModel.diffuseTransmissionEnabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
