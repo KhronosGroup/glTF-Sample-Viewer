@@ -93,6 +93,7 @@ const app = new Vue({
             volumeEnabled: true,
             iorEnabled: true,
             iridescenceEnabled: true,
+            diffuseTransmissionEnabled: true,
             specularEnabled: true,
             emissiveStrengthEnabled: true,
 

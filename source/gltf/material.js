@@ -89,9 +89,7 @@ class gltfMaterial extends GltfObject
         {
             defines.push("MATERIAL_EMISSIVE_STRENGTH 1");
         }
-        if(this.hasDiffuseTransmission
-            // && renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission
-        )
+        if(this.hasDiffuseTransmission && renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission)
         {
             defines.push("MATERIAL_DIFFUSE_TRANSMISSION 1");
         }
