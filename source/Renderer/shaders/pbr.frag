@@ -233,7 +233,7 @@ void main()
 #endif
         }
 
-        vec3 intensity = getLighIntensity(light, pointToLight);
+        vec3 lightIntensity = getLighIntensity(light, pointToLight);
 
         // BDTF
 #ifdef MATERIAL_TRANSMISSION
@@ -243,20 +243,22 @@ void main()
         pointToLight -= transmissionRay;
         l = normalize(pointToLight);
 
-        vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
+        vec3 transmittedLight = lightIntensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
 
 #ifdef MATERIAL_VOLUME
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
         f_specular_transmission += transmittedLight;
-#endif
+#endif // MATERIAL_TRANSMISSION
 
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
-        f_diffuse_transmission += materialInfo.diffuseTransmissionColorFactor * intensity * clampedDot(-n, l) *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+        vec3 lambertian = BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, clampedDot(v, normalize(-l + v)));
+        f_diffuse_transmission += materialInfo.diffuseTransmissionColorFactor *  lightIntensity * clampedDot(-n, l) * lambertian;
 #endif
+
     }
-#endif
+#endif // USE_PUNCTUAL
 
     f_emissive = u_EmissiveFactor;
 #ifdef MATERIAL_EMISSIVE_STRENGTH
