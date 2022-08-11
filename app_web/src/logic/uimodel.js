@@ -234,25 +234,45 @@ class UIModel
             filter(file => file !== undefined),
         );
 
-        const move = fromEvent(document, 'mousemove');
-        const mousedown = fromEvent(inputDomElement, 'mousedown');
-        const cancelMouse = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
+        const mouseMove = fromEvent(document, 'mousemove');
+        const mouseDown = fromEvent(inputDomElement, 'mousedown');
+        const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
+        
+        inputDomElement.addEventListener('mousemove', event => event.preventDefault(), false);
+        inputDomElement.addEventListener('mousedown', event => event.preventDefault(), false);
+        inputDomElement.addEventListener('mouseup', event => event.preventDefault(), false);
 
-        const mouseOrbit = mousedown.pipe(
+        const mouseOrbit = mouseDown.pipe(
             filter( event => event.button === 0 && event.shiftKey === false),
-            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
-            map( mouse => ({deltaPhi: mouse.movementX, deltaTheta: mouse.movementY }))
+            mergeMap(() => mouseMove.pipe(
+                pairwise(),
+                map( ([oldMouse, newMouse]) => {
+                    return {
+                        deltaPhi: newMouse.pageX - oldMouse.pageX, 
+                        deltaTheta: newMouse.pageY - oldMouse.pageY 
+                    };
+                }),
+                takeUntil(mouseUp)
+            ))
         );
 
-        const mousePan = mousedown.pipe(
+        const mousePan = mouseDown.pipe(
             filter( event => event.button === 1 || event.shiftKey === true),
-            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
-            map( mouse => ({deltaX: mouse.movementX, deltaY: mouse.movementY }))
+            mergeMap(() => mouseMove.pipe(
+                pairwise(),
+                map( ([oldMouse, newMouse]) => {
+                    return {
+                        deltaX: newMouse.pageX - oldMouse.pageX, 
+                        deltaY: newMouse.pageY - oldMouse.pageY 
+                    };
+                }),
+                takeUntil(mouseUp)
+            ))
         );
 
-        const smbZoom = mousedown.pipe(
+        const smbZoom = mouseDown.pipe(
             filter( event => event.button === 2),
-            mergeMap(() => move.pipe(takeUntil(cancelMouse))),
+            mergeMap(() => mouseMove.pipe(takeUntil(mouseUp))),
             map( mouse => ({deltaZoom: mouse.movementY }))
         );
         const wheelZoom = fromEvent(inputDomElement, 'wheel').pipe(
