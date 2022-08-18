@@ -125,7 +125,7 @@ class gltfAnimation extends GltfObject
                 // For the renderer it's not a problem because uploading a single-element array is the same as uploading a scalar to a uniform.
                 // However, it becomes a problem if we use the animated value for further computation and assume is stays a scalar.
                 // Thus we explicitly convert the animated value back to a scalar if the interpolant is a single-element array.
-                if (interpolant.length == 1) {
+                if (interpolant?.length == 1) {
                     animatedProperty.animate(interpolant[0]);
                 }
                 else {
