@@ -176,10 +176,14 @@ class GltfView
                 return state.gltf.animations[index];
             }).filter(animation => animation !== undefined);
 
-            for(const animation of animations)
-            {
-                animation.advance(state.gltf, t);
+            for (const clip of state.gltf.animationClips) {
+                clip.advance(state.gltf, t);
             }
+
+            // for(let i = 0; i < animations.length; i++)
+            // {
+            //     animation.advance(state.gltf, t, i);
+            // }
         }
     }
 }
