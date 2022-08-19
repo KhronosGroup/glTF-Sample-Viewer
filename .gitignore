@@ -17,3 +17,4 @@ debug.log
 npm_package/*.map
 /.vscode/settings.json
 out
+/packages/behavior/coverage
