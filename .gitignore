@@ -18,3 +18,4 @@ npm_package/*.map
 /.vscode/settings.json
 out
 /packages/behavior/coverage
+/packages/behavior/.vscode

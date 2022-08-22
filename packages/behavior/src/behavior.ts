@@ -1,7 +1,9 @@
-import { BehaviorNode } from './node'
-import { BehaviorVariable } from './variable'
 
-export interface Behavior {
-    nodes: BehaviorNode[];
-    variables: BehaviorVariable[];
+export class Behavior {
+    behaviorExtensionData: object;
+
+    constructor(behaviorExtensionObject: object) {
+        this.behaviorExtensionData = behaviorExtensionObject;
+    }
+
 }
