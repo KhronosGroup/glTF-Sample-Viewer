@@ -1,6 +1,6 @@
 import { Interpreter } from "./interpreter"
 
-test('Interpreter', () => {
+test('Control Flow', () => {
     const nodes = [
         {
             type: "branch",
@@ -32,6 +32,34 @@ test('Interpreter', () => {
 
     const interpreter = new Interpreter();
     interpreter.run(0, nodes);
-    expect(interpreter.state.get(["node", 1, "result"]) === 1);
+    expect(interpreter.state["$node"][1]["result"]).toBe(1);
+});
+
+test('Resolve References', () => {
+    const nodes = [
+        {
+            type: "add",
+            parameters: {
+                first: 0,
+                second: 1,
+            },
+            flow: { next: 1 }
+        },
+        {
+            type: "subtract",
+            parameters: {
+                first: { 
+                    $node: 0,
+                    socket: "result"
+                },
+                second: 1,
+            },
+            flow: { }
+        }
+    ]
+
+    const interpreter = new Interpreter();
+    interpreter.run(0, nodes);
+    expect(interpreter.state["$node"][1]["result"]).toBe(0);
 });
 
