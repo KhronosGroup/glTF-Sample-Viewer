@@ -13,6 +13,9 @@ export class Behavior {
         this.behaviorExtensionData.nodes.forEach( (node: schema.Node) => {
             if (schema.extractTypeCategory(node.type) === "event") {
                 const typeName = schema.extractTypeName(node.type);
+                if (!(typeName in this.events)) {
+                    this.events[typeName] = [];
+                }
                 this.events[typeName] = [...this.events[typeName], node];
             }
         });

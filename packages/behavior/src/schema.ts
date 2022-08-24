@@ -15,5 +15,5 @@ export function extractTypeName(type: string): string {
 
 export interface Behavior {
     nodes: Node[];
-    variables: any[]; // TODO
+    variables?: any[]; // TODO
 }

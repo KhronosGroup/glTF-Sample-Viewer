@@ -21,8 +21,10 @@ export class Interpreter {
     }
 
     private evalNode(index: number, node: schema.Node): number | undefined {
-        if (! (node.type in nodes)) {
-            console.error(`Unknown node ${node.type} encountered during evaluation of behavior`);
+        const nodeTypeCategory = schema.extractTypeCategory(node.type);
+        const nodeTypeName = schema.extractTypeName(node.type);
+        if (! (nodeTypeCategory in nodes && nodeTypeName in nodes[nodeTypeCategory]) ) {
+            throw new Error(`Unknown node ${node.type} encountered during evaluation of behavior`);
         }
 
         // Extract all references from the state, so that the nodes don't need to differntiate between
@@ -37,7 +39,7 @@ export class Interpreter {
             }
         }
 
-        const output = nodes[node.type]({parameters: parameters, flow: node.flow}, this.context);
+        const output = nodes[nodeTypeCategory][nodeTypeName]({parameters: parameters, flow: node.flow}, this.context);
         this.makeState("$node", index);
         for (const [socketName, socketValue] of Object.entries(output.result)) {
             this.state["$node"][index][socketName] = socketValue;

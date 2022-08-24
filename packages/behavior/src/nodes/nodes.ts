@@ -2,7 +2,7 @@ import { flowNodes } from "./flowNodes"
 import { mathNodes } from "./mathNodes"
 import { NodeFunction } from "./node-types";
 
-export const nodes: { [nodeName: string]: NodeFunction; } = {
-    ...mathNodes,
-    ...flowNodes
+export const nodes: { [category: string]: { [name: string]: NodeFunction; }} = {
+    math: mathNodes,
+    flow: flowNodes
 }

@@ -1,6 +1,7 @@
 
-export class NodeContext {
-    // TODO
+export interface NodeContext {
+    setCallback?: (jsonPointer: string, value: any) => undefined;
+    getCallback?: (jsonPointer: string) => any;
 }
 
 export interface NodeInput {

@@ -4,7 +4,7 @@ import * as schema from "./schema"
 test('Control Flow', () => {
     const nodes = [
         {
-            type: "branch",
+            type: "flow/branch",
             parameters: {
                 condition: true,
             },
@@ -14,7 +14,7 @@ test('Control Flow', () => {
             }
         },
         {
-            type: "add",
+            type: "math/add",
             parameters: {
                 first: 0,
                 second: 1,
@@ -22,7 +22,7 @@ test('Control Flow', () => {
             flow: { }
         },
         {
-            type: "subtract",
+            type: "math/subtract",
             parameters: {
                 first: 2,
                 second: 1,
@@ -39,7 +39,7 @@ test('Control Flow', () => {
 test('Resolve References', () => {
     const nodes = [
         {
-            type: "add",
+            type: "math/add",
             parameters: {
                 first: 0,
                 second: 1,
@@ -47,7 +47,7 @@ test('Resolve References', () => {
             flow: { next: 1 }
         },
         {
-            type: "subtract",
+            type: "math/subtract",
             parameters: {
                 first: { 
                     $node: 0,
