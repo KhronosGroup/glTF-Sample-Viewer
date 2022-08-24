@@ -1,20 +1,14 @@
 import { nodes } from "./nodes/nodes";
 import { NodeContext } from "./nodes/node-types";
+import * as schema from "./schema";
 
-
-interface BehaviorNode {
-    type: string,
-    flow?: {[flowName: string]: any},
-    parameters: {[paramName: string]: any}
-}
 
 export class Interpreter {
     public state: {[type: string]: {[index: number]: {[socket: string]: any}}} = {};
     public context: NodeContext = {};
 
-    
 
-    public run(entryIndex: number, nodes: BehaviorNode[])
+    public run(entryIndex: number, nodes: schema.Node[])
     {
         // Ensure no state can leak between individual runs
         this.state = {};
@@ -26,7 +20,7 @@ export class Interpreter {
         } while (currentIndex !== undefined)
     }
 
-    private evalNode(index: number, node: BehaviorNode): number | undefined {
+    private evalNode(index: number, node: schema.Node): number | undefined {
         if (! (node.type in nodes)) {
             console.error(`Unknown node ${node.type} encountered during evaluation of behavior`);
         }
@@ -34,7 +28,7 @@ export class Interpreter {
         // Extract all references from the state, so that the nodes don't need to differntiate between
         // references and literal values
         let parameters: {[paramName: string]: any} = {};
-        for (const [paramName, paramValue] of Object.entries(node.parameters)) {
+        for (const [paramName, paramValue] of Object.entries(node.parameters || {})) {
             if (typeof paramValue === 'object' && "$node" in paramValue) {
                 parameters[paramName] = this.state["$node"][paramValue.$node][paramValue.socket];
                 continue;

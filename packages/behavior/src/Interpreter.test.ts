@@ -1,4 +1,5 @@
 import { Interpreter } from "./interpreter"
+import * as schema from "./schema"
 
 test('Control Flow', () => {
     const nodes = [

@@ -1,6 +1,9 @@
 import { Behavior } from './behavior';
+import { Interpreter } from './interpreter';
 
-test('Parse Behavior', () => {
-    const behavior: Behavior = JSON.parse('{ "nodes": [], "variables": []}')
-    expect(behavior.behaviorExtensionData);
+
+test('Run event', () => {
+    const interpreter = new Interpreter();
+    const behavior = new Behavior(JSON.parse('{ "nodes": [{"type": "events/onUpdate"}]}'));
+    behavior.onUpdate(interpreter);
 });
