@@ -55,7 +55,6 @@ test('Resolve References', () => {
                 },
                 second: 1,
             },
-            flow: { }
         }
     ]
 
