@@ -40,7 +40,7 @@ class glTF extends GltfObject
         this.bufferViews = [];
         this.materials = [];
         this.animations = [];
-        this.animationClips = [];
+        this.animationClips = undefined;
         this.skins = [];
         this.path = file;
     }
@@ -69,10 +69,13 @@ class glTF extends GltfObject
         this.imageBasedLights = objectsFromJsons(getJsonIBLsFromExtensions(json.extensions), ImageBasedLight);
         this.images = objectsFromJsons(json.images, gltfImage);
         this.animations = objectsFromJsons(json.animations, gltfAnimation);
-        this.animationClips = objectsFromJsons(json.extensions?.KHR_animation_clip?.clips, gltfAnimationClip);
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+
+        if (json.extensions?.KHR_animation_clip != undefined) {
+            this.animationClips = objectsFromJsons(json.extensions?.KHR_animation_clip?.clips, gltfAnimationClip);
+        }
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
