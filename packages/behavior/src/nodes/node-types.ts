@@ -1,6 +1,6 @@
 
 export interface NodeContext {
-    setCallback?: (jsonPointer: string, value: any) => undefined;
+    setCallback?: (jsonPointer: string, value: any) => void;
     getCallback?: (jsonPointer: string) => any;
 }
 
