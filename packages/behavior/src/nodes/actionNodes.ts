@@ -7,4 +7,11 @@ export const actionNodes = {
         }
         return {nextFlow: input.flow.next, result: {}};
     },
+    get: (input: NodeInput, context: NodeContext): NodeOutput => {
+        let value: any = undefined;
+        if (context.getCallback) {
+            value = context.getCallback(input.parameters.source);
+        }
+        return {nextFlow: input.flow.next, result: {result: value}};
+    },
 }
