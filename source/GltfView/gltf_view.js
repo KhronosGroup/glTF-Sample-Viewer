@@ -172,13 +172,22 @@ class GltfView
 
             const t = state.animationTimer.elapsedSec();
 
-            const animations = state.animationIndices.map(index => {
-                return state.gltf.animations[index];
-            }).filter(animation => animation !== undefined);
-
-            for(const animation of animations)
+            if (state.gltf.animationClips !== undefined)
             {
-                animation.advance(state.gltf, t);
+                for (const clip of state.gltf.animationClips)
+                {
+                    clip.advance(state.gltf, t);
+                }
+            }
+            else
+            {
+                const animations = state.animationIndices.map(index => {
+                    return state.gltf.animations[index];
+                }).filter(animation => animation !== undefined);
+                for(const animation of animations)
+                {
+                    animation.advance(state.gltf, t, true);
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ import { initGlForMembers, objectsFromJsons, objectFromJson } from './utils';
 import { gltfAsset } from './asset.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfAnimation } from './animation.js';
+import { gltfAnimationClip } from './animation_clip.js';
 import { gltfSkin } from './skin.js';
 import { gltfVariant } from './variant.js';
 
@@ -39,6 +40,7 @@ class glTF extends GltfObject
         this.bufferViews = [];
         this.materials = [];
         this.animations = [];
+        this.animationClips = undefined;
         this.skins = [];
         this.path = file;
     }
@@ -70,6 +72,10 @@ class glTF extends GltfObject
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+
+        if (json.extensions?.KHR_animation_clip != undefined) {
+            this.animationClips = objectsFromJsons(json.extensions?.KHR_animation_clip?.clips, gltfAnimationClip);
+        }
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());

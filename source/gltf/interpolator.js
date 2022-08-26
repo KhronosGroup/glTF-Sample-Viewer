@@ -85,7 +85,7 @@ class gltfInterpolator
         this.prevKey = 0;
     }
 
-    interpolate(gltf, channel, sampler, t, stride, maxTime)
+    interpolate(gltf, channel, sampler, t, stride)
     {
         if(t === undefined)
         {
@@ -100,9 +100,6 @@ class gltfInterpolator
             return jsToGlSlice(output, 0, stride);
         }
 
-        // Wrap t around, so the animation loops.
-        // Make sure that t is never earlier than the first keyframe and never later then the last keyframe.
-        t = t % maxTime;
         t = clamp(t, input[0], input[input.length - 1]);
 
         if (this.prevT > t)
