@@ -186,7 +186,7 @@ class GltfView
                 }).filter(animation => animation !== undefined);
                 for(const animation of animations)
                 {
-                    animation.advance(state.gltf, t);
+                    animation.advance(state.gltf, t, true);
                 }
             }
         }

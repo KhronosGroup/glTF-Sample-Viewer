@@ -44,7 +44,7 @@ class gltfAnimation extends GltfObject
     }
 
     // advance the animation, if totalTime is undefined, the animation is deactivated
-    advance(gltf, time)
+    advance(gltf, time, repeat)
     {
         if(this.channels === undefined)
         {
@@ -119,6 +119,9 @@ class gltfAnimation extends GltfObject
                     stride = targets?.length ?? 0;
                 }
                 
+                if (repeat === true) {
+                    time %= this.maxTime;
+                }
                 const interpolant = interpolator.interpolate(gltf, channel, sampler, time, stride);
 
                 // The interpolator will always return a `Float32Array`, even if the animated value is a scalar.
