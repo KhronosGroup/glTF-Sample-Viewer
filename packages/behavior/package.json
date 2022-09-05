@@ -1,5 +1,5 @@
 {
-  "name": "behavior",
+  "name": "@khronosgroup/gltf-behavior",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

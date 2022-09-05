@@ -4,10 +4,10 @@ const pkg = require('./package.json');
 const version = pkg.version;
 
 export default {
-  input: ["src/main.ts"],
+  input: ["src/index.ts"],
   output: {
-    file: "dist/js/bundle.js",
-    format: "iife",
+    file: "dist/bundle.module.js",
+    format: "esm",
     sourcemap: true,
     banner: `/*! ${version} */`,
   },
