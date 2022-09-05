@@ -7,15 +7,15 @@ export class Interpreter {
     public _state: {[type: string]: {[index: number]: {[socket: string]: any}}} = {};
     public _context: NodeContext = {};
 
-    constructor(setCallback?: (jsonPointer: string, value: any) => void, getCallback?: (jsonPointer: string) => any) 
+    constructor(setCallback?: (jsonPointer: string, value: any) => void, getCallback?: (jsonPointer: string) => any)
     {
         this._context = {
-            setCallback: setCallback,
-            getCallback: getCallback
+            setCallback,
+            getCallback
         }
     }
 
-    public run(entryIndex: number, nodes: schema.Node[])
+    public run(entryIndex: number, behaviorNodes: schema.Node[])
     {
         // Ensure no state can leak between individual runs
         this._state = {};
@@ -23,7 +23,7 @@ export class Interpreter {
         // Evaluate the graph node by node
         let currentIndex: number | undefined = entryIndex;
         do {
-            currentIndex = this.evalNode(currentIndex, nodes[currentIndex]);
+            currentIndex = this.evalNode(currentIndex, behaviorNodes[currentIndex]);
         } while (currentIndex !== undefined)
     }
 
@@ -36,20 +36,20 @@ export class Interpreter {
 
         // Extract all references from the state, so that the nodes don't need to differntiate between
         // references and literal values
-        let parameters: {[paramName: string]: any} = {};
+        const parameters: {[paramName: string]: any} = {};
         for (const [paramName, paramValue] of Object.entries(node.parameters || {})) {
             if (typeof paramValue === 'object' && "$node" in paramValue) {
-                parameters[paramName] = this._state["$node"][paramValue.$node][paramValue.socket];
+                parameters[paramName] = this._state.$node[paramValue.$node][paramValue.socket];
                 continue;
             } else {
                 parameters[paramName] = paramValue;
             }
         }
 
-        const output = nodes[nodeTypeCategory][nodeTypeName]({parameters: parameters, flow: node.flow}, this._context);
+        const output = nodes[nodeTypeCategory][nodeTypeName]({parameters, flow: node.flow}, this._context);
         this.makeState("$node", index);
         for (const [socketName, socketValue] of Object.entries(output.result)) {
-            this._state["$node"][index][socketName] = socketValue;
+            this._state.$node[index][socketName] = socketValue;
         }
 
         return output.nextFlow;

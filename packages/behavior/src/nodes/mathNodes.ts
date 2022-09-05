@@ -12,5 +12,5 @@ export const mathNodes = {
         const second = input.parameters.second;
         const next = input.flow?.next;
         return {nextFlow: next, result: {result: first - second}};
-    },
+    }
 }

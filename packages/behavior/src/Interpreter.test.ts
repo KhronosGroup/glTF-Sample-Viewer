@@ -6,34 +6,34 @@ test('Control Flow', () => {
         {
             type: "flow/branch",
             parameters: {
-                condition: true,
+                condition: true
             },
             flow: {
                 true: 1,
-                false: 2,
+                false: 2
             }
         },
         {
             type: "math/add",
             parameters: {
                 first: 0,
-                second: 1,
+                second: 1
             },
-            flow: { }
+            flow: {}
         },
         {
             type: "math/subtract",
             parameters: {
                 first: 2,
-                second: 1,
+                second: 1
             },
-            flow: { }
+            flow: {}
         }
     ]
 
     const interpreter = new Interpreter();
     interpreter.run(0, nodes);
-    expect(interpreter._state["$node"][1]["result"]).toBe(1);
+    expect(interpreter._state.$node[1].result).toBe(1);
 });
 
 test('Resolve References', () => {
@@ -42,24 +42,24 @@ test('Resolve References', () => {
             type: "math/add",
             parameters: {
                 first: 0,
-                second: 1,
+                second: 1
             },
             flow: { next: 1 }
         },
         {
             type: "math/subtract",
             parameters: {
-                first: { 
+                first: {
                     $node: 0,
                     socket: "result"
                 },
-                second: 1,
-            },
+                second: 1
+            }
         }
     ]
 
     const interpreter = new Interpreter();
     interpreter.run(0, nodes);
-    expect(interpreter._state["$node"][1]["result"]).toBe(0);
+    expect(interpreter._state.$node[1].result).toBe(0);
 });
 
