@@ -2,9 +2,10 @@ import { nodes } from "./nodes/nodes";
 import { NodeContext } from "./nodes/node-types";
 import * as schema from "./schema";
 
-
+export type InterpreterState = {[type: string]: {[index: number]: {[socket: string]: any}}};
 export class Interpreter {
-    public _state: {[type: string]: {[index: number]: {[socket: string]: any}}} = {};
+    
+    public _state: InterpreterState  = {};
     public _context: NodeContext = {};
 
     constructor(setCallback?: (jsonPointer: string, value: any) => void, getCallback?: (jsonPointer: string) => any)
@@ -15,16 +16,23 @@ export class Interpreter {
         }
     }
 
-    public run(entryIndex: number, behaviorNodes: schema.Node[])
+    public run(entryIndex: number, behaviorNodes: schema.Node[], initialState?: {[key: string]: any})
     {
         // Ensure no state can leak between individual runs
         this._state = {};
 
+
+        // Initialize state with the data from the input event, so that subsequent nodes can access it
+        if (initialState) {
+            this.makeState("$node", entryIndex);
+            this._state.$node[entryIndex] = initialState;
+        }
+
         // Evaluate the graph node by node
-        let currentIndex: number | undefined = entryIndex;
-        do {
+        let currentIndex: number | undefined = behaviorNodes[entryIndex].flow?.next;
+        while (currentIndex !== undefined) {
             currentIndex = this.evalNode(currentIndex, behaviorNodes[currentIndex]);
-        } while (currentIndex !== undefined)
+        }
     }
 
     private evalNode(index: number, node: schema.Node): number | undefined {
