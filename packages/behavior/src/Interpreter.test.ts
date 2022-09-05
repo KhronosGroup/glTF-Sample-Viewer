@@ -33,7 +33,7 @@ test('Control Flow', () => {
 
     const interpreter = new Interpreter();
     interpreter.run(0, nodes);
-    expect(interpreter.state["$node"][1]["result"]).toBe(1);
+    expect(interpreter._state["$node"][1]["result"]).toBe(1);
 });
 
 test('Resolve References', () => {
@@ -60,6 +60,6 @@ test('Resolve References', () => {
 
     const interpreter = new Interpreter();
     interpreter.run(0, nodes);
-    expect(interpreter.state["$node"][1]["result"]).toBe(0);
+    expect(interpreter._state["$node"][1]["result"]).toBe(0);
 });
 

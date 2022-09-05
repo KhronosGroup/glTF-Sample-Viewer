@@ -4,14 +4,21 @@ import * as schema from "./schema";
 
 
 export class Interpreter {
-    public state: {[type: string]: {[index: number]: {[socket: string]: any}}} = {};
-    public context: NodeContext = {};
+    public _state: {[type: string]: {[index: number]: {[socket: string]: any}}} = {};
+    public _context: NodeContext = {};
 
+    constructor(setCallback?: (jsonPointer: string, value: any) => void, getCallback?: (jsonPointer: string) => any) 
+    {
+        this._context = {
+            setCallback: setCallback,
+            getCallback: getCallback
+        }
+    }
 
     public run(entryIndex: number, nodes: schema.Node[])
     {
         // Ensure no state can leak between individual runs
-        this.state = {};
+        this._state = {};
 
         // Evaluate the graph node by node
         let currentIndex: number | undefined = entryIndex;
@@ -32,28 +39,28 @@ export class Interpreter {
         let parameters: {[paramName: string]: any} = {};
         for (const [paramName, paramValue] of Object.entries(node.parameters || {})) {
             if (typeof paramValue === 'object' && "$node" in paramValue) {
-                parameters[paramName] = this.state["$node"][paramValue.$node][paramValue.socket];
+                parameters[paramName] = this._state["$node"][paramValue.$node][paramValue.socket];
                 continue;
             } else {
                 parameters[paramName] = paramValue;
             }
         }
 
-        const output = nodes[nodeTypeCategory][nodeTypeName]({parameters: parameters, flow: node.flow}, this.context);
+        const output = nodes[nodeTypeCategory][nodeTypeName]({parameters: parameters, flow: node.flow}, this._context);
         this.makeState("$node", index);
         for (const [socketName, socketValue] of Object.entries(output.result)) {
-            this.state["$node"][index][socketName] = socketValue;
+            this._state["$node"][index][socketName] = socketValue;
         }
 
         return output.nextFlow;
     }
 
     private makeState(type: string, index: number) {
-        if (!(type in this.state)) {
-            this.state[type] = {};
+        if (!(type in this._state)) {
+            this._state[type] = {};
         }
-        if (!(index in this.state[type])) {
-            this.state[type][index] = {};
+        if (!(index in this._state[type])) {
+            this._state[type][index] = {};
         }
     }
 };

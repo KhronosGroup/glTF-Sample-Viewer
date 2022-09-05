@@ -20,5 +20,5 @@ test('Run event', () => {
         ]
     });
     behavior.onUpdate(interpreter);
-    expect(Object.entries(interpreter.state).length).toBe(1);
+    expect(Object.entries(interpreter._state).length).toBe(1);
 });
