@@ -2,11 +2,10 @@
   "name": "@khronosgroup/gltf-behavior",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/bundle.module.js",
   "files": [
     "dist"
   ],
-  "types": "dist/modules/index.d.ts",
   "scripts": {
     "build": "run-s clean test build_js",
     "build_js": "rollup -c",

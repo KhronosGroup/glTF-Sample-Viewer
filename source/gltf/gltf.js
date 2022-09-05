@@ -1,6 +1,7 @@
 import { gltfAccessor } from './accessor.js';
 import { gltfBuffer } from './buffer.js';
 import { gltfBufferView } from './buffer_view.js';
+import { gltfBehavior } from './behavior.js';
 import { gltfCamera } from './camera.js';
 import { gltfImage } from './image.js';
 import { gltfLight } from './light.js';
@@ -70,6 +71,8 @@ class glTF extends GltfObject
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+        this.behaviors = objectsFromJsons(getJsonBehaviorsFromExtensions(json.extensions), gltfBehavior);
+
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -155,6 +158,19 @@ class glTF extends GltfObject
 
         return nonDisjointAnimations;
     }
+}
+
+function getJsonBehaviorsFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_behavior === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_behavior.behaviors;
 }
 
 function getJsonLightsFromExtensions(extensions)
