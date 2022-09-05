@@ -2,6 +2,7 @@ import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfRenderer } from '../Renderer/renderer.js';
 import { GL } from '../Renderer/webgl.js';
 import { ResourceLoader } from '../ResourceLoader/resource_loader.js';
+import { Interpreter } from '@khronosgroup/gltf-behavior'
 
 /**
  * GltfView represents a view on a gltf, e.g. in a canvas
@@ -19,6 +20,13 @@ class GltfView
     {
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
+        this.behaviorInterpreter = new Interpreter((pointer, value) => {
+            console.log(`Behavior triggered ${value}`);
+        },
+        (pointer) => {
+            console.log(`Behavior get triggered ${pointer}`);
+            return {};
+        });
     }
 
     /**
@@ -59,6 +67,7 @@ class GltfView
     {
         this.renderer.init(state);
         this._animate(state);
+        this._behave(state);
 
         this.renderer.resize(width, height);
 
@@ -179,6 +188,21 @@ class GltfView
             for(const animation of animations)
             {
                 animation.advance(state.gltf, t);
+            }
+        }
+    }
+
+    _behave(state)
+    {
+        if(state.gltf === undefined)
+        {
+            return;
+        }
+
+        if(state.gltf.behaviors !== undefined)
+        {
+            for (const behavior of state.gltf.behaviors) {
+                behavior.behavior.onUpdate(this.behaviorInterpreter);
             }
         }
     }

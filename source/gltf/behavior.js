@@ -6,9 +6,6 @@ class gltfBehavior extends GltfObject
     constructor()
     {
         super();
-        this.name = undefined;
-        this.nodes = [];
-        this.variables = [];
     }
 
     initGl(gltf, webGlContext)
