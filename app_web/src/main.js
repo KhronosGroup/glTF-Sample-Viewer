@@ -344,6 +344,7 @@ async function main()
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
         redraw |= past.width != canvas.width || past.height != canvas.height;
+        redraw |= state.gltf && state.gltf.behaviors && state.gltf.behaviors.length > 0;
         past.width = canvas.width;
         past.height = canvas.height;
         
