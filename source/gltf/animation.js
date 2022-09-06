@@ -87,7 +87,6 @@ class gltfAnimation extends GltfObject
             case InterpolationPath.WEIGHTS:
                 property = `/meshes/${gltf.nodes[channel.target.node].mesh}/weights`;
                 break;
-                break;
             }
 
             if (property != null) {
@@ -97,7 +96,7 @@ class gltfAnimation extends GltfObject
                 }
 
                 const animatedProperty = JsonPointer.get(gltf, property);
-                if (animatedProperty === undefined || !animatedProperty instanceof PointerTargetProperty) {
+                if (animatedProperty === undefined || !(animatedProperty instanceof PointerTargetProperty)) {
                     if (!this.errors.includes(property)) {
                         console.warn(`Cannot animate ${property}`);
                         this.errors.push(property);
