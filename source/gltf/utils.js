@@ -1,5 +1,5 @@
 import { glMatrix } from 'gl-matrix';
-import { PointerTargetProperty } from './animatable_property.js';
+import { PointerTargetProperty } from './pointer_target_property.js';
 
 function jsToGl(array) {
     let tensor = new glMatrix.ARRAY_TYPE(array.length);

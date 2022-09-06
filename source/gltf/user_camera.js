@@ -42,7 +42,7 @@ class UserCamera extends gltfCamera
      */
     setVerticalFoV(yfov)
     {
-        this.perspective.yfov.restValue = yfov;
+        this.perspective.yfov.fallbackValue = yfov;
     }
 
     /**
@@ -298,8 +298,8 @@ class UserCamera extends gltfCamera
         // minimum near plane value needs to depend on far plane value to avoid z fighting or too large near planes
         zNear = Math.max(zNear, zFar / MaxNearFarRatio);
 
-        this.perspective.znear.restValue = zNear;
-        this.perspective.zfar.restValue = zFar;
+        this.perspective.znear.fallbackValue = zNear;
+        this.perspective.zfar.fallbackValue = zFar;
     }
 }
 

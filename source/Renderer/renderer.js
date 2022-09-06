@@ -18,7 +18,7 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
-import { PointerTargetProperty } from '../gltf/animatable_property.js';
+import { PointerTargetProperty } from '../gltf/pointer_target_property.js';
 import { jsToGl } from '../gltf/utils.js';
 
 class gltfRenderer
@@ -75,7 +75,7 @@ class gltfRenderer
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
-        this.lightFill.intensity.restValue = 0.5;
+        this.lightFill.intensity.fallbackValue = 0.5;
         const quatKey = quat.fromValues(
             -0.3535534,
             -0.353553385,
@@ -275,11 +275,11 @@ class gltfRenderer
             currentCamera = state.gltf.cameras[state.cameraIndex].clone();
         }
 
-        currentCamera.perspective.aspectRatio.restValue = this.currentWidth / this.currentHeight;
-        if(currentCamera.perspective.aspectRatio.restValue > 1.0) {
-            currentCamera.orthographic.xmag.restValue = currentCamera.orthographic.ymag.restValue * currentCamera.perspective.aspectRatio.restValue; 
+        currentCamera.perspective.aspectRatio.fallbackValue = this.currentWidth / this.currentHeight;
+        if(currentCamera.perspective.aspectRatio.fallbackValue > 1.0) {
+            currentCamera.orthographic.xmag.fallbackValue = currentCamera.orthographic.ymag.fallbackValue * currentCamera.perspective.aspectRatio.fallbackValue; 
         } else {
-            currentCamera.orthographic.ymag.restValue = currentCamera.orthographic.xmag.restValue / currentCamera.perspective.aspectRatio.restValue; 
+            currentCamera.orthographic.ymag.fallbackValue = currentCamera.orthographic.xmag.fallbackValue / currentCamera.perspective.aspectRatio.fallbackValue; 
         }
 
         this.projMatrix = currentCamera.getProjectionMatrix();

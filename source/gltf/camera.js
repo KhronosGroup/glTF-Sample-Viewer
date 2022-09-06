@@ -1,6 +1,6 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { GltfObject } from './gltf_object.js';
-import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makePointerTarget } from './pointer_target_property.js';
 
 class gltfCamera extends GltfObject
 {
@@ -30,7 +30,7 @@ class gltfCamera extends GltfObject
 
         if (json.perspective !== undefined)
         {
-            makeAnimatable(this.perspective, json.perspective, {
+            makePointerTarget(this.perspective, json.perspective, {
                 "yfov": 45 * Math.PI / 180,            
                 "aspectRatio": 1.0,
                 "znear": 0.01,
@@ -39,7 +39,7 @@ class gltfCamera extends GltfObject
         }
         if (json.orthographic !== undefined)
         {
-            makeAnimatable(this.orthographic, json.orthographic, {
+            makePointerTarget(this.orthographic, json.orthographic, {
                 "xmag": 1,
                 "ymag": 1,
                 "znear": 0.01,

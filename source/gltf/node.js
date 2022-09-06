@@ -1,7 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makePointerTarget } from './pointer_target_property.js';
 
 // contain:
 // transform
@@ -32,7 +32,7 @@ class gltfNode extends GltfObject
     fromJson(json)
     {
         super.fromJson(json);
-        makeAnimatable(this, json, { "weights": [] });
+        makePointerTarget(this, json, { "weights": [] });
     }
 
     getWeights(gltf)
@@ -68,9 +68,9 @@ class gltfNode extends GltfObject
 
     resetTransform()
     {
-        this.rotation.rest();
-        this.scale.rest();
-        this.translation.rest();
+        this.rotation.reset();
+        this.scale.reset();
+        this.translation.reset();
     }
 
     getLocalTransform()

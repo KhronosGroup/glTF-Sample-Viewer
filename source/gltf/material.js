@@ -2,7 +2,7 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makePointerTarget } from './pointer_target_property.js';
 
 class gltfMaterial extends GltfObject
 {
@@ -568,7 +568,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonMetallicRoughness(jsonMetallicRoughness)
     {
-        makeAnimatable(this.pbrMetallicRoughness, jsonMetallicRoughness, {
+        makePointerTarget(this.pbrMetallicRoughness, jsonMetallicRoughness, {
             "baseColorFactor": vec4.fromValues(1, 1, 1, 1),
             "metallicFactor": 1,
             "roughnessFactor": 1,
@@ -608,7 +608,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonClearcoat(jsonClearcoat)
     {
-        makeAnimatable(this.extensions.KHR_materials_clearcoat, jsonClearcoat, {
+        makePointerTarget(this.extensions.KHR_materials_clearcoat, jsonClearcoat, {
             "clearcoatFactor": 0,
             "clearcoatRoughnessFactor": 0,
         })
@@ -637,7 +637,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonSheen(jsonSheen)
     {
-        makeAnimatable(this.extensions.KHR_materials_sheen, jsonSheen, {
+        makePointerTarget(this.extensions.KHR_materials_sheen, jsonSheen, {
             "sheenRoughnessFactor": 0,
             "sheenColorFactor": [1, 1, 1],
         });
@@ -658,7 +658,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonTransmission(jsonTransmission)
     {
-        makeAnimatable(this.extensions.KHR_materials_transmission, jsonTransmission, {
+        makePointerTarget(this.extensions.KHR_materials_transmission, jsonTransmission, {
             "transmissionFactor": 0,
         });
 
@@ -672,7 +672,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonSpecular(jsonSpecular)
     {
-        makeAnimatable(this.extensions.KHR_materials_specular, jsonSpecular, {
+        makePointerTarget(this.extensions.KHR_materials_specular, jsonSpecular, {
             "specularColorFactor": [1, 1, 1],
             "specularFactor": 1,
         });
@@ -694,7 +694,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonVolume(jsonVolume)
     {
-        makeAnimatable(this.extensions.KHR_materials_volume, jsonVolume, {
+        makePointerTarget(this.extensions.KHR_materials_volume, jsonVolume, {
             "thicknessFactor": 0,
             "attenuationColor": [1, 1, 1],
             "attenuationDistance": 0,
@@ -711,14 +711,14 @@ class gltfMaterial extends GltfObject
 
     fromJsonEmissiveStrength(json)
     {
-        makeAnimatable(this.extensions.KHR_materials_emissive_strength, json, {
+        makePointerTarget(this.extensions.KHR_materials_emissive_strength, json, {
             "emissiveStrength": 1,
         });
     }
 
     fromJsonIridescence(jsonIridescence)
     {
-        makeAnimatable(this.extensions.KHR_materials_iridescence, jsonIridescence, {
+        makePointerTarget(this.extensions.KHR_materials_iridescence, jsonIridescence, {
             "factor": 0,
             "iridescenceIor": 1.3,
             "iridescenceThicknessMinimum": 100,

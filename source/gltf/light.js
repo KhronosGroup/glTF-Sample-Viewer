@@ -1,7 +1,7 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { jsToGl, UniformStruct } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makePointerTarget } from './pointer_target_property.js';
 
 class gltfLight extends GltfObject
 {
@@ -26,14 +26,14 @@ class gltfLight extends GltfObject
     {
         super.fromJson(json);
 
-        makeAnimatable(this, json, {
+        makePointerTarget(this, json, {
             "color": [1, 1, 1],
             "intensity": 1,
             "range": -1,
         });
         if (json.spot !== undefined)
         {
-            makeAnimatable(this.spot, json.spot, {
+            makePointerTarget(this.spot, json.spot, {
                 "innerConeAngle": 0,
                 "outerConeAngle": Math.PI / 4,
             });

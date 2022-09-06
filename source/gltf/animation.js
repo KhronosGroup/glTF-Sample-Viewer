@@ -3,7 +3,7 @@ import { objectsFromJsons } from './utils.js';
 import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAnimationSampler } from './animation_sampler.js';
 import { gltfInterpolator } from './interpolator.js';
-import { PointerTargetProperty } from './animatable_property.js';
+import { PointerTargetProperty } from './pointer_target_property.js';
 import { JsonPointer } from 'json-ptr';
 
 class gltfAnimation extends GltfObject
@@ -104,11 +104,11 @@ class gltfAnimation extends GltfObject
                     }
                     continue;
                 }
-                if (animatedProperty.restValue === undefined) {
+                if (animatedProperty.fallbackValue === undefined) {
                     continue;
                 }
 
-                let stride = animatedProperty.restValue?.length ?? 1;
+                let stride = animatedProperty.fallbackValue?.length ?? 1;
 
                 if (property.endsWith("/weights") && stride == 0) {
                     const parent = JsonPointer.get(gltf, property.substring(0, property.length - "/weights".length));
@@ -124,10 +124,10 @@ class gltfAnimation extends GltfObject
                 // However, it becomes a problem if we use the animated value for further computation and assume is stays a scalar.
                 // Thus we explicitly convert the animated value back to a scalar if the interpolant is a single-element array.
                 if (interpolant.length == 1) {
-                    animatedProperty.animate(interpolant[0]);
+                    animatedProperty.setValue(interpolant[0]);
                 }
                 else {
-                    animatedProperty.animate(interpolant);
+                    animatedProperty.setValue(interpolant);
                 }
             }
         }
