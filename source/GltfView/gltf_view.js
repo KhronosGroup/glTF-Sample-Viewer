@@ -197,7 +197,7 @@ class GltfView
             const t = state.animationTimer.elapsedSec();
             for (const behavior of state.gltf.behaviors) {
                 behavior.processEvents({
-                    onUpdate: {totalTime: t},
+                    update: {totalTime: t},
                 });
             }
         }

@@ -59,7 +59,11 @@ class gltfBehavior extends GltfObject
         }
 
         for (const [eventName, eventData] of Object.entries(events)) {
-            this.behavior.runOnEvent(eventName, this.interpreter, eventData);
+            const toProperCase = String.prototype.toProperCase = (str) => {
+                return str.replace(/\w\S*/g, (txt) => {return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+            };
+            const normalizedEventName = toProperCase(eventName);
+            this.behavior.runOnEvent(`on${normalizedEventName}`, this.interpreter, eventData);
         }
     }
 }
