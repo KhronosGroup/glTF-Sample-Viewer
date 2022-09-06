@@ -1,44 +1,42 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { jsToGl, UniformStruct } from './utils.js';
-import { fromKeys } from './utils.js';
 import { GltfObject } from './gltf_object.js';
+import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfLight extends GltfObject
 {
-    constructor(
-        type = "directional",
-        color = [1, 1, 1],
-        intensity = 1,
-        innerConeAngle = 0,
-        outerConeAngle = Math.PI / 4,
-        range = -1,
-        name = undefined)
+    constructor()
     {
         super();
-        this.type = type;
-        this.color = color;
-        this.intensity = intensity;
-        this.innerConeAngle = innerConeAngle;
-        this.outerConeAngle = outerConeAngle;
-        this.range = range;
-        this.name = name;
+        this.name = undefined;
+        this.type = "directional";
+        this.color = new AnimatableProperty([1, 1, 1]);
+        this.intensity = new AnimatableProperty(1);
+        this.range = new AnimatableProperty(-1);
+        this.spot = {
+            innerConeAngle: new AnimatableProperty(0),
+            outerConeAngle: new AnimatableProperty(Math.PI / 4),
+        };
 
-        //Can be used to overwrite direction from node
+        // Used to override direction from node
         this.direction = undefined;
     }
 
-    initGl(gltf, webGlContext)
+    fromJson(json)
     {
-        super.initGl(gltf, webGlContext);
-    }
+        super.fromJson(json);
 
-    fromJson(jsonLight)
-    {
-        super.fromJson(jsonLight);
-
-        if(jsonLight.spot !== undefined)
+        makeAnimatable(this, json, {
+            "color": [1, 1, 1],
+            "intensity": 1,
+            "range": -1,
+        });
+        if (json.spot !== undefined)
         {
-            fromKeys(this, jsonLight.spot);
+            makeAnimatable(this.spot, json.spot, {
+                "innerConeAngle": 0,
+                "outerConeAngle": Math.PI / 4,
+            });
         }
     }
 
@@ -74,12 +72,12 @@ class gltfLight extends GltfObject
             uLight.direction = this.direction;
         }
 
-        uLight.range = this.range;
-        uLight.color = jsToGl(this.color);
-        uLight.intensity = this.intensity;
+        uLight.range = this.range.value();
+        uLight.color = jsToGl(this.color.value());
+        uLight.intensity = this.intensity.value();
 
-        uLight.innerConeCos = Math.cos(this.innerConeAngle);
-        uLight.outerConeCos = Math.cos(this.outerConeAngle);
+        uLight.innerConeCos = Math.cos(this.spot.innerConeAngle.value());
+        uLight.outerConeCos = Math.cos(this.spot.outerConeAngle.value());
 
         switch(this.type)
         {

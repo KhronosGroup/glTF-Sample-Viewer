@@ -1,6 +1,7 @@
-import { mat4, quat } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
+import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
 
 // contain:
 // transform
@@ -13,121 +14,73 @@ class gltfNode extends GltfObject
         super();
         this.camera = undefined;
         this.children = [];
-        this.matrix = undefined;
-        this.rotation = jsToGl([0, 0, 0, 1]);
-        this.scale = jsToGl([1, 1, 1]);
-        this.translation = jsToGl([0, 0, 0]);
+        this.rotation = new AnimatableProperty(jsToGl([0, 0, 0, 1]));
+        this.scale = new AnimatableProperty(jsToGl([1, 1, 1]));
+        this.translation = new AnimatableProperty(jsToGl([0, 0, 0]));
         this.name = undefined;
         this.mesh = undefined;
         this.skin = undefined;
+        this.weights = new AnimatableProperty(undefined);
 
         // non gltf
         this.worldTransform = mat4.create();
         this.inverseWorldTransform = mat4.create();
         this.normalMatrix = mat4.create();
         this.light = undefined;
-        this.changed = true;
-
-        this.animationRotation = undefined;
-        this.animationTranslation = undefined;
-        this.animationScale = undefined;
     }
 
-    initGl()
+    fromJson(json)
     {
-        if (this.matrix !== undefined)
-        {
-            this.applyMatrix(this.matrix);
-        }
-        else
-        {
-            if (this.scale !== undefined)
-            {
-                this.scale = jsToGl(this.scale);
-            }
-
-            if (this.rotation !== undefined)
-            {
-                this.rotation = jsToGl(this.rotation);
-            }
-
-            if (this.translation !== undefined)
-            {
-                this.translation = jsToGl(this.translation);
-            }
-        }
-        this.changed = true;
+        super.fromJson(json);
+        makeAnimatable(this, json, { "weights": [] });
     }
 
+    getWeights(gltf)
+    {
+        if (this.weights.value()  !== undefined && this.weights.value().length > 0) {
+            return this.weights;
+        }
+        else {
+            return gltf.meshes[this.mesh].weights;
+        }
+    }
+
+    // TODO: Not called. What about nodes which only define a matrix?
     applyMatrix(matrixData)
     {
-        this.matrix = jsToGl(matrixData);
+        // this.matrix = jsToGl(matrixData);
 
-        mat4.getScaling(this.scale, this.matrix);
+        // mat4.getScaling(this.scale, this.matrix);
 
-        // To extract a correct rotation, the scaling component must be eliminated.
-        const mn = mat4.create();
-        for(const col of [0, 1, 2])
-        {
-            mn[col] = this.matrix[col] / this.scale[0];
-            mn[col + 4] = this.matrix[col + 4] / this.scale[1];
-            mn[col + 8] = this.matrix[col + 8] / this.scale[2];
-        }
-        mat4.getRotation(this.rotation, mn);
-        quat.normalize(this.rotation, this.rotation);
+        // // To extract a correct rotation, the scaling component must be eliminated.
+        // const mn = mat4.create();
+        // for(const col of [0, 1, 2])
+        // {
+        //     mn[col] = this.matrix[col] / this.scale[0];
+        //     mn[col + 4] = this.matrix[col + 4] / this.scale[1];
+        //     mn[col + 8] = this.matrix[col + 8] / this.scale[2];
+        // }
+        // mat4.getRotation(this.rotation, mn);
+        // quat.normalize(this.rotation, this.rotation);
 
-        mat4.getTranslation(this.translation, this.matrix);
-
-        this.changed = true;
-    }
-
-    // vec3
-    applyTranslationAnimation(translation)
-    {
-        this.animationTranslation = translation;
-        this.changed = true;
-    }
-
-    // quat
-    applyRotationAnimation(rotation)
-    {
-        this.animationRotation = rotation;
-        this.changed = true;
-    }
-
-    // vec3
-    applyScaleAnimation(scale)
-    {
-        this.animationScale = scale;
-        this.changed = true;
+        // mat4.getTranslation(this.translation, this.matrix);
     }
 
     resetTransform()
     {
-        this.rotation = jsToGl([0, 0, 0, 1]);
-        this.scale = jsToGl([1, 1, 1]);
-        this.translation = jsToGl([0, 0, 0]);
-        this.changed = true;
+        this.rotation.rest();
+        this.scale.rest();
+        this.translation.rest();
     }
 
     getLocalTransform()
     {
-        if(this.transform === undefined || this.changed)
-        {
-            // if no animation is applied and the transform matrix is present use it directly
-            if(this.animationTranslation === undefined && this.animationRotation === undefined && this.animationScale === undefined && this.matrix !== undefined) {
-                this.transform = mat4.clone(this.matrix);
-            } else {
-                this.transform = mat4.create();
-                const translation = this.animationTranslation !== undefined ? this.animationTranslation : this.translation;
-                const rotation = this.animationRotation !== undefined ? this.animationRotation : this.rotation;
-                const scale = this.animationScale !== undefined ? this.animationScale : this.scale;
-                mat4.fromRotationTranslationScale(this.transform, rotation, translation, scale);
-            }
-            this.changed = false;
-        }
-
-        return mat4.clone(this.transform);
+        return mat4.fromRotationTranslationScale(
+            mat4.create(),
+            this.rotation.value(),
+            this.translation.value(),
+            this.scale.value()
+        );
     }
 }
 
