@@ -25,6 +25,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@khronosgroup/gltf-viewer": "..",
+    "@khronosgroup/behavior": "../packages/behavior",
     "axios": "^0.21.1",
     "buefy": "^0.9.4",
     "gl-matrix": "^3.2.1",
