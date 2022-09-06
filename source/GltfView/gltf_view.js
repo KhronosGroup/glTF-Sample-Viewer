@@ -20,6 +20,7 @@ class GltfView
     {
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
+        this.behaviorEvents = [];
     }
 
     /**
@@ -154,6 +155,10 @@ class GltfView
         };
     }
 
+    triggerEvent(name, data) {
+        this.behaviorEvents.push({ name, data });
+    }
+
     _animate(state)
     {
         if(state.gltf === undefined)
@@ -195,12 +200,14 @@ class GltfView
         if(state.gltf.behaviors !== undefined)
         {
             const t = state.animationTimer.elapsedSec();
+            this.triggerEvent("update", {totalTime: t});
+
             for (const behavior of state.gltf.behaviors) {
-                behavior.processEvents({
-                    update: {totalTime: t},
-                });
+                behavior.processEvents(this.behaviorEvents);
             }
         }
+
+        this.behaviorEvents = [];
     }
 }
 

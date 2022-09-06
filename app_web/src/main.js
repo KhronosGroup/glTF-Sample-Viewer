@@ -333,6 +333,16 @@ async function main()
     });
     listenForRedraw(uiModel.zoom);
 
+
+    addEventListener('keypress', (event) => {
+        if (event.key === "w") {
+            view.triggerEvent("up");
+        }
+        if (event.key === "s") {
+            view.triggerEvent("down");
+        }
+    });
+
     // configure the animation loop
     const past = {};
     const update = () =>
