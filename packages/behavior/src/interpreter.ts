@@ -4,7 +4,7 @@ import * as schema from "./schema";
 
 export type InterpreterState = {[type: string]: {[index: number]: {[socket: string]: any}}};
 export class Interpreter {
-    
+
     public _state: InterpreterState  = {};
     public _context: NodeContext = {};
 
