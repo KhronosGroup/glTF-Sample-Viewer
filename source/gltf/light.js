@@ -1,7 +1,7 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { jsToGl, UniformStruct } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfLight extends GltfObject
 {
@@ -10,12 +10,12 @@ class gltfLight extends GltfObject
         super();
         this.name = undefined;
         this.type = "directional";
-        this.color = new AnimatableProperty([1, 1, 1]);
-        this.intensity = new AnimatableProperty(1);
-        this.range = new AnimatableProperty(-1);
+        this.color = new PointerTargetProperty([1, 1, 1]);
+        this.intensity = new PointerTargetProperty(1);
+        this.range = new PointerTargetProperty(-1);
         this.spot = {
-            innerConeAngle: new AnimatableProperty(0),
-            outerConeAngle: new AnimatableProperty(Math.PI / 4),
+            innerConeAngle: new PointerTargetProperty(0),
+            outerConeAngle: new PointerTargetProperty(Math.PI / 4),
         };
 
         // Used to override direction from node

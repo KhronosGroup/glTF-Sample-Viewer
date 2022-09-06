@@ -1,6 +1,6 @@
 import { mat4, vec3, quat } from 'gl-matrix';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfCamera extends GltfObject
 {
@@ -11,16 +11,16 @@ class gltfCamera extends GltfObject
         this.node = undefined;
         this.type = "perspective";
         this.perspective = {
-            yfov: new AnimatableProperty(45 * Math.PI / 180),
-            aspectRatio: new AnimatableProperty(1.0),
-            znear: new AnimatableProperty(0.01),
-            zfar: new AnimatableProperty(Infinity),
+            yfov: new PointerTargetProperty(45 * Math.PI / 180),
+            aspectRatio: new PointerTargetProperty(1.0),
+            znear: new PointerTargetProperty(0.01),
+            zfar: new PointerTargetProperty(Infinity),
         };
         this.orthographic = {
-            xmag: new AnimatableProperty(1),
-            ymag: new AnimatableProperty(1),
-            znear: new AnimatableProperty(0.01),
-            zfar: new AnimatableProperty(Infinity),
+            xmag: new PointerTargetProperty(1),
+            ymag: new PointerTargetProperty(1),
+            znear: new PointerTargetProperty(0.01),
+            zfar: new PointerTargetProperty(Infinity),
         };
     }
 

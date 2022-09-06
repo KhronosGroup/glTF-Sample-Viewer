@@ -3,7 +3,7 @@ import { objectsFromJsons } from './utils.js';
 import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAnimationSampler } from './animation_sampler.js';
 import { gltfInterpolator } from './interpolator.js';
-import { AnimatableProperty } from './animatable_property.js';
+import { PointerTargetProperty } from './animatable_property.js';
 import { JsonPointer } from 'json-ptr';
 
 class gltfAnimation extends GltfObject
@@ -97,7 +97,7 @@ class gltfAnimation extends GltfObject
                 }
 
                 const animatedProperty = JsonPointer.get(gltf, property);
-                if (animatedProperty === undefined || !animatedProperty instanceof AnimatableProperty) {
+                if (animatedProperty === undefined || !animatedProperty instanceof PointerTargetProperty) {
                     if (!this.errors.includes(property)) {
                         console.warn(`Cannot animate ${property}`);
                         this.errors.push(property);

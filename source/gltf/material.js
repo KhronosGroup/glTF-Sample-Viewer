@@ -2,7 +2,7 @@ import { mat3, vec3, vec4 } from 'gl-matrix';
 import { gltfTextureInfo } from './texture.js';
 import { jsToGl, initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makeAnimatable } from './animatable_property.js';
 
 class gltfMaterial extends GltfObject
 {
@@ -14,9 +14,9 @@ class gltfMaterial extends GltfObject
         this.normalTexture = undefined;
         this.occlusionTexture = undefined;
         this.emissiveTexture = undefined;
-        this.emissiveFactor = new AnimatableProperty(vec3.fromValues(0, 0, 0));
+        this.emissiveFactor = new PointerTargetProperty(vec3.fromValues(0, 0, 0));
         this.alphaMode = "OPAQUE";
-        this.alphaCutoff = new AnimatableProperty(0.5);
+        this.alphaCutoff = new PointerTargetProperty(0.5);
         this.doubleSided = false;
 
         // pbr next extension toggles

@@ -18,7 +18,7 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
-import { AnimatableProperty } from '../gltf/animatable_property.js';
+import { PointerTargetProperty } from '../gltf/animatable_property.js';
 import { jsToGl } from '../gltf/utils.js';
 
 class gltfRenderer
@@ -500,7 +500,7 @@ class gltfRenderer
 
         for (let [uniform, val] of material.getProperties().entries())
         {
-            if (val instanceof AnimatableProperty) {
+            if (val instanceof PointerTargetProperty) {
                 val = val.value();
             }
             if (val instanceof Array) {
