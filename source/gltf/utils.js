@@ -41,6 +41,18 @@ function initGlForMembers(gltfObj, gltf, webGlContext) {
     }
 }
 
+function initStateForMembers(gltfObj, state) {
+    for (const name of Object.keys(gltfObj)) {
+        const member = gltfObj[name];
+        member?.initState?.(state);
+        if (Array.isArray(member)) {
+            for (const element of member) {
+                element?.initState?.(state);
+            }
+        }
+    }
+}
+
 function objectsFromJsons(jsonObjects, GltfType) {
     if (jsonObjects === undefined) {
         return [];
@@ -239,5 +251,6 @@ export {
     UniformStruct,
     Timer,
     AnimationTimer,
-    initGlForMembers
+    initGlForMembers,
+    initStateForMembers
 };

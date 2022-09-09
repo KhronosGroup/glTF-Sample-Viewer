@@ -47,6 +47,7 @@ async function main()
             resourceLoader.initKtxLib();
 
             return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
+                gltf.initState(state);
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
@@ -69,9 +70,9 @@ async function main()
                         if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
                         {
                             state.animationIndices.push(i);
+                            state.animations[i].timer.start();
                         }
                     }
-                    state.animationTimer.start();
                 }
 
                 uiModel.exitLoadingState();
@@ -282,11 +283,11 @@ async function main()
     uiModel.animationPlay.subscribe( animationPlay => {
         if(animationPlay)
         {
-            state.animationTimer.unpause();
+            state.animations.forEach( animation => animation.timer.unpause());
         }
         else
         {
-            state.animationTimer.pause();
+            state.animations.forEach( animation => animation.timer.pause());
         }
     });
 
@@ -352,7 +353,7 @@ async function main()
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
-        redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |= !state.animations.every(animation => animation.timer.paused) && state.animationIndices.length > 0;
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.gltf && state.gltf.behaviors && state.gltf.behaviors.length > 0;
         past.width = canvas.width;

@@ -177,16 +177,16 @@ class GltfView
                 disabledAnimation.advance(state.gltf, undefined);
             }
 
-            const t = state.animationTimer.elapsedSec();
+            
 
             const animations = state.animationIndices.map(index => {
                 return state.gltf.animations[index];
             }).filter(animation => animation !== undefined);
 
-            for(const animation of animations)
-            {
+            animations.forEach((animation, index) => {
+                const t = state.animations[index].timer.elapsedSec();
                 animation.advance(state.gltf, t);
-            }
+            });
         }
     }
 
@@ -199,8 +199,7 @@ class GltfView
 
         if(state.gltf.behaviors !== undefined)
         {
-            const t = state.animationTimer.elapsedSec();
-            this.triggerEvent("update", {totalTime: t});
+            this.triggerEvent("update");
 
             for (const behavior of state.gltf.behaviors) {
                 behavior.processEvents(this.behaviorEvents);

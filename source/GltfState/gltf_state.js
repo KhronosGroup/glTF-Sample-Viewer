@@ -28,8 +28,8 @@ class GltfState
         this.cameraIndex = undefined;
         /** indices of active animations */
         this.animationIndices = [];
-        /** animation timer allows to control the animation time */
-        this.animationTimer = new AnimationTimer();
+        /** state of all animations of the glTF */
+        this.animations = [];
         /** KHR_materials_variants */
         this.variant = undefined;
 

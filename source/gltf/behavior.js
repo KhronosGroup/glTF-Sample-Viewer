@@ -14,7 +14,8 @@ class gltfBehavior extends GltfObject
     {
         super.initGl(gltf, webGlContext);
 
-        this.interpreter = new Interpreter((pointer, value) => {
+        this.interpreter = new Interpreter();
+        this.interpreter.context.setCallback = (pointer, value) => {
             const targetProperty = JsonPointer.get(gltf, pointer);
 
             // Check if the property is a valid target for the behavior to avoid messing up the viewer 
@@ -28,8 +29,8 @@ class gltfBehavior extends GltfObject
             }
 
             targetProperty.setValue(value);
-        },
-        (pointer) => {
+        };
+        this.interpreter.context.getCallback = (pointer) => {
             const targetProperty = JsonPointer.get(gltf, pointer);
 
             // Check if the property is a valid target for the behavior to avoid messing up the viewer 
@@ -43,7 +44,14 @@ class gltfBehavior extends GltfObject
             }
 
             return targetProperty.value();
-        });
+        };
+    }
+
+    initState(state) {
+        super.initState(state);
+        this.interpreter.context.animationSetTimeCallback = (animation, time) => {
+            
+        }
     }
 
     fromJson(jsonBehavior)
