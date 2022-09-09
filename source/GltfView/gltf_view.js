@@ -184,7 +184,7 @@ class GltfView
             }).filter(animation => animation !== undefined);
 
             animations.forEach((animation, index) => {
-                const t = state.animations[index].timer.elapsedSec();
+                const t = state.animations[index].timer.time();
                 animation.advance(state.gltf, t);
             });
         }

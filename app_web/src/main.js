@@ -283,7 +283,7 @@ async function main()
     uiModel.animationPlay.subscribe( animationPlay => {
         if(animationPlay)
         {
-            state.animations.forEach( animation => animation.timer.unpause());
+            state.animations.forEach( animation => animation.timer.continue());
         }
         else
         {
@@ -353,7 +353,7 @@ async function main()
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
-        redraw |= !state.animations.every(animation => animation.timer.paused) && state.animationIndices.length > 0;
+        redraw |= !state.animations.every(animation => animation.timer.isPaused()) && state.animationIndices.length > 0;
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.gltf && state.gltf.behaviors && state.gltf.behaviors.length > 0;
         past.width = canvas.width;

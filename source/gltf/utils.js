@@ -174,60 +174,71 @@ class Timer {
 }
 
 class AnimationTimer {
-    constructor() {
-        this.startTime = 0;
-        this.paused = true;
-        this.fixedTime = null;
-        this.pausedTime = 0;
+    constructor(totalTime) {
+        this._startTime = 0;
+        this._isPaused = true;
+        this._totalTime = totalTime;
+        this.pausedElapsedTime = undefined;
+        this.speed = 1.0;
+        this.repetitions = -1;
     }
 
-    elapsedSec() {
-        if (this.paused) {
-            return this.pausedTime / 1000;
-        }
-        else {
-            return this.fixedTime || (new Date().getTime() - this.startTime) / 1000;
-        }
+    isPaused() {
+        return this._isPaused;
     }
 
-    toggle() {
-        if (this.paused) {
-            this.unpause();
+    /** Time in seconds */
+    time() {
+        let currentTimeMs;
+        if (this._isPaused) {
+            currentTimeMs = this.speed * this.pausedElapsedTime;
+        } else {
+            currentTimeMs = (new Date().getTime() - this._startTime);
         }
-        else {
-            this.pause();
+
+        let currentTimeSec = this.speed * currentTimeMs / 1000;
+
+        if (this.repetitions >= 0) {
+            if (currentTimeSec / this._totalTime > this.repetitions) {
+                this.stop();
+                return this.repetitions * this._totalTime;
+            }
         }
+
+        return currentTimeSec;
     }
+
+    /** Set time in seconds */
+    setTime(time) {
+        if (this._isPaused) {
+            this.pausedElapsedTime = time * 1000;
+        } else {
+            this._startTime = new Date().getTime() - time;
+        }
+    } 
 
     start() {
-        this.startTime = new Date().getTime();
-        this.paused = false;
+        this._startTime = new Date().getTime();
+        this._isPaused = false;
+        this.pausedElapsedTime = undefined;
     }
 
     pause() {
-        this.pausedTime = new Date().getTime() - this.startTime;
-        this.paused = true;
+        this.pausedElapsedTime = new Date().getTime() - this._startTime;
+        this._startTime = undefined;
+        this._isPaused = true;
     }
 
-    unpause() {
-        this.startTime += new Date().getTime() - this.startTime - this.pausedTime;
-        this.paused = false;
+    continue() {
+        this._startTime += new Date().getTime() - this.pausedTime;
+        this.pausedTime = undefined;
+        this._isPaused = false;
     }
 
-    reset() {
-        if (!this.paused) {
-            // Animation is running.
-            this.startTime = new Date().getTime();
-        }
-        else {
-            this.startTime = 0;
-        }
-        this.pausedTime = 0;
-    }
-
-    setFixedTime(timeInSec) {
-        this.paused = false;
-        this.fixedTime = timeInSec;
+    stop() {
+        this._isPaused = true;
+        this._startTime = undefined;
+        this.pausedTime = undefined;
     }
 }
 

@@ -51,24 +51,24 @@ class gltfBehavior extends GltfObject
     initState(state) {
         super.initState(state);
         this.interpreter.context.animationSetTimeCallback = (animation, time) => {
-            // TODO
+            state.animations[animation].timer.setTime(time);
         };
         this.interpreter.context.animationSetPlayingCallback = (animation, isPlaying) => {
             if (isPlaying) {
-                state.animations[animation].timer.unpause();
+                state.animations[animation].timer.continue();
             } else {
                 state.animations[animation].timer.pause();
             }
             
         };
         this.interpreter.context.animationsResetCallback = (animation) => {
-            state.animaions[animation].timer.reset();
+            state.animations[animation].timer.stop();
         };
         this.interpreter.context.animationSetSpeedCallback = (animation, speed) => {
-            //TODO
+            state.animations[animation].timer.speed = speed;
         };
         this.interpreter.context.animationSetRepetitionsCallback = (animation, repetitions) => {
-            //TODO
+            state.animations[animation].timer.repetitions = repetitions;
         };
     }
 
