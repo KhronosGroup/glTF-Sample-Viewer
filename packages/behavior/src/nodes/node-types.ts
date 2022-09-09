@@ -2,6 +2,11 @@
 export interface NodeContext {
     setCallback?: (jsonPointer: string, value: any) => void;
     getCallback?: (jsonPointer: string) => any;
+    animationSetTimeCallback?: (animation: number, time: number) => void;
+    animationSetPlayingCallback?: (animation: number, isPlaying: boolean) => void;
+    animationResetCallback?: (animation: number) => void;
+    animationSetSpeedCallback?: (animation:number, speed: number) => void;
+    animationSetRepetitionsCallback?: (animation: number, repetitions: number) => void;
 }
 
 export interface NodeInput {

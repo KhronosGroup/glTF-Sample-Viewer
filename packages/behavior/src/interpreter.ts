@@ -1,4 +1,4 @@
-import { nodes } from "./nodes/nodes";
+import { getNode } from "./nodes/nodes";
 import { NodeContext } from "./nodes/node-types";
 import * as schema from "./schema";
 
@@ -36,11 +36,6 @@ export class Interpreter {
     }
 
     private evalNode(index: number, node: schema.Node): number | undefined {
-        const nodeTypeCategory = schema.extractTypeCategory(node.type);
-        const nodeTypeName = schema.extractTypeName(node.type);
-        if (! (nodeTypeCategory in nodes && nodeTypeName in nodes[nodeTypeCategory]) ) {
-            throw new Error(`Unknown node ${node.type} encountered during evaluation of behavior`);
-        }
 
         // Extract all references from the state, so that the nodes don't need to differntiate between
         // references and literal values
@@ -54,7 +49,8 @@ export class Interpreter {
             }
         }
 
-        const output = nodes[nodeTypeCategory][nodeTypeName]({parameters, flow: node.flow}, this._context);
+        const nodeFunction = getNode(node.type);
+        const output = nodeFunction({parameters, flow: node.flow}, this._context);
         this.makeState("$node", index);
         for (const [socketName, socketValue] of Object.entries(output.result)) {
             this._state.$node[index][socketName] = socketValue;
