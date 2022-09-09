@@ -21,16 +21,16 @@ export function getNode(type: string): NodeFunction {
     for (const identifier of identifiers.slice(0, -1)) {
         const nextRef: NodeMapping | NodeFunction = currentRef[identifier];
         if (isNodeFunction(nextRef)) {
-            throw `Invalid node type ${type}`;
+            throw new Error(`Invalid node type ${type}`);
         } else {
             currentRef = nextRef;
         }
     }
     const lastIdentifier = identifiers.pop();
     if (!lastIdentifier || !(lastIdentifier in currentRef) || !isNodeFunction(currentRef[lastIdentifier])) {
-        throw `Invalid node type ${type}`;
+        throw new Error(`Invalid node type ${type}`);
     } else {
         // We can be sure that it is a NodeFunction as we checked it in the if clause
-        return <NodeFunction> currentRef[lastIdentifier];
+        return currentRef[lastIdentifier] as NodeFunction;
     }
 }

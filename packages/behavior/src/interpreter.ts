@@ -6,14 +6,11 @@ export type InterpreterState = {[type: string]: {[index: number]: {[socket: stri
 export class Interpreter {
 
     public _state: InterpreterState  = {};
-    public _context: NodeContext = {};
+    public context: NodeContext = {};
 
-    constructor(setCallback?: (jsonPointer: string, value: any) => void, getCallback?: (jsonPointer: string) => any)
+    constructor()
     {
-        this._context = {
-            setCallback,
-            getCallback
-        }
+        this.context = {}
     }
 
     public run(entryIndex: number, behaviorNodes: schema.Node[], initialState?: {[key: string]: any})
@@ -50,7 +47,7 @@ export class Interpreter {
         }
 
         const nodeFunction = getNode(node.type);
-        const output = nodeFunction({parameters, flow: node.flow}, this._context);
+        const output = nodeFunction({parameters, flow: node.flow}, this.context);
         this.makeState("$node", index);
         for (const [socketName, socketValue] of Object.entries(output.result)) {
             this._state.$node[index][socketName] = socketValue;

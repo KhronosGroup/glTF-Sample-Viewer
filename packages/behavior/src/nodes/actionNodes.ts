@@ -30,6 +30,6 @@ export const actionNodes = {
         setRepetitions: (input: NodeInput, context: NodeContext): NodeOutput => {
             context.animationSetSpeedCallback?.(input.parameters.animation, input.parameters.repetitions);
             return {nextFlow: input.flow?.next, result: {}};
-        },
+        }
     }
 }
