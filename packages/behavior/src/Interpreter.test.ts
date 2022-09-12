@@ -73,3 +73,33 @@ test('Resolve References', () => {
     expect(interpreter._state.$node[2].result).toBe(0);
 });
 
+test('Set and get variable', () => {
+    const nodes = [
+        {
+            type: "events/onTestEvent",
+            flow: { next: 1 }
+        },
+        {
+            type: "action/setVariable",
+            parameters: {
+                variable: "variable",
+                value: 41
+            },
+            flow: { next: 2 }
+        },
+        {
+            type: "math/add",
+            parameters: {
+                first: {
+                    $variable: "variable",
+                },
+                second: 1
+            }
+        }
+    ]
+
+    const interpreter = new Interpreter();
+    interpreter.run(0, nodes);
+    expect(interpreter._variables.variable).toBe(41);
+    expect(interpreter._state.$node[2].result).toBe(42);
+});

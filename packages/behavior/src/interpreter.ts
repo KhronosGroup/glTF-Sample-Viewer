@@ -6,18 +6,22 @@ export type InterpreterState = {[type: string]: {[index: number]: {[socket: stri
 export class Interpreter {
 
     public _state: InterpreterState  = {};
+    public _variables: { [variable: string]: any} = {};
     public context: NodeContext = {};
 
     constructor()
     {
-        this.context = {}
+        this.context = {
+            setVariable: (variable, value) => {
+                this._variables[variable] = value;
+            }
+        }
     }
 
     public run(entryIndex: number, behaviorNodes: schema.Node[], initialState?: {[key: string]: any})
     {
         // Ensure no state can leak between individual runs
         this._state = {};
-
 
         // Initialize state with the data from the input event, so that subsequent nodes can access it
         if (initialState) {
@@ -41,7 +45,10 @@ export class Interpreter {
             if (typeof paramValue === 'object' && "$node" in paramValue) {
                 parameters[paramName] = this._state.$node[paramValue.$node][paramValue.socket];
                 continue;
-            } else {
+            } else if (typeof paramValue === 'object' && "$variable" in paramValue) {
+                parameters[paramName] = this._variables[paramValue.$variable];
+            }
+            else {
                 parameters[paramName] = paramValue;
             }
         }
