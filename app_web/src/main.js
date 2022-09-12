@@ -47,8 +47,9 @@ async function main()
             resourceLoader.initKtxLib();
 
             return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
-                gltf.initState(state);
                 state.gltf = gltf;
+                gltf.initState(state);
+
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 state.cameraIndex = undefined;
