@@ -1,5 +1,6 @@
 
 export interface Node {
+    name?: string;
     type: string;
     flow?: {[flowName: string]: any};
     parameters?: {[paramName: string]: any};
