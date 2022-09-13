@@ -90,6 +90,9 @@ class gltfAnimation extends GltfObject {
                         gltf.nodes[channel.target.node].mesh
                     }/weights`;
                     break;
+                case InterpolationPath.POINTER:
+                    property = channel.target.extensions.KHR_animation_pointer.pointer;
+                    break;
             }
 
             if (property != null) {
