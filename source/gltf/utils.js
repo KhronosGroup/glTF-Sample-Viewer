@@ -213,7 +213,7 @@ class AnimationTimer {
         if (this._isPaused) {
             this.pausedElapsedTime = time * 1000;
         } else {
-            this._startTime = new Date().getTime() - time;
+            this._startTime = new Date().getTime() - time * 1000;
         }
     } 
 
