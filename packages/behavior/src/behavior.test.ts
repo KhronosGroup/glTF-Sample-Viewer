@@ -88,29 +88,30 @@ test("Control Flow", () => {
 test("Resolve References", () => {
     const behavior = new Behavior({
         nodes: [
-        {
-            type: "event/onTestEvent",
-            flow: { next: 1 },
-        },
-        {
-            type: "math/add",
-            parameters: {
-                first: 0,
-                second: 1,
+            {
+                type: "event/onTestEvent",
+                flow: { next: 1 },
             },
-            flow: { next: 2 },
-        },
-        {
-            type: "math/subtract",
-            parameters: {
-                first: {
-                    $node: 1,
-                    socket: "result",
+            {
+                type: "math/add",
+                parameters: {
+                    first: 0,
+                    second: 1,
                 },
-                second: 1,
+                flow: { next: 2 },
             },
-        },
-    ]});
+            {
+                type: "math/subtract",
+                parameters: {
+                    first: {
+                        $node: 1,
+                        socket: "result",
+                    },
+                    second: 1,
+                },
+            },
+        ],
+    });
 
     behavior.onEvent("Test");
     expect(behavior.getState(2).result).toBe(0);
@@ -119,31 +120,61 @@ test("Resolve References", () => {
 test("Set and get variable", () => {
     const behavior = new Behavior({
         nodes: [
-        {
-            type: "event/onTestEvent",
-            flow: { next: 1 },
-        },
-        {
-            type: "action/setVariable",
-            parameters: {
-                variable: "variable",
-                value: 41,
+            {
+                type: "event/onTestEvent",
+                flow: { next: 1 },
             },
-            flow: { next: 2 },
-        },
-        {
-            type: "math/add",
-            parameters: {
-                first: {
-                    $variable: "variable",
+            {
+                type: "action/setVariable",
+                parameters: {
+                    variable: "variable",
+                    value: 41,
                 },
-                second: 1,
+                flow: { next: 2 },
             },
-        },
-    ]});
-
+            {
+                type: "math/add",
+                parameters: {
+                    first: {
+                        $variable: "variable",
+                    },
+                    second: 1,
+                },
+            },
+        ],
+    });
 
     behavior.onEvent("Test");
     expect(behavior.getVariable("variable")).toBe(41);
     expect(behavior.getState(2).result).toBe(42);
+});
+
+test("Initial value for variables", () => {
+    const behavior = new Behavior({
+        nodes: [
+            {
+                type: "event/onTestEvent",
+                flow: { next: 1 },
+            },
+            {
+                type: "math/add",
+                parameters: {
+                    first: {
+                        $variable: "variable",
+                    },
+                    second: 1,
+                },
+            },
+        ],
+        variables: {
+            variable: {
+                type: "float",
+                value: 41
+            }
+        }
+    });
+
+    behavior.onEvent("Test");
+    expect(behavior.getVariable("variable")).toBe(41);
+    expect(behavior.getState(1).result).toBe(42);
 });
