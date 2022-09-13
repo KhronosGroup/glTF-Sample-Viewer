@@ -5,16 +5,16 @@ test("Run event", () => {
         nodes: [
             {
                 type: "event/onUpdate",
-                flow: { next: 1 },
+                flow: { next: 1 }
             },
             {
                 type: "math/add",
                 parameters: {
                     first: 1,
-                    second: 1,
-                },
-            },
-        ],
+                    second: 1
+                }
+            }
+        ]
     });
     behavior.onUpdate();
     expect(behavior.getState(1).result).toBe(2);
@@ -25,19 +25,19 @@ test("Custom event", () => {
         nodes: [
             {
                 type: "event/onTestEvent",
-                flow: { next: 1 },
+                flow: { next: 1 }
             },
             {
                 type: "math/add",
                 parameters: {
                     first: {
                         $node: 0,
-                        socket: "value",
+                        socket: "value"
                     },
-                    second: 1,
-                },
-            },
-        ],
+                    second: 1
+                }
+            }
+        ]
     });
     behavior.onEvent("Test", { value: 2 });
     expect(behavior.getState(1).result).toBe(3);
@@ -49,36 +49,36 @@ test("Control Flow", () => {
             {
                 type: "event/onTestEvent",
                 flow: {
-                    next: 1,
-                },
+                    next: 1
+                }
             },
             {
                 type: "flow/branch",
                 parameters: {
-                    condition: true,
+                    condition: true
                 },
                 flow: {
                     true: 2,
-                    false: 3,
-                },
+                    false: 3
+                }
             },
             {
                 type: "math/add",
                 parameters: {
                     first: 0,
-                    second: 1,
+                    second: 1
                 },
-                flow: {},
+                flow: {}
             },
             {
                 type: "math/subtract",
                 parameters: {
                     first: 2,
-                    second: 1,
+                    second: 1
                 },
-                flow: {},
-            },
-        ],
+                flow: {}
+            }
+        ]
     });
 
     behavior.onEvent("Test");
@@ -90,27 +90,27 @@ test("Resolve References", () => {
         nodes: [
             {
                 type: "event/onTestEvent",
-                flow: { next: 1 },
+                flow: { next: 1 }
             },
             {
                 type: "math/add",
                 parameters: {
                     first: 0,
-                    second: 1,
+                    second: 1
                 },
-                flow: { next: 2 },
+                flow: { next: 2 }
             },
             {
                 type: "math/subtract",
                 parameters: {
                     first: {
                         $node: 1,
-                        socket: "result",
+                        socket: "result"
                     },
-                    second: 1,
-                },
-            },
-        ],
+                    second: 1
+                }
+            }
+        ]
     });
 
     behavior.onEvent("Test");
@@ -122,26 +122,26 @@ test("Set and get variable", () => {
         nodes: [
             {
                 type: "event/onTestEvent",
-                flow: { next: 1 },
+                flow: { next: 1 }
             },
             {
                 type: "action/setVariable",
                 parameters: {
                     variable: "variable",
-                    value: 41,
+                    value: 41
                 },
-                flow: { next: 2 },
+                flow: { next: 2 }
             },
             {
                 type: "math/add",
                 parameters: {
                     first: {
-                        $variable: "variable",
+                        $variable: "variable"
                     },
-                    second: 1,
-                },
-            },
-        ],
+                    second: 1
+                }
+            }
+        ]
     });
 
     behavior.onEvent("Test");
@@ -154,17 +154,17 @@ test("Initial value for variables", () => {
         nodes: [
             {
                 type: "event/onTestEvent",
-                flow: { next: 1 },
+                flow: { next: 1 }
             },
             {
                 type: "math/add",
                 parameters: {
                     first: {
-                        $variable: "variable",
+                        $variable: "variable"
                     },
-                    second: 1,
-                },
-            },
+                    second: 1
+                }
+            }
         ],
         variables: {
             variable: {

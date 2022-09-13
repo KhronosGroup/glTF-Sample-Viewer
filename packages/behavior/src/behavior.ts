@@ -27,17 +27,18 @@ export class Behavior {
             }
         );
 
-        this.behaviorExtensionData.variables &&
+        if (this.behaviorExtensionData.variables) {
             Object.entries(this.behaviorExtensionData.variables).forEach(
                 ([variableName, variable]) => {
                     this._variableState[variableName] = variable.value;
                 }
             );
+        }
 
         this.context = {
             setVariable: (variable, value) => {
                 this._variableState[variable] = value;
-            },
+            }
         };
     }
 
