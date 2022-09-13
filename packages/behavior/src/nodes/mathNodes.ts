@@ -41,5 +41,29 @@ export const mathNodes = {
         }
 
         return {nextFlow: next, result: {result: arrayToScalar(result)}};
+    },
+    less: (input: NodeInput, context: NodeContext): NodeOutput => {
+        const first = scalarToArray(input.parameters.first);
+        const second = scalarToArray(input.parameters.second);
+        const next = input.flow?.next;
+
+        let compareResult = true;
+        for(let i = 0; i < first.length; ++i) {
+            compareResult = compareResult && (first[i] < second[i]);
+        }
+
+        return {nextFlow: next, result: {result: compareResult } };
+    },
+    multiply: (input: NodeInput, context: NodeContext): NodeOutput => {
+        const first = scalarToArray(input.parameters.first);
+        const second = scalarToArray(input.parameters.second);
+        const next = input.flow?.next;
+
+        const result = first;
+        for(let i = 0; i < first.length; ++i) {
+            result[i] = first[i] * second[i];
+        }
+
+        return {nextFlow: next, result: {result: arrayToScalar(result)}};
     }
 }

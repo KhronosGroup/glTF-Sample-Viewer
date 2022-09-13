@@ -17,7 +17,7 @@ export interface NodeInput {
 
 export interface NodeOutput {
     nextFlow: number | undefined;
-    result: { [socketName: string]: number | [number, number] | [number, number, number] | [number, number, number, number] };
+    result: { [socketName: string]: number | [number, number] | [number, number, number] | [number, number, number, number] | boolean };
 };
 
 export type NodeFunction = (input: NodeInput, context: NodeContext) => NodeOutput;

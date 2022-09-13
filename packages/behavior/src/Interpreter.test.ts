@@ -91,7 +91,7 @@ test('Set and get variable', () => {
             type: "math/add",
             parameters: {
                 first: {
-                    $variable: "variable",
+                    $variable: "variable"
                 },
                 second: 1
             }
