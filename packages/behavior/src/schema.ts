@@ -5,6 +5,11 @@ export interface Node {
     parameters?: {[paramName: string]: any};
 }
 
+export interface Variable {
+    type: string;
+    value: any;
+}
+
 export function extractTypeCategory(type: string): string {
     return type.substring(0, type.indexOf('/'))
 }
@@ -15,5 +20,5 @@ export function extractTypeName(type: string): string {
 
 export interface Behavior {
     nodes: Node[];
-    variables?: any[]; // TODO
+    variables?: {[variableName: string]: Variable};
 }
