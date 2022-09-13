@@ -1,6 +1,6 @@
 import { GltfObject } from './gltf_object.js';
-import { AnimationTimer } from "./utils.js";
-import { Behavior, Interpreter } from '@khronosgroup/gltf-behavior';
+
+import { Behavior } from '@khronosgroup/gltf-behavior';
 import { JsonPointer } from 'json-ptr';
 import { PointerTargetProperty } from './pointer_target_property';
 class gltfBehavior extends GltfObject
@@ -15,8 +15,7 @@ class gltfBehavior extends GltfObject
     {
         super.initGl(gltf, webGlContext);
 
-        this.interpreter = new Interpreter();
-        this.interpreter.context.setCallback = (pointer, value) => {
+        this.behavior.context.setCallback = (pointer, value) => {
             const targetProperty = JsonPointer.get(gltf, pointer);
 
             // Check if the property is a valid target for the behavior to avoid messing up the viewer 
@@ -31,7 +30,7 @@ class gltfBehavior extends GltfObject
 
             targetProperty.setValue(value);
         };
-        this.interpreter.context.getCallback = (pointer) => {
+        this.behavior.context.getCallback = (pointer) => {
             const targetProperty = JsonPointer.get(gltf, pointer);
 
             // Check if the property is a valid target for the behavior to avoid messing up the viewer 
@@ -50,10 +49,10 @@ class gltfBehavior extends GltfObject
 
     initState(state) {
         super.initState(state);
-        this.interpreter.context.animationSetTimeCallback = (animation, time) => {
+        this.behavior.context.animationSetTimeCallback = (animation, time) => {
             state.animations[animation].timer.setTime(time);
         };
-        this.interpreter.context.animationSetPlayingCallback = (animation, isPlaying) => {
+        this.behavior.context.animationSetPlayingCallback = (animation, isPlaying) => {
             if (isPlaying) {
                 state.animations[animation].timer.continue();
             } else {
@@ -61,13 +60,13 @@ class gltfBehavior extends GltfObject
             }
             
         };
-        this.interpreter.context.animationsResetCallback = (animation) => {
+        this.behavior.context.animationsResetCallback = (animation) => {
             state.animations[animation].timer.stop();
         };
-        this.interpreter.context.animationSetSpeedCallback = (animation, speed) => {
+        this.behavior.context.animationSetSpeedCallback = (animation, speed) => {
             state.animations[animation].timer.speed = speed;
         };
-        this.interpreter.context.animationSetRepetitionsCallback = (animation, repetitions) => {
+        this.behavior.context.animationSetRepetitionsCallback = (animation, repetitions) => {
             state.animations[animation].timer.repetitions = repetitions;
         };
     }
@@ -80,16 +79,12 @@ class gltfBehavior extends GltfObject
 
     processEvents(events)
     {
-        if (!this.interpreter) {
-            return;
-        }
-
         for (const event of events) {
             const toProperCase = String.prototype.toProperCase = (str) => {
                 return str.replace(/\w\S*/g, (txt) => {return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
             };
             const normalizedEventName = toProperCase(event.name);
-            this.behavior.runOnEvent(`on${normalizedEventName}`, this.interpreter, event.data);
+            this.behavior.runOnEvent(`on${normalizedEventName}`, event.data);
         }
     }
 }
