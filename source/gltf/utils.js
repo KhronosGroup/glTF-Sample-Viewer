@@ -179,33 +179,55 @@ class AnimationTimer {
         this._isPaused = true;
         this._totalTime = totalTime;
         this.pausedElapsedTime = undefined;
-        this.speed = 1.0;
         this.repetitions = -1;
+
+        this.speedChanges = [{ speed: 1.0, timestamp: new Date().getTime() }];
     }
 
     isPaused() {
         return this._isPaused;
     }
 
-    /** Time in seconds */
-    time() {
-        let currentTimeMs;
-        if (this._isPaused) {
-            currentTimeMs = this.speed * this.pausedElapsedTime;
-        } else {
-            currentTimeMs = (new Date().getTime() - this._startTime);
+    /** Calculate the complete time an animation has been playing in ms. Speed is taken into account. Result can be negative */
+    calculateAnimationTime() {
+        let animationTimeMs = 0.0;
+        for(let i = 0; i < this.speedChanges.length(); ++i) {
+            const change = this.speedChanges[i];
+            let durationMs = 0.0;
+            if(i == this.speedChanges.length - 1) {
+                durationMs = new Date().getTime() - change.timestampMs;
+            } else {
+                const nextChange = this.speedChanges[i + 1];
+                durationMs = nextChange.timestamp - change.timestamp;
+            }
+            animationTimeMs += change.speed * durationMs
         }
 
-        let currentTimeSec = this.speed * currentTimeMs / 1000;
+        return animationTimeMs;
+    }
+
+    /** use custom mod function that returns positive results for negative inputs */
+    mod(left, right) {
+        return ((left % right) + right) % right;
+    }
+
+    /** Returns time in seconds */
+    time() {
+        if (this._isPaused) {
+            // TODO handle the paused state
+        }
+        
+        const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
+        const animationTimeSec = mod(totalAnimationTimeSec, this._totalTime);
 
         if (this.repetitions >= 0) {
-            if (currentTimeSec / this._totalTime > this.repetitions) {
+            if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
-                return this.repetitions * this._totalTime;
+                return this._totalTime;
             }
         }
 
-        return currentTimeSec;
+        return animationTimeSec;
     }
 
     /** Set time in seconds */
@@ -213,11 +235,22 @@ class AnimationTimer {
         if (this._isPaused) {
             this.pausedElapsedTime = time * 1000;
         } else {
-            this._startTime = new Date().getTime() - time * 1000;
+            const lastChange = this.speedChanges[-1];
+            const currentSpeed = lastChange.speed;
+            // TODO implement this completely
+
+            this.speedChanges.push[{ speed: currentSpeed, timestampMs: /** TODO */}];
         }
-    } 
+    }
+
+    setSpeed(speed) {
+        const currentTime = new Date().getTime() - this._start;
+        newSpeedChange = { speed: speed, timestampMs: currentTime };
+        speedChanges.push(newSpeedChange);
+    }
 
     start() {
+        this.speedChanges = [{ speed: 1.0, timestamp: new Date().getTime() }];
         this._startTime = new Date().getTime();
         this._isPaused = false;
         this.pausedElapsedTime = undefined;

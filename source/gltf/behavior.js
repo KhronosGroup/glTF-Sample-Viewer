@@ -64,7 +64,7 @@ class gltfBehavior extends GltfObject
             state.animations[animation].timer.stop();
         };
         this.behavior.context.animationSetSpeedCallback = (animation, speed) => {
-            state.animations[animation].timer.speed = speed;
+            state.animations[animation].timer.setSpeed(speed);
         };
         this.behavior.context.animationSetRepetitionsCallback = (animation, repetitions) => {
             state.animations[animation].timer.repetitions = repetitions;
