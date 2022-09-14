@@ -76,6 +76,7 @@ async function main()
                     }
                 }
 
+                view.isFirstRun = true;
                 uiModel.exitLoadingState();
 
                 return state;

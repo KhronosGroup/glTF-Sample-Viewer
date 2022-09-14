@@ -21,6 +21,7 @@ class GltfView
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
         this.behaviorEvents = [];
+        this.isFirstRun = true;
     }
 
     /**
@@ -195,6 +196,12 @@ class GltfView
         if(state.gltf === undefined)
         {
             return;
+        }
+        
+        // this behavior is only called once, it is reset after a new glTF has been loaded
+        if(this.isFirstRun) {
+            this.triggerEvent("start");
+            this.isFirstRun = false;
         }
 
         if(state.gltf.behaviors !== undefined)
