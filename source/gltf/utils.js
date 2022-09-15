@@ -221,6 +221,8 @@ class AnimationTimer {
         const animationTimeSec = this.mod(totalAnimationTimeSec, this._totalTime);
 
         if (this.repetitions >= 0) {
+            /** TODO this implementation of repetitions does not work anymore, 
+             * since setTime can reset the total amount of animation time that already passed */
             if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
                 return this._totalTime;
