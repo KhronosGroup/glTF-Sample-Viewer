@@ -242,7 +242,7 @@ class AnimationTimer {
             const newTimestamp = timeNowMs - (timeSec * 1000);
 
             this.speedChanges = [];
-            this.speedChanges.push({ speed: 0.989898, timestampMs: newTimestamp });
+            this.speedChanges.push({ speed: 1.0, timestampMs: newTimestamp });
             this.speedChanges.push({ speed: currentSpeed, timestampMs: timeNowMs });
         }
     }
