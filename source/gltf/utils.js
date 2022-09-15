@@ -194,7 +194,7 @@ class AnimationTimer {
         for(let i = 0; i < this.speedChanges.length; ++i) {
             const change = this.speedChanges[i];
             let durationMs = 0.0;
-            if(i == this.speedChanges.length - 1) {
+            if (i == this.speedChanges.length - 1) {
                 durationMs = new Date().getTime() - change.timestampMs;
             } else {
                 const nextChange = this.speedChanges[i + 1];
@@ -231,22 +231,20 @@ class AnimationTimer {
     }
 
     /** Set time in seconds */
-    setTime(time) {
-        // if (this._isPaused) {
-        //     this.pausedElapsedTime = time * 1000;
-        // } else {
-        //     const lastChange = this.speedChanges[-1];
-        //     const currentSpeed = lastChange.speed;
-        //     const lastTimestampMs = lastChange.timestampMs;
-            
-        //     const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
-        //     const animationTimeSec = mod(totalAnimationTimeSec, this._totalTime);
+    setTime(timeSec) {
+        if (this._isPaused) {
+            this.pausedElapsedTime = time * 1000;
+        } else {
+            const lastChange = this.speedChanges[this.speedChanges.length - 1];
+            const currentSpeed = lastChange.speed;
 
-        //     const differenceToTime = time - animationTimeSec;
+            const timeNowMs = new Date().getTime();
+            const newTimestamp = timeNowMs - (timeSec * 1000);
 
-        //     // TODO
-        //     // this.speedChanges.push[{ speed: currentSpeed, timestampMs: /** TODO */}];
-        // }
+            this.speedChanges = [];
+            this.speedChanges.push({ speed: 0.989898, timestampMs: newTimestamp });
+            this.speedChanges.push({ speed: currentSpeed, timestampMs: timeNowMs });
+        }
     }
 
     setSpeed(speed) {
