@@ -344,6 +344,9 @@ async function main()
         if (event.key === "s") {
             view.triggerEvent("down");
         }
+        if (event.key === " ") {
+            view.triggerEvent("space");
+        }
     });
 
     // configure the animation loop
