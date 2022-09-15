@@ -29,3 +29,8 @@ test('Equals_02', () => {
     const output = mathNodes.equals({parameters: {"first": [3, 1, 4] , "second": [3, 1, 4] }, flow: { next: 1}}, {});
     expect(output.result.result).toBe(true);
 });
+
+test('Absval', () => {
+    const output = mathNodes.absval({parameters: {"value": -1.42}, flow: { next: 1}}, {});
+    expect(output.result.result).toBe(1.42);
+});

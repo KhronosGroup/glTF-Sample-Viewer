@@ -77,5 +77,16 @@ export const mathNodes = {
         }
 
         return {nextFlow: next, result: {result: compareResult } };
+    },
+    absval: (input: NodeInput, context: NodeContext): NodeOutput => {
+        const value = scalarToArray(input.parameters.value);
+        const next = input.flow?.next;
+
+        const result = value;
+        for(let i = 0; i < value.length; ++i) {
+            result[i] = Math.abs(value[i]);
+        }
+
+        return {nextFlow: next, result: {result: arrayToScalar(result) } };
     }
 }
