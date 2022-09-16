@@ -175,12 +175,9 @@ class Timer {
 
 class AnimationTimer {
     constructor(totalTime) {
-        this._startTime = 0;
         this._isPaused = true;
         this._totalTime = totalTime;
-        this.pausedElapsedTime = undefined;
         this.repetitions = -1;
-
         this.speedChanges = [];
     }
 
@@ -235,7 +232,7 @@ class AnimationTimer {
     /** Set time in seconds */
     setTime(timeSec) {
         if (this._isPaused) {
-            this.pausedElapsedTime = time * 1000;
+            // TODO
         } else {
             const lastChange = this.speedChanges[this.speedChanges.length - 1];
             const currentSpeed = lastChange.speed;
@@ -256,27 +253,32 @@ class AnimationTimer {
 
     start() {
         this.speedChanges = [{ speed: 1.0, timestampMs: new Date().getTime() }];
-        this._startTime = new Date().getTime();
         this._isPaused = false;
-        this.pausedElapsedTime = undefined;
     }
 
     pause() {
-        this.pausedElapsedTime = new Date().getTime() - this._startTime;
-        this._startTime = undefined;
+        if (this._isPaused) {
+            return;
+        }
+        this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
         this._isPaused = true;
     }
 
     continue() {
-        this._startTime += new Date().getTime() - this.pausedTime;
-        this.pausedTime = undefined;
+        if (this.speedChanges.length < 2) {
+            this.start(); // TODO is that appropriate?
+        }
+        const lastChangeBeforePause = this.speedChanges[this.speedChanges.length - 2];
+        const newSpeed = lastChangeBeforePause.speed;
+
+        const newSpeedChange = { speed: newSpeed, timestampMs: new Date().getTime() };
+        this.speedChanges.push(newSpeedChange);
         this._isPaused = false;
     }
 
     stop() {
+        this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
         this._isPaused = true;
-        this._startTime = undefined;
-        this.pausedTime = undefined;
     }
 }
 
