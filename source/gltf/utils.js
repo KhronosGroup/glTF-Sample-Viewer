@@ -210,10 +210,6 @@ class AnimationTimer {
 
     /** Returns time in seconds */
     time() {
-        if (this._isPaused) {
-            // TODO handle the paused state
-        }
-        
         const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
         const animationTimeSec = this.mod(totalAnimationTimeSec, this._totalTime);
 
@@ -260,13 +256,17 @@ class AnimationTimer {
         if (this._isPaused) {
             return;
         }
-        this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
+        this.speedChanges.push({ speed: 0.0, timestampMs: new Date().getTime() });
         this._isPaused = true;
     }
 
     continue() {
+        if (!this._isPaused) {
+            return;
+        }
         if (this.speedChanges.length < 2) {
-            this.start(); // TODO is that appropriate?
+            this.start();
+            return;
         }
         const lastChangeBeforePause = this.speedChanges[this.speedChanges.length - 2];
         const newSpeed = lastChangeBeforePause.speed;
