@@ -214,11 +214,10 @@ class AnimationTimer {
         const animationTimeSec = this.mod(totalAnimationTimeSec, this._totalTime);
 
         if (this.repetitions >= 0) {
-            /** TODO this implementation of repetitions does not work anymore, 
-             * since setTime can reset the total amount of animation time that already passed */
+            /** warning: using repetitions in conjunction with setTime breaks repetitions */
             if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
-                return this._totalTime;
+                return 0.0;
             }
         }
 
@@ -245,6 +244,11 @@ class AnimationTimer {
     setSpeed(speed) {
         const newSpeedChange = { speed: speed, timestampMs: new Date().getTime() };
         this.speedChanges.push(newSpeedChange);
+        this._isPaused = false;
+    }
+
+    setRepetitions(repetitions) {
+        this.repetitions = repetitions;
     }
 
     start() {
