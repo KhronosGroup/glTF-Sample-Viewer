@@ -347,6 +347,15 @@ async function main()
         if (event.key === " ") {
             view.triggerEvent("space");
         }
+        if (event.key === "1") {
+            view.triggerEvent("One");
+        }
+        if (event.key === "2") {
+            view.triggerEvent("Two");
+        }
+        if (event.key === "3") {
+            view.triggerEvent("Three");
+        }
     });
 
     // configure the animation loop
