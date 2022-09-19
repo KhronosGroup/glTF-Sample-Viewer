@@ -111,6 +111,11 @@ function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max);
 }
 
+/** use custom mod function that returns positive results for negative inputs */
+function mod(left, right) {
+    return ((left % right) + right) % right;
+}
+
 function getIsGlb(filename) {
     return getExtension(filename) == "glb";
 }
@@ -203,15 +208,10 @@ class AnimationTimer {
         return animationTimeMs;
     }
 
-    /** use custom mod function that returns positive results for negative inputs */
-    mod(left, right) {
-        return ((left % right) + right) % right;
-    }
-
     /** Returns time in seconds */
     time() {
         const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
-        const animationTimeSec = this.mod(totalAnimationTimeSec, this._totalTime);
+        const animationTimeSec = mod(totalAnimationTimeSec, this._totalTime);
 
         if (this.repetitions >= 0) {
             /** warning: using repetitions in conjunction with setTime breaks repetitions */
