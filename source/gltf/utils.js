@@ -184,6 +184,7 @@ class AnimationTimer {
         this._totalTime = totalTime;
         this.repetitions = -1;
         this.speedChanges = [];
+        this.onFinish; /** onFinish may hold a function that is executed when the animation stops */
     }
 
     isPaused() {
@@ -279,6 +280,11 @@ class AnimationTimer {
     stop() {
         this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
         this._isPaused = true;
+        
+        if (this.onFinish !== undefined) {
+            this.onFinish();
+            this.onFinish = undefined;
+        }
     }
 }
 

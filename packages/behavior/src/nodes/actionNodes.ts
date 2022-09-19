@@ -35,6 +35,10 @@ export const actionNodes = {
         setRepetitions: (input: NodeInput, context: NodeContext): NodeOutput => {
             context.animationSetRepetitionsCallback?.(input.parameters.animation, input.parameters.repetitions);
             return {nextFlow: input.flow?.next, result: {}};
+        },
+        queueAnimations: (input: NodeInput, context: NodeContext): NodeOutput => {
+            context.animationQueueCallback?.(input.parameters.animations);
+            return {nextFlow: input.flow?.next, result: {}};
         }
     }
 }
