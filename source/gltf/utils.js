@@ -226,19 +226,15 @@ class AnimationTimer {
 
     /** Set time in seconds */
     setTime(timeSec) {
-        if (this._isPaused) {
-            // TODO
-        } else {
-            const lastChange = this.speedChanges[this.speedChanges.length - 1];
-            const currentSpeed = lastChange.speed;
+        const lastChange = this.speedChanges[this.speedChanges.length - 1];
+        const currentSpeed = lastChange.speed;
 
-            const timeNowMs = new Date().getTime();
-            const newTimestamp = timeNowMs - (timeSec * 1000);
+        const timeNowMs = new Date().getTime();
+        const newTimestamp = timeNowMs - (timeSec * 1000);
 
-            this.speedChanges = [];
-            this.speedChanges.push({ speed: 1.0, timestampMs: newTimestamp });
-            this.speedChanges.push({ speed: currentSpeed, timestampMs: timeNowMs });
-        }
+        this.speedChanges = [];
+        this.speedChanges.push({ speed: 1.0, timestampMs: newTimestamp });
+        this.speedChanges.push({ speed: currentSpeed, timestampMs: timeNowMs });
     }
 
     setSpeed(speed) {
