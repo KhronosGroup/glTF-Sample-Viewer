@@ -47,6 +47,19 @@ class gltfBehavior extends GltfObject
         };
     }
 
+    popAnimationQueue(state, animations, index) {
+        if(index >= animations.length) {
+            return;
+        }
+
+        const animation = animations[index];
+        
+        state.animations[animation].timer.setRepetitions(1);
+        state.animations[animation].timer.start();
+        
+        state.animations[animation].timer.onFinish = function () { this.popAnimationQueue(state, animations, ++index); };
+    }
+
     initState(state) {
         super.initState(state);
         this.behavior.context.animationSetTimeCallback = (animation, time) => {
@@ -69,22 +82,9 @@ class gltfBehavior extends GltfObject
         this.behavior.context.animationSetRepetitionsCallback = (animation, repetitions) => {
             state.animations[animation].timer.setRepetitions(repetitions);
         };
-        this.behavior.context.animationsQueueCallback = (animations) => {
-            popAnimationQueue(animations, 0);
+        this.behavior.context.animationQueueCallback = (animations) => {
+            this.popAnimationQueue(state, animations, 0);
         };
-    }
-
-    popAnimationQueue(animations, index) {
-        if(index >= animations.length) {
-            return;
-        }
-
-        const animation = animations[index];
-        
-        state.animations[animation].timer.setRepetitions(1);
-        state.animations[animation].timer.start();
-        
-        state.animations[animation].timer.onFinish = popAnimtionQueue(animations, ++index);
     }
 
     fromJson(jsonBehavior)
