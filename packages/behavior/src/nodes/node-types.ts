@@ -9,6 +9,7 @@ export interface NodeContext {
     animationSetRepetitionsCallback?: (animation: number, repetitions: number) => void;
     animationQueueCallback?: (animations: [number]) => void;
     setVariable?: (variable: number, value: any) => void;
+    getVariable?: (variable: number) => any;
 }
 
 export interface NodeInput {

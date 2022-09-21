@@ -15,6 +15,11 @@ export const actionNodes = {
         value = context.setVariable?.(input.parameters.variable, input.parameters.value);
         return {nextFlow: input.flow?.next, result: {}};
     },
+    getVariable: (input: NodeInput, context: NodeContext): NodeOutput => {
+        let value: any;
+        value = context.getVariable?.(input.parameters.variable);
+        return {nextFlow: input.flow?.next, result: {result: value}};
+    },
     animations: {
         setTime: (input: NodeInput, context: NodeContext): NodeOutput => {
             context.animationSetTimeCallback?.(input.parameters.animation, input.parameters.time);

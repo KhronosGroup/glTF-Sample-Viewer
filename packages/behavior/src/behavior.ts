@@ -38,6 +38,9 @@ export class Behavior {
         this.context = {
             setVariable: (variable, value) => {
                 this._variableState[variable] = value;
+            },
+            getVariable: (variable) => {
+                return this._variableState[variable];
             }
         };
     }
