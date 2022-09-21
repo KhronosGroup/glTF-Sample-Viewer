@@ -125,12 +125,19 @@ test("Set and get variable", () => {
                 flow: { next: 1 }
             },
             {
+                type: "action/getVariable",
+                parameters: {
+                    variable: "variable"
+                },
+                flow: { next: 2 }
+            },
+            {
                 type: "action/setVariable",
                 parameters: {
                     variable: "variable",
                     value: 41
                 },
-                flow: { next: 2 }
+                flow: { next: 3 }
             },
             {
                 type: "math/add",
@@ -141,12 +148,19 @@ test("Set and get variable", () => {
                     second: 1
                 }
             }
-        ]
+        ],
+        variables: {
+            variable: {
+                type: "float",
+                value: 23
+            }
+        }
     });
 
     behavior.onEvent("Test");
     expect(behavior.getVariable("variable")).toBe(41);
-    expect(behavior.getState(2).result).toBe(42);
+    expect(behavior.getState(1).result).toBe(23);
+    expect(behavior.getState(3).result).toBe(42);
 });
 
 test("Initial value for variables", () => {
