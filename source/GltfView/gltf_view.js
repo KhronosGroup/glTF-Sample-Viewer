@@ -175,6 +175,7 @@ class GltfView
 
             for(const disabledAnimation of disabledAnimations)
             {
+                // TODO this is probably unneeded. Get rid of this
                 disabledAnimation.advance(state.gltf, undefined);
             }
 

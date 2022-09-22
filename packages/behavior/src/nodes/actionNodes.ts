@@ -42,7 +42,7 @@ export const actionNodes = {
             return {nextFlow: input.flow?.next, result: {}};
         },
         queueAnimations: (input: NodeInput, context: NodeContext): NodeOutput => {
-            context.animationQueueCallback?.(input.parameters.animations);
+            context.animationQueueCallback?.(input.parameters.animations, input.parameters.repetitions);
             return {nextFlow: input.flow?.next, result: {}};
         }
     }

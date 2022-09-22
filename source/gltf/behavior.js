@@ -70,21 +70,20 @@ class gltfBehavior extends GltfObject
             state.animations[animation].timer.setRepetitions(repetitions);
         };
         let index = 0;
-        this.behavior.context.animationQueueCallback = (animations) => {
+        this.behavior.context.animationQueueCallback = (animations, repetitions) => {
             let func = function() {
                 if(index >= animations.length) {
                     return;
                 }
         
                 const animation = animations[index];
+                const repetitionCount = repetitions[index];
                 
-                state.animations[animation].timer.setRepetitions(1);
+                state.animations[animation].timer.setRepetitions(repetitionCount);
                 state.animations[animation].timer.start();
                 index++;
-                state.animations[animation].timer.onFinish = func.bind(state, animations, index);
-
+                state.animations[animation].timer.onFinish = func.bind(state, animations, repetitions, index);
             };
-
 
             func();
         };

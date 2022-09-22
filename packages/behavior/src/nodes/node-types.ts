@@ -7,7 +7,7 @@ export interface NodeContext {
     animationResetCallback?: (animation: number) => void;
     animationSetSpeedCallback?: (animation:number, speed: number) => void;
     animationSetRepetitionsCallback?: (animation: number, repetitions: number) => void;
-    animationQueueCallback?: (animations: [number]) => void;
+    animationQueueCallback?: (animations: [number], repetitions: [number]) => void;
     setVariable?: (variable: number, value: any) => void;
     getVariable?: (variable: number) => any;
 }

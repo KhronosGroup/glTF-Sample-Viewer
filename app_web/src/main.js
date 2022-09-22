@@ -295,6 +295,7 @@ async function main()
 
     uiModel.activeAnimations.subscribe( animations => {
         state.animationIndices = animations;
+        // TODO start newly activated animations, stop others
     });
     listenForRedraw(uiModel.activeAnimations);
 
