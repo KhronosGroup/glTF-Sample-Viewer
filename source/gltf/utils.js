@@ -181,6 +181,7 @@ class Timer {
 class AnimationTimer {
     constructor(totalTime) {
         this._isPaused = true;
+        this._isStopped = false;
         this._totalTime = totalTime;
         this.repetitions = -1;
         this.speedChanges = [];
@@ -189,6 +190,10 @@ class AnimationTimer {
 
     isPaused() {
         return this._isPaused;
+    }
+
+    isStopped() {
+        return this._isStopped;
     }
 
     /** Calculate the complete time an animation has been playing in ms. Speed is taken into account. Result can be negative */
@@ -211,6 +216,10 @@ class AnimationTimer {
 
     /** Returns time in seconds */
     time() {
+        if (this._isStopped) {
+            return this._totalTime - 0.1;
+        }
+
         const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
         const animationTimeSec = mod(totalAnimationTimeSec, this._totalTime);
 
@@ -218,7 +227,7 @@ class AnimationTimer {
             /** warning: using repetitions in conjunction with setTime breaks repetitions */
             if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
-                return 0.0;
+                return this._totalTime - 0.1;
             }
         }
 
@@ -227,6 +236,9 @@ class AnimationTimer {
 
     /** Set time in seconds */
     setTime(timeSec) {
+        if (this._isStopped) {
+            return;
+        }
         const lastChange = this.speedChanges[this.speedChanges.length - 1];
         const currentSpeed = lastChange.speed;
 
@@ -239,6 +251,9 @@ class AnimationTimer {
     }
 
     setSpeed(speed) {
+        if (this._isStopped) {
+            return;
+        }
         const newSpeedChange = { speed: speed, timestampMs: new Date().getTime() };
         this.speedChanges.push(newSpeedChange);
         this._isPaused = false;
@@ -251,10 +266,11 @@ class AnimationTimer {
     start() {
         this.speedChanges = [{ speed: 1.0, timestampMs: new Date().getTime() }];
         this._isPaused = false;
+        this._isStopped = false;
     }
 
     pause() {
-        if (this._isPaused) {
+        if (this._isPaused || this._isStopped) {
             return;
         }
         this.speedChanges.push({ speed: 0.0, timestampMs: new Date().getTime() });
@@ -262,7 +278,7 @@ class AnimationTimer {
     }
 
     continue() {
-        if (!this._isPaused) {
+        if (!this._isPaused || this._isStopped) {
             return;
         }
         if (this.speedChanges.length < 2) {
@@ -279,7 +295,7 @@ class AnimationTimer {
 
     stop() {
         this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
-        this._isPaused = true;
+        this._isStopped = true;
         
         if (this.onFinish !== undefined) {
             this.onFinish();

@@ -120,18 +120,11 @@ export class Behavior {
                 parameters[paramName] =
                     this._variableState[paramValue.$variable];
             } else if (Array.isArray(paramValue)) {
-                console.log("Array encountered!");
                 for (let i = 0; i < paramValue.length; ++i) {
                     if (paramValue[i].$variable !== undefined) {
-                        // console.log("paramValue[" + i + "] " + paramValue[i].$variable);
                         paramValue[i] = this._variableState[paramValue[i].$variable];
-                        // console.log("swapped for: " + paramValue[i]);
-                        console.log("substituted variable");
                     } else if (paramValue[i].$node !== undefined) {
-                        // console.log("paramValue[" + i + "] " + paramValue[i].$variable);
                         paramValue[i] = this._nodeState[paramValue[i].$node][paramValue[i].socket];
-                        // console.log("swapped for: " + paramValue[i]);
-                        console.log("substituted node");
                     }
                 }
                 parameters[paramName] = paramValue;

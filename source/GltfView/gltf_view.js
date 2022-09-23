@@ -169,25 +169,25 @@ class GltfView
 
         if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
         {
-            const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
-                return false === state.animationIndices.includes(index);
-            });
+            // const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
+            //     return false === state.animationIndices.includes(index);
+            // });
 
-            for(const disabledAnimation of disabledAnimations)
-            {
-                // TODO this is probably unneeded. Get rid of this
-                disabledAnimation.advance(state.gltf, undefined);
-            }
+            // for(const disabledAnimation of disabledAnimations)
+            // {
+            //     disabledAnimation.advance(state.gltf, undefined);
+            // }
 
             
-
             const animations = state.animationIndices.map(index => {
                 return state.gltf.animations[index];
             }).filter(animation => animation !== undefined);
 
             animations.forEach((animation, index) => {
-                const t = state.animations[index].timer.time();
-                animation.advance(state.gltf, t);
+                if (!state.animations[index].timer.isStopped()) {
+                    const t = state.animations[index].timer.time();
+                    animation.advance(state.gltf, t);
+                }
             });
         }
     }

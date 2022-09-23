@@ -54,13 +54,17 @@ class gltfBehavior extends GltfObject
         };
         this.behavior.context.animationSetPlayingCallback = (animation, isPlaying) => {
             if (isPlaying) {
-                state.animations[animation].timer.continue();
+                if (state.animations[animation].timer.isStopped) {
+                    state.animations[animation].timer.start();
+                } else {
+                    state.animations[animation].timer.continue();
+                }
             } else {
                 state.animations[animation].timer.pause();
             }
             
         };
-        this.behavior.context.animationsResetCallback = (animation) => {
+        this.behavior.context.animationResetCallback = (animation) => {
             state.animations[animation].timer.stop();
         };
         this.behavior.context.animationSetSpeedCallback = (animation, speed) => {
@@ -69,8 +73,8 @@ class gltfBehavior extends GltfObject
         this.behavior.context.animationSetRepetitionsCallback = (animation, repetitions) => {
             state.animations[animation].timer.setRepetitions(repetitions);
         };
-        let index = 0;
         this.behavior.context.animationQueueCallback = (animations, repetitions) => {
+            let index = 0;
             let func = function() {
                 if(index >= animations.length) {
                     return;

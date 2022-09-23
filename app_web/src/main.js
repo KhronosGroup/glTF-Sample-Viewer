@@ -68,11 +68,12 @@ async function main()
                     state.animationIndices = [];
                     for (let i = 0; i < gltf.animations.length; i++)
                     {
-                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
-                        {
-                            state.animationIndices.push(i);
+                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
                             state.animations[i].timer.start();
+                        } else {
+                            state.animations[i].timer.stop();
                         }
+                        state.animationIndices.push(i);
                     }
                 }
 
@@ -294,8 +295,16 @@ async function main()
     });
 
     uiModel.activeAnimations.subscribe( animations => {
-        state.animationIndices = animations;
-        // TODO start newly activated animations, stop others
+        console.log(animations);
+        // for (let i = 0; i < state.animationIndices.length; i++)
+        // {
+        //     // TODO isStopped or similar should be used here instead of isPaused
+        //     if (animations.includes(i) && state.animations[i].timer.isPaused) {
+        //         state.animations[i].timer.start();
+        //     } else {
+        //         state.animations[i].timer.stop();
+        //     }
+        // }
     });
     listenForRedraw(uiModel.activeAnimations);
 
@@ -303,7 +312,7 @@ async function main()
         resourceLoader.loadEnvironment(hdrFile).then( (environment) => {
             state.environment = environment;
             //We neeed to wait until the environment is loaded to redraw
-            redraw = true
+            redraw = true;
         });
     });
 
