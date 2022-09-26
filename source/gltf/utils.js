@@ -217,7 +217,7 @@ class AnimationTimer {
     /** Returns time in seconds */
     time() {
         if (this._isStopped) {
-            return this._totalTime - 0.1;
+            return this._totalTime - 0.05; // this constant is a quick fix to get the last frame of an animation
         }
 
         const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
@@ -227,13 +227,13 @@ class AnimationTimer {
             /** warning: using repetitions in conjunction with setTime breaks repetitions */
             if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
-                return this._totalTime - 0.1;
+                return this._totalTime - 0.05; // this constant is a quick fix to get the last frame of an animation
             }
         }
 
         return animationTimeSec;
     }
-
+    
     /** Set time in seconds */
     setTime(timeSec) {
         if (this._isStopped) {
