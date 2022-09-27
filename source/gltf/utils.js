@@ -227,6 +227,10 @@ class AnimationTimer {
             /** warning: using repetitions in conjunction with setTime breaks repetitions */
             if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
+                if (this.onFinish !== undefined) {
+                    this.onFinish();
+                    this.onFinish = undefined;
+                }
                 return this._totalTime - 0.02; // this constant is a quick fix to get the last frame of an animation
             }
         }
@@ -296,11 +300,6 @@ class AnimationTimer {
     stop() {
         this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
         this._isStopped = true;
-        
-        if (this.onFinish !== undefined) {
-            this.onFinish();
-            this.onFinish = undefined;
-        }
     }
 }
 
