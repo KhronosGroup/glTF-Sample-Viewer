@@ -1,5 +1,5 @@
 import glslify from 'rollup-plugin-glslify';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
 import commonjs from 'rollup-plugin-commonjs';
