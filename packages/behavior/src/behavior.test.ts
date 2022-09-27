@@ -140,6 +140,13 @@ test("Set and get variable", () => {
                 flow: { next: 3 }
             },
             {
+                type: "action/getVariable",
+                parameters: {
+                    variable: "variable"
+                },
+                flow: { next: 4 }
+            },
+            {
                 type: "math/add",
                 parameters: {
                     first: {
@@ -160,7 +167,8 @@ test("Set and get variable", () => {
     behavior.onEvent("Test");
     expect(behavior.getVariable("variable")).toBe(41);
     expect(behavior.getState(1).result).toBe(23);
-    expect(behavior.getState(3).result).toBe(42);
+    expect(behavior.getState(3).result).toBe(41);
+    expect(behavior.getState(4).result).toBe(42);
 });
 
 test("Initial value for variables", () => {
