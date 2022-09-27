@@ -42,9 +42,6 @@ export class Behavior {
 
         this.context = {
             setVariable: (variable, value) => {
-                if(variable === "animationEnd" || variable === "animationBegin" || variable === "animationMain") {
-                    console.log("set variable: " + variable + " to value: " + value);
-                }
                 this._variableState[variable] = copyValue(value);
             },
             getVariable: (variable) => {
@@ -127,8 +124,6 @@ export class Behavior {
             ) {
                 parameters[paramName] = copyValue(this._variableState[paramValue.$variable]);
             } else if (Array.isArray(paramValue)) {
-                console.log("paramValue: " + paramValue);
-
                 const result = copyValue(paramValue);
                 for (let i = 0; i < result.length; ++i) {
                     if (result[i].$variable !== undefined) {
@@ -138,7 +133,6 @@ export class Behavior {
                     }
                 }
                 parameters[paramName] = result;
-                console.log("resolved Values: " + parameters[paramName]);
             } else {
                 parameters[paramName] = paramValue;
             }
