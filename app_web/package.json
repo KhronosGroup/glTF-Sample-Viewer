@@ -5,7 +5,7 @@
   "main": "src/main.js",
   "module": "src/main.js",
   "scripts": {
-    "build": "rollup -v ; rollup -h ; rollup -c",
+    "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
