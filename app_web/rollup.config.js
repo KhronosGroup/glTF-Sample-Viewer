@@ -47,7 +47,8 @@ export default {
         verbose: true
     }),
     replace({
-      'process.env.NODE_ENV': JSON.stringify( 'production' )
+      'process.env.NODE_ENV': JSON.stringify( 'production' ),
+      preventAssignment: true,
     }),
     alias({
       'vue': 'vue/dist/vue.esm.js'
