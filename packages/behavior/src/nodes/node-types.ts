@@ -8,8 +8,8 @@ export interface NodeContext {
     animationSetSpeedCallback?: (animation:number, speed: number) => void;
     animationSetRepetitionsCallback?: (animation: number, repetitions: number) => void;
     animationQueueCallback?: (animations: [number], repetitions: [number]) => void;
-    setVariable?: (variable: number, value: any) => void;
-    getVariable?: (variable: number) => any;
+    setVariable?: (variable: any, value: any) => void;
+    getVariable?: (variable: any) => any;
 }
 
 export interface NodeInput {
