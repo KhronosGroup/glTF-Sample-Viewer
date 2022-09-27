@@ -4,6 +4,11 @@ import { getNode } from "./nodes/nodes";
 
 type BehaviorState = { [index: number]: { [socket: string]: any } };
 
+function copyValue(value: any): any
+{
+    return JSON.parse(JSON.stringify(value));
+}
+
 export class Behavior {
     private behaviorExtensionData: schema.Behavior;
     private events: { [eventName: string]: number[] } = {};
@@ -37,10 +42,13 @@ export class Behavior {
 
         this.context = {
             setVariable: (variable, value) => {
-                this._variableState[variable] = value;
+                if(variable === "animationEnd" || variable === "animationBegin" || variable === "animationMain") {
+                    console.log("set variable: " + variable + " to value: " + value);
+                }
+                this._variableState[variable] = copyValue(value);
             },
             getVariable: (variable) => {
-                return this._variableState[variable];
+                return copyValue(this._variableState[variable]);
             }
         };
     }
@@ -117,17 +125,20 @@ export class Behavior {
                 typeof paramValue === "object" &&
                 "$variable" in paramValue
             ) {
-                parameters[paramName] =
-                    this._variableState[paramValue.$variable];
+                parameters[paramName] = copyValue(this._variableState[paramValue.$variable]);
             } else if (Array.isArray(paramValue)) {
-                for (let i = 0; i < paramValue.length; ++i) {
-                    if (paramValue[i].$variable !== undefined) {
-                        paramValue[i] = this._variableState[paramValue[i].$variable];
-                    } else if (paramValue[i].$node !== undefined) {
-                        paramValue[i] = this._nodeState[paramValue[i].$node][paramValue[i].socket];
+                console.log("paramValue: " + paramValue);
+
+                const result = copyValue(paramValue);
+                for (let i = 0; i < result.length; ++i) {
+                    if (result[i].$variable !== undefined) {
+                        result[i] = copyValue(this._variableState[result[i].$variable]);
+                    } else if (result[i].$node !== undefined) {
+                        result[i] = this._nodeState[result[i].$node][result[i].socket];
                     }
                 }
-                parameters[paramName] = paramValue;
+                parameters[paramName] = result;
+                console.log("resolved Values: " + parameters[paramName]);
             } else {
                 parameters[paramName] = paramValue;
             }
