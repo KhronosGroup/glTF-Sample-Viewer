@@ -4,7 +4,7 @@ on:
     branches: [master]
       
 jobs:
-  build-and-deploy-to-gtihub-pages:
+  build-and-deploy-to-github-pages:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
