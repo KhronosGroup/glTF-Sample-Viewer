@@ -37,7 +37,7 @@
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
     "jsdoc-to-markdown": "^6.0.1",
-    "rollup": "^2.37.0",
+    "rollup": "^2.79.1",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-glslify": "^1.2.0",
     "serve": "^11.3.0"
