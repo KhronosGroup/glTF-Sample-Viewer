@@ -68,7 +68,11 @@ class gltfSkin extends GltfObject
 
     computeJoints(gltf, parentNode, webGlContext)
     {
-        const ibmAccessor = gltf.accessors[this.inverseBindMatrices].getDeinterlacedView(gltf);
+        let ibmAccessor = null;
+        if (this.inverseBindMatrices !== undefined) {
+            ibmAccessor = gltf.accessors[this.inverseBindMatrices].getDeinterlacedView(gltf);
+        }
+
         this.jointMatrices = [];
         this.jointNormalMatrices = [];
 
@@ -80,10 +84,13 @@ class gltfSkin extends GltfObject
         {
             const node = gltf.nodes[joint];
 
-            let jointMatrix = mat4.create();
-            let ibm = jsToGlSlice(ibmAccessor, i * 16, 16);
-            mat4.mul(jointMatrix, node.worldTransform, ibm);
-            mat4.mul(jointMatrix, parentNode.inverseWorldTransform, jointMatrix);
+            let jointMatrix = mat4.clone(node.worldTransform);
+
+            if (ibmAccessor !== null) {
+                let ibm = jsToGlSlice(ibmAccessor, i * 16, 16);
+                mat4.mul(jointMatrix, jointMatrix, ibm);
+                mat4.mul(jointMatrix, parentNode.inverseWorldTransform, jointMatrix);
+            }
 
             let normalMatrix = mat4.create();
             mat4.invert(normalMatrix, jointMatrix);
