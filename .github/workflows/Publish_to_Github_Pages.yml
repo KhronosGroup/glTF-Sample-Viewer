@@ -17,7 +17,7 @@ jobs:
         run: |
           cd app_web
           npm install
-          npm list
+          npm list --all
           npm run build
 
       - name: Check build size
