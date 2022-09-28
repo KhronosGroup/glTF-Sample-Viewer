@@ -10,19 +10,12 @@ import json from '@rollup/plugin-json';
 
 export default {
     input: 'src/main.js',
-    external: ['gl-matrix', 'axios', 'jpeg-js', 'fast-png'],
     output: [
         {
             name: 'SampleViewerApp',
             file: 'dist/GltfSVApp.umd.js',
             format: 'umd',
-            sourcemap: true,
-            globals: {
-                'gl-matrix': 'glMatrix',
-                'axios': 'axios',
-                'jpeg-js': 'jpeg',
-                'fast-png': 'png'
-            },
+            sourcemap: true
         }
     ],
     plugins: [
