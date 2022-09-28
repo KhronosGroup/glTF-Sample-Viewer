@@ -16,13 +16,7 @@ export default {
       name: 'SampleViewerApp',
       file: 'dist/GltfSVApp.umd.js',
       format: 'umd',
-      sourcemap: true,
-      globals: {
-        'gl-matrix': 'glMatrix',
-        'axios': 'axios',
-        'jpeg-js': 'jpeg',
-        'fast-png': 'png'
-      },
+      sourcemap: true
     }
   ],
   plugins: [
@@ -35,8 +29,7 @@ export default {
         compress: false
     }),
     resolve({
-        browser: true,
-        preferBuiltins: true
+        browser: true
     }),
     builtins(),
     scss(),
