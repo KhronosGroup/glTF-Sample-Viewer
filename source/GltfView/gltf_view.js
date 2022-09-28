@@ -169,6 +169,7 @@ class GltfView
 
         if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
         {
+            // TODO this code does not yet work as intended with the KHR_behavior extension
             // const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
             //     return false === state.animationIndices.includes(index);
             // });

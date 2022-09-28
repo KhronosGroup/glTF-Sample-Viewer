@@ -295,7 +295,8 @@ async function main()
     });
 
     uiModel.activeAnimations.subscribe( animations => {
-        console.log(animations);
+        // TODO this code does not yet work as intended with this of implementation of the KHR_behavior extension
+
         // for (let i = 0; i < state.animationIndices.length; i++)
         // {
         //     // TODO isStopped or similar should be used here instead of isPaused

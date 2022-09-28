@@ -264,12 +264,12 @@
                         </div>
                     </b-tab-item>
 
-
+<!-- TODO this code does not yet work as intended with the KHR_behavior extension
+    
                     <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
                             <div @click="collapseActiveTab($event, 2)"
                                 v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
-                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                                 <img v-bind:src="[tabsHidden === false && activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
                                     v-bind:width="[tabsHidden === false && activeTab === 2 ? '50px' : '30px']"
                                     v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
@@ -297,7 +297,7 @@
                             </b-field>
                         </div>
                     </b-tab-item>
-
+-->
 
                     <b-tab-item label="XMP" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
