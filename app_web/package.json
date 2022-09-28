@@ -49,7 +49,7 @@
     "rollup-plugin-scss": "^3.0.0",
     "concurrently": "^7.4.0",
     "eslint": "^8.24.0",
-    "node-sass": "^7.0.3",
+    "sass": "^1.55.0",
     "serve": "^14.0.1"
   },
   "bugs": {
