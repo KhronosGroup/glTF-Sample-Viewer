@@ -86,7 +86,7 @@ class gltfBehavior extends GltfObject
                 state.animations[animation].timer.setRepetitions(repetitionCount);
                 state.animations[animation].timer.start();
                 index++;
-                state.animations[animation].timer.onFinish = func.bind(state, animations, repetitions, index);
+                state.animations[animation].timer.onFinishRepetitions = func.bind(state, animations, repetitions, index);
             };
 
             func();

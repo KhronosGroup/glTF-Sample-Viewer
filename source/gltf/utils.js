@@ -185,7 +185,8 @@ class AnimationTimer {
         this._totalTime = totalTime;
         this.repetitions = -1;
         this.speedChanges = [];
-        this.onFinish; /** onFinish may hold a function that is executed when the animation stops */
+        /** onFinishRepetitions may hold a function that is executed when the animation stops after completing all allowed repetitions*/
+        this.onFinishRepetitions; 
     }
 
     isPaused() {
@@ -217,21 +218,21 @@ class AnimationTimer {
     /** Returns time in seconds */
     time() {
         if (this._isStopped) {
-            return this._totalTime - 0.02; // this constant is a quick fix to get the last frame of an animation
+            return this._totalTime - 0.02; // this constant is a quick fix to get the end state of an animation
         }
 
         const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
         const animationTimeSec = mod(totalAnimationTimeSec, this._totalTime);
 
         if (this.repetitions >= 0) {
-            /** warning: using repetitions in conjunction with setTime breaks repetitions */
+            /** warning: using repetitions in conjunction with setTime leads to undefined behavior */
             if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
                 this.stop();
-                if (this.onFinish !== undefined) {
-                    this.onFinish();
-                    this.onFinish = undefined;
+                if (this.onFinishRepetitions !== undefined) {
+                    this.onFinishRepetitions();
+                    this.onFinishRepetitions = undefined;
                 }
-                return this._totalTime - 0.02; // this constant is a quick fix to get the last frame of an animation
+                return this._totalTime - 0.02; // this constant is a quick fix to get the end state of an animation
             }
         }
 
