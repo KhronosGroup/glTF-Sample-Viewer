@@ -20,7 +20,6 @@ export default {
     ],
     plugins: [
         json(),
-        commonjs(),
         glslify({
             include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
             compress: false
@@ -50,5 +49,6 @@ export default {
         alias({
             'vue': 'vue/dist/vue.esm.js'
         }),
+        commonjs(),
     ]
 };
