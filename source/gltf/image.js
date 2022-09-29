@@ -3,7 +3,7 @@ import { isPowerOf2 } from './math_utils.js';
 import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 import { GL } from "../Renderer/webgl";
 import { ImageMimeType } from "./image_mime_type.js";
-import * as jpeg  from "jpeg-js";
+import { decode }  from "jpeg-js";
 import * as png from 'fast-png';
 
 class gltfImage extends GltfObject
@@ -99,7 +99,7 @@ class gltfImage extends GltfObject
         }
         else if(this.mimeType === ImageMimeType.JPEG && this.uri instanceof ArrayBuffer)
         {
-            this.image = jpeg.decode(this.uri, {useTArray: true});
+            this.image = decode(this.uri, {useTArray: true});
         }
         else if(this.mimeType === ImageMimeType.PNG && this.uri instanceof ArrayBuffer)
         {
