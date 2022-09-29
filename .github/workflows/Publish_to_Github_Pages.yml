@@ -17,7 +17,7 @@ jobs:
         run: |
           cd app_web
           sudo apt update
-          sudo apt install node
+          sudo apt install nodejs npm
           node -v
           npm -v
           npm install
