@@ -24,9 +24,7 @@ export default {
             browser: true,
             preferBuiltins: false
         }),
-        commonjs({
-            include: 'node_modules/**'
-        }),
+        commonjs(),
         copy({
             targets: [
                 {
