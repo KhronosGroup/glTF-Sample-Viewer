@@ -16,10 +16,6 @@ jobs:
       - name: Install and Build
         run: |
           cd app_web
-          sudo apt update
-          sudo apt install nodejs npm
-          node -v
-          npm -v
           npm install
           npm run build
       
