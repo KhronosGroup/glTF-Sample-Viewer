@@ -299,8 +299,7 @@ async function main()
 
         // for (let i = 0; i < state.animationIndices.length; i++)
         // {
-        //     // TODO isStopped or similar should be used here instead of isPaused
-        //     if (animations.includes(i) && state.animations[i].timer.isPaused) {
+        //     if (animations.includes(i) && state.animations[i].timer.isStopped()) {
         //         state.animations[i].timer.start();
         //     } else {
         //         state.animations[i].timer.stop();
