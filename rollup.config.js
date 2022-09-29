@@ -20,11 +20,11 @@ export default {
     ],
     plugins: [
         glslify(),
+        commonjs(),
         resolve({
             browser: true,
             preferBuiltins: false
         }),
-        commonjs(),
         copy({
             targets: [
                 {
