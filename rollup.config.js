@@ -32,6 +32,5 @@ export default {
                 { src: ["source/libs/*", "!source/libs/hdrpng.js"], dest: "dist/libs" }
             ]
         }),
-        commonjs(),
     ]
 };
