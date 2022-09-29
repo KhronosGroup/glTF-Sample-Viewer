@@ -13,8 +13,8 @@ export default {
     output: [
         {
             name: 'SampleViewerApp',
-            file: 'dist/GltfSVApp.umd.js',
-            format: 'umd',
+            file: 'dist/GltfSVApp.js',
+            format: 'esm',
             sourcemap: true
         }
     ],
@@ -33,7 +33,7 @@ export default {
         scss(),
         copy({
             targets: [
-                { src: ["index.html"], dest: "dist/" },
+                { src: ["index.html", "main.js"], dest: "dist/" },
                 { src: ["../assets/models/2.0", "!../asset/models/.git"], dest: "dist/assets/models" },
                 { src: ["../assets/environments/*.hdr", "../assets/environments/*.jpg", "!../asset/environments/.git"], dest: "dist/assets/environments" },
                 { src: ["../assets/images"], dest: "dist/assets" },
