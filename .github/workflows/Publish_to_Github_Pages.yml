@@ -18,6 +18,8 @@ jobs:
           cd app_web
           sudo apt update
           sudo apt install node
+          node -v
+          npm -v
           npm install
           npm run build
 
