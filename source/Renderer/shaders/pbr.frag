@@ -296,9 +296,16 @@ void main()
 #endif
 
 #else
-    // In case of missing data for a debug view, render a magenta stripe pattern.
-    g_finalColor = vec4(1, 0, 1, 1);
-    g_finalColor.rb = vec2(max(2.0 * sin(0.1 * (gl_FragCoord.x + gl_FragCoord.y)), 0.0) + 0.3);
+    // In case of missing data for a debug view, render a checkerboard.
+    g_finalColor = vec4(1.0);
+    {
+        float frequency = 0.02;
+        float gray = 0.9;
+
+        vec2 v1 = step(0.5, fract(frequency * gl_FragCoord.xy));
+        vec2 v2 = step(0.5, vec2(1.0) - fract(frequency * gl_FragCoord.xy));
+        g_finalColor.rgb *= gray + v1.x * v1.y + v2.x * v2.y;
+    }
 #endif
 
     // Debug views:
