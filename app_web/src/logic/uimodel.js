@@ -5,6 +5,9 @@ import { GltfState } from 'gltf-viewer-source';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
 
+import * as jpg  from "jpeg-js";
+import * as png from 'fast-png';
+
 import normalizeWheel from 'normalize-wheel';
 
 // this class wraps all the observables for the gltf sample viewer state
@@ -16,6 +19,9 @@ class UIModel
     {
         this.app = app;
         this.pathProvider = modelPathProvider;
+
+        console.log(jpg.decode);
+        console.log(png.decode);
 
         this.app.models = this.pathProvider.getAllKeys();
 
