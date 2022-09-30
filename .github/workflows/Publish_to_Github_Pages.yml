@@ -18,14 +18,6 @@ jobs:
           cd app_web
           npm install
           npm run build
-      
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: sample-viewer-artifact
-          path: |
-            app_web/dist/
-            !app_web/dist/assets/
 
       - name: Check build size
         # 1GB = 1073741824 bytes
