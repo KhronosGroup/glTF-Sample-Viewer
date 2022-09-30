@@ -20,6 +20,11 @@ export default {
     ],
     plugins: [
         glslify(),
+        resolve({
+            browser: true,
+            preferBuiltins: false,
+            dedupe: ['gl-matrix', 'axios', 'jpeg-js', 'fast-png']
+        }),
         copy({
             targets: [
                 {
