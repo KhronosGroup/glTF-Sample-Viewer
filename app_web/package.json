@@ -34,7 +34,9 @@
     "rxjs": "^6.6.3",
     "simple-dropzone": "^0.8.0",
     "vue": "^2.6.12",
-    "vue-rx": "^6.2.0"
+    "vue-rx": "^6.2.0",
+    "fast-png": "^5.0.3",
+    "jpeg-js": "^0.4.3"
   },
   "devDependencies": {
     "rollup": "^2.79.1",
