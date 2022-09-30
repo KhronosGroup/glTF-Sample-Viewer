@@ -10,6 +10,7 @@ import json from '@rollup/plugin-json';
 
 export default {
     input: 'src/main.js',
+    external:['gl-matrix', 'axios', 'jpeg-js', 'fast-png'],
     output: [
         {
             name: 'SampleViewerApp',
