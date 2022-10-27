@@ -387,7 +387,7 @@ class gltfMaterial extends GltfObject
                 }
                 if (this.sheenRoughnessTexture !== undefined)
                 {
-                    this.sheenRoughnessTexture.samplerName = "u_sheenRoughnessSampler";
+                    this.sheenRoughnessTexture.samplerName = "u_SheenRoughnessSampler";
                     this.parseTextureInfoExtensions(this.sheenRoughnessTexture, "SheenRoughness");
                     this.textures.push(this.sheenRoughnessTexture);
                     this.defines.push("HAS_SHEEN_ROUGHNESS_MAP 1");
