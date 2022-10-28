@@ -200,20 +200,17 @@ class UIModel
     {
         const observables = {};
 
-        const simpleDropzoneObservabel = new Observable(subscriber => {
-            const dropCtrl = new SimpleDropzone(inputDomElement, inputDomElement);
-            dropCtrl.on('drop', ({files}) => {
+        const simpleDropZone = new SimpleDropzone(inputDomElement, inputDomElement);
+        observables.filesDropped = new Observable(subscriber => {
+            simpleDropZone.on('drop', ({files}) => {
                 app.showDropDownOverlay = false;
-                subscriber.next(files);
+                subscriber.next(Array.from(files.values()));
             });
-            dropCtrl.on('droperror', () => {
+            simpleDropZone.on('droperror', () => {
                 app.showDropDownOverlay = false;
                 subscriber.error();
             });
         });
-        observables.filesDropped = simpleDropzoneObservabel.pipe(
-            map(files => Array.from(files.values()))
-        );
 
         observables.gltfDropped = observables.filesDropped.pipe(
             // filter out any non .gltf or .glb files
