@@ -100,6 +100,11 @@ NormalInfo getNormalInfo(vec3 v)
     vec3 uv_dx = dFdx(vec3(UV, 0.0));
     vec3 uv_dy = dFdy(vec3(UV, 0.0));
 
+    if (length(uv_dx) + length(uv_dy) <= 1e-6) {
+        uv_dx = vec3(1.0, 0.0, 0.0);
+        uv_dy = vec3(0.0, 1.0, 0.0);
+    }
+
     vec3 t_ = (uv_dy.t * dFdx(v_Position) - uv_dx.t * dFdy(v_Position)) /
         (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
 
