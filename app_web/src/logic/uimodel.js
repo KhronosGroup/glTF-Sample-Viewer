@@ -1,5 +1,5 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, tap } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
