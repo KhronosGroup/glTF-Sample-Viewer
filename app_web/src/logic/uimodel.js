@@ -1,5 +1,5 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, tap } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 
 import { SimpleDropzone } from 'simple-dropzone';
@@ -288,7 +288,6 @@ class UIModel
 
         const touchOrbit = touchstart.pipe(
             filter(event => event.touches.length === 1),
-            map(event => event.touches[0]),
             mergeMap(() => touchmove.pipe(
                 filter(event => event.touches.length === 1),
                 map(event => event.touches[0]),
@@ -304,15 +303,18 @@ class UIModel
         );
 
         const touchZoom = touchstart.pipe(
-            filter( event => event.touches.length === 2),
-            mergeMap(() => touchmove.pipe(takeUntil(touchend))),
-            map( event => {
-                const pos1 = vec2.fromValues(event.touches[0].pageX, event.touches[0].pageY);
-                const pos2 = vec2.fromValues(event.touches[1].pageX, event.touches[1].pageY);
-                return vec2.dist(pos1, pos2);
-            }),
-            pairwise(),
-            map( ([oldDist, newDist]) => ({ deltaZoom: newDist - oldDist }))
+            filter(event => event.touches.length === 2),
+            mergeMap(() => touchmove.pipe(
+                filter(event => event.touches.length === 2),
+                map(event => {
+                    const pos1 = vec2.fromValues(event.touches[0].clientX, event.touches[0].clientY);
+                    const pos2 = vec2.fromValues(event.touches[1].clientX, event.touches[1].clientY);
+                    return vec2.dist(pos1, pos2);
+                }),
+                pairwise(),
+                map(([oldDist, newDist]) => ({ deltaZoom: newDist - oldDist })),
+                takeUntil(touchend))
+            ),
         );
 
         inputDomElement.addEventListener('ontouchmove', event => event.preventDefault(), false);
