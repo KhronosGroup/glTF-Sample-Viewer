@@ -287,14 +287,16 @@ class UIModel
         const touchend = merge(fromEvent(inputDomElement, 'touchend'), fromEvent(inputDomElement, 'touchcancel'));
 
         const touchOrbit = touchstart.pipe(
-            filter( event => event.touches.length === 1),
-            map( event => event.touches[0]),
+            filter(event => event.touches.length === 1),
+            map(event => event.touches[0]),
             mergeMap(() => touchmove.pipe(
+                filter(event => event.touches.length === 1),
+                map(event => event.touches[0]),
                 pairwise(),
-                map( ([oldTouch, newTouch]) => {
+                map(([oldTouch, newTouch]) => {
                     return {
-                        deltaPhi: newTouch.pageX - oldTouch.pageX, 
-                        deltaTheta: newTouch.pageY - oldTouch.pageY 
+                        deltaPhi: newTouch.clientX - oldTouch.clientX,
+                        deltaTheta: newTouch.clientY - oldTouch.clientY,
                     };
                 }),
                 takeUntil(touchend)
