@@ -11,7 +11,7 @@
     <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="GltfSVApp.umd.css">
+    <link rel="stylesheet" href="GltfSVApp.css">
     <link rel="icon" href="assets/images/gltf.png">
 
     <!-- buefy styles -->
@@ -24,7 +24,6 @@
 
     <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
     <script src="libs/libktx.js"></script>
-
 </head>
 <script>
     function getUrlVars() {
@@ -87,7 +86,7 @@
 </script>
 
 
-<body onload="SampleViewerApp.main()" class="is-flex">
+<body class="is-flex">
 
     <div class="columns">
         <div class="column" id="canvasUI">
@@ -411,6 +410,6 @@
     </div>
 </body>
 
-<script src="GltfSVApp.umd.js"></script>
+<script type="module" src="main.js"></script>
 
 </html>
