@@ -13,18 +13,9 @@ class gltfWebGl
         }
     }
 
-    loadWebGlExtensions(webglExtensions)
+    loadWebGlExtensions()
     {
-        for (let extension of webglExtensions)
-        {
-            if (this.context.getExtension(extension) === null)
-            {
-                console.warn("Extension " + extension + " not supported!");
-            }
-        }
-
         let EXT_texture_filter_anisotropic = this.context.getExtension("EXT_texture_filter_anisotropic");
-
         if (EXT_texture_filter_anisotropic)
         {
             this.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
@@ -33,6 +24,7 @@ class gltfWebGl
         }
         else
         {
+            console.warn("Anisotropic filtering is not supported");
             this.context.supports_EXT_texture_filter_anisotropic = false;
         }
     }
