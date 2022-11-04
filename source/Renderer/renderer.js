@@ -56,12 +56,7 @@ class gltfRenderer
 
         this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
-        let requiredWebglExtensions = [
-            "EXT_texture_filter_anisotropic",
-            "OES_texture_float_linear"
-        ];
-
-        this.webGl.loadWebGlExtensions(requiredWebglExtensions);
+        this.webGl.loadWebGlExtensions();
 
         this.visibleLights = [];
 
