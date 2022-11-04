@@ -238,9 +238,9 @@ class UIModel
         const mouseDown = fromEvent(inputDomElement, 'mousedown');
         const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
         
-        inputDomElement.addEventListener('mousemove', event => event.preventDefault(), false);
-        inputDomElement.addEventListener('mousedown', event => event.preventDefault(), false);
-        inputDomElement.addEventListener('mouseup', event => event.preventDefault(), false);
+        inputDomElement.addEventListener('mousemove', event => event.preventDefault());
+        inputDomElement.addEventListener('mousedown', event => event.preventDefault());
+        inputDomElement.addEventListener('mouseup', event => event.preventDefault());
 
         const mouseOrbit = mouseDown.pipe(
             filter( event => event.button === 0 && event.shiftKey === false),
@@ -279,7 +279,8 @@ class UIModel
             map(wheelEvent => normalizeWheel(wheelEvent)),
             map(normalizedZoom => ({deltaZoom: normalizedZoom.spinY }))
         );
-        inputDomElement.addEventListener('onscroll', event => event.preventDefault(), false);
+        inputDomElement.addEventListener('scroll', event => event.preventDefault(), { passive: false });
+        inputDomElement.addEventListener('wheel', event => event.preventDefault(), { passive: false });
         const mouseZoom = merge(smbZoom, wheelZoom);
 
         const touchmove = fromEvent(document, 'touchmove');
@@ -294,8 +295,8 @@ class UIModel
                 pairwise(),
                 map(([oldTouch, newTouch]) => {
                     return {
-                        deltaPhi: newTouch.clientX - oldTouch.clientX,
-                        deltaTheta: newTouch.clientY - oldTouch.clientY,
+                        deltaPhi: 2.0 * (newTouch.clientX - oldTouch.clientX),
+                        deltaTheta: 2.0 * (newTouch.clientY - oldTouch.clientY),
                     };
                 }),
                 takeUntil(touchend)
@@ -312,12 +313,14 @@ class UIModel
                     return vec2.dist(pos1, pos2);
                 }),
                 pairwise(),
-                map(([oldDist, newDist]) => ({ deltaZoom: newDist - oldDist })),
+                map(([oldDist, newDist]) => ({ deltaZoom: 0.1 * (oldDist - newDist) })),
                 takeUntil(touchend))
             ),
         );
 
-        inputDomElement.addEventListener('ontouchmove', event => event.preventDefault(), false);
+        inputDomElement.addEventListener('ontouchmove', event => event.preventDefault(), { passive: false });
+        inputDomElement.addEventListener('ontouchstart', event => event.preventDefault(), { passive: false });
+        inputDomElement.addEventListener('ontouchend', event => event.preventDefault(), { passive: false });
 
         observables.orbit = merge(mouseOrbit, touchOrbit);
         observables.pan = mousePan;
