@@ -274,12 +274,17 @@ class gltfRenderer
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
+        if(currentCamera.aspectRatio > 1.0) {
+            currentCamera.xmag = currentCamera.ymag * currentCamera.aspectRatio; 
+        } else {
+            currentCamera.ymag = currentCamera.xmag / currentCamera.aspectRatio; 
+        }
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
-        this.visibleLights = this.getVisibleLights(state.gltf, scene);
+        this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
@@ -586,11 +591,17 @@ class gltfRenderer
     }
 
     /// Compute a list of lights instantiated by one or more nodes as a list of node-light tuples.
-    getVisibleLights(gltf, scene)
+    getVisibleLights(gltf, nodes)
     {
-        const nodeLights = [];
-        for (const nodeIndex of scene.nodes) {
+        let nodeLights = [];
+
+        for (const nodeIndex of nodes) {
             const node = gltf.nodes[nodeIndex];
+
+            if (node.children !== undefined) {
+                nodeLights = nodeLights.concat(this.getVisibleLights(gltf, node.children))
+            }
+
             const lightIndex = node.extensions?.KHR_lights_punctual?.light;
             if (lightIndex === undefined) {
                 continue;
@@ -598,6 +609,7 @@ class gltfRenderer
             const light = gltf.lights[lightIndex];
             nodeLights.push([node, light]);
         }
+
         return nodeLights;
     }
 

@@ -1,16 +1,16 @@
 name: Deploy to github pages
-on: 
+on:
   push:
     branches: [master]
-      
+
 jobs:
-  build-and-deploy-to-gtihub-pages:
+  build-and-deploy-to-github-pages:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.1
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           lfs: true
 
       - name: Install and Build
@@ -18,15 +18,15 @@ jobs:
           cd app_web
           npm install
           npm run build
-          
+
       - name: Check build size
-        #1GB = 1073741824 bytes
+        # 1GB = 1073741824 bytes
         run: |
           SIZE=$(du -s -B 1 app_web/dist/ | cut -f 1)
           if [[ $SIZE -gt 1073741824 ]]; then echo 'dist folder exceeds limit of 1GB! Aborting'; exit 1; fi
-                  
+
       - name: Deploy to Khronos repo
-        continue-on-error: true #If no changes are commited this action fails
+        continue-on-error: true # If no changes are commited this action fails
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
           branch: main

@@ -163,7 +163,7 @@ void main()
     vec3 diffuse_radiance = f_diffuse;
 #endif
 
-#if defined(MATERIAL_TRANSMISSION) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
+#if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
     f_transmission += getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
@@ -303,9 +303,16 @@ void main()
 #endif
 
 #else
-    // In case of missing data for a debug view, render a magenta stripe pattern.
-    g_finalColor = vec4(1, 0, 1, 1);
-    g_finalColor.rb = vec2(max(2.0 * sin(0.1 * (gl_FragCoord.x + gl_FragCoord.y)), 0.0) + 0.3);
+    // In case of missing data for a debug view, render a checkerboard.
+    g_finalColor = vec4(1.0);
+    {
+        float frequency = 0.02;
+        float gray = 0.9;
+
+        vec2 v1 = step(0.5, fract(frequency * gl_FragCoord.xy));
+        vec2 v2 = step(0.5, vec2(1.0) - fract(frequency * gl_FragCoord.xy));
+        g_finalColor.rgb *= gray + v1.x * v1.y + v2.x * v2.y;
+    }
 #endif
 
     // Debug views:
@@ -389,7 +396,7 @@ void main()
     g_finalColor.rgb = linearTosRGB(vec3(BdotV));
 #endif
 #if DEBUG == DEBUG_IOR
-    g_finalColor.rgb = vec3( u_Ior );
+    g_finalColor.rgb = vec3(u_Ior);
 #endif
 
     // MR:
