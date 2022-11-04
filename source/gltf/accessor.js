@@ -88,6 +88,10 @@ class gltfAccessor extends GltfObject
                 break;
             }
         }
+        else if (this.sparse !== undefined)
+        {
+            this.typedView = this.createView();
+        }
 
         if (this.typedView === undefined)
         {
@@ -175,6 +179,10 @@ class gltfAccessor extends GltfObject
                 this.filteredView[i] = dv[func](offset, true);
             }
         }
+        else if (this.sparse !== undefined)
+        {
+            this.filteredView = this.createView();
+        }
 
         if (this.filteredView === undefined)
         {
@@ -186,6 +194,18 @@ class gltfAccessor extends GltfObject
         }
 
         return this.filteredView;
+    }
+
+    createView()
+    {
+        const size = this.count * this.getComponentCount(this.type);
+        if (this.componentType == GL.BYTE) return new Int8Array(size);
+        if (this.componentType == GL.UNSIGNED_BYTE) return new Uint8Array(size);
+        if (this.componentType == GL.SHORT) return new Int16Array(size);
+        if (this.componentType == GL.UNSIGNED_SHORT) return new Uint16Array(size);
+        if (this.componentType == GL.UNSIGNED_INT) return new Uint32Array(size);
+        if (this.componentType == GL.FLOAT) return new Float32Array(size);
+        return undefined;
     }
 
     // getNormalizedDeinterlacedView provides an alternative view to the accessors data,
