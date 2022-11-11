@@ -279,7 +279,7 @@ class gltfRenderer
         }
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
-        if (this.transmissionDrawables.length > 0 || this.transparentDrawables.length > 0) {
+        if (this.transmissionDrawables.length > 0) {
             // Render transmission sample texture
             this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
             this.webGl.context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
@@ -338,6 +338,7 @@ class gltfRenderer
             this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
         }
 
+        this.transparentDrawables = this.transparentDrawables.sortPrimitivesByDepth(state.gltf, this.transparentDrawables);
         for (const drawable of this.transparentDrawables)
         {
             let renderpassConfiguration = {};
