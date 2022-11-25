@@ -88,16 +88,12 @@ class gltfAccessor extends GltfObject
                 break;
             }
         }
-        else if (this.sparse !== undefined)
+        else
         {
             this.typedView = this.createView();
         }
 
-        if (this.typedView === undefined)
-        {
-            console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
-        }
-        else if (this.sparse !== undefined)
+        if (this.sparse !== undefined)
         {
             this.applySparse(gltf, this.typedView);
         }
@@ -179,16 +175,12 @@ class gltfAccessor extends GltfObject
                 this.filteredView[i] = dv[func](offset, true);
             }
         }
-        else if (this.sparse !== undefined)
+        else
         {
             this.filteredView = this.createView();
         }
 
-        if (this.filteredView === undefined)
-        {
-            console.warn("Failed to convert buffer view to filtered view!: " + this.bufferView)
-        }
-        else if (this.sparse !== undefined)
+        if (this.sparse !== undefined)
         {
             this.applySparse(gltf, this.filteredView);
         }
