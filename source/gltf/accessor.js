@@ -215,6 +215,13 @@ class gltfAccessor extends GltfObject
         return this.normalizedFilteredView;
     }
 
+    byteStride(gltf)
+    {
+        return gltf.bufferViews[this.bufferView]?.byteStride ??
+            gltf.bufferViews[this.sparse?.values.bufferView]?.byteStride ??
+            0;
+    }
+
     applySparse(gltf, view)
     {
         // Gather indices.
