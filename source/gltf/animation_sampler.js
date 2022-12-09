@@ -6,7 +6,7 @@ class gltfAnimationSampler extends GltfObject
     {
         super();
         this.input = undefined;
-        this.interpolation = undefined;
+        this.interpolation = InterpolationModes.LINEAR;
         this.output = undefined;
     }
 }
