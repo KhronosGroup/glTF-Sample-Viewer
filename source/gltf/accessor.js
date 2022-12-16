@@ -88,16 +88,12 @@ class gltfAccessor extends GltfObject
                 break;
             }
         }
-        else if (this.sparse !== undefined)
+        else
         {
             this.typedView = this.createView();
         }
 
-        if (this.typedView === undefined)
-        {
-            console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
-        }
-        else if (this.sparse !== undefined)
+        if (this.sparse !== undefined)
         {
             this.applySparse(gltf, this.typedView);
         }
@@ -131,54 +127,55 @@ class gltfAccessor extends GltfObject
             return this.filteredView;
         }
 
-        const componentSize = this.getComponentSize(this.componentType);
-        const componentCount = this.getComponentCount(this.type);
-        const arrayLength = this.count * componentCount;
-
-        let func = 'getFloat32';
-        switch (this.componentType)
+        if (this.bufferView !== undefined)
         {
-        case GL.BYTE:
-            this.filteredView = new Int8Array(arrayLength);
-            func = 'getInt8';
-            break;
-        case GL.UNSIGNED_BYTE:
-            this.filteredView = new Uint8Array(arrayLength);
-            func = 'getUint8';
-            break;
-        case GL.SHORT:
-            this.filteredView = new Int16Array(arrayLength);
-            func = 'getInt16';
-            break;
-        case GL.UNSIGNED_SHORT:
-            this.filteredView = new Uint16Array(arrayLength);
-            func = 'getUint16';
-            break;
-        case GL.UNSIGNED_INT:
-            this.filteredView = new Uint32Array(arrayLength);
-            func = 'getUint32';
-            break;
-        case GL.FLOAT:
-            this.filteredView = new Float32Array(arrayLength);
-            func = 'getFloat32';
-            break;
-        default:
-            return;
-        }
-
-        if (this.bufferView !== undefined) {
             const bufferView = gltf.bufferViews[this.bufferView];
             const buffer = gltf.buffers[bufferView.buffer];
             const byteOffset = this.byteOffset + bufferView.byteOffset;
-            const stride = bufferView.byteStride !== 0 ? bufferView.byteStride : componentCount * componentSize;
-            const dataView = new DataView(buffer.buffer, byteOffset, this.count * stride);
-            for (let i = 0; i < arrayLength; ++i)
+
+            const componentSize = this.getComponentSize(this.componentType);
+            const componentCount = this.getComponentCount(this.type);
+            const arrayLength = this.count * componentCount;
+
+            let stride = bufferView.byteStride !== 0 ? bufferView.byteStride : componentCount * componentSize;
+            let dv = new DataView(buffer.buffer, byteOffset, this.count * stride);
+
+            let func = 'getFloat32';
+            switch (this.componentType)
             {
-                const offset = Math.floor(i / componentCount) * stride + (i % componentCount) * componentSize;
-                this.filteredView[i] = dataView[func](offset, true);
+            case GL.BYTE:
+                this.filteredView = new Int8Array(arrayLength);
+                func = 'getInt8';
+                break;
+            case GL.UNSIGNED_BYTE:
+                this.filteredView = new Uint8Array(arrayLength);
+                func = 'getUint8';
+                break;
+            case GL.SHORT:
+                this.filteredView = new Int16Array(arrayLength);
+                func = 'getInt16';
+                break;
+            case GL.UNSIGNED_SHORT:
+                this.filteredView = new Uint16Array(arrayLength);
+                func = 'getUint16';
+                break;
+            case GL.UNSIGNED_INT:
+                this.filteredView = new Uint32Array(arrayLength);
+                func = 'getUint32';
+                break;
+            case GL.FLOAT:
+                this.filteredView = new Float32Array(arrayLength);
+                func = 'getFloat32';
+                break;
+            }
+
+            for(let i = 0; i < arrayLength; ++i)
+            {
+                let offset = Math.floor(i/componentCount) * stride + (i % componentCount) * componentSize;
+                this.filteredView[i] = dv[func](offset, true);
             }
         }
-        else if (this.sparse !== undefined)
+        else
         {
             this.filteredView = this.createView();
         }
@@ -218,13 +215,20 @@ class gltfAccessor extends GltfObject
         return this.normalizedFilteredView;
     }
 
+    byteStride(gltf)
+    {
+        return gltf.bufferViews[this.bufferView]?.byteStride ??
+            gltf.bufferViews[this.sparse?.values.bufferView]?.byteStride ??
+            0;
+    }
+
     applySparse(gltf, view)
     {
         // Gather indices.
 
         const indicesBufferView = gltf.bufferViews[this.sparse.indices.bufferView];
         const indicesBuffer = gltf.buffers[indicesBufferView.buffer];
-        const indicesByteOffset = this.sparse.indices.byteOffset + indicesBufferView.byteOffset;
+        const indicesByteOffset = this.sparse.indices.byteOffset ?? 0 + indicesBufferView.byteOffset ?? 0;
 
         const indicesComponentSize = this.getComponentSize(this.sparse.indices.componentType);
         let indicesComponentCount = 1;
@@ -254,7 +258,7 @@ class gltfAccessor extends GltfObject
 
         const valuesBufferView = gltf.bufferViews[this.sparse.values.bufferView];
         const valuesBuffer = gltf.buffers[valuesBufferView.buffer];
-        const valuesByteOffset = this.sparse.values.byteOffset + valuesBufferView.byteOffset;
+        const valuesByteOffset = this.sparse.values.byteOffset ?? 0 + valuesBufferView.byteOffset ?? 0;
 
         const valuesComponentSize = this.getComponentSize(this.componentType);
         let valuesComponentCount = this.getComponentCount(this.type);

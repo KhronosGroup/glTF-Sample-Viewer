@@ -321,6 +321,9 @@ button.button
     border: 0px;
     padding: 0px;
     background: rgb(51, 51, 51);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 .canvasUIMaximize {
