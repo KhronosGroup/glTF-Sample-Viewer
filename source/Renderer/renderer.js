@@ -331,14 +331,14 @@ class gltfRenderer
 
         // filter materials with transmission extension
         this.transmissionDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.transmissionDrawables);
-        for (const drawable of this.transmissionDrawables)
+        for (const drawable of this.transmissionDrawables.filter((a) => a.depth <= 0))
         {
             let renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
             this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
         }
 
-        for (const drawable of this.transparentDrawables)
+        for (const drawable of this.transparentDrawables.filter((a) => a.depth <= 0))
         {
             let renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;

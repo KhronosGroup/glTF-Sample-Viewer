@@ -88,7 +88,6 @@ class gltfCamera extends GltfObject
         // 2. Sort primitives so that the furthest nodes are rendered first.
         //    This is required for correct transparency rendering.
         return drawables
-            .filter((a) => a.depth <= 0)
             .sort((a, b) => a.depth - b.depth);
     }
 
