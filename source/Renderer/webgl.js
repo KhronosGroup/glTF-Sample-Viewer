@@ -150,14 +150,6 @@ class gltfWebGl
             return false;
         }
 
-        if(gltfAccessor.bufferView === undefined)
-        {
-            console.warn("Tried to access undefined bufferview");
-            return true;
-        }
-
-        let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
-
         if (gltfAccessor.glBuffer === undefined)
         {
             gltfAccessor.glBuffer = this.context.createBuffer();
@@ -177,7 +169,7 @@ class gltfWebGl
             this.context.bindBuffer(GL.ARRAY_BUFFER, gltfAccessor.glBuffer);
         }
 
-        this.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+        this.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfAccessor.byteStride(gltf), 0);
         this.context.enableVertexAttribArray(attributeLocation);
 
         return true;
