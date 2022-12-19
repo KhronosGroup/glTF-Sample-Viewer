@@ -269,7 +269,11 @@ class gltfWebGl
 
         if (this.context.supports_EXT_texture_filter_anisotropic)
         {
-            this.context.texParameterf(type, this.context.anisotropy, this.context.maxAnisotropy); // => 16xAF
+            if ((gltfSamplerObj.magFilter !==  GL.NEAREST) 
+                && (gltfSamplerObj.minFilter ===  GL.NEAREST_MIPMAP_LINEAR || gltfSamplerObj.minFilter ===  GL.LINEAR_MIPMAP_LINEAR ))
+            {
+                this.context.texParameterf(type, this.context.anisotropy, this.context.maxAnisotropy); // => 16xAF
+            }
         }
     }
 }
