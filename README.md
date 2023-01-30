@@ -59,7 +59,7 @@ For local usage and debugging, please follow these instructions:
 
 0. Make sure [Git LFS](https://git-lfs.github.com) is installed.
 
-1. Checkout the [`master`](../../tree/master) branch
+1. Checkout the [`main`](../../tree/main) branch
 
 2. Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
 
