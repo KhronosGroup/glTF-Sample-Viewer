@@ -118,6 +118,7 @@ GltfState containing a state for visualization in GltfView
             * [.exposure](#GltfState+renderingParameters.exposure)
             * [.usePunctual](#GltfState+renderingParameters.usePunctual)
             * [.useIBL](#GltfState+renderingParameters.useIBL)
+            * [.iblIntensity](#GltfState+renderingParameters.iblIntensity)
             * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
             * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
             * [.toneMap](#GltfState+renderingParameters.toneMap)
@@ -245,6 +246,7 @@ parameters used to configure the rendering
     * [.exposure](#GltfState+renderingParameters.exposure)
     * [.usePunctual](#GltfState+renderingParameters.usePunctual)
     * [.useIBL](#GltfState+renderingParameters.useIBL)
+    * [.iblIntensity](#GltfState+renderingParameters.iblIntensity)
     * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
     * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
     * [.toneMap](#GltfState+renderingParameters.toneMap)
@@ -287,6 +289,12 @@ KHR_lights_punctual
 
 #### renderingParameters.useIBL
 image based lighting
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.iblIntensity"></a>
+
+#### renderingParameters.iblIntensity
+image based lighting intensity
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState+renderingParameters.renderEnvironmentMap"></a>
