@@ -183,6 +183,7 @@
                                     </option>
                                 </b-select>
                             </b-field>
+                            <div class="modelCreditBottom">{{ modelCopyright }}</div>
                         </div>
                     </b-tab-item>
 
@@ -298,7 +299,7 @@
                     </b-tab-item>
 
 
-                    <b-tab-item label="XMP" icon="video" class="tabItemScrollable tab-item">
+                    <b-tab-item label="Credits" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
                             <div @click="collapseActiveTab($event, 3)"
                                 v-bind:style="[tabsHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
@@ -307,14 +308,17 @@
                                     v-bind:width="[tabsHidden === false && activeTab === 3 ? '50px' : '30px']"
                                     v-bind:style="[tabsHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
                                 <span
-                                    v-bind:style="[tabsHidden === false && activeTab === 3 ? {'display': 'none'} : {}]">XMP</span>
+                                    v-bind:style="[tabsHidden === false && activeTab === 3 ? {'display': 'none'} : {}]">Credits</span>
                             </div>
                         </template>
 
                         <div class="tabContent">
                             <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                 @click="collapseActiveTab($event, 3)">
-                            <h2 class="title is-spaced">XMP</h2>
+                            <h2 class="title">Model Credits</h2>
+                            <div class="modelCredit">{{ modelCopyright }}</div>
+                            <div class="modelCredit">{{ modelGenerator }}</div>
+                            <h3 class="title">{{ xmp ? "XMP" : "" }}</h3>
                             <json-to-ui-template v-bind:data="xmp" v-bind:isinner="false"></json-to-ui-template>
                         </div>
                     </b-tab-item>
