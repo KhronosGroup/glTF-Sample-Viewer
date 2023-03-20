@@ -100,6 +100,10 @@ void main()
     materialInfo = getIridescenceInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_ANISOTROPY
+    materialInfo = getAnisotropyInfo(materialInfo, normalInfo);
+#endif
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -207,6 +211,9 @@ void main()
 #ifdef MATERIAL_IRIDESCENCE
             f_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+#elif defined(MATERIAL_ANISOTROPY)
+            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            f_specular += intensity * NdotL * BRDF_specularGGXAnisotropy(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.anisotropyStrength, n, v, l, h, materialInfo.anisotropicT, materialInfo.anisotropicB);
 #else
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);

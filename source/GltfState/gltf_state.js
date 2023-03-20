@@ -55,6 +55,8 @@ class GltfState
                 KHR_materials_specular: true,
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
+                /** KHR_materials_anisotropy defines microfacet grooves in the surface, stretching the specular reflection on the surface */
+                KHR_materials_anisotropy: true,
                 KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
