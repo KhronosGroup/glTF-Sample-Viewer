@@ -377,7 +377,7 @@ MaterialInfo getAnisotropyInfo(MaterialInfo info, NormalInfo normalInfo)
     mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
     direction = rotationMatrix * direction.xy;
 
-    info.anisotropicT = mat3(normalInfo.t, normalInfo.b, normalInfo.n) * vec3(direction, 0.0);
+    info.anisotropicT = mat3(normalInfo.t, normalInfo.b, normalInfo.n) * normalize(vec3(direction, 0.0));
     info.anisotropicB = cross(normalInfo.n, info.anisotropicT);
     info.anisotropyStrength = u_Anisotropy.z * length(direction);
     return info;
