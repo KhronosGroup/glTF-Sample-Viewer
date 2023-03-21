@@ -171,8 +171,9 @@ vec3 getIBLRadianceAnisotropy(vec3 n, vec3 v, float roughness, float anisotropy,
     float tangentRoughness = mix(roughness, 1.0, anisotropy * anisotropy);
     vec3  anisotropicTangent  = cross(anisotropyDirection, v);
     vec3  anisotropicNormal   = cross(anisotropicTangent, anisotropyDirection);
-    float bendFactor          = anisotropy * tangentRoughness;
-    vec3  bentNormal          = normalize(mix(n, anisotropicNormal, bendFactor));
+    float bendFactor          = 1.0 - anisotropy * (1.0 - roughness);
+    float bendFactorPow4      = bendFactor * bendFactor * bendFactor * bendFactor;
+    vec3  bentNormal          = normalize(mix(anisotropicNormal, n, bendFactorPow4));
 
     float lod = roughness * float(u_MipCount - 1);
     vec3 reflection = normalize(reflect(-v, bentNormal));
