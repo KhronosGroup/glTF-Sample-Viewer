@@ -378,7 +378,7 @@ MaterialInfo getAnisotropyInfo(MaterialInfo info, NormalInfo normalInfo)
     direction = rotationMatrix * direction.xy;
 
     info.anisotropicT = mat3(normalInfo.t, normalInfo.b, normalInfo.n) * normalize(vec3(direction, 0.0));
-    info.anisotropicB = cross(normalInfo.n, info.anisotropicT);
+    info.anisotropicB = cross(normalInfo.ng, info.anisotropicT);
     info.anisotropyStrength = clamp(u_Anisotropy.z * length(direction), 0.0, 1.0);
     return info;
 }
