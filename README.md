@@ -10,13 +10,19 @@ This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Vi
 Table of Contents
 -----------------
 
-- [Version](#version)
-- [Credits](#credits)
-- [Features](#features)
-- [Setup](#setup)
-- [API](#api)
-- [Web App](#web-app)
-- [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
+- [Khronos glTF 2.0 Sample Viewer](#khronos-gltf-20-sample-viewer)
+  - [Table of Contents](#table-of-contents)
+  - [Version](#version)
+  - [Credits](#credits)
+  - [Features](#features)
+  - [Setup](#setup)
+  - [API](#api)
+    - [GltfView](#gltfview)
+    - [GltfState](#gltfstate)
+    - [ResourceLoader](#resourceloader)
+  - [Web App](#web-app)
+  - [Render Fidelity Tools](#render-fidelity-tools)
+  - [Physically-Based Materials in glTF 2.0](#physically-based-materials-in-gltf-20)
 
 Version
 -------
@@ -46,6 +52,7 @@ Features
 - [x] [KHR_materials_variants](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_variants)
 - [x] [KHR_materials_volume](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_volume)
 - [x] [KHR_materials_iridescence](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_iridescence)
+- [x] [KHR_materials_anisotropy](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
 - [x] [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
 - [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform)

@@ -442,4 +442,22 @@ vec3 specularTexture = vec3(1.0);
     g_finalColor.rgb = vec3(materialInfo.iridescenceThickness / 1200.0);
 #endif
 #endif
+
+    // Anisotropy:
+#ifdef MATERIAL_ANISOTROPY
+#if DEBUG == DEBUG_ANISOTROPIC_STRENGTH
+    g_finalColor.rgb = vec3(materialInfo.anisotropyStrength);
+#endif
+#if DEBUG == DEBUG_ANISOTROPIC_DIRECTION
+    vec2 direction = vec2(1.0, 0.0);
+#ifdef HAS_ANISOTROPY_MAP
+    direction = texture(u_AnisotropySampler, getAnisotropyUV()).xy * 2.0 - vec2(1.0);
+#endif
+    vec2 directionRotation = u_Anisotropy.xy; // cos(theta), sin(theta)
+    mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
+    direction = rotationMatrix * direction.xy;
+
+    g_finalColor.rgb = vec3(direction, 0.0);
+#endif
+#endif
 }
