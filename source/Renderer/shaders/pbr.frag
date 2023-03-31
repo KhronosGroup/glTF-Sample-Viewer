@@ -165,16 +165,14 @@ void main()
         materialInfo.ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
-    float ao = 1.0;
-    // Apply optional PBR terms for additional (optional) shading
-#ifdef HAS_OCCLUSION_MAP
-    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
-    f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
-    // apply ambient occlusion to all lighting that is not punctual
-    f_specular = mix(f_specular, f_specular * ao, u_OcclusionStrength);
-    f_sheen = mix(f_sheen, f_sheen * ao, u_OcclusionStrength);
-    f_clearcoat = mix(f_clearcoat, f_clearcoat * ao, u_OcclusionStrength);
-#endif
+    vec3 f_diffuse_ibl = f_diffuse;
+    vec3 f_specular_ibl = f_specular;
+    vec3 f_sheen_ibl = f_sheen;
+    vec3 f_clearcoat_ibl = f_clearcoat;
+    f_diffuse = vec3(0.0);
+    f_specular = vec3(0.0);
+    f_sheen = vec3(0.0);
+    f_clearcoat = vec3(0.0);
 
 #ifdef USE_PUNCTUAL
     for (int i = 0; i < LIGHT_COUNT; ++i)
@@ -256,26 +254,44 @@ void main()
 
     float clearcoatFactor = 0.0;
     vec3 clearcoatFresnel = vec3(0);
+    vec3 diffuse;
+    vec3 specular;
+    vec3 sheen;
+    vec3 clearcoat;
+
+    float ao = 1.0;
+    // Apply optional PBR terms for additional (optional) shading
+#ifdef HAS_OCCLUSION_MAP
+    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
+    diffuse = f_diffuse + mix(f_diffuse_ibl, f_diffuse_ibl * ao, u_OcclusionStrength);
+    // apply ambient occlusion to all lighting that is not punctual
+    specular = f_specular + mix(f_specular_ibl, f_specular_ibl * ao, u_OcclusionStrength);
+    sheen = f_sheen + mix(f_sheen_ibl, f_sheen_ibl * ao, u_OcclusionStrength);
+    clearcoat = f_clearcoat + mix(f_clearcoat_ibl, f_clearcoat_ibl * ao, u_OcclusionStrength);
+#else
+    diffuse = f_diffuse_ibl + f_diffuse;
+    specular = f_specular_ibl + f_specular;
+    sheen = f_sheen_ibl + f_sheen;
+    clearcoat = f_clearcoat_ibl + f_clearcoat;
+#endif
 
 #ifdef MATERIAL_CLEARCOAT
     clearcoatFactor = materialInfo.clearcoatFactor;
     clearcoatFresnel = F_Schlick(materialInfo.clearcoatF0, materialInfo.clearcoatF90, clampedDot(materialInfo.clearcoatNormal, v));
-    f_clearcoat = f_clearcoat * clearcoatFactor;
+    clearcoat *= clearcoatFactor;
 #endif
 
 #ifdef MATERIAL_TRANSMISSION
-    vec3 diffuse = mix(f_diffuse, f_transmission, materialInfo.transmissionFactor);
-#else
-    vec3 diffuse = f_diffuse;
+    diffuse = mix(diffuse, f_transmission, materialInfo.transmissionFactor);
 #endif
 
     vec3 color = vec3(0);
 #ifdef MATERIAL_UNLIT
     color = baseColor.rgb;
 #else
-    color = f_emissive + diffuse + f_specular;
-    color = f_sheen + color * albedoSheenScaling;
-    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
+    color = f_emissive + diffuse + specular;
+    color = sheen + color * albedoSheenScaling;
+    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + clearcoat;
 #endif
 
 #if DEBUG == DEBUG_NONE
@@ -345,7 +361,7 @@ void main()
     // MR:
 #ifdef MATERIAL_METALLICROUGHNESS
 #if DEBUG == DEBUG_METALLIC_ROUGHNESS
-    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
+    g_finalColor.rgb = linearTosRGB(f_diffuse + f_diffuse_ibl + f_specular);
 #endif
 #if DEBUG == DEBUG_METALLIC
     g_finalColor.rgb = vec3(materialInfo.metallic);
@@ -361,7 +377,7 @@ void main()
     // Clearcoat:
 #ifdef MATERIAL_CLEARCOAT
 #if DEBUG == DEBUG_CLEARCOAT
-    g_finalColor.rgb = linearTosRGB(f_clearcoat);
+    g_finalColor.rgb = linearTosRGB(f_clearcoat + f_clearcoat_ibl);
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_FACTOR
     g_finalColor.rgb = vec3(materialInfo.clearcoatFactor);
@@ -377,7 +393,7 @@ void main()
     // Sheen:
 #ifdef MATERIAL_SHEEN
 #if DEBUG == DEBUG_SHEEN
-    g_finalColor.rgb = linearTosRGB(f_sheen);
+    g_finalColor.rgb = linearTosRGB(f_sheen + f_sheen_ibl);
 #endif
 #if DEBUG == DEBUG_SHEEN_COLOR
     g_finalColor.rgb = materialInfo.sheenColorFactor;
@@ -390,7 +406,7 @@ void main()
     // Specular:
 #ifdef MATERIAL_SPECULAR
 #if DEBUG == DEBUG_SPECULAR
-    g_finalColor.rgb = linearTosRGB(f_specular);
+    g_finalColor.rgb = linearTosRGB(f_specular + f_specular_ibl);
 #endif
 #if DEBUG == DEBUG_SPECULAR_FACTOR
     g_finalColor.rgb = vec3(materialInfo.specularWeight);
