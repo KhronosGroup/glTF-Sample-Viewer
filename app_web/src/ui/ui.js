@@ -61,6 +61,8 @@ const app = new Vue({
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
+            modelCopyright: "",
+            modelGenerator: "",
             statistics: [],
 
             selectedModel: "DamagedHelmet",

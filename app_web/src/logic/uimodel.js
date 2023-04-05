@@ -411,11 +411,33 @@ class UIModel
                         return xmpPacket;
                     }
                 }
-                return [];
+                return null;
             })
         );
         xmpData.subscribe( (xmpData) => {
             this.app.xmp = xmpData;
+        });
+
+        const copyrightMsg = gltfLoadedAndInit.pipe(
+            map( (gltf) => {
+                if (gltf.asset.copyright)
+                    return gltf.asset.copyright;
+                return "";
+            })
+        );
+        copyrightMsg.subscribe( (copyright) => {
+            this.app.modelCopyright = copyright;
+        });
+
+        const generatorMsg = gltfLoadedAndInit.pipe(
+            map( (gltf) => {
+                if (gltf.asset.generator)
+                    return "Generator: " + gltf.asset.generator;
+                return "";
+            })
+        );
+        generatorMsg.subscribe( (generator) => {
+            this.app.modelGenerator = generator;
         });
 
         const animations = gltfLoadedAndInit.pipe(
