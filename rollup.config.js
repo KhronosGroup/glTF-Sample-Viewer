@@ -21,7 +21,7 @@ export default {
     plugins: [
         glslify(),
         resolve({
-            browser: true,
+            browser: false,
             preferBuiltins: false,
             dedupe: ['gl-matrix', 'axios', 'jpeg-js', 'fast-png']
         }),
