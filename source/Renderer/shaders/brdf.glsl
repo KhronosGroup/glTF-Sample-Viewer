@@ -218,12 +218,11 @@ float V_GGX_anisotropic(float NdotL, float NdotV, float BdotV, float TdotV, floa
     return clamp(v, 0.0, 1.0);
 }
 
-vec3 BRDF_specularGGXAnisotropy(vec3 f0, vec3 f90, float roughness, float anisotropy, vec3 n, vec3 v, vec3 l, vec3 h, vec3 t, vec3 b)
+vec3 BRDF_specularGGXAnisotropy(vec3 f0, vec3 f90, float alphaRoughness, float anisotropy, vec3 n, vec3 v, vec3 l, vec3 h, vec3 t, vec3 b)
 {
     // Roughness along the anisotropy bitangent is the material roughness, while the tangent roughness increases with anisotropy.
-    float tangentRoughness = mix(roughness, 1.0, anisotropy * anisotropy);
-	float at = tangentRoughness * tangentRoughness;
-    float ab = clamp(roughness * roughness, 0.001, 1.0);
+    float at = mix(alphaRoughness, 1.0, anisotropy * anisotropy);
+    float ab = clamp(alphaRoughness, 0.001, 1.0);
 
     float NdotL = clamp(dot(n, l), 0.0, 1.0);
     float NdotH = clamp(dot(n, h), 0.001, 1.0);
