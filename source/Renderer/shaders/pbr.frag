@@ -455,7 +455,7 @@ vec3 specularTexture = vec3(1.0);
 #endif
     vec2 directionRotation = u_Anisotropy.xy; // cos(theta), sin(theta)
     mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
-    direction = rotationMatrix * direction.xy;
+    direction = (normalize(rotationMatrix * direction.xy) + vec2(1.0)) * 0.5;
 
     g_finalColor.rgb = vec3(direction, 0.0);
 #endif
