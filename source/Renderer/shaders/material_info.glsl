@@ -370,8 +370,11 @@ MaterialInfo getIorInfo(MaterialInfo info)
 MaterialInfo getAnisotropyInfo(MaterialInfo info, NormalInfo normalInfo)
 {
     vec2 direction = vec2(1.0, 0.0);
+    float strengthFactor = 1.0;
 #ifdef HAS_ANISOTROPY_MAP
-    direction = texture(u_AnisotropySampler, getAnisotropyUV()).xy * 2.0 - vec2(1.0);
+    vec3 anisotropySample = texture(u_AnisotropySampler, getAnisotropyUV()).xyz;
+    direction = anisotropySample.xy * 2.0 - vec2(1.0);
+    strengthFactor = anisotropySample.z;
 #endif
     vec2 directionRotation = u_Anisotropy.xy; // cos(theta), sin(theta)
     mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
@@ -379,7 +382,7 @@ MaterialInfo getAnisotropyInfo(MaterialInfo info, NormalInfo normalInfo)
 
     info.anisotropicT = mat3(normalInfo.t, normalInfo.b, normalInfo.n) * normalize(vec3(direction, 0.0));
     info.anisotropicB = cross(normalInfo.ng, info.anisotropicT);
-    info.anisotropyStrength = clamp(u_Anisotropy.z * length(direction), 0.0, 1.0);
+    info.anisotropyStrength = clamp(u_Anisotropy.z * strengthFactor, 0.0, 1.0);
     return info;
 }
 #endif
