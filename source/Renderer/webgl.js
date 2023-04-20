@@ -31,7 +31,7 @@ class gltfWebGl
 
     setTexture(loc, gltf, textureInfo, texSlot)
     {
-        if (loc === -1)
+        if (loc === null)
         {
             return false;
         }
@@ -144,7 +144,7 @@ class gltfWebGl
 
     enableAttribute(gltf, attributeLocation, gltfAccessor)
     {
-        if (attributeLocation === -1)
+        if (attributeLocation === null)
         {
             console.warn("Tried to access unknown attribute");
             return false;
