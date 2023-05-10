@@ -1,8 +1,9 @@
 
 import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
-import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
+import { getIsGlb, getContainingFolder, getIsGltf, getIsGlfx } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
+import { GlxfParser } from './glxf_parser.js';
 import { gltfLoader } from "./loader.js";
 import { gltfImage, ImageMimeType } from "../gltf/image.js";
 import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
@@ -17,6 +18,7 @@ import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
+import { glxfParser } from './glxf_parser.js';
 
 /**
  * ResourceLoader can be used to load resources for the GltfState
@@ -36,6 +38,66 @@ class ResourceLoader
         this.view = view;
     }
 
+    
+    async loadAsset(assetFile, externalFiles)
+    {
+        let filename = "";
+        let isGlfx = undefined;
+        if (gltfFile instanceof ArrayBuffer)
+        {
+            isGlfx = false
+        } 
+        else if (typeof assetFile === "string")
+        {
+            isGlfx = getIsGlxf(filename); 
+            console.log("Loading asset from string");
+        } 
+        else if (typeof (File) !== 'undefined' && assetFile instanceof File)
+        {
+            let fileContent = assetFile;
+            filename = assetFile.name;
+            isGlfx = getIsGlxf(filename); 
+
+            data = await AsyncFileReader.readAsText(fileContent);
+            json = JSON.parse(data);
+            buffers = externalFiles;
+
+            this.loadGlfx(assetFile, externalFiles)
+        } 
+        else
+        {
+            console.error("Passed invalid type to loadAsset " + typeof (assetFile));
+        }
+
+        return this.loadGltf(assetFile, externalFiles)
+    }
+
+    async loadGlfx(glfxFile, externalFiles)
+    {              
+        console.log("Loading glfxFile from file");  
+        let filename = glfxFile.name;
+
+        let data = await AsyncFileReader.readAsText(glfxFile);
+        let glxfJson = JSON.parse(data);
+
+        let gltfJson = await GlxfParser.convertGlxfToGltf(glxfJson)
+
+        const gltf = new glTF(filename);
+        gltf.ktxDecoder = this.view.ktxDecoder; 
+        gltf.fromJson(gltfJson);
+
+        // because the gltf image paths are not relative
+        // to the gltf, we have to resolve all image paths before that
+        for (const image of gltf.images)
+        {
+            image.resolveRelativePath(getContainingFolder(gltf.path));
+        }
+
+        await gltfLoader.load(gltf, this.view.context, buffers);
+
+        return gltf;
+    }
+
     /**
      * loadGltf asynchroneously and create resources for rendering
      * @param {(String | ArrayBuffer | File)} gltfFile the .gltf or .glb file either as path or as preloaded resource. In node.js environments, only ArrayBuffer types are accepted.
@@ -44,17 +106,26 @@ class ResourceLoader
      */
     async loadGltf(gltfFile, externalFiles)
     {
+        console.log("resource_loader.js -> loadGltf: "+gltfFile)
+        console.log(gltfFile)
+
         let isGlb = undefined;
-        let buffers = undefined;
+        let buffers = undefined; // array of additional resources
         let json = undefined;
-        let data = undefined;
+        let data = undefined; // binary data used for glb
         let filename = "";
         if (typeof gltfFile === "string")
         {
             isGlb = getIsGlb(gltfFile);
-            let response = await axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" });
-            json = response.data;
-            data = response.data;
+            let response = await axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" });    
+            if (isGlb)
+            {
+                data = response.data;
+            }
+            else
+            {
+                json = response.data;
+            }
             filename = gltfFile;
         }
         else if (gltfFile instanceof ArrayBuffer)
@@ -98,6 +169,12 @@ class ResourceLoader
             buffers = glb.buffers;
         }
 
+
+        return { json: json, data: buffers, filename: filename };
+    }
+
+    async prepareGltfResources(json, data, filename)  
+    {
         const gltf = new glTF(filename);
         gltf.ktxDecoder = this.view.ktxDecoder;
         //Make sure draco decoder instance is ready
@@ -110,7 +187,7 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
-        await gltfLoader.load(gltf, this.view.context, buffers);
+        await gltfLoader.load(gltf, this.view.context, data);
 
         return gltf;
     }
