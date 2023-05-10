@@ -219,6 +219,14 @@ class UIModel
             // filter out any non .gltf or .glb files
 
             map( (files) => {
+
+                const glxfFile = files.find( (file) => file.name.endsWith(".glxf") );
+                if ( glxfFile !== undefined){
+                    const additionalFiles = files.filter( (file) => file !== glxfFile);
+                    console.log("Loading glxf file: "+ glxfFile.name);
+                    return {mainFile: glxfFile, additionalFiles: additionalFiles};
+                }
+
                 // restructure the data by separating mainFile (gltf/glb) from additionalFiles
                 const mainFile = files.find( (file) => file.name.endsWith(".glb") || file.name.endsWith(".gltf"));
                 const additionalFiles = files.filter( (file) => file !== mainFile);

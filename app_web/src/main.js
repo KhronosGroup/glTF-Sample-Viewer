@@ -46,7 +46,7 @@ async function main()
             // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
             resourceLoader.initKtxLib();
 
-            return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
+            return from(resourceLoader.loadAsset(model.mainFile, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
