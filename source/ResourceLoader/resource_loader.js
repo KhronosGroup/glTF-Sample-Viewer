@@ -1,9 +1,8 @@
 
 import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
-import { getIsGlb, getContainingFolder, getIsGltf, getIsGlfx } from '../gltf/utils.js';
+import { getIsGlb, getContainingFolder, getIsGltf, getIsGlxf } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
-import { GlxfParser } from './glxf_parser.js';
 import { gltfLoader } from "./loader.js";
 import { gltfImage, ImageMimeType } from "../gltf/image.js";
 import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
@@ -18,7 +17,7 @@ import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
-import { glxfParser } from './glxf_parser.js';
+import { GlxfParser } from './glxf_parser.js';
 
 /**
  * ResourceLoader can be used to load resources for the GltfState
@@ -43,7 +42,7 @@ class ResourceLoader
     {
         let filename = "";
         let isGlfx = undefined;
-        if (gltfFile instanceof ArrayBuffer)
+        if (assetFile instanceof ArrayBuffer)
         {
             isGlfx = false
         } 
@@ -51,6 +50,7 @@ class ResourceLoader
         {
             isGlfx = getIsGlxf(filename); 
             console.log("Loading asset from string");
+            // TODO
         } 
         else if (typeof (File) !== 'undefined' && assetFile instanceof File)
         {
@@ -58,44 +58,33 @@ class ResourceLoader
             filename = assetFile.name;
             isGlfx = getIsGlxf(filename); 
 
-            data = await AsyncFileReader.readAsText(fileContent);
-            json = JSON.parse(data);
-            buffers = externalFiles;
+            //let data = await AsyncFileReader.readAsText(fileContent);
+            //json = JSON.parse(data);
+            //buffers = externalFiles;
 
-            this.loadGlfx(assetFile, externalFiles)
+            let gltf = await this.loadGlxf(assetFile, externalFiles)
+            return this.prepareGltfResources(gltf.json, gltf.data, gltf.filename)  
         } 
         else
         {
             console.error("Passed invalid type to loadAsset " + typeof (assetFile));
         }
 
-        return this.loadGltf(assetFile, externalFiles)
+        let gltf = await this.loadGltf(assetFile, externalFiles)
+        return this.prepareGltfResources(gltf.json, gltf.data, gltf.filename)  
     }
 
-    async loadGlfx(glfxFile, externalFiles)
+    async loadGlxf(glxfFile, externalFiles)
     {              
-        console.log("Loading glfxFile from file");  
-        let filename = glfxFile.name;
+        console.log("Loading glxf from file");  
+        let filename = glxfFile.name;
 
-        let data = await AsyncFileReader.readAsText(glfxFile);
+        let data = await AsyncFileReader.readAsText(glxfFile);
         let glxfJson = JSON.parse(data);
 
-        let gltfJson = await GlxfParser.convertGlxfToGltf(glxfJson)
+        let gltf = await GlxfParser.convertGlxfToGltf(glxfJson, externalFiles)
 
-        const gltf = new glTF(filename);
-        gltf.ktxDecoder = this.view.ktxDecoder; 
-        gltf.fromJson(gltfJson);
-
-        // because the gltf image paths are not relative
-        // to the gltf, we have to resolve all image paths before that
-        for (const image of gltf.images)
-        {
-            image.resolveRelativePath(getContainingFolder(gltf.path));
-        }
-
-        await gltfLoader.load(gltf, this.view.context, buffers);
-
-        return gltf;
+        return { json: gltf.json, data: gltf.data, filename: filename };
     }
 
     /**
