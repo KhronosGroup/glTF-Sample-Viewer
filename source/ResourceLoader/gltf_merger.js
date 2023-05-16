@@ -301,19 +301,20 @@ class GltfMerger
 
     }
 
-    static merge(gltfResident, gltfImport)
+    static merge(gltfResident, gltfImport_)
     {   
         if(Object.keys(gltfResident).length === 0){
-            return gltfImport
+            return gltfImport_
         }
-        if(Object.keys(gltfImport).length === 0){
+        if(Object.keys(gltfImport_).length === 0){
             return gltfResident
         }
+        let gltfResult = JSON.parse(JSON.stringify(gltfResident));  
+        let gltfImport = JSON.parse(JSON.stringify(gltfImport_));  
 
 
         console.log("merge glTF")
 
-        let gltfResult = gltfResident
 
         let propertyArrays = [
             "/accessors/\\d+",
@@ -334,21 +335,19 @@ class GltfMerger
 
         for (let pattern of propertyArrays) 
         { 
-            this.fixReferences(gltfResident, gltfImport, pattern )
+            this.fixReferences(gltfResult, gltfImport, pattern )
         }
         for (let pattern of propertyArrays) 
         { 
-            this.mergeProperties(gltfResident, gltfImport, pattern)
+            this.mergeProperties(gltfResult, gltfImport, pattern)
         }
 
         
-        gltfResident["scene"] = 1
-
         console.log("merge result:" );
-        console.log(gltfResident );
+        console.log(gltfResult );
 
 
-        return gltfResident
+        return gltfResult
     }
 }
 
