@@ -111,7 +111,7 @@ class GlxfParser
                     }
                 }
             } 
-            
+
             resetTransform(gltf, nodeID)
         }
 
@@ -246,21 +246,84 @@ class GlxfParser
             let node =  mergedGLTF["nodes"][id]
             if("extras" in node)
             {
-                if("asset"in node["extras"])
+                if("asset" in node["extras"])
                 {
                     assetNodeIDs.push(id)
                 }
             }
         }
 
-        // TODO: glxf transformation and node hierarchy
-        let scene ={}
-        scene["nodes"]=assetNodeIDs
-        mergedGLTF["scenes"].push(scene)
-        mergedGLTF["scene"] = mergedGLTF["scenes"].length-1
 
+        function getAssetNode(gltf, assetID)
+        {
+            for (let id = 0; id < gltf["nodes"].length; id++) 
+            {
+                let node =  gltf["nodes"][id]
+                if("extras" in node)
+                {
+                    if("asset" in node["extras"])
+                    {
+                        if( assetID === node["extras"]["asset"])
+                        {
+                            return id
+                        }
+                    }
+                }
+            }
+            return undefined
+        }
+
+        // Merging glxf transformation and node hierarchy
+ 
+        delete glxf["assets"]
+
+        for (let id = 0; id < glxf["nodes"].length; id++) 
+        {
+            // move asset property to extras to merge valid glTF
+            if(glxf["nodes"][id].hasOwnProperty("asset"))
+            {
+                const assetID = glxf["nodes"][id]["asset"]
+                delete glxf["nodes"][id]["asset"]
+                glxf["nodes"][id]["extras"] = {}
+                glxf["nodes"][id]["extras"]["expectAsset"] = (assetID)
+            } 
+        }
+
+        // Prepare merged glTF for final merge of glXF properties
+        // We don't want to expose old scenes from glTFs
+        delete mergedGLTF["scenes"]
+        delete mergedGLTF["scene"]
+
+        mergedGLTF = await GltfMerger.merge(mergedGLTF, glxf);
+
+        // Connect nodes offered by assets and expected by glxf
+        for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
+        {
+            if(mergedGLTF["nodes"][id].hasOwnProperty("extras") &&
+                mergedGLTF["nodes"][id]["extras"].hasOwnProperty("expectAsset"))
+            {
+                const assetID = mergedGLTF["nodes"][id]["extras"]["expectAsset"]
+                const nodeID = getAssetNode(mergedGLTF, assetID) 
+                if(nodeID!==undefined)
+                {
+                    mergedGLTF["nodes"][id]["children"] = []
+                    mergedGLTF["nodes"][id]["children"].push(nodeID)
+                }
+            } 
+        }
+
+        // cleanup asset markers in the extras field
+        for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
+        {
+            if(mergedGLTF["nodes"][id].hasOwnProperty("extras") )
+            {
+                delete mergedGLTF["nodes"][id]["extras"]["expectAsset"]
+                delete mergedGLTF["nodes"][id]["extras"]["asset"]
+            } 
+        }
+       
         // Return the GLTF JSON 
-        return { json: mergedGLTF, data:appendix };
+        return { json: mergedGLTF, data: appendix};
     }
 
 }
