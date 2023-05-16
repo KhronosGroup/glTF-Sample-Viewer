@@ -49,8 +49,7 @@ class GlxfParser
         mat4.multiply(result, parentTransform, nodeObject.getLocalTransform());
         return result 
     }
-
-      
+     
 
 
     static applyNodeTransform(gltf, nodeID, transform)
@@ -69,7 +68,8 @@ class GlxfParser
             let parentList = []
             let candidateID = nodeID
 
-            while (candidateID!==undefined) {
+            while (candidateID!==undefined) 
+            {
                 parentList.push(candidateID)
                 candidateID = this.getNodeParent(gltf, parentList[parentList.length - 1])
             } 
@@ -78,16 +78,15 @@ class GlxfParser
             mat4.identity(globalTransform)
             for (let i = parentList.length-1; i >=0 ; i--) 
             {
-                let id = parentList[i]
-               
+                let id = parentList[i]    
                 globalTransform = this.applyTransform(gltf["nodes"][id], globalTransform);
             }
             delete gltf["nodes"][nodeID]["translation"]
             delete gltf["nodes"][nodeID]["rotation"]
-            delete gltf["nodes"][nodeID]["scale"]
-            //mat4.identity(globalTransform)
+            delete gltf["nodes"][nodeID]["scale"] 
             let matrix =[]
-            for (let i = 0; i < globalTransform.length; ++i) {
+            for (let i = 0; i < globalTransform.length; ++i) 
+            {
                 matrix.push(globalTransform[i]);
             }
             gltf["nodes"][nodeID]["matrix"] = matrix
@@ -98,7 +97,22 @@ class GlxfParser
             // The value none indicates that all nodes' transforms (including own) from 
             // the imported asset are ignored.
 
-            //TODO
+            function resetTransform(gltf, nodeID)
+            {
+                delete gltf["nodes"][nodeID]["translation"]
+                delete gltf["nodes"][nodeID]["rotation"]
+                delete gltf["nodes"][nodeID]["scale"] 
+                delete gltf["nodes"][nodeID]["matrix"] 
+                if(gltf["nodes"][nodeID].hasOwnProperty("children"))
+                {
+                    for (const child of node["children"])
+                    {
+                        resetTransform(gltf, child);
+                    }
+                }
+            } 
+            
+            resetTransform(gltf, nodeID)
         }
 
     }
