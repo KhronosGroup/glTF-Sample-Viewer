@@ -4,11 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>glTF Sample Viewer</title>
-
-    <meta name="author" content="Khronos Group Inc.">
-    <meta name="description" content="The official glTF sample viewer">
-    <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR">
+    <title>glXF Demo</title>
+    <meta name="author" content="UX3D GmbH">
+    <meta name="description" content="The official glXF demo">
+    <meta name="keywords" content="glXF, glTF, WebGL, Sample, Viewer, PBR">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="GltfSVApp.css">
@@ -85,11 +84,12 @@
     </div>
 </script>
 
-
-<body class="is-flex" style="touch-action: none">
-
+<body class="is-flex" style="touch-action: none; flex-direction: column;">
     <div class="columns">
         <div class="column" id="canvasUI">
+            <div class="banner"> 
+                <p>glXF Demo by <a href="https://ux3d.io">UX3D GmbH</a></p> 
+            </div>
             <canvas id="canvas" @mousemove="mouseMove">No
                 Canvas!</canvas>
             <div class="canvasUIMaximize">

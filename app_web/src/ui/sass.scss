@@ -75,6 +75,21 @@ body
     height: 100%;
 }
 
+.banner {
+    text-align: center;
+    background-color: grey;
+    height: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.banner p
+{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
 // there is no specific bulma setting for these
 .select select
 {
