@@ -4,6 +4,7 @@ import { glTF } from '../gltf/gltf.js';
 import { getIsGlb, getContainingFolder, getIsGltf, getIsGlxf } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
 import { GltfParser } from './gltf_parser.js';
+import { AssetLoader } from './asset_loader.js';
 import { gltfLoader } from "./loader.js";
 import { gltfImage, ImageMimeType } from "../gltf/image.js";
 import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
@@ -38,60 +39,11 @@ class ResourceLoader
         this.view = view;
     }
 
-    
     async loadAsset(assetFile, externalFiles)
     {
-        let filename = "";
-        let isGlfx = undefined;
-        if (assetFile instanceof ArrayBuffer)
-        {
-            isGlfx = false
-        } 
-        else if (typeof assetFile === "string")
-        {
-            isGlfx = getIsGlxf(filename); 
-            console.log("Loading asset from string");
-            // TODO
-        } 
-        else if (typeof (File) !== 'undefined' && assetFile instanceof File)
-        {
-            let fileContent = assetFile;
-            filename = assetFile.name;
-            isGlfx = getIsGlxf(filename); 
-
-            //let data = await AsyncFileReader.readAsText(fileContent);
-            //json = JSON.parse(data);
-            //buffers = externalFiles;
-
-        } 
-        else
-        {
-            console.error("Passed invalid type to loadAsset " + typeof (assetFile));
-        }
-
-        if(isGlfx){
-            
-            let gltf = await this.loadGlxf(assetFile, externalFiles)
-            return await this.prepareGltfResources(gltf.json, gltf.data, gltf.filename)  
-        }
-
-        let gltf = await GltfParser.loadGltf(assetFile, externalFiles)
+        let gltf = await AssetLoader.loadAsset(assetFile, externalFiles)
         return await this.prepareGltfResources(gltf.json, gltf.data, gltf.filename)  
     }
-
-    async loadGlxf(glxfFile, externalFiles)
-    {              
-        console.log("Loading glxf from file");  
-        let filename = glxfFile.name;
-
-        let data = await AsyncFileReader.readAsText(glxfFile);
-        let glxfJson = JSON.parse(data);
-
-        let gltf = await GlxfParser.convertGlxfToGltf(glxfJson, externalFiles)
-
-        return { json: gltf.json, data: gltf.data, filename: filename };
-    }
-
 
     async prepareGltfResources(json, data, filename)  
     {

@@ -1,25 +1,12 @@
 
-import { GltfParser } from "./gltf_parser.js";
 import { GltfMerger } from "./gltf_merger.js";
 import { gltfNode } from '../gltf/node.js';
-import { mat4, quat } from 'gl-matrix';
-import { initGlForMembers, objectsFromJsons, objectFromJson } from '../gltf/utils';
+import { mat4 } from 'gl-matrix';
+import { objectFromJson } from '../gltf/utils';
+import { AssetLoader } from "./asset_loader.js";
 
 class GlxfParser
 {
-
-    static findFile(filename, files) 
-    {
-        for (const file of files) 
-        {
-            if (file.name === filename)
-            {
-            return file;
-            }
-        }
-        
-        return null; // File not found
-    }
 
     static getNodeParent(gltf, nodeID)
     {
@@ -150,7 +137,6 @@ class GlxfParser
         let nodeIDs = []
         if ("nodes" in asset)
         {
-            console.log("handle asset nodes")
             const nodeList =  asset["nodes"] // e.g. [ "node_a", "node_b" ]
             let nodeTransform = "global" // default
             if ("transform" in asset)
@@ -167,7 +153,6 @@ class GlxfParser
         } 
         else if("scene" in asset)
         {
-            console.log("handle asset scene")
             const sceneName = asset["scene"]
 
             const sceneID = this.getPropertyIDByName(gltf, "scenes", sceneName)
@@ -175,14 +160,10 @@ class GlxfParser
         }
         else // no scene and no nodes defined by glxf
         {   
-            console.log("handle default")
             // check for default scene
             if (gltf.hasOwnProperty("scene"))
             {
                 const sceneID = gltf["scene"]
-                console.log("sceneID = "+sceneID)
-                console.log("scene nodes = ")
-                console.log(gltf["scenes"][sceneID]["nodes"])
                 nodeIDs = gltf["scenes"][sceneID]["nodes"]
             }
             else
@@ -201,10 +182,6 @@ class GlxfParser
         node["extras"]["asset"] = assetID
         node["children"]  = nodeIDs
 
-        
-        console.log("Adding nodeIDs:")
-        console.log(nodeIDs)
-
         gltf["nodes"].push(node)
     }
 
@@ -218,24 +195,17 @@ class GlxfParser
         for (let i = 0; i <  glxf.assets.length; i++) 
         {
             let asset = glxf.assets[i];
-            const gltfURI = asset.uri;
-            console.log("loading glxf asset: "+gltfURI)
-            console.log("glxf appendix: ")
-            console.log(appendix)
-            const assetFile = this.findFile(asset.uri, appendix)
-            let gltfPackage = await GltfParser.loadGltf(assetFile, appendix); // -> { json, data, filename }
-            // resolve all nodes/scenes and the respective transformations 
 
-            console.log("loaded asset: ")
-            console.log( gltfPackage.json)
-            this.resolveAsset(i, asset, gltfPackage.json)
+            const assetFile = appendix.find( (file) => file.name === asset.uri );
+            let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }
+
+            // resolve all nodes/scenes and the respective transformations 
+            this.resolveAsset(i, asset, resourcePackage.json)
 
             // Merge the current GLTF with the mergedGLTF object
-            mergedGLTF = await GltfMerger.merge(mergedGLTF, gltfPackage.json);
+            mergedGLTF = await GltfMerger.merge(mergedGLTF, resourcePackage.json);
         }
 
-        console.log("mergedGLTF: ")
-        console.log(mergedGLTF)
 
         // glTFs are prepared
         // now lets compose our glxf scene

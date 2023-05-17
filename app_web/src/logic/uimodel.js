@@ -220,8 +220,14 @@ class UIModel
 
             map( (files) => {
 
-                const glxfFile = files.find( (file) => file.name.endsWith(".glxf") );
-                if ( glxfFile !== undefined){
+                let glxfFile = files.find( (file) => file.name.endsWith(".glxf") );
+                if ( glxfFile !== undefined) {
+                    // In case more than one glxf file is dropped, use main.glxf as main file
+                    let rootGLXF = files.find( (file) => file.name.endsWith("main.glxf") );
+                    if (rootGLXF !== undefined)
+                    {
+                        glxfFile = rootGLXF;
+                    }
                     const additionalFiles = files.filter( (file) => file !== glxfFile);
                     console.log("Loading glxf file: "+ glxfFile.name);
                     return {mainFile: glxfFile, additionalFiles: additionalFiles};

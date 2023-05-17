@@ -144,13 +144,10 @@ class GltfMerger
             let referencePatterns = this.gltfBackreferences[pattern]
             for (const ref of referencePatterns) 
             {
-                console.log("ref: "+ref)
-              
                 let pathArray = this.getPathArray(gltf, ref)
 
                 for (const path of pathArray) 
                 {
-                    // console.log("path: "+path)
                     let value =this.getObjectAtPath(gltf, path) 
                     this.setValuetAtPath(gltf,path,value+offset)
                 } 
@@ -243,7 +240,6 @@ class GltfMerger
             if (source[key] instanceof Array && target.hasOwnProperty(key) && target[key] instanceof Array) {
             // Merge arrays by appending the elements
             target[key] = target[key].concat(source[key]);
-            console.log("Merge arrays by appending the elements ")
             } else if (source[key] instanceof Object && target.hasOwnProperty(key) && target[key] instanceof Object) {
             // Recursively merge objects
             merge(target[key], source[key]);
@@ -260,7 +256,6 @@ class GltfMerger
     
     if (targetObj && sourceObj) {
         merge(targetObj, sourceObj);
-        console.log("mergeJsonAtPath ")
     }
     
     return json1;
@@ -270,13 +265,11 @@ class GltfMerger
     {   
         let path = pattern.replace('/\\d+', '');
         
-        //console.log("merge Property: "+path)
         let objA = this.getObjectAtPath(gltfA, path)
         let objB = this.getObjectAtPath(gltfB, path)
         
         if(objA === undefined && objB=== undefined)
         {
-            console.log("both undefined for: "+pattern)
             return
         }       
 
@@ -284,12 +277,10 @@ class GltfMerger
         let merged = undefined
         if(objA === undefined )
         {
-            console.log("A undefined for: "+pattern)
             merged = objB
         } 
         else if(objB === undefined )
         {
-            console.log("B undefined for: "+pattern)
             merged = objA
         }  
         else
@@ -311,9 +302,6 @@ class GltfMerger
         }
         let gltfResult = JSON.parse(JSON.stringify(gltfResident));  
         let gltfImport = JSON.parse(JSON.stringify(gltfImport_));  
-
-
-        console.log("merge glTF")
 
 
         let propertyArrays = [
@@ -341,11 +329,6 @@ class GltfMerger
         { 
             this.mergeProperties(gltfResult, gltfImport, pattern)
         }
-
-        
-        console.log("merge result:" );
-        console.log(gltfResult );
-
 
         return gltfResult
     }
