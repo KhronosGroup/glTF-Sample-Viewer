@@ -76,7 +76,9 @@ class gltfLoader
             for (let i = 0; i < gltf.buffers.length; ++i)
             {   
                 let glb_uri = "undefined"
-                if(gltf.buffers[i].hasOwnProperty("extras") && gltf.buffers[i]["extras"].hasOwnProperty("glb"))
+                if(gltf.buffers[i].hasOwnProperty("extras") && 
+                    gltf.buffers[i]["extras"] !== undefined && 
+                    gltf.buffers[i]["extras"].hasOwnProperty("glb"))
                 {
                     glb_uri = gltf.buffers[i]["extras"]["glb"]
                 }
