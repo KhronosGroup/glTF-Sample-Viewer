@@ -47,9 +47,6 @@ class ResourceLoader
 
     async prepareGltfResources(json, data, filename)  
     {
-        console.log("prepareGltfResources json: ")
-        console.log(json)
-
         const gltf = new glTF(filename);
         gltf.ktxDecoder = this.view.ktxDecoder;
         //Make sure draco decoder instance is ready
@@ -62,7 +59,7 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
-        await gltfLoader.load(gltf, this.view.context, data);
+        await gltfLoader.load(gltf, this.view.context, filename, data);
 
         return gltf;
     }

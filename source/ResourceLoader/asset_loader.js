@@ -1,11 +1,7 @@
 
 
 import { getIsGlb, getContainingFolder, getIsGltf, getIsGlxf } from '../gltf/utils.js';
-import { GlbParser } from './glb_parser.js';
 import { GltfParser } from './gltf_parser.js';
-import { gltfLoader } from "./loader.js";
-
-
 
 import { AsyncFileReader } from './async_file_reader.js';
 
@@ -54,11 +50,11 @@ class AssetLoader
     }
 
     static async loadGlxf(glxfFile, externalFiles)
-    {              
+    {       
         let filename = glxfFile.name;
 
-        let data = await AsyncFileReader.readAsText(glxfFile);
-        let glxfJson = JSON.parse(data);
+        let jsonData = await AsyncFileReader.readAsText(glxfFile);
+        let glxfJson = JSON.parse(jsonData);
 
         let gltf = await GlxfParser.convertGlxfToGltf(glxfJson, externalFiles)
 

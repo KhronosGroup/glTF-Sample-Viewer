@@ -197,8 +197,16 @@ class GlxfParser
             let asset = glxf.assets[i];
 
             const assetFile = appendix.find( (file) => file.name === asset.uri );
-            let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }
+            if(assetFile === undefined)
+            {
+                console.error("unable to locate asset file: "+asset.uri)
+                console.log("appendix: ")
+                console.log(appendix)
+                continue
+            }
 
+            let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }
+            appendix = resourcePackage.data
             // resolve all nodes/scenes and the respective transformations 
             this.resolveAsset(i, asset, resourcePackage.json)
 
