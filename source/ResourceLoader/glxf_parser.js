@@ -2,7 +2,8 @@
 import { GltfMerger } from "./gltf_merger.js";
 import { gltfNode } from '../gltf/node.js';
 import { mat4 } from 'gl-matrix';
-import { objectFromJson } from '../gltf/utils';
+import { objectFromJson,getContainingFolder } from '../gltf/utils';
+
 import { AssetLoader } from "./asset_loader.js";
 
 class GlxfParser
@@ -187,7 +188,7 @@ class GlxfParser
 
 
 
-    static async convertGlxfToGltf(glxf, appendix)
+    static async convertGlxfToGltf(filename, glxf, appendix)
     {
         let mergedGLTF = {}; // Initialize an empty merged GLTF object
 
@@ -196,13 +197,14 @@ class GlxfParser
         {
             let asset = glxf.assets[i];
 
-            const assetFile = appendix.find( (file) => file.name === asset.uri );
+            let assetFile = undefined
+            if(appendix !==undefined)
+            {
+                assetFile = appendix.find( (file) => file.name === asset.uri );
+            }
             if(assetFile === undefined)
             {
-                console.error("unable to locate asset file: "+asset.uri)
-                console.log("appendix: ")
-                console.log(appendix)
-                continue
+                assetFile = getContainingFolder(filename )+asset.uri
             }
 
             let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }

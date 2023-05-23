@@ -28,10 +28,10 @@ class UIModel
         {
             dropdownGltfChanged = app.modelChanged$.pipe(
                 pluck("event", "msg"),
-                startWith("DamagedHelmet"),
+                startWith("glXFTest"),
                 map(value => {
                     app.flavours = this.pathProvider.getModelFlavours(value);
-                    app.selectedFlavour = "glTF";
+                    app.selectedFlavour = app.flavours[0];
                     return this.pathProvider.resolve(value, app.selectedFlavour);
                 }),
                 map( value => ({mainFile: value, additionalFiles: undefined})),
@@ -41,7 +41,7 @@ class UIModel
                 pluck("event", "msg"),
                 map(value => {
                     app.flavours = this.pathProvider.getModelFlavours(value);
-                    app.selectedFlavour = "glTF";
+                    app.selectedFlavour =  app.flavours[0];
                     return this.pathProvider.resolve(value, app.selectedFlavour);
                 }),
                 map( value => ({mainFile: value, additionalFiles: undefined})),
@@ -229,7 +229,6 @@ class UIModel
                         glxfFile = rootGLXF;
                     }
                     const additionalFiles = files.filter( (file) => file !== glxfFile);
-                    console.log("Loading glxf file: "+ glxfFile.name);
                     return {mainFile: glxfFile, additionalFiles: additionalFiles};
                 }
 
