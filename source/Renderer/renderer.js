@@ -459,7 +459,7 @@ class gltfRenderer
             vertexCount = gltfAccessor.count;
 
             const location = this.shader.getAttributeLocation(attribute.name);
-            if (location < 0)
+            if (location === null)
             {
                 continue; // only skip this attribute
             }
@@ -479,15 +479,9 @@ class gltfRenderer
         {
             let info = material.textures[textureIndex];
             const location = this.shader.getUniformLocation(info.samplerName);
-
-            if (location < 0)
+            if (!this.webGl.setTexture(location, state.gltf, info, textureIndex))
             {
-                console.log("Unable to find uniform location of "+info.samplerName);
-                continue; // only skip this texture
-            }
-            if (!this.webGl.setTexture(location, state.gltf, info, textureIndex)) // binds texture and sampler
-            {
-                return; // skip this material
+                continue;
             }
         }
 
@@ -495,11 +489,6 @@ class gltfRenderer
         if (primitive.morphTargetTextureInfo !== undefined) 
         {
             const location = this.shader.getUniformLocation(primitive.morphTargetTextureInfo.samplerName);
-            if (location < 0)
-            {
-                console.log("Unable to find uniform location of " + primitive.morphTargetTextureInfo.samplerName);
-            }
-
             this.webGl.setTexture(location, state.gltf, primitive.morphTargetTextureInfo, textureIndex); // binds texture and sampler
             textureIndex++;
         }
@@ -509,11 +498,6 @@ class gltfRenderer
         {
             const skin = state.gltf.skins[node.skin];
             const location = this.shader.getUniformLocation(skin.jointTextureInfo.samplerName);
-            if (location < 0)
-            {
-                console.log("Unable to find uniform location of " + skin.jointTextureInfo.samplerName);
-            }
-
             this.webGl.setTexture(location, state.gltf, skin.jointTextureInfo, textureIndex); // binds texture and sampler
             textureIndex++;
         }
@@ -557,7 +541,7 @@ class gltfRenderer
         for (const attribute of primitive.glAttributes)
         {
             const location = this.shader.getAttributeLocation(attribute.name);
-            if (location < 0)
+            if (location === null)
             {
                 continue; // skip this attribute
             }
