@@ -26,6 +26,7 @@ class gltfMaterial extends GltfObject
         this.hasEmissiveStrength = false;
         this.hasVolume = false;
         this.hasIridescence = false;
+        this.hasAnisotropy = false;
 
         // non gltf properties
         this.type = "unlit";
@@ -96,6 +97,10 @@ class gltfMaterial extends GltfObject
         if(this.hasEmissiveStrength && renderingParameters.enabledExtensions.KHR_materials_emissive_strength)
         {
             defines.push("MATERIAL_EMISSIVE_STRENGTH 1");
+        }
+        if(this.hasAnisotropy && renderingParameters.enabledExtensions.KHR_materials_anisotropy)
+        {
+            defines.push("MATERIAL_ANISOTROPY 1");
         }
 
         return defines;
@@ -565,6 +570,37 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_IridescenceIor", iridescenceIor);
                 this.properties.set("u_IridescenceThicknessMaximum", thicknessMaximum);
             }
+
+            // KHR Extension: Anisotropy
+            // See https://github.com/KhronosGroup/glTF/tree/KHR_materials_anisotropy/extensions/2.0/Khronos/KHR_materials_anisotropy
+            if(this.extensions.KHR_materials_anisotropy !== undefined)
+            {
+                this.hasAnisotropy = true;
+
+                let factor = this.extensions.KHR_materials_anisotropy.anisotropyStrength;
+                let rotation = this.extensions.KHR_materials_anisotropy.anisotropyRotation;
+
+                if (factor === undefined)
+                {
+                    factor = 0.0;
+                }
+                if (rotation === undefined)
+                {
+                    rotation = 0;
+                }
+
+                if (this.anisotropyTexture !== undefined)
+                {
+                    this.anisotropyTexture.samplerName = "u_AnisotropySampler";
+                    this.parseTextureInfoExtensions(this.anisotropyTexture, "Anisotropy");
+                    this.textures.push(this.anisotropyTexture);
+                    this.defines.push("HAS_ANISOTROPY_MAP 1");
+                    this.properties.set("u_AnisotropyUVSet", this.anisotropyTexture.texCoord);
+                }
+
+                let anisotropy =  vec3.fromValues(Math.cos(rotation), Math.sin(rotation), factor);
+                this.properties.set("u_Anisotropy", anisotropy);
+            }
         }
 
         initGlForMembers(this, gltf, webGlContext);
@@ -653,6 +689,11 @@ class gltfMaterial extends GltfObject
         if(jsonExtensions.KHR_materials_iridescence !== undefined)
         {
             this.fromJsonIridescence(jsonExtensions.KHR_materials_iridescence);
+        }
+
+        if(jsonExtensions.KHR_materials_anisotropy !== undefined)
+        {
+            this.fromJsonAnisotropy(jsonExtensions.KHR_materials_anisotropy);
         }
     }
 
@@ -781,6 +822,16 @@ class gltfMaterial extends GltfObject
             const iridescenceThicknessTexture = new gltfTextureInfo();
             iridescenceThicknessTexture.fromJson(jsonIridescence.iridescenceThicknessTexture);
             this.iridescenceThicknessTexture = iridescenceThicknessTexture;
+        }
+    }
+
+    fromJsonAnisotropy(jsonAnisotropy)
+    {
+        if(jsonAnisotropy.anisotropyTexture !== undefined)
+        {
+            const anisotropyTexture = new gltfTextureInfo();
+            anisotropyTexture.fromJson(jsonAnisotropy.anisotropyTexture);
+            this.anisotropyTexture = anisotropyTexture;
         }
     }
 }

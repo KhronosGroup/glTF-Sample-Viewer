@@ -343,3 +343,23 @@ vec2 getIridescenceThicknessUV()
 }
 
 #endif
+
+
+// Anisotropy
+
+#ifdef MATERIAL_ANISOTROPY
+
+uniform sampler2D u_AnisotropySampler;
+uniform int u_AnisotropyUVSet;
+uniform mat3 u_AnisotropyUVTransform;
+
+vec2 getAnisotropyUV()
+{
+    vec3 uv = vec3(u_AnisotropyUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
+#ifdef HAS_ANISOTROPY_UV_TRANSFORM
+    uv = u_AnisotropyUVTransform * uv;
+#endif
+    return uv.xy;
+}
+
+#endif

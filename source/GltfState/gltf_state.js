@@ -55,6 +55,8 @@ class GltfState
                 KHR_materials_specular: true,
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
+                /** KHR_materials_anisotropy defines microfacet grooves in the surface, stretching the specular reflection on the surface */
+                KHR_materials_anisotropy: true,
                 KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
@@ -196,7 +198,7 @@ GltfState.DebugOutput = {
         VOLUME_THICKNESS: "Volume Thickness",
     },
 
-    /** output tranmission lighting */
+    /** output iridescence */
     iridescence: {
         /** output the combined iridescence */
         IRIDESCENCE: "Iridescence",
@@ -204,6 +206,14 @@ GltfState.DebugOutput = {
         IRIDESCENCE_FACTOR: "Iridescence Factor",
         /** output the iridescence thickness*/
         IRIDESCENCE_THICKNESS: "Iridescence Thickness",
+    },
+
+    /** output anisotropy */
+    anisotropy: {
+        /** output the anisotropic strength*/
+        ANISOTROPIC_STRENGTH: "Anisotropic Strength",
+        /** output final direction as defined by the anisotropyTexture and rotation*/
+        ANISOTROPIC_DIRECTION: "Anisotropic Direction",
     },
 };
 
