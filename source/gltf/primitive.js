@@ -1,6 +1,7 @@
 import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
+import { gltfAccessor } from './accessor.js';
 import { gltfImage } from './image.js';
 import { ImageMimeType } from './image_mime_type.js';
 import { gltfTexture } from './texture.js';
@@ -15,7 +16,7 @@ class gltfPrimitive extends GltfObject
     constructor()
     {
         super();
-        this.attributes = [];
+        this.attributes = {};
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
@@ -53,6 +54,7 @@ class gltfPrimitive extends GltfObject
 
         if (this.extensions !== undefined)
         {
+            // Decode Draco compressed mesh:
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
                 const dracoDecoder = new DracoDecoder();
@@ -67,6 +69,12 @@ class gltfPrimitive extends GltfObject
                     console.warn('Failed to load draco compressed mesh: DracoDecoder not initialized');
                 }
             }
+        }
+
+        if (this.attributes.TANGENT === undefined)
+        {
+            console.info("Generating tangents using the MikkTSpace algorithm.");
+            this.unweld(gltf);
         }
 
         // VERTEX ATTRIBUTES
@@ -721,6 +729,60 @@ class gltfPrimitive extends GltfObject
             componentType: attributeType
         };
 
+    }
+
+    // TODO: Unweld morphed attributes
+    unweld(gltf) {
+        if (this.indices === undefined) {
+            return;
+        }
+
+        // For now, keep only the position attribute:
+        for (const attribute of Object.keys(this.attributes)) {
+            if (attribute !== "POSITION") {
+                delete this.attributes[attribute];
+            }
+        }
+        
+        const indices = gltf.accessors[this.indices].getTypedView(gltf);
+        const weldedAttribute = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
+        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * 3);
+
+        // Apply the index mapping.
+        for (let i = 0; i < indices.length; i++) {
+            unweldedAttribute[i * 3 + 0] = weldedAttribute[indices[i] * 3 + 0];
+            unweldedAttribute[i * 3 + 1] = weldedAttribute[indices[i] * 3 + 1];
+            unweldedAttribute[i * 3 + 2] = weldedAttribute[indices[i] * 3 + 2];
+        }
+
+        // Create a new buffer and buffer view for the unwelded attribute:
+        const unweldedBuffer = new gltfBuffer();
+        unweldedBuffer.byteLength = unweldedAttribute.byteLength;
+        unweldedBuffer.buffer = unweldedAttribute.buffer;
+        gltf.buffers.push(unweldedBuffer);
+
+        const unweldedBufferView = new gltfBufferView();
+        unweldedBufferView.buffer = gltf.buffers.length - 1;
+        unweldedBufferView.byteLength = unweldedAttribute.byteLength;
+        unweldedBufferView.target = GL.ARRAY_BUFFER;
+        gltf.bufferViews.push(unweldedBufferView);
+
+        // Create a new accessor for the unwelded attribute:
+        const unweldedAccessor = new gltfAccessor();
+        unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
+        unweldedAccessor.byteOffset = 0;
+        unweldedAccessor.componentType = GL.FLOAT;
+        unweldedAccessor.count = indices.length;
+        unweldedAccessor.type = "VEC3";
+        unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
+        unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
+        gltf.accessors.push(unweldedAccessor);
+
+        // Update the primitive to use the unwelded attribute:
+        this.attributes.POSITION = gltf.accessors.length - 1;
+
+        // Remove the indices:
+        this.indices = undefined;
     }
 }
 
