@@ -736,50 +736,48 @@ class gltfPrimitive extends GltfObject
         if (this.indices === undefined) {
             return;
         }
-
-        // For now, keep only the position attribute:
-        for (const attribute of Object.keys(this.attributes)) {
-            if (attribute !== "POSITION") {
-                delete this.attributes[attribute];
-            }
-        }
         
         const indices = gltf.accessors[this.indices].getTypedView(gltf);
-        const weldedAttribute = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
-        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * 3);
 
-        // Apply the index mapping.
-        for (let i = 0; i < indices.length; i++) {
-            unweldedAttribute[i * 3 + 0] = weldedAttribute[indices[i] * 3 + 0];
-            unweldedAttribute[i * 3 + 1] = weldedAttribute[indices[i] * 3 + 1];
-            unweldedAttribute[i * 3 + 2] = weldedAttribute[indices[i] * 3 + 2];
+        for (const attribute of Object.keys(this.attributes)) {
+            const stride = gltf.accessors[this.attributes[attribute]].getComponentCount(gltf.accessors[this.attributes[attribute]].type);
+
+            const weldedAttribute = gltf.accessors[this.attributes[attribute]].getTypedView(gltf);
+            const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * stride);
+
+            // Apply the index mapping.
+            for (let i = 0; i < indices.length; i++) {
+                for (let j = 0; j < stride; j++) {
+                    unweldedAttribute[i * stride + j] = weldedAttribute[indices[i] * stride + j];
+                }
+            }
+
+            // Create a new buffer and buffer view for the unwelded attribute:
+            const unweldedBuffer = new gltfBuffer();
+            unweldedBuffer.byteLength = unweldedAttribute.byteLength;
+            unweldedBuffer.buffer = unweldedAttribute.buffer;
+            gltf.buffers.push(unweldedBuffer);
+
+            const unweldedBufferView = new gltfBufferView();
+            unweldedBufferView.buffer = gltf.buffers.length - 1;
+            unweldedBufferView.byteLength = unweldedAttribute.byteLength;
+            unweldedBufferView.target = GL.ARRAY_BUFFER;
+            gltf.bufferViews.push(unweldedBufferView);
+
+            // Create a new accessor for the unwelded attribute:
+            const unweldedAccessor = new gltfAccessor();
+            unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
+            unweldedAccessor.byteOffset = 0;
+            unweldedAccessor.count = indices.length;
+            unweldedAccessor.type = gltf.accessors[this.attributes[attribute]].type;
+            unweldedAccessor.componentType = gltf.accessors[this.attributes[attribute]].componentType;
+            unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
+            unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
+            gltf.accessors.push(unweldedAccessor);
+
+            // Update the primitive to use the unwelded attribute:
+            this.attributes[attribute] = gltf.accessors.length - 1;
         }
-
-        // Create a new buffer and buffer view for the unwelded attribute:
-        const unweldedBuffer = new gltfBuffer();
-        unweldedBuffer.byteLength = unweldedAttribute.byteLength;
-        unweldedBuffer.buffer = unweldedAttribute.buffer;
-        gltf.buffers.push(unweldedBuffer);
-
-        const unweldedBufferView = new gltfBufferView();
-        unweldedBufferView.buffer = gltf.buffers.length - 1;
-        unweldedBufferView.byteLength = unweldedAttribute.byteLength;
-        unweldedBufferView.target = GL.ARRAY_BUFFER;
-        gltf.bufferViews.push(unweldedBufferView);
-
-        // Create a new accessor for the unwelded attribute:
-        const unweldedAccessor = new gltfAccessor();
-        unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
-        unweldedAccessor.byteOffset = 0;
-        unweldedAccessor.componentType = GL.FLOAT;
-        unweldedAccessor.count = indices.length;
-        unweldedAccessor.type = "VEC3";
-        unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
-        unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
-        gltf.accessors.push(unweldedAccessor);
-
-        // Update the primitive to use the unwelded attribute:
-        this.attributes.POSITION = gltf.accessors.length - 1;
 
         // Remove the indices:
         this.indices = undefined;
