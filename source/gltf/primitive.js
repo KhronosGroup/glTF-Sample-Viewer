@@ -10,6 +10,7 @@ import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
+import { mikktspace } from '../../app_web/src/main.js';
 
 class gltfPrimitive extends GltfObject
 {
@@ -74,7 +75,10 @@ class gltfPrimitive extends GltfObject
         if (this.attributes.TANGENT === undefined)
         {
             console.info("Generating tangents using the MikkTSpace algorithm.");
+            console.time("Tangent generation");
             this.unweld(gltf);
+            this.generateTangents(gltf);
+            console.timeEnd("Tangent generation");
         }
 
         // VERTEX ATTRIBUTES
@@ -806,6 +810,54 @@ class gltfPrimitive extends GltfObject
 
         // Update the primitive to use the unwelded attribute:
         return gltf.accessors.length - 1;
+    }
+
+    generateTangents(gltf) {
+        const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
+        const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
+        const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
+        for (let i = 0; i < positions.length; i += 3) {
+            mikktspace.writeFace(
+                positions[i], positions[i + 1], positions[i + 2],
+                normals[i], normals[i + 1], normals[i + 2],
+                texcoords[i], texcoords[i + 1]
+            );
+        }
+
+        mikktspace.generateTangents();
+
+        const tangents = new Float32Array(4 * positions.length / 3);
+        for (let i = 0; i < tangents.length; i++) {
+            let t = mikktspace.readTangent(i);
+            tangents[i] = t;
+        }
+
+        // Create a new buffer and buffer view for the tangents:
+        const tangentBuffer = new gltfBuffer();
+        tangentBuffer.byteLength = tangents.byteLength;
+        tangentBuffer.buffer = tangents.buffer;
+        gltf.buffers.push(tangentBuffer);
+
+        const tangentBufferView = new gltfBufferView();
+        tangentBufferView.buffer = gltf.buffers.length - 1;
+        tangentBufferView.byteLength = tangents.byteLength;
+        tangentBufferView.target = GL.ARRAY_BUFFER;
+        gltf.bufferViews.push(tangentBufferView);
+
+        // Create a new accessor for the tangents:
+        const tangentAccessor = new gltfAccessor();
+        tangentAccessor.bufferView = gltf.bufferViews.length - 1;
+        tangentAccessor.byteOffset = 0;
+        tangentAccessor.count = tangents.length / 4;
+        tangentAccessor.type = "VEC4";
+        tangentAccessor.componentType = GL.FLOAT;
+
+        // Update the primitive to use the tangents:
+        this.attributes.TANGENT = gltf.accessors.length;
+        gltf.accessors.push(tangentAccessor);
+
+        // Update the primitive to use the tangents:
+        this.attributes.TANGENT = gltf.accessors.length - 1;
     }
 }
 
