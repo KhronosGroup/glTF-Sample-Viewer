@@ -731,56 +731,81 @@ class gltfPrimitive extends GltfObject
 
     }
 
-    // TODO: Unweld morphed attributes
+    /**
+     * Unwelds this primitive, i.e. applies the index mapping.
+     * This is required for generating tangents using the MikkTSpace algorithm,
+     * because the same vertex might be mapped to different tangents.
+     * @param {*} gltf The glTF document.
+     */
     unweld(gltf) {
+        // Unwelding is an idempotent operation.
         if (this.indices === undefined) {
             return;
         }
         
         const indices = gltf.accessors[this.indices].getTypedView(gltf);
 
-        for (const attribute of Object.keys(this.attributes)) {
-            const stride = gltf.accessors[this.attributes[attribute]].getComponentCount(gltf.accessors[this.attributes[attribute]].type);
-
-            const weldedAttribute = gltf.accessors[this.attributes[attribute]].getTypedView(gltf);
-            const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * stride);
-
-            // Apply the index mapping.
-            for (let i = 0; i < indices.length; i++) {
-                for (let j = 0; j < stride; j++) {
-                    unweldedAttribute[i * stride + j] = weldedAttribute[indices[i] * stride + j];
-                }
-            }
-
-            // Create a new buffer and buffer view for the unwelded attribute:
-            const unweldedBuffer = new gltfBuffer();
-            unweldedBuffer.byteLength = unweldedAttribute.byteLength;
-            unweldedBuffer.buffer = unweldedAttribute.buffer;
-            gltf.buffers.push(unweldedBuffer);
-
-            const unweldedBufferView = new gltfBufferView();
-            unweldedBufferView.buffer = gltf.buffers.length - 1;
-            unweldedBufferView.byteLength = unweldedAttribute.byteLength;
-            unweldedBufferView.target = GL.ARRAY_BUFFER;
-            gltf.bufferViews.push(unweldedBufferView);
-
-            // Create a new accessor for the unwelded attribute:
-            const unweldedAccessor = new gltfAccessor();
-            unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
-            unweldedAccessor.byteOffset = 0;
-            unweldedAccessor.count = indices.length;
-            unweldedAccessor.type = gltf.accessors[this.attributes[attribute]].type;
-            unweldedAccessor.componentType = gltf.accessors[this.attributes[attribute]].componentType;
-            unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
-            unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
-            gltf.accessors.push(unweldedAccessor);
-
-            // Update the primitive to use the unwelded attribute:
-            this.attributes[attribute] = gltf.accessors.length - 1;
+        // Unweld attributes:
+        for (const [attribute, accessorIndex] of Object.entries(this.attributes)) {
+            this.attributes[attribute] = this.unweldAccessor(gltf, gltf.accessors[accessorIndex], indices);
         }
 
-        // Remove the indices:
+        // Unweld morph targets:
+        for (const target of this.targets) {
+            for (const [attribute, accessorIndex] of Object.entries(target)) {
+                target[attribute] = this.unweldAccessor(gltf, gltf.accessors[accessorIndex], indices);
+            }
+        }
+
+        // Dipose the indices:
         this.indices = undefined;
+    }
+
+    /**
+     * Unwelds a single accessor. Used by {@link unweld}.
+     * @param {*} gltf The glTF document.
+     * @param {*} accessor The accessor to unweld.
+     * @param {*} typedIndexView A typed view of the indices.
+     * @returns A new accessor index containing the unwelded attribute.
+     */
+    unweldAccessor(gltf, accessor, typedIndexView) {
+        const stride = accessor.getComponentCount(accessor.type);
+
+        const weldedAttribute = accessor.getTypedView(gltf);
+        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * stride);
+
+        // Apply the index mapping.
+        for (let i = 0; i < typedIndexView.length; i++) {
+            for (let j = 0; j < stride; j++) {
+                unweldedAttribute[i * stride + j] = weldedAttribute[typedIndexView[i] * stride + j];
+            }
+        }
+
+        // Create a new buffer and buffer view for the unwelded attribute:
+        const unweldedBuffer = new gltfBuffer();
+        unweldedBuffer.byteLength = unweldedAttribute.byteLength;
+        unweldedBuffer.buffer = unweldedAttribute.buffer;
+        gltf.buffers.push(unweldedBuffer);
+
+        const unweldedBufferView = new gltfBufferView();
+        unweldedBufferView.buffer = gltf.buffers.length - 1;
+        unweldedBufferView.byteLength = unweldedAttribute.byteLength;
+        unweldedBufferView.target = GL.ARRAY_BUFFER;
+        gltf.bufferViews.push(unweldedBufferView);
+
+        // Create a new accessor for the unwelded attribute:
+        const unweldedAccessor = new gltfAccessor();
+        unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
+        unweldedAccessor.byteOffset = 0;
+        unweldedAccessor.count = typedIndexView.length;
+        unweldedAccessor.type = accessor.type;
+        unweldedAccessor.componentType = accessor.componentType;
+        unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
+        unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
+        gltf.accessors.push(unweldedAccessor);
+
+        // Update the primitive to use the unwelded attribute:
+        return gltf.accessors.length - 1;
     }
 }
 
