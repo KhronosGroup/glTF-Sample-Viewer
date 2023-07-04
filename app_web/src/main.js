@@ -7,8 +7,14 @@ import { Observable, Subject, from, merge } from 'rxjs';
 import { mergeMap, filter, map, multicast } from 'rxjs/operators';
 import { gltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
 
-async function main()
-{
+
+import mikktspaceWasm from '../../source/libs/mikktspace_module.js';
+
+let mikktspace = null;
+
+async function main() {
+    mikktspace = await mikktspaceWasm("libs/mikktspace_module_bg.wasm");
+
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const ui = document.getElementById("app");
@@ -363,4 +369,4 @@ async function main()
     window.requestAnimationFrame(update);
 }
 
-export { main };
+export { main, mikktspace };
