@@ -1,7 +1,6 @@
 import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
-import { gltfAccessor } from './accessor.js';
 import { gltfImage } from './image.js';
 import { ImageMimeType } from './image_mime_type.js';
 import { gltfTexture } from './texture.js';
@@ -10,14 +9,13 @@ import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
-import { mikktspace } from '../../app_web/src/main.js';
 
 class gltfPrimitive extends GltfObject
 {
     constructor()
     {
         super();
-        this.attributes = {};
+        this.attributes = [];
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
@@ -55,7 +53,6 @@ class gltfPrimitive extends GltfObject
 
         if (this.extensions !== undefined)
         {
-            // Decode Draco compressed mesh:
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
                 const dracoDecoder = new DracoDecoder();
@@ -70,15 +67,6 @@ class gltfPrimitive extends GltfObject
                     console.warn('Failed to load draco compressed mesh: DracoDecoder not initialized');
                 }
             }
-        }
-
-        if (this.attributes.TANGENT === undefined)
-        {
-            console.info("Generating tangents using the MikkTSpace algorithm.");
-            console.time("Tangent generation");
-            this.unweld(gltf);
-            this.generateTangents(gltf);
-            console.timeEnd("Tangent generation");
         }
 
         // VERTEX ATTRIBUTES
@@ -733,131 +721,6 @@ class gltfPrimitive extends GltfObject
             componentType: attributeType
         };
 
-    }
-
-    /**
-     * Unwelds this primitive, i.e. applies the index mapping.
-     * This is required for generating tangents using the MikkTSpace algorithm,
-     * because the same vertex might be mapped to different tangents.
-     * @param {*} gltf The glTF document.
-     */
-    unweld(gltf) {
-        // Unwelding is an idempotent operation.
-        if (this.indices === undefined) {
-            return;
-        }
-        
-        const indices = gltf.accessors[this.indices].getTypedView(gltf);
-
-        // Unweld attributes:
-        for (const [attribute, accessorIndex] of Object.entries(this.attributes)) {
-            this.attributes[attribute] = this.unweldAccessor(gltf, gltf.accessors[accessorIndex], indices);
-        }
-
-        // Unweld morph targets:
-        for (const target of this.targets) {
-            for (const [attribute, accessorIndex] of Object.entries(target)) {
-                target[attribute] = this.unweldAccessor(gltf, gltf.accessors[accessorIndex], indices);
-            }
-        }
-
-        // Dipose the indices:
-        this.indices = undefined;
-    }
-
-    /**
-     * Unwelds a single accessor. Used by {@link unweld}.
-     * @param {*} gltf The glTF document.
-     * @param {*} accessor The accessor to unweld.
-     * @param {*} typedIndexView A typed view of the indices.
-     * @returns A new accessor index containing the unwelded attribute.
-     */
-    unweldAccessor(gltf, accessor, typedIndexView) {
-        const stride = accessor.getComponentCount(accessor.type);
-
-        const weldedAttribute = accessor.getTypedView(gltf);
-        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * stride);
-
-        // Apply the index mapping.
-        for (let i = 0; i < typedIndexView.length; i++) {
-            for (let j = 0; j < stride; j++) {
-                unweldedAttribute[i * stride + j] = weldedAttribute[typedIndexView[i] * stride + j];
-            }
-        }
-
-        // Create a new buffer and buffer view for the unwelded attribute:
-        const unweldedBuffer = new gltfBuffer();
-        unweldedBuffer.byteLength = unweldedAttribute.byteLength;
-        unweldedBuffer.buffer = unweldedAttribute.buffer;
-        gltf.buffers.push(unweldedBuffer);
-
-        const unweldedBufferView = new gltfBufferView();
-        unweldedBufferView.buffer = gltf.buffers.length - 1;
-        unweldedBufferView.byteLength = unweldedAttribute.byteLength;
-        unweldedBufferView.target = GL.ARRAY_BUFFER;
-        gltf.bufferViews.push(unweldedBufferView);
-
-        // Create a new accessor for the unwelded attribute:
-        const unweldedAccessor = new gltfAccessor();
-        unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
-        unweldedAccessor.byteOffset = 0;
-        unweldedAccessor.count = typedIndexView.length;
-        unweldedAccessor.type = accessor.type;
-        unweldedAccessor.componentType = accessor.componentType;
-        unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
-        unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
-        gltf.accessors.push(unweldedAccessor);
-
-        // Update the primitive to use the unwelded attribute:
-        return gltf.accessors.length - 1;
-    }
-
-    generateTangents(gltf) {
-        const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
-        const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
-        const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
-        for (let i = 0; i < positions.length; i += 3) {
-            mikktspace.writeFace(
-                positions[i], positions[i + 1], positions[i + 2],
-                normals[i], normals[i + 1], normals[i + 2],
-                texcoords[i], texcoords[i + 1]
-            );
-        }
-
-        mikktspace.generateTangents();
-
-        const tangents = new Float32Array(4 * positions.length / 3);
-        for (let i = 0; i < tangents.length; i++) {
-            let t = mikktspace.readTangent(i);
-            tangents[i] = t;
-        }
-
-        // Create a new buffer and buffer view for the tangents:
-        const tangentBuffer = new gltfBuffer();
-        tangentBuffer.byteLength = tangents.byteLength;
-        tangentBuffer.buffer = tangents.buffer;
-        gltf.buffers.push(tangentBuffer);
-
-        const tangentBufferView = new gltfBufferView();
-        tangentBufferView.buffer = gltf.buffers.length - 1;
-        tangentBufferView.byteLength = tangents.byteLength;
-        tangentBufferView.target = GL.ARRAY_BUFFER;
-        gltf.bufferViews.push(tangentBufferView);
-
-        // Create a new accessor for the tangents:
-        const tangentAccessor = new gltfAccessor();
-        tangentAccessor.bufferView = gltf.bufferViews.length - 1;
-        tangentAccessor.byteOffset = 0;
-        tangentAccessor.count = tangents.length / 4;
-        tangentAccessor.type = "VEC4";
-        tangentAccessor.componentType = GL.FLOAT;
-
-        // Update the primitive to use the tangents:
-        this.attributes.TANGENT = gltf.accessors.length;
-        gltf.accessors.push(tangentAccessor);
-
-        // Update the primitive to use the tangents:
-        this.attributes.TANGENT = gltf.accessors.length - 1;
     }
 }
 
