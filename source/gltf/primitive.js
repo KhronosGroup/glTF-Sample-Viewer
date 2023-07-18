@@ -773,15 +773,15 @@ class gltfPrimitive extends GltfObject
      * @returns A new accessor index containing the unwelded attribute.
      */
     unweldAccessor(gltf, accessor, typedIndexView) {
-        const stride = accessor.getComponentCount(accessor.type);
+        const componentCount = accessor.getComponentCount(accessor.type);
 
         const weldedAttribute = accessor.getTypedView(gltf);
-        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * stride);
+        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * componentCount);
 
         // Apply the index mapping.
         for (let i = 0; i < typedIndexView.length; i++) {
-            for (let j = 0; j < stride; j++) {
-                unweldedAttribute[i * stride + j] = weldedAttribute[typedIndexView[i] * stride + j];
+            for (let j = 0; j < componentCount; j++) {
+                unweldedAttribute[i * componentCount + j] = weldedAttribute[typedIndexView[i] * componentCount + j];
             }
         }
 
@@ -804,8 +804,8 @@ class gltfPrimitive extends GltfObject
         unweldedAccessor.count = typedIndexView.length;
         unweldedAccessor.type = accessor.type;
         unweldedAccessor.componentType = accessor.componentType;
-        unweldedAccessor.min = gltf.accessors[this.attributes.POSITION].min;
-        unweldedAccessor.max = gltf.accessors[this.attributes.POSITION].max;
+        unweldedAccessor.min = accessor.min;
+        unweldedAccessor.max = accessor.max;
         gltf.accessors.push(unweldedAccessor);
 
         // Update the primitive to use the unwelded attribute:
@@ -813,6 +813,11 @@ class gltfPrimitive extends GltfObject
     }
 
     generateTangents(gltf) {
+        if(this.attributes.NORMAL === undefined || this.attributes.TEXCOORD_0 === undefined)
+        {
+            return;
+        }
+
         const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
         const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
         const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
@@ -856,8 +861,6 @@ class gltfPrimitive extends GltfObject
         this.attributes.TANGENT = gltf.accessors.length;
         gltf.accessors.push(tangentAccessor);
 
-        // Update the primitive to use the tangents:
-        this.attributes.TANGENT = gltf.accessors.length - 1;
     }
 }
 
