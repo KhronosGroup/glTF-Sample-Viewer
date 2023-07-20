@@ -1,5 +1,6 @@
 import { GltfObject } from './gltf_object.js';
 import { isPowerOf2 } from './math_utils.js';
+import { getExtension } from './utils.js';
 import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 import { GL } from "../Renderer/webgl";
 import { ImageMimeType } from "./image_mime_type.js";
@@ -14,7 +15,7 @@ class gltfImage extends GltfObject
         miplevel = 0,
         bufferView = undefined,
         name = undefined,
-        mimeType = ImageMimeType.JPEG,
+        mimeType = undefined,
         image = undefined)
     {
         super();
@@ -73,11 +74,40 @@ class gltfImage extends GltfObject
         });
     }
 
+    setMimetypeFromFilename(filename)
+    {
+
+        let extension = getExtension(filename)
+        if(extension == "ktx2" || extension == "ktx")
+        {
+            this.mimeType = ImageMimeType.KTX2;
+        } 
+        else if(extension == "jpg" || extension == "jpeg")
+        {
+            this.mimeType = ImageMimeType.JPEG;
+        }
+        else if(extension == "png" )
+        {
+            this.mimeType = ImageMimeType.PNG;
+        } 
+        else 
+        {
+            console.warn("MimeType not defined");
+            // assume jpeg encoding as best guess
+            this.mimeType = ImageMimeType.JPEG; 
+        }
+    
+    }
+
     async setImageFromUri(gltf)
     {
         if (this.uri === undefined)
         {
             return false;
+        }
+        if (this.mimeType === undefined)
+        {
+            this.setMimetypeFromFilename(this.uri);
         }
 
         if(this.mimeType === ImageMimeType.KTX2)
@@ -180,6 +210,12 @@ class gltfImage extends GltfObject
         {
             return false;
         }
+
+        if (this.mimeType === undefined)
+        {
+            this.setMimetypeFromFilename(foundFile.name);
+        }
+
 
         if(this.mimeType === ImageMimeType.KTX2)
         {
