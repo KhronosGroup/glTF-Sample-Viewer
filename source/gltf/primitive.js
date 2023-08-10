@@ -10,7 +10,9 @@ import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
-import { mikktspace } from '../../app_web/src/main.js';
+import init, {generateTangents as gT} from '../libs/mikktspace_main.js';
+import mikktspace from '../libs/mikktspace_main_bg.wasm';
+
 
 class gltfPrimitive extends GltfObject
 {
@@ -37,6 +39,12 @@ class gltfPrimitive extends GltfObject
 
         // The primitive centroid is used for depth sorting.
         this.centroid = undefined;
+        this.initMikktSpace();
+    }
+
+    async initMikktSpace() {
+        await init(await mikktspace());
+        console.log("Mikktspace init");
     }
 
     initGl(gltf, webGlContext)
@@ -821,21 +829,21 @@ class gltfPrimitive extends GltfObject
         const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
         const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
         const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
-        for (let i = 0; i < positions.length; i += 3) {
-            mikktspace.writeFace(
+        /*for (let i = 0; i < positions.length; i += 3) {
+            gT.writeFace(
                 positions[i], positions[i + 1], positions[i + 2],
                 normals[i], normals[i + 1], normals[i + 2],
                 texcoords[i], texcoords[i + 1]
             );
-        }
+        }*/
 
-        mikktspace.generateTangents();
+        const tangents = gT(positions, normals, texcoords);
 
-        const tangents = new Float32Array(4 * positions.length / 3);
-        for (let i = 0; i < tangents.length; i++) {
+        //const tangents = new Float32Array(4 * positions.length / 3);
+        /*for (let i = 0; i < tangents.length; i++) {
             let t = mikktspace.readTangent(i);
             tangents[i] = t;
-        }
+        }*/
 
         // Create a new buffer and buffer view for the tangents:
         const tangentBuffer = new gltfBuffer();
