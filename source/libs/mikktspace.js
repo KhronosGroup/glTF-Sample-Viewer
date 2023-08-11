@@ -134,7 +134,7 @@ async function load(module, imports) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('mikktspace_main_bg.wasm', import.meta.url);
+        input = new URL('mikktspace_bg.wasm', import.meta.url);
     }
     const imports = {};
     imports.wbg = {};

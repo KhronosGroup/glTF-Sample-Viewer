@@ -10,7 +10,7 @@ import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
-import { generateTangents } from '../libs/mikktspace_main.js';
+import { generateTangents } from '../libs/mikktspace.js';
 
 
 class gltfPrimitive extends GltfObject

@@ -9,8 +9,8 @@ import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
 import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
-import init from '../libs/mikktspace_main.js';
-import mikktspace from '../libs/mikktspace_main_bg.wasm';
+import init from '../libs/mikktspace.js';
+import mikktspace from '../libs/mikktspace_bg.wasm';
 
 
 import { AsyncFileReader } from './async_file_reader.js';
