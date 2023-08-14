@@ -9,8 +9,8 @@
     "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
   },
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "echo 'Please run `npm run build` from the `app_web` or `app_headless` directory.'",
+    "dev": "echo 'Please run `npm run dev` from the `app_web` or `app_headless` directory.'",
     "prepublishOnly": "npm run build && npm run build_docs",
     "build_docs": "rm API.md; ./node_modules/.bin/jsdoc2md source/gltf-sample-viewer.js source/GltfView/gltf_view.js source/GltfState/gltf_state.js source/ResourceLoader/resource_loader.js source/gltf/user_camera.js > API.md",
     "test": "echo \"Error: no test specified\" && exit 1",
