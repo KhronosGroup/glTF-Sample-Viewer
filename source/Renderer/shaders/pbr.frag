@@ -29,6 +29,9 @@ precision highp float;
 #include <iridescence.glsl>
 #endif
 
+#undef DEBUG
+#define DEBUG DEBUG_ANISOTROPIC_DIRECTION
+
 
 out vec4 g_finalColor;
 
@@ -467,11 +470,12 @@ vec3 specularTexture = vec3(1.0);
 #if DEBUG == DEBUG_ANISOTROPIC_DIRECTION
     vec2 direction = vec2(1.0, 0.0);
 #ifdef HAS_ANISOTROPY_MAP
-    direction = texture(u_AnisotropySampler, getAnisotropyUV()).xy * 2.0 - vec2(1.0);
+    direction = texture(u_AnisotropySampler, getAnisotropyUV()).xy;
+    direction = direction * 2.0 - vec2(1.0); // [0, 1] -> [-1, 1]
 #endif
     vec2 directionRotation = u_Anisotropy.xy; // cos(theta), sin(theta)
     mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
-    direction = (normalize(rotationMatrix * direction.xy) + vec2(1.0)) * 0.5;
+    direction = (direction + vec2(1.0)) * 0.5; // [-1, 1] -> [0, 1]
 
     g_finalColor.rgb = vec3(direction, 0.0);
 #endif
