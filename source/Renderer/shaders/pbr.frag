@@ -29,9 +29,6 @@ precision highp float;
 #include <iridescence.glsl>
 #endif
 
-#undef DEBUG
-#define DEBUG DEBUG_ANISOTROPIC_DIRECTION
-
 
 out vec4 g_finalColor;
 
