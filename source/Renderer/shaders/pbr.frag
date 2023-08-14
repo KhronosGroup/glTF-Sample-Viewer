@@ -442,7 +442,7 @@ vec3 specularTexture = vec3(1.0);
 #endif
 #ifdef MATERIAL_VOLUME
 #if DEBUG == DEBUG_VOLUME_THICKNESS
-    g_finalColor.rgb = vec3(materialInfo.thickness);
+    g_finalColor.rgb = vec3(materialInfo.thickness / u_ThicknessFactor);
 #endif
 #endif
 
