@@ -9,9 +9,9 @@ class GltfObject
         this.extras = undefined;
     }
 
-    fromJson(json)
+    fromJson(json, ignore = [])
     {
-        fromKeys(this, json);
+        fromKeys(this, json, ignore);
     }
 
     initGl(gltf, webGlContext)

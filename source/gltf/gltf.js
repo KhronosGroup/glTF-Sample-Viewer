@@ -17,6 +17,9 @@ import { GltfObject } from './gltf_object.js';
 import { gltfAnimation } from './animation.js';
 import { gltfSkin } from './skin.js';
 import { gltfVariant } from './variant.js';
+import { gltfAudioSource } from './audio_source';
+import { gltfAudioEmitter } from './audio_emitter.js';
+import { gltfAudio } from './audio.js';
 
 class glTF extends GltfObject
 {
@@ -40,6 +43,9 @@ class glTF extends GltfObject
         this.materials = [];
         this.animations = [];
         this.skins = [];
+        this.audioSources = [];
+        this.audioEmitters = [];
+        this.audio = [];
         this.path = file;
     }
 
@@ -70,6 +76,9 @@ class glTF extends GltfObject
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+        this.audioSources = objectsFromJsons(getJsonAudioSourcesFromExtensions(json.extensions), gltfAudioSource);
+        this.audioEmitters = objectsFromJsons(getJsonAudioEmittersFromExtensions(json.extensions), gltfAudioEmitter);
+        this.audio = objectsFromJsons(getJsonAudioFromExtensions(json.extensions), gltfAudio);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -196,6 +205,45 @@ function getJsonVariantsFromExtension(extensions)
     return extensions.KHR_materials_variants.variants;
 }
 
+function getJsonAudioSourcesFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_audio === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_audio.sources;
+}
+
+function getJsonAudioEmittersFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_audio === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_audio.emitters;
+}
+
+function getJsonAudioFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_audio === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_audio.audio;
+}
+
 function enforceVariantsUniqueness(variants)
 {
     for(let i=0;i<variants.length;i++)
@@ -231,5 +279,7 @@ export {
     GltfObject,
     gltfAnimation,
     gltfSkin,
-    gltfVariant
+    gltfVariant,
+    gltfAudioSource,
+    gltfAudioEmitter,
 };

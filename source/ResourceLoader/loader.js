@@ -10,8 +10,9 @@ class gltfLoader
 
         await buffersPromise; // images might be stored in the buffers
         const imagesPromise = gltfLoader.loadImages(gltf, additionalFiles);
+        const audioPromise = gltfLoader.loadAudio(gltf, additionalFiles);
 
-        return await Promise.all([buffersPromise, imagesPromise])
+        return await Promise.all([buffersPromise, imagesPromise, audioPromise])
             .then(() => gltf.initGl(webGlContext));
     }
 
@@ -22,6 +23,12 @@ class gltfLoader
             image.image = undefined;
         }
         gltf.images = [];
+
+        for (let audio of gltf.audio)
+        {
+            audio.decodedAudio = undefined;
+        }
+        gltf.audio = [];
 
         for (let texture of gltf.textures)
         {
@@ -101,6 +108,16 @@ class gltfLoader
             imagePromises.push(image.load(gltf, additionalFiles));
         }
         return Promise.all(imagePromises);
+    }
+
+    static loadAudio(gltf, additionalFiles)
+    {
+        const audioPromises = [];
+        for (let audio of gltf.audio)
+        {
+            audioPromises.push(audio.load(gltf, additionalFiles));
+        }
+        return Promise.all(audioPromises);
     }
 }
 

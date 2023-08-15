@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3, quat } from 'gl-matrix';
+import { mat4, mat3, vec3, quat, vec4 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
@@ -65,6 +65,8 @@ class gltfRenderer
         this.viewProjectionMatrix = mat4.create();
 
         this.currentCameraPosition = vec3.create();
+        this.currentCameraLookDirection = vec3.create();
+        this.currentCameraUpDirection = vec3.create();
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
@@ -227,6 +229,7 @@ class gltfRenderer
         this.transmissionDrawables = drawables
             .filter(({primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
                 && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+
     }
 
     // render complete gltf scene with given camera
@@ -258,6 +261,8 @@ class gltfRenderer
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
+        this.currentCameraLookDirection = currentCamera.getLookDirection(state.gltf);
+        this.currentCameraUpDirection = currentCamera.getUpDirection(state.gltf);
 
         this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
