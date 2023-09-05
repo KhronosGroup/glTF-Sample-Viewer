@@ -16,7 +16,7 @@ async function main() {
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
-    const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
+    const pathProvider = new gltfModelPathProvider('assets/models/Models/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
         "footprint_court": "Footprint Court",
