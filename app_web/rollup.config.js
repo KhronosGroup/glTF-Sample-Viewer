@@ -7,6 +7,7 @@ import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
+import {wasm} from "@rollup/plugin-wasm";
 
 export default {
     input: 'src/main.js',
@@ -19,6 +20,7 @@ export default {
         }
     ],
     plugins: [
+        wasm(),
         json(),
         glslify({
             include: ['../source/Renderer/shaders/*', '../source/shaders/*'],

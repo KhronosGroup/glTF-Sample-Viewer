@@ -7,8 +7,7 @@ import { Observable, Subject, from, merge } from 'rxjs';
 import { mergeMap, filter, map, multicast } from 'rxjs/operators';
 import { gltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
 
-async function main()
-{
+async function main() {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
     const ui = document.getElementById("app");
