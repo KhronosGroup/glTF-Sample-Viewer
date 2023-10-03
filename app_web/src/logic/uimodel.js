@@ -12,31 +12,12 @@ class UIModel
 {
     constructor(app, modelPathProvider, environments) {
         this.app = app;
-        this.pathProvider = modelPathProvider;
 
-        this.app.models = this.pathProvider.getAllKeys();
+        this.app.models = modelPathProvider.getAllKeys();
 
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const modelURL = urlParams.get("model");
-
-        const dropdownGltfChanged = app.modelChanged$.pipe(
-            pluck("event", "msg"),
-            startWith(modelURL === null ? "DamagedHelmet" : null),
-            filter(value => value !== null),
-            map(value => {
-                app.flavours = this.pathProvider.getModelFlavours(value);
-                app.selectedFlavour = "glTF";
-                return this.pathProvider.resolve(value, app.selectedFlavour);
-            }),
-            map(value => ({mainFile: value})),
-        );
-
-        const dropdownFlavourChanged = app.flavourChanged$.pipe(
-            pluck("event", "msg"),
-            map(value => this.pathProvider.resolve(app.selectedModel, value)),
-            map(value => ({mainFile: value})),
-        );
 
         this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
         this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
@@ -105,7 +86,26 @@ class UIModel
         canvas.addEventListener('dragenter', () => this.app.showDropDownOverlay = true);
         canvas.addEventListener('dragleave', () => this.app.showDropDownOverlay = false);
 
-        const inputObservables = UIModel.getInputObservables(canvas, this.app);
+        const inputObservables = getInputObservables(canvas, this.app);
+
+        const dropdownGltfChanged = app.modelChanged$.pipe(
+            pluck("event", "msg"),
+            startWith(modelURL === null ? "DamagedHelmet" : null),
+            filter(value => value !== null),
+            map(value => {
+                app.flavours = modelPathProvider.getModelFlavours(value);
+                app.selectedFlavour = "glTF";
+                return modelPathProvider.resolve(value, app.selectedFlavour);
+            }),
+            map(value => ({mainFile: value})),
+        );
+
+        const dropdownFlavourChanged = app.flavourChanged$.pipe(
+            pluck("event", "msg"),
+            map(value => modelPathProvider.resolve(app.selectedModel, value)),
+            map(value => ({mainFile: value})),
+        );
+
         this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.droppedGltf);
         this.hdr = merge(selectedEnvironment, this.addEnvironment, inputObservables.droppedHdr).pipe(
             startWith(environments[initialEnvironment].hdr_path)
@@ -156,140 +156,6 @@ class UIModel
         this.orbit = inputObservables.orbit;
         this.pan = inputObservables.pan;
         this.zoom = inputObservables.zoom;
-    }
-
-    // app has to be the vuejs app instance
-    static getInputObservables(inputElement, app)
-    {
-        const observables = {};
-        
-        const droppedFiles = new Observable(subscriber => {
-            const dropZone = new SimpleDropzone(inputElement, inputElement);
-            dropZone.on('drop', ({files}) => {
-                app.showDropDownOverlay = false;
-                subscriber.next(Array.from(files.entries()));
-            });
-            dropZone.on('droperror', () => {
-                app.showDropDownOverlay = false;
-                subscriber.error();
-            });
-        }).pipe(share());
-
-        // Partition files into a .gltf or .glb and additional files like buffers and textures
-        observables.droppedGltf = droppedFiles.pipe(
-            map(files => ({
-                mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
-                additionalFiles: files.filter(file => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf"))
-            })),
-            filter(files => files.mainFile !== undefined),
-            map(files => ({
-                mainFile: files.mainFile[1],
-                additionalFiles: files.additionalFiles.map(file => file[1])
-            }))
-        );
-
-        observables.droppedHdr = droppedFiles.pipe(
-            map(files => files.find(([path]) => path.endsWith(".hdr"))),
-            filter(file => file !== undefined),
-            pluck("1")
-        );
-
-        const mouseMove = fromEvent(document, 'mousemove');
-        const mouseDown = fromEvent(inputElement, 'mousedown');
-        const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
-        
-        inputElement.addEventListener('mousemove', event => event.preventDefault());
-        inputElement.addEventListener('mousedown', event => event.preventDefault());
-        inputElement.addEventListener('mouseup', event => event.preventDefault());
-
-        const mouseOrbit = mouseDown.pipe(
-            filter(event => event.button === 0 && event.shiftKey === false),
-            mergeMap(() => mouseMove.pipe(
-                pairwise(),
-                map( ([oldMouse, newMouse]) => {
-                    return {
-                        deltaPhi: newMouse.pageX - oldMouse.pageX, 
-                        deltaTheta: newMouse.pageY - oldMouse.pageY 
-                    };
-                }),
-                takeUntil(mouseUp)
-            ))
-        );
-
-        const mousePan = mouseDown.pipe(
-            filter( event => event.button === 1 || event.shiftKey === true),
-            mergeMap(() => mouseMove.pipe(
-                pairwise(),
-                map( ([oldMouse, newMouse]) => {
-                    return {
-                        deltaX: newMouse.pageX - oldMouse.pageX, 
-                        deltaY: newMouse.pageY - oldMouse.pageY 
-                    };
-                }),
-                takeUntil(mouseUp)
-            ))
-        );
-
-        const dragZoom = mouseDown.pipe(
-            filter( event => event.button === 2),
-            mergeMap(() => mouseMove.pipe(takeUntil(mouseUp))),
-            map( mouse => ({deltaZoom: mouse.movementY}))
-        );
-        const wheelZoom = fromEvent(inputElement, 'wheel').pipe(
-            map(wheelEvent => normalizeWheel(wheelEvent)),
-            map(normalizedZoom => ({deltaZoom: normalizedZoom.spinY }))
-        );
-        inputElement.addEventListener('scroll', event => event.preventDefault(), { passive: false });
-        inputElement.addEventListener('wheel', event => event.preventDefault(), { passive: false });
-        const mouseZoom = merge(dragZoom, wheelZoom);
-
-        const touchmove = fromEvent(document, 'touchmove');
-        const touchstart = fromEvent(inputElement, 'touchstart');
-        const touchend = merge(fromEvent(inputElement, 'touchend'), fromEvent(inputElement, 'touchcancel'));
-
-        const touchOrbit = touchstart.pipe(
-            filter(event => event.touches.length === 1),
-            mergeMap(() => touchmove.pipe(
-                filter(event => event.touches.length === 1),
-                map(event => event.touches[0]),
-                pairwise(),
-                map(([oldTouch, newTouch]) => {
-                    return {
-                        deltaPhi: 2.0 * (newTouch.clientX - oldTouch.clientX),
-                        deltaTheta: 2.0 * (newTouch.clientY - oldTouch.clientY),
-                    };
-                }),
-                takeUntil(touchend)
-            )),
-        );
-
-        const touchZoom = touchstart.pipe(
-            filter(event => event.touches.length === 2),
-            mergeMap(() => touchmove.pipe(
-                filter(event => event.touches.length === 2),
-                map(event => {
-                    const pos1 = vec2.fromValues(event.touches[0].clientX, event.touches[0].clientY);
-                    const pos2 = vec2.fromValues(event.touches[1].clientX, event.touches[1].clientY);
-                    return vec2.dist(pos1, pos2);
-                }),
-                pairwise(),
-                map(([oldDist, newDist]) => ({ deltaZoom: 0.1 * (oldDist - newDist) })),
-                takeUntil(touchend))
-            ),
-        );
-
-        inputElement.addEventListener('ontouchmove', event => event.preventDefault(), { passive: false });
-        inputElement.addEventListener('ontouchstart', event => event.preventDefault(), { passive: false });
-        inputElement.addEventListener('ontouchend', event => event.preventDefault(), { passive: false });
-
-        observables.orbit = merge(mouseOrbit, touchOrbit);
-        observables.pan = mousePan;
-        observables.zoom = merge(mouseZoom, touchZoom);
-
-        // disable context menu
-        inputElement.oncontextmenu = () => false;
-
-        return observables;
     }
 
     attachGltfLoaded(glTFLoadedStateObservable)
@@ -410,5 +276,145 @@ class UIModel
         this.app.exitLoadingState();
     }
 }
+
+const getInputObservables = (inputElement, app) => {
+    const observables = {};
+    
+    const droppedFiles = new Observable(subscriber => {
+        const dropZone = new SimpleDropzone(inputElement, inputElement);
+        dropZone.on('drop', ({files}) => {
+            app.showDropDownOverlay = false;
+            subscriber.next(Array.from(files.entries()));
+        });
+        dropZone.on('droperror', () => {
+            app.showDropDownOverlay = false;
+            subscriber.error();
+        });
+    }).pipe(share());
+
+    // Partition files into a .gltf or .glb and additional files like buffers and textures
+    observables.droppedGltf = droppedFiles.pipe(
+        map(files => ({
+            mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
+            additionalFiles: files.filter(file => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf"))
+        })),
+        filter(files => files.mainFile !== undefined),
+        
+        // map(files => ({
+        //     mainFile: files.mainFile[1],
+        //     additionalFiles: files.additionalFiles.map(file => file[1]),
+        // })),
+
+        // map(files => ({
+        //     // mainFile: files.mainFile[1],
+        //     mainFile: files.mainFile,
+        //     additionalFiles: files.additionalFiles.map(file => file[1]),
+        // })),
+
+    );
+
+    observables.droppedHdr = droppedFiles.pipe(
+        map(files => files.find(([path]) => path.endsWith(".hdr"))),
+        filter(file => file !== undefined),
+        pluck("1")
+    );
+
+    const mouseMove = fromEvent(document, 'mousemove');
+    const mouseDown = fromEvent(inputElement, 'mousedown');
+    const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
+    
+    inputElement.addEventListener('mousemove', event => event.preventDefault());
+    inputElement.addEventListener('mousedown', event => event.preventDefault());
+    inputElement.addEventListener('mouseup', event => event.preventDefault());
+
+    const mouseOrbit = mouseDown.pipe(
+        filter(event => event.button === 0 && event.shiftKey === false),
+        mergeMap(() => mouseMove.pipe(
+            pairwise(),
+            map( ([oldMouse, newMouse]) => {
+                return {
+                    deltaPhi: newMouse.pageX - oldMouse.pageX, 
+                    deltaTheta: newMouse.pageY - oldMouse.pageY 
+                };
+            }),
+            takeUntil(mouseUp)
+        ))
+    );
+
+    const mousePan = mouseDown.pipe(
+        filter( event => event.button === 1 || event.shiftKey === true),
+        mergeMap(() => mouseMove.pipe(
+            pairwise(),
+            map( ([oldMouse, newMouse]) => {
+                return {
+                    deltaX: newMouse.pageX - oldMouse.pageX, 
+                    deltaY: newMouse.pageY - oldMouse.pageY 
+                };
+            }),
+            takeUntil(mouseUp)
+        ))
+    );
+
+    const dragZoom = mouseDown.pipe(
+        filter( event => event.button === 2),
+        mergeMap(() => mouseMove.pipe(takeUntil(mouseUp))),
+        map( mouse => ({deltaZoom: mouse.movementY}))
+    );
+    const wheelZoom = fromEvent(inputElement, 'wheel').pipe(
+        map(wheelEvent => normalizeWheel(wheelEvent)),
+        map(normalizedZoom => ({deltaZoom: normalizedZoom.spinY }))
+    );
+    inputElement.addEventListener('scroll', event => event.preventDefault(), { passive: false });
+    inputElement.addEventListener('wheel', event => event.preventDefault(), { passive: false });
+    const mouseZoom = merge(dragZoom, wheelZoom);
+
+    const touchmove = fromEvent(document, 'touchmove');
+    const touchstart = fromEvent(inputElement, 'touchstart');
+    const touchend = merge(fromEvent(inputElement, 'touchend'), fromEvent(inputElement, 'touchcancel'));
+
+    const touchOrbit = touchstart.pipe(
+        filter(event => event.touches.length === 1),
+        mergeMap(() => touchmove.pipe(
+            filter(event => event.touches.length === 1),
+            map(event => event.touches[0]),
+            pairwise(),
+            map(([oldTouch, newTouch]) => {
+                return {
+                    deltaPhi: 2.0 * (newTouch.clientX - oldTouch.clientX),
+                    deltaTheta: 2.0 * (newTouch.clientY - oldTouch.clientY),
+                };
+            }),
+            takeUntil(touchend)
+        )),
+    );
+
+    const touchZoom = touchstart.pipe(
+        filter(event => event.touches.length === 2),
+        mergeMap(() => touchmove.pipe(
+            filter(event => event.touches.length === 2),
+            map(event => {
+                const pos1 = vec2.fromValues(event.touches[0].clientX, event.touches[0].clientY);
+                const pos2 = vec2.fromValues(event.touches[1].clientX, event.touches[1].clientY);
+                return vec2.dist(pos1, pos2);
+            }),
+            pairwise(),
+            map(([oldDist, newDist]) => ({ deltaZoom: 0.1 * (oldDist - newDist) })),
+            takeUntil(touchend))
+        ),
+    );
+
+    inputElement.addEventListener('ontouchmove', event => event.preventDefault(), { passive: false });
+    inputElement.addEventListener('ontouchstart', event => event.preventDefault(), { passive: false });
+    inputElement.addEventListener('ontouchend', event => event.preventDefault(), { passive: false });
+
+    observables.orbit = merge(mouseOrbit, touchOrbit);
+    observables.pan = mousePan;
+    observables.zoom = merge(mouseZoom, touchZoom);
+
+    // disable context menu
+    inputElement.oncontextmenu = () => false;
+
+    return observables;
+};
 
 export { UIModel };

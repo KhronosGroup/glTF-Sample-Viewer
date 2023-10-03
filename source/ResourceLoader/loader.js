@@ -57,7 +57,7 @@ class gltfLoader
     {
         if (appendix && appendix.length > 0)
         {
-            if (appendix[0] instanceof Type)
+            if (appendix[0] instanceof Type || appendix[0][1] instanceof Type)
             {
                 return appendix;
             }
