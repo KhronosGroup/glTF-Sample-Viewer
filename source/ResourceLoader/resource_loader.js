@@ -71,10 +71,10 @@ class ResourceLoader
                 console.error("Only .glb files can be loaded from an array buffer");
             }
         }
-        else if (typeof (File) !== 'undefined' && gltfFile instanceof File)
+        else if (Array.isArray(gltfFile) && typeof(File) !== 'undefined' && gltfFile[1] instanceof File)
         {
-            let fileContent = gltfFile;
-            filename = gltfFile.name;
+            let fileContent = gltfFile[1];
+            filename = gltfFile[1].name;
             isGlb = getIsGlb(filename);
             if (isGlb)
             {

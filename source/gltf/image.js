@@ -30,12 +30,9 @@ class gltfImage extends GltfObject
 
     resolveRelativePath(basePath)
     {
-        if (typeof this.uri === 'string' || this.uri instanceof String)
-        {
-            if (this.uri.startsWith('./'))
-            {
-                // Remove preceding './' from URI.
-                this.uri = this.uri.substr(2);
+        if (typeof this.uri === 'string' || this.uri instanceof String) {
+            if (this.uri.startsWith('./')) {
+                this.uri = this.uri.substring(2);
             }
             this.uri = basePath + this.uri;
         }
@@ -53,7 +50,7 @@ class gltfImage extends GltfObject
         }
 
         if (!await this.setImageFromBufferView(gltf) &&
-            !await this.setImageFromFiles(additionalFiles, gltf) &&
+            !await this.setImageFromFiles(gltf, additionalFiles) &&
             !await this.setImageFromUri(gltf))
         {
             console.error("Was not able to resolve image with uri '%s'", this.uri);
@@ -190,21 +187,18 @@ class gltfImage extends GltfObject
         return true;
     }
 
-    async setImageFromFiles(files, gltf)
+    async setImageFromFiles(gltf, files)
     {
         if (this.uri === undefined || files === undefined)
         {
             return false;
         }
 
-        let foundFile = files.find(function(file)
-        {
-            const uriName = this.uri.split('\\').pop().split('/').pop();
-            if (file.name === uriName)
-            {
+        let foundFile = files.find(file => {
+            if (file[0] == "/" + this.uri) {
                 return true;
             }
-        }, this);
+        });
 
         if (foundFile === undefined)
         {
@@ -213,7 +207,7 @@ class gltfImage extends GltfObject
 
         if (this.mimeType === undefined)
         {
-            this.setMimetypeFromFilename(foundFile.name);
+            this.setMimetypeFromFilename(foundFile[0]);
         }
 
 
@@ -221,7 +215,7 @@ class gltfImage extends GltfObject
         {
             if (gltf.ktxDecoder !== undefined)
             {
-                const data = new Uint8Array(await foundFile.arrayBuffer());
+                const data = new Uint8Array(await foundFile[1].arrayBuffer());
                 this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
             }
             else
@@ -231,7 +225,7 @@ class gltfImage extends GltfObject
         }
         else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
         {
-            const imageData = await AsyncFileReader.readAsDataURL(foundFile).catch( () => {
+            const imageData = await AsyncFileReader.readAsDataURL(foundFile[1]).catch( () => {
                 console.error("Could not load image with FileReader");
             });
             this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {

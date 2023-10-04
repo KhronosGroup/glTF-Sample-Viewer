@@ -1,3 +1,3 @@
-import { main } from './GltfSVApp.js';
+import main from './GltfSVApp.js';
 
 main();
