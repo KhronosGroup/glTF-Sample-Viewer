@@ -299,18 +299,6 @@ const getInputObservables = (inputElement, app) => {
             additionalFiles: files.filter(file => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf"))
         })),
         filter(files => files.mainFile !== undefined),
-        
-        // map(files => ({
-        //     mainFile: files.mainFile[1],
-        //     additionalFiles: files.additionalFiles.map(file => file[1]),
-        // })),
-
-        // map(files => ({
-        //     // mainFile: files.mainFile[1],
-        //     mainFile: files.mainFile,
-        //     additionalFiles: files.additionalFiles.map(file => file[1]),
-        // })),
-
     );
 
     observables.droppedHdr = droppedFiles.pipe(

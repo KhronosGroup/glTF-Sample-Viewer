@@ -185,10 +185,10 @@ export default async () => {
     listenForRedraw(uiModel.iblIntensity);
 
     uiModel.renderEnvEnabled.subscribe(renderEnvEnabled => state.renderingParameters.renderEnvironmentMap = renderEnvEnabled);
-    listenForRedraw(uiModel.blurEnvEnabled);
-
-    uiModel.blurEnvEnabled.subscribe(blurEnvEnabled => state.renderingParameters.blurEnvironmentMap = blurEnvEnabled);
     listenForRedraw(uiModel.renderEnvEnabled);
+    
+    uiModel.blurEnvEnabled.subscribe(blurEnvEnabled => state.renderingParameters.blurEnvironmentMap = blurEnvEnabled);
+    listenForRedraw(uiModel.blurEnvEnabled);
 
     uiModel.punctualLightsEnabled.subscribe(punctualLightsEnabled => state.renderingParameters.usePunctual = punctualLightsEnabled);
     listenForRedraw(uiModel.punctualLightsEnabled);
