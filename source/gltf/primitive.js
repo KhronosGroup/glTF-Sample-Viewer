@@ -775,8 +775,8 @@ class gltfPrimitive extends GltfObject
      */
     unweldAccessor(gltf, accessor, typedIndexView) {
         const componentCount = accessor.getComponentCount(accessor.type);
-
-        const weldedAttribute = accessor.getTypedView(gltf);
+        
+        const weldedAttribute = accessor.getDeinterlacedView(gltf);
         const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * componentCount);
 
         // Apply the index mapping.
