@@ -1,5 +1,5 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share, tap } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
@@ -184,27 +184,18 @@ class UIModel
 
         gltfLoadedAndInit.subscribe(() => this.app.setAnimationState(true));
 
-        const xmpData = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.extensions !== undefined && gltf.extensions.KHR_xmp_json_ld !== undefined
+        gltfLoadedAndInit
+            .pipe(map(gltf => gltf.extensions !== undefined && gltf.extensions.KHR_xmp_json_ld !== undefined
                     && gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp_json_ld !== undefined
                 ? gltf.extensions.KHR_xmp_json_ld.packets[gltf.asset.extensions.KHR_xmp_json_ld.packet]
                 : null
-            )
-        );
-        xmpData.subscribe(xmpData => this.app.xmp = xmpData);
+            ))
+            .subscribe(xmpData => this.app.xmp = xmpData);
 
-        const copyrightMsg = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.asset.copyrigh || "")
-        );
-        copyrightMsg.subscribe(copyright => this.app.modelCopyright = copyright);
-
-        const generatorMsg = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.asset.generator
-                ? "Generator: " + gltf.asset.generator
-                : ""
-            )
-        );
-        generatorMsg.subscribe(generator => this.app.modelGenerator = generator);
+        gltfLoadedAndInit.subscribe(gltf => {
+            this.app.modelCopyright = gltf.asset.copyright || "N/A";
+            this.app.modelGenerator = gltf.asset.generator || "N/A";
+        });
 
         const animations = gltfLoadedAndInit.pipe(
             map(gltf => gltf.animations.map((anim, index) => ({
