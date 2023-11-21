@@ -182,28 +182,18 @@ class UIModel
         );
         variants.subscribe(variants => this.app.materialVariants = variants);
 
-        gltfLoadedAndInit.subscribe(() => this.app.setAnimationState(true));
-
-        gltfLoadedAndInit
-            .pipe(map(gltf => gltf.extensions !== undefined && gltf.extensions.KHR_xmp_json_ld !== undefined
-                    && gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp_json_ld !== undefined
-                ? gltf.extensions.KHR_xmp_json_ld.packets[gltf.asset.extensions.KHR_xmp_json_ld.packet]
-                : null
-            ))
-            .subscribe(xmpData => this.app.xmp = xmpData);
-
         gltfLoadedAndInit.subscribe(gltf => {
             this.app.modelCopyright = gltf.asset.copyright || "N/A";
             this.app.modelGenerator = gltf.asset.generator || "N/A";
-        });
 
-        const animations = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.animations.map((anim, index) => ({
+            this.app.setAnimationState(true);
+            this.app.animations = gltf.animations.map((anim, index) => ({
                 title: anim.name || index,
                 index: index
-            })))
-        );
-        animations.subscribe(animations => this.app.animations = animations);
+            }));
+
+            this.app.xmp = gltf?.extensions?.KHR_xmp_json_ld?.packets[gltf?.asset?.extensions?.KHR_xmp_json_ld.packet] ?? null;
+        });
 
         glTFLoadedStateObservable
             .pipe(map(state => state.animationIndices))
