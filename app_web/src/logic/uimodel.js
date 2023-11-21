@@ -164,8 +164,8 @@ class UIModel
         gltfLoaded.subscribe(state => {
             const gltf = state.gltf;
 
-            this.app.modelCopyright = gltf.asset.copyright || "N/A";
-            this.app.modelGenerator = gltf.asset.generator || "N/A";
+            this.app.assetCopyright = gltf.asset.copyright || "N/A";
+            this.app.assetGenerator = gltf.asset.generator || "N/A";
             
             this.app.selectedScene = state.sceneIndex;
             this.app.scenes = gltf.scenes.map((scene, index) => ({title: scene.name || index, index: index}));
