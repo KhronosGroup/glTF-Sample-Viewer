@@ -158,46 +158,30 @@ class UIModel
         this.zoom = inputObservables.zoom;
     }
 
-    attachGltfLoaded(glTFLoadedStateObservable)
+    attachGltfLoaded(gltfLoaded)
     {
-        const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(map(state => state.gltf));
+        this.attachCameraChangeObservable(gltfLoaded);
+        gltfLoaded.subscribe(state => {
+            const gltf = state.gltf;
 
-        // update scenes
-        const sceneIndices = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.scenes.map((scene, index) => ({title: scene.name || index, index: index})))
-        );
-        sceneIndices.subscribe(scenes => this.app.scenes = scenes);
-
-        const loadedSceneIndex = glTFLoadedStateObservable.pipe(map(state => state.sceneIndex));
-        loadedSceneIndex.subscribe(scene => this.app.selectedScene = scene);
-
-        // update cameras
-        this.attachCameraChangeObservable(glTFLoadedStateObservable);
-
-        const variants = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.variants !== undefined
-                ? gltf.variants.map(variant => ({title: variant.name}))
-                : []),
-            map(variants => [{title: "None"}, ...variants])
-        );
-        variants.subscribe(variants => this.app.materialVariants = variants);
-
-        gltfLoadedAndInit.subscribe(gltf => {
             this.app.modelCopyright = gltf.asset.copyright || "N/A";
             this.app.modelGenerator = gltf.asset.generator || "N/A";
+            
+            this.app.selectedScene = state.sceneIndex;
+            this.app.scenes = gltf.scenes.map((scene, index) => ({title: scene.name || index, index: index}));
+
+            this.app.selectedAnimations = state.animationIndices;
+
+            this.app.materialVariants = ["None", ...gltf?.variants];
 
             this.app.setAnimationState(true);
-            this.app.animations = gltf.animations.map((anim, index) => ({
-                title: anim.name || index,
+            this.app.animations = gltf.animations.map((animation, index) => ({
+                title: animation.name ?? `Animation ${index}`,
                 index: index
             }));
 
             this.app.xmp = gltf?.extensions?.KHR_xmp_json_ld?.packets[gltf?.asset?.extensions?.KHR_xmp_json_ld.packet] ?? null;
         });
-
-        glTFLoadedStateObservable
-            .pipe(map(state => state.animationIndices))
-            .subscribe( animationIndices => this.app.selectedAnimations = animationIndices);
     }
 
     updateStatistics(statisticsUpdateObservable)

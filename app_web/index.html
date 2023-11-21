@@ -169,7 +169,7 @@
 
                             <b-field label="Variants" class="subtitle"
                                 v-bind:style="[materialVariants.length <= 1 ? {'display': 'none'} : {}]">
-                                <b-field v-for="item in materialVariants" v-bind:key="item.titel"
+                                <b-field v-for="item in materialVariants" v-bind:key="item"
                                     v-bind:style="[materialVariants.length > 5 ? {'display': 'none'} : {}]">
                                     <b-radio v-bind:native-value="item.title" v-stream:input="variantChanged$"
                                         v-model="selectedVariant">
@@ -178,7 +178,7 @@
                                 </b-field>
                                 <b-select v-model="selectedVariant" v-stream:input="variantChanged$"
                                     v-bind:style="[materialVariants.length > 5 ? {} : {'display': 'none'}]">
-                                    <option v-for="(item) in materialVariants" v-bind:value="item.title">
+                                    <option v-for="(item) in materialVariants" v-bind:value="item">
                                         {{ item.title }}
                                     </option>
                                 </b-select>
