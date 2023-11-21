@@ -46,7 +46,8 @@ float getSpotAttenuation(vec3 pointToLight, vec3 spotDirection, float outerConeC
     {
         if (actualCos < innerConeCos)
         {
-            return smoothstep(outerConeCos, innerConeCos, actualCos);
+            float angularAttenuation = (actualCos - outerConeCos) / (innerConeCos - outerConeCos);
+            return angularAttenuation * angularAttenuation;
         }
         return 1.0;
     }
