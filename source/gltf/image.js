@@ -53,7 +53,6 @@ class gltfImage extends GltfObject
             !await this.setImageFromFiles(gltf, additionalFiles) &&
             !await this.setImageFromUri(gltf))
         {
-            console.error("Was not able to resolve image with uri '%s'", this.uri);
             return;
         }
 
@@ -148,6 +147,8 @@ class gltfImage extends GltfObject
         {
             return false;
         }
+
+        console.log("Load image: " + this.mimeType);
 
         const buffer = gltf.buffers[view.buffer].buffer;
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
