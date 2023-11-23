@@ -168,7 +168,10 @@ class UIModel
             this.app.assetGenerator = gltf.asset.generator ?? "N/A";
             
             this.app.selectedScene = state.sceneIndex;
-            this.app.scenes = gltf.scenes.map((scene, index) => ({title: scene.name || index, index: index}));
+            this.app.scenes = gltf.scenes.map((scene, index) => ({
+                title: scene.name ?? `Scene ${index}`,
+                index: index
+            }));
 
             this.app.selectedAnimations = state.animationIndices;
 
