@@ -40,14 +40,12 @@ class gltfWebGl
 
         if (gltfTex === undefined)
         {
-            console.warn("Texture is undefined: " + textureInfo.index);
             return false;
         }
 
         const image = gltf.images[gltfTex.source];
         if (image === undefined)
         {
-            console.warn("Image is undefined for texture: " + gltfTex.source);
             return false;
         }
 

@@ -29,7 +29,6 @@ class gltfBuffer extends GltfObject
             if (!self.setBufferFromFiles(additionalFiles, resolve) &&
                 !self.setBufferFromUri(gltf, resolve))
             {
-                console.error("Was not able to resolve buffer with uri '%s'", self.uri);
                 resolve();
             }
         });
