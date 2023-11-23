@@ -1,5 +1,5 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share, tap } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
@@ -158,65 +158,33 @@ class UIModel
         this.zoom = inputObservables.zoom;
     }
 
-    attachGltfLoaded(glTFLoadedStateObservable)
+    attachGltfLoaded(gltfLoaded)
     {
-        const gltfLoadedAndInit = glTFLoadedStateObservable.pipe(map(state => state.gltf));
+        this.attachCameraChangeObservable(gltfLoaded);
+        gltfLoaded.subscribe(state => {
+            const gltf = state.gltf;
 
-        // update scenes
-        const sceneIndices = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.scenes.map((scene, index) => ({title: scene.name || index, index: index})))
-        );
-        sceneIndices.subscribe(scenes => this.app.scenes = scenes);
-
-        const loadedSceneIndex = glTFLoadedStateObservable.pipe(map(state => state.sceneIndex));
-        loadedSceneIndex.subscribe(scene => this.app.selectedScene = scene);
-
-        // update cameras
-        this.attachCameraChangeObservable(glTFLoadedStateObservable);
-
-        const variants = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.variants !== undefined
-                ? gltf.variants.map(variant => ({title: variant.name}))
-                : []),
-            map(variants => [{title: "None"}, ...variants])
-        );
-        variants.subscribe(variants => this.app.materialVariants = variants);
-
-        gltfLoadedAndInit.subscribe(() => this.app.setAnimationState(true));
-
-        const xmpData = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.extensions !== undefined && gltf.extensions.KHR_xmp_json_ld !== undefined
-                    && gltf.asset.extensions !== undefined && gltf.asset.extensions.KHR_xmp_json_ld !== undefined
-                ? gltf.extensions.KHR_xmp_json_ld.packets[gltf.asset.extensions.KHR_xmp_json_ld.packet]
-                : null
-            )
-        );
-        xmpData.subscribe(xmpData => this.app.xmp = xmpData);
-
-        const copyrightMsg = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.asset.copyrigh || "")
-        );
-        copyrightMsg.subscribe(copyright => this.app.modelCopyright = copyright);
-
-        const generatorMsg = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.asset.generator
-                ? "Generator: " + gltf.asset.generator
-                : ""
-            )
-        );
-        generatorMsg.subscribe(generator => this.app.modelGenerator = generator);
-
-        const animations = gltfLoadedAndInit.pipe(
-            map(gltf => gltf.animations.map((anim, index) => ({
-                title: anim.name || index,
+            this.app.assetCopyright = gltf.asset.copyright ?? "N/A";
+            this.app.assetGenerator = gltf.asset.generator ?? "N/A";
+            
+            this.app.selectedScene = state.sceneIndex;
+            this.app.scenes = gltf.scenes.map((scene, index) => ({
+                title: scene.name ?? `Scene ${index}`,
                 index: index
-            })))
-        );
-        animations.subscribe(animations => this.app.animations = animations);
+            }));
 
-        glTFLoadedStateObservable
-            .pipe(map(state => state.animationIndices))
-            .subscribe( animationIndices => this.app.selectedAnimations = animationIndices);
+            this.app.selectedAnimations = state.animationIndices;
+
+            this.app.materialVariants = ["None", ...gltf?.variants.map(variant => variant.name)];
+
+            this.app.setAnimationState(true);
+            this.app.animations = gltf.animations.map((animation, index) => ({
+                title: animation.name ?? `Animation ${index}`,
+                index: index
+            }));
+
+            this.app.xmp = gltf?.extensions?.KHR_xmp_json_ld?.packets[gltf?.asset?.extensions?.KHR_xmp_json_ld.packet] ?? null;
+        });
     }
 
     updateStatistics(statisticsUpdateObservable)

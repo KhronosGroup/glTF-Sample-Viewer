@@ -55,14 +55,14 @@ export const app = new Vue({
             flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
-            materialVariants: [{title: "None"}],
+            materialVariants: ["None"],
 
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
-            modelCopyright: "",
-            modelGenerator: "",
+            assetCopyright: "",
+            assetGenerator: "",
             statistics: [],
 
             selectedModel: "DamagedHelmet",
