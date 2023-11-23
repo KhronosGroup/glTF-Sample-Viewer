@@ -172,7 +172,7 @@ class UIModel
 
             this.app.selectedAnimations = state.animationIndices;
 
-            this.app.materialVariants = ["None", ...gltf?.variants];
+            this.app.materialVariants = ["None", ...gltf?.variants.map(variant => variant.name)];
 
             this.app.setAnimationState(true);
             this.app.animations = gltf.animations.map((animation, index) => ({
