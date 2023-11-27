@@ -43,6 +43,9 @@ uniform float u_Ior;
 // Anisotropy
 uniform vec3 u_Anisotropy;
 
+// Dispersion
+uniform float u_Dispersion;
+
 // Alpha mode
 uniform float u_AlphaCutoff;
 
@@ -98,6 +101,9 @@ struct MaterialInfo
     vec3 anisotropicT;
     vec3 anisotropicB;
     float anisotropyStrength;
+
+    // KHR_materials_dispersion
+    float dispersion;
 };
 
 
@@ -292,10 +298,15 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
     vec4 transmissionSample = texture(u_TransmissionSampler, getTransmissionUV());
     info.transmissionFactor *= transmissionSample.r;
 #endif
+
+#ifdef MATERIAL_DISPERSION
+    info.dispersion = u_Dispersion;
+#else
+    info.dispersion = 0.0;
+#endif
     return info;
 }
 #endif
-
 
 #ifdef MATERIAL_VOLUME
 MaterialInfo getVolumeInfo(MaterialInfo info)

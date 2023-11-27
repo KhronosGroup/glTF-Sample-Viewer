@@ -102,6 +102,11 @@ class gltfMaterial extends GltfObject
         {
             defines.push("MATERIAL_ANISOTROPY 1");
         }
+        // if(this.hasDispersion && renderingParameters.enabledExtensions.KHR_materials_dispersion)
+        if(this.hasDispersion)
+        {
+            defines.push("MATERIAL_DISPERSION 1");
+        }
 
         return defines;
     }
@@ -600,6 +605,22 @@ class gltfMaterial extends GltfObject
 
                 let anisotropy =  vec3.fromValues(Math.cos(rotation), Math.sin(rotation), factor);
                 this.properties.set("u_Anisotropy", anisotropy);
+            }
+
+            // KHR Extension: Dispersion
+            // TODO: Github link
+            if (this.extensions.KHR_materials_dispersion !== undefined)
+            {
+                let dispersion = 0.0;
+
+                this.hasDispersion = true;
+
+                if(this.extensions.KHR_materials_dispersion.dispersion !== undefined)
+                {
+                    dispersion = this.extensions.KHR_materials_dispersion.dispersion;
+                }
+
+                this.properties.set("u_Dispersion", dispersion);
             }
         }
 

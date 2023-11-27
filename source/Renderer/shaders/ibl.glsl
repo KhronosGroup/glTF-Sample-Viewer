@@ -77,11 +77,9 @@ vec3 getTransmissionSample(vec2 fragCoord, float roughness, float ior)
 
 #ifdef MATERIAL_TRANSMISSION
 vec3 getIBLVolumeRefraction(vec3 n, vec3 v, float perceptualRoughness, vec3 baseColor, vec3 f0, vec3 f90,
-    vec3 position, mat4 modelMatrix, mat4 viewMatrix, mat4 projMatrix, float ior, float thickness, vec3 attenuationColor, float attenuationDistance)
+    vec3 position, mat4 modelMatrix, mat4 viewMatrix, mat4 projMatrix, float ior, float thickness, vec3 attenuationColor, float attenuationDistance, float dispersion)
 {
 #ifdef MATERIAL_DISPERSION
-    // TODO: Hardcoded dispersion
-    float dispersion = 5.0;
     // Dispersion will spread out the ior values for each r,g,b channel
     float halfSpread = (ior - 1.0) * 0.025 * dispersion;
     vec3 iors = vec3(ior - halfSpread, ior, ior + halfSpread);
