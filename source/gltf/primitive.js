@@ -809,6 +809,7 @@ class gltfPrimitive extends GltfObject
         unweldedAccessor.componentType = accessor.componentType;
         unweldedAccessor.min = accessor.min;
         unweldedAccessor.max = accessor.max;
+        unweldedAccessor.normalized = accessor.normalized;
         gltf.accessors.push(unweldedAccessor);
 
         // Update the primitive to use the unwelded attribute:
