@@ -73,7 +73,8 @@ class gltfPrimitive extends GltfObject
             }
         }
 
-        if (this.attributes.TANGENT === undefined)
+        // Generate tangents with Mikktspace which needs normals and texcoords as inputs
+        if (this.attributes.TANGENT === undefined && this.attributes.NORMAL && this.attributes.TEXCOORD_0)
         {
             console.info("Generating tangents using the MikkTSpace algorithm.");
             console.time("Tangent generation");
@@ -777,7 +778,8 @@ class gltfPrimitive extends GltfObject
         const componentCount = accessor.getComponentCount(accessor.type);
         
         const weldedAttribute = accessor.getDeinterlacedView(gltf);
-        const unweldedAttribute = new Float32Array(gltf.accessors[this.indices].count * componentCount);
+        // Create new array with same type as weldedAttribute
+        const unweldedAttribute = new weldedAttribute.constructor(gltf.accessors[this.indices].count * componentCount);
 
         // Apply the index mapping.
         for (let i = 0; i < typedIndexView.length; i++) {
