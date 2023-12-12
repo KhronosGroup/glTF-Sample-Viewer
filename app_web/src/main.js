@@ -3,8 +3,8 @@ import { GltfView } from 'gltf-viewer-source';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
-import { from, merge } from 'rxjs';
-import { mergeMap, map, share } from 'rxjs/operators';
+import { EMPTY, from, merge } from 'rxjs';
+import { mergeMap, map, share, catchError } from 'rxjs/operators';
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
 
 export default async () => {
@@ -71,6 +71,11 @@ export default async () => {
 
                 return state;
             }));
+        }),
+        catchError(error => {
+            console.error(error);
+            uiModel.exitLoadingState();
+            return EMPTY;
         }),
         share()
     );
