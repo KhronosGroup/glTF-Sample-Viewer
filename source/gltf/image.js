@@ -148,8 +148,6 @@ class gltfImage extends GltfObject
             return false;
         }
 
-        console.log("Load image: " + this.mimeType);
-
         const buffer = gltf.buffers[view.buffer].buffer;
         const array = new Uint8Array(buffer, view.byteOffset, view.byteLength);
         if (this.mimeType === ImageMimeType.KTX2)
