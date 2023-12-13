@@ -1,6 +1,6 @@
 
 import { GlbParser } from './glb_parser.js';
-import { getIsGlb, getContainingFolder, getIsGltf, getIsGlxf } from '../gltf/utils.js';
+import { getIsGlb, getContainingFolder, getIsGltf, getIsGltfx } from '../gltf/utils.js';
 import axios from 'axios';
 import { AsyncFileReader } from './async_file_reader.js';
 class GltfParser

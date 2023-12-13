@@ -93,8 +93,8 @@ function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max);
 }
 
-function getIsGlxf(filename) {
-    return getExtension(filename) == "glxf";
+function getIsGltfx(filename) {
+    return getExtension(filename) == "gltfx";
 }
 
 function getIsGlb(filename) {
@@ -228,7 +228,7 @@ export {
     clamp,
     getIsGlb,
     getIsGltf,
-    getIsGlxf,
+    getIsGltfx,
     getIsHdr,
     getExtension,
     getFileName,

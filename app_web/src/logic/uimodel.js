@@ -304,16 +304,16 @@ const getInputObservables = (inputElement, app) => {
         map((files) => {
             // consider subfolders later with webkitRelativePath
 
-            let glxfFile = files.find(  file  => { file.name.endsWith(".glxf") });
-            if ( glxfFile !== undefined) {
-                // In case more than one glxf file is dropped, use main.glxf as main file
-                let rootGLXF = files.find( file  =>  file.name.endsWith("main.glxf") );
-                if (rootGLXF !== undefined)
+            let gltfxFile = files.find(  file  => { file.name.endsWith(".gltfx") });
+            if ( gltfxFile !== undefined) {
+                // In case more than one gltfx file is dropped, use main.gltfx as main file
+                let rootGLTFX = files.find( file  =>  file.name.endsWith("main.gltfx") );
+                if (rootGLTFX !== undefined)
                 {
-                    glxfFile = rootGLXF;
+                    gltfxFile = rootGLTFX;
                 }
-                const additionalFiles = files.filter( (file) => file !== glxfFile);
-                return {mainFile: glxfFile, additionalFiles: additionalFiles};
+                const additionalFiles = files.filter( (file) => file !== gltfxFile);
+                return {mainFile: gltfxFile, additionalFiles: additionalFiles};
             }
 
             const mainFile= files.find((file) =>  file.name.endsWith(".glb") ||  file.name.endsWith(".gltf"));

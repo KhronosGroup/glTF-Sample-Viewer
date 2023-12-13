@@ -2,11 +2,11 @@
 import { GltfMerger } from "./gltf_merger.js";
 import { gltfNode } from '../gltf/node.js';
 import { mat4 } from 'gl-matrix';
-import { objectFromJson,getContainingFolder } from '../gltf/utils';
+import { objectFromJson,getContainingFolder } from '../gltf/utils.js';
 
 import { AssetLoader } from "./asset_loader.js";
 
-class GlxfParser
+class GltfxParser
 {
 
     static getNodeParent(gltf, nodeID)
@@ -45,13 +45,13 @@ class GlxfParser
         if(transform === "local")
         {
             // The value local indicates that only the nodes' own transforms 
-            // (defined by TRS or matrix properties) are used in their instantiation in the glXF.
+            // (defined by TRS or matrix properties) are used in their instantiation in the glTFX.
             return
         }
         if(transform === "global")
         {
             // The value global indicates that the nodes use their global transforms from 
-            // the imported asset as their local transforms in the glXF.
+            // the imported asset as their local transforms in the glTFX.
             
             let parentList = []
             let candidateID = nodeID
@@ -159,7 +159,7 @@ class GlxfParser
             const sceneID = this.getPropertyIDByName(gltf, "scenes", sceneName)
             nodeIDs = gltf["scenes"][sceneID]["nodes"]
         }
-        else // no scene and no nodes defined by glxf
+        else // no scene and no nodes defined by gltfx
         {   
             // check for default scene
             if (gltf.hasOwnProperty("scene"))
@@ -188,14 +188,14 @@ class GlxfParser
 
 
 
-    static async convertGlxfToGltf(filename, glxf, appendix)
+    static async convertGltfxToGltf(filename, gltfx, appendix)
     {
         let mergedGLTF = {}; // Initialize an empty merged GLTF object
 
-        // Iterate over each asset in the GLXF file and merge them into one glTF
-        for (let i = 0; i <  glxf.assets.length; i++) 
+        // Iterate over each asset in the glTFX file and merge them into one glTF
+        for (let i = 0; i <  gltfx.assets.length; i++) 
         {
-            let asset = glxf.assets[i];
+            let asset = gltfx.assets[i];
 
             let assetFile = undefined
             if(appendix !==undefined)
@@ -218,7 +218,7 @@ class GlxfParser
 
 
         // glTFs are prepared
-        // now lets compose our glxf scene
+        // now lets compose our gltfx scene
       
         let assetNodeIDs = []
         for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
@@ -253,30 +253,30 @@ class GlxfParser
             return undefined
         }
 
-        // Merging glxf transformation and node hierarchy
+        // Merging gltfx transformation and node hierarchy
  
-        delete glxf["assets"]
+        delete gltfx["assets"]
 
-        for (let id = 0; id < glxf["nodes"].length; id++) 
+        for (let id = 0; id < gltfx["nodes"].length; id++) 
         {
             // move asset property to extras to merge valid glTF
-            if(glxf["nodes"][id].hasOwnProperty("asset"))
+            if(gltfx["nodes"][id].hasOwnProperty("asset"))
             {
-                const assetID = glxf["nodes"][id]["asset"]
-                delete glxf["nodes"][id]["asset"]
-                glxf["nodes"][id]["extras"] = {}
-                glxf["nodes"][id]["extras"]["expectAsset"] = (assetID)
+                const assetID = gltfx["nodes"][id]["asset"]
+                delete gltfx["nodes"][id]["asset"]
+                gltfx["nodes"][id]["extras"] = {}
+                gltfx["nodes"][id]["extras"]["expectAsset"] = (assetID)
             } 
         }
 
-        // Prepare merged glTF for final merge of glXF properties
+        // Prepare merged glTF for final merge of glTFX properties
         // We don't want to expose old scenes from glTFs
         delete mergedGLTF["scenes"]
         delete mergedGLTF["scene"]
 
-        mergedGLTF = await GltfMerger.merge(mergedGLTF, glxf);
+        mergedGLTF = await GltfMerger.merge(mergedGLTF, gltfx);
 
-        // Connect nodes offered by assets and expected by glxf
+        // Connect nodes offered by assets and expected by gltfx
         for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
         {
             if(mergedGLTF["nodes"][id].hasOwnProperty("extras") &&
@@ -308,4 +308,4 @@ class GlxfParser
 
 }
 
-export { GlxfParser };
+export { GltfxParser };

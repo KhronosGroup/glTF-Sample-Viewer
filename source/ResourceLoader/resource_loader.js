@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
-import { getIsGlb, getContainingFolder, getIsGltf, getIsGlxf } from '../gltf/utils.js';
+import { getIsGlb, getContainingFolder, getIsGltf, getIsGltfx } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
 import { GltfParser } from './gltf_parser.js';
 import { AssetLoader } from './asset_loader.js';
@@ -21,7 +21,7 @@ import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
-import { GlxfParser } from './glxf_parser.js';
+import { GltfxParser } from './gltfx_parser.js';
 
 /**
  * ResourceLoader can be used to load resources for the GltfState
