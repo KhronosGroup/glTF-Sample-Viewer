@@ -67,7 +67,7 @@ class gltfShader
             {
                 this.unknownUniforms.push(name);
             }
-            return -1;
+            return null;
         }
         return uniform.loc;
     }

@@ -11,6 +11,8 @@ import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
 import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
+import init from '../libs/mikktspace.js';
+import mikktspace from '../libs/mikktspace_bg.wasm';
 
 
 import { AsyncFileReader } from './async_file_reader.js';
@@ -59,6 +61,7 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
+        await init(await mikktspace());
         await gltfLoader.load(gltf, this.view.context, filename, data);
 
         return gltf;

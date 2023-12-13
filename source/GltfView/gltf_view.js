@@ -114,34 +114,35 @@ class GltfView
         const transparentMaterials = activeMaterials.filter(material => material.alphaMode === "BLEND");
         const faceCount = activePrimitives
             .map(primitive => {
-                let verticesCount = 0;
-                if(primitive.indices !== undefined)
-                {
-                    verticesCount = state.gltf.accessors[primitive.indices].count;
+                let vertexCount = 0;
+                if (primitive.indices !== undefined) {
+                    vertexCount = state.gltf.accessors[primitive.indices].count;
                 }
-                if (verticesCount === 0)
-                {
+                else {
+                    vertexCount = state.gltf.accessors[primitive.attributes["POSITION"]].count;
+                }
+                if (vertexCount === 0) {
                     return 0;
                 }
 
                 // convert vertex count to point, line or triangle count
                 switch (primitive.mode) {
                 case GL.POINTS:
-                    return verticesCount;
+                    return vertexCount;
                 case GL.LINES:
-                    return verticesCount / 2;
+                    return vertexCount / 2;
                 case GL.LINE_LOOP:
-                    return verticesCount;
+                    return vertexCount;
                 case GL.LINE_STRIP:
-                    return verticesCount - 1;
+                    return vertexCount - 1;
                 case GL.TRIANGLES:
-                    return verticesCount / 3;
+                    return vertexCount / 3;
                 case GL.TRIANGLE_STRIP:
                 case GL.TRIANGLE_FAN:
-                    return verticesCount - 2;
+                    return vertexCount - 2;
                 }
             })
-            .reduce((acc, faceCount) => acc += faceCount);
+            .reduce((acc, faceCount) => acc + faceCount);
 
         // assemble statistics object
         return {
