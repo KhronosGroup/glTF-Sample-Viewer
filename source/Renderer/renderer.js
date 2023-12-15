@@ -199,13 +199,55 @@ class gltfRenderer
         this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
+    gatherNodeIDs(nodeIdx, gltf)
+    {
+        const gatheredNodeIDs = [];
 
-    prepareScene(state, scene) {
-        this.nodes = scene.gatherNodes(state.gltf);
+        function recursiveGather(nodeIndex)
+        {
+            const node = gltf.nodes[nodeIndex];
+ 
+            if(!node){return}
 
+            gatheredNodeIDs.push(nodeIndex);
+
+            // recurse into children
+            for(const child of node.children)
+            {
+                recursiveGather(child);
+            }
+        }
+ 
+        recursiveGather(nodeIdx);
+
+        return gatheredNodeIDs;
+    }
+
+    gatherNodes(nodeIdx, gltf)
+    {
+        const gatheredNodeIDs = gatherNodeIDs(nodeIdx, gltf)
+        const nodeArray = [];
+        for (const nodeID of gatheredNodeIDs)
+        {  
+            nodeArray.push(state.gltf.nodes[nodeID]); 
+        }
+        return nodeArray;
+    }
+
+    prepareDrawables(state, nodeIDs) 
+    {
+       
         // collect drawables by essentially zipping primitives (for geometry and material)
         // and nodes for the transform
-        const drawables = this.nodes
+        
+        const nodeArray = []
+
+        for (const nodeID of nodeIDs)
+        {  
+            nodeArray.push(state.gltf.nodes[nodeID]); 
+        }
+
+        const drawables = nodeArray
             .filter(node => node.mesh !== undefined)
             .reduce((acc, node) => acc.concat(state.gltf.meshes[node.mesh].primitives.map( primitive => {
                 return  {node: node, primitive: primitive};
@@ -231,11 +273,36 @@ class gltfRenderer
 
     // render complete gltf scene with given camera
     drawScene(state, scene)
-    {
-        if (this.preparedScene !== scene) {
-            this.prepareScene(state, scene);
-            this.preparedScene = scene;
+    {            
+
+        this.sceneNodeIDs = scene.gatherNodeIDs(state.gltf);
+
+        let splitRenderPass = false
+        for (const nodeID of this.sceneNodeIDs)
+        {  
+            const node = state.gltf.nodes[nodeID]
+            if(node.extras!==undefined && node.extras.asset!==undefined ) {
+                console.log("node with asset: "+node["extras"]["asset"])
+                console.log("node has illumination: "+node["extras"]["illumination"])
+                splitRenderPass = true
+                const nodesGathered = this.gatherNodeIDs(nodeID, state.gltf) 
+                this.drawNodes(state, nodesGathered)
+            }
         }
+
+        if(!splitRenderPass){
+            this.drawNodes(state, this.sceneNodeIDs)
+        }
+    } 
+
+    drawNodes(state, nodeIDs)
+    {
+        // performance optimization
+        // if (this.preparedScene !== scene) {
+        //     this.preparedScene = scene;
+        // }
+
+        this.prepareDrawables(state, nodeIDs);
 
         let currentCamera = undefined;
 
@@ -259,7 +326,7 @@ class gltfRenderer
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
-        this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
+        this.visibleLights = this.getVisibleLights(state.gltf, nodeIDs);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
@@ -270,8 +337,9 @@ class gltfRenderer
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
         // Update skins.
-        for (const node of this.nodes)
+        for (const nodeID of this.sceneNodeIDs)
         {
+            const node = state.gltf.nodes[nodeID]
             if (node.mesh !== undefined && node.skin !== undefined)
             {
                 this.updateSkin(state, node);
@@ -320,7 +388,7 @@ class gltfRenderer
         // Render environment
         const fragDefines = [];
         this.pushFragParameterDefines(fragDefines, state);
-        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
+        //this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
 
         for (const drawable of this.opaqueDrawables)
         {  
