@@ -287,12 +287,22 @@ class gltfRenderer
                 console.log("node with asset: "+node["extras"]["asset"])
                 console.log("node has illumination: "+node["extras"]["illumination"])
                 splitRenderPass = true
-                const nodesGathered = this.gatherNodeIDs(nodeID, state.gltf) 
-                this.drawNodes(state, nodesGathered)
+                const assetNodes = this.gatherNodeIDs(nodeID, state.gltf)
+                if(node["extras"]["illumination"]==="scene"){
+                    //collect all nodes from the scene
+                    this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
+                }
+                if(node["extras"]["illumination"]==="asset"){
+                    //collect only nodes from the specific asset
+                    this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
+                }
+                this.drawNodes(state, assetNodes)
             }
         }
 
         if(!splitRenderPass){
+            
+            this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
             this.drawNodes(state, this.sceneNodeIDs)
         }
     } 
@@ -357,7 +367,6 @@ class gltfRenderer
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
-        this.visibleLights = this.getVisibleLights(state.gltf, nodeIDs);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
