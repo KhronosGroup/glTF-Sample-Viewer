@@ -45,15 +45,15 @@ class gltfScene extends GltfObject
         }
     }
 
-    gatherNodes(gltf)
+    gatherNodeIDs(gltf)
     {
-        const nodes = [];
+        const nodeIDs = [];
 
         function gatherNode(nodeIndex)
         {
-            const node = gltf.nodes[nodeIndex];
-            nodes.push(node);
+            nodeIDs.push(nodeIndex);
 
+            const node = gltf.nodes[nodeIndex];
             // recurse into children
             for(const child of node.children)
             {
@@ -64,6 +64,20 @@ class gltfScene extends GltfObject
         for (const node of this.nodes)
         {
             gatherNode(node);
+        }
+
+        return nodeIDs;
+    }
+
+    gatherNodes(gltf)
+    {
+        const nodeIDs = this.gatherNodeIDs(gltf);
+        const nodes = [];
+
+        for (const nodeIndex of nodeIDs)
+        {  
+            const node = gltf.nodes[nodeIndex];
+            nodes.push(node); 
         }
 
         return nodes;
