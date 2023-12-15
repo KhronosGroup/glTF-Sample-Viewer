@@ -199,6 +199,7 @@ class gltfRenderer
         this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
+
     gatherNodeIDs(nodeIdx, gltf)
     {
         const gatheredNodeIDs = [];
@@ -274,6 +275,7 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
+        this.drawEnvironmentMap(state)
 
         this.sceneNodeIDs = scene.gatherNodeIDs(state.gltf);
 
@@ -294,6 +296,34 @@ class gltfRenderer
             this.drawNodes(state, this.sceneNodeIDs)
         }
     } 
+
+    drawEnvironmentMap(state)
+    {
+        let currentCamera = undefined;
+        if (state.cameraIndex === undefined)
+        {
+            currentCamera = state.userCamera;
+        }
+        else
+        {
+            currentCamera = state.gltf.cameras[state.cameraIndex].clone();
+        }
+        currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
+        if(currentCamera.aspectRatio > 1.0) {
+            currentCamera.xmag = currentCamera.ymag * currentCamera.aspectRatio; 
+        } else {
+            currentCamera.ymag = currentCamera.xmag / currentCamera.aspectRatio; 
+        }
+        this.projMatrix = currentCamera.getProjectionMatrix();
+        this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
+        mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
+
+        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
+        this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
+        const fragDefines = [];
+        this.pushFragParameterDefines(fragDefines, state);
+        this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
+    }
 
     drawNodes(state, nodeIDs)
     {
@@ -324,6 +354,7 @@ class gltfRenderer
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
+        mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
         this.visibleLights = this.getVisibleLights(state.gltf, nodeIDs);
@@ -334,7 +365,6 @@ class gltfRenderer
             this.visibleLights.push([null, this.lightFill]);
         }
 
-        mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
 
         // Update skins.
         for (const nodeID of this.sceneNodeIDs)
@@ -388,7 +418,6 @@ class gltfRenderer
         // Render environment
         const fragDefines = [];
         this.pushFragParameterDefines(fragDefines, state);
-        //this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
 
         for (const drawable of this.opaqueDrawables)
         {  
