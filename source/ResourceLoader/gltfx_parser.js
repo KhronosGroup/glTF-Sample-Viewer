@@ -183,6 +183,10 @@ class GltfxParser
         node["extras"]["asset"] = assetID
         node["children"]  = nodeIDs
 
+        if(asset["illumination"]!==undefined){
+            node["extras"]["illumination"] = asset["illumination"]
+        }
+
         gltf["nodes"].push(node)
     }
 
@@ -297,11 +301,10 @@ class GltfxParser
         {
             if(mergedGLTF["nodes"][id].hasOwnProperty("extras") )
             {
-                delete mergedGLTF["nodes"][id]["extras"]["expectAsset"]
-                delete mergedGLTF["nodes"][id]["extras"]["asset"]
+                //delete mergedGLTF["nodes"][id]["extras"]["expectAsset"]
+                //delete mergedGLTF["nodes"][id]["extras"]["asset"]
             } 
         }
-       
         // Return the GLTF JSON 
         return { json: mergedGLTF, data: appendix};
     }
