@@ -283,27 +283,34 @@ class gltfRenderer
         for (const nodeID of this.sceneNodeIDs)
         {  
             const node = state.gltf.nodes[nodeID]
-            if(node.extras!==undefined && node.extras.asset!==undefined ) {
-                console.log("node with asset: "+node["extras"]["asset"])
-                console.log("node has illumination: "+node["extras"]["illumination"])
+            if(node.extras!==undefined && node.extras.asset!==undefined ) 
+            {
                 splitRenderPass = true
                 const assetNodes = this.gatherNodeIDs(nodeID, state.gltf)
-                if(node["extras"]["illumination"]==="scene"){
+                if(node["extensions"]["gltfx"]["lightSource"]==="scene"){
                     //collect all nodes from the scene
                     this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
                 }
-                if(node["extras"]["illumination"]==="asset"){
+                if(node["extensions"]["gltfx"]["lightSource"]==="asset"){
                     //collect only nodes from the specific asset
                     this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
                 }
-                this.drawNodes(state, assetNodes)
+                let nodeEnvironment=undefined
+                if(node["extensions"]["gltfx"]["environment"]!==undefined){
+                    const environmentID=node["extensions"]["gltfx"]["environment"]
+
+                    const environment=state.gltf.environments[environmentID]
+                    nodeEnvironment=environment.filteredEnvironment
+                }
+
+                this.drawNodes(state, assetNodes, nodeEnvironment)
             }
         }
 
-        if(!splitRenderPass){
-            
+        if(!splitRenderPass)
+        {    
             this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
-            this.drawNodes(state, this.sceneNodeIDs)
+            this.drawNodes(state, this.sceneNodeIDs, state.environment)
         }
     } 
 
@@ -335,7 +342,7 @@ class gltfRenderer
         this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
     }
 
-    drawNodes(state, nodeIDs)
+    drawNodes(state, nodeIDs, environment)
     {
         // performance optimization
         // if (this.preparedScene !== scene) {
@@ -424,7 +431,6 @@ class gltfRenderer
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
         this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
 
-        // Render environment
         const fragDefines = [];
         this.pushFragParameterDefines(fragDefines, state);
 
@@ -432,7 +438,7 @@ class gltfRenderer
         {  
             let renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, undefined, environment);
         }
 
         // filter materials with transmission extension
@@ -455,9 +461,14 @@ class gltfRenderer
     }
 
     // vertices with given material
-    drawPrimitive(state, renderpassConfiguration, primitive, node, viewProjectionMatrix, transmissionSampleTexture)
+    drawPrimitive(state, renderpassConfiguration, primitive, node, viewProjectionMatrix, transmissionSampleTexture, environment=undefined)
     {
         if (primitive.skip) return;
+
+        if(environment === undefined)
+        {
+            environment = state.environment
+        }
 
         let material;
         if(primitive.mappings !== undefined && state.variant != "default")
@@ -608,24 +619,23 @@ class gltfRenderer
             textureIndex++;
         }
 
-        let textureCount = textureIndex;
         if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
-            textureCount = this.applyEnvironmentMap(state, textureCount);
+            textureIndex = this.applyEnvironmentMap(state,environment, textureIndex);
         }
 
-        if (state.renderingParameters.usePunctual && state.environment !== undefined)
+        if (state.renderingParameters.useIBL && state.environment !== undefined)
         {
-            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureCount++);
+            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureIndex++);
         }
 
         if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
                     && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
         {
-            this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
+            this.webGl.context.activeTexture(GL.TEXTURE0 + textureIndex);
             this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureCount);
-            textureCount++;
+            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureIndex);
+            textureIndex++;
 
             this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
@@ -822,9 +832,9 @@ class gltfRenderer
         }
     }
 
-    applyEnvironmentMap(state, texSlotOffset)
+    applyEnvironmentMap(state, environment, texSlotOffset)
     {
-        const environment = state.environment;
+        //const environment = state.environment;
         this.webGl.setTexture(this.shader.getUniformLocation("u_LambertianEnvSampler"), environment, environment.diffuseEnvMap, texSlotOffset++);
 
         this.webGl.setTexture(this.shader.getUniformLocation("u_GGXEnvSampler"), environment, environment.specularEnvMap, texSlotOffset++);
@@ -841,7 +851,12 @@ class gltfRenderer
         mat3.fromMat4(rotMatrix3, rotMatrix4);
         this.shader.updateUniform("u_EnvRotation", rotMatrix3);
 
-        this.shader.updateUniform("u_EnvIntensity", state.renderingParameters.iblIntensity);
+        let environmentIntensity = state.renderingParameters.iblIntensity
+        if (  environment.intensity)
+        {
+            environmentIntensity *= environment.intensity
+        }
+        this.shader.updateUniform("u_EnvIntensity", environmentIntensity);
 
         return texSlotOffset;
     }

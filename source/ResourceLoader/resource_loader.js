@@ -22,6 +22,7 @@ import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
 import { GltfxParser } from './gltfx_parser.js';
+import { app } from '../../app_web/src/ui/ui.js';
 
 /**
  * ResourceLoader can be used to load resources for the GltfState
@@ -63,9 +64,37 @@ class ResourceLoader
 
         await init(await mikktspace());
         await gltfLoader.load(gltf, this.view.context, filename, data);
-
+        
+        await this.filterEnvironments(gltf, data)
         return gltf;
     }
+        
+    async filterEnvironments(gltf, appendix)
+    {
+        function getFileByURI(uri, dataArray){
+            for (let data of dataArray) { 
+                if (typeof (File) !== 'undefined' && data instanceof File){ 
+                    if (data.name ===uri){
+                        return data
+                    }
+                }
+            }
+            return undefined
+        }
+
+        if (gltf.environments===undefined){            
+            return
+        }
+        
+        for (let environment of gltf.environments){ 
+            let hdrFile = getFileByURI(environment.uri, appendix)
+            console.log(hdrFile ) 
+            environment.filteredEnvironment = await this.loadEnvironment(hdrFile)
+            environment.filteredEnvironment.intensity = environment.intensity
+        }
+
+    }
+
 
     /**
      * loadEnvironment asynchroneously, run IBL sampling and create resources for rendering

@@ -15,6 +15,8 @@ class GltfState
     {
         /** loaded gltf data @see ResourceLoader.loadGltf */
         this.gltf = undefined;
+        /** loaded gltfx data @see ResourceLoader.loadGltfx */
+        this.gltfx = undefined;
         /** loaded environment data @see ResourceLoader.loadEnvironment */
         this.environment = undefined;
         /** user camera @see UserCamera, convenient camera controls */

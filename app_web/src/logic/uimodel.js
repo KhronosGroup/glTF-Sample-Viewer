@@ -324,6 +324,7 @@ const getInputObservables = (inputElement, app) => {
     );
 
     observables.droppedHdr = droppedFiles.pipe(
+        map((files) => {if(files.length!=1){return [];} else {return files;}}), // only accept exactly one hdr file
         map(files => files.find((file) => file.name.endsWith(".hdr"))),
         filter(file => file !== undefined),
         //pluck("1")

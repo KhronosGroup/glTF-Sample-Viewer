@@ -17,6 +17,7 @@ import { GltfObject } from './gltf_object.js';
 import { gltfAnimation } from './animation.js';
 import { gltfSkin } from './skin.js';
 import { gltfVariant } from './variant.js';
+import { gltfxEnvironment } from './environment.js';
 
 class glTF extends GltfObject
 {
@@ -40,6 +41,7 @@ class glTF extends GltfObject
         this.materials = [];
         this.animations = [];
         this.skins = [];
+        this.environments = [];
         this.path = file;
     }
 
@@ -70,6 +72,8 @@ class glTF extends GltfObject
         this.skins = objectsFromJsons(json.skins, gltfSkin);
         this.variants = objectsFromJsons(getJsonVariantsFromExtension(json.extensions), gltfVariant);
         this.variants = enforceVariantsUniqueness(this.variants);
+        
+        this.environments = objectsFromJsons(getJsonEnvironmentsFromExtensions(json.extensions), gltfxEnvironment);
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -156,6 +160,20 @@ class glTF extends GltfObject
         return nonDisjointAnimations;
     }
 }
+
+function getJsonEnvironmentsFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.gltfx === undefined)
+    {
+        return [];
+    }
+    return extensions.gltfx.environments;
+}
+
 
 function getJsonLightsFromExtensions(extensions)
 {

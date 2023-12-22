@@ -183,8 +183,16 @@ class GltfxParser
         node["extras"]["asset"] = assetID
         node["children"]  = nodeIDs
 
-        if(asset["illumination"]!==undefined){
-            node["extras"]["illumination"] = asset["illumination"]
+        
+        node["extensions"] = {}
+        node["extensions"]["gltfx"] = {}
+
+        if(asset["lightSource"]!==undefined){
+            node["extensions"]["gltfx"]["lightSource"] = asset["lightSource"]
+        }
+
+        if(asset["environment"]!==undefined){
+            node["extensions"]["gltfx"]["environment"] = asset["environment"]
         }
 
         gltf["nodes"].push(node)
@@ -278,6 +286,22 @@ class GltfxParser
         delete mergedGLTF["scenes"]
         delete mergedGLTF["scene"]
 
+
+        // Convert glTFX environments to a glTF extension 
+        if(gltfx["environments"]!==undefined){
+            if(mergedGLTF["extensions"]===undefined){
+                mergedGLTF["extensions"] = {}
+            }
+            if(mergedGLTF["extensions"]["gltfx"]===undefined){
+                mergedGLTF["extensions"]["gltfx"] = {}
+            }
+            if(mergedGLTF["extensions"]["gltfx"]["environments"]===undefined){
+                mergedGLTF["extensions"]["gltfx"]["environments"] = []
+            }
+
+            mergedGLTF["extensions"]["gltfx"]["environments"]=mergedGLTF["extensions"]["gltfx"]["environments"].concat(gltfx["environments"])
+        }
+
         mergedGLTF = await GltfMerger.merge(mergedGLTF, gltfx);
 
         // Connect nodes offered by assets and expected by gltfx
@@ -297,14 +321,19 @@ class GltfxParser
         }
 
         // cleanup asset markers in the extras field
-        for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
+        const cleanup = false
+        if (cleanup)
         {
-            if(mergedGLTF["nodes"][id].hasOwnProperty("extras") )
+            for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
             {
-                //delete mergedGLTF["nodes"][id]["extras"]["expectAsset"]
-                //delete mergedGLTF["nodes"][id]["extras"]["asset"]
-            } 
+                if(mergedGLTF["nodes"][id].hasOwnProperty("extras") )
+                {
+                    delete mergedGLTF["nodes"][id]["extras"]["expectAsset"]
+                    delete mergedGLTF["nodes"][id]["extras"]["asset"]
+                } 
+            }
         }
+        
         // Return the GLTF JSON 
         return { json: mergedGLTF, data: appendix};
     }
