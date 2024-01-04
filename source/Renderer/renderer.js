@@ -447,7 +447,7 @@ class gltfRenderer
         {
             let renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture);
+            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, this.opaqueRenderTexture, environment);
         }
 
 
@@ -456,7 +456,7 @@ class gltfRenderer
         {
             let renderpassConfiguration = {};
             renderpassConfiguration.linearOutput = false;
-            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix, undefined, environment);
         }
     }
 
