@@ -54,24 +54,22 @@ function getSceneExtents(gltf, sceneIndex, outMin, outMax)
 function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
 {
     let min = jsToGl(accessor.min);
+    let max = jsToGl(accessor.max);
+    
     if (accessor.normalized) {
         min = gltfAccessor.dequantize(min, accessor.componentType)
-    }
-
-    let max = jsToGl(accessor.max);
-    if (accessor.normalized) {
         max = gltfAccessor.dequantize(max, accessor.componentType)
     }
 
     // Construct all eight corners from min and max values
     let boxVertices = [
         vec3.fromValues(min[0], min[1], min[2]),
-        vec3.fromValues(min[0], min[1], min[2]),
+        vec3.fromValues(min[0], min[1], max[2]),
         vec3.fromValues(min[0], max[1], min[2]),
         vec3.fromValues(min[0], max[1], max[2]),
 
         vec3.fromValues(max[0], min[1], min[2]),
-        vec3.fromValues(max[0], min[1], min[2]),
+        vec3.fromValues(max[0], min[1], max[2]),
         vec3.fromValues(max[0], max[1], min[2]),
         vec3.fromValues(max[0], max[1], max[2])]
 
