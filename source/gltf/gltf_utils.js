@@ -53,19 +53,44 @@ function getSceneExtents(gltf, sceneIndex, outMin, outMax)
 
 function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
 {
-    const boxMin = vec3.create();
     let min = jsToGl(accessor.min);
     if (accessor.normalized) {
         min = gltfAccessor.dequantize(min, accessor.componentType)
     }
-    vec3.transformMat4(boxMin, min, worldTransform);
 
-    const boxMax = vec3.create();
     let max = jsToGl(accessor.max);
     if (accessor.normalized) {
         max = gltfAccessor.dequantize(max, accessor.componentType)
     }
-    vec3.transformMat4(boxMax, max, worldTransform);
+
+    // Construct all eight corners from min and max values
+    let boxVertices = [
+        vec3.fromValues(min[0], min[1], min[2]),
+        vec3.fromValues(min[0], min[1], min[2]),
+        vec3.fromValues(min[0], max[1], min[2]),
+        vec3.fromValues(min[0], max[1], max[2]),
+
+        vec3.fromValues(max[0], min[1], min[2]),
+        vec3.fromValues(max[0], min[1], min[2]),
+        vec3.fromValues(max[0], max[1], min[2]),
+        vec3.fromValues(max[0], max[1], max[2])]
+
+
+    // Transform all bounding box vertices
+    for(let i in boxVertices) { 
+        vec3.transformMat4(boxVertices[i], boxVertices[i], worldTransform); 
+    }
+
+    // Create new (axis-aligned) bounding box out of transformed bounding box
+    const boxMin = vec3.clone(boxVertices[0]); // initialize
+    const boxMax = vec3.clone(boxVertices[0]);
+
+    for(let i in boxVertices) {
+        for (const component of [0, 1, 2]) {
+            boxMin[component] = Math.min(boxMin[component], boxVertices[i][component]);
+            boxMax[component] = Math.max(boxMax[component], boxVertices[i][component]);
+        }
+    }
 
     const center = vec3.create();
     vec3.add(center, boxMax, boxMin);
