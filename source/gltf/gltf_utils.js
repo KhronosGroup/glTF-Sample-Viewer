@@ -1,5 +1,6 @@
 import { vec3 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
+import { gltfAccessor } from './accessor.js';
 
 function getSceneExtents(gltf, sceneIndex, outMin, outMax)
 {
@@ -54,15 +55,15 @@ function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
 {
     const boxMin = vec3.create();
     let min = jsToGl(accessor.min);
-    if (accessor.normalized){
-        vec3.normalize(min, min);
+    if (accessor.normalized) {
+        min = gltfAccessor.dequantize(min, accessor.componentType)
     }
     vec3.transformMat4(boxMin, min, worldTransform);
 
     const boxMax = vec3.create();
     let max = jsToGl(accessor.max);
-    if (accessor.normalized){
-        vec3.normalize(max, max);
+    if (accessor.normalized) {
+        max = gltfAccessor.dequantize(max, accessor.componentType)
     }
     vec3.transformMat4(boxMax, max, worldTransform);
 
