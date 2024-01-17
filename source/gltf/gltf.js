@@ -18,6 +18,27 @@ import { gltfAnimation } from './animation.js';
 import { gltfSkin } from './skin.js';
 import { gltfVariant } from './variant.js';
 
+const allowedExtensions = [
+    "KHR_draco_mesh_compression",
+    "KHR_texture_basisu",
+    "KHR_texture_transform",
+    "KHR_lights_punctual",
+    "KHR_lights_image_based",
+    "KHR_materials_variants",
+    "KHR_materials_unlit",
+    "KHR_materials_clearcoat",
+    "KHR_materials_sheen",
+    "KHR_materials_transmission",
+    "KHR_materials_volume",
+    "KHR_materials_ior",
+    "KHR_materials_iridescence",
+    "KHR_materials_anisotropy",
+    "KHR_materials_specular",
+    "KHR_materials_emissive_strength",
+    "KHR_materials_xmp_json_ld",
+    "KHR_materials_pbrSpecularGlossiness",
+];
+
 class glTF extends GltfObject
 {
     constructor(file)
@@ -51,6 +72,12 @@ class glTF extends GltfObject
     fromJson(json)
     {
         super.fromJson(json);
+
+        for (const extensionName of json.extensionsRequired ?? []) {
+            if (!allowedExtensions.includes(extensionName)) {
+                throw new Error("Unsupported extension: " + extensionName);
+            }
+        }
 
         this.asset = objectFromJson(json.asset, gltfAsset);
         this.cameras = objectsFromJsons(json.cameras, gltfCamera);
