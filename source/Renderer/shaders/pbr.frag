@@ -128,16 +128,11 @@ void main()
     float albedoSheenScaling = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
-    vec3 iridescenceFresnel = materialInfo.f0;
-    vec3 iridescenceF0 = materialInfo.f0;
+    vec3 iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+    vec3 iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
 
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
-    }
-
-    if (materialInfo.iridescenceFactor > 0.0) {
-        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
-        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
     }
 #endif
 
