@@ -311,6 +311,7 @@ button.button
 .column {
     padding: 0px;
     height: 100%;
+    position: relative;
 }
 
 #canvas {
@@ -324,6 +325,21 @@ button.button
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
+}
+
+#canvasCredit {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    max-width: 100%;
+    padding: 8px 10px;
+    opacity: 0.7;
+    font-size: 85%;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .canvasUIMaximize {

@@ -166,6 +166,7 @@ class UIModel
 
             this.app.assetCopyright = gltf.asset.copyright ?? "N/A";
             this.app.assetGenerator = gltf.asset.generator ?? "N/A";
+            document.getElementById("canvasCredit").textContent = gltf.asset.copyright ?? "No copyright string in asset.";
             
             this.app.selectedScene = state.sceneIndex;
             this.app.scenes = gltf.scenes.map((scene, index) => ({
