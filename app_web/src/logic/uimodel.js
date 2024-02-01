@@ -43,6 +43,13 @@ class UIModel
             startWith(GltfState.DebugOutput.NONE)
         );
 
+        
+        this.app.lods = Object.keys(GltfState.LoDs).map((key) => ({title: GltfState.LoDs[key]}));
+        this.lod = app.lodChanged$.pipe(
+            pluck("event", "msg"),
+            startWith(GltfState.LoDs.Q0)
+        );
+
         this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
@@ -62,6 +69,7 @@ class UIModel
         this.blurEnvEnabled = app.blurEnvChanged$.pipe(pluck("event", "msg"));
         this.addEnvironment = app.$watchAsObservable('uploadedHDR').pipe(pluck('newValue'));
         this.captureCanvas = app.captureCanvas$.pipe(pluck('event'));
+        this.loadHighQuality = app.loadHighQuality$.pipe(pluck('event'));
         this.cameraValuesExport = app.cameraExport$.pipe(pluck('event'));
 
         const initialClearColor = "#303542";

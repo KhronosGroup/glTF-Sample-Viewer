@@ -122,6 +122,10 @@ export default async () => {
         const dataURL = canvas.toDataURL();
         downloadDataURL("capture.png", dataURL);
     });
+    
+    uiModel.loadHighQuality.subscribe(() => {
+        console.log("load hq")
+    });
 
     // Only redraw glTF view upon user inputs, or when an animation is playing.
     let redraw = false;
@@ -141,6 +145,10 @@ export default async () => {
 
     uiModel.debugchannel.subscribe(debugchannel => state.renderingParameters.debugOutput = debugchannel);
     listenForRedraw(uiModel.debugchannel);
+
+    
+    uiModel.lod.subscribe(lod => state.renderingParameters.LoD = lod);
+    listenForRedraw(uiModel.lod);
 
     uiModel.skinningEnabled.subscribe(skinningEnabled => state.renderingParameters.skinning = skinningEnabled);
     listenForRedraw(uiModel.skinningEnabled);

@@ -272,6 +272,29 @@ class gltfRenderer
                 && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
     }
 
+    getAssetNodeID(gltf, assetID)
+    {
+        for (let id = 0; id < gltf["nodes"].length; id++) 
+        {
+            let node =  gltf["nodes"][id]
+            if(node === undefined){
+                console.error("node undefined")
+                continue;
+            }
+            if(node.hasOwnProperty("extras") && node["extras"]!==undefined)
+            {
+                if(node["extras"].hasOwnProperty("asset") && node["extras"]["asset"]!==undefined)
+                {
+                    if( assetID === node["extras"]["asset"])
+                    {
+                        return id
+                    }
+                }
+            }
+        }
+        return undefined
+    }
+
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
@@ -283,20 +306,32 @@ class gltfRenderer
         for (const nodeID of this.sceneNodeIDs)
         {  
             const node = state.gltf.nodes[nodeID]
-            if(node.extras!==undefined && node.extras.asset!==undefined ) 
+            if(node.extras !== undefined && node.extras.asset!== undefined ) 
             {
                 splitRenderPass = true
-                const assetNodes = this.gatherNodeIDs(nodeID, state.gltf)
-                if(node["extensions"]["gltfx"]["lightSource"]==="scene"){
+
+                let renderNodeID = nodeID
+                if(node["extensions"]["gltfx"]["lod"] !== undefined) {
+                    const stateLODLevel = state.renderingParameters.LoD.slice(1, 2);
+                    const lodMarker = node.extras.asset + "_lod"+stateLODLevel
+                    console.log("loading: "+lodMarker)
+                    renderNodeID=this.getAssetNodeID(state.gltf, lodMarker)
+                }
+                
+                const assetNodes = this.gatherNodeIDs(renderNodeID, state.gltf)
+
+                if(node["extensions"]["gltfx"]["lightSource"] === "scene"){
                     //collect all nodes from the scene
                     this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
                 }
-                if(node["extensions"]["gltfx"]["lightSource"]==="asset"){
+
+                if(node["extensions"]["gltfx"]["lightSource"] === "asset"){
                     //collect only nodes from the specific asset
                     this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
                 }
-                let nodeEnvironment=undefined
-                if(node["extensions"]["gltfx"]["environment"]!==undefined){
+
+                let nodeEnvironment = undefined
+                if(node["extensions"]["gltfx"]["environment"] !== undefined){
                     const environmentID=node["extensions"]["gltfx"]["environment"]
 
                     const environment=state.gltf.environments[environmentID]

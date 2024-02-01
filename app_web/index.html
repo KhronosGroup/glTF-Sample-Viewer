@@ -348,6 +348,19 @@
                             <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                 @click="collapseActiveTab($event, 4)">
                             <h2 class="title is-spaced">Advanced Controls</h2>
+                            
+                            <b-field label="Level of Detail" class="smallerLabel">
+                                <button v-stream:click="loadHighQuality$" type="button" class="button is-rounded mb-2">Request Higher Quality</button>
+
+                                <b-select v-stream:input="lodChanged$" v-model="lod">
+                                    <option v-for="(item) in lods" v-bind:value="item.title">
+                                        {{ item.title }}
+                                    </option>
+                                </b-select>
+
+                            </b-field>
+
+
                             <b-field label="Capture Canvas" class="smallerLabel">
                                 <button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i
                                         class="fa fa-download downloadIcon"></i>Download as .png</button>

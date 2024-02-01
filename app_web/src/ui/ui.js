@@ -46,7 +46,7 @@ export const app = new Vue({
         'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
-        'cameraExport$', 'captureCanvas$','iblIntensityChanged$',],
+        'cameraExport$', 'captureCanvas$', 'loadHighQuality$','lodChanged$','iblIntensityChanged$',],
     data() {
         return {
             fullheight: true,
@@ -59,6 +59,8 @@ export const app = new Vue({
 
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "None"}],
+            
+            lods: [{title: "Q0"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
             assetCopyright: "",
@@ -87,6 +89,7 @@ export const app = new Vue({
             debugChannel: "None",
             exposureSetting: 0,
             toneMap: "None",
+            lod: "Q0",
             skinning: true,
             morphing: true,
             clearcoatEnabled: true,

@@ -77,6 +77,8 @@ class GltfState
             blurEnvironmentMap: true,
             /** which tonemap to use, use ACES for a filmic effect */
             toneMap: GltfState.ToneMaps.LINEAR,
+
+            LoD: GltfState.LoDs.Q0,
             /** render some debug output channes, such as for example the normals */
             debugOutput: GltfState.DebugOutput.NONE,
             /**
@@ -113,6 +115,13 @@ GltfState.ToneMaps = {
     /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
     ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
 };
+
+GltfState.LoDs = {
+    Q0: "Q0",
+    Q1: "Q1",
+    Q2: "Q2",
+};
+
 
 /**
  * DebugOutput enum for selecting debug output channels

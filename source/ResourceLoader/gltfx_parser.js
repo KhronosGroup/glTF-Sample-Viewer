@@ -124,7 +124,7 @@ class GltfxParser
         return undefined
     }
 
-    static resolveAsset(assetID, asset, gltf)
+    static resolveAsset(lookupID, asset, gltf)
     {
         if (!gltf.hasOwnProperty("scenes"))
         {
@@ -180,7 +180,7 @@ class GltfxParser
 
         let node = {}
         node["extras"] = {}
-        node["extras"]["asset"] = assetID
+        node["extras"]["asset"] = lookupID
         node["children"]  = nodeIDs
 
         
@@ -195,6 +195,11 @@ class GltfxParser
             node["extensions"]["gltfx"]["environment"] = asset["environment"]
         }
 
+        if(asset["lod"]!==undefined){
+            node["extensions"]["gltfx"]["lod"] = asset["lod"]
+        }
+
+
         gltf["nodes"].push(node)
     }
 
@@ -205,28 +210,69 @@ class GltfxParser
         let mergedGLTF = {}; // Initialize an empty merged GLTF object
 
         // Iterate over each asset in the glTFX file and merge them into one glTF
-        for (let i = 0; i <  gltfx.assets.length; i++) 
+        for (let assetID = 0; assetID <  gltfx.assets.length; assetID++) 
         {
-            let asset = gltfx.assets[i];
+            let asset = gltfx.assets[assetID];
+            const uri =  asset.uri
 
+            ///
+            /// 
             let assetFile = undefined
-            if(appendix !==undefined)
+            if(appendix !== undefined)
             {
-                assetFile = appendix.find( (file) => file.name === asset.uri );
+                assetFile = appendix.find( (file) => file.name === uri );
             }
             if(assetFile === undefined)
             {
-                assetFile = getContainingFolder(filename )+asset.uri
+                assetFile = getContainingFolder(filename)+uri
             }
 
+            // load gltf file or gltfx file 
             let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }
             appendix = resourcePackage.data
             // resolve all nodes/scenes and the respective transformations 
-            this.resolveAsset(i, asset, resourcePackage.json)
+            const lookupID = assetID
+            this.resolveAsset(lookupID, asset, resourcePackage.json)
 
             // Merge the current GLTF with the mergedGLTF object
             mergedGLTF = await GltfMerger.merge(mergedGLTF, resourcePackage.json);
+            ///
+            /// 
+
+
+            // load LODs for asset as well:  
+            if(asset.hasOwnProperty("lod"))
+            {
+                for (let level = 0; level < asset.lod.length; level++) 
+                {
+                    const uri = asset["lod"][level]["uri"] // array
+
+                    ///
+                    /// 
+                    let assetFile = undefined
+                    if(appendix !== undefined)
+                    {
+                        assetFile = appendix.find( (file) => file.name === uri );
+                    }
+                    if(assetFile === undefined)
+                    {
+                        assetFile = getContainingFolder(filename)+uri
+                    }
+        
+                    // load gltf file or gltfx file 
+                    let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }
+                    appendix = resourcePackage.data
+                    // resolve all nodes/scenes and the respective transformations 
+                    const lookupID = assetID + "_lod" + level
+                    this.resolveAsset(lookupID, asset, resourcePackage.json)
+        
+                    // Merge the current GLTF with the mergedGLTF object
+                    mergedGLTF = await GltfMerger.merge(mergedGLTF, resourcePackage.json);
+                } 
+            }
+
         }
+
 
 
         // glTFs are prepared
@@ -267,19 +313,25 @@ class GltfxParser
 
         // Merging gltfx transformation and node hierarchy
  
-        delete gltfx["assets"]
 
         for (let id = 0; id < gltfx["nodes"].length; id++) 
         {
-            // move asset property to extras to merge valid glTF
+            // move asset property of original gltfx file to extras to merge valid glTF later
             if(gltfx["nodes"][id].hasOwnProperty("asset"))
             {
                 const assetID = gltfx["nodes"][id]["asset"]
                 delete gltfx["nodes"][id]["asset"]
                 gltfx["nodes"][id]["extras"] = {}
                 gltfx["nodes"][id]["extras"]["expectAsset"] = (assetID)
+                
+                let gltfxAsset = gltfx["assets"][assetID]
+                if(gltfxAsset.hasOwnProperty("lod")){
+                    gltfx["nodes"][id]["extras"]["lod"] = + gltfxAsset["lod"] // array
+                }
             } 
         }
+
+        delete gltfx["assets"]
 
         // Prepare merged glTF for final merge of glTFX properties
         // We don't want to expose old scenes from glTFs
