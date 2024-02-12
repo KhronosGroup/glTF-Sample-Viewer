@@ -97,7 +97,7 @@ class UIModel
 
         const inputObservables = getInputObservables(canvas, this.app);
 
-
+        this.droppedGltf = inputObservables.droppedGltf
 /*
 
         let dropdownGltfChanged = undefined;

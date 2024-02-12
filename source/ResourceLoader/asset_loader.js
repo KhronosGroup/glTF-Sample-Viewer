@@ -40,6 +40,35 @@ class AssetLoader
         return await GltfParser.loadGltf(assetFile, externalFiles)
     }
 
+    static async loadAssetIncrement( gltfxFile, externalFiles, gltf)
+    {
+        console.log("asset_loader.js: loadAssetIncrement")
+        let filename = undefined
+        let jsonString = undefined
+        if (typeof gltfxFile === "string")
+        {
+            let response = await axios.get(gltfxFile,{
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                responseType: 'json',
+                } );
+            jsonString = JSON.stringify(response.data);
+            filename = gltfxFile;
+        }
+        else
+        {
+
+            jsonString = await AsyncFileReader.readAsText(gltfxFile);
+            filename = gltfxFile.name;
+        }
+
+        let gltfxJson =  JSON.parse(jsonString);
+        let gltfIncrement = await GltfxParser.loadGltfxIncrement(filename, gltfxJson, externalFiles, gltf)
+
+        return { json: gltfIncrement.json, data: gltfIncrement.data, filename: filename };
+    }
+
     static async loadGltfx(gltfxFile, externalFiles)
     {       
         let filename = undefined

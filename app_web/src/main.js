@@ -42,8 +42,9 @@ export default async () => {
             // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
             resourceLoader.initKtxLib();
 
-            return from(resourceLoader.loadAsset(model.mainFile, model.additionalFiles).then( (gltf) => {
-                state.gltf = gltf;
+            return from(resourceLoader.loadAsset(model.mainFile, model.additionalFiles).then( (gltfPackage) => {
+                state.parsedgltf = gltfPackage.parsedgltf;
+                state.gltf = gltfPackage.gltf;
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 state.cameraIndex = undefined;
@@ -59,8 +60,8 @@ export default async () => {
 
                     // Try to start as many animations as possible without generating conficts.
                     state.animationIndices = [];
-                    for (let i = 0; i < gltf.animations.length; i++) {
-                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
+                    for (let i = 0; i < state.gltf.animations.length; i++) {
+                        if (!state.gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
                             state.animationIndices.push(i);
                         }
                     }
@@ -73,6 +74,11 @@ export default async () => {
             }));
         }),
         share()
+    );
+
+    uiModel.droppedGltf.subscribe((files => {
+        state.files=files;
+    }) 
     );
 
     // Disable all animations which are not disjoint to the current selection of animations.
@@ -124,7 +130,12 @@ export default async () => {
     });
     
     uiModel.loadHighQuality.subscribe(() => {
-        console.log("load hq")
+
+        resourceLoader.loadAssetIncrement(state.files.mainFile, state.files.additionalFiles, state.parsedgltf).then( (gltfPackage) => {
+            console.log("increment loaded");
+            state.gltf = gltfPackage.gltf;
+            state.parsedgltf = gltfPackage.parsedgltf;
+        }).catch((e)=>{console.log("error: "+e);});
     });
 
     // Only redraw glTF view upon user inputs, or when an animation is playing.

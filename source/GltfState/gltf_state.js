@@ -13,6 +13,9 @@ class GltfState
      */
     constructor(view)
     {
+        this.files = undefined
+        this.parsedgltf = undefined;
+
         /** loaded gltf data @see ResourceLoader.loadGltf */
         this.gltf = undefined;
         /** loaded gltfx data @see ResourceLoader.loadGltfx */

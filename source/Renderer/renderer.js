@@ -311,12 +311,17 @@ class gltfRenderer
                 splitRenderPass = true
 
                 let renderNodeID = nodeID
-                if(node["extensions"]["gltfx"]["lod"] !== undefined) {
-                    const stateLODLevel = state.renderingParameters.LoD.slice(1, 2);
-                    const lodMarker = node.extras.asset + "_lod"+stateLODLevel
-                    console.log("loading: "+lodMarker)
-                    renderNodeID=this.getAssetNodeID(state.gltf, lodMarker)
+
+                const stateLODLevel = state.renderingParameters.LoD.slice(1, 2);
+                const lodMarker = node.extras.asset + "_lod" + stateLODLevel
+                const lodNodeID = this.getAssetNodeID(state.gltf, lodMarker)
+
+                if( lodNodeID !==undefined){
+                    renderNodeID=lodNodeID
+                }else{
+                    console.log("lod level unavailable: "+stateLODLevel)
                 }
+
                 
                 const assetNodes = this.gatherNodeIDs(renderNodeID, state.gltf)
 

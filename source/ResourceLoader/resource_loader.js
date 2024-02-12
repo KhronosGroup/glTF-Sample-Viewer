@@ -44,8 +44,21 @@ class ResourceLoader
 
     async loadAsset(assetFile, externalFiles)
     {
-        let gltf = await AssetLoader.loadAsset(assetFile, externalFiles)
-        return await this.prepareGltfResources(gltf.json, gltf.data, gltf.filename)  
+        let parsedgltf = await AssetLoader.loadAsset(assetFile, externalFiles)
+        let gltf = await this.prepareGltfResources(parsedgltf.json, parsedgltf.data, parsedgltf.filename) 
+        return {parsedgltf:parsedgltf, gltf:gltf}
+    }
+
+
+    async loadAssetIncrement(assetFile, externalFiles, gltf)
+    {
+        console.log("loadAssetIncrement")
+
+        let gltfIncrement = await AssetLoader.loadAssetIncrement( assetFile, externalFiles, gltf)
+
+        let gltfPrepared = await this.prepareGltfResources(gltfIncrement.json, gltfIncrement.data, gltfIncrement.filename)  
+       
+        return {parsedgltf:gltfIncrement, gltf:gltfPrepared}
     }
 
     async prepareGltfResources(json, data, filename)  

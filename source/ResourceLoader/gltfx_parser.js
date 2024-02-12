@@ -195,15 +195,28 @@ class GltfxParser
             node["extensions"]["gltfx"]["environment"] = asset["environment"]
         }
 
-        if(asset["lod"]!==undefined){
-            node["extensions"]["gltfx"]["lod"] = asset["lod"]
-        }
-
-
         gltf["nodes"].push(node)
     }
 
 
+    static getAssetNode(gltf, assetID)
+    {
+        for (let id = 0; id < gltf["nodes"].length; id++) 
+        {
+            let node =  gltf["nodes"][id]
+            if("extras" in node)
+            {
+                if("asset" in node["extras"])
+                {
+                    if( assetID === node["extras"]["asset"])
+                    {
+                        return id
+                    }
+                }
+            }
+        }
+        return undefined
+    }
 
     static async convertGltfxToGltf(filename, gltfx, appendix)
     {
@@ -242,7 +255,8 @@ class GltfxParser
 
             // load LODs for asset as well:  
             if(asset.hasOwnProperty("lod"))
-            {
+            { 
+                continue // debug -> load lods in increment
                 for (let level = 0; level < asset.lod.length; level++) 
                 {
                     const uri = asset["lod"][level]["uri"] // array
@@ -291,25 +305,7 @@ class GltfxParser
             }
         }
 
-
-        function getAssetNode(gltf, assetID)
-        {
-            for (let id = 0; id < gltf["nodes"].length; id++) 
-            {
-                let node =  gltf["nodes"][id]
-                if("extras" in node)
-                {
-                    if("asset" in node["extras"])
-                    {
-                        if( assetID === node["extras"]["asset"])
-                        {
-                            return id
-                        }
-                    }
-                }
-            }
-            return undefined
-        }
+ 
 
         // Merging gltfx transformation and node hierarchy
  
@@ -326,7 +322,7 @@ class GltfxParser
                 
                 let gltfxAsset = gltfx["assets"][assetID]
                 if(gltfxAsset.hasOwnProperty("lod")){
-                    gltfx["nodes"][id]["extras"]["lod"] = + gltfxAsset["lod"] // array
+                    gltfx["nodes"][id]["extras"]["lod"] =  gltfxAsset["lod"] // array
                 }
             } 
         }
@@ -363,7 +359,7 @@ class GltfxParser
                 mergedGLTF["nodes"][id]["extras"].hasOwnProperty("expectAsset"))
             {
                 const assetID = mergedGLTF["nodes"][id]["extras"]["expectAsset"]
-                const nodeID = getAssetNode(mergedGLTF, assetID) 
+                const nodeID =    this.getAssetNode(mergedGLTF, assetID) 
                 if(nodeID!==undefined)
                 {
                     mergedGLTF["nodes"][id]["children"] = []
@@ -389,6 +385,85 @@ class GltfxParser
         // Return the GLTF JSON 
         return { json: mergedGLTF, data: appendix};
     }
+
+    
+
+
+    static async loadGltfxIncrement(filename, gltfx, appendix, loadedGltf)
+    {
+        let mergedGLTF = loadedGltf.json; // Initialize with already loaded gltf
+        appendix = loadedGltf.data
+
+        // Iterate over each asset in the glTFX file and merge them into one glTF
+        for (let assetID = 0; assetID <  gltfx.assets.length; assetID++) 
+        {
+            let asset = gltfx.assets[assetID];
+
+            if(!asset.hasOwnProperty("lod"))
+            {
+                continue
+            }
+            // load LOD for asset if 
+
+            console.log("gltfx_parser: resolve asset lod: "+ assetID)
+
+            let nextLoD=undefined
+            for (let level = asset.lod.length-1; level >= 0 ; level--) 
+            {
+                const lodMarker = assetID + "_lod" + level
+                const lodNodeID = this.getAssetNode(mergedGLTF, lodMarker)
+                if(lodNodeID===undefined) {
+                    nextLoD=level
+                    break
+                }
+            }
+            if(nextLoD!==undefined){
+
+                const uri = asset["lod"][nextLoD]["uri"] // array
+
+                ///
+                /// 
+                let assetFile = undefined
+                if(appendix !== undefined)
+                {
+                    assetFile = appendix.find( (file) => file.name === uri );
+                }
+                if(assetFile === undefined)
+                {
+                    assetFile = getContainingFolder(filename)+uri
+                }
+    
+                // load gltf file or gltfx file 
+                let resourcePackage = await AssetLoader.loadAsset(assetFile, appendix); // -> { json, data, filename }
+                appendix = resourcePackage.data
+                // resolve all nodes/scenes and the respective transformations 
+                const lookupID = assetID + "_lod" + nextLoD
+                this.resolveAsset(lookupID, asset, resourcePackage.json)
+
+                console.log("gltfx_parser: merge new lod: "+ nextLoD)
+    
+                // Merge the current GLTF with the mergedGLTF object
+                mergedGLTF = await GltfMerger.merge(mergedGLTF, resourcePackage.json);
+            } 
+            
+
+        }
+
+
+ 
+
+        // ToDo:
+        
+        //delete mergedGLTF["scenes"]
+        //delete mergedGLTF["scene"]
+
+
+
+       
+        // Return the GLTF JSON 
+        return { json: mergedGLTF, data: appendix};
+    }
+
 
 }
 
