@@ -227,7 +227,7 @@ void main()
 #endif
         }
 
-        // BDTF
+        // BTDF (Bidirectional Transmittance Distribution Function)
 #ifdef MATERIAL_TRANSMISSION
         // If the light ray travels through the geometry, use the point it exits the geometry again.
         // That will change the angle to the light source, if the material refracts the light ray.
