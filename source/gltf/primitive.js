@@ -828,6 +828,11 @@ class gltfPrimitive extends GltfObject
 
         const tangents = generateTangents(positions, normals, texcoords);
 
+        // convert coordinate system handedness to respect output format of MikkTSpace 
+        for (let idx = 0; idx < tangents.length; idx += 4) {
+           tangents[idx+3] = -tangents[idx+3] // Flip w-channel
+        }
+
         // Create a new buffer and buffer view for the tangents:
         const tangentBuffer = new gltfBuffer();
         tangentBuffer.byteLength = tangents.byteLength;
