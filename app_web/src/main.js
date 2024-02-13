@@ -129,19 +129,20 @@ export default async () => {
         downloadDataURL("capture.png", dataURL);
     });
     
-    uiModel.loadHighQuality.subscribe(() => {
-
-        resourceLoader.loadAssetIncrement(state.files.mainFile, state.files.additionalFiles, state.parsedgltf).then( (gltfPackage) => {
-            console.log("increment loaded");
-            state.gltf = gltfPackage.gltf;
-            state.parsedgltf = gltfPackage.parsedgltf;
-        }).catch((e)=>{console.log("error: "+e);});
-    });
 
     // Only redraw glTF view upon user inputs, or when an animation is playing.
     let redraw = false;
     const listenForRedraw = stream => stream.subscribe(() => redraw = true);
     
+    uiModel.loadHighQuality.subscribe(() => {
+        resourceLoader.loadAssetIncrement(state.files.mainFile, state.files.additionalFiles, state.parsedgltf).then( (gltfPackage) => {
+            console.log("increment loaded");
+            state.gltf = gltfPackage.gltf;
+            state.parsedgltf = gltfPackage.parsedgltf;
+            redraw = true;
+        }).catch((e)=>{console.log("error: "+e);});
+    });
+
     uiModel.scene.subscribe(scene => state.sceneIndex = scene !== -1 ? scene : undefined);
     listenForRedraw(uiModel.scene);
 
