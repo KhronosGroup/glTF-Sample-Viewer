@@ -306,14 +306,16 @@ class gltfRenderer
         for (const nodeID of this.sceneNodeIDs)
         {  
             const node = state.gltf.nodes[nodeID]
-            if(node.extras !== undefined && node.extras.asset!== undefined ) 
+            if(node.extras !== undefined && node.extras.expectAsset !== undefined ) 
             {
                 splitRenderPass = true
 
-                let renderNodeID = nodeID
-
+                let renderNodeID = this.getAssetNodeID(state.gltf, node.extras.expectAsset)
+                
                 const stateLODLevel = state.renderingParameters.LoD.slice(1, 2);
-                const lodMarker = node.extras.asset + "_lod" + stateLODLevel
+
+
+                const lodMarker = node.extras.expectAsset + "_lod" + stateLODLevel
                 const lodNodeID = this.getAssetNodeID(state.gltf, lodMarker)
 
                 if( lodNodeID !==undefined){
@@ -325,18 +327,21 @@ class gltfRenderer
                 
                 const assetNodes = this.gatherNodeIDs(renderNodeID, state.gltf)
 
-                if(node["extensions"]["gltfx"]["lightSource"] === "scene"){
+
+                const assetNode = state.gltf.nodes[renderNodeID]
+
+                if(assetNode["extensions"]["gltfx"]["lightSource"] === "scene"){
                     //collect all nodes from the scene
                     this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
                 }
 
-                if(node["extensions"]["gltfx"]["lightSource"] === "asset"){
+                if(assetNode["extensions"]["gltfx"]["lightSource"] === "asset"){
                     //collect only nodes from the specific asset
                     this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
                 }
 
                 let nodeEnvironment = undefined
-                if(node["extensions"]["gltfx"]["environment"] !== undefined){
+                if(assetNode["extensions"]["gltfx"]["environment"] !== undefined){
                     const environmentID=node["extensions"]["gltfx"]["environment"]
 
                     const environment=state.gltf.environments[environmentID]
