@@ -57,6 +57,8 @@ class GltfState
                 KHR_materials_iridescence: true,
                 /** KHR_materials_anisotropy defines microfacet grooves in the surface, stretching the specular reflection on the surface */
                 KHR_materials_anisotropy: true,
+                /** KHR_materials_dispersion defines configuring the strength of the angular separation of colors (chromatic abberation)*/
+                KHR_materials_dispersion: true,
                 KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */

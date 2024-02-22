@@ -27,6 +27,7 @@ class gltfMaterial extends GltfObject
         this.hasVolume = false;
         this.hasIridescence = false;
         this.hasAnisotropy = false;
+        this.hasDispersion = false;
 
         // non gltf properties
         this.type = "unlit";
@@ -102,8 +103,7 @@ class gltfMaterial extends GltfObject
         {
             defines.push("MATERIAL_ANISOTROPY 1");
         }
-        // if(this.hasDispersion && renderingParameters.enabledExtensions.KHR_materials_dispersion)
-        if(this.hasDispersion)
+        if(this.hasDispersion && renderingParameters.enabledExtensions.KHR_materials_dispersion)
         {
             defines.push("MATERIAL_DISPERSION 1");
         }
@@ -577,7 +577,7 @@ class gltfMaterial extends GltfObject
             }
 
             // KHR Extension: Anisotropy
-            // See https://github.com/KhronosGroup/glTF/tree/KHR_materials_anisotropy/extensions/2.0/Khronos/KHR_materials_anisotropy
+            // See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy
             if(this.extensions.KHR_materials_anisotropy !== undefined)
             {
                 this.hasAnisotropy = true;
@@ -608,7 +608,7 @@ class gltfMaterial extends GltfObject
             }
 
             // KHR Extension: Dispersion
-            // TODO: Github link
+            // See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_dispersion
             if (this.extensions.KHR_materials_dispersion !== undefined)
             {
                 let dispersion = 0.0;

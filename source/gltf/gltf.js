@@ -33,6 +33,7 @@ const allowedExtensions = [
     "KHR_materials_ior",
     "KHR_materials_iridescence",
     "KHR_materials_anisotropy",
+    "KHR_materials_dispersion",
     "KHR_materials_specular",
     "KHR_materials_emissive_strength",
     "KHR_materials_xmp_json_ld",

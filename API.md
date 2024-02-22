@@ -755,6 +755,8 @@ output the anisotropy strength
 output the final anisotropic direction as defined by the anisotropicTexture and anisotropic rotation
 
 **Kind**: static property of [<code>anisotropy</code>](#GltfState.DebugOutput.anisotropy)  
+
+
 <a name="ResourceLoader"></a>
 
 ## ResourceLoader

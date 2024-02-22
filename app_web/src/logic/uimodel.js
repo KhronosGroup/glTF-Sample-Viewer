@@ -52,6 +52,7 @@ class UIModel
         this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(pluck('newValue'));
         this.iridescenceEnabled = app.$watchAsObservable('iridescenceEnabled').pipe(pluck('newValue'));
         this.anisotropyEnabled = app.$watchAsObservable('anisotropyEnabled').pipe(pluck('newValue'));
+        this.dispersionEnabled = app.$watchAsObservable('dispersionEnabled').pipe(pluck('newValue'));
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(pluck('newValue'));
         this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(pluck('newValue'));
         this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
