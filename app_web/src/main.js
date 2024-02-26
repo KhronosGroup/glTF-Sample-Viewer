@@ -172,13 +172,16 @@ export default async () => {
     listenForRedraw(uiModel.iorEnabled);
 
     uiModel.iridescenceEnabled.subscribe(iridescenceEnabled => state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled);
-    listenForRedraw(uiModel.specularEnabled);
-
-    uiModel.anisotropyEnabled.subscribe(anisotropyEnabled => state.renderingParameters.enabledExtensions.KHR_materials_anisotropy = anisotropyEnabled);
     listenForRedraw(uiModel.iridescenceEnabled);
 
-    uiModel.specularEnabled.subscribe(specularEnabled => state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled);
+    uiModel.anisotropyEnabled.subscribe(anisotropyEnabled => state.renderingParameters.enabledExtensions.KHR_materials_anisotropy = anisotropyEnabled);
     listenForRedraw(uiModel.anisotropyEnabled);
+
+    uiModel.dispersionEnabled.subscribe(dispersionEnabled => state.renderingParameters.enabledExtensions.KHR_materials_dispersion = dispersionEnabled);
+    listenForRedraw(uiModel.dispersionEnabled);
+
+    uiModel.specularEnabled.subscribe(specularEnabled => state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled);
+    listenForRedraw(uiModel.specularEnabled);
 
     uiModel.emissiveStrengthEnabled.subscribe(enabled => state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);

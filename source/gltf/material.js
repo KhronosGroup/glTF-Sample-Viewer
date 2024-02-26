@@ -27,6 +27,7 @@ class gltfMaterial extends GltfObject
         this.hasVolume = false;
         this.hasIridescence = false;
         this.hasAnisotropy = false;
+        this.hasDispersion = false;
 
         // non gltf properties
         this.type = "unlit";
@@ -101,6 +102,10 @@ class gltfMaterial extends GltfObject
         if(this.hasAnisotropy && renderingParameters.enabledExtensions.KHR_materials_anisotropy)
         {
             defines.push("MATERIAL_ANISOTROPY 1");
+        }
+        if(this.hasDispersion && renderingParameters.enabledExtensions.KHR_materials_dispersion)
+        {
+            defines.push("MATERIAL_DISPERSION 1");
         }
 
         return defines;
@@ -572,7 +577,7 @@ class gltfMaterial extends GltfObject
             }
 
             // KHR Extension: Anisotropy
-            // See https://github.com/KhronosGroup/glTF/tree/KHR_materials_anisotropy/extensions/2.0/Khronos/KHR_materials_anisotropy
+            // See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy
             if(this.extensions.KHR_materials_anisotropy !== undefined)
             {
                 this.hasAnisotropy = true;
@@ -600,6 +605,22 @@ class gltfMaterial extends GltfObject
 
                 let anisotropy =  vec3.fromValues(Math.cos(rotation), Math.sin(rotation), factor);
                 this.properties.set("u_Anisotropy", anisotropy);
+            }
+
+            // KHR Extension: Dispersion
+            // See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_dispersion
+            if (this.extensions.KHR_materials_dispersion !== undefined)
+            {
+                let dispersion = 0.0;
+
+                this.hasDispersion = true;
+
+                if(this.extensions.KHR_materials_dispersion.dispersion !== undefined)
+                {
+                    dispersion = this.extensions.KHR_materials_dispersion.dispersion;
+                }
+
+                this.properties.set("u_Dispersion", dispersion);
             }
         }
 

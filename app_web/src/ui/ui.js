@@ -96,6 +96,7 @@ export const app = new Vue({
             iorEnabled: true,
             iridescenceEnabled: true,
             anisotropyEnabled: true,
+            dispersionEnabled: true,
             specularEnabled: true,
             emissiveStrengthEnabled: true,
 
