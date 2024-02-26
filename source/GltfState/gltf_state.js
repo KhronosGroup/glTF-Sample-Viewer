@@ -75,8 +75,8 @@ class GltfState
             renderEnvironmentMap: true,
             /** apply blur to the background environment map */
             blurEnvironmentMap: true,
-            /** which tonemap to use, use ACES for a filmic effect */
-            toneMap: GltfState.ToneMaps.LINEAR,
+            /** which tonemap to use, use KHR_PBR_NEUTRAL for best color reproduction */
+            toneMap: GltfState.ToneMaps.KHR_PBR_NEUTRAL,
             /** render some debug output channes, such as for example the normals */
             debugOutput: GltfState.DebugOutput.NONE,
             /**
@@ -104,14 +104,16 @@ class GltfState
  * by gltf sample viewer
 */
 GltfState.ToneMaps = {
-    /** don't apply tone mapping */
-    NONE: "None",
+    /** Khronos PBR neutral tone mapping, see https://modelviewer.dev/examples/tone-mapping */
+    KHR_PBR_NEUTRAL: "Khronos PBR Neutral",
     /** ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6 */
     ACES_HILL_EXPOSURE_BOOST: "ACES Filmic Tone Mapping (Hill - Exposure Boost)",
     /** fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation*/
     ACES_NARKOWICZ: "ACES Filmic Tone Mapping (Narkowicz)",
     /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
     ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
+    /** Linear mapping clamped at white */
+    NONE: "None (Linear mapping, clamped at white)",
 };
 
 /**

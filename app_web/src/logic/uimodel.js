@@ -33,7 +33,7 @@ class UIModel
         this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({title: GltfState.ToneMaps[key]}));
         this.tonemap = app.tonemapChanged$.pipe(
             pluck("event", "msg"),
-            startWith(GltfState.ToneMaps.LINEAR)
+            startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL)
         );
 
         this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({title: GltfState.DebugOutput[key]}));
