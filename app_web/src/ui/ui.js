@@ -86,7 +86,7 @@ export const app = new Vue({
 
             debugChannel: "None",
             exposureSetting: 0,
-            toneMap: "None",
+            toneMap: "Khronos PBR Neutral",
             skinning: true,
             morphing: true,
             clearcoatEnabled: true,
