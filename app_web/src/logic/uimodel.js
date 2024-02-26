@@ -1,5 +1,5 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share, tap } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
@@ -176,7 +176,11 @@ class UIModel
 
             this.app.selectedAnimations = state.animationIndices;
 
-            this.app.materialVariants = ["None", ...gltf?.variants.map(variant => variant.name)];
+            if (gltf && gltf.variants) {
+                this.app.materialVariants = ["None", ...gltf.variants.map(variant => variant.name)];
+            } else {
+                this.app.materialVariants = ["None"];
+            }
 
             this.app.setAnimationState(true);
             this.app.animations = gltf.animations.map((animation, index) => ({
