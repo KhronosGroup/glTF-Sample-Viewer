@@ -27,7 +27,7 @@ class UIModel
             pluck('newValue'),
             map(environmentName => this.app.environments[environmentName].hdr_path)
         );
-        const initialEnvironment = "footprint_court";
+        const initialEnvironment = "Cannon_Exterior";
         this.app.selectedEnvironment = initialEnvironment;
 
         this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({title: GltfState.ToneMaps[key]}));
