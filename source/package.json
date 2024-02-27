@@ -14,7 +14,6 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^0.21.1",
     "fast-png": "^5.0.3",
     "gl-matrix": "^3.2.1",
     "jpeg-js": "^0.4.3"
