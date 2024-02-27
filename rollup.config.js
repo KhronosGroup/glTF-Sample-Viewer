@@ -25,7 +25,7 @@ export default {
         resolve({
             browser: false,
             preferBuiltins: false,
-            dedupe: ['gl-matrix', 'axios', 'jpeg-js', 'fast-png']
+            dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
         copy({
             targets: [

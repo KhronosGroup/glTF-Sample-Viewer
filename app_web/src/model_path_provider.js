@@ -1,4 +1,3 @@
-import axios from 'axios';
 import path from 'path';
 
 export class GltfModelPathProvider
@@ -12,9 +11,8 @@ export class GltfModelPathProvider
 
     async initialize()
     {
-        const self = this;
-        const response = await axios.get(this.modelIndexerPath);
-        self.populateDictionary(response.data);
+        const response = await fetch(this.modelIndexerPath);
+        this.populateDictionary(await response.json());
     }
 
     resolve(modelKey, flavour)
