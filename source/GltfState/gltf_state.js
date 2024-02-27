@@ -112,8 +112,8 @@ GltfState.ToneMaps = {
     ACES_NARKOWICZ: "ACES Filmic Tone Mapping (Narkowicz)",
     /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
     ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
-    /** Linear mapping clamped at white */
-    NONE: "None (Linear mapping, clamped at white)",
+    /** Linear mapping, clamped at 1.0 per channel */
+    NONE: "None (Linear mapping, clamped at 1.0)",
 };
 
 /**

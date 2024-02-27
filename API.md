@@ -390,7 +390,7 @@ more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's im
 <a name="GltfState.ToneMaps.NONE"></a>
 
 #### ToneMaps.NONE
-Linear mapping clamped at white
+Linear mapping, clamped at 1.0 per channel
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.DebugOutput"></a>
