@@ -65,13 +65,13 @@ Setup
 
 For local usage and debugging, please follow these instructions:
 
-0. Make sure [Git LFS](https://git-lfs.github.com) is installed.
+1. Make sure [Git LFS](https://git-lfs.github.com) is installed.
 
-1. Checkout the [`main`](../../tree/main) branch
+2. Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update --init --recursive`
 
-2. Pull the submodules for the required [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models) and [environments](https://github.com/KhronosGroup/glTF-Sample-Environments) `git submodule update  --init --recursive`
+3. Change into the `app_web` directory
 
-3. To build the npm package for publishing:
+4. To build the npm package for publishing:
 	- run `npm install`
 	- run `npm run build`
 
@@ -88,7 +88,7 @@ More detailed information about the API is listed in the [api documentation](API
 
 ### GltfView
 
-The GltfView component is associated with one WebGL2 context. In practice this means it will be associated with one HTML5 Canvas. This component manages the interaction between the canvas and the GL context. For example it therefore specifies the viewport, the swapchain and can be used to schedule frame renders. 
+The GltfView component is associated with one WebGL2 context. In practice this means it will be associated with one HTML5 Canvas. This component manages the interaction between the canvas and the GL context. For example it therefore specifies the viewport, the swapchain and can be used to schedule frame renders.
 
 ```js
 const view = new GltfView(webGl2Context);
@@ -136,7 +136,7 @@ You can find an example application for the gltf viewer in the [app_web subdirec
 Open a terminal window in the repository root an run the following commands
 ```
 cd app_web
-npm install 
+npm install
 npm run dev
 ```
 
