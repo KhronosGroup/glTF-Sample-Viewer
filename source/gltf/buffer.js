@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { getContainingFolder } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -41,13 +40,13 @@ class gltfBuffer extends GltfObject
             return false;
         }
 
-        const self = this;
-        axios.get(getContainingFolder(gltf.path) + this.uri, { responseType: 'arraybuffer'})
-            .then(function(response)
-            {
-                self.buffer = response.data;
+        fetch(getContainingFolder(gltf.path) + this.uri)
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                this.buffer = buffer;
                 callback();
             });
+
         return true;
     }
 

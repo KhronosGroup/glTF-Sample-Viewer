@@ -1,5 +1,3 @@
-
-import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
 import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
@@ -54,9 +52,8 @@ class ResourceLoader
         if (typeof gltfFile === "string")
         {
             isGlb = getIsGlb(gltfFile);
-            let response = await axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" });
-            json = response.data;
-            data = response.data;
+            const response = await fetch(gltfFile);
+            json = data = await (isGlb ? response.arrayBuffer() : response.json());
             filename = gltfFile;
         }
         else if (gltfFile instanceof ArrayBuffer)
@@ -129,9 +126,8 @@ class ResourceLoader
         let image = undefined;
         if (typeof environmentFile === "string")
         {
-            let response = await axios.get(environmentFile, { responseType: "arraybuffer" });
-
-            image = await loadHDR(new Uint8Array(response.data));
+            let response = await fetch(environmentFile);
+            image = await loadHDR(new Uint8Array(await response.arrayBuffer()));
         }
         else if (environmentFile instanceof ArrayBuffer)
         {
@@ -334,12 +330,12 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     }
 
     environment.images.push(new gltfImage(
-        undefined, 
-        GL.TEXTURE_2D, 
-        0, 
-        undefined, 
-        undefined, 
-        ImageMimeType.GLTEXTURE, 
+        undefined,
+        GL.TEXTURE_2D,
+        0,
+        undefined,
+        undefined,
+        ImageMimeType.GLTEXTURE,
         environmentFiltering.ggxLutTextureID));
     const lutTexture = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
     lutTexture.initialized = true; // iblsampler has already initialized the texture
@@ -351,12 +347,12 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     // Sheen
     // Charlie
     environment.images.push(new gltfImage(
-        undefined, 
-        GL.TEXTURE_2D, 
-        0, 
-        undefined, 
-        undefined, 
-        ImageMimeType.GLTEXTURE, 
+        undefined,
+        GL.TEXTURE_2D,
+        0,
+        undefined,
+        undefined,
+        ImageMimeType.GLTEXTURE,
         environmentFiltering.charlieLutTextureID));
     const charlieLut = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
     charlieLut.initialized = true; // iblsampler has already initialized the texture
