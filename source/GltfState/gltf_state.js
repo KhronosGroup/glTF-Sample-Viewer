@@ -120,6 +120,8 @@ GltfState.ToneMaps = {
 };
 
 GltfState.LoDs = {
+    Highest: "Highest",
+    Distance: "Distance",
     Q0: "Q0",
     Q1: "Q1",
     Q2: "Q2",

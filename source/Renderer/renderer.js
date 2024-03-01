@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3, quat } from 'gl-matrix';
+import { mat4, mat3, vec3,vec4, quat } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
@@ -18,6 +18,8 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
+
+import { getSceneExtents, getBoundingBoxFromMinMax, getNodeBoundingBox} from '../gltf/gltf_utils.js';
 
 class gltfRenderer
 {
@@ -313,15 +315,123 @@ class gltfRenderer
                 let renderNodeID = this.getAssetNodeID(state.gltf, node.extras.expectAsset)
                 
                 const stateLODLevel = state.renderingParameters.LoD.slice(1, 2);
+                let lodMarker = node.extras.expectAsset + "_lod" + stateLODLevel;
+                
+
+                if(state.renderingParameters.LoD === "Highest") {
+                    for (const level of [0,1,2]){
+
+                        lodMarker = node.extras.expectAsset + "_lod" + level
+                        if(this.getAssetNodeID(state.gltf, lodMarker) !==undefined){
+                            break
+                        }
+                    }
+                }
+
+                if(state.renderingParameters.LoD === "Distance") {
+                    let origin = vec3.create(); 
+                    let assetDistance= vec3.distance (origin, this.currentCameraPosition)
+                    console.log(assetDistance)
+                    let distanceSuggestion = 0 
+                    if(assetDistance>300.0)distanceSuggestion=1
+                    if(assetDistance>600.0)distanceSuggestion=2
+                    lodMarker = node.extras.expectAsset + "_lod" + distanceSuggestion
+                }
+                
+
+                let viewProjectionMatrix = this.viewProjectionMatrix
+                let viewMatrix = this.viewMatrix
 
 
-                const lodMarker = node.extras.expectAsset + "_lod" + stateLODLevel
+                function transformViewProj(v3_in){
+                    let v4_in = vec4.fromValues(v3_in[0],v3_in[1],v3_in[2],1.0)
+                    let v4 = vec4.create()
+                    vec4.transformMat4(v4, v4_in, viewProjectionMatrix )
+ 
+                    let v3 = vec3.fromValues(v4[0],v4[1],v4[2])  
+                    vec3.scale(v3, v3, 1.0/v4[3])
+                    // [-1 .. +1]
+                    
+                    vec3.add(v3, v3, vec3.fromValues(1,1,1))
+                    vec3.scale(v3, v3, 0.5) 
+                    
+                    // [0 .. +1]
+                    return v3
+                }
+
+                function transformView(v3_in){
+                    let v4_in = vec4.fromValues(v3_in[0],v3_in[1],v3_in[2],1.0)
+                    let v4 = vec4.create()
+                    vec4.transformMat4(v4, v4_in, viewMatrix ) 
+                    let v3 = vec3.fromValues(v4[0],v4[1],v4[2])                      
+                    return v3
+                }
+
+
+                //calculate size of bounding box in camera space:
+                let boxVertices = getNodeBoundingBox(state.gltf, renderNodeID)
+
+                for(let i in boxVertices) { 
+                    boxVertices[i] = transformView(boxVertices[i],  this.viewMatrix); 
+                }
+
+                const worldMin = vec3.clone(boxVertices[0]); // initialize
+                const worldMax = vec3.clone(boxVertices[0]);
+
+                for(let i in boxVertices) {
+                    for (const component of [0, 1, 2]) {
+                        worldMin[component] = Math.min(worldMin[component], boxVertices[i][component]);
+                        worldMax[component] = Math.max(worldMax[component], boxVertices[i][component]);
+                    }
+                }
+
+                const hMeter = (worldMax[0] - worldMin[0])  
+                const vMeter = (worldMax[1] - worldMin[1]) 
+
+                // view-dependent bounding box:
+                // let diagonalMeters = Math.sqrt(hMeter*hMeter+ vMeter*vMeter)
+
+                // view-independent / static bounding box of asset:
+                let diagonalMeters = vec3.distance(boxVertices[0], boxVertices[7])
+                
+                console.log("diagonal [meter]: " + diagonalMeters)
+
+
+                //calculate size of bounding box in pixel space:
+                boxVertices = getNodeBoundingBox(state.gltf, renderNodeID)
+                for(let i in boxVertices) { 
+                    boxVertices[i] = transformViewProj(boxVertices[i], viewProjectionMatrix); 
+                }
+
+                const pixelMin = vec3.clone(boxVertices[0]); // initialize
+                const pixelMax = vec3.clone(boxVertices[0]);
+
+                for(let i in boxVertices) {
+                    for (const component of [0, 1, 2]) {
+                        pixelMin[component] = Math.min(pixelMin[component], boxVertices[i][component]);
+                        pixelMax[component] = Math.max(pixelMax[component], boxVertices[i][component]);
+                    }
+                }
+
+                const hPixels = (pixelMax[0] - pixelMin[0]) *  this.currentWidth
+                const vPixels = (pixelMax[1] - pixelMin[1]) *  this.currentHeight
+
+                let diagonalPixels = Math.sqrt(hPixels*hPixels+ vPixels*vPixels)
+                console.log("diagonal [pixel]: " + diagonalPixels)
+
+                let pqpm = diagonalPixels/diagonalMeters
+                console.log("pqpm: " + pqpm)
+                
+                
+
                 const lodNodeID = this.getAssetNodeID(state.gltf, lodMarker)
 
-                if( lodNodeID !==undefined){
+                if( lodNodeID !== undefined){
                     renderNodeID=lodNodeID
+                    //console.log("switching render node:  "+renderNodeID)
+                    //console.log(state.gltf)
                 }else{
-                    console.log("lod level unavailable: "+stateLODLevel)
+                    //console.log("lod level unavailable: "+stateLODLevel)
                 }
 
                 
