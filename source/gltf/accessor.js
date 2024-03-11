@@ -88,12 +88,12 @@ class gltfAccessor extends GltfObject
                 break;
             }
         }
-
-        if (this.typedView === undefined)
+        else
         {
-            console.warn("Failed to convert buffer view to typed view!: " + this.bufferView);
+            this.typedView = this.createView();
         }
-        else if (this.sparse !== undefined)
+
+        if (this.sparse !== undefined)
         {
             this.applySparse(gltf, this.typedView);
         }
@@ -175,17 +175,29 @@ class gltfAccessor extends GltfObject
                 this.filteredView[i] = dv[func](offset, true);
             }
         }
-
-        if (this.filteredView === undefined)
+        else
         {
-            console.warn("Failed to convert buffer view to filtered view!: " + this.bufferView)
+            this.filteredView = this.createView();
         }
-        else if (this.sparse !== undefined)
+
+        if (this.sparse !== undefined)
         {
             this.applySparse(gltf, this.filteredView);
         }
 
         return this.filteredView;
+    }
+
+    createView()
+    {
+        const size = this.count * this.getComponentCount(this.type);
+        if (this.componentType == GL.BYTE) return new Int8Array(size);
+        if (this.componentType == GL.UNSIGNED_BYTE) return new Uint8Array(size);
+        if (this.componentType == GL.SHORT) return new Int16Array(size);
+        if (this.componentType == GL.UNSIGNED_SHORT) return new Uint16Array(size);
+        if (this.componentType == GL.UNSIGNED_INT) return new Uint32Array(size);
+        if (this.componentType == GL.FLOAT) return new Float32Array(size);
+        return undefined;
     }
 
     // getNormalizedDeinterlacedView provides an alternative view to the accessors data,
@@ -203,13 +215,20 @@ class gltfAccessor extends GltfObject
         return this.normalizedFilteredView;
     }
 
+    byteStride(gltf)
+    {
+        return gltf.bufferViews[this.bufferView]?.byteStride ??
+            gltf.bufferViews[this.sparse?.values.bufferView]?.byteStride ??
+            0;
+    }
+
     applySparse(gltf, view)
     {
         // Gather indices.
 
         const indicesBufferView = gltf.bufferViews[this.sparse.indices.bufferView];
         const indicesBuffer = gltf.buffers[indicesBufferView.buffer];
-        const indicesByteOffset = this.sparse.indices.byteOffset + indicesBufferView.byteOffset;
+        const indicesByteOffset = this.sparse.indices.byteOffset ?? 0 + indicesBufferView.byteOffset ?? 0;
 
         const indicesComponentSize = this.getComponentSize(this.sparse.indices.componentType);
         let indicesComponentCount = 1;
@@ -239,7 +258,7 @@ class gltfAccessor extends GltfObject
 
         const valuesBufferView = gltf.bufferViews[this.sparse.values.bufferView];
         const valuesBuffer = gltf.buffers[valuesBufferView.buffer];
-        const valuesByteOffset = this.sparse.values.byteOffset + valuesBufferView.byteOffset;
+        const valuesByteOffset = this.sparse.values.byteOffset ?? 0 + valuesBufferView.byteOffset ?? 0;
 
         const valuesComponentSize = this.getComponentSize(this.componentType);
         let valuesComponentCount = this.getComponentCount(this.type);
@@ -286,6 +305,7 @@ class gltfAccessor extends GltfObject
     }
 
     // dequantize can be used to perform the normalization from WebGL2 vertexAttribPointer explicitly
+    // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md#encoding-quantized-data
     static dequantize(typedArray, componentType)
     {
         switch (componentType)

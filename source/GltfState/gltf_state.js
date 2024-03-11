@@ -56,6 +56,10 @@ class GltfState
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
                 KHR_materials_diffuse_transmission: true,
+                /** KHR_materials_anisotropy defines microfacet grooves in the surface, stretching the specular reflection on the surface */
+                KHR_materials_anisotropy: true,
+                /** KHR_materials_dispersion defines configuring the strength of the angular separation of colors (chromatic abberation)*/
+                KHR_materials_dispersion: true,
                 KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
@@ -72,8 +76,8 @@ class GltfState
             renderEnvironmentMap: true,
             /** apply blur to the background environment map */
             blurEnvironmentMap: true,
-            /** which tonemap to use, use ACES for a filmic effect */
-            toneMap: GltfState.ToneMaps.LINEAR,
+            /** which tonemap to use, use KHR_PBR_NEUTRAL for best color reproduction */
+            toneMap: GltfState.ToneMaps.KHR_PBR_NEUTRAL,
             /** render some debug output channes, such as for example the normals */
             debugOutput: GltfState.DebugOutput.NONE,
             /**
@@ -101,14 +105,16 @@ class GltfState
  * by gltf sample viewer
 */
 GltfState.ToneMaps = {
-    /** don't apply tone mapping */
-    NONE: "None",
+    /** Khronos PBR neutral tone mapping, see https://modelviewer.dev/examples/tone-mapping */
+    KHR_PBR_NEUTRAL: "Khronos PBR Neutral",
     /** ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6 */
     ACES_HILL_EXPOSURE_BOOST: "ACES Filmic Tone Mapping (Hill - Exposure Boost)",
     /** fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation*/
     ACES_NARKOWICZ: "ACES Filmic Tone Mapping (Narkowicz)",
     /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
     ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
+    /** Linear mapping, clamped at 1.0 per channel */
+    NONE: "None (Linear mapping, clamped at 1.0)",
 };
 
 /**
@@ -197,7 +203,17 @@ GltfState.DebugOutput = {
         VOLUME_THICKNESS: "Volume Thickness",
     },
 
-    /** output tranmission lighting */
+    /** output diffuse tranmission lighting */
+    diffuseTransmission: {
+        /** output the combined diffuse tranmission */
+        DIFFUSE_TRANSMISSION: "Diffuse Transmission",
+        /** output the diffuse tranmission factor */
+        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Factor",
+        /** output the diffuse tranmission color factor */
+        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color Factor",
+    },
+
+    /** output iridescence */
     iridescence: {
         /** output the combined iridescence */
         IRIDESCENCE: "Iridescence",
@@ -207,14 +223,12 @@ GltfState.DebugOutput = {
         IRIDESCENCE_THICKNESS: "Iridescence Thickness",
     },
 
-    /** output diffuse tranmission lighting */
-    diffuseTransmission: {
-        /** output the combined diffuse tranmission */
-        DIFFUSE_TRANSMISSION: "Diffuse Transmission",
-        /** output the diffuse tranmission factor */
-        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Factor",
-        /** output the diffuse tranmission color factor */
-        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color Factor",
+    /** output anisotropy */
+    anisotropy: {
+        /** output the anisotropic strength*/
+        ANISOTROPIC_STRENGTH: "Anisotropic Strength",
+        /** output final direction as defined by the anisotropyTexture and rotation*/
+        ANISOTROPIC_DIRECTION: "Anisotropic Direction",
     }
 };
 

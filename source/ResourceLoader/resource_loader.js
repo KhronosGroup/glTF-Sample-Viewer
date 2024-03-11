@@ -1,5 +1,3 @@
-
-import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
 import { getIsGlb, getContainingFolder } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
@@ -9,6 +7,8 @@ import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
 import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
+import init from '../libs/mikktspace.js';
+import mikktspace from '../libs/mikktspace_bg.wasm';
 
 
 import { AsyncFileReader } from './async_file_reader.js';
@@ -52,9 +52,8 @@ class ResourceLoader
         if (typeof gltfFile === "string")
         {
             isGlb = getIsGlb(gltfFile);
-            let response = await axios.get(gltfFile, { responseType: isGlb ? "arraybuffer" : "json" });
-            json = response.data;
-            data = response.data;
+            const response = await fetch(gltfFile);
+            json = data = await (isGlb ? response.arrayBuffer() : response.json());
             filename = gltfFile;
         }
         else if (gltfFile instanceof ArrayBuffer)
@@ -69,10 +68,10 @@ class ResourceLoader
                 console.error("Only .glb files can be loaded from an array buffer");
             }
         }
-        else if (typeof (File) !== 'undefined' && gltfFile instanceof File)
+        else if (Array.isArray(gltfFile) && typeof(File) !== 'undefined' && gltfFile[1] instanceof File)
         {
-            let fileContent = gltfFile;
-            filename = gltfFile.name;
+            let fileContent = gltfFile[1];
+            filename = gltfFile[1].name;
             isGlb = getIsGlb(filename);
             if (isGlb)
             {
@@ -110,6 +109,7 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
+        await init(await mikktspace());
         await gltfLoader.load(gltf, this.view.context, buffers);
 
         return gltf;
@@ -126,9 +126,8 @@ class ResourceLoader
         let image = undefined;
         if (typeof environmentFile === "string")
         {
-            let response = await axios.get(environmentFile, { responseType: "arraybuffer" });
-
-            image = await loadHDR(new Uint8Array(response.data));
+            let response = await fetch(environmentFile);
+            image = await loadHDR(new Uint8Array(await response.arrayBuffer()));
         }
         else if (environmentFile instanceof ArrayBuffer)
         {
@@ -331,12 +330,12 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     }
 
     environment.images.push(new gltfImage(
-        undefined, 
-        GL.TEXTURE_2D, 
-        0, 
-        undefined, 
-        undefined, 
-        ImageMimeType.GLTEXTURE, 
+        undefined,
+        GL.TEXTURE_2D,
+        0,
+        undefined,
+        undefined,
+        ImageMimeType.GLTEXTURE,
         environmentFiltering.ggxLutTextureID));
     const lutTexture = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
     lutTexture.initialized = true; // iblsampler has already initialized the texture
@@ -348,12 +347,12 @@ async function _loadEnvironmentFromPanorama(imageHDR, view, luts)
     // Sheen
     // Charlie
     environment.images.push(new gltfImage(
-        undefined, 
-        GL.TEXTURE_2D, 
-        0, 
-        undefined, 
-        undefined, 
-        ImageMimeType.GLTEXTURE, 
+        undefined,
+        GL.TEXTURE_2D,
+        0,
+        undefined,
+        undefined,
+        ImageMimeType.GLTEXTURE,
         environmentFiltering.charlieLutTextureID));
     const charlieLut = new gltfTexture(lutSamplerIdx, [imageIdx++], GL.TEXTURE_2D);
     charlieLut.initialized = true; // iblsampler has already initialized the texture

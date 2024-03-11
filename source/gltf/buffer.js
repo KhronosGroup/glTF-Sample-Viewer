@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { getContainingFolder } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -29,7 +28,6 @@ class gltfBuffer extends GltfObject
             if (!self.setBufferFromFiles(additionalFiles, resolve) &&
                 !self.setBufferFromUri(gltf, resolve))
             {
-                console.error("Was not able to resolve buffer with uri '%s'", self.uri);
                 resolve();
             }
         });
@@ -42,13 +40,13 @@ class gltfBuffer extends GltfObject
             return false;
         }
 
-        const self = this;
-        axios.get(getContainingFolder(gltf.path) + this.uri, { responseType: 'arraybuffer'})
-            .then(function(response)
-            {
-                self.buffer = response.data;
+        fetch(getContainingFolder(gltf.path) + this.uri)
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                this.buffer = buffer;
                 callback();
             });
+
         return true;
     }
 
@@ -59,13 +57,12 @@ class gltfBuffer extends GltfObject
             return false;
         }
 
-        const foundFile = files.find(function(file)
-        {
+        const foundFile = files.find(([path, file]) => {
             if (file.name === this.uri || file.fullPath === this.uri)
             {
                 return true;
             }
-        }, this);
+        });
 
         if (foundFile === undefined)
         {
@@ -79,7 +76,7 @@ class gltfBuffer extends GltfObject
             self.buffer = event.target.result;
             callback();
         };
-        reader.readAsArrayBuffer(foundFile);
+        reader.readAsArrayBuffer(foundFile[1]);
 
         return true;
     }

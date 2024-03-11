@@ -118,6 +118,7 @@ GltfState containing a state for visualization in GltfView
             * [.exposure](#GltfState+renderingParameters.exposure)
             * [.usePunctual](#GltfState+renderingParameters.usePunctual)
             * [.useIBL](#GltfState+renderingParameters.useIBL)
+            * [.iblIntensity](#GltfState+renderingParameters.iblIntensity)
             * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
             * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
             * [.toneMap](#GltfState+renderingParameters.toneMap)
@@ -127,10 +128,11 @@ GltfState containing a state for visualization in GltfView
             * [.internalMSAA](#GltfState+renderingParameters.internalMSAA)
     * _static_
         * [.ToneMaps](#GltfState.ToneMaps)
-            * [.NONE](#GltfState.ToneMaps.NONE)
+            * [.KHR_PBR_NEUTRAL](#GltfState.ToneMaps.KHR_PBR_NEUTRAL)
             * [.ACES_HILL_EXPOSURE_BOOST](#GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST)
             * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
             * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
+            * [.NONE](#GltfState.ToneMaps.NONE)
         * [.DebugOutput](#GltfState.DebugOutput)
             * [.NONE](#GltfState.DebugOutput.NONE)
             * [.generic](#GltfState.DebugOutput.generic)
@@ -170,6 +172,9 @@ GltfState containing a state for visualization in GltfView
                 * [.IRIDESCENCE](#GltfState.DebugOutput.iridescence.IRIDESCENCE)
                 * [.IRIDESCENCE_FACTOR](#GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR)
                 * [.IRIDESCENCE_THICKNESS](#GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS)
+            * [.anisotropy](#GltfState.DebugOutput.anisotropy)
+                * [.ANISOTROPIC_STRENGTH](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH)
+                * [.ANISOTROPIC_DIRECTION](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION)
 
 <a name="new_GltfState_new"></a>
 
@@ -245,6 +250,7 @@ parameters used to configure the rendering
     * [.exposure](#GltfState+renderingParameters.exposure)
     * [.usePunctual](#GltfState+renderingParameters.usePunctual)
     * [.useIBL](#GltfState+renderingParameters.useIBL)
+    * [.iblIntensity](#GltfState+renderingParameters.iblIntensity)
     * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
     * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
     * [.toneMap](#GltfState+renderingParameters.toneMap)
@@ -289,6 +295,12 @@ KHR_lights_punctual
 image based lighting
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
+<a name="GltfState+renderingParameters.iblIntensity"></a>
+
+#### renderingParameters.iblIntensity
+image based lighting intensity
+
+**Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState+renderingParameters.renderEnvironmentMap"></a>
 
 #### renderingParameters.renderEnvironmentMap
@@ -304,7 +316,7 @@ apply blur to the background environment map
 <a name="GltfState+renderingParameters.toneMap"></a>
 
 #### renderingParameters.toneMap
-which tonemap to use, use ACES for a filmic effect
+which tonemap to use, use KHR_PBR_NEUTRAL for best color reproduction
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState+renderingParameters.debugOutput"></a>
@@ -345,15 +357,16 @@ by gltf sample viewer
 **Kind**: static property of [<code>GltfState</code>](#GltfState)  
 
 * [.ToneMaps](#GltfState.ToneMaps)
-    * [.NONE](#GltfState.ToneMaps.NONE)
+    * [.KHR_PBR_NEUTRAL](#GltfState.ToneMaps.KHR_PBR_NEUTRAL)
     * [.ACES_HILL_EXPOSURE_BOOST](#GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST)
     * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
     * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
+    * [.NONE](#GltfState.ToneMaps.NONE)
 
-<a name="GltfState.ToneMaps.NONE"></a>
+<a name="GltfState.ToneMaps.KHR_PBR_NEUTRAL"></a>
 
-#### ToneMaps.NONE
-don't apply tone mapping
+#### ToneMaps.KHR\_PBR\_NEUTRAL
+Khronos PBR neutral tone mapping, see https://modelviewer.dev/examples/tone-mapping
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST"></a>
@@ -372,6 +385,12 @@ fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' imple
 
 #### ToneMaps.ACES\_HILL
 more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
+<a name="GltfState.ToneMaps.NONE"></a>
+
+#### ToneMaps.NONE
+Linear mapping, clamped at 1.0 per channel
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.DebugOutput"></a>
@@ -421,6 +440,9 @@ such as "NORMAL"
         * [.IRIDESCENCE](#GltfState.DebugOutput.iridescence.IRIDESCENCE)
         * [.IRIDESCENCE_FACTOR](#GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR)
         * [.IRIDESCENCE_THICKNESS](#GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS)
+    * [.anisotropy](#GltfState.DebugOutput.anisotropy)
+        * [.ANISOTROPIC_STRENGTH](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH)
+        * [.ANISOTROPIC_DIRECTION](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION)
 
 <a name="GltfState.DebugOutput.NONE"></a>
 
@@ -674,7 +696,7 @@ output the volume thickness
 <a name="GltfState.DebugOutput.iridescence"></a>
 
 #### DebugOutput.iridescence
-output tranmission lighting
+output iridescence
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
 
@@ -701,6 +723,29 @@ output the iridescence factor
 output the iridescence thickness
 
 **Kind**: static property of [<code>iridescence</code>](#GltfState.DebugOutput.iridescence)  
+<a name="GltfState.DebugOutput.anisotropy"></a>
+
+#### DebugOutput.anisotropy
+output anisotropy
+
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
+
+* [.anisotropy](#GltfState.DebugOutput.anisotropy)
+    * [.ANISOTROPIC_STRENGTH](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH)
+    * [.ANISOTROPIC_DIRECTION](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION)
+
+<a name="GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH"></a>
+
+##### anisotropy.ANISOTROPIC\_STRENGTH
+output the anisotropic strength
+
+**Kind**: static property of [<code>anisotropy</code>](#GltfState.DebugOutput.anisotropy)  
+<a name="GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION"></a>
+
+##### anisotropy.ANISOTROPIC\_DIRECTION
+output final direction as defined by the anisotropyTexture and rotation
+
+**Kind**: static property of [<code>anisotropy</code>](#GltfState.DebugOutput.anisotropy)  
 <a name="ResourceLoader"></a>
 
 ## ResourceLoader

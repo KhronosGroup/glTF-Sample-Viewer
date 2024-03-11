@@ -321,6 +321,9 @@ button.button
     border: 0px;
     padding: 0px;
     background: rgb(51, 51, 51);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 .canvasUIMaximize {
@@ -339,6 +342,24 @@ button.button
 
 .dg li.gui-stats:not(.folder) {
     height: 48px;
+}
+
+.modelCredit {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+}
+.modelCreditBottom {
+    margin-top: 1.5rem;
+    margin-right: 1em;
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+}
+@media (min-height: 768px) {
+    .modelCreditBottom {
+        position: absolute;
+        bottom: 0;
+    }
 }
 
 #gltf-sample-viewer-model-spinner {

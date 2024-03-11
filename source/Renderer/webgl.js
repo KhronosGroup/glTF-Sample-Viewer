@@ -13,18 +13,9 @@ class gltfWebGl
         }
     }
 
-    loadWebGlExtensions(webglExtensions)
+    loadWebGlExtensions()
     {
-        for (let extension of webglExtensions)
-        {
-            if (this.context.getExtension(extension) === null)
-            {
-                console.warn("Extension " + extension + " not supported!");
-            }
-        }
-
         let EXT_texture_filter_anisotropic = this.context.getExtension("EXT_texture_filter_anisotropic");
-
         if (EXT_texture_filter_anisotropic)
         {
             this.context.anisotropy = EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT;
@@ -33,13 +24,14 @@ class gltfWebGl
         }
         else
         {
+            console.warn("Anisotropic filtering is not supported");
             this.context.supports_EXT_texture_filter_anisotropic = false;
         }
     }
 
     setTexture(loc, gltf, textureInfo, texSlot)
     {
-        if (loc === -1)
+        if (loc === null)
         {
             return false;
         }
@@ -48,14 +40,12 @@ class gltfWebGl
 
         if (gltfTex === undefined)
         {
-            console.warn("Texture is undefined: " + textureInfo.index);
             return false;
         }
 
         const image = gltf.images[gltfTex.source];
         if (image === undefined)
         {
-            console.warn("Image is undefined for texture: " + gltfTex.source);
             return false;
         }
 
@@ -152,19 +142,11 @@ class gltfWebGl
 
     enableAttribute(gltf, attributeLocation, gltfAccessor)
     {
-        if (attributeLocation === -1)
+        if (attributeLocation === null)
         {
             console.warn("Tried to access unknown attribute");
             return false;
         }
-
-        if(gltfAccessor.bufferView === undefined)
-        {
-            console.warn("Tried to access undefined bufferview");
-            return true;
-        }
-
-        let gltfBufferView = gltf.bufferViews[gltfAccessor.bufferView];
 
         if (gltfAccessor.glBuffer === undefined)
         {
@@ -185,7 +167,7 @@ class gltfWebGl
             this.context.bindBuffer(GL.ARRAY_BUFFER, gltfAccessor.glBuffer);
         }
 
-        this.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfBufferView.byteStride, 0);
+        this.context.vertexAttribPointer(attributeLocation, gltfAccessor.getComponentCount(gltfAccessor.type), gltfAccessor.componentType, gltfAccessor.normalized, gltfAccessor.byteStride(gltf), 0);
         this.context.enableVertexAttribArray(attributeLocation);
 
         return true;
@@ -285,7 +267,11 @@ class gltfWebGl
 
         if (this.context.supports_EXT_texture_filter_anisotropic)
         {
-            this.context.texParameterf(type, this.context.anisotropy, this.context.maxAnisotropy); // => 16xAF
+            if ((gltfSamplerObj.magFilter !==  GL.NEAREST) 
+                && (gltfSamplerObj.minFilter ===  GL.NEAREST_MIPMAP_LINEAR || gltfSamplerObj.minFilter ===  GL.LINEAR_MIPMAP_LINEAR ))
+            {
+                this.context.texParameterf(type, this.context.anisotropy, this.context.maxAnisotropy); // => 16xAF
+            }
         }
     }
 }

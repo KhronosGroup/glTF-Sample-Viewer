@@ -3,23 +3,22 @@ import { GltfView } from 'gltf-viewer-source';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
-import { Observable, Subject, from, merge } from 'rxjs';
-import { mergeMap, filter, map, multicast } from 'rxjs/operators';
-import { gltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
+import { EMPTY, from, merge } from 'rxjs';
+import { mergeMap, map, share, catchError } from 'rxjs/operators';
+import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
 
-async function main()
-{
+export default async () => {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
-    const ui = document.getElementById("app");
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
-    const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
+    const pathProvider = new GltfModelPathProvider('assets/models/Models/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
+        "Cannon_Exterior": "Cannon Exterior",
         "footprint_court": "Footprint Court",
         "pisa": "Pisa",
         "doge2": "Doge's palace",
@@ -28,7 +27,6 @@ async function main()
         "helipad": "Helipad Goldenhour",
         "papermill": "Papermill Ruins",
         "neutral": "Studio Neutral",
-        "Cannon_Exterior": "Cannon Exterior",
         "Colorful_Studio": "Colorful Studio",
         "Wide_Street" : "Wide Street",
     }, "assets/environments/");
@@ -37,24 +35,21 @@ async function main()
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
-    const gltfLoadedSubject = new Subject();
-    const gltfLoadedMulticast = uiModel.model.pipe(
-        mergeMap( (model) =>
-        {
-        	uiModel.goToLoadingState();
+    const gltfLoaded = uiModel.model.pipe(
+        mergeMap(model => {
+            uiModel.goToLoadingState();
 
             // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
             resourceLoader.initKtxLib();
 
-            return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
+            return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then(gltf => {
                 state.gltf = gltf;
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 state.cameraIndex = undefined;
-                if (state.gltf.scenes.length != 0)
-                {
-                    if(state.sceneIndex > state.gltf.scenes.length - 1)
-                    {
+
+                if (state.gltf.scenes.length != 0) {
+                    if (state.sceneIndex > state.gltf.scenes.length - 1) {
                         state.sceneIndex = 0;
                     }
                     const scene = state.gltf.scenes[state.sceneIndex];
@@ -64,10 +59,8 @@ async function main()
 
                     // Try to start as many animations as possible without generating conficts.
                     state.animationIndices = [];
-                    for (let i = 0; i < gltf.animations.length; i++)
-                    {
-                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
-                        {
+                    for (let i = 0; i < gltf.animations.length; i++) {
+                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
                             state.animationIndices.push(i);
                         }
                     }
@@ -77,71 +70,59 @@ async function main()
                 uiModel.exitLoadingState();
 
                 return state;
-            })
-            );
+            }));
         }),
-        // transform gltf loaded observable to multicast observable to avoid multiple execution with multiple subscriptions
-        multicast(gltfLoadedSubject)
+        catchError(error => {
+            console.error(error);
+            uiModel.exitLoadingState();
+            return EMPTY;
+        }),
+        share()
     );
 
-    uiModel.disabledAnimations(uiModel.activeAnimations.pipe(map(animationIndices => {
-        // Disable all animations which are not disjoint to the current selection of animations.
-        return state.gltf.nonDisjointAnimations(animationIndices);
-    })));
+    // Disable all animations which are not disjoint to the current selection of animations.
+    uiModel.disabledAnimations(uiModel.activeAnimations.pipe(map(animationIndices => state.gltf.nonDisjointAnimations(animationIndices))));
 
-    const sceneChangedSubject = new Subject();
-    const sceneChangedObservable = uiModel.scene.pipe(map( newSceneIndex => {
-        state.sceneIndex = newSceneIndex;
-        state.cameraIndex = undefined;
-        const scene = state.gltf.scenes[state.sceneIndex];
-        if (scene !== undefined)
-        {
-            scene.applyTransformHierarchy(state.gltf);
-            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
-        }
-    }),
-    multicast(sceneChangedSubject)
+    const sceneChangedObservable = uiModel.scene.pipe(
+        map(sceneIndex => {
+            state.sceneIndex = sceneIndex;
+            state.cameraIndex = undefined;
+            const scene = state.gltf.scenes[state.sceneIndex];
+            if (scene !== undefined)
+            {
+                scene.applyTransformHierarchy(state.gltf);
+                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+            }
+        }),
+        share()
     );
 
-    const statisticsUpdateObservableTemp = merge(
-        gltfLoadedMulticast,
-        sceneChangedObservable
-    );
+    const statisticsUpdateObservable = merge(sceneChangedObservable, gltfLoaded).pipe(map(() => view.gatherStatistics(state)));
 
-    const statisticsUpdateObservable = statisticsUpdateObservableTemp.pipe(
-        map( (_) => view.gatherStatistics(state) )
-    );
-
-    const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe( map(_ => {
-        let camera = state.userCamera;
-        if(state.cameraIndex !== undefined)
-        {
-            camera = state.gltf.cameras[state.cameraIndex];
-        }
-        const cameraDesc = camera.getDescription(state.gltf);
-        return cameraDesc;
+    const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe(map(() => {
+        const camera = state.cameraIndex === undefined
+            ? state.userCamera
+            : state.gltf.cameras[state.cameraIndex];
+        return camera.getDescription(state.gltf);
     }));
 
     const downloadDataURL = (filename, dataURL) => {
-        var element = document.createElement('a');
+        const element = document.createElement('a');
         element.setAttribute('href', dataURL);
         element.setAttribute('download', filename);
-
         element.style.display = 'none';
         document.body.appendChild(element);
-
         element.click();
-
         document.body.removeChild(element);
     };
 
-    cameraExportChangedObservable.subscribe( cameraDesc => {
+    cameraExportChangedObservable.subscribe(cameraDesc => {
         const gltf = JSON.stringify(cameraDesc, undefined, 4);
         const dataURL = 'data:text/plain;charset=utf-8,' +  encodeURIComponent(gltf);
         downloadDataURL("camera.gltf", dataURL);
     });
 
-    uiModel.captureCanvas.subscribe( () => {
+    uiModel.captureCanvas.subscribe(() => {
         view.renderFrame(state, canvas.width, canvas.height);
         const dataURL = canvas.toDataURL();
         downloadDataURL("capture.png", dataURL);
@@ -151,116 +132,80 @@ async function main()
     let redraw = false;
     const listenForRedraw = stream => stream.subscribe(() => redraw = true);
     
-    uiModel.scene.pipe(filter(scene => scene === -1)).subscribe( () => {
-        state.sceneIndex = undefined;
-    });
-    uiModel.scene.pipe(filter(scene => scene !== -1)).subscribe( scene => {
-        state.sceneIndex = scene;
-    });
+    uiModel.scene.subscribe(scene => state.sceneIndex = scene !== -1 ? scene : undefined);
     listenForRedraw(uiModel.scene);
 
-    uiModel.camera.pipe(filter(camera => camera === -1)).subscribe( () => {
-        state.cameraIndex = undefined;
-    });
-    uiModel.camera.pipe(filter(camera => camera !== -1)).subscribe( camera => {
-        state.cameraIndex = camera;
-    });
+    uiModel.camera.subscribe(camera => state.cameraIndex = camera !== -1 ? camera : undefined);
     listenForRedraw(uiModel.camera);
 
-    uiModel.variant.subscribe( variant => {
-        state.variant = variant;
-    });
+    uiModel.variant.subscribe(variant => state.variant = variant);
     listenForRedraw(uiModel.variant);
 
-    uiModel.tonemap.subscribe( tonemap => {
-        state.renderingParameters.toneMap = tonemap;
-    });
+    uiModel.tonemap.subscribe(tonemap => state.renderingParameters.toneMap = tonemap);
     listenForRedraw(uiModel.tonemap);
 
-    uiModel.debugchannel.subscribe( debugchannel => {
-        state.renderingParameters.debugOutput = debugchannel;
-    });
+    uiModel.debugchannel.subscribe(debugchannel => state.renderingParameters.debugOutput = debugchannel);
     listenForRedraw(uiModel.debugchannel);
 
-    uiModel.skinningEnabled.subscribe( skinningEnabled => {
-        state.renderingParameters.skinning = skinningEnabled;
-    });
+    uiModel.skinningEnabled.subscribe(skinningEnabled => state.renderingParameters.skinning = skinningEnabled);
     listenForRedraw(uiModel.skinningEnabled);
 
-    uiModel.exposure.subscribe( exposure => {
-        state.renderingParameters.exposure = (1.0 / Math.pow(2.0, exposure));
-    });
+    uiModel.exposure.subscribe(exposure => state.renderingParameters.exposure = (1.0 / Math.pow(2.0, exposure)));
     listenForRedraw(uiModel.exposure);
 
-    uiModel.morphingEnabled.subscribe( morphingEnabled => {
-        state.renderingParameters.morphing = morphingEnabled;
-    });
+    uiModel.morphingEnabled.subscribe(morphingEnabled => state.renderingParameters.morphing = morphingEnabled);
     listenForRedraw(uiModel.morphingEnabled);
 
-    uiModel.clearcoatEnabled.subscribe( clearcoatEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_clearcoat = clearcoatEnabled;
-    });
-    uiModel.sheenEnabled.subscribe( sheenEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_sheen = sheenEnabled;
-    });
-    uiModel.transmissionEnabled.subscribe( transmissionEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_transmission = transmissionEnabled;
-    });
-    uiModel.volumeEnabled.subscribe( volumeEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_volume = volumeEnabled;
-    });
-    uiModel.iorEnabled.subscribe( iorEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_ior = iorEnabled;
-    });
-    uiModel.iridescenceEnabled.subscribe( iridescenceEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled;
-    });
-    uiModel.diffuseTransmissionEnabled.subscribe( diffuseTransmissionEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission = diffuseTransmissionEnabled;
-    });
-    uiModel.specularEnabled.subscribe( specularEnabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
-    });
-    uiModel.emissiveStrengthEnabled.subscribe( enabled => {
-        state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
-    });
+    uiModel.clearcoatEnabled.subscribe(clearcoatEnabled => state.renderingParameters.enabledExtensions.KHR_materials_clearcoat = clearcoatEnabled);
     listenForRedraw(uiModel.clearcoatEnabled);
+
+    uiModel.sheenEnabled.subscribe(sheenEnabled => state.renderingParameters.enabledExtensions.KHR_materials_sheen = sheenEnabled);
     listenForRedraw(uiModel.sheenEnabled);
+
+    uiModel.transmissionEnabled.subscribe(transmissionEnabled => state.renderingParameters.enabledExtensions.KHR_materials_transmission = transmissionEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
-    listenForRedraw(uiModel.volumeEnabled);
-    listenForRedraw(uiModel.iorEnabled);
-    listenForRedraw(uiModel.specularEnabled);
-    listenForRedraw(uiModel.iridescenceEnabled);
+
+    uiModel.diffuseTransmissionEnabled.subscribe(diffuseTransmissionEnabled => state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission = diffuseTransmissionEnabled);
     listenForRedraw(uiModel.diffuseTransmissionEnabled);
+
+    uiModel.volumeEnabled.subscribe(volumeEnabled => state.renderingParameters.enabledExtensions.KHR_materials_volume = volumeEnabled);
+    listenForRedraw(uiModel.volumeEnabled);
+
+    uiModel.iorEnabled.subscribe(iorEnabled => state.renderingParameters.enabledExtensions.KHR_materials_ior = iorEnabled);
+    listenForRedraw(uiModel.iorEnabled);
+
+    uiModel.iridescenceEnabled.subscribe(iridescenceEnabled => state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled);
+    listenForRedraw(uiModel.iridescenceEnabled);
+
+    uiModel.anisotropyEnabled.subscribe(anisotropyEnabled => state.renderingParameters.enabledExtensions.KHR_materials_anisotropy = anisotropyEnabled);
+    listenForRedraw(uiModel.anisotropyEnabled);
+
+    uiModel.dispersionEnabled.subscribe(dispersionEnabled => state.renderingParameters.enabledExtensions.KHR_materials_dispersion = dispersionEnabled);
+    listenForRedraw(uiModel.dispersionEnabled);
+
+    uiModel.specularEnabled.subscribe(specularEnabled => state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled);
+    listenForRedraw(uiModel.specularEnabled);
+
+    uiModel.emissiveStrengthEnabled.subscribe(enabled => state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 
-    uiModel.iblEnabled.subscribe( iblEnabled => {
-        state.renderingParameters.useIBL = iblEnabled;
-    });
+    uiModel.iblEnabled.subscribe(iblEnabled => state.renderingParameters.useIBL = iblEnabled);
     listenForRedraw(uiModel.iblEnabled);
 
-    uiModel.iblIntensity.subscribe( iblIntensity => {
-        state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity);
-    });
+    uiModel.iblIntensity.subscribe(iblIntensity => state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity));
     listenForRedraw(uiModel.iblIntensity);
 
-    uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
-        state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
-    });
-    uiModel.blurEnvEnabled.subscribe( blurEnvEnabled => {
-        state.renderingParameters.blurEnvironmentMap = blurEnvEnabled;
-    });
+    uiModel.renderEnvEnabled.subscribe(renderEnvEnabled => state.renderingParameters.renderEnvironmentMap = renderEnvEnabled);
     listenForRedraw(uiModel.renderEnvEnabled);
+    
+    uiModel.blurEnvEnabled.subscribe(blurEnvEnabled => state.renderingParameters.blurEnvironmentMap = blurEnvEnabled);
     listenForRedraw(uiModel.blurEnvEnabled);
 
-    uiModel.punctualLightsEnabled.subscribe( punctualLightsEnabled => {
-        state.renderingParameters.usePunctual = punctualLightsEnabled;
-    });
+    uiModel.punctualLightsEnabled.subscribe(punctualLightsEnabled => state.renderingParameters.usePunctual = punctualLightsEnabled);
     listenForRedraw(uiModel.punctualLightsEnabled);
 
-    uiModel.environmentRotation.subscribe( environmentRotation => {
-        switch (environmentRotation)
-        {
+    uiModel.environmentRotation.subscribe(environmentRotation => {
+        switch (environmentRotation) {
         case "+Z":
             state.renderingParameters.environmentRotation = 90.0;
             break;
@@ -278,60 +223,50 @@ async function main()
     listenForRedraw(uiModel.environmentRotation);
 
 
-    uiModel.clearColor.subscribe( clearColor => {
-        state.renderingParameters.clearColor = clearColor;
-    });
+    uiModel.clearColor.subscribe(clearColor => state.renderingParameters.clearColor = clearColor);
     listenForRedraw(uiModel.clearColor);
 
-    uiModel.animationPlay.subscribe( animationPlay => {
-        if(animationPlay)
-        {
+    uiModel.animationPlay.subscribe(animationPlay => {
+        if(animationPlay) {
             state.animationTimer.unpause();
         }
-        else
-        {
+        else {
             state.animationTimer.pause();
         }
     });
 
-    uiModel.activeAnimations.subscribe( animations => {
-        state.animationIndices = animations;
-    });
+    uiModel.activeAnimations.subscribe(animations => state.animationIndices = animations);
     listenForRedraw(uiModel.activeAnimations);
 
-    uiModel.hdr.subscribe( hdrFile => {
+    uiModel.hdr.subscribe(hdrFile => {
         resourceLoader.loadEnvironment(hdrFile).then( (environment) => {
             state.environment = environment;
-            //We neeed to wait until the environment is loaded to redraw
-            redraw = true
+            // We need to wait until the environment is loaded to redraw
+            redraw = true;
         });
     });
 
-    uiModel.attachGltfLoaded(gltfLoadedMulticast);
+    uiModel.attachGltfLoaded(gltfLoaded);
     uiModel.updateStatistics(statisticsUpdateObservable);
-    const sceneChangedStateObservable = uiModel.scene.pipe(map( newSceneIndex => state));
+    const sceneChangedStateObservable = uiModel.scene.pipe(map(() => state));
     uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
-    gltfLoadedMulticast.connect();
 
     uiModel.orbit.subscribe( orbit => {
-        if (state.cameraIndex === undefined)
-        {
+        if (state.cameraIndex === undefined) {
             state.userCamera.orbit(orbit.deltaPhi, orbit.deltaTheta);
         }
     });
     listenForRedraw(uiModel.orbit);
 
     uiModel.pan.subscribe( pan => {
-        if (state.cameraIndex === undefined)
-        {
+        if (state.cameraIndex === undefined) {
             state.userCamera.pan(pan.deltaX, -pan.deltaY);
         }
     });
     listenForRedraw(uiModel.pan);
 
     uiModel.zoom.subscribe( zoom => {
-        if (state.cameraIndex === undefined)
-        {
+        if (state.cameraIndex === undefined) {
             state.userCamera.zoomBy(zoom.deltaZoom);
         }
     });
@@ -339,8 +274,7 @@ async function main()
 
     // configure the animation loop
     const past = {};
-    const update = () =>
-    {
+    const update = () => {
         const devicePixelRatio = window.devicePixelRatio || 1;
 
         // set the size of the drawingBuffer based on the size it's displayed.
@@ -361,6 +295,4 @@ async function main()
 
     // After this start executing animation loop.
     window.requestAnimationFrame(update);
-}
-
-export { main };
+};

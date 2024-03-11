@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue.esm.js'
+import Vue from 'vue/dist/vue.esm.js';
 import VueRx from 'vue-rx';
 import { Subject } from 'rxjs';
 import './sass.scss';
@@ -22,7 +22,7 @@ Vue.component('toggle-button', {
     },
     methods:
     {
-        buttonclicked: function(value)
+        buttonclicked: function()
         {
             this.isOn = !this.isOn;
             this.name = this.isOn ? this.ontext : this.offtext;
@@ -40,7 +40,7 @@ Vue.component('json-to-ui-template', {
     template:'#jsonToUITemplate'
 });
 
-const app = new Vue({
+export const app = new Vue({
     domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
         'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
         'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
@@ -55,12 +55,14 @@ const app = new Vue({
             flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
-            materialVariants: [{title: "None"}],
+            materialVariants: ["None"],
 
             animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
+            assetCopyright: "",
+            assetGenerator: "",
             statistics: [],
 
             selectedModel: "DamagedHelmet",
@@ -84,7 +86,7 @@ const app = new Vue({
 
             debugChannel: "None",
             exposureSetting: 0,
-            toneMap: "None",
+            toneMap: "Khronos PBR Neutral",
             skinning: true,
             morphing: true,
             clearcoatEnabled: true,
@@ -94,6 +96,8 @@ const app = new Vue({
             iorEnabled: true,
             iridescenceEnabled: true,
             diffuseTransmissionEnabled: true,
+            anisotropyEnabled: true,
+            dispersionEnabled: true,
             specularEnabled: true,
             emissiveStrengthEnabled: true,
 
@@ -117,6 +121,7 @@ const app = new Vue({
         colorPicker.classList.remove("input");
 
         // test if webgl is present
+        const canvas = document.getElementById("canvas");
         const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
         if (context === undefined || context === null) {
             this.error("The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " + 
@@ -136,7 +141,7 @@ const app = new Vue({
             img.style.height = "22px";
             document.getElementById("tabsContainer").childNodes[0].childNodes[0].appendChild(a);
             a.appendChild(img);
-        })
+        });
 
     },
     methods:
@@ -145,7 +150,7 @@ const app = new Vue({
         {
             this.$refs.animationState.setState(value);
         },
-        iblTriggered: function(value)
+        iblTriggered: function()
         {
             if(this.ibl == false)
             {
@@ -156,7 +161,7 @@ const app = new Vue({
                 this.renderEnv = this.environmentVisiblePrefState;
             }
         },
-        transmissionTriggered: function(value)
+        transmissionTriggered: function()
         {
             if(this.transmissionEnabled == false)
             {
@@ -197,14 +202,14 @@ const app = new Vue({
             this.$buefy.toast.open({
                 message: message,
                 type: 'is-warning'
-            })
+            });
         },
         error(message, duration = 5000) {
             this.$buefy.toast.open({
                 message: message,
                 type: 'is-danger',
                 duration: duration
-            })
+            });
         },
         goToLoadingState() {
             if(this.loadingComponent !== undefined)
@@ -213,7 +218,7 @@ const app = new Vue({
             }
             this.loadingComponent = this.$buefy.loading.open({
                 container: null
-            })
+            });
         },
         exitLoadingState()
         {
@@ -237,7 +242,7 @@ const app = new Vue({
     }
 }).$mount('#app');
 
-const canvasUI = new Vue({
+new Vue({
     data() {
         return {
             fullscreen: false,
@@ -247,7 +252,7 @@ const canvasUI = new Vue({
     methods:
     {
         toggleFullscreen() {
-            if(this.fullscreen) {
+            if (this.fullscreen) {
                 app.show();
             } else {
                 app.hide();
@@ -268,33 +273,28 @@ const canvasUI = new Vue({
 
 }).$mount('#canvasUI');
 
-
-export { app };
-
 // pipe error messages to UI
-(function(){
-
-    var originalWarn = console.warn;
-    var originalError = console.error;
+(() => {
+    const originalWarn = console.warn;
+    const originalError = console.error;
 
     console.warn = function(txt) {
         app.warn(txt);
         originalWarn.apply(console, arguments);
-    }
+    };
     console.error = function(txt) {
         app.error(txt);
         originalError.apply(console, arguments);
-    }
+    };
 
     window.onerror = function(msg, url, lineNo, columnNo, error) {
-        var message = [
+        app.error([
             'Message: ' + msg,
             'URL: ' + url,
             'Line: ' + lineNo,
             'Column: ' + columnNo,
             'Error object: ' + JSON.stringify(error)
-          ].join(' - ');
-        app.error(message);
+        ].join(' - '));
     };
 })();
 
