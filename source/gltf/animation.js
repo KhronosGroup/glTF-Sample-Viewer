@@ -3,8 +3,6 @@ import { objectsFromJsons } from './utils.js';
 import { gltfAnimationChannel, InterpolationPath } from './channel.js';
 import { gltfAnimationSampler } from './animation_sampler.js';
 import { gltfInterpolator } from './interpolator.js';
-import { AnimatableProperty } from './animatable_property.js';
-import { JsonPointer } from 'json-ptr';
 
 class gltfAnimation extends GltfObject
 {
@@ -19,8 +17,6 @@ class gltfAnimation extends GltfObject
         this.interpolators = [];
         this.maxTime = 0;
         this.disjointAnimations = [];
-
-        this.errors = [];
     }
 
     fromJson(jsonAnimation)
@@ -72,65 +68,25 @@ class gltfAnimation extends GltfObject
             const sampler = this.samplers[channel.sampler];
             const interpolator = this.interpolators[i];
 
-            let property = null;
+            const node = gltf.nodes[channel.target.node];
+
             switch(channel.target.path)
             {
             case InterpolationPath.TRANSLATION:
-                property = `/nodes/${channel.target.node}/translation`;
+                node.applyTranslationAnimation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime));
                 break;
             case InterpolationPath.ROTATION:
-                property = `/nodes/${channel.target.node}/rotation`;
+                node.applyRotationAnimation(interpolator.interpolate(gltf, channel, sampler, totalTime, 4, this.maxTime));
                 break;
             case InterpolationPath.SCALE:
-                property = `/nodes/${channel.target.node}/scale`;
+                node.applyScaleAnimation(interpolator.interpolate(gltf, channel, sampler, totalTime, 3, this.maxTime));
                 break;
             case InterpolationPath.WEIGHTS:
-                property = `/meshes/${gltf.nodes[channel.target.node].mesh}/weights`;
-                break;
-            case InterpolationPath.POINTER:
-                property = channel.target.extensions.KHR_animation_pointer.pointer;
+            {
+                const mesh = gltf.meshes[node.mesh];
+                mesh.weightsAnimated = interpolator.interpolate(gltf, channel, sampler, totalTime, mesh.weights.length, this.maxTime);
                 break;
             }
-
-            if (property != null) {
-                if (property.startsWith("/extensions/KHR_lights_punctual/")) {
-                    const suffix = property.substring("/extensions/KHR_lights_punctual/".length);
-                    property = "/" + suffix;
-                }
-
-                const animatedProperty = JsonPointer.get(gltf, property);
-                if (animatedProperty === undefined || !animatedProperty instanceof AnimatableProperty) {
-                    if (!this.errors.includes(property)) {
-                        console.warn(`Cannot animate ${property}`);
-                        this.errors.push(property);
-                    }
-                    continue;
-                }
-                if (animatedProperty.restValue === undefined) {
-                    continue;
-                }
-
-                let stride = animatedProperty.restValue?.length ?? 1;
-
-                if (property.endsWith("/weights") && stride == 0) {
-                    const parent = JsonPointer.get(gltf, property.substring(0, property.length - "/weights".length));
-                    const mesh = property.startsWith("/nodes") ? gltf.meshes[parent.mesh] : parent;
-                    const targets = mesh.primitives[0]?.targets ?? 0;
-                    stride = targets?.length ?? 0;
-                }
-                
-                const interpolant = interpolator.interpolate(gltf, channel, sampler, totalTime, stride, this.maxTime);
-
-                // The interpolator will always return a `Float32Array`, even if the animated value is a scalar.
-                // For the renderer it's not a problem because uploading a single-element array is the same as uploading a scalar to a uniform.
-                // However, it becomes a problem if we use the animated value for further computation and assume is stays a scalar.
-                // Thus we explicitly convert the animated value back to a scalar if the interpolant is a single-element array.
-                if (interpolant.length == 1) {
-                    animatedProperty.animate(interpolant[0]);
-                }
-                else {
-                    animatedProperty.animate(interpolant);
-                }
             }
         }
     }
