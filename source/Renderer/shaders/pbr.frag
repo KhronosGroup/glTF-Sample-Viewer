@@ -302,7 +302,6 @@ void main()
     clearcoat *= clearcoatFactor;
 #endif
 
-    vec3 diffuse = f_diffuse;
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
     diffuse = mix(diffuse, f_diffuse_transmission, materialInfo.diffuseTransmissionFactor);
 #endif
