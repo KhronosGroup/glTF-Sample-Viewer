@@ -229,7 +229,7 @@ GltfState.DebugOutput = {
         ANISOTROPIC_STRENGTH: "Anisotropic Strength",
         /** output final direction as defined by the anisotropyTexture and rotation*/
         ANISOTROPIC_DIRECTION: "Anisotropic Direction",
-    }
+    },
 };
 
 export { GltfState };

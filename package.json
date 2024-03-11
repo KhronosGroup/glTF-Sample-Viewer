@@ -28,8 +28,7 @@
   "dependencies": {
     "fast-png": "^5.0.3",
     "gl-matrix": "^3.2.1",
-    "jpeg-js": "^0.4.3",
-    "json-ptr": "^3.1.0"
+    "jpeg-js": "^0.4.3"
   },
   "devDependencies": {
     "rollup": "^2.79.1",
