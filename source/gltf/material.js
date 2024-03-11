@@ -22,6 +22,7 @@ class gltfMaterial extends GltfObject
         this.hasClearcoat = false;
         this.hasSheen = false;
         this.hasTransmission = false;
+        this.hasDiffuseTransmission = false;
         this.hasIOR = false;
         this.hasEmissiveStrength = false;
         this.hasVolume = false;
@@ -78,6 +79,10 @@ class gltfMaterial extends GltfObject
         if (this.hasTransmission && renderingParameters.enabledExtensions.KHR_materials_transmission)
         {
             defines.push("MATERIAL_TRANSMISSION 1");
+        }
+        if(this.hasDiffuseTransmission && renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission)
+        {
+            defines.push("MATERIAL_DIFFUSE_TRANSMISSION 1");
         }
         if (this.hasVolume && renderingParameters.enabledExtensions.KHR_materials_volume)
         {
@@ -481,6 +486,35 @@ class gltfMaterial extends GltfObject
                 this.properties.set("u_TransmissionFactor", transmissionFactor);
             }
 
+            // KHR Extension: Diffuse Transmission
+            if(this.extensions.KHR_materials_diffuse_transmission !== undefined)
+            {
+                const extension = this.extensions.KHR_materials_diffuse_transmission;
+
+                this.hasDiffuseTransmission = true;
+
+                this.properties.set("u_DiffuseTransmissionFactor", extension.diffuseTransmissionFactor);
+                this.properties.set("u_DiffuseTransmissionColorFactor", extension.diffuseTransmissionColorFactor);
+
+                if (this.diffuseTransmissionTexture !== undefined)
+                {
+                    this.diffuseTransmissionTexture.samplerName = "u_DiffuseTransmissionSampler";
+                    this.parseTextureInfoExtensions(this.diffuseTransmissionTexture, "DiffuseTransmission");
+                    this.textures.push(this.diffuseTransmissionTexture);
+                    this.defines.push("HAS_DIFFUSE_TRANSMISSION_MAP 1");
+                    this.properties.set("u_DiffuseTransmissionUVSet", this.diffuseTransmissionTexture.texCoord);
+                }
+
+                if (this.diffuseTransmissionColorTexture !== undefined)
+                {
+                    this.diffuseTransmissionColorTexture.samplerName = "u_DiffuseTransmissionColorSampler";
+                    this.parseTextureInfoExtensions(this.diffuseTransmissionColorTexture, "DiffuseTransmissionColor");
+                    this.textures.push(this.diffuseTransmissionColorTexture);
+                    this.defines.push("HAS_DIFFUSE_TRANSMISSION_COLOR_MAP 1");
+                    this.properties.set("u_DiffuseTransmissionColorUVSet", this.diffuseTransmissionColorTexture.texCoord);
+                }
+            }
+
             // KHR Extension: IOR
             //https://github.com/DassaultSystemes-Technology/glTF/tree/KHR_materials_ior/extensions/2.0/Khronos/KHR_materials_ior
             if (this.extensions.KHR_materials_ior !== undefined)
@@ -697,6 +731,11 @@ class gltfMaterial extends GltfObject
             this.fromJsonTransmission(jsonExtensions.KHR_materials_transmission);
         }
 
+        if(jsonExtensions.KHR_materials_diffuse_transmission !== undefined)
+        {
+            this.fromJsonDiffuseTransmission(jsonExtensions.KHR_materials_diffuse_transmission);
+        }
+
         if(jsonExtensions.KHR_materials_specular !== undefined)
         {
             this.fromJsonSpecular(jsonExtensions.KHR_materials_specular);
@@ -799,6 +838,23 @@ class gltfMaterial extends GltfObject
             const transmissionTexture = new gltfTextureInfo();
             transmissionTexture.fromJson(jsonTransmission.transmissionTexture);
             this.transmissionTexture = transmissionTexture;
+        }
+    }
+
+    fromJsonDiffuseTransmission(json)
+    {
+        if(json.diffuseTransmissionTexture !== undefined)
+        {
+            const texture = new gltfTextureInfo();
+            texture.fromJson(json.diffuseTransmissionTexture);
+            this.diffuseTransmissionTexture = texture;
+        }
+
+        if(json.diffuseTransmissionColorTexture !== undefined)
+        {
+            const texture = new gltfTextureInfo();
+            texture.fromJson(json.diffuseTransmissionColorTexture);
+            this.diffuseTransmissionColorTexture = texture;
         }
     }
 
