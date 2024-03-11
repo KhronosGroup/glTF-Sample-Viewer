@@ -338,6 +338,16 @@ class gltfPrimitive extends GltfObject
         }
     }
 
+    getShaderIdentifier()
+    {
+        return "primitive.vert";
+    }
+
+    getDefines()
+    {
+        return this.defines;
+    }
+
     fromJson(jsonPrimitive)
     {
         super.fromJson(jsonPrimitive);
