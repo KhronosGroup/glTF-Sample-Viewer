@@ -18,8 +18,6 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
-import { AnimatableProperty } from '../gltf/animatable_property.js';
-import { jsToGl } from '../gltf/utils.js';
 
 class gltfRenderer
 {
@@ -70,7 +68,7 @@ class gltfRenderer
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
-        this.lightFill.intensity.restValue = 0.5;
+        this.lightFill.intensity = 0.5;
         const quatKey = quat.fromValues(
             -0.3535534,
             -0.353553385,
@@ -378,19 +376,17 @@ class gltfRenderer
 
         let vertDefines = [];
         this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
-        vertDefines = primitive.defines.concat(vertDefines);
-
-        material.updateTextureTransforms();
+        vertDefines = primitive.getDefines().concat(vertDefines);
 
         let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
-        if (renderpassConfiguration.linearOutput)
+        if(renderpassConfiguration.linearOutput === true)
         {
             fragDefines.push("LINEAR_OUTPUT 1");
         }
         this.pushFragParameterDefines(fragDefines, state);
         
-        const fragmentHash = this.shaderCache.selectShader("pbr.frag", fragDefines);
-        const vertexHash = this.shaderCache.selectShader("primitive.vert", vertDefines);
+        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
+        const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -475,15 +471,6 @@ class gltfRenderer
 
         for (let [uniform, val] of material.getProperties().entries())
         {
-            if (val instanceof AnimatableProperty) {
-                val = val.value();
-            }
-            if (val instanceof Array) {
-                val = jsToGl(val);
-            }
-            if (val === undefined) {
-                continue;
-            }
             this.shader.updateUniform(uniform, val, false);
         }
 
@@ -605,11 +592,11 @@ class gltfRenderer
         // morphing
         if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
-            const weights = node.getWeights(gltf).value();
-            if (weights !== undefined && weights.length > 0)
+            const mesh = gltf.meshes[node.mesh];
+            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + weights.length);
+                vertDefines.push("WEIGHT_COUNT " + mesh.getWeightsAnimated().length);
             }
         }
     }
@@ -618,10 +605,11 @@ class gltfRenderer
     {
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
-            const weights = node.getWeights(state.gltf).value();
-            if (weights !== undefined && weights.length > 0)
+            const mesh = state.gltf.meshes[node.mesh];
+            const weightsAnimated = mesh.getWeightsAnimated();
+            if (weightsAnimated !== undefined && weightsAnimated.length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", weights);
+                this.shader.updateUniformArray("u_morphWeights", weightsAnimated);
             }
         }
     }
