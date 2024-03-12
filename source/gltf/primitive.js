@@ -11,6 +11,7 @@ import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
 import { generateTangents } from '../libs/mikktspace.js';
+import { mat4, mat3, vec3 } from 'gl-matrix';
 
 
 class gltfPrimitive extends GltfObject
@@ -76,11 +77,11 @@ class gltfPrimitive extends GltfObject
         // Generate tangents with Mikktspace which needs normals and texcoords as inputs
         if (this.attributes.TANGENT === undefined && this.attributes.NORMAL && this.attributes.TEXCOORD_0)
         {
-            console.info("Generating tangents using the MikkTSpace algorithm.");
-            console.time("Tangent generation");
-            this.unweld(gltf);
-            this.generateTangents(gltf);
-            console.timeEnd("Tangent generation");
+            // console.info("Generating tangents using the MikkTSpace algorithm.");
+            // console.time("Tangent generation");
+            // this.unweld(gltf);
+            // this.generateTangents(gltf);
+            // console.timeEnd("Tangent generation");
         }
 
         // VERTEX ATTRIBUTES
@@ -282,6 +283,7 @@ class gltfPrimitive extends GltfObject
         }
 
         this.computeCentroid(gltf);
+        this.computeMeanDensity(gltf);
     }
 
     computeCentroid(gltf)
@@ -316,6 +318,122 @@ class gltfPrimitive extends GltfObject
         }
         else
         {
+            // Primitive does not have indices.
+
+            const acc = new Float32Array(3);
+
+            for(let i = 0; i < positions.length; i += 3) {
+                acc[0] += positions[i];
+                acc[1] += positions[i + 1];
+                acc[2] += positions[i + 2];
+            }
+
+            const positionVectors = positions.length / 3;
+
+            const centroid = new Float32Array([
+                acc[0] / positionVectors,
+                acc[1] / positionVectors,
+                acc[2] / positionVectors,
+            ]);
+
+            this.centroid = centroid;
+        }
+    }
+    
+
+    computeMeanDensity(gltf)
+    {    
+
+        console.log("computeMeanDensity")
+        const positionsAccessor = gltf.accessors[this.attributes.POSITION];
+        const positions = positionsAccessor.getNormalizedTypedView(gltf);
+
+        if(this.indices !== undefined)
+        {
+            // Primitive has indices.
+
+            const indicesAccessor = gltf.accessors[this.indices];
+
+            const indices = indicesAccessor.getTypedView(gltf);
+
+            const triangleDistances = new Float32Array(indices.length/3);
+            const triangleAreas = new Float32Array(indices.length/3);
+
+            let vertices = [];
+            const aMin = positionsAccessor.min
+            const aMax = positionsAccessor.max
+
+            for(let i = 0; i < positions.length; i+=3) 
+            {
+                    
+                let dx = aMax[0] - aMin[0]
+                let dy = aMax[1] - aMin[1]
+                let dz = aMax[2] - aMin[2] 
+
+                let scale = Math.max( Math.max(dx,dy),dz)
+
+                let vertex = vec3.fromValues( 
+                    (positions[i + 0] - aMin[0]) / scale,
+                    (positions[i + 1] - aMin[1]) / scale,
+                    (positions[i + 2] - aMin[2]) / scale);
+
+                vertices.push(vertex) 
+            }
+            for(let i = 0; i < indices.length; i+=3) 
+            {
+                let va = vertices[indices[i + 0]]
+                let vb = vertices[indices[i + 1]]
+                let vc = vertices[indices[i + 2]]
+
+
+                let d0 = vec3.distance (va, vb)
+                let d1 = vec3.distance (va, vc)
+                let d2 = vec3.distance (vb, vc)
+
+                let meanDistance = (d0+d1+d2)/3.0
+                triangleDistances[i/3] = meanDistance 
+                //0.5* length( AB x AC)
+                let AB =  vec3.sub(vec3.create(),vb,va)
+                let AC =  vec3.sub(vec3.create(),vc,va)
+                let area =  vec3.length(vec3.cross(vec3.create(),AB,AC))*0.5
+                triangleAreas[i/3]=area
+            }
+            
+
+            let acc = 0.0
+            let meshArea = 0.0
+            for(let i = 0; i < triangleDistances.length; i+=1) {
+                acc+=  triangleDistances[i]
+                meshArea+=triangleAreas[i]
+            }
+            
+             
+            let x = positionsAccessor.max[0] - positionsAccessor.min[0]
+            let y = positionsAccessor.max[1] - positionsAccessor.min[1]
+            let z = positionsAccessor.max[2] - positionsAccessor.min[2] 
+             
+            let vertexCount = vertices.length
+            let volume =  (x*y*z)
+            console.log("volume= "+volume)
+            let extent =  (x+y+z)/3
+            console.log("extent= "+extent)
+
+            console.log("acc= "+acc)
+            let mean = acc / triangleDistances.length
+            console.log("1.0/mean= "+(1.0/mean))
+            console.log("meshArea= "+meshArea)
+            let quality  =vertexCount/ meshArea
+            console.log("quality= "+quality)
+
+            
+            // quality =  triangle_area / triangles
+
+            // uv_area * pixels / triangle_area
+            
+        }
+        else
+        {
+            console.log("Primitive does not have indices.  ")
             // Primitive does not have indices.
 
             const acc = new Float32Array(3);
