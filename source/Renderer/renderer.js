@@ -328,16 +328,9 @@ class gltfRenderer
                     }
                 }
 
-                if(state.renderingParameters.LoD === "Distance") {
-                    let origin = vec3.create(); 
-                    let assetDistance= vec3.distance (origin, this.currentCameraPosition)
-                    console.log(assetDistance)
-                    let distanceSuggestion = 0 
-                    if(assetDistance>300.0)distanceSuggestion=1
-                    if(assetDistance>600.0)distanceSuggestion=2
-                    lodMarker = node.extras.expectAsset + "_lod" + distanceSuggestion
-                }
-                
+
+                //console.log("node.extras")
+                //console.log(node.extras)
 
                 let viewProjectionMatrix = this.viewProjectionMatrix
                 let viewMatrix = this.viewMatrix
@@ -372,7 +365,7 @@ class gltfRenderer
                 let boxVertices = getNodeBoundingBox(state.gltf, renderNodeID)
 
                 for(let i in boxVertices) { 
-                    boxVertices[i] = transformView(boxVertices[i],  this.viewMatrix); 
+                    boxVertices[i] = transformView(boxVertices[i]); 
                 }
 
                 const worldMin = vec3.clone(boxVertices[0]); // initialize
@@ -400,7 +393,7 @@ class gltfRenderer
                 //calculate size of bounding box in pixel space:
                 boxVertices = getNodeBoundingBox(state.gltf, renderNodeID)
                 for(let i in boxVertices) { 
-                    boxVertices[i] = transformViewProj(boxVertices[i], viewProjectionMatrix); 
+                    boxVertices[i] = transformViewProj(boxVertices[i]); 
                 }
 
                 const pixelMin = vec3.clone(boxVertices[0]); // initialize
@@ -419,10 +412,80 @@ class gltfRenderer
                 let diagonalPixels = Math.sqrt(hPixels*hPixels+ vPixels*vPixels)
                 console.log("diagonal [pixel]: " + diagonalPixels)
 
-                let pqpm = diagonalPixels/diagonalMeters
-                console.log("pqpm: " + pqpm)
+                let required_pqpm = diagonalPixels/diagonalMeters
+                console.log("pqpm: " + required_pqpm)
                 
+
+                let screen_coverage = (hPixels*vPixels) / (this.currentWidth * this.currentHeight)
+                console.log("screen_coverage: " + screen_coverage)
+
+                let origin = vec3.create(); 
+                let asset_distance= vec3.distance (origin, this.currentCameraPosition)
+                console.log("asset_distance: "+asset_distance)
                 
+
+                if(state.renderingParameters.LoD === "PQPM") {
+
+                    if(node.extras.lod!==undefined){
+                        let selected_pqpm = 999999
+                        for (const level of node.extras.lod) {
+                            if((required_pqpm < level.pqpm) // this level offers better quality than required
+                                && (selected_pqpm > level.pqpm)) // and has lower quality than currently selected
+                            {  // ->better fit
+                               
+                                const levelID =  node.extras.lod.indexOf(level)
+                                lodMarker = node.extras.expectAsset + "_lod" + levelID
+
+                                selected_pqpm = level.pqpm
+
+                            }
+                        }
+                    }
+                }
+
+                
+                if(state.renderingParameters.LoD === "Coverage") {
+
+                    if(node.extras.lod!==undefined){
+                        let selected_coverage = 2.0
+                        for (const level of node.extras.lod) {
+                            if((screen_coverage < level.coverage) // this level offers better quality than required
+                                && (selected_coverage > level.coverage)) // and has lower quality than currently selected
+                            {  // ->better fit
+                               
+                                const levelID =  node.extras.lod.indexOf(level)
+                                lodMarker = node.extras.expectAsset + "_lod" + levelID
+
+                                selected_coverage = level.coverage
+
+                            }
+                        }
+                    }
+                }
+
+                
+                if(state.renderingParameters.LoD === "Distance") {
+
+                    if(node.extras.lod!==undefined){
+                        let selected_distance = 0.0
+                        for (const level of node.extras.lod) {
+                            if((asset_distance > level.distance) // this level offers better quality than required
+                                && (selected_distance < level.distance)) // and has lower quality than currently selected
+                            {  // ->better fit
+                               
+                                const levelID =  node.extras.lod.indexOf(level)
+                                lodMarker = node.extras.expectAsset + "_lod" + levelID
+
+                                selected_distance = level.distance
+
+                            }
+                        }
+                    }
+                }
+
+
+
+                // select correct lod node for rendering
 
                 const lodNodeID = this.getAssetNodeID(state.gltf, lodMarker)
 

@@ -121,6 +121,8 @@ GltfState.ToneMaps = {
 
 GltfState.LoDs = {
     Highest: "Highest",
+    PQPM: "PQPM",
+    Coverage: "Coverage",
     Distance: "Distance",
     Q0: "Q0",
     Q1: "Q1",
