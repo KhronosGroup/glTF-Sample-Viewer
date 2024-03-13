@@ -559,7 +559,25 @@ class gltfRenderer
 
         // update model dependant matrices once per node
         this.shader.updateUniform("u_ViewProjectionMatrix", viewProjectionMatrix);
-        this.shader.updateUniform("u_ModelMatrix", node.worldTransform);
+        
+        const lookAtCamera = mat4.create();
+
+        const worldTranslation = vec3.create();
+        mat4.getTranslation(worldTranslation, node.worldTransform);
+
+        const worldRotationQuat = quat.create();
+
+        const inverseView = mat4.create();
+        mat4.invert(inverseView, this.viewMatrix);
+
+        const cameraUp = vec3.fromValues(0, 1, 0);
+        const cameraUpWorld = vec3.transformMat4(cameraUp, cameraUp, inverseView);
+
+        mat4.targetTo(lookAtCamera, worldTranslation, this.currentCameraPosition, cameraUpWorld);
+
+        mat4.translate(lookAtCamera, lookAtCamera, node.translation)
+
+        this.shader.updateUniform("u_ModelMatrix", lookAtCamera);
         this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
         this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
@@ -674,7 +692,7 @@ class gltfRenderer
 
             this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
+            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, lookAtCamera);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
         }
