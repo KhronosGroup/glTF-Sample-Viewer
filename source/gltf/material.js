@@ -493,8 +493,9 @@ class gltfMaterial extends GltfObject
 
                 this.hasDiffuseTransmission = true;
 
+                let diffuseTransmissionColorFactor = jsToGl(extension.diffuseTransmissionColorFactor ?? [1.0, 1.0, 1.0]);
                 this.properties.set("u_DiffuseTransmissionFactor", extension.diffuseTransmissionFactor);
-                this.properties.set("u_DiffuseTransmissionColorFactor", extension.diffuseTransmissionColorFactor);
+                this.properties.set("u_DiffuseTransmissionColorFactor", diffuseTransmissionColorFactor);
 
                 if (this.diffuseTransmissionTexture !== undefined)
                 {
