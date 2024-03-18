@@ -581,32 +581,44 @@ class gltfRenderer
             
             const cameraUp = vec3.fromValues(0, 1, 0);
             vec3.transformMat4(cameraUp, cameraUp, inverseView);
+
+            const fixRotation = mat4.create();
             
             const defaultModelForward = vec3.fromValues(0, 0, 1);
-            let modelForward = vec3.fromValues(0, 0, 1);
+            const rendererForward = vec3.fromValues(0, 0, -1);
+            let modelForward = vec3.fromValues(0, 0, -1);
             if (node.extensions.billboard.viewDirection) {
                 modelForward = vec3.fromValues(...node.extensions.billboard.viewDirection);
             }
+            vec3.normalize(modelForward, modelForward);
             if (vec3.equals(modelForward, defaultModelForward)) {
                 vec3.negate(cameraTranslation, cameraTranslation);
-            } else if (!vec3.equals(modelForward, vec3.fromValues(0, 0, -1))) {
-                const rad = vec3.angle(modelForward, defaultModelForward);
-                let axis = vec3.cross(vec3.create(), modelForward, defaultModelForward);
-                if (vec3.equals(axis, vec3.create())) {
-                    axis = vec3.fromValues(1, 0, 0);
-                }
-                const fixRotation = quat.setAxisAngle(quat.create(), vec3.normalize(axis, axis), rad);
-                const test = vec3.clone(cameraTranslation);
-                vec3.transformQuat(cameraTranslation, cameraTranslation, fixRotation);
-                console.log(test, cameraTranslation, test2);
+                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
+            } else if (!vec3.equals(modelForward, rendererForward)) {
+                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
+                const rad = vec3.angle(rendererForward, modelForward);
+                let axis = vec3.cross(vec3.create(), rendererForward, modelForward);
+                vec3.transformMat4(axis, axis, lookAtCamera);
+                //TODO fix cameraUP
+                const q = quat.setAxisAngle(quat.create(), vec3.normalize(axis, axis), rad);
+                vec3.transformQuat(cameraTranslation, cameraTranslation, q);
+                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
+            } else {
+                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
             }
     
-            mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
     
             modelMatrix = mat4.create();
     
             mat4.scale(modelMatrix, modelMatrix, modelScale);
-    
+            if (node.extensions.billboard.scaleWithDistance && state.cameraIndex === undefined) {
+                const currentCamera = state.userCamera;
+                const initialPos = vec3.transformMat4(vec3.create(), worldTranslation, currentCamera.initialViewMatrix);
+                const currentPos = vec3.transformMat4(vec3.create(), worldTranslation, this.viewMatrix);
+                const scaleFactor = currentPos[2] / initialPos[2];
+                mat4.scale(modelMatrix, modelMatrix, vec3.fromValues(scaleFactor,scaleFactor,scaleFactor));
+            }
+
             mat4.multiply(modelMatrix, modelMatrix, lookAtCamera);
     
             modelMatrix[12] = worldTranslation[0];
