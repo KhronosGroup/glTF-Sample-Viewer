@@ -629,6 +629,9 @@ class gltfRenderer
 
         switch (state.renderingParameters.toneMap)
         {
+        case (GltfState.ToneMaps.KHR_PBR_NEUTRAL):
+            fragDefines.push("TONEMAP_KHR_PBR_NEUTRAL 1");
+            break;
         case (GltfState.ToneMaps.ACES_NARKOWICZ):
             fragDefines.push("TONEMAP_ACES_NARKOWICZ 1");
             break;

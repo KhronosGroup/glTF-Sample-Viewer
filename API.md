@@ -100,106 +100,81 @@ GltfState containing a state for visualization in GltfView
 
 **Kind**: global class  
 
-- [Classes](#classes)
-- [GltfView](#gltfview)
-  - [new GltfView(context)](#new-gltfviewcontext)
-  - [gltfView.createState() ⇒ GltfState](#gltfviewcreatestate--gltfstate)
-  - [gltfView.createResourceLoader(\[externalDracoLib\], \[externalKtxLib\]) ⇒ ResourceLoader](#gltfviewcreateresourceloaderexternaldracolib-externalktxlib--resourceloader)
-  - [gltfView.renderFrame(state, width, height)](#gltfviewrenderframestate-width-height)
-  - [gltfView.gatherStatistics(state) ⇒ Object](#gltfviewgatherstatisticsstate--object)
-- [GltfState](#gltfstate)
-  - [new GltfState(view)](#new-gltfstateview)
-  - [gltfState.gltf](#gltfstategltf)
-  - [gltfState.environment](#gltfstateenvironment)
-  - [gltfState.userCamera](#gltfstateusercamera)
-  - [gltfState.sceneIndex](#gltfstatesceneindex)
-  - [gltfState.cameraIndex](#gltfstatecameraindex)
-  - [gltfState.animationIndices](#gltfstateanimationindices)
-  - [gltfState.animationTimer](#gltfstateanimationtimer)
-  - [gltfState.variant](#gltfstatevariant)
-  - [gltfState.renderingParameters](#gltfstaterenderingparameters)
-    - [renderingParameters.morphing](#renderingparametersmorphing)
-    - [renderingParameters.skinning](#renderingparametersskinning)
-    - [renderingParameters.clearColor](#renderingparametersclearcolor)
-    - [renderingParameters.exposure](#renderingparametersexposure)
-    - [renderingParameters.usePunctual](#renderingparametersusepunctual)
-    - [renderingParameters.useIBL](#renderingparametersuseibl)
-    - [renderingParameters.iblIntensity](#renderingparametersiblintensity)
-    - [renderingParameters.renderEnvironmentMap](#renderingparametersrenderenvironmentmap)
-    - [renderingParameters.blurEnvironmentMap](#renderingparametersblurenvironmentmap)
-    - [renderingParameters.toneMap](#renderingparameterstonemap)
-    - [renderingParameters.debugOutput](#renderingparametersdebugoutput)
-    - [renderingParameters.environmentRotation](#renderingparametersenvironmentrotation)
-    - [renderingParameters.useDirectionalLightsWithDisabledIBL](#renderingparametersusedirectionallightswithdisabledibl)
-    - [renderingParameters.internalMSAA](#renderingparametersinternalmsaa)
-  - [GltfState.ToneMaps](#gltfstatetonemaps)
-    - [ToneMaps.NONE](#tonemapsnone)
-    - [ToneMaps.ACES\_HILL\_EXPOSURE\_BOOST](#tonemapsaces_hill_exposure_boost)
-    - [ToneMaps.ACES\_NARKOWICZ](#tonemapsaces_narkowicz)
-    - [ToneMaps.ACES\_HILL](#tonemapsaces_hill)
-  - [GltfState.DebugOutput](#gltfstatedebugoutput)
-    - [DebugOutput.NONE](#debugoutputnone)
-    - [DebugOutput.generic](#debugoutputgeneric)
-      - [generic.UV\_COORDS\_0](#genericuv_coords_0)
-      - [generic.UV\_COORDS\_1](#genericuv_coords_1)
-      - [generic.NORMAL](#genericnormal)
-      - [generic.GEOMETRYNORMAL](#genericgeometrynormal)
-      - [generic.TANGENT](#generictangent)
-      - [generic.BITANGENT](#genericbitangent)
-      - [generic.WORLDSPACENORMAL](#genericworldspacenormal)
-      - [generic.ALPHA](#genericalpha)
-      - [generic.OCCLUSION](#genericocclusion)
-      - [generic.EMISSIVE](#genericemissive)
-    - [DebugOutput.mr](#debugoutputmr)
-      - [mr.METALLIC\_ROUGHNESS](#mrmetallic_roughness)
-      - [mr.BASECOLOR](#mrbasecolor)
-      - [mr.METALLIC](#mrmetallic)
-      - [mr.ROUGHNESS](#mrroughness)
-    - [DebugOutput.clearcoat](#debugoutputclearcoat)
-      - [clearcoat.CLEARCOAT](#clearcoatclearcoat)
-      - [clearcoat.CLEARCOAT\_FACTOR](#clearcoatclearcoat_factor)
-      - [clearcoat.CLEARCOAT\_ROUGHNESS](#clearcoatclearcoat_roughness)
-      - [clearcoat.CLEARCOAT\_NORMAL](#clearcoatclearcoat_normal)
-    - [DebugOutput.sheen](#debugoutputsheen)
-      - [sheen.SHEEN](#sheensheen)
-      - [sheen.SHEEN\_COLOR](#sheensheen_color)
-      - [sheen.SHEEN\_ROUGHNESS](#sheensheen_roughness)
-    - [DebugOutput.specular](#debugoutputspecular)
-      - [specular.SPECULAR](#specularspecular)
-      - [specular.SPECULAR\_FACTOR](#specularspecular_factor)
-      - [specular.SPECULAR\_COLOR](#specularspecular_color)
-    - [DebugOutput.transmission](#debugoutputtransmission)
-      - [transmission.TRANSMISSION\_VOLUME](#transmissiontransmission_volume)
-      - [transmission.TRANSMISSION\_FACTOR](#transmissiontransmission_factor)
-      - [transmission.VOLUME\_THICKNESS](#transmissionvolume_thickness)
-    - [DebugOutput.iridescence](#debugoutputiridescence)
-      - [iridescence.IRIDESCENCE](#iridescenceiridescence)
-      - [iridescence.IRIDESCENCE\_FACTOR](#iridescenceiridescence_factor)
-      - [iridescence.IRIDESCENCE\_THICKNESS](#iridescenceiridescence_thickness)
-      - [anisotropy.ANISOTROPIC\_STRENGTH](#anisotropyanisotropic_strength)
-      - [anisotropy.ANISOTROPIC\_DIRECTION](#anisotropyanisotropic_direction)
-- [ResourceLoader](#resourceloader)
-  - [new ResourceLoader(view)](#new-resourceloaderview)
-  - [resourceLoader.loadGltf(gltfFile, \[externalFiles\]) ⇒ Promise](#resourceloaderloadgltfgltffile-externalfiles--promise)
-  - [resourceLoader.loadEnvironment(environmentFile, \[lutFiles\]) ⇒ Promise](#resourceloaderloadenvironmentenvironmentfile-lutfiles--promise)
-  - [resourceLoader.initKtxLib(\[externalKtxLib\])](#resourceloaderinitktxlibexternalktxlib)
-  - [resourceLoader.initDracoLib(\[externalDracoLib\])](#resourceloaderinitdracolibexternaldracolib)
-- [UserCamera](#usercamera)
-  - [new UserCamera()](#new-usercamera)
-  - [userCamera.setVerticalFoV(yfov)](#usercamerasetverticalfovyfov)
-  - [userCamera.getPosition()](#usercameragetposition)
-  - [userCamera.getRotation()](#usercameragetrotation)
-  - [userCamera.getLookDirection()](#usercameragetlookdirection)
-  - [userCamera.getTarget()](#usercameragettarget)
-  - [userCamera.lookAt(from, to)](#usercameralookatfrom-to)
-  - [userCamera.setPosition(position)](#usercamerasetpositionposition)
-  - [userCamera.setTarget(target)](#usercamerasettargettarget)
-  - [userCamera.setRotation(yaw, pitch)](#usercamerasetrotationyaw-pitch)
-  - [userCamera.setDistanceFromTarget(distance, target)](#usercamerasetdistancefromtargetdistance-target)
-  - [userCamera.zoomBy(value)](#usercamerazoombyvalue)
-  - [userCamera.orbit(x, y)](#usercameraorbitx-y)
-  - [userCamera.pan(x, y)](#usercamerapanx-y)
-  - [userCamera.fitViewToScene(gltf, sceneIndex)](#usercamerafitviewtoscenegltf-sceneindex)
+* [GltfState](#GltfState)
+    * [new GltfState(view)](#new_GltfState_new)
+    * _instance_
+        * [.gltf](#GltfState+gltf)
+        * [.environment](#GltfState+environment)
+        * [.userCamera](#GltfState+userCamera)
+        * [.sceneIndex](#GltfState+sceneIndex)
+        * [.cameraIndex](#GltfState+cameraIndex)
+        * [.animationIndices](#GltfState+animationIndices)
+        * [.animationTimer](#GltfState+animationTimer)
+        * [.variant](#GltfState+variant)
+        * [.renderingParameters](#GltfState+renderingParameters)
+            * [.morphing](#GltfState+renderingParameters.morphing)
+            * [.skinning](#GltfState+renderingParameters.skinning)
+            * [.clearColor](#GltfState+renderingParameters.clearColor)
+            * [.exposure](#GltfState+renderingParameters.exposure)
+            * [.usePunctual](#GltfState+renderingParameters.usePunctual)
+            * [.useIBL](#GltfState+renderingParameters.useIBL)
+            * [.iblIntensity](#GltfState+renderingParameters.iblIntensity)
+            * [.renderEnvironmentMap](#GltfState+renderingParameters.renderEnvironmentMap)
+            * [.blurEnvironmentMap](#GltfState+renderingParameters.blurEnvironmentMap)
+            * [.toneMap](#GltfState+renderingParameters.toneMap)
+            * [.debugOutput](#GltfState+renderingParameters.debugOutput)
+            * [.environmentRotation](#GltfState+renderingParameters.environmentRotation)
+            * [.useDirectionalLightsWithDisabledIBL](#GltfState+renderingParameters.useDirectionalLightsWithDisabledIBL)
+            * [.internalMSAA](#GltfState+renderingParameters.internalMSAA)
+    * _static_
+        * [.ToneMaps](#GltfState.ToneMaps)
+            * [.KHR_PBR_NEUTRAL](#GltfState.ToneMaps.KHR_PBR_NEUTRAL)
+            * [.ACES_HILL_EXPOSURE_BOOST](#GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST)
+            * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
+            * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
+            * [.NONE](#GltfState.ToneMaps.NONE)
+        * [.DebugOutput](#GltfState.DebugOutput)
+            * [.NONE](#GltfState.DebugOutput.NONE)
+            * [.generic](#GltfState.DebugOutput.generic)
+                * [.UV_COORDS_0](#GltfState.DebugOutput.generic.UV_COORDS_0)
+                * [.UV_COORDS_1](#GltfState.DebugOutput.generic.UV_COORDS_1)
+                * [.NORMAL](#GltfState.DebugOutput.generic.NORMAL)
+                * [.GEOMETRYNORMAL](#GltfState.DebugOutput.generic.GEOMETRYNORMAL)
+                * [.TANGENT](#GltfState.DebugOutput.generic.TANGENT)
+                * [.BITANGENT](#GltfState.DebugOutput.generic.BITANGENT)
+                * [.WORLDSPACENORMAL](#GltfState.DebugOutput.generic.WORLDSPACENORMAL)
+                * [.ALPHA](#GltfState.DebugOutput.generic.ALPHA)
+                * [.OCCLUSION](#GltfState.DebugOutput.generic.OCCLUSION)
+                * [.EMISSIVE](#GltfState.DebugOutput.generic.EMISSIVE)
+            * [.mr](#GltfState.DebugOutput.mr)
+                * [.METALLIC_ROUGHNESS](#GltfState.DebugOutput.mr.METALLIC_ROUGHNESS)
+                * [.BASECOLOR](#GltfState.DebugOutput.mr.BASECOLOR)
+                * [.METALLIC](#GltfState.DebugOutput.mr.METALLIC)
+                * [.ROUGHNESS](#GltfState.DebugOutput.mr.ROUGHNESS)
+            * [.clearcoat](#GltfState.DebugOutput.clearcoat)
+                * [.CLEARCOAT](#GltfState.DebugOutput.clearcoat.CLEARCOAT)
+                * [.CLEARCOAT_FACTOR](#GltfState.DebugOutput.clearcoat.CLEARCOAT_FACTOR)
+                * [.CLEARCOAT_ROUGHNESS](#GltfState.DebugOutput.clearcoat.CLEARCOAT_ROUGHNESS)
+                * [.CLEARCOAT_NORMAL](#GltfState.DebugOutput.clearcoat.CLEARCOAT_NORMAL)
+            * [.sheen](#GltfState.DebugOutput.sheen)
+                * [.SHEEN](#GltfState.DebugOutput.sheen.SHEEN)
+                * [.SHEEN_COLOR](#GltfState.DebugOutput.sheen.SHEEN_COLOR)
+                * [.SHEEN_ROUGHNESS](#GltfState.DebugOutput.sheen.SHEEN_ROUGHNESS)
+            * [.specular](#GltfState.DebugOutput.specular)
+                * [.SPECULAR](#GltfState.DebugOutput.specular.SPECULAR)
+                * [.SPECULAR_FACTOR](#GltfState.DebugOutput.specular.SPECULAR_FACTOR)
+                * [.SPECULAR_COLOR](#GltfState.DebugOutput.specular.SPECULAR_COLOR)
+            * [.transmission](#GltfState.DebugOutput.transmission)
+                * [.TRANSMISSION_VOLUME](#GltfState.DebugOutput.transmission.TRANSMISSION_VOLUME)
+                * [.TRANSMISSION_FACTOR](#GltfState.DebugOutput.transmission.TRANSMISSION_FACTOR)
+                * [.VOLUME_THICKNESS](#GltfState.DebugOutput.transmission.VOLUME_THICKNESS)
+            * [.iridescence](#GltfState.DebugOutput.iridescence)
+                * [.IRIDESCENCE](#GltfState.DebugOutput.iridescence.IRIDESCENCE)
+                * [.IRIDESCENCE_FACTOR](#GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR)
+                * [.IRIDESCENCE_THICKNESS](#GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS)
+            * [.anisotropy](#GltfState.DebugOutput.anisotropy)
+                * [.ANISOTROPIC_STRENGTH](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH)
+                * [.ANISOTROPIC_DIRECTION](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION)
 
 <a name="new_GltfState_new"></a>
 
@@ -341,7 +316,7 @@ apply blur to the background environment map
 <a name="GltfState+renderingParameters.toneMap"></a>
 
 #### renderingParameters.toneMap
-which tonemap to use, use ACES for a filmic effect
+which tonemap to use, use KHR_PBR_NEUTRAL for best color reproduction
 
 **Kind**: static property of [<code>renderingParameters</code>](#GltfState+renderingParameters)  
 <a name="GltfState+renderingParameters.debugOutput"></a>
@@ -382,15 +357,16 @@ by gltf sample viewer
 **Kind**: static property of [<code>GltfState</code>](#GltfState)  
 
 * [.ToneMaps](#GltfState.ToneMaps)
-    * [.NONE](#GltfState.ToneMaps.NONE)
+    * [.KHR_PBR_NEUTRAL](#GltfState.ToneMaps.KHR_PBR_NEUTRAL)
     * [.ACES_HILL_EXPOSURE_BOOST](#GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST)
     * [.ACES_NARKOWICZ](#GltfState.ToneMaps.ACES_NARKOWICZ)
     * [.ACES_HILL](#GltfState.ToneMaps.ACES_HILL)
+    * [.NONE](#GltfState.ToneMaps.NONE)
 
-<a name="GltfState.ToneMaps.NONE"></a>
+<a name="GltfState.ToneMaps.KHR_PBR_NEUTRAL"></a>
 
-#### ToneMaps.NONE
-don't apply tone mapping
+#### ToneMaps.KHR\_PBR\_NEUTRAL
+Khronos PBR neutral tone mapping, see https://modelviewer.dev/examples/tone-mapping
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST"></a>
@@ -409,6 +385,12 @@ fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' imple
 
 #### ToneMaps.ACES\_HILL
 more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation
+
+**Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
+<a name="GltfState.ToneMaps.NONE"></a>
+
+#### ToneMaps.NONE
+Linear mapping, clamped at 1.0 per channel
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.DebugOutput"></a>
@@ -714,7 +696,7 @@ output the volume thickness
 <a name="GltfState.DebugOutput.iridescence"></a>
 
 #### DebugOutput.iridescence
-output tranmission lighting
+output iridescence
 
 **Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
 
@@ -741,22 +723,29 @@ output the iridescence factor
 output the iridescence thickness
 
 **Kind**: static property of [<code>iridescence</code>](#GltfState.DebugOutput.iridescence)  
-<a name="ResourceLoader"></a>
+<a name="GltfState.DebugOutput.anisotropy"></a>
 
-<a name="GltfState.DebugOutput.anisotropy.IRIDESCENCE"></a>
+#### DebugOutput.anisotropy
+output anisotropy
 
-##### anisotropy.ANISOTROPIC\_STRENGTH
-output the anisotropy strength
+**Kind**: static property of [<code>DebugOutput</code>](#GltfState.DebugOutput)  
 
-**Kind**: static property of [<code>anisotropy</code>](#GltfState.DebugOutput.anisotropy)  
+* [.anisotropy](#GltfState.DebugOutput.anisotropy)
+    * [.ANISOTROPIC_STRENGTH](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH)
+    * [.ANISOTROPIC_DIRECTION](#GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION)
+
 <a name="GltfState.DebugOutput.anisotropy.ANISOTROPIC_STRENGTH"></a>
 
-##### anisotropy.ANISOTROPIC\_DIRECTION
-output the final anisotropic direction as defined by the anisotropicTexture and anisotropic rotation
+##### anisotropy.ANISOTROPIC\_STRENGTH
+output the anisotropic strength
 
 **Kind**: static property of [<code>anisotropy</code>](#GltfState.DebugOutput.anisotropy)  
+<a name="GltfState.DebugOutput.anisotropy.ANISOTROPIC_DIRECTION"></a>
 
+##### anisotropy.ANISOTROPIC\_DIRECTION
+output final direction as defined by the anisotropyTexture and rotation
 
+**Kind**: static property of [<code>anisotropy</code>](#GltfState.DebugOutput.anisotropy)  
 <a name="ResourceLoader"></a>
 
 ## ResourceLoader
