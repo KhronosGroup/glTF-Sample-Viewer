@@ -57,12 +57,7 @@ class gltfBuffer extends GltfObject
             return false;
         }
 
-        const foundFile = files.find(([path, file]) => {
-            if (file.name === this.uri || file.fullPath === this.uri)
-            {
-                return true;
-            }
-        });
+        const foundFile = files.find(file => file[1].name === this.uri || file[1].fullPath === this.uri);
 
         if (foundFile === undefined)
         {

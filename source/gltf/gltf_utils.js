@@ -57,8 +57,8 @@ function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
     let max = jsToGl(accessor.max);
     
     if (accessor.normalized) {
-        min = gltfAccessor.dequantize(min, accessor.componentType)
-        max = gltfAccessor.dequantize(max, accessor.componentType)
+        min = gltfAccessor.dequantize(min, accessor.componentType);
+        max = gltfAccessor.dequantize(max, accessor.componentType);
     }
 
     // Construct all eight corners from min and max values
@@ -71,7 +71,7 @@ function getExtentsFromAccessor(accessor, worldTransform, outMin, outMax)
         vec3.fromValues(max[0], min[1], min[2]),
         vec3.fromValues(max[0], min[1], max[2]),
         vec3.fromValues(max[0], max[1], min[2]),
-        vec3.fromValues(max[0], max[1], max[2])]
+        vec3.fromValues(max[0], max[1], max[2])];
 
 
     // Transform all bounding box vertices

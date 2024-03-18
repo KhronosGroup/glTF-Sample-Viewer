@@ -1,3 +1,2 @@
-dist/*
-libs/*
-rollup.config.js
+/**/dist/*
+/**/libs/*

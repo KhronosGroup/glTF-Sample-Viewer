@@ -38,7 +38,7 @@ class ImageBasedLight extends GltfObject
         }
     }
 
-    initGl(gltf, webGlContext)
+    initGl(gltf)
     {
         if (this.diffuseEnvironmentTexture !== undefined)
         {

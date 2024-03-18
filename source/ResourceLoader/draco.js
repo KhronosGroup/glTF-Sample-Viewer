@@ -1,3 +1,5 @@
+/* globals DracoDecoderModule */
+
 class DracoDecoder {
 
     constructor(dracoLib) {
