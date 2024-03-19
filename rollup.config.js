@@ -2,7 +2,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import glslify from 'rollup-plugin-glslify';
 import resolve from '@rollup/plugin-node-resolve';
 import copy from "rollup-plugin-copy";
-import {wasm} from "@rollup/plugin-wasm";
+import { wasm } from "@rollup/plugin-wasm";
 
 
 export default {

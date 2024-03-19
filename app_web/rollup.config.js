@@ -7,7 +7,8 @@ import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
-import {wasm} from "@rollup/plugin-wasm";
+import { wasm } from "@rollup/plugin-wasm";
+import livereload from 'rollup-plugin-livereload';
 
 export default {
     input: 'src/main.js',
@@ -53,5 +54,6 @@ export default {
             'vue': 'vue/dist/vue.esm.js'
         }),
         commonjs(),
+        livereload(),
     ]
 };
