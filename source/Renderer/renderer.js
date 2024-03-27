@@ -572,10 +572,19 @@ class gltfRenderer
             const inverseView = mat4.create();
             mat4.invert(inverseView, this.viewMatrix);
     
-            let cameraTranslation = this.currentCameraPosition;
-    
+            let cameraTranslation = vec3.clone(this.currentCameraPosition);
             vec3.subtract(cameraTranslation, cameraTranslation, worldTranslation);
+            if (node.extensions.billboard.rotationAxis) {
+                if (node.extensions.billboard.rotationAxis === 'x') {
+                    cameraTranslation[0] = 0;
+                } else if (node.extensions.billboard.rotationAxis === 'y') {
+                    cameraTranslation[1] = 0;
+                } else if (node.extensions.billboard.rotationAxis === 'z') {    
+                    cameraTranslation[2] = 0;
+                }
+            }
             vec3.normalize(cameraTranslation, cameraTranslation);
+
             
             const cameraUp = vec3.fromValues(inverseView[4], inverseView[5], inverseView[6]);
             vec3.normalize(cameraUp, cameraUp);
