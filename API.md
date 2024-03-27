@@ -366,7 +366,7 @@ by gltf sample viewer
 <a name="GltfState.ToneMaps.KHR_PBR_NEUTRAL"></a>
 
 #### ToneMaps.KHR\_PBR\_NEUTRAL
-Khronos PBR neutral tone mapping, see https://modelviewer.dev/examples/tone-mapping
+Khronos PBR neutral tone mapping, see https://github.com/KhronosGroup/ToneMapping, https://modelviewer.dev/examples/tone-mapping
 
 **Kind**: static property of [<code>ToneMaps</code>](#GltfState.ToneMaps)  
 <a name="GltfState.ToneMaps.ACES_HILL_EXPOSURE_BOOST"></a>
