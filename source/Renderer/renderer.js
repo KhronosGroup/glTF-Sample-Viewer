@@ -572,42 +572,47 @@ class gltfRenderer
             const inverseView = mat4.create();
             mat4.invert(inverseView, this.viewMatrix);
     
-
-    
             let cameraTranslation = this.currentCameraPosition;
     
             vec3.subtract(cameraTranslation, cameraTranslation, worldTranslation);
             vec3.normalize(cameraTranslation, cameraTranslation);
             
-            const cameraUp = vec3.fromValues(0, 1, 0);
-            vec3.transformMat4(cameraUp, cameraUp, inverseView);
+            const cameraUp = vec3.fromValues(inverseView[4], inverseView[5], inverseView[6]);
+            vec3.normalize(cameraUp, cameraUp);
+            const cameraRight = vec3.fromValues(inverseView[0], inverseView[1], inverseView[2]);
+            vec3.normalize(cameraRight, cameraRight);
 
-            const fixRotation = mat4.create();
-            
-            const defaultModelForward = vec3.fromValues(0, 0, 1);
-            const rendererForward = vec3.fromValues(0, 0, -1);
-            let modelForward = vec3.fromValues(0, 0, -1);
+            let modelForward = vec3.fromValues(0, 0, 1);
+
+            let modelUp = vec3.fromValues(0, 1, 0);
             if (node.extensions.billboard.viewDirection) {
                 modelForward = vec3.fromValues(...node.extensions.billboard.viewDirection);
             }
-            vec3.normalize(modelForward, modelForward);
-            if (vec3.equals(modelForward, defaultModelForward)) {
-                vec3.negate(cameraTranslation, cameraTranslation);
-                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
-            } else if (!vec3.equals(modelForward, rendererForward)) {
-                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
-                const rad = vec3.angle(rendererForward, modelForward);
-                let axis = vec3.cross(vec3.create(), rendererForward, modelForward);
-                vec3.transformMat4(axis, axis, lookAtCamera);
-                //TODO fix cameraUP
-                const q = quat.setAxisAngle(quat.create(), vec3.normalize(axis, axis), rad);
-                vec3.transformQuat(cameraTranslation, cameraTranslation, q);
-                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
-            } else {
-                mat4.targetTo(lookAtCamera, vec3.create(), cameraTranslation, cameraUp);
+            if (node.extensions.billboard.up) {
+                modelUp = vec3.fromValues(...node.extensions.billboard.up);
             }
-    
-    
+            vec3.normalize(modelForward, modelForward);
+            vec3.normalize(modelUp, modelUp);
+
+            // Fix up vector if not orthogonal
+            const modelRight = vec3.cross(vec3.create(), modelForward, modelUp);
+            vec3.normalize(modelRight, modelRight);
+            vec3.cross(modelUp, modelRight, modelForward);
+
+
+            const targetRotation = quat.create();
+            const rot1 = quat.rotationTo(quat.create(), modelForward, cameraTranslation);
+
+            // Calculate up vector based on camera right vector
+            const camToObj = vec3.negate(vec3.create(), cameraTranslation);
+            const desiredUp = vec3.cross(vec3.create(), cameraRight, camToObj);
+            vec3.normalize(desiredUp, desiredUp);
+
+            const newUp = vec3.transformQuat(vec3.create(), modelUp, rot1);
+
+            const rot2 = quat.rotationTo(quat.create(), newUp, desiredUp);
+            quat.multiply(targetRotation, rot2, rot1);
+
             modelMatrix = mat4.create();
     
             mat4.scale(modelMatrix, modelMatrix, modelScale);
@@ -619,6 +624,8 @@ class gltfRenderer
                 mat4.scale(modelMatrix, modelMatrix, vec3.fromValues(scaleFactor,scaleFactor,scaleFactor));
             }
 
+
+            mat4.fromQuat(lookAtCamera, targetRotation);
             mat4.multiply(modelMatrix, modelMatrix, lookAtCamera);
     
             modelMatrix[12] = worldTranslation[0];
