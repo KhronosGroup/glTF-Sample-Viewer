@@ -35,6 +35,11 @@ out vec4 g_finalColor;
 
 void main()
 {
+    //Billboards
+#ifdef BILLBOARD_DEPTH
+    gl_FragDepth = BILLBOARD_DEPTH;
+#endif
+
     vec4 baseColor = getBaseColor();
 
 #if ALPHAMODE == ALPHAMODE_OPAQUE

@@ -535,6 +535,9 @@ class gltfRenderer
         {
             fragDefines.push("LINEAR_OUTPUT 1");
         }
+        if (node.extensions?.billboard?.overlay) {
+            fragDefines.push("BILLBOARD_DEPTH 0.0");
+        }
         this.pushFragParameterDefines(fragDefines, state);
         
         const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
