@@ -1,17 +1,15 @@
-import path from 'path';
-
 export class GltfModelPathProvider
 {
-    constructor(modelIndexerPath, ignoredVariants = ["glTF-Embedded"])
+    constructor(url, ignoredVariants = ["glTF-Embedded"])
     {
-        this.modelIndexerPath = modelIndexerPath;
+        this.url = url;
         this.ignoredVariants = ignoredVariants;
         this.modelsDictionary = undefined;
     }
 
     async initialize()
     {
-        const response = await fetch(this.modelIndexerPath);
+        const response = await fetch(this.url + "/Models/model-index.json");
         this.populateDictionary(await response.json());
     }
 
@@ -27,7 +25,7 @@ export class GltfModelPathProvider
 
     populateDictionary(modelIndexer)
     {
-        const modelsFolder = path.dirname(this.modelIndexerPath);
+        const modelsFolder = this.url + "/Models";
         this.modelsDictionary = {};
         for (const entry of modelIndexer)
         {
@@ -46,8 +44,7 @@ export class GltfModelPathProvider
                 }
 
                 const fileName = entry.variants[variant];
-                const modelPath = path.join(modelsFolder, entry.name, variant, fileName);
-                variants[variant] = modelPath;
+                variants[variant] = modelsFolder + "/" + entry.name + "/" + variant + "/" + fileName;
             }
             this.modelsDictionary[entry.name] = variants;
         }
