@@ -20,10 +20,7 @@ export default async () => {
   const state = view.createState();
   state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
-  const pathProvider = new GltfModelPathProvider(
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main",
-    "Models/model-index.json",
-  );
+  const pathProvider = new GltfModelPathProvider("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main");
   await pathProvider.initialize();
   const environmentPaths = fillEnvironmentWithPaths(
     {
