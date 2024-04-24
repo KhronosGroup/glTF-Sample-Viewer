@@ -366,7 +366,7 @@ void main()
     // MR:
 #ifdef MATERIAL_METALLICROUGHNESS
 #if DEBUG == DEBUG_METALLIC_ROUGHNESS
-    g_finalColor.rgb = linearTosRGB(f_diffuse + f_diffuse_ibl + f_specular);
+    g_finalColor.rgb = linearTosRGB(diffuse + specular);
 #endif
 #if DEBUG == DEBUG_METALLIC
     g_finalColor.rgb = vec3(materialInfo.metallic);
@@ -382,7 +382,7 @@ void main()
     // Clearcoat:
 #ifdef MATERIAL_CLEARCOAT
 #if DEBUG == DEBUG_CLEARCOAT
-    g_finalColor.rgb = linearTosRGB(f_clearcoat + f_clearcoat_ibl);
+    g_finalColor.rgb = linearTosRGB(clearcoat);
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_FACTOR
     g_finalColor.rgb = vec3(materialInfo.clearcoatFactor);
@@ -398,7 +398,7 @@ void main()
     // Sheen:
 #ifdef MATERIAL_SHEEN
 #if DEBUG == DEBUG_SHEEN
-    g_finalColor.rgb = linearTosRGB(f_sheen + f_sheen_ibl);
+    g_finalColor.rgb = linearTosRGB(sheen);
 #endif
 #if DEBUG == DEBUG_SHEEN_COLOR
     g_finalColor.rgb = materialInfo.sheenColorFactor;
@@ -411,7 +411,7 @@ void main()
     // Specular:
 #ifdef MATERIAL_SPECULAR
 #if DEBUG == DEBUG_SPECULAR
-    g_finalColor.rgb = linearTosRGB(f_specular + f_specular_ibl);
+    g_finalColor.rgb = linearTosRGB(specular);
 #endif
 #if DEBUG == DEBUG_SPECULAR_FACTOR
     g_finalColor.rgb = vec3(materialInfo.specularWeight);
@@ -429,7 +429,7 @@ vec3 specularTexture = vec3(1.0);
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
 #if DEBUG == DEBUG_TRANSMISSION_VOLUME
-    g_finalColor.rgb = linearTosRGB(f_transmission);
+    g_finalColor.rgb = linearTosRGB(f_transmission * materialInfo.transmissionFactor);
 #endif
 #if DEBUG == DEBUG_TRANSMISSION_FACTOR
     g_finalColor.rgb = vec3(materialInfo.transmissionFactor);
@@ -444,7 +444,7 @@ vec3 specularTexture = vec3(1.0);
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE
-    g_finalColor.rgb = iridescenceFresnel;
+    g_finalColor.rgb = iridescenceFresnel * materialInfo.iridescenceFactor;
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = vec3(materialInfo.iridescenceFactor);
