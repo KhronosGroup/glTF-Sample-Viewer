@@ -29,7 +29,7 @@ async function loadHDR(buffer)
     const d8 = buffer;
     let format = undefined;
     // read header.
-    while (!header.match(/\n\n[^\n]+\n/g)) header += String.fromCharCode(d8[pos++]);
+    while (!header.match(/\n\n[^\n]+\n/g) && pos < d8.length) header += String.fromCharCode(d8[pos++]);
     // check format.
     format = header.match(/FORMAT=(.*)$/m);
     if (format.length < 2)
