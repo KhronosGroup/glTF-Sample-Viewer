@@ -219,11 +219,13 @@ void main()
 
 #ifdef MATERIAL_SHEEN
             f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
-            albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
+            float l_albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
                 1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL, materialInfo.sheenRoughnessFactor));
-            f_diffuse += l_diffuse * albedoSheenScaling;
-            f_specular += l_specular * albedoSheenScaling;
+            l_diffuse *= l_albedoSheenScaling;
+            l_specular *= l_albedoSheenScaling;
 #endif
+            f_diffuse += l_diffuse;
+            f_specular += l_specular;
 
 #ifdef MATERIAL_CLEARCOAT
             f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
