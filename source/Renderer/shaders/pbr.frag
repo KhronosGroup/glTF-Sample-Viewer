@@ -155,6 +155,7 @@ void main()
 
 #ifdef MATERIAL_SHEEN
     f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
+    albedoSheenScaling = 1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor);
 #endif
 #endif
 
@@ -274,14 +275,14 @@ void main()
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
-    diffuse = f_diffuse + mix(f_diffuse_ibl, f_diffuse_ibl * ao, u_OcclusionStrength);
+    diffuse = f_diffuse + mix(f_diffuse_ibl, f_diffuse_ibl * ao, u_OcclusionStrength) * albedoSheenScaling;
     // apply ambient occlusion to all lighting that is not punctual
-    specular = f_specular + mix(f_specular_ibl, f_specular_ibl * ao, u_OcclusionStrength);
+    specular = f_specular + mix(f_specular_ibl, f_specular_ibl * ao, u_OcclusionStrength) * albedoSheenScaling;
     sheen = f_sheen + mix(f_sheen_ibl, f_sheen_ibl * ao, u_OcclusionStrength);
     clearcoat = f_clearcoat + mix(f_clearcoat_ibl, f_clearcoat_ibl * ao, u_OcclusionStrength);
 #else
-    diffuse = f_diffuse_ibl + f_diffuse;
-    specular = f_specular_ibl + f_specular;
+    diffuse = f_diffuse_ibl * albedoSheenScaling + f_diffuse;
+    specular = f_specular_ibl * albedoSheenScaling + f_specular;
     sheen = f_sheen_ibl + f_sheen;
     clearcoat = f_clearcoat_ibl + f_clearcoat;
 #endif
