@@ -255,6 +255,8 @@ class gltfRenderer
             })), [])
             .filter(({primitive}) => primitive.material !== undefined);
 
+        this.billBoardOverlayDrawables = drawables.filter(({node}) => node.extensions?.billboard?.overlay);
+
         // opaque drawables don't need sorting
         this.opaqueDrawables = drawables
             .filter(({primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND"
@@ -427,6 +429,21 @@ class gltfRenderer
             }
         }
 
+        //Sort billboards
+        this.billBoardOverlayDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.billBoardOverlayDrawables);
+        const epsilon = 0.0000001;
+        let j = 1;
+        for (let i = this.billBoardOverlayDrawables.length - 1; i >= 0; i--)
+        {
+            const drawable = this.billBoardOverlayDrawables[i];
+            if (drawable.depth < 0.0) {
+                drawable.primitive.billboardDepth = j * epsilon;
+                j++;
+            } else {
+                drawable.primitive.billboardDepth = undefined;
+            }
+        }
+
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
             // Render transmission sample texture
@@ -535,8 +552,8 @@ class gltfRenderer
         {
             fragDefines.push("LINEAR_OUTPUT 1");
         }
-        if (node.extensions?.billboard?.overlay) {
-            fragDefines.push("BILLBOARD_DEPTH 0.0");
+        if (primitive.billboardDepth !== undefined) {
+            fragDefines.push(`BILLBOARD_DEPTH ${primitive.billboardDepth}`);
         }
         this.pushFragParameterDefines(fragDefines, state);
         
