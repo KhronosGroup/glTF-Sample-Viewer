@@ -16,7 +16,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "fast-png": "^5.0.3",
-    "gl-matrix": "^3.2.1",
+    "gl-matrix": "^3.4.3",
     "jpeg-js": "^0.4.3"
   },
   "bugs": {
