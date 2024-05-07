@@ -38,6 +38,11 @@ class GltfState
         /** KHR_materials_variants */
         this.variant = undefined;
 
+        /** callback for selection events without this selection is disabled*/
+        this.selectionCallback = undefined;
+
+        this.triggerSelection = false;
+
         /** parameters used to configure the rendering */
         this.renderingParameters = {
             /** morphing between vertices */

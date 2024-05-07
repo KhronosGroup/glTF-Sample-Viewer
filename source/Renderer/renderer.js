@@ -5,6 +5,8 @@ import { gltfWebGl, GL } from './webgl.js';
 import { EnvironmentRenderer } from './environment_renderer.js';
 
 import pbrShader from './shaders/pbr.frag';
+import pickingShader from './shaders/picking.frag';
+import pickingVertShader from './shaders/picking.vert';
 import brdfShader from './shaders/brdf.glsl';
 import iridescenceShader from './shaders/iridescence.glsl';
 import materialInfoShader from './shaders/material_info.glsl';
@@ -44,6 +46,8 @@ class gltfRenderer
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
         shaderSources.set("pbr.frag", pbrShader);
+        shaderSources.set("picking.frag", pickingShader);
+        shaderSources.set("picking.vert", pickingVertShader);
         shaderSources.set("material_info.glsl", materialInfoShader);
         shaderSources.set("brdf.glsl", brdfShader);
         shaderSources.set("iridescence.glsl", iridescenceShader);
@@ -256,6 +260,8 @@ class gltfRenderer
                 return  {node: node, primitive: primitive};
             })), [])
             .filter(({primitive}) => primitive.material !== undefined);
+
+        this.drawables = drawables;
 
         this.billBoardOverlayDrawables = drawables.filter(({node}) => node.extensions?.billboard?.overlay);
 
@@ -562,7 +568,7 @@ class gltfRenderer
         this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
     }
 
-    drawNodes(state, nodeIDs, environment)
+    drawNodes(state, nodeIDs, environment, picking = false)
     {
         // performance optimization
         // if (this.preparedScene !== scene) {
@@ -626,6 +632,17 @@ class gltfRenderer
                 drawable.primitive.billboardDepth = undefined;
             }
         }
+
+        if (picking) {
+            for (const drawable of this.drawables)
+            {
+                let renderpassConfiguration = {};
+                renderpassConfiguration.picking = true;
+                this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            }
+            return;
+        }
+
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
@@ -740,8 +757,11 @@ class gltfRenderer
         }
         this.pushFragParameterDefines(fragDefines, state);
         
-        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
+        const fragShader = renderpassConfiguration.picking ? "picking.frag" : material.getShaderIdentifier();
+        const vertShader = renderpassConfiguration.picking ? "picking.vert" : primitive.getShaderIdentifier();
+
+        const fragmentHash = this.shaderCache.selectShader(fragShader, fragDefines);
+        const vertexHash = this.shaderCache.selectShader(vertShader, vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -755,7 +775,7 @@ class gltfRenderer
 
         this.webGl.context.useProgram(this.shader.program);
 
-        if (state.renderingParameters.usePunctual)
+        if (state.renderingParameters.usePunctual && !renderpassConfiguration.picking)
         {
             this.applyLights();
         }
@@ -778,7 +798,7 @@ class gltfRenderer
             this.webGl.context.frontFace(GL.CCW);
         }
 
-        if (material.doubleSided)
+        if (material.doubleSided || renderpassConfiguration.picking)
         {
             this.webGl.context.disable(GL.CULL_FACE);
         }
@@ -787,7 +807,7 @@ class gltfRenderer
             this.webGl.context.enable(GL.CULL_FACE);
         }
 
-        if (material.alphaMode === 'BLEND')
+        if (material.alphaMode === 'BLEND' && !renderpassConfiguration.picking)
         {
             this.webGl.context.enable(GL.BLEND);
             this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ONE, GL.ONE_MINUS_SRC_ALPHA);
@@ -857,29 +877,31 @@ class gltfRenderer
             textureIndex++;
         }
 
-        if (state.renderingParameters.useIBL && state.environment !== undefined)
-        {
-            textureIndex = this.applyEnvironmentMap(state,environment, textureIndex);
-        }
-
-        if (state.renderingParameters.useIBL && state.environment !== undefined)
-        {
-            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureIndex++);
-        }
-
-        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
-                    && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
-        {
-            this.webGl.context.activeTexture(GL.TEXTURE0 + textureIndex);
-            this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureIndex);
-            textureIndex++;
-
-            this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
-
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, modelMatrix);
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
+        if (!renderpassConfiguration.picking) {
+            if (state.renderingParameters.useIBL && state.environment !== undefined)
+            {
+                textureIndex = this.applyEnvironmentMap(state,environment, textureIndex);
+            }
+    
+            if (state.renderingParameters.useIBL && state.environment !== undefined)
+            {
+                this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureIndex++);
+            }
+    
+            if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
+                        && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
+            {
+                this.webGl.context.activeTexture(GL.TEXTURE0 + textureIndex);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
+                this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureIndex);
+                textureIndex++;
+    
+                this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+    
+                this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
+                this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
+                this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
+            }
         }
 
         if (drawIndexed)
