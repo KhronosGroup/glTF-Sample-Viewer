@@ -40,6 +40,9 @@ class gltfRenderer
         this.opaqueRenderTexture = 0;
         this.opaqueFramebuffer = 0;
         this.opaqueDepthTexture = 0;
+        this.pickingIDTexture = 0;
+        this.pickingPositionTexture = 0;
+        this.pickingNormalTexture = 0;
         this.opaqueFramebufferWidth = 1024;
         this.opaqueFramebufferHeight = 1024;
 
@@ -127,6 +130,33 @@ class gltfRenderer
             context.texImage2D( context.TEXTURE_2D, 0, context.DEPTH_COMPONENT16, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.DEPTH_COMPONENT, context.UNSIGNED_SHORT, null);
             context.bindTexture(context.TEXTURE_2D, null);
 
+            this.pickingIDTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingIDTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.UNSIGNED_BYTE, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
+            this.pickingPositionTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingPositionTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGB32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGB, context.FLOAT, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
+            this.pickingNormalTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingNormalTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGB32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGB, context.FLOAT, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
 
             this.colorRenderBuffer = context.createRenderbuffer();
             context.bindRenderbuffer(context.RENDERBUFFER, this.colorRenderBuffer);
@@ -153,6 +183,14 @@ class gltfRenderer
             context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.opaqueRenderTexture, 0);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.TEXTURE_2D, this.opaqueDepthTexture, 0);
             context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+
+
+            this.pickingFramebuffer = context.createFramebuffer();
+            context.bindFramebuffer(context.FRAMEBUFFER, this.pickingFramebuffer);
+            context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.pickingIDTexture, 0);
+            //context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
+            //context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
+
             context.bindFramebuffer(context.FRAMEBUFFER, null);
 
             this.initialized = true;
@@ -202,6 +240,10 @@ class gltfRenderer
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
         this.webGl.context.clearColor(...clearColor);
+        this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
+        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+        this.webGl.context.clearColor(0, 0, 0, 1);
         this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
@@ -308,7 +350,7 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
-        this.drawEnvironmentMap(state)
+        //this.drawEnvironmentMap(state)
 
         this.sceneNodeIDs = scene.gatherNodeIDs(state.gltf);
 
@@ -568,7 +610,7 @@ class gltfRenderer
         this.environmentRenderer.drawEnvironmentMap(this.webGl, this.viewProjectionMatrix, state, this.shaderCache, fragDefines);
     }
 
-    drawNodes(state, nodeIDs, environment, picking = false)
+    drawNodes(state, nodeIDs, environment)
     {
         // performance optimization
         // if (this.preparedScene !== scene) {
@@ -633,14 +675,39 @@ class gltfRenderer
             }
         }
 
-        if (picking) {
+        if (true || state.triggerSelection) {
+            //state.triggerSelection = false;
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
+            //this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
+
+            const fragDefines = [];
+            this.pushFragParameterDefines(fragDefines, state);
             for (const drawable of this.drawables)
             {
                 let renderpassConfiguration = {};
                 renderpassConfiguration.picking = true;
                 this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
             }
+            //this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
+            const pixels = new Uint8Array(4);
+            //this.webGl.context.readPixels(state.pickingX ?? 0, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
+            //console.log(pixels);
+
+            //this.webGl.context.bindFramebuffer(this.webGl.context.READ_FRAMEBUFFER, this.pickingFramebuffer);
+            //this.webGl.context.bindFramebuffer(this.webGl.context.DRAW_FRAMEBUFFER, null);
+            //this.webGl.context.blitFramebuffer(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, this.webGl.context.COLOR_BUFFER_BIT, this.webGl.context.NEAREST);
+
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
             return;
+            for (const drawable of this.drawables)
+            {
+                if (vec4.equals(drawable.node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
+                {
+                    state.selectedNode = drawable.node;
+                    break;
+                }
+            }
         }
 
 
@@ -786,6 +853,9 @@ class gltfRenderer
         this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
         this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
+        if (renderpassConfiguration.picking) {
+            this.shader.updateUniform("u_PickingColor", node.pickingColor, false);
+        }
 
         this.updateAnimationUniforms(state, node, primitive);
 
@@ -830,6 +900,9 @@ class gltfRenderer
         let vertexCount = 0;
         for (const attribute of primitive.glAttributes)
         {
+            if (renderpassConfiguration.picking && attribute.name !== "POSITION") {
+                //continue;
+            }
             const gltfAccessor = state.gltf.accessors[attribute.accessor];
             vertexCount = gltfAccessor.count;
 
@@ -916,6 +989,9 @@ class gltfRenderer
 
         for (const attribute of primitive.glAttributes)
         {
+            if (renderpassConfiguration.picking && attribute.name !== "POSITION") {
+                //continue;
+            }
             const location = this.shader.getAttributeLocation(attribute.name);
             if (location === null)
             {
