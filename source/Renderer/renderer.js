@@ -900,8 +900,8 @@ class gltfRenderer
         let vertexCount = 0;
         for (const attribute of primitive.glAttributes)
         {
-            if (renderpassConfiguration.picking && attribute.name !== "POSITION") {
-                //continue;
+            if (renderpassConfiguration.picking && (attribute.attribute !== "POSITION" || attribute.attribute.startsWith("JOINTS") || attribute.attribute.startsWith("WEIGHTS"))) {
+                continue;
             }
             const gltfAccessor = state.gltf.accessors[attribute.accessor];
             vertexCount = gltfAccessor.count;
@@ -989,8 +989,8 @@ class gltfRenderer
 
         for (const attribute of primitive.glAttributes)
         {
-            if (renderpassConfiguration.picking && attribute.name !== "POSITION") {
-                //continue;
+            if (renderpassConfiguration.picking && (attribute.attribute !== "POSITION" || attribute.attribute.startsWith("JOINTS") || attribute.attribute.startsWith("WEIGHTS"))) {
+                continue;
             }
             const location = this.shader.getAttributeLocation(attribute.name);
             if (location === null)
