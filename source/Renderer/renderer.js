@@ -85,6 +85,9 @@ class gltfRenderer
         this.lightFill.direction = vec3.create();
         vec3.transformQuat(this.lightKey.direction, [0, 0, -1], quatKey);
         vec3.transformQuat(this.lightFill.direction, [0, 0, -1], quatFill);
+
+        this.currentAssetLOD = new Map();
+
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -329,9 +332,6 @@ class gltfRenderer
                 }
 
 
-                //console.log("node.extras")
-                //console.log(node.extras)
-
                 let viewProjectionMatrix = this.viewProjectionMatrix
                 let viewMatrix = this.viewMatrix
 
@@ -386,8 +386,7 @@ class gltfRenderer
 
                 // view-independent / static bounding box of asset:
                 let diagonalMeters = vec3.distance(boxVertices[0], boxVertices[7])
-                
-                console.log("diagonal [meter]: " + diagonalMeters)
+                //console.log("diagonal [meter]: " + diagonalMeters)
 
 
                 //calculate size of bounding box in pixel space:
@@ -410,80 +409,155 @@ class gltfRenderer
                 const vPixels = (pixelMax[1] - pixelMin[1]) *  this.currentHeight
 
                 let diagonalPixels = Math.sqrt(hPixels*hPixels+ vPixels*vPixels)
-                console.log("diagonal [pixel]: " + diagonalPixels)
+                //console.log("diagonal [pixel]: " + diagonalPixels)
 
                 let required_pqpm = diagonalPixels/diagonalMeters
-                console.log("pqpm: " + required_pqpm)
+                //console.log("pqpm: " + required_pqpm)
                 
 
                 let screen_coverage = (hPixels*vPixels) / (this.currentWidth * this.currentHeight)
-                console.log("screen_coverage: " + screen_coverage)
+                //console.log("screen_coverage: " + screen_coverage)
 
                 let origin = vec3.create(); 
                 let asset_distance= vec3.distance (origin, this.currentCameraPosition)
-                console.log("asset_distance: "+asset_distance)
+                //console.log("asset_distance: "+asset_distance)
                 
 
-                if(state.renderingParameters.LoD === "PQPM") {
+                let selectedLOD = undefined
+                const toleranceRange = 0.3
 
-                    if(node.extras.lod!==undefined){
-                        let selected_pqpm = 999999
-                        for (const level of node.extras.lod) {
-                            if((required_pqpm < level.pqpm) // this level offers better quality than required
-                                && (selected_pqpm > level.pqpm)) // and has lower quality than currently selected
-                            {  // ->better fit
-                               
-                                const levelID =  node.extras.lod.indexOf(level)
-                                lodMarker = node.extras.expectAsset + "_lod" + levelID
-
-                                selected_pqpm = level.pqpm
-
-                            }
-                        }
+                if (state.renderingParameters.LoD === "PQPM") {
+                  if (node.extras.lod !== undefined) {
+                    let selected_pqpm = 999999;
+                    let current_pqpm = -999.0;
+                    const currentLOD = this.currentAssetLOD.get(
+                      node.extras.expectAsset
+                    );
+                    if (currentLOD !== undefined) {
+                      current_pqpm =
+                        node.extras.lod[currentLOD].qualityPixels /
+                        diagonalMeters;
                     }
+
+                    for (const level of node.extras.lod) {
+                      const level_pqpm = level.qualityPixels / diagonalMeters;
+                      if (
+                        required_pqpm < level_pqpm && // this level offers better quality than required
+                        selected_pqpm > level_pqpm
+                      ) {
+                        // and has lower quality than currently selected
+                        // ->better fit
+
+                        selectedLOD = node.extras.lod.indexOf(level);
+
+                        selected_pqpm = level_pqpm;
+                      }
+                    }
+
+                    // Check if diff to new lod is high enough
+                    if (
+                      Math.abs(selected_pqpm - current_pqpm) / selected_pqpm <
+                      toleranceRange
+                    ) {
+                      // not worth changing
+                      selectedLOD = currentLOD;
+                    } else {
+                      // more than x% diff to current lod
+                      this.currentAssetLOD.set(
+                        node.extras.expectAsset,
+                        selectedLOD
+                      );
+                    }
+                  }
                 }
 
-                
-                if(state.renderingParameters.LoD === "Coverage") {
-
-                    if(node.extras.lod!==undefined){
-                        let selected_coverage = 2.0
-                        for (const level of node.extras.lod) {
-                            if((screen_coverage < level.coverage) // this level offers better quality than required
-                                && (selected_coverage > level.coverage)) // and has lower quality than currently selected
-                            {  // ->better fit
-                               
-                                const levelID =  node.extras.lod.indexOf(level)
-                                lodMarker = node.extras.expectAsset + "_lod" + levelID
-
-                                selected_coverage = level.coverage
-
-                            }
-                        }
+                if (state.renderingParameters.LoD === "Coverage") {
+                  if (node.extras.lod !== undefined) {
+                    let selected_coverage = 2.0;
+                    let current_coverage = -999.0;
+                    const currentLOD = this.currentAssetLOD.get(
+                      node.extras.expectAsset
+                    );
+                    if (currentLOD !== undefined) {
+                      current_coverage =
+                        node.extras.lod[currentLOD].screenCoverage;
                     }
+                    for (const level of node.extras.lod) {
+                      if (
+                        screen_coverage < level.screenCoverage && // this level offers better quality than required
+                        selected_coverage > level.screenCoverage
+                      ) {
+                        // and has lower quality than currently selected
+                        // ->better fit
+
+                        selectedLOD = node.extras.lod.indexOf(level);
+                        selected_coverage = level.screenCoverage;
+                      }
+                    }
+
+                    // Check if diff to new lod is high enough
+                    if (
+                      Math.abs(selected_coverage - current_coverage) /
+                        selected_coverage <
+                      toleranceRange
+                    ) {
+                      // not worth changing
+                      selectedLOD = currentLOD;
+                    } else {
+                      // more than x% diff to current lod
+                      this.currentAssetLOD.set(
+                        node.extras.expectAsset,
+                        selectedLOD
+                      );
+                    }
+                  }
                 }
 
-                
-                if(state.renderingParameters.LoD === "Distance") {
-
-                    if(node.extras.lod!==undefined){
-                        let selected_distance = 0.0
-                        for (const level of node.extras.lod) {
-                            if((asset_distance > level.distance) // this level offers better quality than required
-                                && (selected_distance < level.distance)) // and has lower quality than currently selected
-                            {  // ->better fit
-                               
-                                const levelID =  node.extras.lod.indexOf(level)
-                                lodMarker = node.extras.expectAsset + "_lod" + levelID
-
-                                selected_distance = level.distance
-
-                            }
-                        }
+                if (state.renderingParameters.LoD === "Distance") {
+                  if (node.extras.lod !== undefined) {
+                    let selected_distance = 0.0;
+                    let current_distance = -999.0;
+                    const currentLOD = this.currentAssetLOD.get(
+                      node.extras.expectAsset
+                    );
+                    if (currentLOD !== undefined) {
+                      current_distance = node.extras.lod[currentLOD].distance;
                     }
+
+                    for (const level of node.extras.lod) {
+                      if (
+                        asset_distance > level.distance && // this level offers better quality than required
+                        selected_distance < level.distance // and has lower quality than currently selected
+                      ) {
+                        // ->better fit
+
+                        selectedLOD = node.extras.lod.indexOf(level);
+                        selected_distance = level.distance;
+                      }
+                    }
+
+                    // Check if diff to new lod is high enough
+                    if (
+                      Math.abs(selected_distance - current_distance) /
+                        selected_distance <
+                      toleranceRange
+                    ) {
+                      // not worth changing
+                      selectedLOD = currentLOD;
+                    } else {
+                      // more than x% diff to current lod
+                      this.currentAssetLOD.set(
+                        node.extras.expectAsset,
+                        selectedLOD
+                      );
+                    }
+                  }
                 }
 
-
+                // Check for active level of detail
+                if(selectedLOD !== undefined) {
+                    lodMarker = node.extras.expectAsset + "_lod" + selectedLOD
+                }
 
                 // select correct lod node for rendering
 
