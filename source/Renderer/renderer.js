@@ -243,7 +243,7 @@ class gltfRenderer
         this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
-        this.webGl.context.clearColor(0, 0, 0, 1);
+        this.webGl.context.clearColor(0, 0, 0, 0);
         this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
@@ -678,8 +678,6 @@ class gltfRenderer
         if (true || state.triggerSelection) {
             //state.triggerSelection = false;
             this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
-            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
-            //this.webGl.context.viewport(0, 0,  this.currentWidth, this.currentHeight);
 
             const fragDefines = [];
             this.pushFragParameterDefines(fragDefines, state);
@@ -689,22 +687,17 @@ class gltfRenderer
                 renderpassConfiguration.picking = true;
                 this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
             }
-            //this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
+            this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
             const pixels = new Uint8Array(4);
-            //this.webGl.context.readPixels(state.pickingX ?? 0, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
-            //console.log(pixels);
+            this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
+            console.log(pixels);
 
-            //this.webGl.context.bindFramebuffer(this.webGl.context.READ_FRAMEBUFFER, this.pickingFramebuffer);
-            //this.webGl.context.bindFramebuffer(this.webGl.context.DRAW_FRAMEBUFFER, null);
-            //this.webGl.context.blitFramebuffer(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, this.webGl.context.COLOR_BUFFER_BIT, this.webGl.context.NEAREST);
-
-            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
-            return;
             for (const drawable of this.drawables)
             {
                 if (vec4.equals(drawable.node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
                 {
                     state.selectedNode = drawable.node;
+                    console.log("FOUND");
                     break;
                 }
             }

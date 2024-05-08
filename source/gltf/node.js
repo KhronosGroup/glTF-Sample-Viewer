@@ -39,7 +39,7 @@ class gltfNode extends GltfObject
     {
         if (this.mesh !== undefined) {
             const mask = 0x000000FF;
-            this.pickingColor = vec4.fromValues((gltfNode.currentPickingColor & mask) / 255, ((gltfNode.currentPickingColor >>> 8) & mask) / 255, ((gltfNode.currentPickingColor >>> 16) & mask) / 255, 1.0/*(gltfNode.currentPickingColor >>> 24) & mask / 255*/);
+            this.pickingColor = vec4.fromValues((gltfNode.currentPickingColor & mask) / 255, ((gltfNode.currentPickingColor >>> 8) & mask) / 255, ((gltfNode.currentPickingColor >>> 16) & mask) / 255, ((gltfNode.currentPickingColor >>> 24) & mask) / 255);
             gltfNode.currentPickingColor += 50;
         }
         if (this.matrix !== undefined)
