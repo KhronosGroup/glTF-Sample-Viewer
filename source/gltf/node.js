@@ -8,7 +8,7 @@ import { GltfObject } from './gltf_object.js';
 
 class gltfNode extends GltfObject
 {
-    static currentPickingColor = 0;
+    static currentPickingColor = 50;
     constructor()
     {
         super();

@@ -106,7 +106,8 @@ class gltfRenderer
         const maxSamples = context.getParameter(context.MAX_SAMPLES);
         const samples = state.internalMSAA < maxSamples ? state.internalMSAA : maxSamples;
         if (!this.initialized){
-            if (this.webGl.context.getExtension("OES_texture_float")) {
+            const ext = context.getExtension('OES_texture_float_linear');
+            if (ext !== null) {
                 this.floatTexturesSupported = true;
             }
 
@@ -136,7 +137,7 @@ class gltfRenderer
 
             this.pickingIDTexture = context.createTexture();
             context.bindTexture(context.TEXTURE_2D, this.pickingIDTexture);
-            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
@@ -145,7 +146,7 @@ class gltfRenderer
 
             this.pickingPositionTexture = context.createTexture();
             context.bindTexture(context.TEXTURE_2D, this.pickingPositionTexture);
-            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
@@ -154,7 +155,7 @@ class gltfRenderer
 
             this.pickingNormalTexture = context.createTexture();
             context.bindTexture(context.TEXTURE_2D, this.pickingNormalTexture);
-            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR_MIPMAP_LINEAR);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
@@ -696,17 +697,45 @@ class gltfRenderer
             this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
             const pixels = new Uint8Array(4);
             this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
-            console.log(pixels);
 
+            let pickingResult = {
+                node: undefined,
+                position: undefined,
+                normal: undefined
+            };
+
+            if (this.floatTexturesSupported) {
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
+                const position = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
+                pickingResult.position = position;
+    
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
+                const normal = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
+                pickingResult.normal = normal;
+            }
+
+            let found = false;
             for (const drawable of this.drawables)
             {
                 if (vec4.equals(drawable.node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
                 {
-                    state.selectedNode = drawable.node;
+                    state.renderingParameters.highlightedNodes = [drawable.node];
+                    found = true;
                     console.log("FOUND");
+                    pickingResult.node = drawable.node;
                     break;
                 }
             }
+            if (!found)
+            {
+                state.renderingParameters.highlightedNodes = [];
+            }
+            if (state.renderingParameters.selectionCallback){
+                state.renderingParameters.selectionCallback(pickingResult);
+            }
+            console.log(pickingResult);
         }
 
 
@@ -821,6 +850,9 @@ class gltfRenderer
         if (primitive.billboardDepth !== undefined) {
             fragDefines.push(`BILLBOARD_DEPTH ${primitive.billboardDepth}`);
         }
+        if (state.renderingParameters.highlightedNodes?.includes(node)) {
+            fragDefines.push("IS_HIGHLIGHT 1");
+        }
         this.pushFragParameterDefines(fragDefines, state);
         
         const fragShader = renderpassConfiguration.picking ? "picking.frag" : material.getShaderIdentifier();
@@ -854,7 +886,8 @@ class gltfRenderer
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
         if (renderpassConfiguration.picking) {
             this.shader.updateUniform("u_PickingColor", node.pickingColor, false);
-        }
+        } 
+        this.shader.updateUniform("u_HighlightColor", vec4.fromValues(0,0,1,1), false);
 
         this.updateAnimationUniforms(state, node, primitive);
 

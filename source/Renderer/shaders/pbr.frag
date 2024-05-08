@@ -32,6 +32,9 @@ precision highp float;
 
 out vec4 g_finalColor;
 
+#ifdef IS_HIGHLIGHT
+uniform vec4 u_HighlightColor;
+#endif
 
 void main()
 {
@@ -477,4 +480,9 @@ vec3 specularTexture = vec3(1.0);
     g_finalColor.rgb = vec3(direction, 0.0);
 #endif
 #endif
+
+#ifdef IS_HIGHLIGHT
+    g_finalColor = u_HighlightColor;
+#endif
+
 }

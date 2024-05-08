@@ -43,6 +43,8 @@ class GltfState
 
         this.triggerSelection = false;
 
+        this.highlightedNodes = [];
+
         /** parameters used to configure the rendering */
         this.renderingParameters = {
             /** morphing between vertices */
