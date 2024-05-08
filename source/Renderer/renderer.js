@@ -66,6 +66,7 @@ class gltfRenderer
         this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
         this.webGl.loadWebGlExtensions();
+        this.floatTexturesSupported = false;
 
         this.visibleLights = [];
 
@@ -105,6 +106,9 @@ class gltfRenderer
         const maxSamples = context.getParameter(context.MAX_SAMPLES);
         const samples = state.internalMSAA < maxSamples ? state.internalMSAA : maxSamples;
         if (!this.initialized){
+            if (this.webGl.context.getExtension("OES_texture_float")) {
+                this.floatTexturesSupported = true;
+            }
 
             context.pixelStorei(GL.UNPACK_COLORSPACE_CONVERSION_WEBGL, GL.NONE);
             context.enable(GL.DEPTH_TEST);
@@ -188,8 +192,10 @@ class gltfRenderer
             this.pickingFramebuffer = context.createFramebuffer();
             context.bindFramebuffer(context.FRAMEBUFFER, this.pickingFramebuffer);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.pickingIDTexture, 0);
-            //context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
-            //context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
+            if (this.floatTexturesSupported) {
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
+            }
 
             context.bindFramebuffer(context.FRAMEBUFFER, null);
 
