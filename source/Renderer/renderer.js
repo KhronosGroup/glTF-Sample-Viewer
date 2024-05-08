@@ -106,7 +106,8 @@ class gltfRenderer
         const maxSamples = context.getParameter(context.MAX_SAMPLES);
         const samples = state.internalMSAA < maxSamples ? state.internalMSAA : maxSamples;
         if (!this.initialized){
-            const ext = context.getExtension('OES_texture_float_linear');
+            const ext = context.getExtension('EXT_color_buffer_float');
+            context.getExtension('OES_texture_float_linear');
             if (ext !== null) {
                 this.floatTexturesSupported = true;
             }
@@ -150,7 +151,7 @@ class gltfRenderer
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
-            context.texImage2D(context.TEXTURE_2D, 0, context.RGB32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGB, context.FLOAT, null);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGBA32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.FLOAT, null);
             context.bindTexture(context.TEXTURE_2D, null);
 
             this.pickingNormalTexture = context.createTexture();
@@ -159,7 +160,7 @@ class gltfRenderer
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
             context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
-            context.texImage2D(context.TEXTURE_2D, 0, context.RGB32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGB, context.FLOAT, null);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGBA32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.FLOAT, null);
             context.bindTexture(context.TEXTURE_2D, null);
 
 
