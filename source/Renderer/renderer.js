@@ -300,6 +300,128 @@ class gltfRenderer
         return undefined
     }
 
+                
+    get_distance_lod(node, target_property, asset_value) {
+        let selectedLOD = undefined
+        if (node.extras.lod !== undefined) {
+            let toleranceRange = undefined
+            let fitting_lod_value = -999.0;
+            let fitting_lod = undefined;
+            let current_lod_value = -999.0;
+            let current_lod = this.currentAssetLOD.get(
+                node.extras.expectAsset
+            );
+            if (current_lod !== undefined) {
+                current_lod_value = node.extras.lod[current_lod][target_property];
+            }
+            let lower_bound = 0
+            let upper_bound = 0
+            for (const level of node.extras.lod) {
+                upper_bound = level[target_property]
+
+                if (
+                    asset_value > lower_bound && // this level offers better quality than required
+                    asset_value < upper_bound // and has lower quality than currently selected
+                ) {
+                    // ->better fit
+
+                    fitting_lod = node.extras.lod.indexOf(level);
+                    fitting_lod_value = level[target_property];
+                    //selected_value =  level[target_property];
+                    lower_bound =  level[target_property];
+                    toleranceRange = level.toleranceRange
+                }
+                
+            }
+
+
+            let fitting_diff = Math.abs(fitting_lod_value - asset_value)
+            let current_diff = Math.abs(current_lod_value - asset_value)
+
+
+            // Check if diff to new lod is high enough
+            if (toleranceRange===undefined||
+                fitting_diff < current_diff * (1.0+toleranceRange) ||
+                current_lod === undefined
+            ) {
+                // new level gives better fit even when applying tolerance range
+                selectedLOD = fitting_lod;
+                this.currentAssetLOD.set(
+                    node.extras.expectAsset,
+                    selectedLOD
+                );
+                                    
+            } else {
+                // keep curren lod
+                selectedLOD = current_lod;
+            }
+        
+        }
+
+        return selectedLOD
+    }
+
+    
+                
+    get_lod(node, target_property, asset_value) {
+        let selectedLOD = undefined
+        
+        if (node.extras.lod !== undefined) {
+            let toleranceRange = undefined
+            let fitting_lod_value = -999.0;
+            let fitting_lod = undefined;
+            let current_lod_value = -999.0;
+            let current_lod = this.currentAssetLOD.get(
+                node.extras.expectAsset
+            );
+            if (current_lod !== undefined) {
+                current_lod_value = node.extras.lod[current_lod][target_property];
+            }
+
+            let selected_value = 9999999.0
+            let upper_bound = 0
+            for (const level of node.extras.lod) {
+                upper_bound = level[target_property]
+              if (
+                asset_value < upper_bound && // this level offers better quality than required
+                selected_value > upper_bound // and has lower quality than currently selected
+                ) {
+                // and has lower quality than currently selected
+                // ->better fit
+
+                fitting_lod = node.extras.lod.indexOf(level);
+                fitting_lod_value = level[target_property];
+                selected_value =  level[target_property];
+                // lower_bound =  level[target_property];
+                toleranceRange = level.toleranceRange
+              }
+            }
+
+            let fitting_diff = Math.abs(fitting_lod_value - asset_value)
+            let current_diff = Math.abs(current_lod_value - asset_value)
+
+
+            // Check if diff to new lod is high enough
+            if (toleranceRange===undefined||
+                fitting_diff < current_diff * (1.0+toleranceRange) ||
+                current_lod === undefined
+            ) {
+                // new level gives better fit even when applying tolerance range
+                selectedLOD = fitting_lod;
+                this.currentAssetLOD.set(
+                    node.extras.expectAsset,
+                    selectedLOD
+                );
+                                    
+            } else {
+                // keep curren lod
+                selectedLOD = current_lod;
+            }
+          }
+
+          return selectedLOD
+    }
+
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
@@ -359,8 +481,7 @@ class gltfRenderer
                     let v3 = vec3.fromValues(v4[0],v4[1],v4[2])                      
                     return v3
                 }
-
-
+                
                 //calculate size of bounding box in camera space:
                 let boxVertices = getNodeBoundingBox(state.gltf, renderNodeID)
 
@@ -424,7 +545,7 @@ class gltfRenderer
                 
 
                 let selectedLOD = undefined
-                const toleranceRange = 0.3
+                let toleranceRange =undefined
 
                 if (state.renderingParameters.LoD === "PQPM") {
                   if (node.extras.lod !== undefined) {
@@ -472,86 +593,18 @@ class gltfRenderer
                 }
 
                 if (state.renderingParameters.LoD === "Coverage") {
-                  if (node.extras.lod !== undefined) {
-                    let selected_coverage = 2.0;
-                    let current_coverage = -999.0;
-                    const currentLOD = this.currentAssetLOD.get(
-                      node.extras.expectAsset
-                    );
-                    if (currentLOD !== undefined) {
-                      current_coverage =
-                        node.extras.lod[currentLOD].screenCoverage;
-                    }
-                    for (const level of node.extras.lod) {
-                      if (
-                        screen_coverage < level.screenCoverage && // this level offers better quality than required
-                        selected_coverage > level.screenCoverage
-                      ) {
-                        // and has lower quality than currently selected
-                        // ->better fit
 
-                        selectedLOD = node.extras.lod.indexOf(level);
-                        selected_coverage = level.screenCoverage;
-                      }
-                    }
+                    const target_property = "screenCoverage"
+                    const asset_value = screen_coverage
 
-                    // Check if diff to new lod is high enough
-                    if (
-                      Math.abs(selected_coverage - current_coverage) /
-                        selected_coverage <
-                      toleranceRange
-                    ) {
-                      // not worth changing
-                      selectedLOD = currentLOD;
-                    } else {
-                      // more than x% diff to current lod
-                      this.currentAssetLOD.set(
-                        node.extras.expectAsset,
-                        selectedLOD
-                      );
-                    }
-                  }
+                    selectedLOD = this.get_lod(node,"screenCoverage",screen_coverage )
                 }
 
                 if (state.renderingParameters.LoD === "Distance") {
-                  if (node.extras.lod !== undefined) {
-                    let selected_distance = 0.0;
-                    let current_distance = -999.0;
-                    const currentLOD = this.currentAssetLOD.get(
-                      node.extras.expectAsset
-                    );
-                    if (currentLOD !== undefined) {
-                      current_distance = node.extras.lod[currentLOD].distance;
-                    }
-
-                    for (const level of node.extras.lod) {
-                      if (
-                        asset_distance > level.distance && // this level offers better quality than required
-                        selected_distance < level.distance // and has lower quality than currently selected
-                      ) {
-                        // ->better fit
-
-                        selectedLOD = node.extras.lod.indexOf(level);
-                        selected_distance = level.distance;
-                      }
-                    }
-
-                    // Check if diff to new lod is high enough
-                    if (
-                      Math.abs(selected_distance - current_distance) /
-                        selected_distance <
-                      toleranceRange
-                    ) {
-                      // not worth changing
-                      selectedLOD = currentLOD;
-                    } else {
-                      // more than x% diff to current lod
-                      this.currentAssetLOD.set(
-                        node.extras.expectAsset,
-                        selectedLOD
-                      );
-                    }
-                  }
+                    const target_property = "distance"
+                    const asset_value = asset_distance
+                    
+                    selectedLOD = this.get_distance_lod(node,"distance",asset_distance )
                 }
 
                 // Check for active level of detail
