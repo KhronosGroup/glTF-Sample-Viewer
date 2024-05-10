@@ -281,6 +281,14 @@ export default async () => {
     });
     listenForRedraw(uiModel.zoom);
 
+    uiModel.selection.subscribe(selection => {
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        state.pickingX = Math.floor(selection.x * devicePixelRatio);
+        state.pickingY = Math.floor(selection.y * devicePixelRatio);
+        state.triggerSelection = true;
+    });
+    listenForRedraw(uiModel.selection);
+
     // configure the animation loop
     const past = {};
     const update = () => {

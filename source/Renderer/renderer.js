@@ -697,10 +697,12 @@ class gltfRenderer
             }
         }
 
-        if (true || state.triggerSelection) {
-            //state.triggerSelection = false;
+        if (state.triggerSelection) {
+            state.triggerSelection = false;
             this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
             this.webGl.context.viewport(0, 0, this.currentWidth, this.currentHeight);
+
+            const pickingY = this.currentHeight - state.pickingY;
 
             const fragDefines = [];
             this.pushFragParameterDefines(fragDefines, state);
@@ -710,9 +712,10 @@ class gltfRenderer
                 renderpassConfiguration.picking = true;
                 this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
             }
+
             this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
             const pixels = new Uint8Array(4);
-            this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, state.pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
+            this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
 
             let pickingResult = {
                 node: undefined,
@@ -738,12 +741,12 @@ class gltfRenderer
                 if (this.floatTexturesSupported) {
                     this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
                     const position = new Float32Array(4);
-                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, state.pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
+                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
                     pickingResult.position = position;
         
                     this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
                     const normal = new Float32Array(4);
-                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, state.pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
+                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
                     pickingResult.normal = normal;
                 }
             }
