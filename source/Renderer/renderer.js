@@ -107,7 +107,6 @@ class gltfRenderer
         const samples = state.internalMSAA < maxSamples ? state.internalMSAA : maxSamples;
         if (!this.initialized){
             const ext = context.getExtension('EXT_color_buffer_float');
-            context.getExtension('OES_texture_float_linear');
             if (ext !== null) {
                 this.floatTexturesSupported = true;
             }
@@ -175,6 +174,15 @@ class gltfRenderer
                 context.DEPTH_COMPONENT16, 
                 this.opaqueFramebufferWidth,
                 this.opaqueFramebufferHeight);
+                
+            this.pickingFramebuffer = context.createFramebuffer();
+            context.bindFramebuffer(context.FRAMEBUFFER, this.pickingFramebuffer);
+            context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.pickingIDTexture, 0);
+            if (this.floatTexturesSupported) {
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
+                context.drawBuffers([context.COLOR_ATTACHMENT0, context.COLOR_ATTACHMENT1, context.COLOR_ATTACHMENT2]);
+            }
 
             this.samples = samples;
 
@@ -188,16 +196,8 @@ class gltfRenderer
             context.bindFramebuffer(context.FRAMEBUFFER, this.opaqueFramebuffer);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.opaqueRenderTexture, 0);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.TEXTURE_2D, this.opaqueDepthTexture, 0);
+
             context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
-
-
-            this.pickingFramebuffer = context.createFramebuffer();
-            context.bindFramebuffer(context.FRAMEBUFFER, this.pickingFramebuffer);
-            context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.pickingIDTexture, 0);
-            if (this.floatTexturesSupported) {
-                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
-                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
-            }
 
             context.bindFramebuffer(context.FRAMEBUFFER, null);
 
@@ -233,6 +233,20 @@ class gltfRenderer
             this.currentHeight = height;
             this.currentWidth = width;
             this.webGl.context.viewport(0, 0, width, height);
+            if (this.initialized) {
+                this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingIDTexture);
+                this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, null);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                if (this.floatTexturesSupported) {
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingPositionTexture);
+                    this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA32F, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.FLOAT, null);
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingNormalTexture);
+                    this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA32F, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.FLOAT, null);
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                }
+            }
         }
     }
 
@@ -358,7 +372,7 @@ class gltfRenderer
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
-        //this.drawEnvironmentMap(state)
+        this.drawEnvironmentMap(state)
 
         this.sceneNodeIDs = scene.gatherNodeIDs(state.gltf);
 
@@ -686,6 +700,7 @@ class gltfRenderer
         if (true || state.triggerSelection) {
             //state.triggerSelection = false;
             this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+            this.webGl.context.viewport(0, 0, this.currentWidth, this.currentHeight);
 
             const fragDefines = [];
             this.pushFragParameterDefines(fragDefines, state);
@@ -697,25 +712,13 @@ class gltfRenderer
             }
             this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
             const pixels = new Uint8Array(4);
-            this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
+            this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, state.pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
 
             let pickingResult = {
                 node: undefined,
                 position: undefined,
                 normal: undefined
             };
-
-            if (this.floatTexturesSupported) {
-                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
-                const position = new Float32Array(4);
-                this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
-                pickingResult.position = position;
-    
-                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
-                const normal = new Float32Array(4);
-                this.webGl.context.readPixels(state.pickingX ?? this.opaqueFramebufferHeight / 2, state.pickingY ?? this.opaqueFramebufferHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
-                pickingResult.normal = normal;
-            }
 
             let found = false;
             for (const drawable of this.drawables)
@@ -724,7 +727,6 @@ class gltfRenderer
                 {
                     state.renderingParameters.highlightedNodes = [drawable.node];
                     found = true;
-                    console.log("FOUND");
                     pickingResult.node = drawable.node;
                     break;
                 }
@@ -732,6 +734,18 @@ class gltfRenderer
             if (!found)
             {
                 state.renderingParameters.highlightedNodes = [];
+            } else {
+                if (this.floatTexturesSupported) {
+                    this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
+                    const position = new Float32Array(4);
+                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, state.pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
+                    pickingResult.position = position;
+        
+                    this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
+                    const normal = new Float32Array(4);
+                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, state.pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
+                    pickingResult.normal = normal;
+                }
             }
             if (state.renderingParameters.selectionCallback){
                 state.renderingParameters.selectionCallback(pickingResult);
@@ -888,7 +902,7 @@ class gltfRenderer
         if (renderpassConfiguration.picking) {
             this.shader.updateUniform("u_PickingColor", node.pickingColor, false);
         } 
-        this.shader.updateUniform("u_HighlightColor", vec4.fromValues(0,0,1,1), false);
+        this.shader.updateUniform("u_HighlightColor", vec4.fromValues(1,1,0,0.25), false);
 
         this.updateAnimationUniforms(state, node, primitive);
 

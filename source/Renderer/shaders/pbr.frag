@@ -482,7 +482,7 @@ vec3 specularTexture = vec3(1.0);
 #endif
 
 #ifdef IS_HIGHLIGHT
-    g_finalColor = u_HighlightColor;
+    g_finalColor.rgb = mix(g_finalColor.rgb, u_HighlightColor.rgb, u_HighlightColor.a);
 #endif
 
 }
