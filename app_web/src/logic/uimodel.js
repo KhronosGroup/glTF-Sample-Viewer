@@ -204,6 +204,7 @@ class UIModel
         this.pan = inputObservables.pan;
         this.zoom = inputObservables.zoom;
         this.selection = inputObservables.selection;
+        this.moveSelection = inputObservables.move;
     }
 
     attachGltfLoaded(gltfLoaded)
@@ -343,13 +344,21 @@ const getInputObservables = (inputElement, app) => {
     const mouseDown = fromEvent(inputElement, 'mousedown');
     const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
     const doubleClick = fromEvent(inputElement, 'dblclick');
+    const click = fromEvent(inputElement, 'click');
     
     inputElement.addEventListener('mousemove', event => event.preventDefault());
     inputElement.addEventListener('mousedown', event => event.preventDefault());
     inputElement.addEventListener('mouseup', event => event.preventDefault());
     inputElement.addEventListener('dblclick', event => event.preventDefault());
+    inputElement.addEventListener('click', event => event.preventDefault());
 
     const selection = doubleClick.pipe(
+        filter(event => event.button === 0),
+        map((clickEvent) => {
+            return {x: clickEvent.pageX, y: clickEvent.pageY};
+        }));
+
+    const move = click.pipe(
         filter(event => event.button === 0),
         map((clickEvent) => {
             return {x: clickEvent.pageX, y: clickEvent.pageY};
@@ -439,6 +448,7 @@ const getInputObservables = (inputElement, app) => {
     observables.pan = mousePan;
     observables.zoom = merge(mouseZoom, touchZoom);
     observables.selection = selection;
+    observables.move = move;
 
     // disable context menu
     inputElement.oncontextmenu = () => false;

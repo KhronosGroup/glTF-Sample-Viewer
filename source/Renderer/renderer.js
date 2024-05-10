@@ -728,30 +728,26 @@ class gltfRenderer
             {
                 if (vec4.equals(drawable.node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
                 {
-                    state.renderingParameters.highlightedNodes = [drawable.node];
                     found = true;
                     pickingResult.node = drawable.node;
                     break;
                 }
             }
-            if (!found)
-            {
-                state.renderingParameters.highlightedNodes = [];
-            } else {
-                if (this.floatTexturesSupported) {
-                    this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
-                    const position = new Float32Array(4);
-                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
-                    pickingResult.position = position;
-        
-                    this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
-                    const normal = new Float32Array(4);
-                    this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
-                    pickingResult.normal = normal;
-                }
+
+            if (found && this.floatTexturesSupported) {
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
+                const position = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
+                pickingResult.position = position;
+    
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
+                const normal = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
+                pickingResult.normal = normal;
             }
-            if (state.renderingParameters.selectionCallback){
-                state.renderingParameters.selectionCallback(pickingResult);
+            
+            if (state.selectionCallback){
+                state.selectionCallback(pickingResult);
             }
             console.log(pickingResult);
         }
@@ -868,7 +864,7 @@ class gltfRenderer
         if (primitive.billboardDepth !== undefined) {
             fragDefines.push(`BILLBOARD_DEPTH ${primitive.billboardDepth}`);
         }
-        if (state.renderingParameters.highlightedNodes?.includes(node)) {
+        if (state.highlightedNodes?.includes(node)) {
             fragDefines.push("IS_HIGHLIGHT 1");
         }
         this.pushFragParameterDefines(fragDefines, state);

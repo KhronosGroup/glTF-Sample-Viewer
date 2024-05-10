@@ -48,6 +48,7 @@ export default async () => {
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 state.cameraIndex = undefined;
+                state.highlightedNodes = [];
 
                 if (state.gltf.scenes.length != 0) {
                     if (state.sceneIndex > state.gltf.scenes.length - 1) {
@@ -281,13 +282,46 @@ export default async () => {
     });
     listenForRedraw(uiModel.zoom);
 
+    let select = false;
     uiModel.selection.subscribe(selection => {
         const devicePixelRatio = window.devicePixelRatio || 1;
         state.pickingX = Math.floor(selection.x * devicePixelRatio);
         state.pickingY = Math.floor(selection.y * devicePixelRatio);
         state.triggerSelection = true;
+        select = true;
     });
     listenForRedraw(uiModel.selection);
+
+    let moveNode = false;
+    uiModel.moveSelection.subscribe(selection => {
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        state.pickingX = Math.floor(selection.x * devicePixelRatio);
+        state.pickingY = Math.floor(selection.y * devicePixelRatio);
+        state.triggerSelection = true;
+        moveNode = true;
+    });
+    listenForRedraw(uiModel.moveSelection);
+
+    const selectionCallback = (selectionInfo) => {
+        if (state.highlightedNodes[0] === selectionInfo.node) {
+            return;
+        }
+        if (selectionInfo.node === undefined) {
+            state.highlightedNodes = [];
+        } else if (moveNode && !select && state.highlightedNodes.length === 1) {
+            const node = state.highlightedNodes[0];
+            node.translation = selectionInfo.position;
+            node.changed = true;
+            moveNode = false;
+            update();
+        } else if (select) {
+            state.highlightedNodes = [selectionInfo.node];
+            select = false;
+        }
+        redraw = true;
+    };
+
+    state.selectionCallback = selectionCallback;
 
     // configure the animation loop
     const past = {};
