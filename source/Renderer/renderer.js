@@ -424,6 +424,71 @@ class gltfRenderer
           return selectedLOD
     }
 
+             
+    get_pqpm_lod(node, target_property, asset_value, diagonalMeters) 
+    {
+        let selectedLOD = undefined
+        
+        if (node.extras.lod === undefined) {
+            return undefined
+        }
+    
+        let toleranceRange = undefined
+        let fitting_lod_value = -999.0;
+        let fitting_lod = undefined;
+        let current_lod_value = -999.0;
+        let current_lod = this.currentAssetLOD.get(
+            node.extras.expectAsset
+        );
+        if (current_lod !== undefined) {
+            current_lod_value = node.extras.lod[current_lod][target_property] /
+            diagonalMeters;
+        }
+
+        let selected_value = 9999999.0
+        let level_value = 0
+        for (const level of node.extras.lod) {
+            level_value = level[target_property] / diagonalMeters;
+            if (
+            asset_value < level_value && // this level offers better quality than required
+            selected_value > level_value // and has lower quality than currently selected
+            ) {
+            // and has lower quality than currently selected
+            // ->better fit
+
+            fitting_lod = node.extras.lod.indexOf(level);
+            fitting_lod_value =level_value;
+            selected_value =  level_value;
+            toleranceRange = level.toleranceRange
+            }
+        }
+
+        let fitting_diff = Math.abs(fitting_lod_value - asset_value)
+        let current_diff = Math.abs(current_lod_value - asset_value)
+
+
+        // Check if diff to new lod is high enough
+        if (toleranceRange===undefined||
+            fitting_diff < current_diff * (1.0+toleranceRange) ||
+            current_lod === undefined
+        ) {
+            // new level gives better fit even when applying tolerance range
+            selectedLOD = fitting_lod;
+            this.currentAssetLOD.set(
+                node.extras.expectAsset,
+                selectedLOD
+            );
+                                
+        } else {
+            // keep curren lod
+            selectedLOD = current_lod;
+        }
+        
+
+          return selectedLOD
+    }
+
+
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
@@ -549,63 +614,16 @@ class gltfRenderer
                 let selectedLOD = undefined
                 let toleranceRange =undefined
 
-                if (state.renderingParameters.LoD === "PQPM") {
-                  if (node.extras.lod !== undefined) {
-                    let selected_pqpm = 999999;
-                    let current_pqpm = -999.0;
-                    const currentLOD = this.currentAssetLOD.get(
-                      node.extras.expectAsset
-                    );
-                    if (currentLOD !== undefined) {
-                      current_pqpm =
-                        node.extras.lod[currentLOD].qualityPixels /
-                        diagonalMeters;
-                    }
-
-                    for (const level of node.extras.lod) {
-                      const level_pqpm = level.qualityPixels / diagonalMeters;
-                      if (
-                        required_pqpm < level_pqpm && // this level offers better quality than required
-                        selected_pqpm > level_pqpm
-                      ) {
-                        // and has lower quality than currently selected
-                        // ->better fit
-
-                        selectedLOD = node.extras.lod.indexOf(level);
-
-                        selected_pqpm = level_pqpm;
-                      }
-                    }
-
-                    // Check if diff to new lod is high enough
-                    if (
-                      Math.abs(selected_pqpm - current_pqpm) / selected_pqpm <
-                      toleranceRange
-                    ) {
-                      // not worth changing
-                      selectedLOD = currentLOD;
-                    } else {
-                      // more than x% diff to current lod
-                      this.currentAssetLOD.set(
-                        node.extras.expectAsset,
-                        selectedLOD
-                      );
-                    }
-                  }
+                if (state.renderingParameters.LoD === "PQPM") { 
+                    selectedLOD = this.get_pqpm_lod(node,"qualityPixels", required_pqpm, diagonalMeters)
+                  
                 }
 
                 if (state.renderingParameters.LoD === "Coverage") {
-
-                    const target_property = "screenCoverage"
-                    const asset_value = screen_coverage
-
                     selectedLOD = this.get_lod(node,"screenCoverage",screen_coverage )
                 }
 
-                if (state.renderingParameters.LoD === "Distance") {
-                    const target_property = "distance"
-                    const asset_value = asset_distance
-                    
+                if (state.renderingParameters.LoD === "Distance") {                   
                     selectedLOD = this.get_distance_lod(node,"distance",asset_distance )
                 }
 
