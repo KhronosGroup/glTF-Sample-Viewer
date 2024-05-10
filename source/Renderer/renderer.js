@@ -260,6 +260,8 @@ class gltfRenderer
             })), [])
             .filter(({primitive}) => primitive.material !== undefined);
 
+        this.billBoardOverlayDrawables = drawables.filter(({node}) => node.extensions?.billboard?.overlay);
+
         // opaque drawables don't need sorting
         this.opaqueDrawables = drawables
             .filter(({primitive}) => state.gltf.materials[primitive.material].alphaMode !== "BLEND"
@@ -737,6 +739,21 @@ class gltfRenderer
             }
         }
 
+        //Sort billboards
+        this.billBoardOverlayDrawables = currentCamera.sortPrimitivesByDepth(state.gltf, this.billBoardOverlayDrawables);
+        const epsilon = 0.0000001;
+        let j = 1;
+        for (let i = this.billBoardOverlayDrawables.length - 1; i >= 0; i--)
+        {
+            const drawable = this.billBoardOverlayDrawables[i];
+            if (drawable.depth < 0.0) {
+                drawable.primitive.billboardDepth = j * epsilon;
+                j++;
+            } else {
+                drawable.primitive.billboardDepth = undefined;
+            }
+        }
+
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
             // Render transmission sample texture
@@ -844,6 +861,9 @@ class gltfRenderer
         if(renderpassConfiguration.linearOutput === true)
         {
             fragDefines.push("LINEAR_OUTPUT 1");
+        }
+        if (primitive.billboardDepth !== undefined) {
+            fragDefines.push(`BILLBOARD_DEPTH ${primitive.billboardDepth}`);
         }
         this.pushFragParameterDefines(fragDefines, state);
         
@@ -984,7 +1004,7 @@ class gltfRenderer
 
             this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
 
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
+            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, modelMatrix);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
         }

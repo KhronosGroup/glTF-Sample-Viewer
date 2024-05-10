@@ -76,7 +76,7 @@ class GltfView
             return;
         }
 
-        scene.applyTransformHierarchy(state.gltf);
+        scene.applyTransformHierarchy(state);
 
         this.renderer.drawScene(state, scene);
     }

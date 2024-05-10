@@ -54,7 +54,7 @@ export default async () => {
                         state.sceneIndex = 0;
                     }
                     const scene = state.gltf.scenes[state.sceneIndex];
-                    scene.applyTransformHierarchy(state.gltf);
+                    scene.applyTransformHierarchy(state);
                     state.userCamera.aspectRatio = canvas.width / canvas.height;
                     state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
@@ -91,7 +91,7 @@ export default async () => {
             const scene = state.gltf.scenes[state.sceneIndex];
             if (scene !== undefined)
             {
-                scene.applyTransformHierarchy(state.gltf);
+                scene.applyTransformHierarchy(state);
                 state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
             }
         }),
