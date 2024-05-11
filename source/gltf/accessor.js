@@ -1,3 +1,5 @@
+/* globals WebGl */
+
 import { GL } from '../Renderer/webgl.js';
 import { GltfObject } from './gltf_object.js';
 

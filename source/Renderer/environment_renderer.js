@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3 } from 'gl-matrix';
+import { mat4, mat3 } from 'gl-matrix';
 
 
 class EnvironmentRenderer
@@ -24,16 +24,16 @@ class EnvironmentRenderer
             4, 5, 0
         ]), gl.STATIC_DRAW);
 
-        this.vertexBuffer = gl.createBuffer()
+        this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
             -1, -1, -1,
-             1, -1, -1,
-             1,  1, -1,
+            1, -1, -1,
+            1,  1, -1,
             -1,  1, -1,
             -1, -1,  1,
-             1, -1,  1,
-             1,  1,  1,
+            1, -1,  1,
+            1,  1,  1,
             -1,  1,  1
         ]), gl.STATIC_DRAW);
     }
@@ -82,4 +82,4 @@ class EnvironmentRenderer
     }
 }
 
-export { EnvironmentRenderer }
+export { EnvironmentRenderer };

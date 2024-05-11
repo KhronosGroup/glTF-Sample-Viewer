@@ -281,9 +281,12 @@
                             <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                 @click="collapseActiveTab($event, 2)">
                             <h2 class="title is-spaced">Animation</h2>
-                            <label class="subtitle">Animation Controls</label>
+                            <label class="subtitle" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">Animation Controls</label>
                             <toggle-button v-stream:buttonclicked="animationPlayChanged$" ontext="Pause" offtext="Play"
-                                ref="animationState"></toggle-button>
+                                ref="animationState"
+                                v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"></toggle-button>
+                            
+                            <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No Animations available</label>
 
                             <b-field label="Animations"
                                 v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">

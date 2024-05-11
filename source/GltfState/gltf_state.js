@@ -83,9 +83,9 @@ class GltfState
             /**
              * By default the front face of the environment is +Z (90)
              * Front faces:
-             * +X = 0 
-             * +Z = 90 
-             * -X = 180 
+             * +X = 0
+             * +Z = 90
+             * -X = 180
              * -Z = 270
              */
             environmentRotation: 90.0,
@@ -100,12 +100,12 @@ class GltfState
     }
 }
 
-/** 
- * ToneMaps enum for the different tonemappings that are supported 
+/**
+ * ToneMaps enum for the different tonemappings that are supported
  * by gltf sample viewer
 */
 GltfState.ToneMaps = {
-    /** Khronos PBR neutral tone mapping, see https://modelviewer.dev/examples/tone-mapping */
+    /** Khronos PBR neutral tone mapping, see https://github.com/KhronosGroup/ToneMapping, https://modelviewer.dev/examples/tone-mapping */
     KHR_PBR_NEUTRAL: "Khronos PBR Neutral",
     /** ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6 */
     ACES_HILL_EXPOSURE_BOOST: "ACES Filmic Tone Mapping (Hill - Exposure Boost)",
@@ -170,7 +170,7 @@ GltfState.DebugOutput = {
         /** output the clear coat roughness */
         CLEARCOAT_ROUGHNESS: "ClearCoat Roughness",
         /** output the clear coat normal */
-        CLEARCOAT_NORMAL: "ClearCoat Normal",    
+        CLEARCOAT_NORMAL: "ClearCoat Normal",
     },
 
     /** output sheen lighting */

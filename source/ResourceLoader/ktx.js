@@ -1,3 +1,5 @@
+/* globals LIBKTX */
+
 class KtxDecoder {
 
     constructor (context, externalKtxlib) {

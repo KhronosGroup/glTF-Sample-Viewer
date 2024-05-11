@@ -8,8 +8,8 @@
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint --fix src/**/*.js",
+    "lint": "eslint src/**/*.js main.js rollup.config.js ../source/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js ../source/**/*.js",
     "postversion": "git push && git push --tags"
   },
   "repository": {

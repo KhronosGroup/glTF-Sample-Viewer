@@ -1,5 +1,4 @@
 import { GltfObject } from './gltf_object.js';
-import { isPowerOf2 } from './math_utils.js';
 import { getExtension } from './utils.js';
 import { AsyncFileReader } from '../ResourceLoader/async_file_reader.js';
 import { GL } from "../Renderer/webgl";
@@ -73,11 +72,11 @@ class gltfImage extends GltfObject
     setMimetypeFromFilename(filename)
     {
 
-        let extension = getExtension(filename)
+        let extension = getExtension(filename);
         if(extension == "ktx2" || extension == "ktx")
         {
             this.mimeType = ImageMimeType.KTX2;
-        } 
+        }
         else if(extension == "jpg" || extension == "jpeg")
         {
             this.mimeType = ImageMimeType.JPEG;
@@ -85,14 +84,14 @@ class gltfImage extends GltfObject
         else if(extension == "png" )
         {
             this.mimeType = ImageMimeType.PNG;
-        } 
-        else 
+        }
+        else
         {
             console.warn("MimeType not defined");
             // assume jpeg encoding as best guess
-            this.mimeType = ImageMimeType.JPEG; 
+            this.mimeType = ImageMimeType.JPEG;
         }
-    
+
     }
 
     async setImageFromUri(gltf)
@@ -243,4 +242,3 @@ class gltfImage extends GltfObject
 }
 
 export { gltfImage, ImageMimeType };
-
