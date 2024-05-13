@@ -43,6 +43,7 @@ class gltfRenderer
         this.pickingIDTexture = 0;
         this.pickingPositionTexture = 0;
         this.pickingNormalTexture = 0;
+        this.pickingDepthTexture = 0;
         this.opaqueFramebufferWidth = 1024;
         this.opaqueFramebufferHeight = 1024;
 
@@ -162,6 +163,15 @@ class gltfRenderer
             context.texImage2D(context.TEXTURE_2D, 0, context.RGBA32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.FLOAT, null);
             context.bindTexture(context.TEXTURE_2D, null);
 
+            this.pickingDepthTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingDepthTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D( context.TEXTURE_2D, 0, context.DEPTH_COMPONENT16, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.DEPTH_COMPONENT, context.UNSIGNED_SHORT, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
 
             this.colorRenderBuffer = context.createRenderbuffer();
             context.bindRenderbuffer(context.RENDERBUFFER, this.colorRenderBuffer);
@@ -178,6 +188,7 @@ class gltfRenderer
             this.pickingFramebuffer = context.createFramebuffer();
             context.bindFramebuffer(context.FRAMEBUFFER, this.pickingFramebuffer);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.pickingIDTexture, 0);
+            context.framebufferTexture2D(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.TEXTURE_2D, this.pickingDepthTexture, 0);
             if (this.floatTexturesSupported) {
                 context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
                 context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
@@ -237,6 +248,9 @@ class gltfRenderer
                 this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
                 this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingIDTexture);
                 this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, null);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingDepthTexture);
+                this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.DEPTH_COMPONENT16, this.currentWidth, this.currentHeight, 0, this.webGl.context.DEPTH_COMPONENT, this.webGl.context.UNSIGNED_SHORT, null);
                 this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
                 if (this.floatTexturesSupported) {
                     this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingPositionTexture);
@@ -706,7 +720,8 @@ class gltfRenderer
 
             const fragDefines = [];
             this.pushFragParameterDefines(fragDefines, state);
-            for (const drawable of this.drawables)
+            const pickingDrawables = this.drawables.filter(({node}) => !state.highlightedNodes.includes(node));
+            for (const drawable of pickingDrawables)
             {
                 let renderpassConfiguration = {};
                 renderpassConfiguration.picking = true;
@@ -749,7 +764,6 @@ class gltfRenderer
             if (state.selectionCallback){
                 state.selectionCallback(pickingResult);
             }
-            console.log(pickingResult);
         }
 
 
