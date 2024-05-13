@@ -364,8 +364,21 @@ const getInputObservables = (inputElement, app) => {
             return {x: clickEvent.pageX, y: clickEvent.pageY};
         }));
 
+    const moveDrag = mouseDown.pipe(
+        filter(event => event.button === 0 && event.ctrlKey === true && event.shiftKey === false),
+        mergeMap(() => mouseMove.pipe(
+            pairwise(),
+            map( ([_, newMouse]) => {
+                return {
+                    x: newMouse.pageX, y: newMouse.pageY
+                };
+            }),
+            takeUntil(mouseUp)
+        ))
+    );
+
     const mouseOrbit = mouseDown.pipe(
-        filter(event => event.button === 0 && event.shiftKey === false),
+        filter(event => event.button === 0 && event.shiftKey === false && event.ctrlKey === false),
         mergeMap(() => mouseMove.pipe(
             pairwise(),
             map( ([oldMouse, newMouse]) => {
@@ -448,7 +461,7 @@ const getInputObservables = (inputElement, app) => {
     observables.pan = mousePan;
     observables.zoom = merge(mouseZoom, touchZoom);
     observables.selection = selection;
-    observables.move = move;
+    observables.move = merge(move, moveDrag);
 
     // disable context menu
     inputElement.oncontextmenu = () => false;
