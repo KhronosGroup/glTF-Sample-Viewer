@@ -8,9 +8,9 @@
 
 // The following equation models the Fresnel reflectance term of the spec equation (aka F())
 // Implementation of fresnel from [4], Equation 15
-vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH)
+vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH) 
 {
-    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0); // dialectric_fresnel
 }
 
 float F_Schlick(float f0, float f90, float VdotH)
@@ -152,7 +152,7 @@ float D_Charlie(float sheenRoughness, float NdotH)
 vec3 BRDF_lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float specularWeight, float VdotH)
 {
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-    return (1.0 - specularWeight * F_Schlick(f0, f90, VdotH)) * (diffuseColor / M_PI);
+    return (1.0 - specularWeight * F_Schlick(f0, f90, VdotH)) * (diffuseColor / M_PI); // 1.0 - specularWeight * => mix dielectric_fresnel * diffuse_bdrf
 }
 
 
@@ -182,7 +182,7 @@ vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float specularWei
     float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
     float D = D_GGX(NdotH, alphaRoughness);
 
-    return specularWeight * F * Vis * D;
+    return specularWeight * F * Vis * D; // Vis * D => specular_brdf
 }
 
 
@@ -193,7 +193,7 @@ vec3 BRDF_specularGGXIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, flo
     float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
     float D = D_GGX(NdotH, alphaRoughness);
 
-    return specularWeight * F * Vis * D;
+    return specularWeight * F * Vis * D; // Vis * D => specular_brdf
 }
 #endif
 

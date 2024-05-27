@@ -69,6 +69,8 @@ struct MaterialInfo
     float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
     vec3 c_diff;
 
+    float fresnel_w;
+
     vec3 f90;                       // reflectance color at grazing angle
     float metallic;
 
