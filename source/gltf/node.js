@@ -1,4 +1,4 @@
-import { mat4, quat } from 'gl-matrix';
+import { mat4, quat, vec4 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 
@@ -8,6 +8,7 @@ import { GltfObject } from './gltf_object.js';
 
 class gltfNode extends GltfObject
 {
+    static currentPickingColor = 50;
     constructor()
     {
         super();
@@ -27,6 +28,7 @@ class gltfNode extends GltfObject
         this.normalMatrix = mat4.create();
         this.light = undefined;
         this.changed = true;
+        this.pickingColor = undefined;
 
         this.animationRotation = undefined;
         this.animationTranslation = undefined;
@@ -35,6 +37,11 @@ class gltfNode extends GltfObject
 
     initGl()
     {
+        if (this.mesh !== undefined) {
+            const mask = 0x000000FF;
+            this.pickingColor = vec4.fromValues((gltfNode.currentPickingColor & mask) / 255, ((gltfNode.currentPickingColor >>> 8) & mask) / 255, ((gltfNode.currentPickingColor >>> 16) & mask) / 255, ((gltfNode.currentPickingColor >>> 24) & mask) / 255);
+            gltfNode.currentPickingColor += 50;
+        }
         if (this.matrix !== undefined)
         {
             this.applyMatrix(this.matrix);
