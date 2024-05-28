@@ -746,10 +746,10 @@ class gltfRenderer
 
                 let nodeEnvironment = undefined
                 if(assetNode["extensions"]["gltfx"]["environment"] !== undefined){
-                    const environmentID=node["extensions"]["gltfx"]["environment"]
+                    const environmentID = assetNode["extensions"]["gltfx"]["environment"]
 
-                    const environment=state.gltf.environments[environmentID]
-                    nodeEnvironment=environment.filteredEnvironment
+                    const environment = state.gltf.environments[environmentID]
+                    nodeEnvironment = environment.filteredEnvironment
                 }
 
                 this.drawNodes(state, assetNodes, nodeEnvironment)
