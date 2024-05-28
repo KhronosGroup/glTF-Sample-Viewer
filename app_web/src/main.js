@@ -337,8 +337,8 @@ export default async () => {
         past.height = canvas.height;
         
         if (redraw) {
-            view.renderFrame(state, canvas.width, canvas.height);
             redraw = false;
+            view.renderFrame(state, canvas.width, canvas.height);
         }
 
         window.requestAnimationFrame(update);
