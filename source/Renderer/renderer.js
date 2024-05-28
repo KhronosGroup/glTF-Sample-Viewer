@@ -652,12 +652,12 @@ class gltfRenderer
                 this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
                 const position = new Float32Array(4);
                 this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
-                pickingResult.position = position;
+                pickingResult.position = position.subarray(0, 3);
 
                 this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
                 const normal = new Float32Array(4);
                 this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
-                pickingResult.normal = normal;
+                pickingResult.normal = normal.subarray(0, 3);
             }
             
             if (state.selectionCallback){

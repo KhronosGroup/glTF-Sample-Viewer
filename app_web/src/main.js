@@ -6,6 +6,7 @@ import { app } from './ui/ui.js';
 import { from, merge } from 'rxjs';
 import { mergeMap, map, share } from 'rxjs/operators';
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
+import { mat4, vec3 } from 'gl-matrix';
 
 export default async () => {
     const canvas = document.getElementById("canvas");
@@ -310,7 +311,9 @@ export default async () => {
             state.highlightedNodes = [];
         } else if (moveNode && !select && state.highlightedNodes.length === 1) {
             const node = state.highlightedNodes[0];
-            node.translation = selectionInfo.position;
+            const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
+            const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
+            node.translation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
             node.changed = true;
             moveNode = false;
             update();
