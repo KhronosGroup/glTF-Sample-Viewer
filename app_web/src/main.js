@@ -6,7 +6,7 @@ import { app } from './ui/ui.js';
 import { from, merge } from 'rxjs';
 import { mergeMap, map, share } from 'rxjs/operators';
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, quat, vec3 } from 'gl-matrix';
 
 export default async () => {
     const canvas = document.getElementById("canvas");
@@ -313,7 +313,13 @@ export default async () => {
             const node = state.highlightedNodes[0];
             const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
             const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
+            const parentGlobalRotation = mat4.getRotation(quat.create(), parentGlobalTransform);
+            const up = vec3.transformQuat(vec3.create(), vec3.fromValues(0, 1, 0), parentGlobalRotation);
+            const angle = vec3.angle(up, selectionInfo.normal);
+            const axis = vec3.cross(vec3.create(), up, selectionInfo.normal);
+            const rotation = quat.setAxisAngle(quat.create(), axis, angle);
             node.translation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
+            node.rotation = rotation;
             node.changed = true;
             moveNode = false;
             update();
