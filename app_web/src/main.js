@@ -309,7 +309,7 @@ export default async () => {
         }
         if (selectionInfo.node === undefined) {
             state.highlightedNodes = [];
-        } else if (moveNode && !select && state.highlightedNodes.length === 1) {
+        } else if (moveNode && !select && state.highlightedNodes.length > 0) {
             const node = state.highlightedNodes[0];
             const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
             const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
@@ -318,7 +318,24 @@ export default async () => {
             moveNode = false;
             update();
         } else if (select) {
-            state.highlightedNodes = [selectionInfo.node];
+            let assetNode = selectionInfo.node;
+            while (assetNode.parentNode !== undefined && assetNode.extras?.asset === undefined) {
+                assetNode = assetNode.parentNode;
+            }
+            const selection = [assetNode];
+            const getAllChildren = (node) => {
+                if (node.children !== undefined) {
+                    for (const childIdx of node.children) {
+                        const child = state.gltf.nodes[childIdx];
+                        selection.push(child);
+                        getAllChildren(child);
+                    }
+                }
+            };
+            // Select all child nodes
+            getAllChildren(assetNode);
+
+            state.highlightedNodes = selection;
             select = false;
         }
         redraw = true;
