@@ -311,15 +311,41 @@ export default async () => {
             state.highlightedNodes = [];
         } else if (moveNode && !select && state.highlightedNodes.length > 0) {
             const node = state.highlightedNodes[0];
+            let targetNode = selectionInfo.node;
+            while (targetNode.parentNode !== undefined && targetNode.extras?.asset === undefined) {
+                targetNode = targetNode.parentNode;
+            }
+            if (targetNode.extras?.asset !== undefined) {
+                selectionInfo.node = targetNode;
+            }
+            // Change parent
+            if (selectionInfo.node !== node.parentNode) {
+                selectionInfo.node.children.push(node.jsonArrayIndex);
+                if (node.parentNode !== undefined) {
+                    const childIndex = node.parentNode.children.indexOf(node.jsonArrayIndex);
+                    node.parentNode.children.splice(childIndex, 1);
+                    node.parentNode.changed = true;
+                } else {
+                    const currentScene = state.gltf.scenes[state.sceneIndex];
+                    const childIndex = currentScene.nodes.indexOf(node.jsonArrayIndex);
+                    currentScene.nodes.splice(childIndex, 1);
+                }
+                node.parentNode = selectionInfo.node;
+                selectionInfo.node.changed = true;
+            }
+
             const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
 
             // Rotate onto normal
             const parentGlobalRotation = mat4.getRotation(quat.create(), parentGlobalTransform);
             const constUp = vec3.fromValues(0, 1, 0);
             const up = vec3.transformQuat(vec3.create(), constUp, parentGlobalRotation);
-            const angle = vec3.angle(up, selectionInfo.normal);
-            const axis = vec3.cross(vec3.create(), up, selectionInfo.normal);
+            const inverseParentWorldRotation = quat.invert(quat.create(), parentGlobalRotation);
+            const normal = vec3.transformQuat(vec3.create(), selectionInfo.normal, inverseParentWorldRotation);
+            const angle = vec3.angle(up, normal);
+            const axis = vec3.cross(vec3.create(), up, normal);
             const rotation = quat.create();
+        
 
             // Handle 180 degree rotations
             if (vec3.length(axis) < 0.0001 && angle > 3.14) {
@@ -329,15 +355,17 @@ export default async () => {
                 quat.setAxisAngle(rotation, axis, angle);
             }
 
+
             // Add rotation around up from model
             const localAngle = quat.getAxisAngle(constUp, node.initialRotation);
-            const localRotation = quat.setAxisAngle(quat.create(), selectionInfo.normal, localAngle);
+            const localRotation = quat.setAxisAngle(quat.create(), normal, localAngle);
             quat.multiply(rotation, rotation, localRotation);
             node.rotation = rotation;
             
             // Set position
             const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
-            node.translation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
+            const localTranslation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
+            node.translation = vec3.transformQuat(localTranslation, localTranslation, inverseParentWorldRotation);
             
             node.changed = true;
             moveNode = false;
@@ -347,7 +375,10 @@ export default async () => {
             while (assetNode.parentNode !== undefined && assetNode.extras?.asset === undefined) {
                 assetNode = assetNode.parentNode;
             }
-            const selection = [assetNode];
+            if (assetNode.extras?.asset !== undefined) {
+                selectionInfo.node = assetNode;
+            }
+            const selection = [selectionInfo.node];
             const getAllChildren = (node) => {
                 if (node.children !== undefined) {
                     for (const childIdx of node.children) {
@@ -358,7 +389,7 @@ export default async () => {
                 }
             };
             // Select all child nodes
-            getAllChildren(assetNode);
+            getAllChildren(selectionInfo.node);
 
             state.highlightedNodes = selection;
             select = false;

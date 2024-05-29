@@ -29,7 +29,9 @@ class gltfScene extends GltfObject
     {
         function applyTransform(state, node, parent, parentTransform)
         {
-            node.parentNode = parent;
+            if (node.parentNode === undefined) {
+                node.parentNode = parent;
+            }
             mat4.multiply(node.worldTransform, parentTransform, node.getLocalTransform());
             if (node.extensions?.billboard) {
                 const lookAtCamera = mat4.create();

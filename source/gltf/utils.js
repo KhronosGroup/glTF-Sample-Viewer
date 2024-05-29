@@ -40,21 +40,22 @@ function initGlForMembers(gltfObj, gltf, webGlContext) {
     }
 }
 
-function objectsFromJsons(jsonObjects, GltfType) {
+function objectsFromJsons(jsonObjects, GltfType, parent = undefined) {
     if (jsonObjects === undefined) {
         return [];
     }
 
     const objects = [];
-    for (const jsonObject of jsonObjects) {
-        objects.push(objectFromJson(jsonObject, GltfType));
+    for (const [index, jsonObject] of jsonObjects.entries()) {
+        objects.push(objectFromJson(jsonObject, GltfType, index, parent));
     }
     return objects;
 }
 
-function objectFromJson(jsonObject, GltfType) {
+function objectFromJson(jsonObject, GltfType, index = undefined, parent = undefined) {
     const object = new GltfType();
-    object.fromJson(jsonObject);
+    object.fromJson(jsonObject, parent);
+    object.jsonArrayIndex = index;
     return object;
 }
 
