@@ -222,6 +222,40 @@ class GltfxParser
         return undefined
     }
 
+    static cloneNodeHierarchy(gltf, nodeID)
+    {
+
+
+        let node = structuredClone( gltf["nodes"][nodeID])
+        const cloned_root_id = gltf["nodes"].length
+        gltf["nodes"].push(node)
+
+        let worklist = [cloned_root_id]
+        // add children
+        while(worklist.length!==0){
+            let id = worklist.pop()
+            let node = gltf["nodes"][id]
+
+            if(node["children"] === undefined)
+            {
+                continue
+            }
+            let new_childs = []
+            for (let i = 0; i < node["children"].length; i++) 
+            {
+                let id = node["children"][i]
+                let node_clone = structuredClone( gltf["nodes"][id])
+                let new_id = gltf["nodes"].length
+                gltf["nodes"].push(node_clone)
+                new_childs.push(new_id)
+            }
+            node["children"] = new_childs
+            worklist.concat(new_childs)
+        }
+
+        return cloned_root_id
+    }
+
     static async convertGltfxToGltf(filename, gltfx, appendix)
     {
         let mergedGLTF = {}; // Initialize an empty merged GLTF object
@@ -357,18 +391,35 @@ class GltfxParser
         mergedGLTF = await GltfMerger.merge(mergedGLTF, gltfx);
 
         // Connect nodes offered by assets and expected by gltfx
-        for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
+        const node_count = mergedGLTF["nodes"].length
+        for (let id = 0; id < node_count ; id++) 
         {
             if(mergedGLTF["nodes"][id].hasOwnProperty("extras") &&
                 mergedGLTF["nodes"][id]["extras"].hasOwnProperty("expectAsset"))
             {
                 const assetID = mergedGLTF["nodes"][id]["extras"]["expectAsset"]
-                const nodeID =    this.getAssetNode(mergedGLTF, assetID) 
-                if(nodeID!==undefined)
-                {
-                    mergedGLTF["nodes"][id]["children"] = []
-                    mergedGLTF["nodes"][id]["children"].push(nodeID)
+                let nodeID = this.getAssetNode(mergedGLTF, assetID) 
+                if(nodeID===undefined)
+                { 
+                    console.log("node undefined")
+                    continue;
                 }
+
+                if(mergedGLTF["nodes"][nodeID]["instanced"] === undefined)
+                {
+                    mergedGLTF["nodes"][nodeID]["instanced"] = true
+                } else {
+                    // this asset/node is already used by another node -> clone hierarchy
+                    nodeID = this.cloneNodeHierarchy(mergedGLTF, nodeID)
+              
+                    // new unique matching combination
+                    mergedGLTF["nodes"][nodeID]["extras"]["asset"] = nodeID
+                    mergedGLTF["nodes"][id]["extras"]["expectAsset"] = nodeID
+                }
+
+                mergedGLTF["nodes"][id]["children"] = []
+                mergedGLTF["nodes"][id]["children"].push(nodeID)
+                
             } 
         }
 
