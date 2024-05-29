@@ -33,6 +33,7 @@ class gltfNode extends GltfObject
         this.animationRotation = undefined;
         this.animationTranslation = undefined;
         this.animationScale = undefined;
+        this.initialRotation = jsToGl([0, 0, 0, 1]);
     }
 
     initGl()
@@ -63,6 +64,7 @@ class gltfNode extends GltfObject
                 this.translation = jsToGl(this.translation);
             }
         }
+        this.initialRotation = this.rotation.slice();
         this.changed = true;
     }
 

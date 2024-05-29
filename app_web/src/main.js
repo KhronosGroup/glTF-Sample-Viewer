@@ -312,14 +312,33 @@ export default async () => {
         } else if (moveNode && !select && state.highlightedNodes.length > 0) {
             const node = state.highlightedNodes[0];
             const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
-            const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
+
+            // Rotate onto normal
             const parentGlobalRotation = mat4.getRotation(quat.create(), parentGlobalTransform);
-            const up = vec3.transformQuat(vec3.create(), vec3.fromValues(0, 1, 0), parentGlobalRotation);
+            const constUp = vec3.fromValues(0, 1, 0);
+            const up = vec3.transformQuat(vec3.create(), constUp, parentGlobalRotation);
             const angle = vec3.angle(up, selectionInfo.normal);
             const axis = vec3.cross(vec3.create(), up, selectionInfo.normal);
-            const rotation = quat.setAxisAngle(quat.create(), axis, angle);
-            node.translation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
+            const rotation = quat.create();
+
+            // Handle 180 degree rotations
+            if (vec3.length(axis) < 0.0001 && angle > 3.14) {
+                const right = vec3.transformQuat(vec3.create(), vec3.fromValues(1, 0, 0), parentGlobalRotation);
+                quat.setAxisAngle(rotation, right, angle);
+            } else {
+                quat.setAxisAngle(rotation, axis, angle);
+            }
+
+            // Add rotation around up from model
+            const localAngle = quat.getAxisAngle(constUp, node.initialRotation);
+            const localRotation = quat.setAxisAngle(quat.create(), selectionInfo.normal, localAngle);
+            quat.multiply(rotation, rotation, localRotation);
             node.rotation = rotation;
+            
+            // Set position
+            const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
+            node.translation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
+            
             node.changed = true;
             moveNode = false;
             update();
