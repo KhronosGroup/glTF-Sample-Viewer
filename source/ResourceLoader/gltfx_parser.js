@@ -224,8 +224,6 @@ class GltfxParser
 
     static cloneNodeHierarchy(gltf, nodeID)
     {
-
-
         let node = structuredClone( gltf["nodes"][nodeID])
         const cloned_root_id = gltf["nodes"].length
         gltf["nodes"].push(node)
@@ -240,17 +238,17 @@ class GltfxParser
             {
                 continue
             }
-            let new_childs = []
+            let new_children = []
             for (let i = 0; i < node["children"].length; i++) 
             {
                 let id = node["children"][i]
                 let node_clone = structuredClone( gltf["nodes"][id])
                 let new_id = gltf["nodes"].length
                 gltf["nodes"].push(node_clone)
-                new_childs.push(new_id)
+                new_children.push(new_id)
             }
-            node["children"] = new_childs
-            worklist.concat(new_childs)
+            node["children"] = new_children
+            worklist = worklist.concat(new_children)
         }
 
         return cloned_root_id
