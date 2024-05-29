@@ -359,7 +359,7 @@ const getInputObservables = (inputElement, app) => {
         }));
 
     const move = click.pipe(
-        filter(event => event.button === 0),
+        filter(event => event.button === 0 && event.ctrlKey === true && event.shiftKey === false),
         map((clickEvent) => {
             return {x: clickEvent.pageX, y: clickEvent.pageY};
         }));

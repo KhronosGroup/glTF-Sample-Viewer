@@ -761,6 +761,54 @@ class gltfRenderer
             this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
             this.drawNodes(state, this.sceneNodeIDs, state.environment)
         }
+        if (state.triggerSelection) {
+            const nodeArray = [];
+
+            for (const nodeID of this.sceneNodeIDs)
+            {  
+                nodeArray.push(state.gltf.nodes[nodeID]); 
+            }
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+            this.webGl.context.viewport(0, 0, this.currentWidth, this.currentHeight);
+            state.triggerSelection = false;
+            const pickingY = this.currentHeight - state.pickingY;
+            this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
+            const pixels = new Uint8Array(4);
+            this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
+
+            let pickingResult = {
+                node: undefined,
+                position: undefined,
+                normal: undefined
+            };
+
+            let found = false;
+            for (const node of nodeArray)
+            {
+                if (node.pickingColor && vec4.equals(node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
+                {
+                    found = true;
+                    pickingResult.node = node;
+                    break;
+                }
+            }
+
+            if (found && this.floatTexturesSupported) {
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
+                const position = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
+                pickingResult.position = position.subarray(0, 3);
+
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
+                const normal = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
+                pickingResult.normal = normal.subarray(0, 3);
+            }
+            
+            if (state.selectionCallback){
+                state.selectionCallback(pickingResult);
+            }
+        }
     } 
 
     drawEnvironmentMap(state)
@@ -857,11 +905,8 @@ class gltfRenderer
         }
 
         if (state.triggerSelection) {
-            state.triggerSelection = false;
             this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
             this.webGl.context.viewport(0, 0, this.currentWidth, this.currentHeight);
-
-            const pickingY = this.currentHeight - state.pickingY;
 
             const fragDefines = [];
             this.pushFragParameterDefines(fragDefines, state);
@@ -871,43 +916,6 @@ class gltfRenderer
                 let renderpassConfiguration = {};
                 renderpassConfiguration.picking = true;
                 this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
-            }
-
-            this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
-            const pixels = new Uint8Array(4);
-            this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
-
-            let pickingResult = {
-                node: undefined,
-                position: undefined,
-                normal: undefined
-            };
-
-            let found = false;
-            for (const drawable of this.drawables)
-            {
-                if (vec4.equals(drawable.node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
-                {
-                    found = true;
-                    pickingResult.node = drawable.node;
-                    break;
-                }
-            }
-
-            if (found && this.floatTexturesSupported) {
-                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
-                const position = new Float32Array(4);
-                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
-                pickingResult.position = position;
-    
-                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
-                const normal = new Float32Array(4);
-                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
-                pickingResult.normal = normal;
-            }
-            
-            if (state.selectionCallback){
-                state.selectionCallback(pickingResult);
             }
         }
 

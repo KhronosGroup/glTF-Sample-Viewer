@@ -6,6 +6,7 @@ import { app } from './ui/ui.js';
 import { from, merge } from 'rxjs';
 import { mergeMap, map, share } from 'rxjs/operators';
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
+import { mat4, quat, vec3 } from 'gl-matrix';
 
 export default async () => {
     const canvas = document.getElementById("canvas");
@@ -308,14 +309,89 @@ export default async () => {
         }
         if (selectionInfo.node === undefined) {
             state.highlightedNodes = [];
-        } else if (moveNode && !select && state.highlightedNodes.length === 1) {
+        } else if (moveNode && !select && state.highlightedNodes.length > 0) {
             const node = state.highlightedNodes[0];
-            node.translation = selectionInfo.position;
+            let targetNode = selectionInfo.node;
+            while (targetNode.parentNode !== undefined && targetNode.extras?.asset === undefined) {
+                targetNode = targetNode.parentNode;
+            }
+            if (targetNode.extras?.asset !== undefined) {
+                selectionInfo.node = targetNode;
+            }
+            // Change parent
+            if (selectionInfo.node !== node.parentNode) {
+                selectionInfo.node.children.push(node.jsonArrayIndex);
+                if (node.parentNode !== undefined) {
+                    const childIndex = node.parentNode.children.indexOf(node.jsonArrayIndex);
+                    node.parentNode.children.splice(childIndex, 1);
+                    node.parentNode.changed = true;
+                } else {
+                    const currentScene = state.gltf.scenes[state.sceneIndex];
+                    const childIndex = currentScene.nodes.indexOf(node.jsonArrayIndex);
+                    currentScene.nodes.splice(childIndex, 1);
+                }
+                node.parentNode = selectionInfo.node;
+                selectionInfo.node.changed = true;
+            }
+
+            const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
+
+            // Rotate onto normal
+            const parentGlobalRotation = mat4.getRotation(quat.create(), parentGlobalTransform);
+            const constUp = vec3.fromValues(0, 1, 0);
+            const up = vec3.transformQuat(vec3.create(), constUp, parentGlobalRotation);
+            const inverseParentWorldRotation = quat.invert(quat.create(), parentGlobalRotation);
+            const normal = vec3.transformQuat(vec3.create(), selectionInfo.normal, inverseParentWorldRotation);
+            const angle = vec3.angle(up, normal);
+            const axis = vec3.cross(vec3.create(), up, normal);
+            const rotation = quat.create();
+        
+
+            // Handle 180 degree rotations
+            if (vec3.length(axis) < 0.0001 && angle > 3.14) {
+                const right = vec3.transformQuat(vec3.create(), vec3.fromValues(1, 0, 0), parentGlobalRotation);
+                quat.setAxisAngle(rotation, right, angle);
+            } else {
+                quat.setAxisAngle(rotation, axis, angle);
+            }
+
+
+            // Add rotation around up from model
+            const localAngle = quat.getAxisAngle(constUp, node.initialRotation);
+            const localRotation = quat.setAxisAngle(quat.create(), normal, localAngle);
+            quat.multiply(rotation, rotation, localRotation);
+            node.rotation = rotation;
+            
+            // Set position
+            const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
+            const localTranslation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
+            node.translation = vec3.transformQuat(localTranslation, localTranslation, inverseParentWorldRotation);
+            
             node.changed = true;
             moveNode = false;
             update();
         } else if (select) {
-            state.highlightedNodes = [selectionInfo.node];
+            let assetNode = selectionInfo.node;
+            while (assetNode.parentNode !== undefined && assetNode.extras?.asset === undefined) {
+                assetNode = assetNode.parentNode;
+            }
+            if (assetNode.extras?.asset !== undefined) {
+                selectionInfo.node = assetNode;
+            }
+            const selection = [selectionInfo.node];
+            const getAllChildren = (node) => {
+                if (node.children !== undefined) {
+                    for (const childIdx of node.children) {
+                        const child = state.gltf.nodes[childIdx];
+                        selection.push(child);
+                        getAllChildren(child);
+                    }
+                }
+            };
+            // Select all child nodes
+            getAllChildren(selectionInfo.node);
+
+            state.highlightedNodes = selection;
             select = false;
         }
         redraw = true;
@@ -337,8 +413,8 @@ export default async () => {
         past.height = canvas.height;
         
         if (redraw) {
-            view.renderFrame(state, canvas.width, canvas.height);
             redraw = false;
+            view.renderFrame(state, canvas.width, canvas.height);
         }
 
         window.requestAnimationFrame(update);
