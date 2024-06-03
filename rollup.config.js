@@ -20,7 +20,7 @@ export default {
         }
     ],
     plugins: [
-        wasm(),
+        wasm( {fileName: "libs/[name][extname]", publicPath: "./"} ),
         glslify(),
         resolve({
             browser: false,
