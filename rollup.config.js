@@ -20,10 +20,10 @@ export default {
         }
     ],
     plugins: [
-        wasm(),
+        wasm( {fileName: "libs/[name][extname]", publicPath: "./"} ),
         glslify(),
         resolve({
-            browser: false,
+            browser: true,
             preferBuiltins: false,
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
