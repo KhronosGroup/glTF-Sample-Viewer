@@ -334,38 +334,35 @@ export default async () => {
                 selectionInfo.node.changed = true;
             }
 
-            const parentGlobalTransform = node.parentNode?.worldTransform ?? mat4.create();
-
             // Rotate onto normal
-            const parentGlobalRotation = mat4.getRotation(quat.create(), parentGlobalTransform);
             const constUp = vec3.fromValues(0, 1, 0);
-            const up = vec3.transformQuat(vec3.create(), constUp, parentGlobalRotation);
-            const inverseParentWorldRotation = quat.invert(quat.create(), parentGlobalRotation);
-            const normal = vec3.transformQuat(vec3.create(), selectionInfo.normal, inverseParentWorldRotation);
-            const angle = vec3.angle(up, normal);
-            const axis = vec3.cross(vec3.create(), up, normal);
+            const normal = selectionInfo.normal;
+            vec3.normalize(normal, normal);
+            const angle = vec3.angle(constUp, normal);
+            const axis = vec3.cross(vec3.create(), constUp, normal);
+            vec3.normalize(axis, axis);
             const rotation = quat.create();
         
 
             // Handle 180 degree rotations
             if (vec3.length(axis) < 0.0001 && angle > 3.14) {
-                const right = vec3.transformQuat(vec3.create(), vec3.fromValues(1, 0, 0), parentGlobalRotation);
-                quat.setAxisAngle(rotation, right, angle);
+                quat.setAxisAngle(rotation, vec3.fromValues(1, 0, 0), angle);
             } else {
                 quat.setAxisAngle(rotation, axis, angle);
             }
+            quat.normalize(rotation, rotation);
 
+            const globalMatrix = mat4.fromRotationTranslation(mat4.create(), rotation, selectionInfo.position);
 
             // Add rotation around up from model
-            const localAngle = quat.getAxisAngle(constUp, node.initialRotation);
-            const localRotation = quat.setAxisAngle(quat.create(), normal, localAngle);
-            quat.multiply(rotation, rotation, localRotation);
-            node.rotation = rotation;
-            
-            // Set position
-            const parentGlobalPosition = mat4.getTranslation(vec3.create(), parentGlobalTransform);
-            const localTranslation = vec3.subtract(vec3.create(), selectionInfo.position, parentGlobalPosition);
-            node.translation = vec3.transformQuat(localTranslation, localTranslation, inverseParentWorldRotation);
+            const rotationMatrix = mat4.fromQuat(mat4.create(), node.initialRotation);
+            mat4.multiply(globalMatrix, globalMatrix, rotationMatrix);
+
+            const parentInverseGlobalTransform =  node.parentNode?.inverseWorldMatrix ?? mat4.create();
+            const localMatrix = mat4.multiply(mat4.create(), parentInverseGlobalTransform, globalMatrix);
+            node.rotation = mat4.getRotation(quat.create(), localMatrix);
+            node.translation = mat4.getTranslation(vec3.create(), localMatrix);
+            node.scale = mat4.getScaling(vec3.create(), localMatrix);
             
             node.changed = true;
             moveNode = false;
