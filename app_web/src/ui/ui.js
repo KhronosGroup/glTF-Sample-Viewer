@@ -46,7 +46,7 @@ export const app = new Vue({
         'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
-        'cameraExport$', 'captureCanvas$', 'loadHighQuality$','lodChanged$','iblIntensityChanged$',],
+        'cameraExport$', 'captureCanvas$', 'loadHighQuality$','lodChanged$','lightingModeChanged$','iblIntensityChanged$',],
     data() {
         return {
             fullheight: true,
@@ -61,6 +61,7 @@ export const app = new Vue({
             tonemaps: [{title: "None"}],
             
             lods: [{title: "Q0"}],
+            lightingModes: [{title: "Scene"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
             assetCopyright: "",
@@ -90,6 +91,7 @@ export const app = new Vue({
             exposureSetting: 0,
             toneMap: "None",
             lod: "Q0",
+            lightingMode: "Scene",
             skinning: true,
             morphing: true,
             clearcoatEnabled: true,

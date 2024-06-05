@@ -89,6 +89,9 @@ class GltfState
             toneMap: GltfState.ToneMaps.LINEAR,
 
             LoD: GltfState.LoDs.Q0,
+
+            LightingMode: GltfState.LightingModes.Scene,
+            
             /** render some debug output channes, such as for example the normals */
             debugOutput: GltfState.DebugOutput.NONE,
             /**
@@ -134,6 +137,13 @@ GltfState.LoDs = {
     Q0: "Q0",
     Q1: "Q1",
     Q2: "Q2",
+};
+
+GltfState.LightingModes = {
+    Scene: "Scene",
+    Local: "Local",
+    None: "None", 
+    Default: "Default", 
 };
 
 
