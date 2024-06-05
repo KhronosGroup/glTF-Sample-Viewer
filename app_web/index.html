@@ -396,9 +396,10 @@
                                     v-stream:input="transmissionChanged$" @input="transmissionTriggered">
                                     KHR_materials_transmission</b-switch>
                                 <b-switch class="smallerLabel"
-                                    v-bind:disabled="transmissionEnabled === false ? true : false"
+                                    v-bind:disabled="!transmissionEnabled && !diffuseTransmissionEnabled"
                                     v-model="volumeEnabled">KHR_materials_volume</b-switch>
-                                <b-switch class="smallerLabel" v-model="diffuseTransmissionEnabled">KHR_materials_diffuse_transmission</b-switch>
+                                <b-switch class="smallerLabel" v-model="diffuseTransmissionEnabled" 
+                                    v-stream:input="diffuseTransmissionChanged$" @input="diffuseTransmissionTriggered">KHR_materials_diffuse_transmission</b-switch>
                                 <b-switch class="smallerLabel" v-model="iorEnabled">KHR_materials_ior</b-switch>
                                 <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular</b-switch>
                                 <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled">KHR_materials_emissive_strength</b-switch>

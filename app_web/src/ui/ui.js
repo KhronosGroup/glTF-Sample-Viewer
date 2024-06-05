@@ -46,7 +46,7 @@ export const app = new Vue({
         'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
         'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
-        'cameraExport$', 'captureCanvas$','iblIntensityChanged$',],
+        'diffuseTransmissionChanged$', 'cameraExport$', 'captureCanvas$','iblIntensityChanged$',],
     data() {
         return {
             fullheight: true,
@@ -109,7 +109,7 @@ export const app = new Vue({
             uiVisible: true,
             
 
-            // these are handls for certain ui change related things
+            // these are handles for certain ui change related things
             environmentVisiblePrefState: true,
             volumeEnabledPrefState: true,
         };
@@ -152,29 +152,33 @@ export const app = new Vue({
         },
         iblTriggered: function()
         {
-            if(this.ibl == false)
-            {
+            if (this.ibl == false) {
                 this.environmentVisiblePrefState = this.renderEnv;
                 this.renderEnv = false;
-            }
-            else{
+            } else {
                 this.renderEnv = this.environmentVisiblePrefState;
             }
         },
         transmissionTriggered: function()
         {
-            if(this.transmissionEnabled == false)
-            {
+            if (this.transmissionEnabled == false && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
+            } else if (this.transmissionEnabled == true && this.diffuseTransmissionEnabled == false) {
+                this.volumeEnabled = this.volumeEnabledPrefState;
             }
-            else{
+        },
+        diffuseTransmissionTriggered: function()
+        {
+            if (this.diffuseTransmissionEnabled == false && this.transmissionEnabled == false) {
+                this.volumeEnabledPrefState = this.volumeEnabled;
+                this.volumeEnabled = false;
+            } else if (this.diffuseTransmissionEnabled == true && this.transmissionEnabled == false) {
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
         collapseActiveTab : function(event, item) {
-            if (item === this.activeTab)
-            {
+            if (item === this.activeTab) {
                 this.tabsHidden = !this.tabsHidden;
                 
                 if(this.tabsHidden) {
@@ -191,8 +195,7 @@ export const app = new Vue({
                     activeNavElement.classList.add('is-active');
                 }
                 return;
-            }
-            else {
+            } else {
                 // reset tab visibility
                 this.tabsHidden = false;
             }

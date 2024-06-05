@@ -48,7 +48,7 @@ class UIModel
         this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
         this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
         this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
-        this.diffuseTransmissionEnabled = app.$watchAsObservable("diffuseTransmissionEnabled").pipe(pluck('newValue'));
+        this.diffuseTransmissionEnabled = app.diffuseTransmissionChanged$.pipe(pluck("event", "msg"));
         this.volumeEnabled = app.$watchAsObservable('volumeEnabled').pipe(pluck('newValue'));
         this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(pluck('newValue'));
         this.iridescenceEnabled = app.$watchAsObservable('iridescenceEnabled').pipe(pluck('newValue'));
