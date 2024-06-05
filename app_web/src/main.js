@@ -164,6 +164,9 @@ export default async () => {
     uiModel.lod.subscribe(lod => state.renderingParameters.LoD = lod);
     listenForRedraw(uiModel.lod);
 
+    uiModel.lightingMode.subscribe(lightingMode => state.renderingParameters.LightingMode = lightingMode);
+    listenForRedraw(uiModel.lightingMode);
+
     uiModel.skinningEnabled.subscribe(skinningEnabled => state.renderingParameters.skinning = skinningEnabled);
     listenForRedraw(uiModel.skinningEnabled);
 

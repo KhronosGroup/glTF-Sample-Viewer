@@ -50,6 +50,12 @@ class UIModel
             startWith(GltfState.LoDs.Q0)
         );
 
+        this.app.lightingModes = Object.keys(GltfState.LightingModes).map((key) => ({title: GltfState.LightingModes[key]}));
+        this.lightingMode = app.lightingModeChanged$.pipe(
+            pluck("event", "msg"),
+            startWith(GltfState.LightingModes.Scene)
+        );
+
         this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
         this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
         this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));

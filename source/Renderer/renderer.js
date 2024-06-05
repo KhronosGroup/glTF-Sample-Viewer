@@ -734,15 +734,32 @@ class gltfRenderer
 
                 const assetNode = state.gltf.nodes[renderNodeID]
 
-                if(assetNode["extensions"]["gltfx"]["lightSource"] === "scene"){
+                // "None", "Local", "Scene"
+                const lightingMode = state.renderingParameters.LightingMode
+
+                if(lightingMode === "Default") { // Lookup glTFX properties
+                    if(assetNode["extensions"]["gltfx"]["lightSource"] === "scene") {
+                        this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
+                    }
+                    if(assetNode["extensions"]["gltfx"]["lightSource"] === "asset") { 
+                        this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
+                    }
+                }
+
+                if(lightingMode === "Scene"){
                     //collect all nodes from the scene
                     this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
                 }
 
-                if(assetNode["extensions"]["gltfx"]["lightSource"] === "asset"){
+                if(lightingMode === "Local"){
                     //collect only nodes from the specific asset
                     this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
                 }
+
+                if(lightingMode === "None"){
+                    this.visibleLights = []
+                }
+                
 
                 let nodeEnvironment = undefined
                 if(assetNode["extensions"]["gltfx"]["environment"] !== undefined){
