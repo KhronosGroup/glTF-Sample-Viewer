@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import { glTF } from '../gltf/gltf.js';
-import { getIsGlb, getContainingFolder, getIsGltf, getIsGlxf } from '../gltf/utils.js';
+import { getIsGlb, getContainingFolder, getIsGltf, getIsGltfx } from '../gltf/utils.js';
 import { GlbParser } from './glb_parser.js';
 import { GltfParser } from './gltf_parser.js';
 import { AssetLoader } from './asset_loader.js';
@@ -11,6 +11,8 @@ import { gltfTexture, gltfTextureInfo } from '../gltf/texture.js';
 import { gltfSampler } from '../gltf/sampler.js';
 import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
+import init from '../libs/mikktspace.js';
+import mikktspace from '../libs/mikktspace_bg.wasm';
 
 
 import { AsyncFileReader } from './async_file_reader.js';
@@ -19,7 +21,8 @@ import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
-import { GlxfParser } from './glxf_parser.js';
+import { GltfxParser } from './gltfx_parser.js';
+import { app } from '../../app_web/src/ui/ui.js';
 
 /**
  * ResourceLoader can be used to load resources for the GltfState
@@ -41,8 +44,21 @@ class ResourceLoader
 
     async loadAsset(assetFile, externalFiles)
     {
-        let gltf = await AssetLoader.loadAsset(assetFile, externalFiles)
-        return await this.prepareGltfResources(gltf.json, gltf.data, gltf.filename)  
+        let parsedgltf = await AssetLoader.loadAsset(assetFile, externalFiles)
+        let gltf = await this.prepareGltfResources(parsedgltf.json, parsedgltf.data, parsedgltf.filename) 
+        return {parsedgltf:parsedgltf, gltf:gltf}
+    }
+
+
+    async loadAssetIncrement(assetFile, externalFiles, gltf)
+    {
+        console.log("loadAssetIncrement")
+
+        let gltfIncrement = await AssetLoader.loadAssetIncrement( assetFile, externalFiles, gltf)
+
+        let gltfPrepared = await this.prepareGltfResources(gltfIncrement.json, gltfIncrement.data, gltfIncrement.filename)  
+       
+        return {parsedgltf:gltfIncrement, gltf:gltfPrepared}
     }
 
     async prepareGltfResources(json, data, filename)  
@@ -59,10 +75,39 @@ class ResourceLoader
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
 
+        await init(await mikktspace());
         await gltfLoader.load(gltf, this.view.context, filename, data);
-
+        
+        await this.filterEnvironments(gltf, data)
         return gltf;
     }
+        
+    async filterEnvironments(gltf, appendix)
+    {
+        function getFileByURI(uri, dataArray){
+            for (let data of dataArray) { 
+                if (typeof (File) !== 'undefined' && data instanceof File){ 
+                    if (data.name ===uri){
+                        return data
+                    }
+                }
+            }
+            return undefined
+        }
+
+        if (gltf.environments===undefined){            
+            return
+        }
+        
+        for (let environment of gltf.environments){ 
+            let hdrFile = getFileByURI(environment.uri, appendix)
+            console.log(hdrFile ) 
+            environment.filteredEnvironment = await this.loadEnvironment(hdrFile)
+            environment.filteredEnvironment.intensity = environment.intensity
+        }
+
+    }
+
 
     /**
      * loadEnvironment asynchroneously, run IBL sampling and create resources for rendering

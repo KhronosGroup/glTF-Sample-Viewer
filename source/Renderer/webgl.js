@@ -31,7 +31,7 @@ class gltfWebGl
 
     setTexture(loc, gltf, textureInfo, texSlot)
     {
-        if (loc === -1)
+        if (loc === null)
         {
             return false;
         }
@@ -40,14 +40,12 @@ class gltfWebGl
 
         if (gltfTex === undefined)
         {
-            console.warn("Texture is undefined: " + textureInfo.index);
             return false;
         }
 
         const image = gltf.images[gltfTex.source];
         if (image === undefined)
         {
-            console.warn("Image is undefined for texture: " + gltfTex.source);
             return false;
         }
 
@@ -144,7 +142,7 @@ class gltfWebGl
 
     enableAttribute(gltf, attributeLocation, gltfAccessor)
     {
-        if (attributeLocation === -1)
+        if (attributeLocation === null)
         {
             console.warn("Tried to access unknown attribute");
             return false;

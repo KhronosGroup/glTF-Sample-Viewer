@@ -32,9 +32,17 @@ precision highp float;
 
 out vec4 g_finalColor;
 
+#ifdef IS_HIGHLIGHT
+uniform vec4 u_HighlightColor;
+#endif
 
 void main()
 {
+    //Billboards
+#ifdef BILLBOARD_DEPTH
+    gl_FragDepth = BILLBOARD_DEPTH;
+#endif
+
     vec4 baseColor = getBaseColor();
 
 #if ALPHAMODE == ALPHAMODE_OPAQUE
@@ -100,6 +108,10 @@ void main()
     materialInfo = getIridescenceInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_ANISOTROPY
+    materialInfo = getAnisotropyInfo(materialInfo, normalInfo);
+#endif
+
     materialInfo.perceptualRoughness = clamp(materialInfo.perceptualRoughness, 0.0, 1.0);
     materialInfo.metallic = clamp(materialInfo.metallic, 0.0, 1.0);
 
@@ -124,16 +136,11 @@ void main()
     float albedoSheenScaling = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
-    vec3 iridescenceFresnel = materialInfo.f0;
-    vec3 iridescenceF0 = materialInfo.f0;
+    vec3 iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+    vec3 iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
 
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
-    }
-
-    if (materialInfo.iridescenceFactor > 0.0) {
-        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
-        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
     }
 #endif
 
@@ -142,6 +149,9 @@ void main()
 #ifdef MATERIAL_IRIDESCENCE
     f_specular += getIBLRadianceGGXIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.f0, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.specularWeight);
     f_diffuse += getIBLRadianceLambertianIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, iridescenceF0, materialInfo.iridescenceFactor, materialInfo.specularWeight);
+#elif defined(MATERIAL_ANISOTROPY)
+    f_specular += getIBLRadianceAnisotropy(n, v, materialInfo.perceptualRoughness, materialInfo.anisotropyStrength, materialInfo.anisotropicB, materialInfo.f0, materialInfo.specularWeight);
+    f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
 #else
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
@@ -205,6 +215,9 @@ void main()
 #ifdef MATERIAL_IRIDESCENCE
             f_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+#elif defined(MATERIAL_ANISOTROPY)
+            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            f_specular += intensity * NdotL * BRDF_specularGGXAnisotropy(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.anisotropyStrength, n, v, l, h, materialInfo.anisotropicT, materialInfo.anisotropicB);
 #else
             f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
@@ -432,7 +445,7 @@ vec3 specularTexture = vec3(1.0);
 #endif
 #ifdef MATERIAL_VOLUME
 #if DEBUG == DEBUG_VOLUME_THICKNESS
-    g_finalColor.rgb = vec3(materialInfo.thickness);
+    g_finalColor.rgb = vec3(materialInfo.thickness / u_ThicknessFactor);
 #endif
 #endif
 
@@ -448,4 +461,28 @@ vec3 specularTexture = vec3(1.0);
     g_finalColor.rgb = vec3(materialInfo.iridescenceThickness / 1200.0);
 #endif
 #endif
+
+    // Anisotropy:
+#ifdef MATERIAL_ANISOTROPY
+#if DEBUG == DEBUG_ANISOTROPIC_STRENGTH
+    g_finalColor.rgb = vec3(materialInfo.anisotropyStrength);
+#endif
+#if DEBUG == DEBUG_ANISOTROPIC_DIRECTION
+    vec2 direction = vec2(1.0, 0.0);
+#ifdef HAS_ANISOTROPY_MAP
+    direction = texture(u_AnisotropySampler, getAnisotropyUV()).xy;
+    direction = direction * 2.0 - vec2(1.0); // [0, 1] -> [-1, 1]
+#endif
+    vec2 directionRotation = u_Anisotropy.xy; // cos(theta), sin(theta)
+    mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
+    direction = (direction + vec2(1.0)) * 0.5; // [-1, 1] -> [0, 1]
+
+    g_finalColor.rgb = vec3(direction, 0.0);
+#endif
+#endif
+
+#ifdef IS_HIGHLIGHT
+    g_finalColor.rgb = mix(g_finalColor.rgb, u_HighlightColor.rgb, u_HighlightColor.a);
+#endif
+
 }

@@ -1,10 +1,9 @@
 import axios from 'axios';
-
 import path from 'path';
 
-class gltfModelPathProvider
+export class GltfModelPathProvider
 {
-    constructor(modelIndexerPath, currentFalvour="glTF", ignoredVariants = ["glTF-Embedded"])
+    constructor(modelIndexerPath, ignoredVariants = ["glTF-Embedded"])
     {
         this.modelIndexerPath = modelIndexerPath;
         this.ignoredVariants = ignoredVariants;
@@ -14,10 +13,8 @@ class gltfModelPathProvider
     async initialize()
     {
         const self = this;
-        return axios.get(this.modelIndexerPath).then(response =>
-        {
-            self.populateDictionary(response.data);
-        });
+        const response = await axios.get(this.modelIndexerPath);
+        self.populateDictionary(response.data);
     }
 
     resolve(modelKey, flavour)
@@ -36,7 +33,6 @@ class gltfModelPathProvider
         this.modelsDictionary = {};
         for (const entry of modelIndexer)
         {
-            // TODO maybe handle undefined names better
             if (entry.variants === undefined || entry.name === undefined)
             {
                 continue;
@@ -54,7 +50,6 @@ class gltfModelPathProvider
                 const fileName = entry.variants[variant];
                 const modelPath = path.join(modelsFolder, entry.name, variant, fileName);
                 variants[variant] = modelPath;
-
             }
             this.modelsDictionary[entry.name] = variants;
         }
@@ -70,7 +65,7 @@ class gltfModelPathProvider
     }
 }
 
-function fillEnvironmentWithPaths(environmentNames, environmentsBasePath)
+export function fillEnvironmentWithPaths(environmentNames, environmentsBasePath)
 {
     Object.keys(environmentNames).map(function(name, index) {
         const title = environmentNames[name];
@@ -83,5 +78,3 @@ function fillEnvironmentWithPaths(environmentNames, environmentsBasePath)
     });
     return environmentNames;
 }
-
-export { gltfModelPathProvider, fillEnvironmentWithPaths };

@@ -37,8 +37,11 @@ uniform float u_IridescenceThicknessMaximum;
 // Emissive Strength
 uniform float u_EmissiveStrength;
 
-// PBR Next IOR
+// IOR
 uniform float u_Ior;
+
+// Anisotropy
+uniform vec3 u_Anisotropy;
 
 // Alpha mode
 uniform float u_AlphaCutoff;
@@ -90,6 +93,11 @@ struct MaterialInfo
     float iridescenceFactor;
     float iridescenceIor;
     float iridescenceThickness;
+
+    // KHR_materials_anisotropy
+    vec3 anisotropicT;
+    vec3 anisotropicB;
+    float anisotropyStrength;
 };
 
 
@@ -97,12 +105,15 @@ struct MaterialInfo
 NormalInfo getNormalInfo(vec3 v)
 {
     vec2 UV = getNormalUV();
-    vec3 uv_dx = dFdx(vec3(UV, 0.0));
-    vec3 uv_dy = dFdy(vec3(UV, 0.0));
+    vec2 uv_dx = dFdx(UV);
+    vec2 uv_dy = dFdy(UV);
 
-    if (length(uv_dx) + length(uv_dy) <= 1e-6) {
-        uv_dx = vec3(1.0, 0.0, 0.0);
-        uv_dy = vec3(0.0, 1.0, 0.0);
+    if (length(uv_dx) <= 1e-2) {
+      uv_dx = vec2(1.0, 0.0);
+    }
+
+    if (length(uv_dy) <= 1e-2) {
+      uv_dy = vec2(0.0, 1.0);
     }
 
     vec3 t_ = (uv_dy.t * dFdx(v_Position) - uv_dx.t * dFdy(v_Position)) /
@@ -354,6 +365,27 @@ MaterialInfo getIorInfo(MaterialInfo info)
 {
     info.f0 = vec3(pow(( u_Ior - 1.0) /  (u_Ior + 1.0), 2.0));
     info.ior = u_Ior;
+    return info;
+}
+#endif
+
+#ifdef MATERIAL_ANISOTROPY
+MaterialInfo getAnisotropyInfo(MaterialInfo info, NormalInfo normalInfo)
+{
+    vec2 direction = vec2(1.0, 0.0);
+    float strengthFactor = 1.0;
+#ifdef HAS_ANISOTROPY_MAP
+    vec3 anisotropySample = texture(u_AnisotropySampler, getAnisotropyUV()).xyz;
+    direction = anisotropySample.xy * 2.0 - vec2(1.0);
+    strengthFactor = anisotropySample.z;
+#endif
+    vec2 directionRotation = u_Anisotropy.xy; // cos(theta), sin(theta)
+    mat2 rotationMatrix = mat2(directionRotation.x, directionRotation.y, -directionRotation.y, directionRotation.x);
+    direction = rotationMatrix * direction.xy;
+
+    info.anisotropicT = mat3(normalInfo.t, normalInfo.b, normalInfo.n) * normalize(vec3(direction, 0.0));
+    info.anisotropicB = cross(normalInfo.ng, info.anisotropicT);
+    info.anisotropyStrength = clamp(u_Anisotropy.z * strengthFactor, 0.0, 1.0);
     return info;
 }
 #endif

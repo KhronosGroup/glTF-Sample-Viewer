@@ -16,6 +16,7 @@ class UserCamera extends gltfCamera
     {
         super();
 
+        this.initialViewMatrix = mat4.create();
         this.transform = mat4.create();
         this.rotAroundY = 0;
         this.rotAroundX = 0;
@@ -253,12 +254,13 @@ class UserCamera extends gltfCamera
         this.transform = mat4.create();
         this.rotAroundX = 0;
         this.rotAroundY = 0;
-        getSceneExtents(gltf, sceneIndex, this.sceneExtents.min, this.sceneExtents.max);
+        getSceneExtents(gltf, gltf.scenes[sceneIndex], this.sceneExtents.min, this.sceneExtents.max);
         this.fitDistanceToExtents(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraTargetToExtents(this.sceneExtents.min, this.sceneExtents.max);
 
         this.fitPanSpeedToScene(this.sceneExtents.min, this.sceneExtents.max);
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+        this.initialViewMatrix = this.getViewMatrix(gltf);
 
     }
 

@@ -34,3 +34,7 @@ jobs:
           token: ${{ secrets.BUILD_GITHUB_PAGES }}
           repository-name: KhronosGroup/glTF-Sample-Viewer-Release
           target-folder: docs
+          clean-exclude: |
+            docs/glxf
+            glxf
+

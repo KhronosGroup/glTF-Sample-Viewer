@@ -67,7 +67,7 @@ class gltfShader
             {
                 this.unknownUniforms.push(name);
             }
-            return -1;
+            return null;
         }
         return uniform.loc;
     }
@@ -158,6 +158,7 @@ class gltfShader
             case GL.FLOAT_VEC4: this.gl.context.uniform4fv(uniform.loc, value); break;
 
             case GL.INT:
+            case GL.UINT:
             {
                 if(Array.isArray(value) || value instanceof Uint32Array || value instanceof Int32Array)
                 {
@@ -167,9 +168,12 @@ class gltfShader
                 }
                 break;
             }
-            case GL.INT_VEC2: this.gl.context.uniform2iv(uniform.loc, value); break;
-            case GL.INT_VEC3: this.gl.context.uniform3iv(uniform.loc, value); break;
-            case GL.INT_VEC4: this.gl.context.uniform4iv(uniform.loc, value); break;
+            case GL.INT_VEC2: 
+            case GL.UNSIGNED_INT_VEC2: this.gl.context.uniform2iv(uniform.loc, value); break;
+            case GL.INT_VEC3:
+            case GL.UNSIGNED_INT_VEC3: this.gl.context.uniform3iv(uniform.loc, value); break;
+            case GL.INT_VEC4:
+            case GL.UNSIGNED_INT_VEC4: this.gl.context.uniform4iv(uniform.loc, value); break;
 
             case GL.FLOAT_MAT2: this.gl.context.uniformMatrix2fv(uniform.loc, false, value); break;
             case GL.FLOAT_MAT3: this.gl.context.uniformMatrix3fv(uniform.loc, false, value); break;

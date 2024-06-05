@@ -163,6 +163,37 @@ vec3 getIBLRadianceLambertianIridescence(vec3 n, vec3 v, float roughness, vec3 d
 }
 #endif
 
+#ifdef MATERIAL_ANISOTROPY
+vec3 getIBLRadianceAnisotropy(vec3 n, vec3 v, float roughness, float anisotropy, vec3 anisotropyDirection, vec3 F0, float specularWeight)
+{
+    float NdotV = clampedDot(n, v);
+
+    float tangentRoughness = mix(roughness, 1.0, anisotropy * anisotropy);
+    vec3  anisotropicTangent  = cross(anisotropyDirection, v);
+    vec3  anisotropicNormal   = cross(anisotropicTangent, anisotropyDirection);
+    float bendFactor          = 1.0 - anisotropy * (1.0 - roughness);
+    float bendFactorPow4      = bendFactor * bendFactor * bendFactor * bendFactor;
+    vec3  bentNormal          = normalize(mix(anisotropicNormal, n, bendFactorPow4));
+
+    float lod = roughness * float(u_MipCount - 1);
+    vec3 reflection = normalize(reflect(-v, bentNormal));
+
+    vec2 brdfSamplePoint = clamp(vec2(NdotV, roughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
+    vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
+    vec4 specularSample = getSpecularSample(reflection, lod);
+
+    vec3 specularLight = specularSample.rgb;
+
+    // see https://bruop.github.io/ibl/#single_scattering_results at Single Scattering Results
+    // Roughness dependent fresnel, from Fdez-Aguera
+    vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
+    vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
+    vec3 FssEss = k_S * f_ab.x + f_ab.y;
+
+    return specularWeight * specularLight * FssEss;
+}
+#endif
+
 
 vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
 {

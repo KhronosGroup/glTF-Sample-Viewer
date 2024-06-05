@@ -1,6 +1,6 @@
 [submodule "assets/models"]
 	path = assets/models
-	url = https://github.com/KhronosGroup/glTF-Sample-Models.git
+	url = https://github.com/KhronosGroup/glTF-Sample-Assets.git
 [submodule "assets/environments"]
 	path = assets/environments
 	url = https://github.com/KhronosGroup/glTF-Sample-Environments.git

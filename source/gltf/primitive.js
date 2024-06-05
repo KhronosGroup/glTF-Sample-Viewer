@@ -1,6 +1,7 @@
 import { initGlForMembers } from './utils.js';
 import { GltfObject } from './gltf_object.js';
 import { gltfBuffer } from './buffer.js';
+import { gltfAccessor } from './accessor.js';
 import { gltfImage } from './image.js';
 import { ImageMimeType } from './image_mime_type.js';
 import { gltfTexture } from './texture.js';
@@ -9,13 +10,16 @@ import { gltfSampler } from './sampler.js';
 import { gltfBufferView } from './buffer_view.js';
 import { DracoDecoder } from '../ResourceLoader/draco.js';
 import { GL  } from '../Renderer/webgl.js';
+import { generateTangents } from '../libs/mikktspace.js';
+import { mat4, mat3, vec3 } from 'gl-matrix';
+
 
 class gltfPrimitive extends GltfObject
 {
     constructor()
     {
         super();
-        this.attributes = [];
+        this.attributes = {};
         this.targets = [];
         this.indices = undefined;
         this.material = undefined;
@@ -53,6 +57,7 @@ class gltfPrimitive extends GltfObject
 
         if (this.extensions !== undefined)
         {
+            // Decode Draco compressed mesh:
             if (this.extensions.KHR_draco_mesh_compression !== undefined)
             {
                 const dracoDecoder = new DracoDecoder();
@@ -67,6 +72,16 @@ class gltfPrimitive extends GltfObject
                     console.warn('Failed to load draco compressed mesh: DracoDecoder not initialized');
                 }
             }
+        }
+
+        // Generate tangents with Mikktspace which needs normals and texcoords as inputs
+        if (this.attributes.TANGENT === undefined && this.attributes.NORMAL && this.attributes.TEXCOORD_0)
+        {
+            // console.info("Generating tangents using the MikkTSpace algorithm.");
+            // console.time("Tangent generation");
+            // this.unweld(gltf);
+            // this.generateTangents(gltf);
+            // console.timeEnd("Tangent generation");
         }
 
         // VERTEX ATTRIBUTES
@@ -268,6 +283,7 @@ class gltfPrimitive extends GltfObject
         }
 
         this.computeCentroid(gltf);
+        this.computeMeanDensity(gltf);
     }
 
     computeCentroid(gltf)
@@ -302,6 +318,122 @@ class gltfPrimitive extends GltfObject
         }
         else
         {
+            // Primitive does not have indices.
+
+            const acc = new Float32Array(3);
+
+            for(let i = 0; i < positions.length; i += 3) {
+                acc[0] += positions[i];
+                acc[1] += positions[i + 1];
+                acc[2] += positions[i + 2];
+            }
+
+            const positionVectors = positions.length / 3;
+
+            const centroid = new Float32Array([
+                acc[0] / positionVectors,
+                acc[1] / positionVectors,
+                acc[2] / positionVectors,
+            ]);
+
+            this.centroid = centroid;
+        }
+    }
+    
+
+    computeMeanDensity(gltf)
+    {    
+
+        console.log("computeMeanDensity")
+        const positionsAccessor = gltf.accessors[this.attributes.POSITION];
+        const positions = positionsAccessor.getNormalizedTypedView(gltf);
+
+        if(this.indices !== undefined)
+        {
+            // Primitive has indices.
+
+            const indicesAccessor = gltf.accessors[this.indices];
+
+            const indices = indicesAccessor.getTypedView(gltf);
+
+            const triangleDistances = new Float32Array(indices.length/3);
+            const triangleAreas = new Float32Array(indices.length/3);
+
+            let vertices = [];
+            const aMin = positionsAccessor.min
+            const aMax = positionsAccessor.max
+
+            for(let i = 0; i < positions.length; i+=3) 
+            {
+                    
+                let dx = aMax[0] - aMin[0]
+                let dy = aMax[1] - aMin[1]
+                let dz = aMax[2] - aMin[2] 
+
+                let scale = Math.max( Math.max(dx,dy),dz)
+
+                let vertex = vec3.fromValues( 
+                    (positions[i + 0] - aMin[0]) / scale,
+                    (positions[i + 1] - aMin[1]) / scale,
+                    (positions[i + 2] - aMin[2]) / scale);
+
+                vertices.push(vertex) 
+            }
+            for(let i = 0; i < indices.length; i+=3) 
+            {
+                let va = vertices[indices[i + 0]]
+                let vb = vertices[indices[i + 1]]
+                let vc = vertices[indices[i + 2]]
+
+
+                let d0 = vec3.distance (va, vb)
+                let d1 = vec3.distance (va, vc)
+                let d2 = vec3.distance (vb, vc)
+
+                let meanDistance = (d0+d1+d2)/3.0
+                triangleDistances[i/3] = meanDistance 
+                //0.5* length( AB x AC)
+                let AB =  vec3.sub(vec3.create(),vb,va)
+                let AC =  vec3.sub(vec3.create(),vc,va)
+                let area =  vec3.length(vec3.cross(vec3.create(),AB,AC))*0.5
+                triangleAreas[i/3]=area
+            }
+            
+
+            let acc = 0.0
+            let meshArea = 0.0
+            for(let i = 0; i < triangleDistances.length; i+=1) {
+                acc+=  triangleDistances[i]
+                meshArea+=triangleAreas[i]
+            }
+            
+             
+            let x = positionsAccessor.max[0] - positionsAccessor.min[0]
+            let y = positionsAccessor.max[1] - positionsAccessor.min[1]
+            let z = positionsAccessor.max[2] - positionsAccessor.min[2] 
+             
+            let vertexCount = vertices.length
+            let volume =  (x*y*z)
+            console.log("volume= "+volume)
+            let extent =  (x+y+z)/3
+            console.log("extent= "+extent)
+
+            console.log("acc= "+acc)
+            let mean = acc / triangleDistances.length
+            console.log("1.0/mean= "+(1.0/mean))
+            console.log("meshArea= "+meshArea)
+            let quality  =vertexCount/ meshArea
+            console.log("quality= "+quality)
+
+            
+            // quality =  triangle_area / triangles
+
+            // uv_area * pixels / triangle_area
+            
+        }
+        else
+        {
+            console.log("Primitive does not have indices.  ")
             // Primitive does not have indices.
 
             const acc = new Float32Array(3);
@@ -720,6 +852,123 @@ class gltfPrimitive extends GltfObject
             itemSize: numComponents,
             componentType: attributeType
         };
+
+    }
+
+    /**
+     * Unwelds this primitive, i.e. applies the index mapping.
+     * This is required for generating tangents using the MikkTSpace algorithm,
+     * because the same vertex might be mapped to different tangents.
+     * @param {*} gltf The glTF document.
+     */
+    unweld(gltf) {
+        // Unwelding is an idempotent operation.
+        if (this.indices === undefined) {
+            return;
+        }
+        
+        const indices = gltf.accessors[this.indices].getTypedView(gltf);
+
+        // Unweld attributes:
+        for (const [attribute, accessorIndex] of Object.entries(this.attributes)) {
+            this.attributes[attribute] = this.unweldAccessor(gltf, gltf.accessors[accessorIndex], indices);
+        }
+
+        // Unweld morph targets:
+        for (const target of this.targets) {
+            for (const [attribute, accessorIndex] of Object.entries(target)) {
+                target[attribute] = this.unweldAccessor(gltf, gltf.accessors[accessorIndex], indices);
+            }
+        }
+
+        // Dipose the indices:
+        this.indices = undefined;
+    }
+
+    /**
+     * Unwelds a single accessor. Used by {@link unweld}.
+     * @param {*} gltf The glTF document.
+     * @param {*} accessor The accessor to unweld.
+     * @param {*} typedIndexView A typed view of the indices.
+     * @returns A new accessor index containing the unwelded attribute.
+     */
+    unweldAccessor(gltf, accessor, typedIndexView) {
+        const componentCount = accessor.getComponentCount(accessor.type);
+        
+        const weldedAttribute = accessor.getDeinterlacedView(gltf);
+        // Create new array with same type as weldedAttribute
+        const unweldedAttribute = new weldedAttribute.constructor(gltf.accessors[this.indices].count * componentCount);
+
+        // Apply the index mapping.
+        for (let i = 0; i < typedIndexView.length; i++) {
+            for (let j = 0; j < componentCount; j++) {
+                unweldedAttribute[i * componentCount + j] = weldedAttribute[typedIndexView[i] * componentCount + j];
+            }
+        }
+
+        // Create a new buffer and buffer view for the unwelded attribute:
+        const unweldedBuffer = new gltfBuffer();
+        unweldedBuffer.byteLength = unweldedAttribute.byteLength;
+        unweldedBuffer.buffer = unweldedAttribute.buffer;
+        gltf.buffers.push(unweldedBuffer);
+
+        const unweldedBufferView = new gltfBufferView();
+        unweldedBufferView.buffer = gltf.buffers.length - 1;
+        unweldedBufferView.byteLength = unweldedAttribute.byteLength;
+        unweldedBufferView.target = GL.ARRAY_BUFFER;
+        gltf.bufferViews.push(unweldedBufferView);
+
+        // Create a new accessor for the unwelded attribute:
+        const unweldedAccessor = new gltfAccessor();
+        unweldedAccessor.bufferView = gltf.bufferViews.length - 1;
+        unweldedAccessor.byteOffset = 0;
+        unweldedAccessor.count = typedIndexView.length;
+        unweldedAccessor.type = accessor.type;
+        unweldedAccessor.componentType = accessor.componentType;
+        unweldedAccessor.min = accessor.min;
+        unweldedAccessor.max = accessor.max;
+        unweldedAccessor.normalized = accessor.normalized;
+        gltf.accessors.push(unweldedAccessor);
+
+        // Update the primitive to use the unwelded attribute:
+        return gltf.accessors.length - 1;
+    }
+
+    generateTangents(gltf) {
+        if(this.attributes.NORMAL === undefined || this.attributes.TEXCOORD_0 === undefined)
+        {
+            return;
+        }
+
+        const positions = gltf.accessors[this.attributes.POSITION].getTypedView(gltf);
+        const normals = gltf.accessors[this.attributes.NORMAL].getTypedView(gltf);
+        const texcoords = gltf.accessors[this.attributes.TEXCOORD_0].getTypedView(gltf);
+
+        const tangents = generateTangents(positions, normals, texcoords);
+
+        // Create a new buffer and buffer view for the tangents:
+        const tangentBuffer = new gltfBuffer();
+        tangentBuffer.byteLength = tangents.byteLength;
+        tangentBuffer.buffer = tangents.buffer;
+        gltf.buffers.push(tangentBuffer);
+
+        const tangentBufferView = new gltfBufferView();
+        tangentBufferView.buffer = gltf.buffers.length - 1;
+        tangentBufferView.byteLength = tangents.byteLength;
+        tangentBufferView.target = GL.ARRAY_BUFFER;
+        gltf.bufferViews.push(tangentBufferView);
+
+        // Create a new accessor for the tangents:
+        const tangentAccessor = new gltfAccessor();
+        tangentAccessor.bufferView = gltf.bufferViews.length - 1;
+        tangentAccessor.byteOffset = 0;
+        tangentAccessor.count = tangents.length / 4;
+        tangentAccessor.type = "VEC4";
+        tangentAccessor.componentType = GL.FLOAT;
+
+        // Update the primitive to use the tangents:
+        this.attributes.TANGENT = gltf.accessors.length;
+        gltf.accessors.push(tangentAccessor);
 
     }
 }

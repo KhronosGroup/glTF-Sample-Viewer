@@ -43,7 +43,7 @@ async function main()
             state.sceneIndex = 0;
         }
         const scene = state.gltf.scenes[state.sceneIndex];
-        scene.applyTransformHierarchy(state.gltf);
+        scene.applyTransformHierarchy(state);
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
         view.renderFrame(state, width, height);

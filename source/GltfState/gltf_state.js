@@ -13,8 +13,13 @@ class GltfState
      */
     constructor(view)
     {
+        this.files = undefined
+        this.parsedgltf = undefined;
+
         /** loaded gltf data @see ResourceLoader.loadGltf */
         this.gltf = undefined;
+        /** loaded gltfx data @see ResourceLoader.loadGltfx */
+        this.gltfx = undefined;
         /** loaded environment data @see ResourceLoader.loadEnvironment */
         this.environment = undefined;
         /** user camera @see UserCamera, convenient camera controls */
@@ -32,6 +37,13 @@ class GltfState
         this.animationTimer = new AnimationTimer();
         /** KHR_materials_variants */
         this.variant = undefined;
+
+        /** callback for selection events without this selection is disabled*/
+        this.selectionCallback = undefined;
+
+        this.triggerSelection = false;
+
+        this.highlightedNodes = [];
 
         /** parameters used to configure the rendering */
         this.renderingParameters = {
@@ -55,6 +67,8 @@ class GltfState
                 KHR_materials_specular: true,
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
+                /** KHR_materials_anisotropy defines microfacet grooves in the surface, stretching the specular reflection on the surface */
+                KHR_materials_anisotropy: true,
                 KHR_materials_emissive_strength: true,
             },
             /** clear color expressed as list of ints in the range [0, 255] */
@@ -73,6 +87,8 @@ class GltfState
             blurEnvironmentMap: true,
             /** which tonemap to use, use ACES for a filmic effect */
             toneMap: GltfState.ToneMaps.LINEAR,
+
+            LoD: GltfState.LoDs.Q0,
             /** render some debug output channes, such as for example the normals */
             debugOutput: GltfState.DebugOutput.NONE,
             /**
@@ -109,6 +125,17 @@ GltfState.ToneMaps = {
     /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
     ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
 };
+
+GltfState.LoDs = {
+    Highest: "Highest",
+    PQPM: "PQPM",
+    Coverage: "Coverage",
+    Distance: "Distance",
+    Q0: "Q0",
+    Q1: "Q1",
+    Q2: "Q2",
+};
+
 
 /**
  * DebugOutput enum for selecting debug output channels
@@ -196,7 +223,7 @@ GltfState.DebugOutput = {
         VOLUME_THICKNESS: "Volume Thickness",
     },
 
-    /** output tranmission lighting */
+    /** output iridescence */
     iridescence: {
         /** output the combined iridescence */
         IRIDESCENCE: "Iridescence",
@@ -204,6 +231,14 @@ GltfState.DebugOutput = {
         IRIDESCENCE_FACTOR: "Iridescence Factor",
         /** output the iridescence thickness*/
         IRIDESCENCE_THICKNESS: "Iridescence Thickness",
+    },
+
+    /** output anisotropy */
+    anisotropy: {
+        /** output the anisotropic strength*/
+        ANISOTROPIC_STRENGTH: "Anisotropic Strength",
+        /** output final direction as defined by the anisotropyTexture and rotation*/
+        ANISOTROPIC_DIRECTION: "Anisotropic Direction",
     },
 };
 
