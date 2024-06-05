@@ -358,7 +358,7 @@ export default async () => {
             const rotationMatrix = mat4.fromQuat(mat4.create(), node.initialRotation);
             mat4.multiply(globalMatrix, globalMatrix, rotationMatrix);
 
-            const parentInverseGlobalTransform =  node.parentNode?.inverseWorldMatrix ?? mat4.create();
+            const parentInverseGlobalTransform = node.parentNode?.inverseWorldTransform ?? mat4.create();
             const localMatrix = mat4.multiply(mat4.create(), parentInverseGlobalTransform, globalMatrix);
             node.rotation = mat4.getRotation(quat.create(), localMatrix);
             node.translation = mat4.getTranslation(vec3.create(), localMatrix);
