@@ -82,6 +82,7 @@ body
     width: 100%;
     display: flex;
     flex-direction: column;
+    position: absolute;
 }
 
 .banner p
@@ -339,6 +340,10 @@ button.button
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
+}
+
+#canvasUI {
+    position:relative;
 }
 
 .canvasUIMaximize {

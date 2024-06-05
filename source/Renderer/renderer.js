@@ -5,6 +5,8 @@ import { gltfWebGl, GL } from './webgl.js';
 import { EnvironmentRenderer } from './environment_renderer.js';
 
 import pbrShader from './shaders/pbr.frag';
+import pickingShader from './shaders/picking.frag';
+import pickingVertShader from './shaders/picking.vert';
 import brdfShader from './shaders/brdf.glsl';
 import iridescenceShader from './shaders/iridescence.glsl';
 import materialInfoShader from './shaders/material_info.glsl';
@@ -38,12 +40,18 @@ class gltfRenderer
         this.opaqueRenderTexture = 0;
         this.opaqueFramebuffer = 0;
         this.opaqueDepthTexture = 0;
+        this.pickingIDTexture = 0;
+        this.pickingPositionTexture = 0;
+        this.pickingNormalTexture = 0;
+        this.pickingDepthTexture = 0;
         this.opaqueFramebufferWidth = 1024;
         this.opaqueFramebufferHeight = 1024;
 
         const shaderSources = new Map();
         shaderSources.set("primitive.vert", primitiveShader);
         shaderSources.set("pbr.frag", pbrShader);
+        shaderSources.set("picking.frag", pickingShader);
+        shaderSources.set("picking.vert", pickingVertShader);
         shaderSources.set("material_info.glsl", materialInfoShader);
         shaderSources.set("brdf.glsl", brdfShader);
         shaderSources.set("iridescence.glsl", iridescenceShader);
@@ -59,6 +67,7 @@ class gltfRenderer
         this.shaderCache = new ShaderCache(shaderSources, this.webGl);
 
         this.webGl.loadWebGlExtensions();
+        this.floatTexturesSupported = false;
 
         this.visibleLights = [];
 
@@ -98,6 +107,10 @@ class gltfRenderer
         const maxSamples = context.getParameter(context.MAX_SAMPLES);
         const samples = state.internalMSAA < maxSamples ? state.internalMSAA : maxSamples;
         if (!this.initialized){
+            const ext = context.getExtension('EXT_color_buffer_float');
+            if (ext !== null) {
+                this.floatTexturesSupported = true;
+            }
 
             context.pixelStorei(GL.UNPACK_COLORSPACE_CONVERSION_WEBGL, GL.NONE);
             context.enable(GL.DEPTH_TEST);
@@ -123,6 +136,42 @@ class gltfRenderer
             context.texImage2D( context.TEXTURE_2D, 0, context.DEPTH_COMPONENT16, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.DEPTH_COMPONENT, context.UNSIGNED_SHORT, null);
             context.bindTexture(context.TEXTURE_2D, null);
 
+            this.pickingIDTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingIDTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.UNSIGNED_BYTE, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
+            this.pickingPositionTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingPositionTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGBA32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.FLOAT, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
+            this.pickingNormalTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingNormalTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D(context.TEXTURE_2D, 0, context.RGBA32F, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.RGBA, context.FLOAT, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
+            this.pickingDepthTexture = context.createTexture();
+            context.bindTexture(context.TEXTURE_2D, this.pickingDepthTexture);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST);
+            context.texImage2D( context.TEXTURE_2D, 0, context.DEPTH_COMPONENT16, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight, 0, context.DEPTH_COMPONENT, context.UNSIGNED_SHORT, null);
+            context.bindTexture(context.TEXTURE_2D, null);
+
 
             this.colorRenderBuffer = context.createRenderbuffer();
             context.bindRenderbuffer(context.RENDERBUFFER, this.colorRenderBuffer);
@@ -135,6 +184,16 @@ class gltfRenderer
                 context.DEPTH_COMPONENT16, 
                 this.opaqueFramebufferWidth,
                 this.opaqueFramebufferHeight);
+                
+            this.pickingFramebuffer = context.createFramebuffer();
+            context.bindFramebuffer(context.FRAMEBUFFER, this.pickingFramebuffer);
+            context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.pickingIDTexture, 0);
+            context.framebufferTexture2D(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.TEXTURE_2D, this.pickingDepthTexture, 0);
+            if (this.floatTexturesSupported) {
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT1, context.TEXTURE_2D, this.pickingPositionTexture, 0);
+                context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT2, context.TEXTURE_2D, this.pickingNormalTexture, 0);
+                context.drawBuffers([context.COLOR_ATTACHMENT0, context.COLOR_ATTACHMENT1, context.COLOR_ATTACHMENT2]);
+            }
 
             this.samples = samples;
 
@@ -148,7 +207,9 @@ class gltfRenderer
             context.bindFramebuffer(context.FRAMEBUFFER, this.opaqueFramebuffer);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, this.opaqueRenderTexture, 0);
             context.framebufferTexture2D(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.TEXTURE_2D, this.opaqueDepthTexture, 0);
+
             context.viewport(0, 0, this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+
             context.bindFramebuffer(context.FRAMEBUFFER, null);
 
             this.initialized = true;
@@ -183,6 +244,23 @@ class gltfRenderer
             this.currentHeight = height;
             this.currentWidth = width;
             this.webGl.context.viewport(0, 0, width, height);
+            if (this.initialized) {
+                this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingIDTexture);
+                this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, null);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingDepthTexture);
+                this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.DEPTH_COMPONENT16, this.currentWidth, this.currentHeight, 0, this.webGl.context.DEPTH_COMPONENT, this.webGl.context.UNSIGNED_SHORT, null);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                if (this.floatTexturesSupported) {
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingPositionTexture);
+                    this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA32F, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.FLOAT, null);
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.pickingNormalTexture);
+                    this.webGl.context.texImage2D(this.webGl.context.TEXTURE_2D, 0, this.webGl.context.RGBA32F, this.currentWidth, this.currentHeight, 0, this.webGl.context.RGBA, this.webGl.context.FLOAT, null);
+                    this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, null);
+                }
+            }
         }
     }
 
@@ -198,6 +276,10 @@ class gltfRenderer
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.opaqueFramebufferMSAA);
         this.webGl.context.clearColor(...clearColor);
+        this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
+        this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+        this.webGl.context.clearColor(0, 0, 0, 0);
         this.webGl.context.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
         this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, null);
     }
@@ -256,6 +338,8 @@ class gltfRenderer
                 return  {node: node, primitive: primitive};
             })), [])
             .filter(({primitive}) => primitive.material !== undefined);
+
+        this.drawables = drawables;
 
         this.billBoardOverlayDrawables = drawables.filter(({node}) => node.extensions?.billboard?.overlay);
 
@@ -532,6 +616,54 @@ class gltfRenderer
             this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
             this.drawNodes(state, this.sceneNodeIDs, state.environment)
         }
+        if (state.triggerSelection) {
+            const nodeArray = [];
+
+            for (const nodeID of this.sceneNodeIDs)
+            {  
+                nodeArray.push(state.gltf.nodes[nodeID]); 
+            }
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+            this.webGl.context.viewport(0, 0, this.currentWidth, this.currentHeight);
+            state.triggerSelection = false;
+            const pickingY = this.currentHeight - state.pickingY;
+            this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT0);
+            const pixels = new Uint8Array(4);
+            this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.UNSIGNED_BYTE, pixels);
+
+            let pickingResult = {
+                node: undefined,
+                position: undefined,
+                normal: undefined
+            };
+
+            let found = false;
+            for (const node of nodeArray)
+            {
+                if (node.pickingColor && vec4.equals(node.pickingColor, vec4.fromValues(pixels[0] / 255, pixels[1] / 255, pixels[2] / 255, pixels[3] / 255)))
+                {
+                    found = true;
+                    pickingResult.node = node;
+                    break;
+                }
+            }
+
+            if (found && this.floatTexturesSupported) {
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT1);
+                const position = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, position);
+                pickingResult.position = position.subarray(0, 3);
+
+                this.webGl.context.readBuffer(this.webGl.context.COLOR_ATTACHMENT2);
+                const normal = new Float32Array(4);
+                this.webGl.context.readPixels(state.pickingX ?? this.currentWidth / 2, pickingY ?? this.currentHeight / 2, 1, 1, this.webGl.context.RGBA, this.webGl.context.FLOAT, normal);
+                pickingResult.normal = normal.subarray(0, 3);
+            }
+            
+            if (state.selectionCallback){
+                state.selectionCallback(pickingResult);
+            }
+        }
     } 
 
     drawEnvironmentMap(state)
@@ -626,6 +758,22 @@ class gltfRenderer
                 drawable.primitive.billboardDepth = undefined;
             }
         }
+
+        if (state.triggerSelection) {
+            this.webGl.context.bindFramebuffer(this.webGl.context.FRAMEBUFFER, this.pickingFramebuffer);
+            this.webGl.context.viewport(0, 0, this.currentWidth, this.currentHeight);
+
+            const fragDefines = [];
+            this.pushFragParameterDefines(fragDefines, state);
+            const pickingDrawables = this.drawables.filter(({node}) => !state.highlightedNodes.includes(node));
+            for (const drawable of pickingDrawables)
+            {
+                let renderpassConfiguration = {};
+                renderpassConfiguration.picking = true;
+                this.drawPrimitive(state, renderpassConfiguration, drawable.primitive, drawable.node, this.viewProjectionMatrix);
+            }
+        }
+
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
@@ -738,10 +886,16 @@ class gltfRenderer
         if (primitive.billboardDepth !== undefined) {
             fragDefines.push(`BILLBOARD_DEPTH ${primitive.billboardDepth}`);
         }
+        if (state.highlightedNodes?.includes(node)) {
+            fragDefines.push("IS_HIGHLIGHT 1");
+        }
         this.pushFragParameterDefines(fragDefines, state);
         
-        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
+        const fragShader = renderpassConfiguration.picking ? "picking.frag" : material.getShaderIdentifier();
+        const vertShader = renderpassConfiguration.picking ? "picking.vert" : primitive.getShaderIdentifier();
+
+        const fragmentHash = this.shaderCache.selectShader(fragShader, fragDefines);
+        const vertexHash = this.shaderCache.selectShader(vertShader, vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -755,7 +909,7 @@ class gltfRenderer
 
         this.webGl.context.useProgram(this.shader.program);
 
-        if (state.renderingParameters.usePunctual)
+        if (state.renderingParameters.usePunctual && !renderpassConfiguration.picking)
         {
             this.applyLights();
         }
@@ -766,6 +920,10 @@ class gltfRenderer
         this.shader.updateUniform("u_NormalMatrix", node.normalMatrix, false);
         this.shader.updateUniform("u_Exposure", state.renderingParameters.exposure, false);
         this.shader.updateUniform("u_Camera", this.currentCameraPosition, false);
+        if (renderpassConfiguration.picking) {
+            this.shader.updateUniform("u_PickingColor", node.pickingColor, false);
+        } 
+        this.shader.updateUniform("u_HighlightColor", vec4.fromValues(1,1,0,0.25), false);
 
         this.updateAnimationUniforms(state, node, primitive);
 
@@ -778,7 +936,7 @@ class gltfRenderer
             this.webGl.context.frontFace(GL.CCW);
         }
 
-        if (material.doubleSided)
+        if (material.doubleSided || renderpassConfiguration.picking)
         {
             this.webGl.context.disable(GL.CULL_FACE);
         }
@@ -787,7 +945,7 @@ class gltfRenderer
             this.webGl.context.enable(GL.CULL_FACE);
         }
 
-        if (material.alphaMode === 'BLEND')
+        if (material.alphaMode === 'BLEND' && !renderpassConfiguration.picking)
         {
             this.webGl.context.enable(GL.BLEND);
             this.webGl.context.blendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ONE, GL.ONE_MINUS_SRC_ALPHA);
@@ -810,6 +968,9 @@ class gltfRenderer
         let vertexCount = 0;
         for (const attribute of primitive.glAttributes)
         {
+            if (renderpassConfiguration.picking && (attribute.attribute !== "POSITION" || attribute.attribute.startsWith("JOINTS") || attribute.attribute.startsWith("WEIGHTS"))) {
+                continue;
+            }
             const gltfAccessor = state.gltf.accessors[attribute.accessor];
             vertexCount = gltfAccessor.count;
 
@@ -857,29 +1018,31 @@ class gltfRenderer
             textureIndex++;
         }
 
-        if (state.renderingParameters.useIBL && state.environment !== undefined)
-        {
-            textureIndex = this.applyEnvironmentMap(state,environment, textureIndex);
-        }
-
-        if (state.renderingParameters.useIBL && state.environment !== undefined)
-        {
-            this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureIndex++);
-        }
-
-        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
-                    && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
-        {
-            this.webGl.context.activeTexture(GL.TEXTURE0 + textureIndex);
-            this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
-            this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureIndex);
-            textureIndex++;
-
-            this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
-
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, modelMatrix);
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
-            this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
+        if (!renderpassConfiguration.picking) {
+            if (state.renderingParameters.useIBL && state.environment !== undefined)
+            {
+                textureIndex = this.applyEnvironmentMap(state,environment, textureIndex);
+            }
+    
+            if (state.renderingParameters.useIBL && state.environment !== undefined)
+            {
+                this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureIndex++);
+            }
+    
+            if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
+                        && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
+            {
+                this.webGl.context.activeTexture(GL.TEXTURE0 + textureIndex);
+                this.webGl.context.bindTexture(this.webGl.context.TEXTURE_2D, this.opaqueRenderTexture);
+                this.webGl.context.uniform1i(this.shader.getUniformLocation("u_TransmissionFramebufferSampler"), textureIndex);
+                textureIndex++;
+    
+                this.webGl.context.uniform2i(this.shader.getUniformLocation("u_TransmissionFramebufferSize"), this.opaqueFramebufferWidth, this.opaqueFramebufferHeight);
+    
+                this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ModelMatrix"),false, node.worldTransform);
+                this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ViewMatrix"),false, this.viewMatrix);
+                this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
+            }
         }
 
         if (drawIndexed)
@@ -894,6 +1057,9 @@ class gltfRenderer
 
         for (const attribute of primitive.glAttributes)
         {
+            if (renderpassConfiguration.picking && (attribute.attribute !== "POSITION" || attribute.attribute.startsWith("JOINTS") || attribute.attribute.startsWith("WEIGHTS"))) {
+                continue;
+            }
             const location = this.shader.getAttributeLocation(attribute.name);
             if (location === null)
             {

@@ -27,8 +27,11 @@ class gltfScene extends GltfObject
 
     applyTransformHierarchy(state, rootTransform = mat4.create())
     {
-        function applyTransform(state, node, parentTransform)
+        function applyTransform(state, node, parent, parentTransform)
         {
+            if (node.parentNode === undefined) {
+                node.parentNode = parent;
+            }
             mat4.multiply(node.worldTransform, parentTransform, node.getLocalTransform());
             if (node.extensions?.billboard) {
                 const lookAtCamera = mat4.create();
@@ -129,13 +132,13 @@ class gltfScene extends GltfObject
 
             for (const child of node.children)
             {
-                applyTransform(state, state.gltf.nodes[child], node.worldTransform);
+                applyTransform(state, state.gltf.nodes[child], node, node.worldTransform);
             }
         }
 
         for (const node of this.nodes)
         {
-            applyTransform(state, state.gltf.nodes[node], rootTransform);
+            applyTransform(state, state.gltf.nodes[node], undefined, rootTransform);
         }
     }
 

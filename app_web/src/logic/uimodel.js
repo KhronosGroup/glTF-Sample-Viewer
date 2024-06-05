@@ -203,6 +203,8 @@ class UIModel
         this.orbit = inputObservables.orbit;
         this.pan = inputObservables.pan;
         this.zoom = inputObservables.zoom;
+        this.selection = inputObservables.selection;
+        this.moveSelection = inputObservables.move;
     }
 
     attachGltfLoaded(gltfLoaded)
@@ -341,13 +343,42 @@ const getInputObservables = (inputElement, app) => {
     const mouseMove = fromEvent(document, 'mousemove');
     const mouseDown = fromEvent(inputElement, 'mousedown');
     const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
+    const doubleClick = fromEvent(inputElement, 'dblclick');
+    const click = fromEvent(inputElement, 'click');
     
     inputElement.addEventListener('mousemove', event => event.preventDefault());
     inputElement.addEventListener('mousedown', event => event.preventDefault());
     inputElement.addEventListener('mouseup', event => event.preventDefault());
+    inputElement.addEventListener('dblclick', event => event.preventDefault());
+    inputElement.addEventListener('click', event => event.preventDefault());
+
+    const selection = doubleClick.pipe(
+        filter(event => event.button === 0),
+        map((clickEvent) => {
+            return {x: clickEvent.pageX, y: clickEvent.pageY};
+        }));
+
+    const move = click.pipe(
+        filter(event => event.button === 0 && event.ctrlKey === true && event.shiftKey === false),
+        map((clickEvent) => {
+            return {x: clickEvent.pageX, y: clickEvent.pageY};
+        }));
+
+    const moveDrag = mouseDown.pipe(
+        filter(event => event.button === 0 && event.ctrlKey === true && event.shiftKey === false),
+        mergeMap(() => mouseMove.pipe(
+            pairwise(),
+            map( ([_, newMouse]) => {
+                return {
+                    x: newMouse.pageX, y: newMouse.pageY
+                };
+            }),
+            takeUntil(mouseUp)
+        ))
+    );
 
     const mouseOrbit = mouseDown.pipe(
-        filter(event => event.button === 0 && event.shiftKey === false),
+        filter(event => event.button === 0 && event.shiftKey === false && event.ctrlKey === false),
         mergeMap(() => mouseMove.pipe(
             pairwise(),
             map( ([oldMouse, newMouse]) => {
@@ -429,6 +460,8 @@ const getInputObservables = (inputElement, app) => {
     observables.orbit = merge(mouseOrbit, touchOrbit);
     observables.pan = mousePan;
     observables.zoom = merge(mouseZoom, touchZoom);
+    observables.selection = selection;
+    observables.move = merge(move, moveDrag);
 
     // disable context menu
     inputElement.oncontextmenu = () => false;
