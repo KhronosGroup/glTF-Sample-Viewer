@@ -360,6 +360,17 @@
 
                             </b-field>
 
+                            <b-field label="Lighting Mode" class="smallerLabel">
+ 
+
+                                <b-select v-stream:input="lightingModeChanged$" v-model="lightingMode">
+                                    <option v-for="(item) in lightingModes" v-bind:value="item.title">
+                                        {{ item.title }}
+                                    </option>
+                                </b-select>
+
+                            </b-field>
+
 
                             <b-field label="Capture Canvas" class="smallerLabel">
                                 <button v-stream:click="captureCanvas$" type="button" class="button is-rounded"><i

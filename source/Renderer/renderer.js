@@ -94,6 +94,9 @@ class gltfRenderer
         this.lightFill.direction = vec3.create();
         vec3.transformQuat(this.lightKey.direction, [0, 0, -1], quatKey);
         vec3.transformQuat(this.lightFill.direction, [0, 0, -1], quatFill);
+
+        this.currentAssetLOD = new Map();
+
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -383,6 +386,193 @@ class gltfRenderer
         return undefined
     }
 
+                
+    get_distance_lod(node, target_property, asset_value) {
+        let selectedLOD = undefined
+        if (node.extras.lod !== undefined) {
+            let toleranceRange = undefined
+            let fitting_lod_value = -999.0;
+            let fitting_lod = undefined;
+            let current_lod_value = -999.0;
+            let current_lod = this.currentAssetLOD.get(
+                node.extras.expectAsset
+            );
+            if (current_lod !== undefined) {
+                current_lod_value = node.extras.lod[current_lod][target_property];
+            }
+            let lower_bound = 0
+            let upper_bound = 0
+            for (const level of node.extras.lod) {
+                upper_bound = level[target_property]
+
+                if (
+                    asset_value > lower_bound && // this level offers better quality than required
+                    asset_value < upper_bound // and has lower quality than currently selected
+                ) {
+                    // ->better fit
+
+                    fitting_lod = node.extras.lod.indexOf(level);
+                    fitting_lod_value = level[target_property];
+                    //selected_value =  level[target_property];
+                    lower_bound =  level[target_property];
+                    toleranceRange = level.toleranceRange
+                }
+                
+            }
+
+
+            let fitting_diff = Math.abs(fitting_lod_value - asset_value)
+            let current_diff = Math.abs(current_lod_value - asset_value)
+
+
+            // Check if diff to new lod is high enough
+            if (toleranceRange===undefined||
+                fitting_diff < current_diff * (1.0+toleranceRange) ||
+                current_lod === undefined
+            ) {
+                // new level gives better fit even when applying tolerance range
+                selectedLOD = fitting_lod;
+                this.currentAssetLOD.set(
+                    node.extras.expectAsset,
+                    selectedLOD
+                );
+                                    
+            } else {
+                // keep curren lod
+                selectedLOD = current_lod;
+            }
+        
+        }
+
+        return selectedLOD
+    }
+
+    
+                
+    get_lod(node, target_property, asset_value) {
+        let selectedLOD = undefined
+        
+        if (node.extras.lod !== undefined) {
+            let toleranceRange = undefined
+            let fitting_lod_value = -999.0;
+            let fitting_lod = undefined;
+            let current_lod_value = -999.0;
+            let current_lod = this.currentAssetLOD.get(
+                node.extras.expectAsset
+            );
+            if (current_lod !== undefined) {
+                current_lod_value = node.extras.lod[current_lod][target_property];
+            }
+
+            let selected_value = 9999999.0
+            let upper_bound = 0
+            for (const level of node.extras.lod) {
+                upper_bound = level[target_property]
+              if (
+                asset_value < upper_bound && // this level offers better quality than required
+                selected_value > upper_bound // and has lower quality than currently selected
+                ) {
+                // and has lower quality than currently selected
+                // ->better fit
+
+                fitting_lod = node.extras.lod.indexOf(level);
+                fitting_lod_value = level[target_property];
+                selected_value =  level[target_property];
+                // lower_bound =  level[target_property];
+                toleranceRange = level.toleranceRange
+              }
+            }
+
+            let fitting_diff = Math.abs(fitting_lod_value - asset_value)
+            let current_diff = Math.abs(current_lod_value - asset_value)
+
+
+            // Check if diff to new lod is high enough
+            if (toleranceRange===undefined||
+                fitting_diff < current_diff * (1.0+toleranceRange) ||
+                current_lod === undefined
+            ) {
+                // new level gives better fit even when applying tolerance range
+                selectedLOD = fitting_lod;
+                this.currentAssetLOD.set(
+                    node.extras.expectAsset,
+                    selectedLOD
+                );
+                                    
+            } else {
+                // keep curren lod
+                selectedLOD = current_lod;
+            }
+          }
+
+          return selectedLOD
+    }
+
+             
+    get_pqpm_lod(node, target_property, asset_value, diagonalMeters) 
+    {
+        let selectedLOD = undefined
+        
+        if (node.extras.lod === undefined) {
+            return undefined
+        }
+    
+        let toleranceRange = undefined
+        let fitting_lod_value = -999.0;
+        let fitting_lod = undefined;
+        let current_lod_value = -999.0;
+        let current_lod = this.currentAssetLOD.get(
+            node.extras.expectAsset
+        );
+        if (current_lod !== undefined) {
+            current_lod_value = node.extras.lod[current_lod][target_property] /
+            diagonalMeters;
+        }
+
+        let selected_value = 9999999.0
+        let level_value = 0
+        for (const level of node.extras.lod) {
+            level_value = level[target_property] / diagonalMeters;
+            if (
+            asset_value < level_value && // this level offers better quality than required
+            selected_value > level_value // and has lower quality than currently selected
+            ) {
+            // and has lower quality than currently selected
+            // ->better fit
+
+            fitting_lod = node.extras.lod.indexOf(level);
+            fitting_lod_value =level_value;
+            selected_value =  level_value;
+            toleranceRange = level.toleranceRange
+            }
+        }
+
+        let fitting_diff = Math.abs(fitting_lod_value - asset_value)
+        let current_diff = Math.abs(current_lod_value - asset_value)
+
+
+        // Check if diff to new lod is high enough
+        if (toleranceRange===undefined||
+            fitting_diff < current_diff * (1.0+toleranceRange) ||
+            current_lod === undefined
+        ) {
+            // new level gives better fit even when applying tolerance range
+            selectedLOD = fitting_lod;
+            this.currentAssetLOD.set(
+                node.extras.expectAsset,
+                selectedLOD
+            );
+                                
+        } else {
+            // keep curren lod
+            selectedLOD = current_lod;
+        }
+        
+
+          return selectedLOD
+    }
+
+
     // render complete gltf scene with given camera
     drawScene(state, scene)
     {            
@@ -415,9 +605,6 @@ class gltfRenderer
                 }
 
 
-                //console.log("node.extras")
-                //console.log(node.extras)
-
                 let viewProjectionMatrix = this.viewProjectionMatrix
                 let viewMatrix = this.viewMatrix
 
@@ -445,8 +632,7 @@ class gltfRenderer
                     let v3 = vec3.fromValues(v4[0],v4[1],v4[2])                      
                     return v3
                 }
-
-
+                
                 //calculate size of bounding box in camera space:
                 let boxVertices = getNodeBoundingBox(state.gltf, renderNodeID)
 
@@ -472,8 +658,7 @@ class gltfRenderer
 
                 // view-independent / static bounding box of asset:
                 let diagonalMeters = vec3.distance(boxVertices[0], boxVertices[7])
-                
-                console.log("diagonal [meter]: " + diagonalMeters)
+                //console.log("diagonal [meter]: " + diagonalMeters)
 
 
                 //calculate size of bounding box in pixel space:
@@ -496,80 +681,40 @@ class gltfRenderer
                 const vPixels = (pixelMax[1] - pixelMin[1]) *  this.currentHeight
 
                 let diagonalPixels = Math.sqrt(hPixels*hPixels+ vPixels*vPixels)
-                console.log("diagonal [pixel]: " + diagonalPixels)
+                //console.log("diagonal [pixel]: " + diagonalPixels)
 
                 let required_pqpm = diagonalPixels/diagonalMeters
-                console.log("pqpm: " + required_pqpm)
+                //console.log("pqpm: " + required_pqpm)
                 
 
                 let screen_coverage = (hPixels*vPixels) / (this.currentWidth * this.currentHeight)
-                console.log("screen_coverage: " + screen_coverage)
+                //console.log("screen_coverage: " + screen_coverage)
 
                 let origin = vec3.create(); 
                 let asset_distance= vec3.distance (origin, this.currentCameraPosition)
-                console.log("asset_distance: "+asset_distance)
+                //console.log("asset_distance: "+asset_distance)
                 
 
-                if(state.renderingParameters.LoD === "PQPM") {
+                let selectedLOD = undefined
+                let toleranceRange =undefined
 
-                    if(node.extras.lod!==undefined){
-                        let selected_pqpm = 999999
-                        for (const level of node.extras.lod) {
-                            if((required_pqpm < level.pqpm) // this level offers better quality than required
-                                && (selected_pqpm > level.pqpm)) // and has lower quality than currently selected
-                            {  // ->better fit
-                               
-                                const levelID =  node.extras.lod.indexOf(level)
-                                lodMarker = node.extras.expectAsset + "_lod" + levelID
-
-                                selected_pqpm = level.pqpm
-
-                            }
-                        }
-                    }
+                if (state.renderingParameters.LoD === "PQPM") { 
+                    selectedLOD = this.get_pqpm_lod(node,"qualityPixels", required_pqpm, diagonalMeters)
+                  
                 }
 
-                
-                if(state.renderingParameters.LoD === "Coverage") {
-
-                    if(node.extras.lod!==undefined){
-                        let selected_coverage = 2.0
-                        for (const level of node.extras.lod) {
-                            if((screen_coverage < level.coverage) // this level offers better quality than required
-                                && (selected_coverage > level.coverage)) // and has lower quality than currently selected
-                            {  // ->better fit
-                               
-                                const levelID =  node.extras.lod.indexOf(level)
-                                lodMarker = node.extras.expectAsset + "_lod" + levelID
-
-                                selected_coverage = level.coverage
-
-                            }
-                        }
-                    }
+                if (state.renderingParameters.LoD === "Coverage") {
+                    selectedLOD = this.get_lod(node,"screenCoverage",screen_coverage )
                 }
 
-                
-                if(state.renderingParameters.LoD === "Distance") {
-
-                    if(node.extras.lod!==undefined){
-                        let selected_distance = 0.0
-                        for (const level of node.extras.lod) {
-                            if((asset_distance > level.distance) // this level offers better quality than required
-                                && (selected_distance < level.distance)) // and has lower quality than currently selected
-                            {  // ->better fit
-                               
-                                const levelID =  node.extras.lod.indexOf(level)
-                                lodMarker = node.extras.expectAsset + "_lod" + levelID
-
-                                selected_distance = level.distance
-
-                            }
-                        }
-                    }
+                if (state.renderingParameters.LoD === "Distance") {                   
+                    selectedLOD = this.get_distance_lod(node,"distance",asset_distance )
                 }
 
-
+                // Check for active level of detail
+                if(selectedLOD !== undefined) {
+                    lodMarker = node.extras.expectAsset + "_lod" + selectedLOD
+                }
 
                 // select correct lod node for rendering
 
@@ -589,22 +734,39 @@ class gltfRenderer
 
                 const assetNode = state.gltf.nodes[renderNodeID]
 
-                if(assetNode["extensions"]["gltfx"]["lightSource"] === "scene"){
+                // "None", "Local", "Scene"
+                const lightingMode = state.renderingParameters.LightingMode
+
+                if(lightingMode === "Default") { // Lookup glTFX properties
+                    if(assetNode["extensions"]["gltfx"]["lightSource"] === "scene") {
+                        this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
+                    }
+                    if(assetNode["extensions"]["gltfx"]["lightSource"] === "asset") { 
+                        this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
+                    }
+                }
+
+                if(lightingMode === "Scene"){
                     //collect all nodes from the scene
                     this.visibleLights = this.getVisibleLights(state.gltf, this.sceneNodeIDs);
                 }
 
-                if(assetNode["extensions"]["gltfx"]["lightSource"] === "asset"){
+                if(lightingMode === "Local"){
                     //collect only nodes from the specific asset
                     this.visibleLights = this.getVisibleLights(state.gltf, assetNodes);
                 }
 
+                if(lightingMode === "None"){
+                    this.visibleLights = []
+                }
+                
+
                 let nodeEnvironment = undefined
                 if(assetNode["extensions"]["gltfx"]["environment"] !== undefined){
-                    const environmentID=node["extensions"]["gltfx"]["environment"]
+                    const environmentID = assetNode["extensions"]["gltfx"]["environment"]
 
-                    const environment=state.gltf.environments[environmentID]
-                    nodeEnvironment=environment.filteredEnvironment
+                    const environment = state.gltf.environments[environmentID]
+                    nodeEnvironment = environment.filteredEnvironment
                 }
 
                 this.drawNodes(state, assetNodes, nodeEnvironment)
