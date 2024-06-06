@@ -19,6 +19,7 @@ export default async () => {
     const pathProvider = new GltfModelPathProvider('assets/models/Models/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
+        "Cannon_Exterior": "Cannon Exterior",
         "footprint_court": "Footprint Court",
         "pisa": "Pisa",
         "doge2": "Doge's palace",
@@ -27,7 +28,6 @@ export default async () => {
         "helipad": "Helipad Goldenhour",
         "papermill": "Papermill Ruins",
         "neutral": "Studio Neutral",
-        "Cannon_Exterior": "Cannon Exterior",
         "Colorful_Studio": "Colorful Studio",
         "Wide_Street" : "Wide Street",
     }, "assets/environments/");

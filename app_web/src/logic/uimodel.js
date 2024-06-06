@@ -1,5 +1,5 @@
 import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share, tap } from 'rxjs/operators';
+import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share } from 'rxjs/operators';
 import { GltfState } from 'gltf-viewer-source';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
@@ -28,13 +28,13 @@ class UIModel
             pluck('newValue'),
             map(environmentName => this.app.environments[environmentName].hdr_path)
         );
-        const initialEnvironment = "footprint_court";
+        const initialEnvironment = "Cannon_Exterior";
         this.app.selectedEnvironment = initialEnvironment;
 
         this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({title: GltfState.ToneMaps[key]}));
         this.tonemap = app.tonemapChanged$.pipe(
             pluck("event", "msg"),
-            startWith(GltfState.ToneMaps.LINEAR)
+            startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL)
         );
 
         this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({title: GltfState.DebugOutput[key]}));
@@ -229,9 +229,13 @@ class UIModel
             }));
 
             this.app.selectedAnimations = state.animationIndices;
- 
-            this.app.materialVariants = ["None", ...gltf?.variants.map(variant => variant.name)];
- 
+
+            if (gltf && gltf.variants) {
+                this.app.materialVariants = ["None", ...gltf.variants.map(variant => variant.name)];
+            } else {
+                this.app.materialVariants = ["None"];
+            }
+
             this.app.setAnimationState(true);
             this.app.animations = gltf.animations.map((animation, index) => ({
                 title: animation.name ?? `Animation ${index}`,

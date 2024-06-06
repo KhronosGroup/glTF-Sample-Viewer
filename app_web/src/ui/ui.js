@@ -89,7 +89,7 @@ export const app = new Vue({
 
             debugChannel: "None",
             exposureSetting: 0,
-            toneMap: "None",
+            toneMap: "Khronos PBR Neutral",
             lod: "Q0",
             lightingMode: "Scene",
             skinning: true,
@@ -124,6 +124,7 @@ export const app = new Vue({
         colorPicker.classList.remove("input");
 
         // test if webgl is present
+        const canvas = document.getElementById("canvas");
         const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
         if (context === undefined || context === null) {
             this.error("The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " + 
