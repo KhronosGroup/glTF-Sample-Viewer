@@ -4,6 +4,7 @@
   "description": "The official glTF sample viewer.",
   "main": "dist/gltf-viewer.js",
   "module": "dist/gltf-viewer.module.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KhronosGroup/glTF-Sample-Viewer.git"
@@ -12,7 +13,7 @@
     "build": "rollup -c",
     "dev": "echo 'Please run `npm run dev` from the `app_web` or `app_headless` directory.'",
     "prepublishOnly": "npm run build && npm run build_docs",
-    "build_docs": "./node_modules/.bin/jsdoc2md source/gltf-sample-viewer.js source/GltfView/gltf_view.js source/GltfState/gltf_state.js source/ResourceLoader/resource_loader.js source/gltf/user_camera.js > API.md",
+    "build_docs": "jsdoc2md source/gltf-sample-viewer.js source/GltfView/gltf_view.js source/GltfState/gltf_state.js source/ResourceLoader/resource_loader.js source/gltf/user_camera.js > API.md",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint source/**/*.js",
     "lint:fix": "eslint --fix source/**/*.js",
@@ -26,17 +27,18 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "fast-png": "^5.0.3",
+    "fast-png": "^6.2.0",
     "gl-matrix": "^3.2.1",
+    "globals": "^15.4.0",
     "jpeg-js": "^0.4.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-node-resolve": "^14.1.0",
     "@rollup/plugin-wasm": "^6.1.3",
-    "concurrently": "^7.4.0",
-    "eslint": "^8.24.0",
-    "jsdoc-to-markdown": "^7.1.1",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.4.0",
+    "jsdoc-to-markdown": "^8.0.1",
     "rollup": "^2.79.1",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-glslify": "^1.3.1",
