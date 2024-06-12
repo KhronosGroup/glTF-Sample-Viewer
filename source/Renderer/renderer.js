@@ -1098,7 +1098,7 @@ class gltfRenderer
             this.webGl.context.frontFace(GL.CCW);
         }
 
-        if (material.doubleSided || renderpassConfiguration.picking)
+        if (material.doubleSided)
         {
             this.webGl.context.disable(GL.CULL_FACE);
         }
