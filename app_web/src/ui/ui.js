@@ -1,54 +1,51 @@
-import Vue from 'vue/dist/vue.esm.js';
-import VueRx from 'vue-rx';
+import { createApp } from 'vue/dist/vue.cjs.js';
 import { Subject } from 'rxjs';
 import './sass.scss';
-import Buefy from 'buefy';
+import Buefy from '@ntohq/buefy-next';
 
-Vue.use(VueRx, { Subject });
-Vue.use(Buefy);
-
-// general components
-Vue.component('toggle-button', {
-    props: ['ontext', 'offtext'],
-    template:'#toggleButtonTemplate',
-    data(){
-        return {
-            name: "Play",
-            isOn: false
-        };
-    },
-    mounted(){
-        this.name = this.ontext;
-    },
-    methods:
-    {
-        buttonclicked: function()
-        {
-            this.isOn = !this.isOn;
-            this.name = this.isOn ? this.ontext : this.offtext;
-            this.$emit('buttonclicked', this.isOn);
-        },
-        setState: function(value)
-        {
-            this.isOn = value;
-            this.name = this.isOn ? this.ontext : this.offtext;
-        }
-    }
-});
-Vue.component('json-to-ui-template', {
-    props: ['data', 'isinner'],
-    template:'#jsonToUITemplate'
-});
-
-export const app = new Vue({
-    domStreams: ['modelChanged$', 'flavourChanged$', 'sceneChanged$', 'cameraChanged$',
-        'environmentChanged$', 'debugchannelChanged$', 'tonemapChanged$', 'skinningChanged$',
-        'punctualLightsChanged$', 'iblChanged$', 'blurEnvChanged$', 'morphingChanged$',
-        'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
-        'variantChanged$', 'exposureChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
-        'cameraExport$', 'captureCanvas$','iblIntensityChanged$',],
+const appCreated = createApp({
     data() {
         return {
+            modelChanged: new Subject(),
+            flavourChanged: new Subject(),
+            sceneChanged: new Subject(),
+            cameraChanged: new Subject(),
+            
+            debugchannelChanged: new Subject(),
+            tonemapChanged: new Subject(),
+            skinningChanged: new Subject(),
+            punctualLightsChanged: new Subject(),
+
+            iblChanged: new Subject(),
+            blurEnvChanged: new Subject(),
+            morphingChanged: new Subject(),
+            colorChanged: new Subject(),
+
+            environmentRotationChanged: new Subject(),
+            animationPlayChanged: new Subject(),
+            variantChanged: new Subject(),
+            exposureChanged: new Subject(),
+
+            clearcoatChanged: new Subject(),
+            sheenChanged: new Subject(),
+            transmissionChanged: new Subject(),
+            cameraExport: new Subject(),
+
+            captureCanvas: new Subject(),
+            iblIntensityChanged: new Subject(),
+
+            volumeChanged: new Subject(),
+            iorChanged: new Subject(),
+            iridescenceChanged: new Subject(),
+            anisotropyChanged: new Subject(),
+            dispersionChanged: new Subject(),
+            specularChanged: new Subject(),
+            emissiveStrengthChanged: new Subject(),
+            renderEnvChanged: new Subject(),
+            addEnvironmentChanged: new Subject(),
+            selectedAnimationsChanged: new Subject(),
+            selectedEnvironmentChanged: new Subject(),
+
             fullheight: true,
             right: true,
             models: ["DamagedHelmet"],
@@ -138,6 +135,7 @@ export const app = new Vue({
             img.src ="assets/ui/GitHub-Mark-Light-32px.png";
             img.style.width = "22px";
             img.style.height = "22px";
+            // console.log(document.getElementById("tabsContainer").childNodes[0].childNodes[0]);
             document.getElementById("tabsContainer").childNodes[0].childNodes[0].appendChild(a);
             a.appendChild(img);
         });
@@ -230,7 +228,7 @@ export const app = new Vue({
         },
         onFileChange(e) {
             const file = e.target.files[0];
-            this.uploadedHDR = file;
+            this.addEnvironmentChanged.next(file);
         },
         hide() {
             this.uiVisible = false;
@@ -239,9 +237,46 @@ export const app = new Vue({
             this.uiVisible = true;
         },
     }
-}).$mount('#app');
+});
 
-new Vue({
+appCreated.use(Buefy);
+
+// general components
+appCreated.component('toggle-button', {
+    props: ['ontext', 'offtext'],
+    template:'#toggleButtonTemplate',
+    data(){
+        return {
+            name: "Play",
+            isOn: false
+        };
+    },
+    mounted(){
+        this.name = this.ontext;
+    },
+    methods:
+    {
+        buttonclicked: function()
+        {
+            this.isOn = !this.isOn;
+            this.name = this.isOn ? this.ontext : this.offtext;
+            this.$emit('buttonclicked', this.isOn);
+        },
+        setState: function(value)
+        {
+            this.isOn = value;
+            this.name = this.isOn ? this.ontext : this.offtext;
+        }
+    }
+});
+appCreated.component('json-to-ui-template', {
+    props: ['data', 'isinner'],
+    template:'#jsonToUITemplate'
+});
+
+export const app = appCreated.mount('#app');
+
+const canvasUI = createApp({
     data() {
         return {
             fullscreen: false,
@@ -270,7 +305,11 @@ new Vue({
         }
     }
 
-}).$mount('#canvasUI');
+});
+
+canvasUI.use(Buefy);
+
+canvasUI.mount('#canvasUI');
 
 // pipe error messages to UI
 (() => {

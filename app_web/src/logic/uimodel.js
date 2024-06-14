@@ -19,56 +19,51 @@ class UIModel
         const urlParams = new URLSearchParams(queryString);
         const modelURL = urlParams.get("model");
 
-        this.scene = app.sceneChanged$.pipe(pluck("event", "msg"));
-        this.camera = app.cameraChanged$.pipe(pluck("event", "msg"));
-        this.environmentRotation = app.environmentRotationChanged$.pipe(pluck("event", "msg"));
+        this.scene = app.sceneChanged.pipe();
+        this.camera = app.cameraChanged.pipe();
+        this.environmentRotation = app.environmentRotationChanged.pipe();
         this.app.environments = environments;
-        const selectedEnvironment = app.$watchAsObservable('selectedEnvironment').pipe(
-            pluck('newValue'),
+        const selectedEnvironment = app.selectedEnvironmentChanged.pipe(
             map(environmentName => this.app.environments[environmentName].hdr_path)
         );
         const initialEnvironment = "Cannon_Exterior";
         this.app.selectedEnvironment = initialEnvironment;
 
         this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({title: GltfState.ToneMaps[key]}));
-        this.tonemap = app.tonemapChanged$.pipe(
-            pluck("event", "msg"),
+        this.tonemap = app.tonemapChanged.pipe(
             startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL)
         );
 
         this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({title: GltfState.DebugOutput[key]}));
-        this.debugchannel = app.debugchannelChanged$.pipe(
-            pluck("event", "msg"),
+        this.debugchannel = app.debugchannelChanged.pipe(
             startWith(GltfState.DebugOutput.NONE)
         );
 
-        this.exposure = app.exposureChanged$.pipe(pluck("event", "msg"));
-        this.skinningEnabled = app.skinningChanged$.pipe(pluck("event", "msg"));
-        this.morphingEnabled = app.morphingChanged$.pipe(pluck("event", "msg"));
-        this.clearcoatEnabled = app.clearcoatChanged$.pipe(pluck("event", "msg"));
-        this.sheenEnabled = app.sheenChanged$.pipe(pluck("event", "msg"));
-        this.transmissionEnabled = app.transmissionChanged$.pipe(pluck("event", "msg"));
-        this.volumeEnabled = app.$watchAsObservable('volumeEnabled').pipe(pluck('newValue'));
-        this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(pluck('newValue'));
-        this.iridescenceEnabled = app.$watchAsObservable('iridescenceEnabled').pipe(pluck('newValue'));
-        this.anisotropyEnabled = app.$watchAsObservable('anisotropyEnabled').pipe(pluck('newValue'));
-        this.dispersionEnabled = app.$watchAsObservable('dispersionEnabled').pipe(pluck('newValue'));
-        this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(pluck('newValue'));
-        this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(pluck('newValue'));
-        this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
-        this.iblIntensity = app.iblIntensityChanged$.pipe(pluck("event", "msg"));
-        this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
-        this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(pluck('newValue'));
-        this.blurEnvEnabled = app.blurEnvChanged$.pipe(pluck("event", "msg"));
-        this.addEnvironment = app.$watchAsObservable('uploadedHDR').pipe(pluck('newValue'));
-        this.captureCanvas = app.captureCanvas$.pipe(pluck('event'));
-        this.cameraValuesExport = app.cameraExport$.pipe(pluck('event'));
+        this.exposure = app.exposureChanged.pipe();
+        this.skinningEnabled = app.skinningChanged.pipe();
+        this.morphingEnabled = app.morphingChanged.pipe();
+        this.clearcoatEnabled = app.clearcoatChanged.pipe();
+        this.sheenEnabled = app.sheenChanged.pipe();
+        this.transmissionEnabled = app.transmissionChanged.pipe();
+        this.volumeEnabled = app.volumeChanged.pipe();
+        this.iorEnabled = app.iorChanged.pipe();
+        this.iridescenceEnabled = app.iridescenceChanged.pipe();
+        this.anisotropyEnabled = app.anisotropyChanged.pipe();
+        this.dispersionEnabled = app.dispersionChanged.pipe();
+        this.specularEnabled = app.specularChanged.pipe();
+        this.emissiveStrengthEnabled = app.emissiveStrengthChanged.pipe();
+        this.iblEnabled = app.iblChanged.pipe();
+        this.iblIntensity = app.iblIntensityChanged.pipe();
+        this.punctualLightsEnabled = app.punctualLightsChanged.pipe();
+        this.renderEnvEnabled = app.renderEnvChanged.pipe();
+        this.blurEnvEnabled = app.blurEnvChanged.pipe();
+        this.addEnvironment = app.addEnvironmentChanged.pipe();
+        this.captureCanvas = app.captureCanvas.pipe();
+        this.cameraValuesExport = app.cameraExport.pipe();
 
         const initialClearColor = "#303542";
         this.app.clearColor = initialClearColor;
-        this.clearColor = app.colorChanged$.pipe(
-            filter(value => value.event !== undefined),
-            pluck("event", "msg"),
+        this.clearColor = app.colorChanged.pipe(
             startWith(initialClearColor),
             map(hex => /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)),
             filter(color => color !== null),
@@ -80,8 +75,8 @@ class UIModel
             ])
         );
 
-        this.animationPlay = app.animationPlayChanged$.pipe(pluck("event", "msg"));
-        this.activeAnimations = app.$watchAsObservable('selectedAnimations').pipe(pluck('newValue'));
+        this.animationPlay = app.animationPlayChanged.pipe();
+        this.activeAnimations = app.selectedAnimationsChanged.pipe();
 
         const canvas = document.getElementById("canvas");
         canvas.addEventListener('dragenter', () => this.app.showDropDownOverlay = true);
@@ -89,8 +84,7 @@ class UIModel
 
         const inputObservables = getInputObservables(canvas, this.app);
 
-        const dropdownGltfChanged = app.modelChanged$.pipe(
-            pluck("event", "msg"),
+        const dropdownGltfChanged = app.modelChanged.pipe(
             startWith(modelURL === null ? "DamagedHelmet" : null),
             filter(value => value !== null),
             map(value => {
@@ -101,8 +95,7 @@ class UIModel
             map(value => ({mainFile: value})),
         );
 
-        const dropdownFlavourChanged = app.flavourChanged$.pipe(
-            pluck("event", "msg"),
+        const dropdownFlavourChanged = app.flavourChanged.pipe(
             map(value => modelPathProvider.resolve(app.selectedModel, value)),
             map(value => ({mainFile: value})),
         );
@@ -121,7 +114,7 @@ class UIModel
                 this.app.selectedEnvironment = hdrPath.name;
             });
 
-        this.variant = app.variantChanged$.pipe(pluck("event", "msg"));
+        this.variant = app.variantChanged.pipe();
 
         // remove last filename
         this.model

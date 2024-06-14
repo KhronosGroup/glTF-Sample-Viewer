@@ -58,7 +58,7 @@ $colors: map-merge($colors, $addColors);
 
 // Import Bulma and Buefy styles
 @import "../../node_modules/bulma/bulma";
-@import "../../node_modules/buefy/src/scss/buefy";
+// @import "../../node_modules/@ntohq/buefy-next/src/scss/buefy";
 
 // general settings
 html
