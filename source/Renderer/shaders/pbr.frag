@@ -264,7 +264,13 @@ void main()
 
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
         vec3 lambertian = BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, clampedDot(v, normalize(-l + v)));
-        f_diffuse_transmission += materialInfo.diffuseTransmissionColorFactor *  lightIntensity * clampedDot(-n, l) * lambertian;
+        vec3 transmittedDiffuseLight = materialInfo.diffuseTransmissionColorFactor *  lightIntensity * clampedDot(-n, l) * lambertian;
+
+#ifdef MATERIAL_VOLUME
+        transmittedDiffuseLight = applyVolumeAttenuation(transmittedDiffuseLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
+#endif
+
+        f_diffuse_transmission += transmittedDiffuseLight;
 #endif
 
     }
