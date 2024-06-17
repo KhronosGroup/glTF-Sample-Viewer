@@ -135,8 +135,15 @@ const appCreated = createApp({
             img.src ="assets/ui/GitHub-Mark-Light-32px.png";
             img.style.width = "22px";
             img.style.height = "22px";
-            // console.log(document.getElementById("tabsContainer").childNodes[0].childNodes[0]);
-            document.getElementById("tabsContainer").childNodes[0].childNodes[0].appendChild(a);
+            let ulElement = document.getElementById("tabsContainer").childNodes[0].childNodes[0];
+            while (ulElement) {
+                if (ulElement.nodeName === "UL") {
+                    break;
+                }
+                ulElement = ulElement.nextElementSibling;
+            }
+
+            ulElement.appendChild(a);
             a.appendChild(img);
         });
 
