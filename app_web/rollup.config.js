@@ -21,7 +21,7 @@ export default {
     ],
     plugins: [
         wasm(),
-        json(),
+        json(), // To include model json file
         glslify({
             include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
             compress: false
@@ -32,7 +32,7 @@ export default {
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
         builtins(),
-        scss(),
+        scss(), // Version 4 is not working
         copy({
             targets: [
                 { src: ["index.html", "main.js"], dest: "dist/" },
@@ -46,7 +46,7 @@ export default {
             verbose: true
         }),
         replace({
-            'process.env.NODE_ENV': JSON.stringify('production'),
+            'process.env.NODE_ENV': JSON.stringify('production'), // This resolves an issue with vue
             preventAssignment: true,
         }),
         commonjs(),
