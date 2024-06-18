@@ -26,7 +26,7 @@
   "dependencies": {
     "@khronosgroup/gltf-viewer": "..",
     "@ntohq/buefy-next": "^0.1.3",
-    "bulma": "^1.0.1",
+    "bulma": "^0.9.4",
     "fast-png": "^6.2.0",
     "gl-matrix": "^3.2.1",
     "gltf-viewer-source": "../source",
