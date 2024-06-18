@@ -51,7 +51,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-scss": "^3.0.0",
     "sass": "^1.77.5",
-    "serve": "^14.0.1"
+    "serve": "^14.2.3"
   },
   "bugs": {
     "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"
