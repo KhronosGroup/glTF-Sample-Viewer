@@ -31,7 +31,7 @@ export default {
             preferBuiltins: true,
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
-        builtins(),
+        builtins(), // Needed for loading assets
         scss(), // Version 4 is not working
         copy({
             targets: [
