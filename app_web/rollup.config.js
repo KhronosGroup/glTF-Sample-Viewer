@@ -4,12 +4,12 @@ import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
 import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
-import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 import {wasm} from "@rollup/plugin-wasm";
 
 export default {
+    strictDeprecations: true,
     input: 'src/main.js',
     output: [
         {
