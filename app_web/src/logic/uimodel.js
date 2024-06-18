@@ -1,6 +1,6 @@
 import { Observable, merge, fromEvent } from 'rxjs';
 import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share } from 'rxjs/operators';
-import { GltfState } from 'gltf-viewer-source';
+import { GltfState } from '@khronosgroup/gltf-viewer';
 import { SimpleDropzone } from 'simple-dropzone';
 import { vec2 } from 'gl-matrix';
 import normalizeWheel from 'normalize-wheel';

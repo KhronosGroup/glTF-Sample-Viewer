@@ -1,5 +1,5 @@
 
-import { GltfView } from 'gltf-viewer-source';
+import { GltfView } from '@khronosgroup/gltf-viewer';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
