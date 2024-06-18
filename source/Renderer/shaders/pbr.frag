@@ -131,6 +131,7 @@ void main()
     vec3 f_diffuse_transmission = vec3(0.0);
 
     float albedoSheenScaling = 1.0;
+    float diffuseTransmissionThickness = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
     vec3 iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
@@ -139,6 +140,13 @@ void main()
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
     }
+#endif
+
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+#ifdef MATERIAL_VOLUME
+    diffuseTransmissionThickness = materialInfo.thickness *
+        (length(vec3(u_ModelMatrix[0].xyz)) + length(vec3(u_ModelMatrix[1].xyz)) + length(vec3(u_ModelMatrix[2].xyz))) / 3.0;
+#endif
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
@@ -155,7 +163,11 @@ void main()
 #endif
 
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
-    f_diffuse_transmission += materialInfo.diffuseTransmissionColorFactor * getIBLRadianceLambertian(-n, -v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
+    vec3 diffuseTransmissionIBL = getIBLRadianceLambertian(-n, -v, materialInfo.perceptualRoughness, materialInfo.diffuseTransmissionColorFactor, materialInfo.f0, materialInfo.specularWeight);
+#ifdef MATERIAL_VOLUME
+        diffuseTransmissionIBL = applyVolumeAttenuation(diffuseTransmissionIBL, diffuseTransmissionThickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
+#endif
+    f_diffuse_transmission += diffuseTransmissionIBL;
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
@@ -263,15 +275,15 @@ void main()
 #endif // MATERIAL_TRANSMISSION
 
 #ifdef MATERIAL_DIFFUSE_TRANSMISSION
-        vec3 lambertian = BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, clampedDot(v, normalize(-l + v)));
-        vec3 transmittedDiffuseLight = materialInfo.diffuseTransmissionColorFactor *  lightIntensity * clampedDot(-n, l) * lambertian;
+        vec3 lambertian = BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.diffuseTransmissionColorFactor, materialInfo.specularWeight, clampedDot(v, normalize(-l + v)));
+        vec3 transmittedDiffuseLight = lightIntensity * clampedDot(-n, l) * lambertian;
 
 #ifdef MATERIAL_VOLUME
-        transmittedDiffuseLight = applyVolumeAttenuation(transmittedDiffuseLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
+        transmittedDiffuseLight = applyVolumeAttenuation(transmittedDiffuseLight, diffuseTransmissionThickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
         f_diffuse_transmission += transmittedDiffuseLight;
-#endif
+#endif // MATERIAL_DIFFUSE_TRANSMISSION
 
     }
 #endif // USE_PUNCTUAL
