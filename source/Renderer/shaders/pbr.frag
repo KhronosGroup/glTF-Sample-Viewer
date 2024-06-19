@@ -155,6 +155,7 @@ void main()
 
 #ifdef MATERIAL_SHEEN
     f_sheen += getIBLRadianceCharlie(n, v, materialInfo.sheenRoughnessFactor, materialInfo.sheenColorFactor);
+    albedoSheenScaling = 1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor);
 #endif
 #endif
 
@@ -204,22 +205,28 @@ void main()
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
+            vec3 l_diffuse = vec3(0.0);
+            vec3 l_specular = vec3(0.0);
 #ifdef MATERIAL_IRIDESCENCE
-            f_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
-            f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+            l_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            l_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
 #elif defined(MATERIAL_ANISOTROPY)
-            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
-            f_specular += intensity * NdotL * BRDF_specularGGXAnisotropy(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.anisotropyStrength, n, v, l, h, materialInfo.anisotropicT, materialInfo.anisotropicB);
+            l_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            l_specular += intensity * NdotL * BRDF_specularGGXAnisotropy(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.anisotropyStrength, n, v, l, h, materialInfo.anisotropicT, materialInfo.anisotropicB);
 #else
-            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
-            f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
+            l_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
+            l_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
 #endif
 
 #ifdef MATERIAL_SHEEN
             f_sheen += intensity * getPunctualRadianceSheen(materialInfo.sheenColorFactor, materialInfo.sheenRoughnessFactor, NdotL, NdotV, NdotH);
-            albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
+            float l_albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
                 1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL, materialInfo.sheenRoughnessFactor));
+            l_diffuse *= l_albedoSheenScaling;
+            l_specular *= l_albedoSheenScaling;
 #endif
+            f_diffuse += l_diffuse;
+            f_specular += l_specular;
 
 #ifdef MATERIAL_CLEARCOAT
             f_clearcoat += intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
@@ -268,14 +275,14 @@ void main()
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
-    diffuse = f_diffuse + mix(f_diffuse_ibl, f_diffuse_ibl * ao, u_OcclusionStrength);
+    diffuse = f_diffuse + mix(f_diffuse_ibl, f_diffuse_ibl * ao, u_OcclusionStrength) * albedoSheenScaling;
     // apply ambient occlusion to all lighting that is not punctual
-    specular = f_specular + mix(f_specular_ibl, f_specular_ibl * ao, u_OcclusionStrength);
+    specular = f_specular + mix(f_specular_ibl, f_specular_ibl * ao, u_OcclusionStrength) * albedoSheenScaling;
     sheen = f_sheen + mix(f_sheen_ibl, f_sheen_ibl * ao, u_OcclusionStrength);
     clearcoat = f_clearcoat + mix(f_clearcoat_ibl, f_clearcoat_ibl * ao, u_OcclusionStrength);
 #else
-    diffuse = f_diffuse_ibl + f_diffuse;
-    specular = f_specular_ibl + f_specular;
+    diffuse = f_diffuse_ibl * albedoSheenScaling + f_diffuse;
+    specular = f_specular_ibl * albedoSheenScaling + f_specular;
     sheen = f_sheen_ibl + f_sheen;
     clearcoat = f_clearcoat_ibl + f_clearcoat;
 #endif
@@ -295,7 +302,7 @@ void main()
     color = baseColor.rgb;
 #else
     color = f_emissive + diffuse + specular;
-    color = sheen + color * albedoSheenScaling;
+    color = sheen + color;
     color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + clearcoat;
 #endif
 
@@ -366,7 +373,7 @@ void main()
     // MR:
 #ifdef MATERIAL_METALLICROUGHNESS
 #if DEBUG == DEBUG_METALLIC_ROUGHNESS
-    g_finalColor.rgb = linearTosRGB(f_diffuse + f_diffuse_ibl + f_specular);
+    g_finalColor.rgb = linearTosRGB(diffuse + specular);
 #endif
 #if DEBUG == DEBUG_METALLIC
     g_finalColor.rgb = vec3(materialInfo.metallic);
@@ -382,7 +389,7 @@ void main()
     // Clearcoat:
 #ifdef MATERIAL_CLEARCOAT
 #if DEBUG == DEBUG_CLEARCOAT
-    g_finalColor.rgb = linearTosRGB(f_clearcoat + f_clearcoat_ibl);
+    g_finalColor.rgb = linearTosRGB(clearcoat);
 #endif
 #if DEBUG == DEBUG_CLEARCOAT_FACTOR
     g_finalColor.rgb = vec3(materialInfo.clearcoatFactor);
@@ -398,7 +405,7 @@ void main()
     // Sheen:
 #ifdef MATERIAL_SHEEN
 #if DEBUG == DEBUG_SHEEN
-    g_finalColor.rgb = linearTosRGB(f_sheen + f_sheen_ibl);
+    g_finalColor.rgb = linearTosRGB(sheen);
 #endif
 #if DEBUG == DEBUG_SHEEN_COLOR
     g_finalColor.rgb = materialInfo.sheenColorFactor;
@@ -411,7 +418,7 @@ void main()
     // Specular:
 #ifdef MATERIAL_SPECULAR
 #if DEBUG == DEBUG_SPECULAR
-    g_finalColor.rgb = linearTosRGB(f_specular + f_specular_ibl);
+    g_finalColor.rgb = linearTosRGB(specular);
 #endif
 #if DEBUG == DEBUG_SPECULAR_FACTOR
     g_finalColor.rgb = vec3(materialInfo.specularWeight);
@@ -429,7 +436,7 @@ vec3 specularTexture = vec3(1.0);
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
 #if DEBUG == DEBUG_TRANSMISSION_VOLUME
-    g_finalColor.rgb = linearTosRGB(f_transmission);
+    g_finalColor.rgb = linearTosRGB(f_transmission * materialInfo.transmissionFactor);
 #endif
 #if DEBUG == DEBUG_TRANSMISSION_FACTOR
     g_finalColor.rgb = vec3(materialInfo.transmissionFactor);
@@ -444,7 +451,7 @@ vec3 specularTexture = vec3(1.0);
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE
-    g_finalColor.rgb = iridescenceFresnel;
+    g_finalColor.rgb = iridescenceFresnel * materialInfo.iridescenceFactor;
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = vec3(materialInfo.iridescenceFactor);

@@ -1,13 +1,12 @@
 import { GltfView } from "gltf-viewer-source";
 
-import { UIModel } from "./logic/uimodel.js";
-import { app } from "./ui/ui.js";
-import { EMPTY, from, merge } from "rxjs";
-import { mergeMap, map, share, catchError } from "rxjs/operators";
-import {
-  GltfModelPathProvider,
-  fillEnvironmentWithPaths,
-} from "./model_path_provider.js";
+import { GltfView } from '@khronosgroup/gltf-viewer';
+
+import { UIModel } from './logic/uimodel.js';
+import { app } from './ui/ui.js';
+import { EMPTY, from, merge } from 'rxjs';
+import { mergeMap, map, share, catchError } from 'rxjs/operators';
+import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
 
 export default async () => {
   const canvas = document.getElementById("canvas");
