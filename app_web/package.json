@@ -4,7 +4,7 @@
   "description": "The official glTF sample viewer example.",
   "main": "src/main.js",
   "module": "src/main.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 dist\"",

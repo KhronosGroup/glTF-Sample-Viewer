@@ -32,7 +32,6 @@ export default {
         copy({
             targets: [
                 { src: ["index.html", "main.js"], dest: "dist/" },
-                { src: ["../assets/environments/*.hdr", "../assets/environments/*.jpg", "!../asset/environments/.git"], dest: "dist/assets/environments" },
                 { src: ["../assets/images"], dest: "dist/assets" },
                 { src: ["../assets/ui"], dest: "dist/assets" },
                 { src: ["../source/libs/*", "!../source/libs/hdrpng.js"], dest: "dist/libs" }

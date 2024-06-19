@@ -1,3 +1,0 @@
-[submodule "assets/environments"]
-	path = assets/environments
-	url = https://github.com/KhronosGroup/glTF-Sample-Environments.git

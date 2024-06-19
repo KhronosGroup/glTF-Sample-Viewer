@@ -33,7 +33,7 @@ export default async () => {
       Colorful_Studio: "Colorful Studio",
       Wide_Street: "Wide Street",
     },
-    "assets/environments/",
+    "https://media.githubusercontent.com/media/KhronosGroup/glTF-Sample-Environments/b710a9fe6bcdfb8965530ede36e8279c298261de/",
   );
 
   const uiModel = new UIModel(app, pathProvider, environmentPaths);
