@@ -55,6 +55,7 @@ class GltfState
                 KHR_materials_specular: true,
                 /** KHR_materials_iridescence adds a thin-film iridescence effect */
                 KHR_materials_iridescence: true,
+                KHR_materials_diffuse_transmission: true,
                 /** KHR_materials_anisotropy defines microfacet grooves in the surface, stretching the specular reflection on the surface */
                 KHR_materials_anisotropy: true,
                 /** KHR_materials_dispersion defines configuring the strength of the angular separation of colors (chromatic abberation)*/
@@ -200,6 +201,16 @@ GltfState.DebugOutput = {
         TRANSMISSION_FACTOR: "Transmission Factor",
         /** output the volume thickness*/
         VOLUME_THICKNESS: "Volume Thickness",
+    },
+
+    /** output diffuse tranmission lighting */
+    diffuseTransmission: {
+        /** output the combined diffuse tranmission */
+        DIFFUSE_TRANSMISSION: "Diffuse Transmission",
+        /** output the diffuse tranmission factor */
+        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Factor",
+        /** output the diffuse tranmission color factor */
+        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color Factor",
     },
 
     /** output iridescence */

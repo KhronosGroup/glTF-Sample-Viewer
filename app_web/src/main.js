@@ -165,6 +165,9 @@ export default async () => {
     uiModel.transmissionEnabled.subscribe(transmissionEnabled => state.renderingParameters.enabledExtensions.KHR_materials_transmission = transmissionEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
 
+    uiModel.diffuseTransmissionEnabled.subscribe(diffuseTransmissionEnabled => state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission = diffuseTransmissionEnabled);
+    listenForRedraw(uiModel.diffuseTransmissionEnabled);
+
     uiModel.volumeEnabled.subscribe(volumeEnabled => state.renderingParameters.enabledExtensions.KHR_materials_volume = volumeEnabled);
     listenForRedraw(uiModel.volumeEnabled);
 
