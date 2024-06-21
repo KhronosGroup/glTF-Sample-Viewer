@@ -650,6 +650,10 @@ class gltfRenderer
                     }
                 }
 
+                let center = vec3.create(); 
+                vec3.add(center, worldMin, worldMax)
+                vec3.scale(center, center, 0.5) 
+
                 const hMeter = (worldMax[0] - worldMin[0])  
                 const vMeter = (worldMax[1] - worldMin[1]) 
 
@@ -690,8 +694,7 @@ class gltfRenderer
                 let screen_coverage = (hPixels*vPixels) / (this.currentWidth * this.currentHeight)
                 //console.log("screen_coverage: " + screen_coverage)
 
-                let origin = vec3.create(); 
-                let asset_distance= vec3.distance (origin, this.currentCameraPosition)
+                let asset_distance= vec3.distance (center, this.currentCameraPosition)
                 //console.log("asset_distance: "+asset_distance)
                 
 
