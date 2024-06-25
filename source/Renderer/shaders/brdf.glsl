@@ -10,7 +10,7 @@
 // Implementation of fresnel from [4], Equation 15
 vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH) 
 {
-    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0); // dialectric_fresnel
+    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
 float F_Schlick(float f0, float f90, float VdotH)
@@ -149,53 +149,21 @@ float D_Charlie(float sheenRoughness, float NdotH)
 
 
 //https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 BRDF_lambertian(vec3 f0, vec3 f90, vec3 diffuseColor, float specularWeight, float VdotH)
+vec3 BRDF_lambertian(vec3 diffuseColor)
 {
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-    return (1.0 - specularWeight * F_Schlick(f0, f90, VdotH)) * (diffuseColor / M_PI); // 1.0 - specularWeight * => mix dielectric_fresnel * diffuse_bdrf
+    return (diffuseColor / M_PI); // 1.0 - specularWeight * => mix dielectric_fresnel * diffuse_bdrf
 }
-
-
-#ifdef MATERIAL_IRIDESCENCE
-//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 BRDF_lambertianIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, float iridescenceFactor, vec3 diffuseColor, float specularWeight, float VdotH)
-{
-    // Use the maximum component of the iridescence Fresnel color
-    // Maximum is used instead of the RGB value to not get inverse colors for the diffuse BRDF
-    vec3 iridescenceFresnelMax = vec3(max(max(iridescenceFresnel.r, iridescenceFresnel.g), iridescenceFresnel.b));
-
-    vec3 schlickFresnel = F_Schlick(f0, f90, VdotH);
-
-    // Blend default specular Fresnel with iridescence Fresnel
-    vec3 F = mix(schlickFresnel, iridescenceFresnelMax, iridescenceFactor);
-
-    // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-    return (1.0 - specularWeight * F) * (diffuseColor / M_PI);
-}
-#endif
-
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
-vec3 BRDF_specularGGX(vec3 f0, vec3 f90, float alphaRoughness, float specularWeight, float VdotH, float NdotL, float NdotV, float NdotH)
+vec3 BRDF_specularGGX(float alphaRoughness, float NdotL, float NdotV, float NdotH)
 {
-    vec3 F = F_Schlick(f0, f90, VdotH);
     float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
     float D = D_GGX(NdotH, alphaRoughness);
 
-    return specularWeight * F * Vis * D; // Vis * D => specular_brdf
+    return vec3(Vis * D);
 }
 
-
-#ifdef MATERIAL_IRIDESCENCE
-vec3 BRDF_specularGGXIridescence(vec3 f0, vec3 f90, vec3 iridescenceFresnel, float alphaRoughness, float iridescenceFactor, float specularWeight, float VdotH, float NdotL, float NdotV, float NdotH)
-{
-    vec3 F = mix(F_Schlick(f0, f90, VdotH), iridescenceFresnel, iridescenceFactor);
-    float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
-    float D = D_GGX(NdotH, alphaRoughness);
-
-    return specularWeight * F * Vis * D; // Vis * D => specular_brdf
-}
-#endif
 
 #ifdef MATERIAL_ANISOTROPY
 // GGX Distribution Anisotropic (Same as Babylon.js)
@@ -218,7 +186,7 @@ float V_GGX_anisotropic(float NdotL, float NdotV, float BdotV, float TdotV, floa
     return clamp(v, 0.0, 1.0);
 }
 
-vec3 BRDF_specularGGXAnisotropy(vec3 f0, vec3 f90, float alphaRoughness, float anisotropy, vec3 n, vec3 v, vec3 l, vec3 h, vec3 t, vec3 b)
+vec3 BRDF_specularGGXAnisotropy(float alphaRoughness, float anisotropy, vec3 n, vec3 v, vec3 l, vec3 h, vec3 t, vec3 b)
 {
     // Roughness along the anisotropy bitangent is the material roughness, while the tangent roughness increases with anisotropy.
     float at = mix(alphaRoughness, 1.0, anisotropy * anisotropy);
@@ -227,13 +195,11 @@ vec3 BRDF_specularGGXAnisotropy(vec3 f0, vec3 f90, float alphaRoughness, float a
     float NdotL = clamp(dot(n, l), 0.0, 1.0);
     float NdotH = clamp(dot(n, h), 0.001, 1.0);
     float NdotV = dot(n, v);
-    float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
     float V = V_GGX_anisotropic(NdotL, NdotV, dot(b, v), dot(t, v), dot(t, l), dot(b, l), at, ab);
     float D = D_GGX_anisotropic(NdotH, dot(t, h), dot(b, h), anisotropy, at, ab);
 
-    vec3 F = F_Schlick(f0, f90, VdotH);
-    return F * V * D;
+    return vec3(V * D);
 }
 #endif
 

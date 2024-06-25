@@ -65,6 +65,7 @@ struct MaterialInfo
     float ior;
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
     vec3 f0;                        // full reflectance color (n incidence angle)
+    vec3 f0_dielectric;
 
     float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
     vec3 c_diff;
@@ -72,6 +73,7 @@ struct MaterialInfo
     float fresnel_w;
 
     vec3 f90;                       // reflectance color at grazing angle
+    vec3 f90_dielectric;
     float metallic;
 
     vec3 baseColor;
@@ -282,9 +284,9 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
     specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
 #endif
 
-    vec3 dielectricSpecularF0 = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
-    info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
+    info.f0_dielectric = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
     info.specularWeight = u_KHR_materials_specular_specularFactor * specularTexture.a;
+    info.f90_dielectric = info.specularWeight;
     info.c_diff = mix(info.baseColor.rgb, vec3(0), info.metallic);
     return info;
 }
