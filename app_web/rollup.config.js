@@ -8,7 +8,7 @@ import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 import {wasm} from "@rollup/plugin-wasm";
 import sourcemaps from 'rollup-plugin-sourcemaps';
-import { watch } from 'rollup';
+import license from "rollup-plugin-license"
 
 export default {
     strictDeprecations: true,
@@ -52,6 +52,16 @@ export default {
             preventAssignment: true,
         }),
         commonjs(),
-        sourcemaps()
+        sourcemaps(),
+        license({
+            banner: {
+                content: {
+                    file: 'LICENSE_BANNER.txt',
+                }
+            },
+            thirdParty:{
+                includeSelf: true
+            }
+        })
     ]
 };

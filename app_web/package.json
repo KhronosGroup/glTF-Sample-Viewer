@@ -16,7 +16,10 @@
   "watch": {
     "build": {
       "patterns": [
-        "src", "main.js", "index.html", "../dist" 
+        "src",
+        "main.js",
+        "index.html",
+        "../dist"
       ],
       "extensions": "js,scss,html",
       "delay": 2500
@@ -58,6 +61,7 @@
     "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-glslify": "^1.3.1",
+    "rollup-plugin-license": "^3.5.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-scss": "^3.0.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
