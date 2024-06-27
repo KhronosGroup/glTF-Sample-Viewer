@@ -160,7 +160,7 @@
                                 </b-select>
                             </b-field>
                             <b-field label="Cameras" class="subtitle">
-                                <b-select v-model="selectedCamera" v-on:input="cameraChanged.next($event.target.value)">
+                                <b-select v-model="selectedCamera" v-on:input="cameraChanged.next(parseInt($event.target.value))">
                                     <option v-for="(item) in cameras" v-bind:value="item.index">
                                         {{ item.title }}
                                     </option>
@@ -212,7 +212,7 @@
                             </b-field>
                             <b-field label="IBL Intensity" class="smallerLabel">
                                 <b-slider rounded v-model="iblIntensity" :min="-2" v-bind:max="5" :step=0.01 :custom-formatter="val => Math.round(Math.pow(10,val)*100.0)/100.0"
-                                    class="iblIntensitySlider" v-on:input="iblIntensityChanged.next($event.target.value)">
+                                    class="iblIntensitySlider" v-on:dragging="iblIntensityChanged.next($event)">
                                     <b-slider-tick :value="-2" class="iblIntensitySliderMarker">0.01</b-slider-tick>
                                     <b-slider-tick :value="0" class="iblIntensitySliderMarker">1</b-slider-tick>
                                     <b-slider-tick :value="2" class="iblIntensitySliderMarker">100</b-slider-tick>                               
@@ -245,7 +245,7 @@
                                 </button>
 
                                 <b-field label="Active Environment" class="smallerLabel">
-                                    <b-dropdown aria-role="list" v-model="selectedEnvironment" v-on:input="selectedEnvironmentChanged.next($event.target.value)">
+                                    <b-dropdown aria-role="list" v-model="selectedEnvironment" v-on:change="selectedEnvironmentChanged.next($event)">
                                         <template #trigger="{ active }">
                                             <b-button rounded type="is-primary"
                                                 :icon-right="active ? 'menu-up' : 'menu-down'">
@@ -370,7 +370,7 @@
                             <label class="smallerLabel">Exposure</label>
 
                             <b-slider rounded v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
-                            :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:input="exposureChanged.next($event.target.value)">
+                            :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:dragging="exposureChanged.next($event)">
                                 <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
                                 <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
                                 <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
