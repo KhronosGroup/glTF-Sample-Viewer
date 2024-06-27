@@ -205,9 +205,9 @@
                                 @click="collapseActiveTab($event, 1)">
                             <h2 class="title  is-spaced">Display</h2>
                             <b-field label="Lighting" class="subtitle">
-                                <b-switch v-model="ibl" v-on:input="iblChanged.next($event.target.value)" @input="iblTriggered">Image Based
+                                <b-switch v-model="ibl" v-on:input="iblChanged.next($event.target.checked)" @input="iblTriggered">Image Based
                                 </b-switch>
-                                <b-switch v-model="punctualLights" v-on:input="punctualLightsChanged.next($event.target.value)">Punctual
+                                <b-switch v-model="punctualLights" v-on:input="punctualLightsChanged.next($event.target.checked)">Punctual
                                     Lighting</b-switch>
                             </b-field>
                             <b-field label="IBL Intensity" class="smallerLabel">
@@ -220,9 +220,9 @@
                                 </b-slider>
                             </b-field>
                             <b-field label="Background" class="subtitle">
-                                <b-switch v-model="renderEnv" v-on:input="renderEnvChanged.next($event.target.value)" v-bind:disabled="ibl === false ? true : false">Environment
+                                <b-switch v-model="renderEnv" v-on:input="renderEnvChanged.next($event.target.checked)" v-bind:disabled="ibl === false ? true : false">Environment
                                     Map</b-switch>
-                                <b-switch v-model="blurEnv" v-on:input="blurEnvChanged.next($event.target.value)"
+                                <b-switch v-model="blurEnv" v-on:input="blurEnvChanged.next($event.target.checked)"
                                     v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
                                 <b-field label="Background Color" class="smallerLabel"></b-field>
                                 <b-input type="color" id="clearColorPicker" custom-class="colorInput"
@@ -384,30 +384,30 @@
                                     </option>
                                 </b-select>
                             </b-field>
-                            <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.value)">Skinning</b-switch>
+                            <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                             <br>
-                            <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.value)">Morphing</b-switch>
+                            <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
                             <b-field label="Current camera values" class="subtitle">
                                 <button v-on:click="cameraExport.next($event.target.value)" type="button" class="button is-rounded"><i
                                         class="fa fa-download downloadIcon"></i>Download as .gltf</button>
                             </b-field>
                             <b-field label="Disable extensions" class="subtitle">
                                 <b-switch class="smallerLabel" v-model="clearcoatEnabled"
-                                    v-on:input="clearcoatChanged.next($event.target.value)">KHR_materials_clearcoat</b-switch>
-                                <b-switch class="smallerLabel" v-model="sheenEnabled" v-on:input="sheenChanged.next($event.target.value)">
+                                    v-on:input="clearcoatChanged.next($event.target.checked)">KHR_materials_clearcoat</b-switch>
+                                <b-switch class="smallerLabel" v-model="sheenEnabled" v-on:input="sheenChanged.next($event.target.checked)">
                                     KHR_materials_sheen</b-switch>
                                 <b-switch class="smallerLabel" v-model="transmissionEnabled"
-                                    v-on:input="transmissionChanged.next($event.target.value)" @input="transmissionTriggered">
+                                    v-on:input="transmissionChanged.next($event.target.checked)" @input="transmissionTriggered">
                                     KHR_materials_transmission</b-switch>
                                 <b-switch class="smallerLabel"
                                     v-bind:disabled="transmissionEnabled === false ? true : false"
-                                    v-model="volumeEnabled" v-on:input="volumeChanged.next($event.target.value)">KHR_materials_volume</b-switch>
-                                <b-switch class="smallerLabel" v-model="iorEnabled" v-on:input="iorChanged.next($event.target.value)">KHR_materials_ior</b-switch>
-                                <b-switch class="smallerLabel" v-model="specularEnabled" v-on:input="specularChanged.next($event.target.value)">KHR_materials_specular</b-switch>
-                                <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled" v-on:input="emissiveStrengthChanged.next($event.target.value)">KHR_materials_emissive_strength</b-switch>
-                                <b-switch class="smallerLabel" v-model="iridescenceEnabled" v-on:input="iridescenceChanged.next($event.target.value)">KHR_materials_iridescence</b-switch>
-                                <b-switch class="smallerLabel" v-model="anisotropyEnabled" v-on:input="anisotropyChanged.next($event.target.value)">KHR_materials_anisotropy</b-switch>
-                                <b-switch class="smallerLabel" v-model="dispersionEnabled" v-on:input="dispersionChanged.next($event.target.value)">KHR_materials_dispersion</b-switch>
+                                    v-model="volumeEnabled" v-on:input="volumeChanged.next($event.target.checked)">KHR_materials_volume</b-switch>
+                                <b-switch class="smallerLabel" v-model="iorEnabled" v-on:input="iorChanged.next($event.target.checked)">KHR_materials_ior</b-switch>
+                                <b-switch class="smallerLabel" v-model="specularEnabled" v-on:input="specularChanged.next($event.target.checked)">KHR_materials_specular</b-switch>
+                                <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled" v-on:input="emissiveStrengthChanged.next($event.target.checked)">KHR_materials_emissive_strength</b-switch>
+                                <b-switch class="smallerLabel" v-model="iridescenceEnabled" v-on:input="iridescenceChanged.next($event.target.checked)">KHR_materials_iridescence</b-switch>
+                                <b-switch class="smallerLabel" v-model="anisotropyEnabled" v-on:input="anisotropyChanged.next($event.target.checked)">KHR_materials_anisotropy</b-switch>
+                                <b-switch class="smallerLabel" v-model="dispersionEnabled" v-on:input="dispersionChanged.next($event.target.checked)">KHR_materials_dispersion</b-switch>
                             </b-field>
                             <b-field label="Statistics" class="subtitle">
                                 <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false">
