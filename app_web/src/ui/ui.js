@@ -54,7 +54,7 @@ const appCreated = createApp({
             cameras: [{title: "User Camera", index: -1}],
             materialVariants: ["None"],
 
-            animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
+            animations: [{title: "None"}],
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],

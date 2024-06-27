@@ -282,7 +282,7 @@
                                 @click="collapseActiveTab($event, 2)">
                             <h2 class="title is-spaced">Animation</h2>
                             <label class="subtitle" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">Animation Controls</label>
-                            <toggle-button v-on:buttonclicked="animationPlayChanged.next($event.target.value)" ontext="Pause" offtext="Play"
+                            <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
                                 ref="animationState"
                                 v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"></toggle-button>
                             
