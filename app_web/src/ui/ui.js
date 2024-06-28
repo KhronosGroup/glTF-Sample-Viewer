@@ -154,15 +154,15 @@ const appCreated = createApp({
         {
             this.$refs.animationState.setState(value);
         },
-        iblTriggered: function()
+        iblTriggered: function(value)
         {
-            if(this.ibl == false)
-            {
+            if(value == false) {
                 this.environmentVisiblePrefState = this.renderEnv;
                 this.renderEnv = false;
-            }
-            else{
+                this.renderEnvChanged.next(false);
+            } else {
                 this.renderEnv = this.environmentVisiblePrefState;
+                this.renderEnvChanged.next(this.renderEnv);
             }
         },
         transmissionTriggered: function()
