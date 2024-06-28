@@ -185,13 +185,13 @@ const appCreated = createApp({
                     // remove is-active class if tabs are hidden
                     event.stopPropagation();
                     
-                    let navElements = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes;
+                    let navElements = document.getElementById("tabsContainer").children[0].children[0].children;
                     for(let elem of navElements) {
                         elem.classList.remove('is-active');
                     }
                 } else {
                     // add is-active class to correct element
-                    let activeNavElement = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes[item];
+                    let activeNavElement = document.getElementById("tabsContainer").children[0].children[0].children[item];
                     activeNavElement.classList.add('is-active');
                 }
                 return;
