@@ -291,7 +291,7 @@
                             <b-field label="Animations"
                                 v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                 <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                    <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations" v-on:input="toggleAnimation($event)"
+                                    <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations"
                                         :disabled="disabledAnimations.includes(animation.index)">
                                         {{ animation.title }}
                                     </b-checkbox>
