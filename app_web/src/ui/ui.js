@@ -68,6 +68,7 @@ const appCreated = createApp({
             selectedCamera: {},
             selectedVariant: "None",
             selectedAnimations: [],
+            selectedAnimationsState: [],
             disabledAnimations: [],
 
             ibl: true,
@@ -150,6 +151,22 @@ const appCreated = createApp({
     },
     methods:
     {
+        toggleAnimation: function(event) {
+            console.log(event);
+            console.log(this.selectedAnimationsState);
+            if (event.target.checked) {
+                if (!this.selectedAnimationsState.includes(parseInt(event.target.value))) {
+                    const selectedAnimationsClone = [...this.selectedAnimationsState];
+                    this.selectedAnimationsChanged.next(selectedAnimationsClone.push(parseInt(event.target.value)));
+                }
+            } else {
+                if (this.selectedAnimationsState.includes(parseInt(event.target.value))) {
+                    const index = this.selectedAnimationsState.indexOf(parseInt(event.target.value));
+                    const selectedAnimationsClone = [...this.selectedAnimationsState];
+                    this.selectedAnimationsChanged.next(selectedAnimationsClone.splice(index, 1));
+                }
+            }
+        },
         setAnimationState: function(value)
         {
             this.$refs.animationState.setState(value);
