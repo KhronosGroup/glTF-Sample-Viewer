@@ -344,7 +344,7 @@ class gltfRenderer
 
         this.drawables = drawables;
 
-        this.billBoardOverlayDrawables = drawables.filter(({node}) => node.extensions?.billboard?.overlay);
+        this.billBoardOverlayDrawables = drawables.filter(({node}) => node.extensions?.KHR_billboard?.overlay);
 
         // opaque drawables don't need sorting
         this.opaqueDrawables = drawables

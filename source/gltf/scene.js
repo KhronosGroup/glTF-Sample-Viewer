@@ -33,7 +33,7 @@ class gltfScene extends GltfObject
                 node.parentNode = parent;
             }
             mat4.multiply(node.worldTransform, parentTransform, node.getLocalTransform());
-            if (node.extensions?.billboard) {
+            if (node.extensions?.KHR_billboard) {
                 const lookAtCamera = mat4.create();
 
                 let currentCamera = undefined;
