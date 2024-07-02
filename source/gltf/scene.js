@@ -58,12 +58,12 @@ class gltfScene extends GltfObject
         
                 let cameraTranslation = currentCamera.getPosition(state.gltf);
                 vec3.subtract(cameraTranslation, cameraTranslation, worldTranslation);
-                if (node.extensions.billboard.rotationAxis) {
-                    if (node.extensions.billboard.rotationAxis === 'x') {
+                if (node.extensions.KHR_billboard.rotationAxis) {
+                    if (node.extensions.KHR_billboard.rotationAxis === 'x') {
                         cameraTranslation[0] = 0;
-                    } else if (node.extensions.billboard.rotationAxis === 'y') {
+                    } else if (node.extensions.KHR_billboard.rotationAxis === 'y') {
                         cameraTranslation[1] = 0;
-                    } else if (node.extensions.billboard.rotationAxis === 'z') {    
+                    } else if (node.extensions.KHR_billboard.rotationAxis === 'z') {    
                         cameraTranslation[2] = 0;
                     }
                 }
@@ -78,11 +78,11 @@ class gltfScene extends GltfObject
                 let modelForward = vec3.fromValues(0, 0, 1);
     
                 let modelUp = vec3.fromValues(0, 1, 0);
-                if (node.extensions.billboard.viewDirection) {
-                    modelForward = vec3.fromValues(...node.extensions.billboard.viewDirection);
+                if (node.extensions.KHR_billboard.viewDirection) {
+                    modelForward = vec3.fromValues(...node.extensions.KHR_billboard.viewDirection);
                 }
-                if (node.extensions.billboard.up) {
-                    modelUp = vec3.fromValues(...node.extensions.billboard.up);
+                if (node.extensions.KHR_billboard.up) {
+                    modelUp = vec3.fromValues(...node.extensions.KHR_billboard.up);
                 }
                 vec3.normalize(modelForward, modelForward);
                 vec3.normalize(modelUp, modelUp);
@@ -109,7 +109,7 @@ class gltfScene extends GltfObject
                 const modelMatrix = mat4.create();
         
                 mat4.scale(modelMatrix, modelMatrix, modelScale);
-                if (node.extensions.billboard.scaleWithDistance && state.cameraIndex === undefined) {
+                if (node.extensions.KHR_billboard.scaleWithDistance && state.cameraIndex === undefined) {
                     const currentCamera = state.userCamera;
                     const initialPos = vec3.transformMat4(vec3.create(), worldTranslation, currentCamera.initialViewMatrix);
                     const currentPos = vec3.transformMat4(vec3.create(), worldTranslation, viewMatrix);
