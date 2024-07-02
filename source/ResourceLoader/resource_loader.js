@@ -8,7 +8,6 @@ import { gltfSampler } from '../gltf/sampler.js';
 import { GL } from '../Renderer/webgl.js';
 import { iblSampler } from '../ibl_sampler.js';
 import init from '../libs/mikktspace.js';
-import mikktspace from '../libs/mikktspace_bg.wasm';
 
 
 import { AsyncFileReader } from './async_file_reader.js';
@@ -30,10 +29,12 @@ class ResourceLoader
      * You cannot share resource loaders between GltfViews as some of the resources
      * are allocated directly on the WebGl2 Context
      * @param {Object} view the GltfView for which the resources are loaded
+     * @param {String} libPath path to the lib folder. This can be used to find the WASM files if sample viewer is repackaged
      */
-    constructor(view)
+    constructor(view, libPath = "./libs/")
     {
         this.view = view;
+        this.libPath = libPath;
     }
 
     /**
@@ -108,8 +109,7 @@ class ResourceLoader
         {
             image.resolveRelativePath(getContainingFolder(gltf.path));
         }
-
-        await init(await mikktspace());
+        await init(`${this.libPath}mikktspace_bg.wasm`);
         await gltfLoader.load(gltf, this.view.context, buffers);
 
         return gltf;
