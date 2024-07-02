@@ -372,10 +372,10 @@ export default async () => {
             update();
         } else if (select) {
             let assetNode = selectionInfo.node;
-            while (assetNode.parentNode !== undefined && assetNode.extras?.asset === undefined) {
+            while (assetNode.parentNode !== undefined && assetNode.extras?.expectAsset === undefined) {
                 assetNode = assetNode.parentNode;
             }
-            if (assetNode.extras?.asset !== undefined) {
+            if (assetNode.extras?.expectAsset !== undefined) {
                 selectionInfo.node = assetNode;
             }
             const selection = [selectionInfo.node];
