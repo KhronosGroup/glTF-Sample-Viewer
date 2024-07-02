@@ -160,7 +160,7 @@
                                 </b-select>
                             </b-field>
                             <b-field label="Cameras" class="subtitle">
-                                <b-select v-model="selectedCamera" v-on:input="cameraChanged.next($event.target.value)">
+                                <b-select v-model="selectedCamera" v-on:input="cameraChanged.next(parseInt($event.target.value))">
                                     <option v-for="(item) in cameras" v-bind:value="item.index">
                                         {{ item.title }}
                                     </option>
@@ -205,14 +205,14 @@
                                 @click="collapseActiveTab($event, 1)">
                             <h2 class="title  is-spaced">Display</h2>
                             <b-field label="Lighting" class="subtitle">
-                                <b-switch v-model="ibl" v-on:input="iblChanged.next($event.target.value)" @input="iblTriggered">Image Based
+                                <b-switch v-model="ibl" v-on:input="iblChanged.next($event.target.checked); iblTriggered($event.target.checked);">Image Based
                                 </b-switch>
-                                <b-switch v-model="punctualLights" v-on:input="punctualLightsChanged.next($event.target.value)">Punctual
+                                <b-switch v-model="punctualLights" v-on:input="punctualLightsChanged.next($event.target.checked)">Punctual
                                     Lighting</b-switch>
                             </b-field>
                             <b-field label="IBL Intensity" class="smallerLabel">
                                 <b-slider rounded v-model="iblIntensity" :min="-2" v-bind:max="5" :step=0.01 :custom-formatter="val => Math.round(Math.pow(10,val)*100.0)/100.0"
-                                    class="iblIntensitySlider" v-on:input="iblIntensityChanged.next($event.target.value)">
+                                    class="iblIntensitySlider" v-on:dragging="iblIntensityChanged.next($event)">
                                     <b-slider-tick :value="-2" class="iblIntensitySliderMarker">0.01</b-slider-tick>
                                     <b-slider-tick :value="0" class="iblIntensitySliderMarker">1</b-slider-tick>
                                     <b-slider-tick :value="2" class="iblIntensitySliderMarker">100</b-slider-tick>                               
@@ -220,9 +220,9 @@
                                 </b-slider>
                             </b-field>
                             <b-field label="Background" class="subtitle">
-                                <b-switch v-model="renderEnv" v-on:input="renderEnvChanged.next($event.target.value)" v-bind:disabled="ibl === false ? true : false">Environment
+                                <b-switch v-model="renderEnv" v-on:input="renderEnvChanged.next($event.target.checked)" v-bind:disabled="ibl === false ? true : false">Environment
                                     Map</b-switch>
-                                <b-switch v-model="blurEnv" v-on:input="blurEnvChanged.next($event.target.value)"
+                                <b-switch v-model="blurEnv" v-on:input="blurEnvChanged.next($event.target.checked)"
                                     v-bind:disabled="ibl === false ? true : false">Blur</b-switch>
                                 <b-field label="Background Color" class="smallerLabel"></b-field>
                                 <b-input type="color" id="clearColorPicker" custom-class="colorInput"
@@ -245,7 +245,7 @@
                                 </button>
 
                                 <b-field label="Active Environment" class="smallerLabel">
-                                    <b-dropdown aria-role="list" v-model="selectedEnvironment" v-on:input="selectedEnvironmentChanged.next($event.target.value)">
+                                    <b-dropdown aria-role="list" v-model="selectedEnvironment" v-on:change="selectedEnvironmentChanged.next($event)">
                                         <template #trigger="{ active }">
                                             <b-button rounded type="is-primary"
                                                 :icon-right="active ? 'menu-up' : 'menu-down'">
@@ -282,7 +282,7 @@
                                 @click="collapseActiveTab($event, 2)">
                             <h2 class="title is-spaced">Animation</h2>
                             <label class="subtitle" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">Animation Controls</label>
-                            <toggle-button v-on:buttonclicked="animationPlayChanged.next($event.target.value)" ontext="Pause" offtext="Play"
+                            <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
                                 ref="animationState"
                                 v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"></toggle-button>
                             
@@ -291,7 +291,7 @@
                             <b-field label="Animations"
                                 v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                 <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                    <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations" v-on:input="selectedAnimationsChanged.next($event.target.value)"
+                                    <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations"
                                         :disabled="disabledAnimations.includes(animation.index)">
                                         {{ animation.title }}
                                     </b-checkbox>
@@ -370,7 +370,7 @@
                             <label class="smallerLabel">Exposure</label>
 
                             <b-slider rounded v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
-                            :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:input="exposureChanged.next($event.target.value)">
+                            :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:dragging="exposureChanged.next($event)">
                                 <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
                                 <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
                                 <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
@@ -384,30 +384,30 @@
                                     </option>
                                 </b-select>
                             </b-field>
-                            <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.value)">Skinning</b-switch>
+                            <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                             <br>
-                            <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.value)">Morphing</b-switch>
+                            <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
                             <b-field label="Current camera values" class="subtitle">
                                 <button v-on:click="cameraExport.next($event.target.value)" type="button" class="button is-rounded"><i
                                         class="fa fa-download downloadIcon"></i>Download as .gltf</button>
                             </b-field>
                             <b-field label="Disable extensions" class="subtitle">
                                 <b-switch class="smallerLabel" v-model="clearcoatEnabled"
-                                    v-on:input="clearcoatChanged.next($event.target.value)">KHR_materials_clearcoat</b-switch>
-                                <b-switch class="smallerLabel" v-model="sheenEnabled" v-on:input="sheenChanged.next($event.target.value)">
+                                    v-on:input="clearcoatChanged.next($event.target.checked)">KHR_materials_clearcoat</b-switch>
+                                <b-switch class="smallerLabel" v-model="sheenEnabled" v-on:input="sheenChanged.next($event.target.checked)">
                                     KHR_materials_sheen</b-switch>
                                 <b-switch class="smallerLabel" v-model="transmissionEnabled"
-                                    v-on:input="transmissionChanged.next($event.target.value)" @input="transmissionTriggered">
+                                    v-on:input="transmissionChanged.next($event.target.checked)" @input="transmissionTriggered">
                                     KHR_materials_transmission</b-switch>
                                 <b-switch class="smallerLabel"
                                     v-bind:disabled="transmissionEnabled === false ? true : false"
-                                    v-model="volumeEnabled" v-on:input="volumeChanged.next($event.target.value)">KHR_materials_volume</b-switch>
-                                <b-switch class="smallerLabel" v-model="iorEnabled" v-on:input="iorChanged.next($event.target.value)">KHR_materials_ior</b-switch>
-                                <b-switch class="smallerLabel" v-model="specularEnabled" v-on:input="specularChanged.next($event.target.value)">KHR_materials_specular</b-switch>
-                                <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled" v-on:input="emissiveStrengthChanged.next($event.target.value)">KHR_materials_emissive_strength</b-switch>
-                                <b-switch class="smallerLabel" v-model="iridescenceEnabled" v-on:input="iridescenceChanged.next($event.target.value)">KHR_materials_iridescence</b-switch>
-                                <b-switch class="smallerLabel" v-model="anisotropyEnabled" v-on:input="anisotropyChanged.next($event.target.value)">KHR_materials_anisotropy</b-switch>
-                                <b-switch class="smallerLabel" v-model="dispersionEnabled" v-on:input="dispersionChanged.next($event.target.value)">KHR_materials_dispersion</b-switch>
+                                    v-model="volumeEnabled" v-on:input="volumeChanged.next($event.target.checked)">KHR_materials_volume</b-switch>
+                                <b-switch class="smallerLabel" v-model="iorEnabled" v-on:input="iorChanged.next($event.target.checked)">KHR_materials_ior</b-switch>
+                                <b-switch class="smallerLabel" v-model="specularEnabled" v-on:input="specularChanged.next($event.target.checked)">KHR_materials_specular</b-switch>
+                                <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled" v-on:input="emissiveStrengthChanged.next($event.target.checked)">KHR_materials_emissive_strength</b-switch>
+                                <b-switch class="smallerLabel" v-model="iridescenceEnabled" v-on:input="iridescenceChanged.next($event.target.checked)">KHR_materials_iridescence</b-switch>
+                                <b-switch class="smallerLabel" v-model="anisotropyEnabled" v-on:input="anisotropyChanged.next($event.target.checked)">KHR_materials_anisotropy</b-switch>
+                                <b-switch class="smallerLabel" v-model="dispersionEnabled" v-on:input="dispersionChanged.next($event.target.checked)">KHR_materials_dispersion</b-switch>
                             </b-field>
                             <b-field label="Statistics" class="subtitle">
                                 <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false">
