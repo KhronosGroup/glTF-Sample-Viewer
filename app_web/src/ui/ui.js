@@ -51,7 +51,7 @@ export const app = new Vue({
         return {
             fullheight: true,
             right: true,
-            models: ["glXFTest"],
+            models: ["BillboardDemo"],
             flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
@@ -68,7 +68,7 @@ export const app = new Vue({
             assetGenerator: "",
             statistics: [],
 
-            selectedModel: "glXFTest",
+            selectedModel: "BillboardDemo",
             selectedFlavour: "",
             selectedScene: {},
             selectedCamera: {},

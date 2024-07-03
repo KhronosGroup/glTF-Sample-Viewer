@@ -19,7 +19,7 @@ export default async () => {
     const pathProvider = new GltfModelPathProvider('Models/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
-        "footprint_court": "Footprint Court",
+        "Cannon_Exterior": "Cannon Exterior",
     }, "environments/");
 
     const uiModel = new UIModel(app, pathProvider, environmentPaths);

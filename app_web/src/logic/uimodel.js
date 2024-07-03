@@ -143,7 +143,7 @@ class UIModel
 
         const dropdownGltfChanged = app.modelChanged$.pipe(
             pluck("event", "msg"),
-            startWith(modelURL === null ? "DamagedHelmet" : null),
+            startWith(modelURL === null ? "BillboardDemo" : null),
             filter(value => value !== null),
             map(value => {
                 app.flavours = modelPathProvider.getModelFlavours(value);
