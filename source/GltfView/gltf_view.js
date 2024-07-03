@@ -38,14 +38,16 @@ class GltfView
      * environments can be loaded for the view
      * @param {Object} [externalDracoLib] optional object of an external Draco library, e.g. from a CDN
      * @param {Object} [externalKtxLib] optional object of an external KTX library, e.g. from a CDN
+     * @param {Object} [externalWebPLib] optional object of an external WebP library, e.g. from a CDN
      * @param {string} [libPath] optional path to the libraries. Used to define the path to the WASM files on repackaging
      * @returns {ResourceLoader} ResourceLoader
      */
-    createResourceLoader(externalDracoLib = undefined, externalKtxLib = undefined, libPath = undefined)
+    createResourceLoader(externalDracoLib = undefined, externalKtxLib = undefined, externalWebPLib = undefined, libPath = undefined)
     {
         let resourceLoader = new ResourceLoader(this, libPath);
         resourceLoader.initKtxLib(externalKtxLib);
         resourceLoader.initDracoLib(externalDracoLib);
+        resourceLoader.initWebPLib(externalWebPLib);
         return resourceLoader;
     }
 
