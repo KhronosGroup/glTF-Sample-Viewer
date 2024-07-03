@@ -4,12 +4,14 @@ import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
 import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
-import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 import {wasm} from "@rollup/plugin-wasm";
+import sourcemaps from 'rollup-plugin-sourcemaps';
+import license from "rollup-plugin-license"
 
 export default {
+    strictDeprecations: true,
     input: 'src/main.js',
     output: [
         {
@@ -21,7 +23,7 @@ export default {
     ],
     plugins: [
         wasm(),
-        json(),
+        json(), // To include model json file
         glslify({
             include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
             compress: false
@@ -31,8 +33,8 @@ export default {
             preferBuiltins: true,
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
-        builtins(),
-        scss(),
+        builtins(), // Needed for loading assets
+        scss(), // Version 4 is not working
         copy({
             targets: [
                 { src: ["index.html", "main.js"], dest: "dist/" },
@@ -46,12 +48,20 @@ export default {
             verbose: true
         }),
         replace({
-            'process.env.NODE_ENV': JSON.stringify('production'),
+            'process.env.NODE_ENV': JSON.stringify('production'), // This resolves an issue with vue
             preventAssignment: true,
         }),
-        alias({
-            'vue': 'vue/dist/vue.esm.js'
-        }),
         commonjs(),
+        sourcemaps(),
+        license({
+            banner: {
+                content: {
+                    file: 'LICENSE_BANNER.txt',
+                }
+            },
+            thirdParty:{
+                includeSelf: true
+            }
+        })
     ]
 };

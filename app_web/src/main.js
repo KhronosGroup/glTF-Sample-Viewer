@@ -1,5 +1,5 @@
 
-import { GltfView } from 'gltf-viewer-source';
+import { GltfView } from '@khronosgroup/gltf-viewer';
 
 import { UIModel } from './logic/uimodel.js';
 import { app } from './ui/ui.js';
@@ -59,6 +59,7 @@ export default async () => {
 
                     // Try to start as many animations as possible without generating conficts.
                     state.animationIndices = [];
+                    
                     for (let i = 0; i < gltf.animations.length; i++) {
                         if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
                             state.animationIndices.push(i);
@@ -269,6 +270,8 @@ export default async () => {
     });
     listenForRedraw(uiModel.zoom);
 
+    listenForRedraw(gltfLoaded);
+    
     // configure the animation loop
     const past = {};
     const update = () => {

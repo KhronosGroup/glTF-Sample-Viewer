@@ -6,6 +6,7 @@ import {wasm} from "@rollup/plugin-wasm";
 
 
 export default {
+    strictDeprecations: true,
     input: ['source/gltf-sample-viewer.js'],
     output: [
         {
