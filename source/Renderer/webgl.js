@@ -51,6 +51,7 @@ class gltfWebGl
 
         if (gltfTex.glTexture === undefined)
         {
+            // TODO webp?
             if (image.mimeType === ImageMimeType.KTX2 ||
                 image.mimeType === ImageMimeType.GLTEXTURE)
             {
@@ -84,6 +85,7 @@ class gltfWebGl
             // upload images that are not directly loaded as GPU resource
             if (image.mimeType === ImageMimeType.PNG ||
                 image.mimeType === ImageMimeType.JPEG ||
+                image.mimeType === ImageMimeType.WEBP ||
                 image.mimeType === ImageMimeType.HDR)
             {
                 // the check `GL.SRGB8_ALPHA8 === undefined` is needed as at the moment node-gles does not define the full format enum

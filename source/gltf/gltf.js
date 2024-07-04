@@ -22,6 +22,7 @@ const allowedExtensions = [
     "KHR_draco_mesh_compression",
     "KHR_texture_basisu",
     "KHR_texture_transform",
+    "KHR_texture_webp",
     "KHR_lights_punctual",
     "KHR_lights_image_based",
     "KHR_materials_variants",

@@ -101,6 +101,7 @@ class ResourceLoader
 
         const gltf = new glTF(filename);
         gltf.ktxDecoder = this.view.ktxDecoder;
+        gltf.webPLibrary = this.view.webPLibrary;
         //Make sure draco decoder instance is ready
         gltf.fromJson(json);
 

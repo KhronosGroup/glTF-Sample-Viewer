@@ -85,6 +85,10 @@ class gltfImage extends GltfObject
         {
             this.mimeType = ImageMimeType.PNG;
         }
+        else if(extension == "webp" )
+        {
+            this.mimeType = ImageMimeType.WEBP;
+        }
         else
         {
             console.warn("MimeType not defined");
@@ -160,6 +164,10 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
+        else if (this.mimeType === ImageMimeType.WEBP)
+        {
+            // TODO: implement webp decoding
+        }
         else if(typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
         {
             const blob = new Blob([array], { "type": this.mimeType });
@@ -220,6 +228,10 @@ class gltfImage extends GltfObject
             {
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
+        }
+        else if(this.mimeType === ImageMimeType.WEBP)
+        {
+            // TODO: implement webp decoding
         }
         else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
         {
