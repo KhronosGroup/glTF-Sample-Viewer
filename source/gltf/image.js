@@ -114,25 +114,46 @@ class gltfImage extends GltfObject
             if (gltf.ktxDecoder !== undefined)
             {
                 this.image = await gltf.ktxDecoder.loadKtxFromUri(this.uri);
+                console.log("uri, KTX: ", this.image);
             }
             else
             {
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
+            // const response = await fetch(this.uri);
+            // const blob = await response.blob();
+            // const objectURL = URL.createObjectURL(blob);
+            debugger;
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
             });
+            console.log("uri, HTML: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.JPEG && this.uri instanceof ArrayBuffer)
         {
             this.image = jpeg.decode(this.uri, {useTArray: true});
+            console.log("uri, JPEG Buffer: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.PNG && this.uri instanceof ArrayBuffer)
         {
             this.image = png.decode(this.uri);
+            console.log("uri, PNG Buffer: ", this.image);
+        }
+        else if(this.mimeType === ImageMimeType.WEBP && this.uri instanceof ArrayBuffer)
+        {
+            // TODO: implement webp decoding
+            if (gltf.webPLibrary !== undefined)
+            {
+                this.image = await await gltf.webPLibrary.decode(this.uri);
+                console.log("uri, WEBP Buffer: ", this.image);
+            }
+            else
+            {
+                console.warn('Loading of webp images failed: WebPLibrary not initalized');
+            }
         }
         else
         {
@@ -158,31 +179,36 @@ class gltfImage extends GltfObject
             if (gltf.ktxDecoder !== undefined)
             {
                 this.image = await gltf.ktxDecoder.loadKtxFromBuffer(array);
+                console.log("bufferView, KTX: ", this.image);
             }
             else
             {
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if (this.mimeType === ImageMimeType.WEBP)
-        {
-            // TODO: implement webp decoding
-        }
-        else if(typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        else if(typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
             const blob = new Blob([array], { "type": this.mimeType });
             const objectURL = URL.createObjectURL(blob);
             this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
                 console.error("Could not load image from buffer view");
             });
+            console.log("bufferView, HTML: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.JPEG)
         {
             this.image = jpeg.decode(array, {useTArray: true});
+            console.log("bufferView, JPEG: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.PNG)
         {
             this.image = png.decode(array);
+            console.log("bufferView, PNG: ", this.image);
+        }
+        else if (this.mimeType === ImageMimeType.WEBP)
+        {
+            // TODO: implement webp decoding
+            console.log("bufferView, WEBP: NOT IMPLEMENTED YET");
         }
         else
         {
@@ -223,17 +249,14 @@ class gltfImage extends GltfObject
             {
                 const data = new Uint8Array(await foundFile[1].arrayBuffer());
                 this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
+                console.log("files, KTX: ", this.image);
             }
             else
             {
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if(this.mimeType === ImageMimeType.WEBP)
-        {
-            // TODO: implement webp decoding
-        }
-        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
             const imageData = await AsyncFileReader.readAsDataURL(foundFile[1]).catch( () => {
                 console.error("Could not load image with FileReader");
@@ -241,6 +264,12 @@ class gltfImage extends GltfObject
             this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {
                 console.error("Could not create image from FileReader image data");
             });
+            console.log("files, HTML: ", this.image);
+        }
+        else if(this.mimeType === ImageMimeType.WEBP)
+        {
+            // TODO: implement webp decoding
+            console.log("files, WEBP: NOT IMPLEMENTED YET ");
         }
         else
         {
@@ -250,6 +279,13 @@ class gltfImage extends GltfObject
 
 
         return true;
+    }
+    
+    async loadWebPFromURI(uri, gltf) {
+        const response = await fetch(uri);
+        const data = new Uint8Array(await response.arrayBuffer());
+        const texture = await gltf.webPLibrary.decode(data);
+        return texture;
     }
 }
 
