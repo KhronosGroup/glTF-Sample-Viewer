@@ -123,10 +123,6 @@ class gltfImage extends GltfObject
         }
         else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
-            // const response = await fetch(this.uri);
-            // const blob = await response.blob();
-            // const objectURL = URL.createObjectURL(blob);
-            debugger;
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
             });
@@ -144,11 +140,11 @@ class gltfImage extends GltfObject
         }
         else if(this.mimeType === ImageMimeType.WEBP && this.uri instanceof ArrayBuffer)
         {
-            // TODO: implement webp decoding
             if (gltf.webPLibrary !== undefined)
             {
-                this.image = await await gltf.webPLibrary.decode(this.uri);
-                console.log("uri, WEBP Buffer: ", this.image);
+                // TODO: test this code (data uris are currently generally not working)
+                this.image = await gltf.webPLibrary.decode(this.uri);
+                console.log("uri, WEBP: ", this.image);
             }
             else
             {
@@ -207,8 +203,16 @@ class gltfImage extends GltfObject
         }
         else if (this.mimeType === ImageMimeType.WEBP)
         {
-            // TODO: implement webp decoding
-            console.log("bufferView, WEBP: NOT IMPLEMENTED YET");
+            if (gltf.webPLibrary !== undefined)
+            {
+                // TODO: test this code
+                this.image = await gltf.webPLibrary.decode(array);
+                console.log("bufferView, WEBP: ", this.image);
+            }
+            else
+            {
+                console.warn('Loading of webp images failed: WebPLibrary not initalized');
+            }
         }
         else
         {
@@ -268,8 +272,17 @@ class gltfImage extends GltfObject
         }
         else if(this.mimeType === ImageMimeType.WEBP)
         {
-            // TODO: implement webp decoding
-            console.log("files, WEBP: NOT IMPLEMENTED YET ");
+            if (gltf.webpLibrary !== undefined)
+            {
+                // TODO test this code
+                const data = new Uint8Array(await foundFile[1].arrayBuffer());
+                this.image = await gltf.webpLibrary.decode(data);
+                console.log("files, WEBP: ", this.image);
+            }
+            else
+            {
+                console.warn('Loading of webp images failed: WebPLibrary not initalized');
+            }
         }
         else
         {
@@ -279,13 +292,6 @@ class gltfImage extends GltfObject
 
 
         return true;
-    }
-    
-    async loadWebPFromURI(uri, gltf) {
-        const response = await fetch(uri);
-        const data = new Uint8Array(await response.arrayBuffer());
-        const texture = await gltf.webPLibrary.decode(data);
-        return texture;
     }
 }
 
