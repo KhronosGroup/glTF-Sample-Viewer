@@ -138,19 +138,6 @@ class gltfImage extends GltfObject
             this.image = png.decode(this.uri);
             console.log("uri, PNG Buffer: ", this.image);
         }
-        else if(this.mimeType === ImageMimeType.WEBP && this.uri instanceof ArrayBuffer)
-        {
-            if (gltf.webPLibrary !== undefined)
-            {
-                // TODO: test this code (data uris are currently generally not working)
-                this.image = await gltf.webPLibrary.decode(this.uri);
-                console.log("uri, WEBP: ", this.image);
-            }
-            else
-            {
-                console.warn('Loading of webp images failed: WebPLibrary not initalized');
-            }
-        }
         else
         {
             console.error("Unsupported image type " + this.mimeType);
@@ -200,19 +187,6 @@ class gltfImage extends GltfObject
         {
             this.image = png.decode(array);
             console.log("bufferView, PNG: ", this.image);
-        }
-        else if (this.mimeType === ImageMimeType.WEBP)
-        {
-            if (gltf.webPLibrary !== undefined)
-            {
-                // TODO: test this code
-                this.image = await gltf.webPLibrary.decode(array);
-                console.log("bufferView, WEBP: ", this.image);
-            }
-            else
-            {
-                console.warn('Loading of webp images failed: WebPLibrary not initalized');
-            }
         }
         else
         {
@@ -269,20 +243,6 @@ class gltfImage extends GltfObject
                 console.error("Could not create image from FileReader image data");
             });
             console.log("files, HTML: ", this.image);
-        }
-        else if(this.mimeType === ImageMimeType.WEBP)
-        {
-            if (gltf.webpLibrary !== undefined)
-            {
-                // TODO test this code
-                const data = new Uint8Array(await foundFile[1].arrayBuffer());
-                this.image = await gltf.webpLibrary.decode(data);
-                console.log("files, WEBP: ", this.image);
-            }
-            else
-            {
-                console.warn('Loading of webp images failed: WebPLibrary not initalized');
-            }
         }
         else
         {

@@ -51,7 +51,6 @@ class gltfWebGl
 
         if (gltfTex.glTexture === undefined)
         {
-            // TODO webp?
             if (image.mimeType === ImageMimeType.KTX2 ||
                 image.mimeType === ImageMimeType.GLTEXTURE)
             {

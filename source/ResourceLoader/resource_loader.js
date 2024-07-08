@@ -14,7 +14,6 @@ import { AsyncFileReader } from './async_file_reader.js';
 
 import { DracoDecoder } from './draco.js';
 import { KtxDecoder } from './ktx.js';
-import { WebPLibrary } from './webp.js';
 
 import { loadHDR } from '../libs/hdrpng.js';
 
@@ -101,7 +100,6 @@ class ResourceLoader
 
         const gltf = new glTF(filename);
         gltf.ktxDecoder = this.view.ktxDecoder;
-        gltf.webPLibrary = this.view.webPLibrary;
         //Make sure draco decoder instance is ready
         gltf.fromJson(json);
 
@@ -174,15 +172,6 @@ class ResourceLoader
         {
             await dracoDecoder.ready();
         }
-    }
-
-    /**
-     * init WebPLib must be called before loading gltf files with webp assets
-     * @param {Object} [externalWebPlib] external webp library (for example from a CDN)
-     */
-    initWebPLib(externalWebPlib)
-    {
-        this.view.webPLibrary = new WebPLibrary(this.view.context, externalWebPlib);
     }
 }
 
