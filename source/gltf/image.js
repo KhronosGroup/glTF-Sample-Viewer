@@ -114,7 +114,6 @@ class gltfImage extends GltfObject
             if (gltf.ktxDecoder !== undefined)
             {
                 this.image = await gltf.ktxDecoder.loadKtxFromUri(this.uri);
-                console.log("uri, KTX: ", this.image);
             }
             else
             {
@@ -126,17 +125,14 @@ class gltfImage extends GltfObject
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
             });
-            console.log("uri, HTML: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.JPEG && this.uri instanceof ArrayBuffer)
         {
             this.image = jpeg.decode(this.uri, {useTArray: true});
-            console.log("uri, JPEG Buffer: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.PNG && this.uri instanceof ArrayBuffer)
         {
             this.image = png.decode(this.uri);
-            console.log("uri, PNG Buffer: ", this.image);
         }
         else
         {
@@ -162,7 +158,6 @@ class gltfImage extends GltfObject
             if (gltf.ktxDecoder !== undefined)
             {
                 this.image = await gltf.ktxDecoder.loadKtxFromBuffer(array);
-                console.log("bufferView, KTX: ", this.image);
             }
             else
             {
@@ -176,17 +171,14 @@ class gltfImage extends GltfObject
             this.image = await gltfImage.loadHTMLImage(objectURL).catch( () => {
                 console.error("Could not load image from buffer view");
             });
-            console.log("bufferView, HTML: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.JPEG)
         {
             this.image = jpeg.decode(array, {useTArray: true});
-            console.log("bufferView, JPEG: ", this.image);
         }
         else if(this.mimeType === ImageMimeType.PNG)
         {
             this.image = png.decode(array);
-            console.log("bufferView, PNG: ", this.image);
         }
         else
         {
@@ -227,7 +219,6 @@ class gltfImage extends GltfObject
             {
                 const data = new Uint8Array(await foundFile[1].arrayBuffer());
                 this.image = await gltf.ktxDecoder.loadKtxFromBuffer(data);
-                console.log("files, KTX: ", this.image);
             }
             else
             {
@@ -242,7 +233,6 @@ class gltfImage extends GltfObject
             this.image = await gltfImage.loadHTMLImage(imageData).catch( () => {
                 console.error("Could not create image from FileReader image data");
             });
-            console.log("files, HTML: ", this.image);
         }
         else
         {
