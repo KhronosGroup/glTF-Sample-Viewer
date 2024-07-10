@@ -7,11 +7,23 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c",
-    "dev": "concurrently \"rollup -c -w\" \"serve --listen 8000 dist\"",
+    "dev": "concurrently \"npm run --prefix .. watch\" \"npm-watch\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js ../source/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js ../source/**/*.js",
     "postversion": "git push && git push --tags"
+  },
+  "watch": {
+    "build": {
+      "patterns": [
+        "src",
+        "main.js",
+        "index.html",
+        "../dist"
+      ],
+      "extensions": "js,scss,html",
+      "delay": 2500
+    }
   },
   "repository": {
     "type": "git",
@@ -44,10 +56,13 @@
     "@rollup/plugin-wasm": "^6.2.2",
     "concurrently": "^8.2.2",
     "eslint": "^9.5.0",
+    "npm-watch": "^0.13.0",
     "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-glslify": "^1.3.1",
+    "rollup-plugin-license": "^3.5.1",
     "rollup-plugin-scss": "^3.0.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
     "sass": "^1.77.5",
     "serve": "^14.2.3"
   },

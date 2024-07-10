@@ -54,7 +54,7 @@ const appCreated = createApp({
             cameras: [{title: "User Camera", index: -1}],
             materialVariants: ["None"],
 
-            animations: [{title: "cool animation"}, {title: "even cooler"}, {title: "not cool"}, {title: "Do not click!"}],
+            animations: [{title: "None"}],
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
@@ -110,6 +110,11 @@ const appCreated = createApp({
             volumeEnabledPrefState: true,
         };
     },
+    watch: {
+        selectedAnimations: function (newValue) {
+            this.selectedAnimationsChanged.next(newValue);
+        }
+    },
     mounted: function()
     {
         // remove input class from color picker (added by default by buefy)
@@ -154,15 +159,15 @@ const appCreated = createApp({
         {
             this.$refs.animationState.setState(value);
         },
-        iblTriggered: function()
+        iblTriggered: function(value)
         {
-            if(this.ibl == false)
-            {
+            if(value == false) {
                 this.environmentVisiblePrefState = this.renderEnv;
                 this.renderEnv = false;
-            }
-            else{
+                this.renderEnvChanged.next(false);
+            } else {
                 this.renderEnv = this.environmentVisiblePrefState;
+                this.renderEnvChanged.next(this.renderEnv);
             }
         },
         transmissionTriggered: function()
@@ -185,13 +190,13 @@ const appCreated = createApp({
                     // remove is-active class if tabs are hidden
                     event.stopPropagation();
                     
-                    let navElements = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes;
+                    let navElements = document.getElementById("tabsContainer").children[0].children[0].children;
                     for(let elem of navElements) {
                         elem.classList.remove('is-active');
                     }
                 } else {
                     // add is-active class to correct element
-                    let activeNavElement = document.getElementById("tabsContainer").childNodes[0].childNodes[0].childNodes[item];
+                    let activeNavElement = document.getElementById("tabsContainer").children[0].children[0].children[item];
                     activeNavElement.classList.add('is-active');
                 }
                 return;

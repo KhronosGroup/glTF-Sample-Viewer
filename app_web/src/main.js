@@ -1,10 +1,13 @@
-import { GltfView } from '@khronosgroup/gltf-viewer';
+import { GltfView } from "@khronosgroup/gltf-viewer";
 
-import { UIModel } from './logic/uimodel.js';
-import { app } from './ui/ui.js';
-import { EMPTY, from, merge } from 'rxjs';
-import { mergeMap, map, share, catchError } from 'rxjs/operators';
-import { GltfModelPathProvider, fillEnvironmentWithPaths } from './model_path_provider.js';
+import { UIModel } from "./logic/uimodel.js";
+import { app } from "./ui/ui.js";
+import { EMPTY, from, merge } from "rxjs";
+import { mergeMap, map, share, catchError } from "rxjs/operators";
+import {
+  GltfModelPathProvider,
+  fillEnvironmentWithPaths,
+} from "./model_path_provider.js";
 
 export default async () => {
   const canvas = document.getElementById("canvas");
@@ -17,7 +20,9 @@ export default async () => {
   const state = view.createState();
   state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
-  const pathProvider = new GltfModelPathProvider("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main");
+  const pathProvider = new GltfModelPathProvider(
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main"
+  );
   await pathProvider.initialize();
   const environmentPaths = fillEnvironmentWithPaths(
     {
@@ -82,7 +87,7 @@ export default async () => {
             uiModel.exitLoadingState();
 
             return state;
-          }),
+          })
       );
     }),
     catchError((error) => {
@@ -90,16 +95,16 @@ export default async () => {
       uiModel.exitLoadingState();
       return EMPTY;
     }),
-    share(),
+    share()
   );
 
   // Disable all animations which are not disjoint to the current selection of animations.
   uiModel.disabledAnimations(
     uiModel.activeAnimations.pipe(
       map((animationIndices) =>
-        state.gltf.nonDisjointAnimations(animationIndices),
-      ),
-    ),
+        state.gltf.nonDisjointAnimations(animationIndices)
+      )
+    )
   );
 
   const sceneChangedObservable = uiModel.scene.pipe(
@@ -112,12 +117,12 @@ export default async () => {
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
       }
     }),
-    share(),
+    share()
   );
 
   const statisticsUpdateObservable = merge(
     sceneChangedObservable,
-    gltfLoaded,
+    gltfLoaded
   ).pipe(map(() => view.gatherStatistics(state)));
 
   const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe(
@@ -127,7 +132,7 @@ export default async () => {
           ? state.userCamera
           : state.gltf.cameras[state.cameraIndex];
       return camera.getDescription(state.gltf);
-    }),
+    })
   );
 
   const downloadDataURL = (filename, dataURL) => {
@@ -157,12 +162,12 @@ export default async () => {
   const listenForRedraw = (stream) => stream.subscribe(() => (redraw = true));
 
   uiModel.scene.subscribe(
-    (scene) => (state.sceneIndex = scene !== -1 ? scene : undefined),
+    (scene) => (state.sceneIndex = scene !== -1 ? scene : undefined)
   );
   listenForRedraw(uiModel.scene);
 
   uiModel.camera.subscribe(
-    (camera) => (state.cameraIndex = camera !== -1 ? camera : undefined),
+    (camera) => (state.cameraIndex = camera !== -1 ? camera : undefined)
   );
   listenForRedraw(uiModel.camera);
 
@@ -170,127 +175,127 @@ export default async () => {
   listenForRedraw(uiModel.variant);
 
   uiModel.tonemap.subscribe(
-    (tonemap) => (state.renderingParameters.toneMap = tonemap),
+    (tonemap) => (state.renderingParameters.toneMap = tonemap)
   );
   listenForRedraw(uiModel.tonemap);
 
   uiModel.debugchannel.subscribe(
-    (debugchannel) => (state.renderingParameters.debugOutput = debugchannel),
+    (debugchannel) => (state.renderingParameters.debugOutput = debugchannel)
   );
   listenForRedraw(uiModel.debugchannel);
 
   uiModel.skinningEnabled.subscribe(
-    (skinningEnabled) => (state.renderingParameters.skinning = skinningEnabled),
+    (skinningEnabled) => (state.renderingParameters.skinning = skinningEnabled)
   );
   listenForRedraw(uiModel.skinningEnabled);
 
   uiModel.exposure.subscribe(
     (exposure) =>
-      (state.renderingParameters.exposure = 1.0 / Math.pow(2.0, exposure)),
+      (state.renderingParameters.exposure = 1.0 / Math.pow(2.0, exposure))
   );
   listenForRedraw(uiModel.exposure);
 
   uiModel.morphingEnabled.subscribe(
-    (morphingEnabled) => (state.renderingParameters.morphing = morphingEnabled),
+    (morphingEnabled) => (state.renderingParameters.morphing = morphingEnabled)
   );
   listenForRedraw(uiModel.morphingEnabled);
 
   uiModel.clearcoatEnabled.subscribe(
     (clearcoatEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_clearcoat =
-        clearcoatEnabled),
+        clearcoatEnabled)
   );
   listenForRedraw(uiModel.clearcoatEnabled);
 
   uiModel.sheenEnabled.subscribe(
     (sheenEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_sheen =
-        sheenEnabled),
+        sheenEnabled)
   );
   listenForRedraw(uiModel.sheenEnabled);
 
   uiModel.transmissionEnabled.subscribe(
     (transmissionEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_transmission =
-        transmissionEnabled),
+        transmissionEnabled)
   );
   listenForRedraw(uiModel.transmissionEnabled);
 
   uiModel.volumeEnabled.subscribe(
     (volumeEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_volume =
-        volumeEnabled),
+        volumeEnabled)
   );
   listenForRedraw(uiModel.volumeEnabled);
 
   uiModel.iorEnabled.subscribe(
     (iorEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_ior =
-        iorEnabled),
+        iorEnabled)
   );
   listenForRedraw(uiModel.iorEnabled);
 
   uiModel.iridescenceEnabled.subscribe(
     (iridescenceEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_iridescence =
-        iridescenceEnabled),
+        iridescenceEnabled)
   );
   listenForRedraw(uiModel.iridescenceEnabled);
 
   uiModel.anisotropyEnabled.subscribe(
     (anisotropyEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_anisotropy =
-        anisotropyEnabled),
+        anisotropyEnabled)
   );
   listenForRedraw(uiModel.anisotropyEnabled);
 
   uiModel.dispersionEnabled.subscribe(
     (dispersionEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_dispersion =
-        dispersionEnabled),
+        dispersionEnabled)
   );
   listenForRedraw(uiModel.dispersionEnabled);
 
   uiModel.specularEnabled.subscribe(
     (specularEnabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_specular =
-        specularEnabled),
+        specularEnabled)
   );
   listenForRedraw(uiModel.specularEnabled);
 
   uiModel.emissiveStrengthEnabled.subscribe(
     (enabled) =>
       (state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength =
-        enabled),
+        enabled)
   );
   listenForRedraw(uiModel.emissiveStrengthEnabled);
 
   uiModel.iblEnabled.subscribe(
-    (iblEnabled) => (state.renderingParameters.useIBL = iblEnabled),
+    (iblEnabled) => (state.renderingParameters.useIBL = iblEnabled)
   );
   listenForRedraw(uiModel.iblEnabled);
 
   uiModel.iblIntensity.subscribe(
     (iblIntensity) =>
-      (state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity)),
+      (state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity))
   );
   listenForRedraw(uiModel.iblIntensity);
 
   uiModel.renderEnvEnabled.subscribe(
     (renderEnvEnabled) =>
-      (state.renderingParameters.renderEnvironmentMap = renderEnvEnabled),
+      (state.renderingParameters.renderEnvironmentMap = renderEnvEnabled)
   );
   listenForRedraw(uiModel.renderEnvEnabled);
 
   uiModel.blurEnvEnabled.subscribe(
     (blurEnvEnabled) =>
-      (state.renderingParameters.blurEnvironmentMap = blurEnvEnabled),
+      (state.renderingParameters.blurEnvironmentMap = blurEnvEnabled)
   );
   listenForRedraw(uiModel.blurEnvEnabled);
 
   uiModel.punctualLightsEnabled.subscribe(
     (punctualLightsEnabled) =>
-      (state.renderingParameters.usePunctual = punctualLightsEnabled),
+      (state.renderingParameters.usePunctual = punctualLightsEnabled)
   );
   listenForRedraw(uiModel.punctualLightsEnabled);
 
@@ -313,7 +318,7 @@ export default async () => {
   listenForRedraw(uiModel.environmentRotation);
 
   uiModel.clearColor.subscribe(
-    (clearColor) => (state.renderingParameters.clearColor = clearColor),
+    (clearColor) => (state.renderingParameters.clearColor = clearColor)
   );
   listenForRedraw(uiModel.clearColor);
 
@@ -326,7 +331,7 @@ export default async () => {
   });
 
   uiModel.activeAnimations.subscribe(
-    (animations) => (state.animationIndices = animations),
+    (animations) => (state.animationIndices = animations)
   );
   listenForRedraw(uiModel.activeAnimations);
 
@@ -363,6 +368,8 @@ export default async () => {
     }
   });
   listenForRedraw(uiModel.zoom);
+
+  listenForRedraw(gltfLoaded);
 
   // configure the animation loop
   const past = {};
