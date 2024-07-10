@@ -27,7 +27,7 @@ jobs:
 
       - name: Deploy to Khronos repo
         continue-on-error: true # If no changes are commited this action fails
-        uses: JamesIves/github-pages-deploy-action@4.1.0
+        uses: JamesIves/github-pages-deploy-action@4.6.3
         with:
           branch: main
           folder: app_web/dist/
