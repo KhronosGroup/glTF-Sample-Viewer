@@ -33,6 +33,12 @@ class gltfTexture extends GltfObject
     {
         super.fromJson(jsonTexture);
         if (jsonTexture.extensions !== undefined &&
+            jsonTexture.extensions.EXT_texture_webp !== undefined &&
+            jsonTexture.extensions.EXT_texture_webp.source !== undefined)
+        {
+            this.source = jsonTexture.extensions.EXT_texture_webp.source;
+        }
+        if (jsonTexture.extensions !== undefined &&
             jsonTexture.extensions.KHR_texture_basisu !== undefined &&
             jsonTexture.extensions.KHR_texture_basisu.source !== undefined)
         {
