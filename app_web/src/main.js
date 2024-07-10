@@ -364,6 +364,8 @@ export default async () => {
   });
   listenForRedraw(uiModel.zoom);
 
+  listenForRedraw(gltfLoaded);
+
   // configure the animation loop
   const past = {};
   const update = () => {
