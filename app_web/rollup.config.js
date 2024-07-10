@@ -1,15 +1,15 @@
 import glslify from 'rollup-plugin-glslify';
 import resolve from '@rollup/plugin-node-resolve';
-import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
 import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
-import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
-import json from '@rollup/plugin-json';
 import {wasm} from "@rollup/plugin-wasm";
+import sourcemaps from 'rollup-plugin-sourcemaps';
+import license from "rollup-plugin-license"
 
 export default {
+    strictDeprecations: true,
     input: 'src/main.js',
     output: [
         {
@@ -21,7 +21,6 @@ export default {
     ],
     plugins: [
         wasm(),
-        json(),
         glslify({
             include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
             compress: false
@@ -31,12 +30,10 @@ export default {
             preferBuiltins: true,
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
-        builtins(),
-        scss(),
+        scss(), // Version 4 is not working
         copy({
             targets: [
                 { src: ["index.html", "main.js"], dest: "dist/" },
-                { src: ["../assets/models/Models", "!../asset/models/.git"], dest: "dist/assets/models" },
                 { src: ["../assets/environments/*.hdr", "../assets/environments/*.jpg", "!../asset/environments/.git"], dest: "dist/assets/environments" },
                 { src: ["../assets/images"], dest: "dist/assets" },
                 { src: ["../assets/ui"], dest: "dist/assets" },
@@ -46,12 +43,20 @@ export default {
             verbose: true
         }),
         replace({
-            'process.env.NODE_ENV': JSON.stringify('production'),
+            'process.env.NODE_ENV': JSON.stringify('production'), // This resolves an issue with vue
             preventAssignment: true,
         }),
-        alias({
-            'vue': 'vue/dist/vue.esm.js'
-        }),
         commonjs(),
+        sourcemaps(),
+        license({
+            banner: {
+                content: {
+                    file: 'LICENSE_BANNER.txt',
+                }
+            },
+            thirdParty:{
+                includeSelf: true
+            }
+        })
     ]
 };
