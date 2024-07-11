@@ -85,6 +85,10 @@ class gltfImage extends GltfObject
         {
             this.mimeType = ImageMimeType.PNG;
         }
+        else if(extension == "webp" )
+        {
+            this.mimeType = ImageMimeType.WEBP;
+        }
         else
         {
             console.warn("MimeType not defined");
@@ -116,7 +120,7 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
             this.image = await gltfImage.loadHTMLImage(this.uri).catch( (error) => {
                 console.error(error);
@@ -160,7 +164,7 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if(typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        else if(typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
             const blob = new Blob([array], { "type": this.mimeType });
             const objectURL = URL.createObjectURL(blob);
@@ -221,7 +225,7 @@ class gltfImage extends GltfObject
                 console.warn('Loading of ktx images failed: KtxDecoder not initalized');
             }
         }
-        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG))
+        else if (typeof(Image) !== 'undefined' && (this.mimeType === ImageMimeType.JPEG || this.mimeType === ImageMimeType.PNG || this.mimeType === ImageMimeType.WEBP))
         {
             const imageData = await AsyncFileReader.readAsDataURL(foundFile[1]).catch( () => {
                 console.error("Could not load image with FileReader");

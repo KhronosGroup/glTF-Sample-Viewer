@@ -6,6 +6,7 @@ import {wasm} from "@rollup/plugin-wasm";
 
 
 export default {
+    strictDeprecations: true,
     input: ['source/gltf-sample-viewer.js'],
     output: [
         {
@@ -20,10 +21,10 @@ export default {
         }
     ],
     plugins: [
-        wasm(),
+        wasm( {fileName: "libs/[name][extname]", publicPath: "./"} ),
         glslify(),
         resolve({
-            browser: false,
+            browser: true,
             preferBuiltins: false,
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),

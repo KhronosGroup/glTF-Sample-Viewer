@@ -119,8 +119,7 @@ vec3 applyVolumeAttenuation(vec3 radiance, float transmissionDistance, vec3 atte
     else
     {
         // Compute light attenuation using Beer's law.
-        vec3 attenuationCoefficient = -log(attenuationColor) / attenuationDistance;
-        vec3 transmittance = exp(-attenuationCoefficient * transmissionDistance); // Beer's law
+        vec3 transmittance = pow(attenuationColor, vec3(transmissionDistance / attenuationDistance));
         return transmittance * radiance;
     }
 }

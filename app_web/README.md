@@ -58,3 +58,14 @@ Debugging
 * Open the project directory in Visual Studio Code and select `Debug->Add Configuration->Chrome` or `Debug->Add Configuration->Firefox` so the `.vscode/launch.json` file is created.
 * Append `/app_web/dist` to `${workspaceFolder}` in the `launch.json` file
 * `Debug->Start Debugging` should now launch a Chrome or Firefox window with the sample viewer and VS Code breakpoints should be hit.
+
+### Known Issues
+npm install give the following warning:
+```
+npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm WARN deprecated source-map-resolve@0.6.0: See https://github.com/lydell/source-map-resolve#deprecated
+npm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+```
+These warnings come from rollup plugins copy and sourcemaps, both are dev dependencies and not used in the final distribution.\
+Sourcemap is used to make debugging of @khronosgroup/gltf-viewer possible.\
+Copy is used to copy all required files to dist.
