@@ -6,6 +6,7 @@
   "module": "src/main.js",
   "type": "module",
   "scripts": {
+    "preinstall": "cd .. && npm install && npm run build",
     "build": "rollup -c",
     "dev": "concurrently \"npm run --prefix .. watch\" \"npm-watch\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
