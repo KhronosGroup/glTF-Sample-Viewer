@@ -130,7 +130,7 @@ void main()
     vec3 f_diffuse_fresnel_ibl = vec3(0.0);
     vec3 f_metal_fresnel_ibl = vec3(0.0);
     vec3 f_emissive = vec3(0.0);
-    vec3 f_clearcoat = vec3(0.0);
+    vec3 clearcoat_brdf = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
     vec3 f_transmission = vec3(0.0);
 
@@ -189,7 +189,7 @@ void main()
 
 
 #ifdef MATERIAL_CLEARCOAT
-    f_clearcoat = getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness);
+    clearcoat_brdf = getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness);
 #endif
 
 #ifdef MATERIAL_SHEEN
@@ -199,7 +199,7 @@ void main()
 
     color = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, materialInfo.metallic);
     color = f_sheen + color * albedoSheenScaling;
-    color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
+    color = mix(color, clearcoat_brdf, clearcoatFactor * clearcoatFresnel);
 
 #ifdef HAS_OCCLUSION_MAP
     float ao = 1.0;
@@ -209,16 +209,11 @@ void main()
 
 #endif
 
-    
-    vec3 f_sheen_ibl = f_sheen;
-    vec3 f_clearcoat_ibl = f_clearcoat;
     f_diffuse = vec3(0.0);
     f_specular_dielectric = vec3(0.0);
     f_specular_metal = vec3(0.0);
     vec3 f_dielectric_brdf = vec3(0.0);
     vec3 f_metal_brdf = vec3(0.0);
-    f_sheen = vec3(0.0);
-    f_clearcoat = vec3(0.0);
 
 #ifdef USE_PUNCTUAL2
     //vec3 dielectric_brdf = mix(diffuse, specular_dielectric, dielectric_fresnel);
@@ -255,7 +250,7 @@ void main()
         vec3 l_specular_metal = vec3(0.0);
         vec3 l_dielectric_brdf = vec3(0.0);
         vec3 l_metal_brdf = vec3(0.0);
-        vec3 l_clearcoat = vec3(0.0);
+        vec3 l_clearcoat_brdf = vec3(0.0);
         vec3 l_sheen = vec3(0.0);
         float l_albedoSheenScaling = 1.0;
 
@@ -299,7 +294,7 @@ void main()
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
-            l_clearcoat = intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
+            l_clearcoat_brdf = intensity * getPunctualRadianceClearCoat(materialInfo.clearcoatNormal, v, l, h, VdotH,
                 materialInfo.clearcoatF0, materialInfo.clearcoatF90, materialInfo.clearcoatRoughness);
 #endif
 
@@ -311,7 +306,7 @@ void main()
         }
         vec3 l_color = mix(l_dielectric_brdf, l_metal_brdf, materialInfo.metallic);
         l_color = l_sheen + l_color * l_albedoSheenScaling;
-        l_color = l_color * (1.0 - clearcoatFactor * clearcoatFresnel) + l_clearcoat;
+        color = mix(l_color, l_clearcoat_brdf, clearcoatFactor * clearcoatFresnel);
         color += l_color;
     }
 #endif
@@ -328,7 +323,7 @@ void main()
 #ifdef MATERIAL_UNLIT
     color = baseColor.rgb;
 #else
-    color = f_emissive + color;
+    color = f_emissive * (1.0 - clearcoatFactor * clearcoatFresnel) + color;
 #endif
 
 #if DEBUG == DEBUG_NONE
