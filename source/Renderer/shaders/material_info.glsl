@@ -224,6 +224,8 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     info.f0 *= sgSample.rgb; // specular
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
 
+    info.f0_dielectric = info.f0;
+
     info.perceptualRoughness = 1.0 - info.perceptualRoughness; // 1 - glossiness
     info.c_diff = info.baseColor.rgb * (1.0 - max(max(info.f0.r, info.f0.g), info.f0.b));
     return info;
