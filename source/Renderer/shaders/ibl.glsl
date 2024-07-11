@@ -26,7 +26,7 @@ vec3 getIBLGGXFresnel(vec3 n, vec3 v, vec3 F0, float roughness, float specularWe
     vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
     vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
     vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
-    vec3 FssEss = specularWeight * k_S * f_ab.x + f_ab.y;
+    vec3 FssEss = specularWeight * (k_S * f_ab.x + f_ab.y);
     return FssEss;
 }
 
@@ -37,7 +37,7 @@ vec3 getIBLLambertianFresnel(vec3 n, vec3 v, float roughness, vec3 diffuseColor,
     vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
     vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
     vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
-    vec3 FssEss = specularWeight * k_S * f_ab.x + f_ab.y; // <--- GGX / specular light contribution (scale it down if the specularWeight is low)
+    vec3 FssEss = specularWeight * (k_S * f_ab.x + f_ab.y); // <--- GGX / specular light contribution (scale it down if the specularWeight is low)
 
     // Multiple scattering, from Fdez-Aguera
     float Ems = (1.0 - (f_ab.x + f_ab.y));
