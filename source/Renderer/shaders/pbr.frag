@@ -215,7 +215,7 @@ void main()
     vec3 f_dielectric_brdf = vec3(0.0);
     vec3 f_metal_brdf = vec3(0.0);
 
-#ifdef USE_PUNCTUAL2
+#ifdef USE_PUNCTUAL
     //vec3 dielectric_brdf = mix(diffuse, specular_dielectric, dielectric_fresnel);
     //vec3 metal_brdf = metal_fresnel * specular_metal;
 
@@ -242,8 +242,8 @@ void main()
         float LdotH = clampedDot(l, h);
         float VdotH = clampedDot(v, h);
 
-        vec3 dielectric_fresnel = F_Schlick(materialInfo.f0_dielectric * materialInfo.specularWeight, materialInfo.f90_dielectric, NdotV);
-        vec3 metal_fresnel = baseColor.rgb + (vec3(1.0) - baseColor.rgb) * pow(1 - abs(VdotH), 5);
+        vec3 dielectric_fresnel = F_Schlick(materialInfo.f0_dielectric * materialInfo.specularWeight, materialInfo.f90_dielectric, abs(VdotH));
+        vec3 metal_fresnel = F_Schlick(baseColor.rgb, vec3(1.0), abs(VdotH));
         
         vec3 l_diffuse = BRDF_lambertian(baseColor.rgb);
         vec3 l_specular_dielectric = vec3(0.0);
@@ -271,8 +271,6 @@ void main()
         l_diffuse = mix(l_diffuse, transmittedLight, materialInfo.transmissionFactor);
 #endif
 
-        if (NdotL > 0.0 || NdotV > 0.0)
-        {
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
@@ -286,7 +284,7 @@ void main()
 #endif
 
             l_metal_brdf = metal_fresnel * l_specular_metal;
-            l_dielectric_brdf = mix(l_diffuse, l_specular_dielectric, dielectric_fresnel); // Do we need to handle vec3 fresnel here?
+            l_dielectric_brdf = mix(intensity * l_diffuse, l_specular_dielectric, dielectric_fresnel); // Do we need to handle vec3 fresnel here?
 
 #ifdef MATERIAL_IRIDESCENCE
             l_metal_brdf = mix(l_metal_brdf, l_specular_metal * iridescenceFresnel, materialInfo.iridescenceFactor);
@@ -303,10 +301,9 @@ void main()
             l_albedoSheenScaling = min(1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotV, materialInfo.sheenRoughnessFactor),
                 1.0 - max3(materialInfo.sheenColorFactor) * albedoSheenScalingLUT(NdotL, materialInfo.sheenRoughnessFactor));
 #endif
-        }
         vec3 l_color = mix(l_dielectric_brdf, l_metal_brdf, materialInfo.metallic);
         l_color = l_sheen + l_color * l_albedoSheenScaling;
-        color = mix(l_color, l_clearcoat_brdf, clearcoatFactor * clearcoatFresnel);
+        l_color = mix(l_color, l_clearcoat_brdf, clearcoatFactor * clearcoatFresnel);
         color += l_color;
     }
 #endif
