@@ -152,7 +152,7 @@ float D_Charlie(float sheenRoughness, float NdotH)
 vec3 BRDF_lambertian(vec3 diffuseColor)
 {
     // see https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-    return (diffuseColor / M_PI); // 1.0 - specularWeight * => mix dielectric_fresnel * diffuse_bdrf
+    return (diffuseColor / M_PI);
 }
 
 //  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB

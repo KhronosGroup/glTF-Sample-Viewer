@@ -216,9 +216,6 @@ void main()
     vec3 f_metal_brdf = vec3(0.0);
 
 #ifdef USE_PUNCTUAL
-    //vec3 dielectric_brdf = mix(diffuse, specular_dielectric, dielectric_fresnel);
-    //vec3 metal_brdf = metal_fresnel * specular_metal;
-
     for (int i = 0; i < LIGHT_COUNT; ++i)
     {
         Light light = u_Lights[i];
