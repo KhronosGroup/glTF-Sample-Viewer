@@ -45,6 +45,7 @@ class UIModel
         this.clearcoatEnabled = app.clearcoatChanged.pipe();
         this.sheenEnabled = app.sheenChanged.pipe();
         this.transmissionEnabled = app.transmissionChanged.pipe();
+        this.diffuseTransmissionEnabled = app.diffuseTransmissionChanged.pipe();
         this.volumeEnabled = app.volumeChanged.pipe();
         this.iorEnabled = app.iorChanged.pipe();
         this.iridescenceEnabled = app.iridescenceChanged.pipe();

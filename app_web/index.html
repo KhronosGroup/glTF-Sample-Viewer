@@ -397,10 +397,13 @@
                                 <b-switch class="smallerLabel" v-model="sheenEnabled" v-on:input="sheenChanged.next($event.target.checked)">
                                     KHR_materials_sheen</b-switch>
                                 <b-switch class="smallerLabel" v-model="transmissionEnabled"
-                                    v-on:input="transmissionChanged.next($event.target.checked)" @input="transmissionTriggered">
+                                    v-on:input="transmissionChanged.next($event.target.checked)" @input="transmissionTriggered($event.target.checked)">
                                     KHR_materials_transmission</b-switch>
+                                <b-switch class="smallerLabel" v-model="diffuseTransmissionEnabled"
+                                    v-on:input="diffuseTransmissionChanged.next($event.target.checked)" @input="diffuseTransmissionTriggered($event.target.checked)">
+                                    KHR_materials_diffuse_transmission</b-switch>
                                 <b-switch class="smallerLabel"
-                                    v-bind:disabled="transmissionEnabled === false ? true : false"
+                                    v-bind:disabled="!transmissionEnabled && !diffuseTransmissionEnabled"
                                     v-model="volumeEnabled" v-on:input="volumeChanged.next($event.target.checked)">KHR_materials_volume</b-switch>
                                 <b-switch class="smallerLabel" v-model="iorEnabled" v-on:input="iorChanged.next($event.target.checked)">KHR_materials_ior</b-switch>
                                 <b-switch class="smallerLabel" v-model="specularEnabled" v-on:input="specularChanged.next($event.target.checked)">KHR_materials_specular</b-switch>

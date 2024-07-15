@@ -100,6 +100,10 @@ void main()
     materialInfo = getIridescenceInfo(materialInfo);
 #endif
 
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+    materialInfo = getDiffuseTransmissionInfo(materialInfo);
+#endif
+
 #ifdef MATERIAL_ANISOTROPY
     materialInfo = getAnisotropyInfo(materialInfo, normalInfo);
 #endif
@@ -123,9 +127,11 @@ void main()
     vec3 f_emissive = vec3(0.0);
     vec3 f_clearcoat = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
-    vec3 f_transmission = vec3(0.0);
+    vec3 f_specular_transmission = vec3(0.0);
+    vec3 f_diffuse_transmission = vec3(0.0);
 
     float albedoSheenScaling = 1.0;
+    float diffuseTransmissionThickness = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
     vec3 iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
@@ -134,6 +140,13 @@ void main()
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
     }
+#endif
+
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+#ifdef MATERIAL_VOLUME
+    diffuseTransmissionThickness = materialInfo.thickness *
+        (length(vec3(u_ModelMatrix[0].xyz)) + length(vec3(u_ModelMatrix[1].xyz)) + length(vec3(u_ModelMatrix[2].xyz))) / 3.0;
+#endif
 #endif
 
     // Calculate lighting contribution from image based lighting source (IBL)
@@ -149,6 +162,14 @@ void main()
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
 #endif
 
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+    vec3 diffuseTransmissionIBL = getIBLRadianceLambertian(-n, -v, materialInfo.perceptualRoughness, materialInfo.diffuseTransmissionColorFactor, materialInfo.f0, materialInfo.specularWeight);
+#ifdef MATERIAL_VOLUME
+        diffuseTransmissionIBL = applyVolumeAttenuation(diffuseTransmissionIBL, diffuseTransmissionThickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
+#endif
+    f_diffuse_transmission += diffuseTransmissionIBL;
+#endif
+
 #ifdef MATERIAL_CLEARCOAT
     f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0, 1.0);
 #endif
@@ -160,7 +181,7 @@ void main()
 #endif
 
 #if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
-    f_transmission += getIBLVolumeRefraction(
+    f_specular_transmission += getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
         materialInfo.c_diff, materialInfo.f0, materialInfo.f90,
@@ -234,6 +255,8 @@ void main()
 #endif
         }
 
+        vec3 lightIntensity = getLighIntensity(light, pointToLight);
+
         // BTDF (Bidirectional Transmittance Distribution Function)
 #ifdef MATERIAL_TRANSMISSION
         // If the light ray travels through the geometry, use the point it exits the geometry again.
@@ -242,17 +265,28 @@ void main()
         pointToLight -= transmissionRay;
         l = normalize(pointToLight);
 
-        vec3 intensity = getLighIntensity(light, pointToLight);
-        vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
+        vec3 transmittedLight = lightIntensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
 
 #ifdef MATERIAL_VOLUME
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
-        f_transmission += transmittedLight;
+        f_specular_transmission += transmittedLight;
+#endif // MATERIAL_TRANSMISSION
+
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+        vec3 lambertian = BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.diffuseTransmissionColorFactor, materialInfo.specularWeight, clampedDot(v, normalize(-l + v)));
+        vec3 transmittedDiffuseLight = lightIntensity * clampedDot(-n, l) * lambertian;
+
+#ifdef MATERIAL_VOLUME
+        transmittedDiffuseLight = applyVolumeAttenuation(transmittedDiffuseLight, diffuseTransmissionThickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
+
+        f_diffuse_transmission += transmittedDiffuseLight;
+#endif // MATERIAL_DIFFUSE_TRANSMISSION
+
     }
-#endif
+#endif // USE_PUNCTUAL
 
     f_emissive = u_EmissiveFactor;
 #ifdef MATERIAL_EMISSIVE_STRENGTH
@@ -293,8 +327,11 @@ void main()
     clearcoat *= clearcoatFactor;
 #endif
 
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+    diffuse = mix(diffuse, f_diffuse_transmission, materialInfo.diffuseTransmissionFactor);
+#endif
 #ifdef MATERIAL_TRANSMISSION
-    diffuse = mix(diffuse, f_transmission, materialInfo.transmissionFactor);
+    diffuse = mix(diffuse, f_specular_transmission, materialInfo.transmissionFactor);
 #endif
 
     vec3 color = vec3(0);
@@ -436,7 +473,7 @@ vec3 specularTexture = vec3(1.0);
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
 #if DEBUG == DEBUG_TRANSMISSION_VOLUME
-    g_finalColor.rgb = linearTosRGB(f_transmission * materialInfo.transmissionFactor);
+    g_finalColor.rgb = linearTosRGB(f_specular_transmission * materialInfo.transmissionFactor);
 #endif
 #if DEBUG == DEBUG_TRANSMISSION_FACTOR
     g_finalColor.rgb = vec3(materialInfo.transmissionFactor);
@@ -477,6 +514,19 @@ vec3 specularTexture = vec3(1.0);
     direction = (direction + vec2(1.0)) * 0.5; // [-1, 1] -> [0, 1]
 
     g_finalColor.rgb = vec3(direction, 0.0);
+#endif
+#endif
+
+    // Diffuse Transmission:
+#ifdef MATERIAL_DIFFUSE_TRANSMISSION
+#if DEBUG == DEBUG_DIFFUSE_TRANSMISSION
+    g_finalColor.rgb = linearTosRGB(f_diffuse_transmission * vec3(materialInfo.diffuseTransmissionFactor));
+#endif
+#if DEBUG == DEBUG_DIFFUSE_TRANSMISSION_FACTOR
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.diffuseTransmissionFactor));
+#endif
+#if DEBUG == DEBUG_DIFFUSE_TRANSMISSION_COLOR_FACTOR
+    g_finalColor.rgb = linearTosRGB(materialInfo.diffuseTransmissionColorFactor);
 #endif
 #endif
 }
