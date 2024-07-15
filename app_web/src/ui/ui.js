@@ -172,21 +172,21 @@ const appCreated = createApp({
                 this.renderEnvChanged.next(this.renderEnv);
             }
         },
-        transmissionTriggered: function()
+        transmissionTriggered: function(value)
         {
-            if (this.transmissionEnabled == false && this.diffuseTransmissionEnabled == false) {
+            if (value == false && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
-            } else if (this.transmissionEnabled == true && this.diffuseTransmissionEnabled == false) {
+            } else if (value == true && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
-        diffuseTransmissionTriggered: function()
+        diffuseTransmissionTriggered: function(value)
         {
-            if (this.diffuseTransmissionEnabled == false && this.transmissionEnabled == false) {
+            if (value == false && this.transmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
-            } else if (this.diffuseTransmissionEnabled == true && this.transmissionEnabled == false) {
+            } else if (value == true && this.transmissionEnabled == false) {
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
