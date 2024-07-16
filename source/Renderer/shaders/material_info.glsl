@@ -249,7 +249,6 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
 
     // Achromatic f0 based on IOR.
     info.c_diff = mix(info.baseColor.rgb,  vec3(0), info.metallic);
-    info.f0 = mix(info.f0, info.baseColor.rgb, info.metallic);
     return info;
 }
 #endif
