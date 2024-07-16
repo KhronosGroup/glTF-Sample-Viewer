@@ -78,32 +78,34 @@ class ResourceLoader
         await init(await mikktspace());
         await gltfLoader.load(gltf, this.view.context, filename, data);
         
-        await this.filterEnvironments(gltf, data)
+        await this.filterEnvironments(gltf, data);
         return gltf;
     }
         
     async filterEnvironments(gltf, appendix)
-    {
+    {   
         function getFileByURI(uri, dataArray){
             for (let data of dataArray) { 
                 if (typeof (File) !== 'undefined' && data instanceof File){ 
                     if (data.name ===uri){
-                        return data
+                        return data;
                     }
                 }
             }
-            return undefined
+            return undefined;
         }
 
         if (gltf.environments===undefined){            
-            return
+            return;
         }
         
         for (let environment of gltf.environments){ 
-            let hdrFile = getFileByURI(environment.uri, appendix)
-            console.log(hdrFile ) 
-            environment.filteredEnvironment = await this.loadEnvironment(hdrFile)
-            environment.filteredEnvironment.intensity = environment.intensity
+            let hdrFile = getFileByURI(environment.uri, appendix);
+            if(hdrFile === undefined) {
+                hdrFile = environment.data;
+            }
+            environment.filteredEnvironment = await this.loadEnvironment(hdrFile);
+            environment.filteredEnvironment.intensity = environment.intensity;
         }
 
     }

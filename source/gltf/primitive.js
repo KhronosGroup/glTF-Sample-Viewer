@@ -283,7 +283,7 @@ class gltfPrimitive extends GltfObject
         }
 
         this.computeCentroid(gltf);
-        this.computeMeanDensity(gltf);
+        // this.computeMeanDensity(gltf);
     }
 
     computeCentroid(gltf)
