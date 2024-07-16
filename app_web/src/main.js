@@ -34,6 +34,10 @@ export default async () => {
             resourceLoader.initKtxLib();
 
             return from(resourceLoader.loadAsset(model.mainFile, model.additionalFiles).then( (gltfPackage) => {
+
+
+                state.files={mainFile:model.mainFile, additionalFiles: model.additionalFiles};
+
                 state.parsedgltf = gltfPackage.parsedgltf;
                 state.gltf = gltfPackage.gltf;
                 const defaultScene = state.gltf.scene;
