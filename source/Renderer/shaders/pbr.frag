@@ -153,6 +153,8 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
 
+    f_diffuse = getDiffuseLight(n) * baseColor.rgb ;
+
 #if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
     f_transmission = getIBLVolumeRefraction(
         n, v,
@@ -177,7 +179,6 @@ void main()
     f_metal_brdf_ibl = f_metal_fresnel_ibl * f_specular_metal;
  
     vec3 f_dielectric_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
-    f_diffuse = getDiffuseLight(n) * baseColor.rgb ;
     f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric,  f_dielectric_fresnel_ibl);
 
 #ifdef MATERIAL_IRIDESCENCE
