@@ -68,7 +68,6 @@ struct MaterialInfo
     vec3 f0_dielectric;
 
     float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
-    vec3 c_diff;
 
     float fresnel_w;
 
@@ -227,7 +226,6 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     info.f0_dielectric = info.f0;
 
     info.perceptualRoughness = 1.0 - info.perceptualRoughness; // 1 - glossiness
-    info.c_diff = info.baseColor.rgb * (1.0 - max(max(info.f0.r, info.f0.g), info.f0.b));
     return info;
 }
 #endif
@@ -247,8 +245,6 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info)
     info.metallic *= mrSample.b;
 #endif
 
-    // Achromatic f0 based on IOR.
-    info.c_diff = mix(info.baseColor.rgb,  vec3(0), info.metallic);
     return info;
 }
 #endif
@@ -288,7 +284,6 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
     info.f0_dielectric = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
     info.specularWeight = u_KHR_materials_specular_specularFactor * specularTexture.a;
     info.f90_dielectric = vec3(info.specularWeight);
-    info.c_diff = mix(info.baseColor.rgb, vec3(0), info.metallic);
     return info;
 }
 #endif
