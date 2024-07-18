@@ -126,9 +126,6 @@ void main()
     vec3 f_diffuse = vec3(0.0);
     vec3 f_dielectric_brdf_ibl = vec3(0.0);
     vec3 f_metal_brdf_ibl = vec3(0.0);
-    vec3 f_specular_fresnel_ibl = vec3(0.0);
-    vec3 f_diffuse_fresnel_ibl = vec3(0.0);
-    vec3 f_metal_fresnel_ibl = vec3(0.0);
     vec3 f_emissive = vec3(0.0);
     vec3 clearcoat_brdf = vec3(0.0);
     vec3 f_sheen = vec3(0.0);
@@ -155,11 +152,6 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    // Calculate fresnel mix for IBL
-    f_specular_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.f0_dielectric, materialInfo.perceptualRoughness, materialInfo.specularWeight);
-    f_diffuse_fresnel_ibl = getIBLLambertianFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
-    f_metal_fresnel_ibl = getIBLGGXFresnel(n, v, baseColor.rgb, materialInfo.perceptualRoughness, 1.0);
-    f_diffuse = getDiffuseLight(n) * baseColor.rgb ;
 
 #if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
     f_transmission = getIBLVolumeRefraction(
@@ -179,8 +171,14 @@ void main()
     f_specular_dielectric = f_specular_metal;
 #endif
 
+    // Calculate fresnel mix for IBL  
+
+    vec3 f_metal_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.perceptualRoughness, baseColor.rgb, 1.0);
     f_metal_brdf_ibl = f_metal_fresnel_ibl * f_specular_metal;
-    f_dielectric_brdf_ibl = f_diffuse_fresnel_ibl * f_diffuse + f_specular_fresnel_ibl * f_specular_dielectric;
+ 
+    vec3 f_dielectric_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
+    f_diffuse = getDiffuseLight(n) * baseColor.rgb ;
+    f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric,  f_dielectric_fresnel_ibl);
 
 #ifdef MATERIAL_IRIDESCENCE
     f_metal_brdf_ibl = mix(f_metal_brdf_ibl, f_specular_metal * iridescenceFresnel, materialInfo.iridescenceFactor);
@@ -207,7 +205,7 @@ void main()
     color = color * (1.0 + u_OcclusionStrength * (ao - 1.0)); 
 #endif
 
-#endif
+#endif //end USE_IBL
 
     f_diffuse = vec3(0.0);
     f_specular_dielectric = vec3(0.0);

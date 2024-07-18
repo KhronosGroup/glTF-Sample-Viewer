@@ -17,7 +17,7 @@ vec4 getSheenSample(vec3 reflection, float lod)
     return textureLod(u_CharlieEnvSampler, u_EnvRotation * reflection, lod) * u_EnvIntensity;
 }
 
-vec3 getIBLGGXFresnel(vec3 n, vec3 v, vec3 F0, float roughness, float specularWeight)
+vec3 getIBLGGXFresnel(vec3 n, vec3 v, float roughness, vec3 F0, float specularWeight)
 {
     // see https://bruop.github.io/ibl/#single_scattering_results at Single Scattering Results
     // Roughness dependent fresnel, from Fdez-Aguera
@@ -35,28 +35,6 @@ vec3 getIBLGGXFresnel(vec3 n, vec3 v, vec3 F0, float roughness, float specularWe
 
     return FssEss + FmsEms;
 }
-
-vec3 getIBLLambertianFresnel(vec3 n, vec3 v, float roughness, vec3 F0, float specularWeight) 
-{
-    // see https://bruop.github.io/ibl/#single_scattering_results at Single Scattering Results
-    // Roughness dependent fresnel, from Fdez-Aguera
-    float NdotV = clampedDot(n, v);
-    vec2 brdfSamplePoint = clamp(vec2(NdotV, roughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 f_ab = texture(u_GGXLUT, brdfSamplePoint).rg;
-    vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
-    vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
-    vec3 FssEss = specularWeight * (k_S * f_ab.x + f_ab.y); // <--- GGX / specular light contribution (scale it down if the specularWeight is low)
-
-    // Multiple scattering, from Fdez-Aguera
-    float Ems = (1.0 - (f_ab.x + f_ab.y));
-    vec3 F_avg = specularWeight * (F0 + (1.0 - F0) / 21.0);
-    vec3 FmsEms = Ems * FssEss * F_avg / (1.0 - F_avg * Ems);
-
-
-    vec3 k_D =  (1.0 - (FssEss + FmsEms)); // we use (1.0 - (FssEss + FmsEms)) instead of (1.0 - FssEss + FmsEms) as indicated by the formula in the blog post (might be a typo in the implementation)
-    return k_D; 
-}
-
 
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness)
 {
