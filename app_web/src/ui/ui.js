@@ -29,6 +29,7 @@ const appCreated = createApp({
             clearcoatChanged: new Subject(),
             sheenChanged: new Subject(),
             transmissionChanged: new Subject(),
+            diffuseTransmissionChanged: new Subject(),
             cameraExport: new Subject(),
 
             captureCanvas: new Subject(),
@@ -92,6 +93,7 @@ const appCreated = createApp({
             volumeEnabled: true,
             iorEnabled: true,
             iridescenceEnabled: true,
+            diffuseTransmissionEnabled: true,
             anisotropyEnabled: true,
             dispersionEnabled: true,
             specularEnabled: true,
@@ -105,7 +107,7 @@ const appCreated = createApp({
             uiVisible: true,
             
 
-            // these are handls for certain ui change related things
+            // these are handles for certain ui change related things
             environmentVisiblePrefState: true,
             volumeEnabledPrefState: true,
         };
@@ -170,20 +172,26 @@ const appCreated = createApp({
                 this.renderEnvChanged.next(this.renderEnv);
             }
         },
-        transmissionTriggered: function()
+        transmissionTriggered: function(value)
         {
-            if(this.transmissionEnabled == false)
-            {
+            if (value == false && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
+            } else if (value == true && this.diffuseTransmissionEnabled == false) {
+                this.volumeEnabled = this.volumeEnabledPrefState;
             }
-            else{
+        },
+        diffuseTransmissionTriggered: function(value)
+        {
+            if (value == false && this.transmissionEnabled == false) {
+                this.volumeEnabledPrefState = this.volumeEnabled;
+                this.volumeEnabled = false;
+            } else if (value == true && this.transmissionEnabled == false) {
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
         collapseActiveTab : function(event, item) {
-            if (item === this.activeTab)
-            {
+            if (item === this.activeTab) {
                 this.tabsHidden = !this.tabsHidden;
                 
                 if(this.tabsHidden) {
@@ -200,8 +208,7 @@ const appCreated = createApp({
                     activeNavElement.classList.add('is-active');
                 }
                 return;
-            }
-            else {
+            } else {
                 // reset tab visibility
                 this.tabsHidden = false;
             }
