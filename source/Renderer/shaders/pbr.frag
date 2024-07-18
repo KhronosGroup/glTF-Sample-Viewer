@@ -157,9 +157,9 @@ void main()
 #ifdef USE_IBL
     // Calculate fresnel mix for IBL
     f_specular_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.f0_dielectric, materialInfo.perceptualRoughness, materialInfo.specularWeight);
-    f_diffuse_fresnel_ibl = getIBLLambertianFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
+    f_diffuse_fresnel_ibl = getIBLLambertianFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
     f_metal_fresnel_ibl = getIBLGGXFresnel(n, v, baseColor.rgb, materialInfo.perceptualRoughness, 1.0);
-    f_diffuse = getDiffuseLight(n);
+    f_diffuse = getDiffuseLight(n) * baseColor.rgb ;
 
 #if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
     f_transmission = getIBLVolumeRefraction(
