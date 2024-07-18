@@ -57,8 +57,7 @@ void main()
     
     // The default index of refraction of 1.5 yields a dielectric normal incidence reflectance of 0.04.
     materialInfo.ior = 1.5;
-    materialInfo.f0 = vec3(0.04);
-    materialInfo.f0_dielectric = materialInfo.f0;
+    materialInfo.f0_dielectric = vec3(0.04);
     materialInfo.specularWeight = 1.0;
 
     // Anything less than 2% is physically impossible and is instead considered to be shadowing. Compare to "Real-Time-Rendering" 4th editon on page 325.
@@ -121,8 +120,6 @@ void main()
     // convert to material roughness by squaring the perceptual roughness.
     materialInfo.alphaRoughness = materialInfo.perceptualRoughness * materialInfo.perceptualRoughness;
 
-    // Compute reflectance.
-    float reflectance = max(max(materialInfo.f0.r, materialInfo.f0.g), materialInfo.f0.b);
 
     // LIGHTING
     vec3 f_specular_dielectric = vec3(0.0);
@@ -143,8 +140,8 @@ void main()
     float diffuseTransmissionThickness = 1.0;
 
 #ifdef MATERIAL_IRIDESCENCE
-    vec3 iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
-    vec3 iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
+    vec3 iridescenceFresnel_dielectric = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0_dielectric);
+    vec3 iridescenceFresnel_metallic = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, baseColor.rgb);
 
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
@@ -182,7 +179,7 @@ void main()
     f_specular_transmission = getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
-        baseColor.rgb, materialInfo.f0, materialInfo.f90,
+        baseColor.rgb, materialInfo.f0_dielectric, materialInfo.f90,
         v_Position, u_ModelMatrix, u_ViewMatrix, u_ProjectionMatrix,
         materialInfo.ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance, materialInfo.dispersion);
     f_diffuse = mix(f_diffuse, f_specular_transmission, materialInfo.transmissionFactor);
@@ -201,12 +198,12 @@ void main()
     vec3 f_metal_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.perceptualRoughness, baseColor.rgb, 1.0);
     f_metal_brdf_ibl = f_metal_fresnel_ibl * f_specular_metal;
  
-    vec3 f_dielectric_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
+    vec3 f_dielectric_fresnel_ibl = getIBLGGXFresnel(n, v, materialInfo.perceptualRoughness, materialInfo.f0_dielectric, materialInfo.specularWeight);
     f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric,  f_dielectric_fresnel_ibl);
 
 #ifdef MATERIAL_IRIDESCENCE
-    f_metal_brdf_ibl = mix(f_metal_brdf_ibl, f_specular_metal * iridescenceFresnel, materialInfo.iridescenceFactor);
-    f_dielectric_brdf_ibl = mix(f_dielectric_brdf_ibl, rgb_mix(f_diffuse, f_specular_dielectric, iridescenceFresnel), materialInfo.iridescenceFactor);
+    f_metal_brdf_ibl = mix(f_metal_brdf_ibl, f_specular_metal * iridescenceFresnel_metallic, materialInfo.iridescenceFactor);
+    f_dielectric_brdf_ibl = mix(f_dielectric_brdf_ibl, rgb_mix(f_diffuse, f_specular_dielectric, iridescenceFresnel_dielectric), materialInfo.iridescenceFactor);
 #endif
 
 
@@ -296,7 +293,7 @@ void main()
         pointToLight -= transmissionRay;
         l = normalize(pointToLight);
 
-        vec3 transmittedLight = lightIntensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, baseColor.rgb, materialInfo.ior);
+        vec3 transmittedLight = lightIntensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0_dielectric, materialInfo.f90, baseColor.rgb, materialInfo.ior);
 
 #ifdef MATERIAL_VOLUME
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
@@ -320,8 +317,8 @@ void main()
         l_dielectric_brdf = mix(l_diffuse, l_specular_dielectric, dielectric_fresnel); // Do we need to handle vec3 fresnel here?
 
 #ifdef MATERIAL_IRIDESCENCE
-        l_metal_brdf = mix(l_metal_brdf, l_specular_metal * iridescenceFresnel, materialInfo.iridescenceFactor);
-        l_dielectric_brdf = mix(l_dielectric_brdf, rgb_mix(l_diffuse, l_specular_dielectric, iridescenceFresnel), materialInfo.iridescenceFactor);
+        l_metal_brdf = mix(l_metal_brdf, l_specular_metal * iridescenceFresnel_metallic, materialInfo.iridescenceFactor);
+        l_dielectric_brdf = mix(l_dielectric_brdf, rgb_mix(l_diffuse, l_specular_dielectric, iridescenceFresnel_dielectric), materialInfo.iridescenceFactor);
 #endif
 
 #ifdef MATERIAL_CLEARCOAT
@@ -502,7 +499,7 @@ vec3 specularTexture = vec3(1.0);
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE
-    g_finalColor.rgb = iridescenceFresnel * materialInfo.iridescenceFactor;
+    g_finalColor.rgb = mix(iridescenceFresnel_dielectric, iridescenceFresnel_metallic, materialInfo.metallic) * materialInfo.iridescenceFactor;
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = vec3(materialInfo.iridescenceFactor);

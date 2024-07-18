@@ -68,7 +68,6 @@ struct MaterialInfo
 {
     float ior;
     float perceptualRoughness;      // roughness value, as authored by the model creator (input to shader)
-    vec3 f0;                        // full reflectance color (n incidence angle)
     vec3 f0_dielectric;
 
     float alphaRoughness;           // roughness mapped to a more linear change in the roughness (proposed by [2])
@@ -221,16 +220,14 @@ vec4 getBaseColor()
 #ifdef MATERIAL_SPECULARGLOSSINESS
 MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
 {
-    info.f0 = u_SpecularFactor;
+    info.f0_dielectric = u_SpecularFactor;
     info.perceptualRoughness = u_GlossinessFactor;
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
     vec4 sgSample = texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV());
     info.perceptualRoughness *= sgSample.a ; // glossiness to roughness
-    info.f0 *= sgSample.rgb; // specular
+    info.f0_dielectric *= sgSample.rgb; // specular
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
-
-    info.f0_dielectric = info.f0;
 
     info.perceptualRoughness = 1.0 - info.perceptualRoughness; // 1 - glossiness
     return info;
@@ -288,7 +285,7 @@ MaterialInfo getSpecularInfo(MaterialInfo info)
     specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
 #endif
 
-    info.f0_dielectric = min(info.f0 * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
+    info.f0_dielectric = min(info.f0_dielectric * u_KHR_materials_specular_specularColorFactor * specularTexture.rgb, vec3(1.0));
     info.specularWeight = u_KHR_materials_specular_specularFactor * specularTexture.a;
     info.f90_dielectric = vec3(info.specularWeight);
     return info;
@@ -400,7 +397,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 #ifdef MATERIAL_IOR
 MaterialInfo getIorInfo(MaterialInfo info)
 {
-    info.f0 = vec3(pow(( u_Ior - 1.0) /  (u_Ior + 1.0), 2.0));
+    info.f0_dielectric = vec3(pow(( u_Ior - 1.0) /  (u_Ior + 1.0), 2.0));
     info.ior = u_Ior;
     return info;
 }
