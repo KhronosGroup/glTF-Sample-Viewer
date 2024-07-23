@@ -149,10 +149,8 @@ GltfState.DebugOutput = {
         EMISSIVE: "Emissive",
     },
 
-    /** output metallic roughness */
+    /** metallic roughness */
     mr: {
-        /** output the combined metallic roughness */
-        METALLIC_ROUGHNESS: "Metallic Roughness",
         /** output the base color value */
         BASECOLOR: "Base Color",
         /** output the metallic value from pbr metallic roughness */
@@ -161,69 +159,57 @@ GltfState.DebugOutput = {
         ROUGHNESS: "Roughness",
     },
 
-    /** output clearcoat lighting */
+    /** KHR_materials_clearcoat */
     clearcoat: {
-        /** output the combined clear coat */
-        CLEARCOAT: "ClearCoat",
-        /** output the clear coat factor */
-        CLEARCOAT_FACTOR: "ClearCoat Factor",
+        /** output the clear coat strength */
+        CLEARCOAT_FACTOR: "ClearCoat Strength",
         /** output the clear coat roughness */
         CLEARCOAT_ROUGHNESS: "ClearCoat Roughness",
         /** output the clear coat normal */
         CLEARCOAT_NORMAL: "ClearCoat Normal",
     },
 
-    /** output sheen lighting */
+    /** KHR_materials_sheen */
     sheen: {
-        /** output the combined sheen */
-        SHEEN: "Sheen",
         /** output the sheen color*/
         SHEEN_COLOR: "Sheen Color",
         /** output the sheen roughness*/
         SHEEN_ROUGHNESS: "Sheen Roughness",
     },
 
-    /** output specular lighting */
+    /** KHR_materials_specular */
     specular: {
-        /** output the combined specular */
-        SPECULAR: "Specular",
-        /** output the specular factor*/
-        SPECULAR_FACTOR: "Specular Factor",
+        /** output the specular strength*/
+        SPECULAR_FACTOR: "Specular Strength",
         /** output the specular color*/
         SPECULAR_COLOR: "Specular Color",
     },
 
-    /** output tranmission lighting */
+    /** KHR_materials_transmission */
     transmission: {
-        /** output the combined transmission/volume */
-        TRANSMISSION_VOLUME: "Transmission/Volume",
-        /** output the transmission factor*/
-        TRANSMISSION_FACTOR: "Transmission Factor",
+        /** output the transmission strength*/
+        TRANSMISSION_FACTOR: "Transmission Strength",
         /** output the volume thickness*/
         VOLUME_THICKNESS: "Volume Thickness",
     },
 
-    /** output diffuse tranmission lighting */
+    /** KHR_materials_diffuse_tranmission */
     diffuseTransmission: {
-        /** output the combined diffuse tranmission */
-        DIFFUSE_TRANSMISSION: "Diffuse Transmission",
-        /** output the diffuse tranmission factor */
-        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Factor",
+        /** output the diffuse tranmission strength */
+        DIFFUSE_TRANSMISSION_FACTOR: "Diffuse Transmission Strength",
         /** output the diffuse tranmission color factor */
-        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color Factor",
+        DIFFUSE_TRANSMISSION_COLOR_FACTOR: "Diffuse Transmission Color",
     },
 
-    /** output iridescence */
+    /** KHR_materials_iridescence */
     iridescence: {
-        /** output the combined iridescence */
-        IRIDESCENCE: "Iridescence",
-        /** output the iridescence factor*/
-        IRIDESCENCE_FACTOR: "Iridescence Factor",
+        /** output the iridescence strength*/
+        IRIDESCENCE_FACTOR: "Iridescence Strength",
         /** output the iridescence thickness*/
         IRIDESCENCE_THICKNESS: "Iridescence Thickness",
     },
 
-    /** output anisotropy */
+    /** KHR_materials_anisotropy */
     anisotropy: {
         /** output the anisotropic strength*/
         ANISOTROPIC_STRENGTH: "Anisotropic Strength",

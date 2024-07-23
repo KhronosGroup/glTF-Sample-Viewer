@@ -84,3 +84,10 @@ float applyIorToRoughness(float roughness, float ior)
     // an IOR of 1.5 results in the default amount of microfacet refraction.
     return roughness * clamp(ior * 2.0 - 2.0, 0.0, 1.0);
 }
+
+vec3 rgb_mix(vec3 base, vec3 layer, vec3 rgb_alpha)
+{
+    float rgb_alpha_max = max(rgb_alpha.r, max(rgb_alpha.g, rgb_alpha.b));
+    return (1.0 - rgb_alpha_max) * base + rgb_alpha * layer;
+}
+
