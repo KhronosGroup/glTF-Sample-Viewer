@@ -170,8 +170,7 @@ void main()
 #ifdef MATERIAL_VOLUME
         diffuseTransmissionIBL = applyVolumeAttenuation(diffuseTransmissionIBL, diffuseTransmissionThickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
-    f_diffuse_transmission += diffuseTransmissionIBL;
-    f_diffuse = mix(f_diffuse, f_diffuse_transmission, materialInfo.diffuseTransmissionFactor);
+    f_diffuse = mix(f_diffuse, diffuseTransmissionIBL, materialInfo.diffuseTransmissionFactor);
 #endif
 
 
@@ -282,7 +281,6 @@ void main()
         diffuse_btdf = applyVolumeAttenuation(diffuse_btdf, diffuseTransmissionThickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
         l_diffuse = mix(l_diffuse, diffuse_btdf, materialInfo.diffuseTransmissionFactor);
-        f_diffuse_transmission += diffuse_btdf;
 #endif // MATERIAL_DIFFUSE_TRANSMISSION
 
         // BTDF (Bidirectional Transmittance Distribution Function)
