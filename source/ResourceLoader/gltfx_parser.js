@@ -288,11 +288,16 @@ class GltfxParser
             ///
             /// 
 
+            const skip_lod_loading = false
+
+            if(skip_lod_loading) {
+                // load lods in increment
+                continue    
+            }
 
             // load LODs for asset as well:  
             if(asset.hasOwnProperty("lod"))
             { 
-                continue // debug -> load lods in increment
                 for (let level = 0; level < asset.lod.length; level++) 
                 {
                     const uri = asset["lod"][level]["uri"] // array
@@ -420,6 +425,41 @@ class GltfxParser
                 
             } 
         }
+
+        // Connect nodes offered by assets and expected by lod node
+        for (let id = 0; id < mergedGLTF["nodes"].length; id++) 
+            {
+                if(mergedGLTF["nodes"][id].hasOwnProperty("extras") &&
+                    mergedGLTF["nodes"][id]["extras"].hasOwnProperty("expectAsset"))
+                {
+                    
+                    const assetID = mergedGLTF["nodes"][id]["extras"]["expectAsset"]
+                    const lodArray = mergedGLTF["nodes"][id]["extras"]["lod"]
+                    for (let level = 0; level < lodArray.length; level++)
+                     {
+                        const lodMarker = assetID + "_lod" + level
+                        const nodeID = this.getAssetNode(mergedGLTF, lodMarker)
+    
+                        if(nodeID===undefined)
+                        {
+                            console.log("gltfx parser: node undefined")
+                            continue
+                        }
+                        if(!mergedGLTF["nodes"][id].hasOwnProperty("extras"))
+                        {
+                            mergedGLTF["nodes"][id]["children"] = []
+                        }
+                        if(mergedGLTF["nodes"][id]["children"].includes(nodeID))
+                        {
+                            continue
+                        }
+                        
+                        mergedGLTF["nodes"][id]["children"].push(nodeID)
+                    }
+                    
+                } 
+            }
+
 
         // cleanup asset markers in the extras field
         const cleanup = false

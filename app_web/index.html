@@ -350,7 +350,7 @@
                             <h2 class="title is-spaced">Advanced Controls</h2>
                             
                             <b-field label="Level of Detail" class="smallerLabel">
-                                <button v-stream:click="loadHighQuality$" type="button" class="button is-rounded mb-2">Request Higher Quality</button>
+                                <!--<button v-stream:click="loadHighQuality$" type="button" class="button is-rounded mb-2">Request Higher Quality</button>-->
 
                                 <b-select v-stream:input="lodChanged$" v-model="lod">
                                     <option v-for="(item) in lods" v-bind:value="item.title">
