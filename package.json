@@ -7,8 +7,8 @@
   "type": "module",
   "scripts": {
     "preinstall": "cd ./glTF-Sample-Render && npm install && npm run build",
-    "build": "rollup -c",
-    "dev": "concurrently \"npm run --prefix ./glTF-Sample-Render watch\" \"npm-watch\" \"serve --listen 8000 dist\"",
+    "build": "cd ./glTF-Sample-Render && npm run build && rollup -c",
+    "dev": "concurrently \"npm-watch\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
@@ -20,7 +20,7 @@
         "src",
         "main.js",
         "index.html",
-        "glTF-Sample-Render/dist"
+        "glTF-Sample-Render/source"
       ],
       "extensions": "js,scss,html",
       "delay": 2500
