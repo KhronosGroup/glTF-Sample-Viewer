@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "preinstall": "cd ./glTF-Sample-Render && npm install && npm run build",
-    "build": "cd ./glTF-Sample-Render && npm run build && rollup -c",
+    "build": "cd ./glTF-Sample-Render && npm run build && cd .. && rollup -c",
+    "build:ui": "rollup -c",
     "dev": "concurrently \"npm-watch\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
@@ -17,13 +18,19 @@
   "watch": {
     "build": {
       "patterns": [
-        "src",
-        "main.js",
-        "index.html",
         "glTF-Sample-Render/source"
       ],
       "extensions": "js,scss,html",
-      "delay": 2500
+      "delay": 1000
+    },
+    "build:ui": {
+      "patterns": [
+        "src",
+        "main.js"
+      ],
+      "extensions": "js,scss,html",
+      "delay": 1000,
+      "runOnChangeOnly": true
     }
   },
   "repository": {
@@ -60,6 +67,7 @@
     "npm-watch": "^0.13.0",
     "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-glslify": "^1.3.1",
     "rollup-plugin-license": "^3.5.1",
     "rollup-plugin-scss": "^3.0.0",
