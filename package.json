@@ -6,12 +6,12 @@
   "module": "src/main.js",
   "type": "module",
   "scripts": {
-    "preinstall": "cd .. && npm install && npm run build",
+    "preinstall": "cd ./glTF-Sample-Render && npm install && npm run build",
     "build": "rollup -c",
-    "dev": "concurrently \"npm run --prefix .. watch\" \"npm-watch\" \"serve --listen 8000 dist\"",
+    "dev": "concurrently \"npm run --prefix ./glTF-Sample-Render watch\" \"npm-watch\" \"serve --listen 8000 dist\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js main.js rollup.config.js ../source/**/*.js",
-    "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js ../source/**/*.js",
+    "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
     "postversion": "git push && git push --tags"
   },
   "watch": {
@@ -20,7 +20,7 @@
         "src",
         "main.js",
         "index.html",
-        "../dist"
+        "glTF-Sample-Render/dist"
       ],
       "extensions": "js,scss,html",
       "delay": 2500
@@ -38,7 +38,7 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "@khronosgroup/gltf-viewer": "..",
+    "@khronosgroup/gltf-viewer": "./glTF-Sample-Render",
     "@ntohq/buefy-next": "^0.1.3",
     "bulma": "^0.9.4",
     "fast-png": "^6.2.0",

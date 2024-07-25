@@ -6,7 +6,7 @@ import copy from 'rollup-plugin-copy';
 import replace from '@rollup/plugin-replace';
 import {wasm} from "@rollup/plugin-wasm";
 import sourcemaps from 'rollup-plugin-sourcemaps';
-import license from "rollup-plugin-license"
+import license from "rollup-plugin-license";
 
 export default {
     strictDeprecations: true,
@@ -22,7 +22,7 @@ export default {
     plugins: [
         wasm(),
         glslify({
-            include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
+            include: ['./glTF-Sample-Render/source/Renderer/shaders/*', './glTF-Sample-Render/source/shaders/*'],
             compress: false
         }),
         resolve({
@@ -34,9 +34,9 @@ export default {
         copy({
             targets: [
                 { src: ["index.html", "main.js"], dest: "dist/" },
-                { src: ["../assets/images"], dest: "dist/assets" },
-                { src: ["../assets/ui"], dest: "dist/assets" },
-                { src: ["../source/libs/*", "!../source/libs/hdrpng.js"], dest: "dist/libs" }
+                { src: ["assets/images"], dest: "dist/assets" },
+                { src: ["assets/ui"], dest: "dist/assets" },
+                { src: ["glTF-Sample-Render/source/libs/*", "!glTF-Sample-Render/source/libs/hdrpng.js"], dest: "dist/libs" }
             ],
             copyOnce: true,
             verbose: true
