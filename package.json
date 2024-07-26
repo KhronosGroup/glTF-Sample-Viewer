@@ -9,7 +9,7 @@
     "preinstall": "cd ./glTF-Sample-Render && npm install && npm run build",
     "build": "cd ./glTF-Sample-Render && npm run build && cd .. && rollup -c",
     "build:ui": "rollup -c",
-    "dev": "concurrently \"npm-watch\" \"serve --listen 8000 dist\"",
+    "dev": "concurrently \"npm-watch\" \"cd ./dist && http-server -p 8000 -c-1\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js glTF-Sample-Render/source/**/*.js",
@@ -64,6 +64,7 @@
     "@rollup/plugin-wasm": "^6.2.2",
     "concurrently": "^8.2.2",
     "eslint": "^9.5.0",
+    "http-server": "^14.1.1",
     "npm-watch": "^0.13.0",
     "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
@@ -72,8 +73,7 @@
     "rollup-plugin-license": "^3.5.1",
     "rollup-plugin-scss": "^3.0.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "sass": "^1.77.5",
-    "serve": "^14.2.3"
+    "sass": "^1.77.5"
   },
   "bugs": {
     "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"

@@ -18,7 +18,7 @@ function copyFiles(from, to, overwrite = false) {
             const log = msg => console.log('\x1b[36m%s\x1b[0m', msg);
             log(`copy files: ${from} → ${to}`);
             if (!fs.existsSync(to)) {
-                fs.mkdirSync(to);
+                fs.mkdirSync(to, {recursive: true});
             }
             fs.readdirSync(from).forEach(file => {
                 const fromFile = `${from}/${file}`;
@@ -42,7 +42,7 @@ function copyFile(from, to, file, overwrite = false) {
             const log = msg => console.log('\x1b[36m%s\x1b[0m', msg);
             log(`copy file: ${from} → ${to}`);
             if (!fs.existsSync(to)) {
-                fs.mkdirSync(to);
+                fs.mkdirSync(to, {recursive: true});
             }
             const fromFile = `${from}/${file}`;
             const toFile = `${to}/${file}`;
@@ -80,24 +80,13 @@ export default {
             dedupe: ['gl-matrix', 'jpeg-js', 'fast-png']
         }),
         scss(), // Version 4 is not working
-        // del({ targets: 'dist/*' }),
+        del({ targets: 'dist/*' }),
         copyFile(".", "./dist", "index.html", true),
         copyFile(".", "./dist", "main.js", true),
         copyFiles("./assets/images", "./dist/assets/images", true),
         copyFiles("./assets/ui", "./dist/assets/ui", true),
         copyFiles("./glTF-Sample-Render/source/libs", "./dist/libs", true),
         copyFiles("./glTF-Sample-Render/assets/images", "./dist/assets/images", true),
-        // copy({
-        //     targets: [
-        //         { src: ["index.html", "main.js"], dest: "dist/" },
-        //         { src: ["assets/images"], dest: "dist/assets" },
-        //         { src: ["assets/ui"], dest: "dist/assets" },
-        //         { src: ["glTF-Sample-Render/source/libs/*", "!glTF-Sample-Render/source/libs/hdrpng.js"], dest: "dist/libs" },
-        //         { src: ["glTF-Sample-Render/assets/images/*"], dest: "dist/assets" }
-        //     ],
-        //     copyOnce: true,
-        //     verbose: true
-        // }),
         replace({
             'process.env.NODE_ENV': JSON.stringify('production'), // This resolves an issue with vue
             preventAssignment: true,
