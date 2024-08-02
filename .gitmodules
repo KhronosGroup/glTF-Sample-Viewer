@@ -1,3 +1,3 @@
 [submodule "glTF-Sample-Render.git"]
-	path = glTF-Sample-Render
+	path = glTF-Sample-Renderer
 	url = git@github.com:KhronosGroup/glTF-Sample-Render.git
