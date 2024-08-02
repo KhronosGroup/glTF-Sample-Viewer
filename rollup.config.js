@@ -70,7 +70,7 @@ export default {
     plugins: [
         wasm(),
         glslify({
-            include: ['./glTF-Sample-Render/source/Renderer/shaders/*', './glTF-Sample-Render/source/shaders/*'],
+            include: ['./glTF-Sample-Renderer/source/Renderer/shaders/*', './glTF-Sample-Renderer/source/shaders/*'],
             compress: false
         }),
         resolve({
@@ -84,8 +84,8 @@ export default {
         copyFile(".", "./dist", "main.js", true),
         copyFiles("./assets/images", "./dist/assets/images", true),
         copyFiles("./assets/ui", "./dist/assets/ui", true),
-        copyFiles("./glTF-Sample-Render/source/libs", "./dist/libs", true),
-        copyFiles("./glTF-Sample-Render/assets/images", "./dist/assets/images", true),
+        copyFiles("./glTF-Sample-Renderer/source/libs", "./dist/libs", true),
+        copyFiles("./glTF-Sample-Renderer/assets/images", "./dist/assets/images", true),
         replace({
             'process.env.NODE_ENV': JSON.stringify('production'), // This resolves an issue with vue
             preventAssignment: true,
