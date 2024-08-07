@@ -9,6 +9,8 @@ import {
   fillEnvironmentWithPaths,
 } from "./model_path_provider.js";
 
+import {validateBytes} from "gltf-validator";
+
 export default async () => {
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext("webgl2", {
@@ -38,7 +40,7 @@ export default async () => {
       Colorful_Studio: "Colorful Studio",
       Wide_Street: "Wide Street",
     },
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/",
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/"
   );
 
   const uiModel = new UIModel(app, pathProvider, environmentPaths);
@@ -51,6 +53,65 @@ export default async () => {
 
       // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
       resourceLoader.initKtxLib();
+
+      const fileType = typeof model.mainFile;
+      if (fileType == "string"){
+        const externalRefFunction = (uri) => {
+          const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
+          return new Promise((resolve, reject) => {
+            fetch(parent + uri).then(response => {
+              response.bytes().then(buffer => {
+                resolve(buffer);
+              }).catch(error => {
+                reject(error);
+              });
+            }).catch(error => {
+              reject(error);
+            });
+          });
+        };
+        fetch(model.mainFile).then(async (response) => {   
+            const buffer = await response.bytes();
+            validateBytes(buffer, {externalResourceFunction: externalRefFunction}).then((result) => {
+              console.log(result);
+            }).catch((error) => {
+              console.error(error);
+            });
+        });
+      } else if (Array.isArray(model.mainFile)) {
+        const externalRefFunction = (uri) => {
+          uri = "/" + uri;
+          return new Promise((resolve, reject) => {
+            let foundFile = undefined;
+            for (let i = 0; i < model.additionalFiles.length; i++) {
+              const file = model.additionalFiles[i];
+              if (file[0] == uri) {
+                foundFile = file[1];
+                break;
+              }
+            }
+            if (foundFile) {
+              foundFile.bytes().then((buffer) => {
+                resolve(buffer);
+              }).catch((error) => {
+                reject(error);
+              });
+            } else {
+              reject("File not found");
+            }
+          });
+        };
+
+        model.mainFile[1].bytes().then((buffer) => {
+          validateBytes(buffer, {externalResourceFunction: externalRefFunction}).then((result) => {
+            console.log(result);
+          }).catch((error) => {
+            console.error(error);
+          });
+        }).catch((error) => {
+          console.error(error);
+        });
+      }
 
       return from(
         resourceLoader
