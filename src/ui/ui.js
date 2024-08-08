@@ -161,23 +161,34 @@ const appCreated = createApp({
     },
     methods:
     {
+        async copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                this.$buefy.toast.open({
+                    message: "Copied to clipboard",
+                    type: 'is-success'
+                });
+            } catch (err) {
+                this.error("Error copying to clipboard.");
+            }
+        },
         getValidationCounter: function(){
             let number = 0;
             let color = "white";
             if (this.validationReport?.issues?.numErrors > 0) {
                 number = this.validationReport?.issues?.numErrors;
-                color = "#ffdddd";
+                color = "red";
             } else if (this.validationReport?.issues?.numWarnings > 0) {
                 number = this.validationReport?.issues?.numWarnings;
-                color = "#ffffcc";
+                color = "yellow";
             } else if (this.validationReport?.issues?.numInfos > 0) {
                 number = this.validationReport?.issues?.numInfos;
             }
             if (number !== 0) {
-                return `<div style="display:flex;color:grey; background-color:${color}; border-radius:50%; width:fit-content; min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${number}</div>`;
+                return `<div style="display:flex;color:black; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${number}</div>`;
             }
-            if (this.tabsHidden === false && this.activeTab === 2 && this.validationReport?.issues?.numWarnings > 0) {
-                return `<img src="assets/ui/Capture 30X30.svg" width="50px" height="100%">`;
+            if (this.tabsHidden === false && this.activeTab === 2) {
+                return `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">`;
             }
             return '<img src="assets/ui/Capture 30X30.svg" width="30px">';
         },

@@ -275,11 +275,13 @@
                         </template>
 
                         <div class="tabContent">
-                            <b-field label="Report" class="subtitle">
-                                <div v-html="getValidationCounter()">
-                                </div>
-                                <json-to-ui-template v-bind:data="validationReport.issues.messages" v-bind:isinner="false">
-                                </json-to-ui-template>
+                            <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                @click="collapseActiveTab($event, 3)">
+                            <h2 class="title is-spaced">glTF Validator</h2>
+                                <button class="button is-rounded" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
+                                <textarea rows="40" cols="25" readonly v-bind:data="validationReport" v-bind:isinner="false" style="max-width: max-content;resize: vertical; margin-top: 20px;">
+                                    {{ validationReport }}
+                                </textarea>
                             </b-field>
                         </div>
                     </b-tab-item>
