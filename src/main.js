@@ -45,6 +45,66 @@ export default async () => {
 
   const uiModel = new UIModel(app, pathProvider, environmentPaths);
 
+
+  const validation = uiModel.model.pipe(
+    mergeMap((model) => {
+      const func = async(model) => {
+        try {
+          const fileType = typeof model.mainFile;
+          if (fileType == "string"){
+            const externalRefFunction = (uri) => {
+              const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
+              return new Promise((resolve, reject) => {
+                fetch(parent + uri).then(response => {
+                  response.bytes().then(buffer => {
+                    resolve(buffer);
+                  }).catch(error => {
+                    reject(error);
+                  });
+                }).catch(error => {
+                  reject(error);
+                });
+              });
+            };
+            const response = await fetch(model.mainFile);
+            const buffer = await response.bytes();
+            const result = await validateBytes(buffer, {externalResourceFunction: externalRefFunction});
+            return result;
+          } else if (Array.isArray(model.mainFile)) {
+            const externalRefFunction = (uri) => {
+              uri = "/" + uri;
+              return new Promise((resolve, reject) => {
+                let foundFile = undefined;
+                for (let i = 0; i < model.additionalFiles.length; i++) {
+                  const file = model.additionalFiles[i];
+                  if (file[0] == uri) {
+                    foundFile = file[1];
+                    break;
+                  }
+                }
+                if (foundFile) {
+                  foundFile.bytes().then((buffer) => {
+                    resolve(buffer);
+                  }).catch((error) => {
+                    reject(error);
+                  });
+                } else {
+                  reject("File not found");
+                }
+              });
+            };
+
+            const buffer = await model.mainFile[1].bytes();
+            return await validateBytes(buffer, {externalResourceFunction: externalRefFunction});
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      return from(func(model));
+    })
+  );
+
   // whenever a new model is selected, load it and when complete pass the loaded gltf
   // into a stream back into the UI
   const gltfLoaded = uiModel.model.pipe(
@@ -53,65 +113,6 @@ export default async () => {
 
       // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
       resourceLoader.initKtxLib();
-
-      const fileType = typeof model.mainFile;
-      if (fileType == "string"){
-        const externalRefFunction = (uri) => {
-          const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
-          return new Promise((resolve, reject) => {
-            fetch(parent + uri).then(response => {
-              response.bytes().then(buffer => {
-                resolve(buffer);
-              }).catch(error => {
-                reject(error);
-              });
-            }).catch(error => {
-              reject(error);
-            });
-          });
-        };
-        fetch(model.mainFile).then(async (response) => {   
-            const buffer = await response.bytes();
-            validateBytes(buffer, {externalResourceFunction: externalRefFunction}).then((result) => {
-              console.log(result);
-            }).catch((error) => {
-              console.error(error);
-            });
-        });
-      } else if (Array.isArray(model.mainFile)) {
-        const externalRefFunction = (uri) => {
-          uri = "/" + uri;
-          return new Promise((resolve, reject) => {
-            let foundFile = undefined;
-            for (let i = 0; i < model.additionalFiles.length; i++) {
-              const file = model.additionalFiles[i];
-              if (file[0] == uri) {
-                foundFile = file[1];
-                break;
-              }
-            }
-            if (foundFile) {
-              foundFile.bytes().then((buffer) => {
-                resolve(buffer);
-              }).catch((error) => {
-                reject(error);
-              });
-            } else {
-              reject("File not found");
-            }
-          });
-        };
-
-        model.mainFile[1].bytes().then((buffer) => {
-          validateBytes(buffer, {externalResourceFunction: externalRefFunction}).then((result) => {
-            console.log(result);
-          }).catch((error) => {
-            console.error(error);
-          });
-        }).catch((error) => {
-          console.error(error);
-        });
-      }
 
       return from(
         resourceLoader
@@ -412,6 +413,7 @@ export default async () => {
   });
 
   uiModel.attachGltfLoaded(gltfLoaded);
+  uiModel.updateValidationReport(validation);
   uiModel.updateStatistics(statisticsUpdateObservable);
   const sceneChangedStateObservable = uiModel.scene.pipe(map(() => state));
   uiModel.attachCameraChangeObservable(sceneChangedStateObservable);

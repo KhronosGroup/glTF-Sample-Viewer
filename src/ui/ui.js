@@ -47,6 +47,8 @@ const appCreated = createApp({
             selectedAnimationsChanged: new Subject(),
             selectedEnvironmentChanged: new Subject(),
 
+            validatorChanged: new Subject(),
+
             fullheight: true,
             right: true,
             models: ["DamagedHelmet"],
@@ -70,6 +72,8 @@ const appCreated = createApp({
             selectedVariant: "None",
             selectedAnimations: [],
             disabledAnimations: [],
+
+            validationReport: {},
 
             ibl: true,
             iblIntensity: 0.0,
@@ -157,6 +161,26 @@ const appCreated = createApp({
     },
     methods:
     {
+        getValidationCounter: function(){
+            let number = 0;
+            let color = "white";
+            if (this.validationReport?.issues?.numErrors > 0) {
+                number = this.validationReport?.issues?.numErrors;
+                color = "#ffdddd";
+            } else if (this.validationReport?.issues?.numWarnings > 0) {
+                number = this.validationReport?.issues?.numWarnings;
+                color = "#ffffcc";
+            } else if (this.validationReport?.issues?.numInfos > 0) {
+                number = this.validationReport?.issues?.numInfos;
+            }
+            if (number !== 0) {
+                return `<div style="display:flex;color:grey; background-color:${color}; border-radius:50%; width:fit-content; min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${number}</div>`;
+            }
+            if (this.tabsHidden === false && this.activeTab === 2 && this.validationReport?.issues?.numWarnings > 0) {
+                return `<img src="assets/ui/Capture 30X30.svg" width="50px" height="100%">`;
+            }
+            return '<img src="assets/ui/Capture 30X30.svg" width="30px">';
+        },
         setAnimationState: function(value)
         {
             this.$refs.animationState.setState(value);
