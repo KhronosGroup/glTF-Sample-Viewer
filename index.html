@@ -274,14 +274,20 @@
                         </div>
                         </template>
 
-                        <div class="tabContent">
+                        <div class="tabContent" style="display: flex; flex-direction: column; height: inherit;">
                             <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                 @click="collapseActiveTab($event, 3)">
-                            <h2 class="title is-spaced">glTF Validator</h2>
-                                <button class="button is-rounded" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
-                                <textarea rows="40" cols="25" readonly v-bind:data="validationReport" v-bind:isinner="false" style="max-width: max-content;resize: vertical; margin-top: 20px;">
+                            <h2 class="title is-spaced" v-bind:data="validationReport">glTF Validator</h2>
+                                <div class="modelCredit">
+                                    <p>Number of errors: {{validationReport?.issues?.numErrors ?? 0}}</p>
+                                    <p>Number of warnings: {{validationReport?.issues?.numWarnings ?? 0}}</p>
+                                    <p>Number of infos: {{validationReport?.issues?.numInfos ?? 0}}</p>
+                                </div>
+                                <button class="button is-rounded" style="width: fit-content; flex-shrink: 0;" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
+                                <textarea cols="25" readonly style="min-height: 200px; max-width: max-content;resize: none; margin-top: 20px; flex-grow: 1;">
                                     {{ validationReport }}
                                 </textarea>
+                                <span style="margin-top: 5px;">Powered by <a href="https://github.com/KhronosGroup/glTF-Validator" target="_blank" rel="noopener noreferrer">glTF-Validator</a></span>
                             </b-field>
                         </div>
                     </b-tab-item>

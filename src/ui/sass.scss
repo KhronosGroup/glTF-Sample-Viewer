@@ -69,6 +69,11 @@ html
     height: 100%;
 }
 
+a:hover
+{
+    color: $primary-light;
+}
+
 body
 {
     margin: 0;
