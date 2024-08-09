@@ -9,6 +9,8 @@ import {
   fillEnvironmentWithPaths,
 } from "./model_path_provider.js";
 
+import {validateBytes} from "gltf-validator";
+
 export default async () => {
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext("webgl2", {
@@ -38,10 +40,70 @@ export default async () => {
       Colorful_Studio: "Colorful Studio",
       Wide_Street: "Wide Street",
     },
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/",
+    "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/"
   );
 
   const uiModel = new UIModel(app, pathProvider, environmentPaths);
+
+
+  const validation = uiModel.model.pipe(
+    mergeMap((model) => {
+      const func = async(model) => {
+        try {
+          const fileType = typeof model.mainFile;
+          if (fileType == "string"){
+            const externalRefFunction = (uri) => {
+              const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
+              return new Promise((resolve, reject) => {
+                fetch(parent + uri).then(response => {
+                  response.bytes().then(buffer => {
+                    resolve(buffer);
+                  }).catch(error => {
+                    reject(error);
+                  });
+                }).catch(error => {
+                  reject(error);
+                });
+              });
+            };
+            const response = await fetch(model.mainFile);
+            const buffer = await response.bytes();
+            const result = await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile});
+            return result;
+          } else if (Array.isArray(model.mainFile)) {
+            const externalRefFunction = (uri) => {
+              uri = "/" + uri;
+              return new Promise((resolve, reject) => {
+                let foundFile = undefined;
+                for (let i = 0; i < model.additionalFiles.length; i++) {
+                  const file = model.additionalFiles[i];
+                  if (file[0] == uri) {
+                    foundFile = file[1];
+                    break;
+                  }
+                }
+                if (foundFile) {
+                  foundFile.bytes().then((buffer) => {
+                    resolve(buffer);
+                  }).catch((error) => {
+                    reject(error);
+                  });
+                } else {
+                  reject("File not found");
+                }
+              });
+            };
+
+            const buffer = await model.mainFile[1].bytes();
+            return await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile[0]});
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      return from(func(model));
+    })
+  );
 
   // whenever a new model is selected, load it and when complete pass the loaded gltf
   // into a stream back into the UI
@@ -351,6 +413,7 @@ export default async () => {
   });
 
   uiModel.attachGltfLoaded(gltfLoaded);
+  uiModel.updateValidationReport(validation);
   uiModel.updateStatistics(statisticsUpdateObservable);
   const sceneChangedStateObservable = uiModel.scene.pipe(map(() => state));
   uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
