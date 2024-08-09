@@ -68,7 +68,7 @@ export default async () => {
             };
             const response = await fetch(model.mainFile);
             const buffer = await response.bytes();
-            const result = await validateBytes(buffer, {externalResourceFunction: externalRefFunction});
+            const result = await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile});
             return result;
           } else if (Array.isArray(model.mainFile)) {
             const externalRefFunction = (uri) => {
@@ -95,7 +95,7 @@ export default async () => {
             };
 
             const buffer = await model.mainFile[1].bytes();
-            return await validateBytes(buffer, {externalResourceFunction: externalRefFunction});
+            return await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile[0]});
           }
         } catch (error) {
           console.error(error);
