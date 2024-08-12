@@ -331,8 +331,9 @@ button.button
     float: right;
     margin-top: -50px;
     padding-right: 20px;
-    overflow: overlay;
+    padding-left: 20px;
     z-index: 2;
+    position: absolute;
 }
 .canvasUIMaximize:hover {
     overflow: visible;
