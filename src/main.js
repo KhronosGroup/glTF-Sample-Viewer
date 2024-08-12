@@ -101,7 +101,7 @@ export default async () => {
           console.error(error);
         }
       };
-      return from(func(model));
+      return from(func(model)).pipe(catchError((error) => { console.error(`Validation failed: ${error}`); return EMPTY; }));
     })
   );
 

@@ -172,6 +172,17 @@ const appCreated = createApp({
                 this.error("Error copying to clipboard.");
             }
         },
+        downloadJSON(filename, json) {
+            const text = JSON.stringify(json, undefined, 4);
+            const dataURL = "data:application/json;charset=utf-8," + encodeURIComponent(text);
+            const element = document.createElement("a");
+            element.setAttribute("href", dataURL);
+            element.setAttribute("download", filename);
+            element.style.display = "none";
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        },
         getValidationCounter: function(){
             let number = 0;
             let color = "white";
