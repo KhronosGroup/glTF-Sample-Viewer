@@ -100,11 +100,11 @@ const appCreated = createApp({
             emissiveStrengthEnabled: true,
 
             activeTab: 0,
-            tabsHidden: false,
+            tabsHidden: true,
             loadingComponent: undefined,
             showDropDownOverlay: false,
             uploadedHDR: undefined,
-            uiVisible: true,
+            uiVisible: false,
             
 
             // these are handles for certain ui change related things
@@ -115,6 +115,14 @@ const appCreated = createApp({
     watch: {
         selectedAnimations: function (newValue) {
             this.selectedAnimationsChanged.next(newValue);
+        }
+    },
+    beforeMount: function(){
+        // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
+        if(window.innerWidth > 768) { 
+            this.uiVisible=true;
+        } else {
+            this.uiVisible=false;
         }
     },
     mounted: function()
@@ -249,11 +257,9 @@ const appCreated = createApp({
             const file = e.target.files[0];
             this.addEnvironmentChanged.next(file);
         },
-        hide() {
-            this.uiVisible = false;
-        },
-        show() {
-            this.uiVisible = true;
+
+        toggleUI() {
+            this.uiVisible = !this.uiVisible;
         },
     }
 });
@@ -298,19 +304,13 @@ export const app = appCreated.mount('#app');
 const canvasUI = createApp({
     data() {
         return {
-            fullscreen: false,
             timer: null
         };
     },
     methods:
     {
         toggleFullscreen() {
-            if (this.fullscreen) {
-                app.show();
-            } else {
-                app.hide();
-            }
-            this.fullscreen = !this.fullscreen;
+            app.toggleUI();
         },
         mouseMove() {
             this.$refs.fullscreenIcon.style.display = "block";
@@ -319,7 +319,7 @@ const canvasUI = createApp({
         setFullscreenIconTimer() {
             clearTimeout(this.timer);
             this.timer = window.setTimeout( () => {
-                this.$refs.fullscreenIcon.style.display = "none";
+                // this.$refs.fullscreenIcon.style.display = "none";
             }, 1000);
         }
     }
