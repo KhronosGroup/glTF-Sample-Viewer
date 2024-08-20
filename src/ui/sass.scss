@@ -69,6 +69,11 @@ html
     height: 100%;
 }
 
+a:hover
+{
+    color: $primary-light;
+}
+
 body
 {
     margin: 0;
@@ -130,7 +135,7 @@ nav.tabs
 {
     margin-top: calc(100vh * 0.11);
 }
-.tabs li:nth-child(5)
+.tabs li:nth-child(6)
 {
     margin-top: auto;
     margin-bottom: calc(100vh * 0.02);
@@ -167,6 +172,12 @@ nav.tabs
 {
     // necessary for scrollbar (overflow property) to work correct
     padding: 1em;
+}
+
+textarea
+{
+    background-color: #1b1b1b;
+    color: $text
 }
 
 .tab-item h2

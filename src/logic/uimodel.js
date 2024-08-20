@@ -198,6 +198,11 @@ class UIModel
         );
     }
 
+    updateValidationReport(validationReportObservable)
+    {
+        validationReportObservable.subscribe(data => this.app.validationReport = data);
+    }
+
     disabledAnimations(disabledAnimationsObservable)
     {
         disabledAnimationsObservable.subscribe(data => this.app.disabledAnimations = data);
