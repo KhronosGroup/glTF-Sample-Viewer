@@ -89,18 +89,22 @@
 <body class="" style="touch-action: none">  <!--is-flex -->
 
     <div class="columns is-mobile">
-        <div class="column" id="canvasUI">
-            <canvas id="canvas" @mousemove="mouseMove">No
-                Canvas!</canvas>
-            <div class="canvasUIMaximize">
-                <img v-bind:src="[fullscreen ? 'assets/ui/Icon_Collapse.svg' : 'assets/ui/Icon_Expand.svg']"
-                    @click="toggleFullscreen()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px">
-            </div>
+        <div class="column" id="canvasUI" ><!---->
+            
+                <canvas id="canvas" @mousemove="mouseMove">
+                    No Canvas!
+                </canvas> 
+                <div class="canvasUIMaximize">
+                    <img v-bind:src="[fullscreen ? 'assets/ui/Icon_Collapse.svg' : 'assets/ui/Icon_Expand.svg']"
+                        @click="toggleFullscreen()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px">
+                </div>  
+            
         </div>
         <div id="app"> 
             <!-- UI -->
-            <div v-show='uiVisible'>
-                <div class="column is-narrow ">  <!-- is-hidden-tablet vs is--hiddenmobile-->
+            <div class="column " v-show='uiVisible'>
+            
+                  <!-- is-hidden-tablet vs is--hiddenmobile-->
                    <!-- <div class="column is-narrow is-hidden-mobile">  is-mobile-->
                     <!--Drop Area -->
                     <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone"
@@ -120,24 +124,50 @@
                         </div>
                     </div>
                     <!-- Tabs -->
-                    <b-tabs id="tabsContainer" vertical position="is-right" v-model="activeTab"
-                        v-bind:class="[tabsHidden ? 'is-flex-wrap-nowrap hideTabs' : 'is-flex-wrap-nowrap']"
-                        type="is-toggle" v-bind:animated="false"><!--  -->
+                    <b-tabs id="tabsContainer" 
+                        vertical position="is-right" 
+                        v-model="activeTab"
+                        v-bind:class="[tabContentHidden ? 'is-flex-wrap-nowrap hideTabs' : 'is-flex-wrap-nowrap']" 
+                        type="is-toggle" v-bind:animated="false">
+                        <!--
+                       
+                        v-bind:style="[isMobile ? {'width': '200px'} : {'width': '400px'}]"  
+                        -->
 
                         <!-- Tab Category: Models -->
-                        <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable">
-                            <template #header>
-                                <div @click="collapseActiveTab($event, 0)"
-                                    v-bind:style="[tabsHidden === false && activeTab === 0 ? {'height': '100%'} : {}]">
+                        <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable" 
+                        title-item-class="d-none">
+                            
+                            
+                            <!-- Tab Header -->
+                            <template #header  >
+                                <div id="test-id" @click="collapseActiveTab($event, 0)"
+                                    v-bind:style="[tabContentHidden === false && activeTab === 0 ? {'height': '100%'} : {}]"
+                                    v-bind:width="[isMobile ? '200px' : '100px']"
+                                    >
+                                    <!-- 
+                                    v-bind:style="[isMobile === false   ? { 'background-color': '#ff1b1b'} : {'color': '#ff1b1b'}]"
+                                    v-bind:style="[isMobile ? {'width': '200px'} : {'width': '400px'}]"    
+                                    -->
                                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabsHidden === false && activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
-                                        v-bind:width="[tabsHidden === false && activeTab === 0 ? '50px' : '30px']"
-                                        v-bind:style="[tabsHidden === false && activeTab === 0 ? {'height': '100%'} : {}]">
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 0 ? {'height': '100%'} : {}]">
+                                             <!--  
+                                        v-bind:width="[tabContentHidden === false && activeTab === 0 ? '150px' : '130px']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 0 ? '150px' : '130px']"
+                                       -->
                                     <span
-                                        v-bind:style="[tabsHidden === false && activeTab === 0 ? {'display': 'none'} : {}]">Models</span>
+                                      
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 0)'>
+                                        Models
+                                    </span>
+                                       <!-- 
+                                      v-bind:style="[tabContentHidden === false && activeTab === 0 ? {'display': 'none'} : {}]"
+                                       -->
                                 </div>
                             </template>
 
+                            <!-- Tab Content: Models -->
                             <div class="tabContent">
                                 <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                     @click="collapseActiveTab($event, 0)">
@@ -194,13 +224,15 @@
                         <b-tab-item label="Display" icon="library-music" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 1)"
-                                    v-bind:style="[tabsHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
+                                    v-bind:style="[tabContentHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
                                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabsHidden === false && activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
-                                        v-bind:width="[tabsHidden === false && activeTab === 1 ? '50px' : '30px']"
-                                        v-bind:style="[tabsHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 1 ? '50px' : '30px']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
                                     <span
-                                        v-bind:style="[tabsHidden === false && activeTab === 1 ? {'display': 'none'} : {}]">Display</span>
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 1)'>
+                                        Display
+                                    </span>
                                 </div>
                             </template>
 
@@ -271,13 +303,15 @@
                         <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 2)"
-                                    v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                                    v-bind:style="[tabContentHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
                                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabsHidden === false && activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
-                                        v-bind:width="[tabsHidden === false && activeTab === 2 ? '50px' : '30px']"
-                                        v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
-                                    <span
-                                        v-bind:style="[tabsHidden === false && activeTab === 2 ? {'display': 'none'} : {}]">Animation</span>
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 2 ? '50px' : '30px']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                                    <span 
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 2 )'>
+                                        Animation
+                                    </span>
                                 </div>
                             </template>
 
@@ -308,13 +342,15 @@
                         <b-tab-item label="Credits" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 3)"
-                                    v-bind:style="[tabsHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
+                                    v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
                                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabsHidden === false && activeTab === 3 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
-                                        v-bind:width="[tabsHidden === false && activeTab === 3 ? '50px' : '30px']"
-                                        v-bind:style="[tabsHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
-                                    <span
-                                        v-bind:style="[tabsHidden === false && activeTab === 3 ? {'display': 'none'} : {}]">Credits</span>
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 3 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 3 ? '50px' : '30px']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
+                                    <span 
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 3)'>
+                                        Credits
+                                    </span>
                                 </div>
                             </template>
 
@@ -340,14 +376,16 @@
                         <b-tab-item label="Advanced Controls" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 4)"
-                                    v-bind:style="[tabsHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
+                                    v-bind:style="[tabContentHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
                                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabsHidden === false && activeTab === 4 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
-                                        v-bind:width="[tabsHidden === false && activeTab === 4 ? '50px' : '30px']"
-                                        v-bind:style="[tabsHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 4 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 4 ? '50px' : '30px']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
                                     <span
-                                        v-bind:style="[tabsHidden === false && activeTab === 4 ? {'display': 'none'} : {}]">Advanced
-                                        Controls</span>
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 4)'>
+                                        Advanced<br>
+                                        Controls
+                                    </span>
                                 </div>
                             </template>
 
@@ -424,7 +462,7 @@
                         </b-tab-item>
 
                     </b-tabs>
-                </div>
+                
             </div>
         </div>
     </div>

@@ -100,11 +100,12 @@ const appCreated = createApp({
             emissiveStrengthEnabled: true,
 
             activeTab: 0,
-            tabsHidden: true,
+            tabContentHidden: true,
             loadingComponent: undefined,
             showDropDownOverlay: false,
             uploadedHDR: undefined,
             uiVisible: false,
+            isMobile: false,
             
 
             // these are handles for certain ui change related things
@@ -120,9 +121,11 @@ const appCreated = createApp({
     beforeMount: function(){
         // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
         if(window.innerWidth > 768) { 
-            this.uiVisible=true;
+            this.uiVisible = true;
+            this.isMobile = false;
         } else {
             this.uiVisible=false;
+            this.isMobile = true;
         }
     },
     mounted: function()
@@ -140,17 +143,18 @@ const appCreated = createApp({
             "if you believe you are seeing this message in error.", 15000);
         }
 
-        // add github logo to navbar
+        // change styling of tab-bar
         this.$nextTick(function () {
             // Code that will run only after the
             // entire view has been rendered
-            var a = document.createElement('a');
-            a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
-            var img = document.createElement('img');
-            img.src ="assets/ui/GitHub-Mark-Light-32px.png";
-            img.style.width = "22px";
-            img.style.height = "22px";
-            let ulElement = document.getElementById("tabsContainer").childNodes[0].childNodes[0];
+
+            let navElement = document.getElementById("tabsContainer").childNodes[0];
+
+            if(!this.isMobile){
+                navElement.style.width = "100px";
+            }
+
+            let ulElement = navElement.childNodes[0];
             while (ulElement) {
                 if (ulElement.nodeName === "UL") {
                     break;
@@ -158,6 +162,13 @@ const appCreated = createApp({
                 ulElement = ulElement.nextElementSibling;
             }
 
+            // add github logo to tab-bar
+            var a = document.createElement('a');
+            a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
+            var img = document.createElement('img');
+            img.src ="assets/ui/GitHub-Mark-Light-32px.png";
+            img.style.width = "22px";
+            img.style.height = "22px";
             ulElement.appendChild(a);
             a.appendChild(img);
         });
@@ -200,9 +211,9 @@ const appCreated = createApp({
         },
         collapseActiveTab : function(event, item) {
             if (item === this.activeTab) {
-                this.tabsHidden = !this.tabsHidden;
+                this.tabContentHidden = !this.tabContentHidden;
                 
-                if(this.tabsHidden) {
+                if(this.tabContentHidden) {
                     // remove is-active class if tabs are hidden
                     event.stopPropagation();
                     
@@ -218,7 +229,7 @@ const appCreated = createApp({
                 return;
             } else {
                 // reset tab visibility
-                this.tabsHidden = false;
+                this.tabContentHidden = false;
             }
             
         },
