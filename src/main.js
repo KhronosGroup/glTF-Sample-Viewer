@@ -130,7 +130,7 @@ export default async () => {
                             const scene = state.gltf.scenes[state.sceneIndex];
                             scene.applyTransformHierarchy(state.gltf);
                             state.userCamera.aspectRatio = canvas.width / canvas.height;
-                            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+                            state.userCamera.resetView(state.gltf, state.sceneIndex);
 
                             // Try to start as many animations as possible without generating conficts.
                             state.animationIndices = [];
@@ -176,7 +176,7 @@ export default async () => {
             const scene = state.gltf.scenes[state.sceneIndex];
             if (scene !== undefined) {
                 scene.applyTransformHierarchy(state.gltf);
-                state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+                state.userCamera.resetView(state.gltf, state.sceneIndex);
             }
         }),
         share()
@@ -455,6 +455,8 @@ export default async () => {
         past.height = canvas.height;
 
         if (redraw) {
+            state.userCamera.aspectRatio = canvas.width / canvas.height;
+            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
             view.renderFrame(state, canvas.width, canvas.height);
             redraw = false;
         }
