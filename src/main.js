@@ -56,8 +56,8 @@ export default async () => {
               const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
               return new Promise((resolve, reject) => {
                 fetch(parent + uri).then(response => {
-                  response.bytes().then(buffer => {
-                    resolve(buffer);
+                  response.arrayBuffer().then(buffer => {
+                    resolve(new Uint8Array(buffer));
                   }).catch(error => {
                     reject(error);
                   });
@@ -67,9 +67,11 @@ export default async () => {
               });
             };
             const response = await fetch(model.mainFile);
-            const buffer = await response.bytes();
-            const result = await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile});
-            return result;
+            const buffer = await response.arrayBuffer();
+            return await validateBytes(new Uint8Array(buffer), {
+              externalResourceFunction: externalRefFunction,
+               uri: model.mainFile
+              });
           } else if (Array.isArray(model.mainFile)) {
             const externalRefFunction = (uri) => {
               uri = "/" + uri;
@@ -83,8 +85,8 @@ export default async () => {
                   }
                 }
                 if (foundFile) {
-                  foundFile.bytes().then((buffer) => {
-                    resolve(buffer);
+                  foundFile.arrayBuffer().then((buffer) => {
+                    resolve(new Uint8Array(buffer));
                   }).catch((error) => {
                     reject(error);
                   });
@@ -94,14 +96,17 @@ export default async () => {
               });
             };
 
-            const buffer = await model.mainFile[1].bytes();
-            return await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile[0]});
+            const buffer = await model.mainFile[1].arrayBuffer();
+            return await validateBytes(new Uint8Array(buffer), {
+              externalResourceFunction: externalRefFunction,
+              uri: model.mainFile[0]
+            });
           }
         } catch (error) {
           console.error(error);
         }
       };
-      return from(func(model));
+      return from(func(model)).pipe(catchError((error) => { console.error(`Validation failed: ${error}`); return EMPTY; }));
     })
   );
 

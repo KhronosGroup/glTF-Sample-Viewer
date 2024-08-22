@@ -283,10 +283,8 @@
                                     <p>Number of warnings: {{validationReport?.issues?.numWarnings ?? 0}}</p>
                                     <p>Number of infos: {{validationReport?.issues?.numInfos ?? 0}}</p>
                                 </div>
-                                <button class="button is-rounded" style="width: fit-content; flex-shrink: 0;" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
-                                <textarea cols="25" readonly style="min-height: 200px; max-width: max-content;resize: none; margin-top: 20px; flex-grow: 1;">
-                                    {{ validationReport }}
-                                </textarea>
+                                <button class="button is-rounded" style="width: fit-content; flex-shrink: 0; margin-bottom: 12px;" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
+                                <button class="button is-rounded" style="width: fit-content; flex-shrink: 0;" v-on:click="downloadJSON(validationReport?.uri?.substring(validationReport.uri.lastIndexOf('/') + 1) + '.report.json', validationReport)">Download</button>
                                 <span style="margin-top: 5px;">Powered by <a href="https://github.com/KhronosGroup/glTF-Validator" target="_blank" rel="noopener noreferrer">glTF-Validator</a></span>
                             </b-field>
                         </div>

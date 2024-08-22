@@ -26,7 +26,8 @@
     "build:ui": {
       "patterns": [
         "src",
-        "main.js"
+        "main.js",
+        "index.html"
       ],
       "extensions": "js,scss,html",
       "delay": 1000,
