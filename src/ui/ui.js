@@ -166,6 +166,18 @@ const appCreated = createApp({
                 ulElement = ulElement.nextElementSibling;
             }
 
+            // Avoid margin on top for mobile devices
+            if(this.isMobile) { 
+                let liElement =ulElement.childNodes[0];
+                while (liElement) {
+                    if (liElement.nodeName === "LI") {
+                        break;
+                    }
+                    liElement = liElement.nextElementSibling;
+                }
+                liElement.style.marginTop = "0px";
+            }
+
             // add github logo to tab-bar
             var a = document.createElement('a');
             a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
@@ -355,19 +367,6 @@ const canvasUI = createApp({
     },
     methods:
     {
-        toggleFullscreen() {
-            app.toggleUI();
-        },
-        mouseMove() {
-            this.$refs.fullscreenIcon.style.display = "block";
-            this.setFullscreenIconTimer();
-        },
-        setFullscreenIconTimer() {
-            clearTimeout(this.timer);
-            this.timer = window.setTimeout( () => {
-                // this.$refs.fullscreenIcon.style.display = "none";
-            }, 1000);
-        }
     }
 
 });
