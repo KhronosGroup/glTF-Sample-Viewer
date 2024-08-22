@@ -451,12 +451,20 @@ export default async () => {
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
         redraw |= past.width != canvas.width || past.height != canvas.height;
+
+        // Refit view if canvas changes significantly
+        if((canvas.width/past.width <0.5 || canvas.width/past.width>2.0 )||
+            (canvas.height/past.height <0.5 || canvas.height/past.height>2.0 ))
+        {
+            state.userCamera.aspectRatio = canvas.width / canvas.height;
+            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+        }
+
+
         past.width = canvas.width;
         past.height = canvas.height;
 
         if (redraw) {
-            state.userCamera.aspectRatio = canvas.width / canvas.height;
-            state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
             view.renderFrame(state, canvas.width, canvas.height);
             redraw = false;
         }
