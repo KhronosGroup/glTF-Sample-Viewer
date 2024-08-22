@@ -284,7 +284,7 @@
                                     <p>Number of infos: {{validationReport?.issues?.numInfos ?? 0}}</p>
                                 </div>
                                 <button class="button is-rounded" style="width: fit-content; flex-shrink: 0; margin-bottom: 12px;" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
-                                <button class="button is-rounded" style="width: fit-content; flex-shrink: 0;" v-on:click="downloadJSON('validationReport.json', validationReport)">Download</button>
+                                <button class="button is-rounded" style="width: fit-content; flex-shrink: 0;" v-on:click="downloadJSON(validationReport?.uri?.substring(validationReport.uri.lastIndexOf('/') + 1) + '.report.json', validationReport)">Download</button>
                                 <span style="margin-top: 5px;">Powered by <a href="https://github.com/KhronosGroup/glTF-Validator" target="_blank" rel="noopener noreferrer">glTF-Validator</a></span>
                             </b-field>
                         </div>
