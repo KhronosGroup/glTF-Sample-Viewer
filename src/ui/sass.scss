@@ -193,7 +193,7 @@ textarea
 }
 label.switch
 {
-    margin-top: 0.5em;
+    margin-top: 0.6em;
     white-space: nowrap;
 }
 
@@ -207,8 +207,8 @@ label.switch
 .smallerLabel .label
 {
     font-weight: 400;
-    margin-bottom: unset !important;
-    margin-top: 0.5em !important;
+    margin-bottom: 0.1em !important;
+    margin-top: 0.9em !important;
 }
 
 .smallestLabel, .smallerLabel span
@@ -339,10 +339,8 @@ button.button
 }
 
 .canvasUIMaximize {
-    float: right;
-    margin-top: -50px;
-    padding-right: 20px;
-    padding-left: 20px;
+    left: 25px;
+    bottom: 25px;
     z-index: 2;
     position: absolute;
 }
