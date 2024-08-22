@@ -99,7 +99,7 @@ body
 
 nav.tabs
 {
-    width: 100px;
+    display: inline-block;
 }
 
 nav.tabs ul
@@ -135,7 +135,7 @@ nav.tabs
 {
     margin-top: calc(100vh * 0.11);
 }
-.tabs li:nth-child(6)
+.tabs li:nth-child(7)
 {
     margin-top: auto;
     margin-bottom: calc(100vh * 0.02);
@@ -193,7 +193,7 @@ textarea
 }
 label.switch
 {
-    margin-top: 0.5em;
+    margin-top: 0.6em;
     white-space: nowrap;
 }
 
@@ -207,8 +207,8 @@ label.switch
 .smallerLabel .label
 {
     font-weight: 400;
-    margin-bottom: unset !important;
-    margin-top: 0.5em !important;
+    margin-bottom: 0.1em !important;
+    margin-top: 0.9em !important;
 }
 
 .smallestLabel, .smallerLabel span
@@ -339,11 +339,10 @@ button.button
 }
 
 .canvasUIMaximize {
-    float: right;
-    margin-top: -50px;
-    padding-right: 20px;
-    overflow: overlay;
+    left: 25px;
+    bottom: 25px;
     z-index: 2;
+    position: absolute;
 }
 .canvasUIMaximize:hover {
     overflow: visible;
