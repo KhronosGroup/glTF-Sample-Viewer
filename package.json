@@ -20,7 +20,7 @@
       "patterns": [
         "glTF-Sample-Renderer/source"
       ],
-      "extensions": "js,scss,html",
+      "extensions": "js,scss,html,glsl,vert,frag",
       "delay": 1000
     },
     "build:ui": {
