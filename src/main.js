@@ -96,8 +96,9 @@ export default async () => {
                             });
                         };
 
-                        const buffer = await model.mainFile[1].bytes();
-                        return await validateBytes(buffer, {externalResourceFunction: externalRefFunction, uri: model.mainFile[0]});
+                        const buffer = await model.mainFile[1].arrayBuffer();
+                        return await validateBytes(new Uint8Array(buffer),
+                            {externalResourceFunction: externalRefFunction, uri: model.mainFile[0]});
                     }
                 } catch (error) {
                     console.error(error);
