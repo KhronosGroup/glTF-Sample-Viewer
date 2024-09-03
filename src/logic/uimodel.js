@@ -90,7 +90,11 @@ class UIModel
             filter(value => value !== null),
             map(value => {
                 app.flavours = modelPathProvider.getModelFlavours(value);
-                app.selectedFlavour = "glTF";
+                if (app.flavours.includes("glTF")){
+                    app.selectedFlavour = "glTF";
+                } else {
+                    app.selectedFlavour = app.flavours[0];
+                }
                 return modelPathProvider.resolve(value, app.selectedFlavour);
             }),
             map(value => ({mainFile: value})),
