@@ -152,6 +152,19 @@ export default async () => {
                         uiModel.exitLoadingState();
 
                         return state;
+                    }).catch((error) => {
+                        console.error("fail: "+error);
+                        resourceLoader
+                        .loadGltf(undefined,undefined)
+                        .then((gltf) => {
+                            state.gltf = gltf;
+                            state.sceneIndex =  0 ;
+                            state.cameraIndex = undefined;
+
+                            uiModel.exitLoadingState();
+                            redraw = true;
+                        }); 
+                        return state;
                     })
             );
         }),
