@@ -324,7 +324,7 @@ const appCreated = createApp({
         },
         onFileChange(e) {
             const file = e.target.files[0];
-            this.addEnvironmentChanged.next(file);
+            this.addEnvironmentChanged.next({hdr_path: file});
         },
 
         toggleUI() {
