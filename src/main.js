@@ -420,8 +420,8 @@ export default async () => {
     );
     listenForRedraw(uiModel.activeAnimations);
 
-    uiModel.hdr.subscribe((hdrFile) => {
-        resourceLoader.loadEnvironment(hdrFile).then((environment) => {
+    uiModel.hdr.subscribe((hdr) => {
+        resourceLoader.loadEnvironment(hdr.hdr_path).then((environment) => {
             state.environment = environment;
             // We need to wait until the environment is loaded to redraw
             redraw = true;
