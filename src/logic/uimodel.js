@@ -122,9 +122,11 @@ class UIModel
                     const license = text.split("SPDX-License-Identifier: ")[1];
                     console.log(license);
                     text = text.replace("SPDX-FileCopyrightText: ", "");
-                    text = text.replace(/SPDX-License-Identifier:(.)*/g, `, <a href="${hdr.hdr_path}">${hdr.hdr_path}</a>, License: `);
+                    text = text.replace(/SPDX-License-Identifier:(.)*/g, `, <a href="${hdr.hdr_path}">Source</a>, License: `);
                     text += `<a href="${hdr.base_path}/LICENSES/${license}.txt">${license}</a>`;
                     text = "(c) " + text;
+                    text = text.replaceAll("\n","");
+                    text = text.replaceAll(" ,", ",");
                     this.app.environmentLicense = text;
                 } catch (error) {
                     this.app.environmentLicense = "N/A";
