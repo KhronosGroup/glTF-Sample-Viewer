@@ -101,7 +101,7 @@
                 <div class="canvasUIMaximize">
                     <img v-bind:src="[fullscreen ? 'assets/ui/Icon_Collapse.svg' : 'assets/ui/Icon_Expand.svg']"
                         @click="toggleUI()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px"
-                        v-show='!(isMobile && tabContentHidden === false)'
+                        v-show='!(isMobile && tabContentHidden === false) && !noUI'
                         >
                 </div>  
             <div class="column " v-show='uiVisible'>

@@ -135,6 +135,16 @@ export default async () => {
                             state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
                             state.userCamera.resetView(state.gltf, state.sceneIndex);
 
+                            const queryString = window.location.search;
+                            const urlParams = new URLSearchParams(queryString);
+                            let yaw = urlParams.get("yaw") ?? 0;
+                            yaw = yaw * (Math.PI / 180) / state.userCamera.orbitSpeed;
+                            let pitch = urlParams.get("pitch") ?? 0;
+                            pitch = pitch * (Math.PI / 180) / state.userCamera.orbitSpeed;
+                            const distance = urlParams.get("distance") ?? 0;
+                            state.userCamera.orbit(yaw, pitch);
+                            state.userCamera.zoomBy(distance);
+
                             // Try to start as many animations as possible without generating conficts.
                             state.animationIndices = [];
                             for (let i = 0; i < gltf.animations.length; i++) {
