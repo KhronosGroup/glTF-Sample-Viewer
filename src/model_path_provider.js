@@ -68,7 +68,9 @@ export function fillEnvironmentWithPaths(environmentNames, environmentsBasePath)
             index: index,
             title: title,
             hdr_path: environmentsBasePath + name + ".hdr",
-            jpg_path: environmentsBasePath + name + ".jpg"
+            jpg_path: environmentsBasePath + name + ".jpg",
+            license_path: environmentsBasePath + name + ".hdr.license",
+            base_path: environmentsBasePath
         };
     });
     return environmentNames;

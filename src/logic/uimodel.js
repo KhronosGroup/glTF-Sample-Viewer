@@ -29,7 +29,7 @@ class UIModel
         this.environmentRotation = app.environmentRotationChanged.pipe();
         this.app.environments = environments;
         const selectedEnvironment = app.selectedEnvironmentChanged.pipe(
-            map(environmentName => this.app.environments[environmentName].hdr_path)
+            map(environmentName => this.app.environments[environmentName])
         );
         const initialEnvironment = "Cannon_Exterior";
         this.app.selectedEnvironment = initialEnvironment;
@@ -111,12 +111,40 @@ class UIModel
         );
 
         this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.droppedGltf);
+
         this.hdr = merge(selectedEnvironment, this.addEnvironment, inputObservables.droppedHdr).pipe(
-            startWith(environments[initialEnvironment].hdr_path)
+            startWith(environments[initialEnvironment])
         );
 
+        this.hdr.subscribe(async hdr => {
+            if (hdr.license_path !== undefined) {
+                try {
+                    const response = await fetch(hdr.license_path);
+                    if (!response.ok) {
+                        throw new Error("License file not found");
+                    }
+                    let text = await response.text();
+                    const license = text.split("SPDX-License-Identifier: ")[1];
+                    console.log(license);
+                    text = text.replace("SPDX-FileCopyrightText: ", "");
+                    text = text.replace(/SPDX-License-Identifier:(.)*/g, `, <a href="${hdr.hdr_path}">Source</a>, License: `);
+                    text += `<a href="${hdr.base_path}/LICENSES/${license}.txt">${license}</a>`;
+                    text = "(c) " + text;
+                    text = text.replaceAll("\n","");
+                    text = text.replaceAll(" ,", ",");
+                    this.app.environmentLicense = text;
+                } catch (error) {
+                    this.app.environmentLicense = "N/A";
+                }
+                
+            } else {
+                this.app.environmentLicense = "N/A";
+            }
+        });
+
         merge(this.addEnvironment, inputObservables.droppedHdr)
-            .subscribe(hdrPath => {
+            .subscribe(hdr => {
+                const hdrPath = hdr.hdr_path;
                 this.app.environments[hdrPath.name] = {
                     title: hdrPath.name,
                     hdr_path: hdrPath,
@@ -285,7 +313,8 @@ const getInputObservables = (inputElement, app) => {
     observables.droppedHdr = droppedFiles.pipe(
         map(files => files.find(([path]) => path.endsWith(".hdr"))),
         filter(file => file !== undefined),
-        pluck("1")
+        pluck("1"),
+        map(file => ({hdr_path: file}))
     );
 
     const mouseMove = fromEvent(document, 'mousemove');
