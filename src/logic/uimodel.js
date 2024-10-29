@@ -18,11 +18,6 @@ class UIModel
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const modelURL = urlParams.get("model");
-        const noUI = urlParams.get("noUI");
-        if (noUI !== null) {
-            this.app.uiVisible = false;
-            this.app.noUI = true;
-        }
 
         this.scene = app.sceneChanged.pipe();
         this.camera = app.cameraChanged.pipe();

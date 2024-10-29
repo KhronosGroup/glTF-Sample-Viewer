@@ -110,6 +110,7 @@ const appCreated = createApp({
             uploadedHDR: undefined,
             uiVisible: false,
             isMobile: false,
+            noUi: false,
             
 
             // these are handles for certain ui change related things
@@ -130,6 +131,13 @@ const appCreated = createApp({
         } else {
             this.uiVisible=false;
             this.isMobile = true;
+        }
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const noUI = urlParams.get("noUI");
+        if (noUI !== null) {
+            this.uiVisible = false;
+            this.noUI = true;
         }
     },
     mounted: function()
