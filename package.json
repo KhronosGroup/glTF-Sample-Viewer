@@ -51,7 +51,7 @@
     "bulma": "^0.9.4",
     "fast-png": "^6.2.0",
     "gl-matrix": "^3.2.1",
-    "gltf-validator": "^2.0.0-dev.3.9",
+    "gltf-validator": "^2.0.0-dev.3.10",
     "jpeg-js": "^0.4.3",
     "normalize-wheel": "^1.0.1",
     "path": "^0.12.7",
