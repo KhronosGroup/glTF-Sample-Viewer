@@ -104,7 +104,7 @@
                         v-show='!(isMobile && tabContentHidden === false) && !noUI'
                         >
                 </div>  
-            <div class="column " v-show='uiVisible'>
+            <div class="column" v-show='uiVisible'>
                     <!--Drop Area -->
                     <div v-bind:class="[showDropDownOverlay ? '' : 'is-hidden']" id="dropZone"
                         style="pointer-events: none;">
@@ -126,7 +126,7 @@
                     <b-tabs id="tabsContainer" 
                         vertical position="is-right" 
                         v-model="activeTab"
-                        v-bind:class="[tabContentHidden ? 'is-flex-wrap-nowrap hideTabs' : 'is-flex-wrap-nowrap']" 
+                        v-bind:class="[tabContentHidden ? 'is-flex-wrap-nowrap hideTabs tabsContainer' : 'is-flex-wrap-nowrap tabsContainer']" 
                         type="is-toggle" v-bind:animated="false">
 
                         <!-- Tab Category: Models -->
