@@ -11,6 +11,11 @@ import {
 
 import {validateBytes} from "gltf-validator";
 
+const ignoredIssues = [
+    // This sample renderer supports tangent space generation.
+    "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+];
+
 export default async () => {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", {
@@ -70,7 +75,8 @@ export default async () => {
                         const buffer = await response.arrayBuffer();
                         return await validateBytes(new Uint8Array(buffer), {
                             externalResourceFunction: externalRefFunction,
-                            uri: model.mainFile
+                            uri: model.mainFile,
+                            ignoredIssues
                         });
                     } else if (Array.isArray(model.mainFile)) {
                         const externalRefFunction = (uri) => {
@@ -98,7 +104,11 @@ export default async () => {
 
                         const buffer = await model.mainFile[1].arrayBuffer();
                         return await validateBytes(new Uint8Array(buffer),
-                            {externalResourceFunction: externalRefFunction, uri: model.mainFile[0]});
+                            {
+                                externalResourceFunction: externalRefFunction,
+                                uri: model.mainFile[0],
+                                ignoredIssues
+                            });
                     }
                 } catch (error) {
                     console.error(error);
