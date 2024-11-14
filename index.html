@@ -239,6 +239,24 @@
                                         <b-slider-tick :value="4" class="iblIntensitySliderMarker">10000</b-slider-tick>
                                     </b-slider>
                                 </b-field>
+                                <b-field class="subtitle"  label="Exposure"></b-field>
+                                <b-slider rounded v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
+                                :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:dragging="exposureChanged.next($event)">
+                                    <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
+                                    <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
+                                    <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
+                                    <b-slider-tick :value="21" class="exposureSliderMarker">0</b-slider-tick>
+
+                                </b-slider>
+                                </b-field>
+
+                                <b-field label="Tone Map" class="subtitle">
+                                    <b-select v-on:input="tonemapChanged.next($event.target.value)" v-model="toneMap">
+                                        <option v-for="(item) in tonemaps" v-bind:value="item.title">
+                                            {{ item.title }}
+                                        </option>
+                                    </b-select>
+                                </b-field>
                                 <b-field label="Background" class="subtitle">
                                     <b-switch class="smallerLabel" v-model="renderEnv" v-on:input="renderEnvChanged.next($event.target.checked)" v-bind:disabled="ibl === false ? true : false">Environment
                                         Map</b-switch>
@@ -427,24 +445,7 @@
                                         </template>
                                     </b-select>
                                 </b-field>
-                                <b-field class="subtitle"  label="Exposure"></b-field>
-                                <b-slider rounded v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
-                                :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:dragging="exposureChanged.next($event)">
-                                    <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
-                                    <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
-                                    <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
-                                    <b-slider-tick :value="21" class="exposureSliderMarker">0</b-slider-tick>
 
-                                </b-slider>
-                                </b-field>
-
-                                <b-field label="Tone Map" class="subtitle">
-                                    <b-select v-on:input="tonemapChanged.next($event.target.value)" v-model="toneMap">
-                                        <option v-for="(item) in tonemaps" v-bind:value="item.title">
-                                            {{ item.title }}
-                                        </option>
-                                    </b-select>
-                                </b-field>
                                 <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                                 <br>
                                 <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
