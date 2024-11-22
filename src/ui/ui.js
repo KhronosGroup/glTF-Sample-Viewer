@@ -74,6 +74,7 @@ const appCreated = createApp({
             disabledAnimations: [],
 
             validationReport: {},
+            validationReportDescription: {},
 
             ibl: true,
             iblIntensity: 0.0,
@@ -223,24 +224,38 @@ const appCreated = createApp({
             document.body.removeChild(element);
         },
         getValidationCounter: function(){
-            let number = 0;
+            let info = "";
             let color = "white";
             if (this.validationReport?.issues?.numErrors > 0) {
-                number = this.validationReport?.issues?.numErrors;
+                info = `${this.validationReport?.issues?.numErrors}`;
                 color = "red";
             } else if (this.validationReport?.issues?.numWarnings > 0) {
-                number = this.validationReport?.issues?.numWarnings;
-                color = "yellow";
+                if (this.validationReportDescription.numIgnoredWarnings == this.validationReport?.issues?.numWarnings) {
+                    color = "lightBlue";
+                    info = "i";
+                } else {
+                    info = `${this.validationReport?.issues?.numWarnings}`;
+                    color = "yellow";
+                }
             } else if (this.validationReport?.issues?.numInfos > 0) {
-                number = this.validationReport?.issues?.numInfos;
+                info = `${info = this.validationReport?.issues?.numInfos}`;
             }
-            if (number !== 0) {
-                return `<div style="display:flex;color:black; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${number}</div>`;
+            let infoDiv = "";
+            if (info !== "") {
+                infoDiv = `<div style="display:flex;color:black; position:absolute; left:50%; top:0px; ` 
+                    + `font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` 
+                    + `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
             }
             if (this.tabsHidden === false && this.activeTab === 2) {
-                return `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">`;
+                return `<div>` 
+                    + `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` 
+                    + infoDiv  
+                    + `</div>`;
             }
-            return '<img src="assets/ui/Capture 30X30.svg" width="30px">';
+            return `<div>` 
+                + `<img src="assets/ui/Capture 30X30.svg" width="30px">` 
+                + infoDiv  
+                + `</div>`;
         },
         setAnimationState: function(value)
         {
