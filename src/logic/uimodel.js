@@ -230,9 +230,39 @@ class UIModel
         );
     }
 
+    createValidationReportDescription(validationReport) {
+        const issues = validationReport?.issues;
+        const messages = issues?.messages;
+        const numWarnings = issues?.numWarnings ?? 0;
+        if (!issues || !messages || numWarnings === 0) {
+            return {};
+        }
+        let numIgnoredWarnings = 0;
+        for (const message of messages) {
+            if (message.code === "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE") {
+                numIgnoredWarnings++;
+            }
+        }
+        if (numIgnoredWarnings === 0) {
+            return {};
+        }
+        return {
+            numIgnoredWarnings: numIgnoredWarnings,
+            message: `The validation generated ${issues.numWarnings} warnings. `
+                +`${numIgnoredWarnings} of these warnings have been about missing `
+                +`tangent space information. Omitting the tangent space information `
+                +`may be a conscious decision by the designer, but it may limit `
+                +`the portability of the asset. The glTF-Sample-Viewer generates `
+                +`tangents using the default MikkTSpace algorithm in this case.`
+        };
+    }
+
     updateValidationReport(validationReportObservable)
     {
-        validationReportObservable.subscribe(data => this.app.validationReport = data);
+        validationReportObservable.subscribe(data => {
+            this.app.validationReport = data;
+            this.app.validationReportDescription = this.createValidationReportDescription(data);
+        });
     }
 
     disabledAnimations(disabledAnimationsObservable)

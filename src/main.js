@@ -13,7 +13,7 @@ import {validateBytes} from "gltf-validator";
 
 const ignoredIssues = [
     // This sample renderer supports tangent space generation.
-    "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+    //"MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
 ];
 
 export default async () => {
