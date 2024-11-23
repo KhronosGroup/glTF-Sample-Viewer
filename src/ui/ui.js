@@ -224,27 +224,33 @@ const appCreated = createApp({
             document.body.removeChild(element);
         },
         getValidationCounter: function(){
-            let info = "";
-            let color = "white";
-            if (this.validationReport?.issues?.numErrors > 0) {
-                info = `${this.validationReport?.issues?.numErrors}`;
-                color = "red";
-            } else if (this.validationReport?.issues?.numWarnings > 0) {
-                if (this.validationReportDescription.numIgnoredWarnings == this.validationReport?.issues?.numWarnings) {
-                    color = "lightBlue";
-                    info = "i";
-                } else {
-                    info = `${this.validationReport?.issues?.numWarnings}`;
-                    color = "yellow";
-                }
-            } else if (this.validationReport?.issues?.numInfos > 0) {
-                info = `${this.validationReport?.issues?.numInfos}`;
-            }
             let infoDiv = "";
-            if (info !== "") {
-                infoDiv = `<div style="display:flex;color:black; position:absolute; left:50%; top:0px; ` 
-                    + `font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` 
-                    + `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
+            const issues = this.validationReport?.issues;
+            if (issues) {
+                let info = "";
+                let color = "white";
+                if (issues.numErrors > 0) {
+                    info = `${issues.numErrors}`;
+                    color = "red";
+                } else if (issues.numWarnings > 0) {
+                    const allIgnored = issues.numWarnings ===
+                        this.validationReportDescription?.numIgnoredWarnings;
+                    if (allIgnored) {
+                        info = "i";
+                        color = "lightBlue";
+                    } else {
+                        info = `${issues.numWarnings}`;
+                        color = "yellow";
+                    }
+                } else if (issues.numInfos > 0) {
+                    info = `${issues.numInfos}`;
+                }
+                if (info !== "") {
+                    infoDiv =
+                      `<div style="display:flex;color:black; position:absolute; left:50%; top:0px; ` +
+                      `font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
+                      `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
+                }
             }
             if (this.tabsHidden === false && this.activeTab === 2) {
                 return `<div>` 
