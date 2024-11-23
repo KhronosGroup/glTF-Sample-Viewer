@@ -238,7 +238,7 @@ const appCreated = createApp({
                     color = "yellow";
                 }
             } else if (this.validationReport?.issues?.numInfos > 0) {
-                info = `${info = this.validationReport?.issues?.numInfos}`;
+                info = `${this.validationReport?.issues?.numInfos}`;
             }
             let infoDiv = "";
             if (info !== "") {
