@@ -133,12 +133,12 @@ nav.tabs
 // handle options placement
 .tabs li:first-child
 {
-    margin-top: calc(100vh * 0.11);
+    margin-top: calc(100dvh * 0.11);
 }
 .tabs li:nth-child(7)
 {
     margin-top: auto;
-    margin-bottom: calc(100vh * 0.02);
+    margin-bottom: calc(100dvh * 0.02);
 }
 
 .tabs li a
