@@ -126,7 +126,7 @@ const appCreated = createApp({
     },
     beforeMount: function(){
         // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
-        if(window.innerWidth > 768) { 
+        if(document.documentElement.clientWidth > 768) { 
             this.uiVisible = true;
             this.isMobile = false;
         } else {
