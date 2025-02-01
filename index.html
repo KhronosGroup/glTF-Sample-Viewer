@@ -326,7 +326,7 @@
                                         <p>Number of infos: {{validationReport?.issues?.numInfos ?? 0}}</p>
                                     </div>
 
-                                    <div v-show='validationReportDescription?.message !== ""'>
+                                    <div v-show='validationReportDescription?.message !== undefined && validationReportDescription?.message !== ""'>
                                         <p style="margin-top: 10px; margin-bottom: 10px; font-size:smaller;">{{validationReportDescription?.message}}</p>
                                     </div>
 

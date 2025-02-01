@@ -223,35 +223,57 @@ const appCreated = createApp({
             element.click();
             document.body.removeChild(element);
         },
-        getValidationCounter: function(){
-            let infoDiv = "";
-            const issues = this.validationReport?.issues;
-            if (issues) {
-                let info = "";
-                let color = "white";
-                if (issues.numErrors > 0) {
-                    info = `${issues.numErrors}`;
-                    color = "red";
-                } else if (issues.numWarnings > 0) {
-                    const allIgnored = issues.numWarnings ===
-                        this.validationReportDescription?.numIgnoredWarnings;
-                    if (allIgnored) {
-                        info = "i";
-                        color = "lightBlue";
-                    } else {
-                        info = `${issues.numWarnings}`;
-                        color = "yellow";
-                    }
-                } else if (issues.numInfos > 0) {
-                    info = `${issues.numInfos}`;
-                }
-                if (info !== "") {
-                    infoDiv =
-                      `<div style="display:flex;color:black; position:absolute; left:50%; top:0px; ` +
-                      `font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
-                      `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
-                }
+
+        /**
+         * Creates a div string summarizing the given issues.
+         * 
+         * If the given issues are empty or do not contain any errors,
+         * warnings, or infos, then the empty string is returned.
+         * 
+         * Otherwise, the div contains the number of errors/warnings/infos
+         * with an appropriate background color. When all warnings of
+         * the given report are ignored, then this will only be a
+         * small "info" div. Clicking on that will expand the details
+         * about the ignored warnings.
+         * 
+         * @param {any} issues The `issues` property that is part of
+         * the validation report of the glTF Validator
+         * @returns The div string
+         */
+        getValidationInfoDiv : function(issues) {
+            if (!issues) {
+                return "";
             }
+            let info = "";
+            let color = "white";
+            if (issues.numErrors > 0) {
+                info = `${issues.numErrors}`;
+                color = "red";
+            } else if (issues.numWarnings > 0) {
+                const allIgnored = issues.numWarnings ===
+                    this.validationReportDescription?.numIgnoredWarnings;
+                if (allIgnored) {
+                    info = "i";
+                    color = "lightBlue";
+                } else {
+                    info = `${issues.numWarnings}`;
+                    color = "yellow";
+                }
+            } else if (issues.numInfos > 0) {
+                info = `${issues.numInfos}`;
+            }
+            if (info === "") {
+                return "";
+            }
+            const infoDiv =
+                `<div style="display:flex;color:black; position:absolute; left:50%; top:0px; ` +
+                `font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
+                `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
+            return infoDiv;
+        },
+
+        getValidationCounter: function(){
+            const infoDiv = this.getValidationInfoDiv(this.validationReport?.issues);
             if (this.tabsHidden === false && this.activeTab === 2) {
                 return `<div>` 
                     + `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` 

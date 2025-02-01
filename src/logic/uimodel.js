@@ -230,6 +230,20 @@ class UIModel
         );
     }
 
+    /**
+     * Creates a descriptive summary of the given validation report.
+     * 
+     * If there are no issues, messages, or warnings in the given 
+     * report, then an empty object is returned.
+     * 
+     * Otherwise, the result will be an object that contains 
+     * `numIgnoredWarnings:number` that counts the number of warnings 
+     * that are ignored by the sample viewer, and a `message:string` 
+     * that explains why these warnings are ignored.
+     * 
+     * @param {any} validationReport The glTF validator validation report
+     * @returns The description
+     */
     createValidationReportDescription(validationReport) {
         const issues = validationReport?.issues;
         const messages = issues?.messages;
