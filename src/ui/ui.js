@@ -262,12 +262,16 @@ const appCreated = createApp({
             } else if (issues.numInfos > 0) {
                 info = `${issues.numInfos}`;
             }
+            if (info.length > 3) {
+                info = "999+";
+            }
             if (info === "") {
                 return "";
             }
+            const padding = this.isMobile ? "right:0%;top:15%;" : "right:15%;top:0%;";
             const infoDiv =
-                `<div style="display:flex;color:black; position:absolute; left:50%; top:0px; ` +
-                `font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
+                `<div style="display:flex;color:black; position:absolute; ${padding} ` +
+                `font-size:80%; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
                 `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
             return infoDiv;
         },
