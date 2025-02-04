@@ -305,7 +305,7 @@
                         <b-tab-item label="Validator" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 2)"
-                                v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                                v-bind:style="[tabContent === false && activeTab === 2 ? {'height': '100%'} : {}]">
                                 <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                                 <div style="max-width:fit-content; margin-left: auto; margin-right: auto;" v-html="getValidationCounter()"></div>
                                 <span

@@ -268,7 +268,7 @@ const appCreated = createApp({
             if (info === "") {
                 return "";
             }
-            const padding = this.isMobile ? "right:0%;top:15%;" : "right:15%;top:0%;";
+            const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
             const infoDiv =
                 `<div style="display:flex;color:black; position:absolute; ${padding} ` +
                 `font-size:80%; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
@@ -278,13 +278,13 @@ const appCreated = createApp({
 
         getValidationCounter: function(){
             const infoDiv = this.getValidationInfoDiv(this.validationReport?.issues);
-            if (this.tabsHidden === false && this.activeTab === 2) {
-                return `<div>` 
+            if (this.tabContentHidden === false && this.activeTab === 2) {
+                return `<div style="position:relative; width:50px; height:100%">` 
                     + `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` 
                     + infoDiv  
                     + `</div>`;
             }
-            return `<div>` 
+            return `<div style="position:relative; width:50px; height:100%">` 
                 + `<img src="assets/ui/Capture 30X30.svg" width="30px">` 
                 + infoDiv  
                 + `</div>`;
