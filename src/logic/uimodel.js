@@ -203,7 +203,7 @@ class UIModel
             this.app.selectedAnimations = state.animationIndices;
 
             if (gltf && gltf.variants) {
-                this.app.materialVariants = ["None", ...gltf.variants.map(variant => variant.name)];
+                this.app.materialVariants = ["None", ...gltf.variants.map(variant => variant?.name ?? "Unnamed")];
             } else {
                 this.app.materialVariants = ["None"];
             }
