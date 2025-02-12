@@ -305,7 +305,7 @@
                         <b-tab-item label="Validator" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 2)"
-                                v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                                v-bind:style="[tabContent === false && activeTab === 2 ? {'height': '100%'} : {}]">
                                 <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                                 <div style="max-width:fit-content; margin-left: auto; margin-right: auto;" v-html="getValidationCounter()"></div>
                                 <span
@@ -325,6 +325,11 @@
                                         <p>Number of warnings: {{validationReport?.issues?.numWarnings ?? 0}}</p>
                                         <p>Number of infos: {{validationReport?.issues?.numInfos ?? 0}}</p>
                                     </div>
+
+                                    <div v-show='validationReportDescription?.message !== undefined && validationReportDescription?.message !== ""'>
+                                        <p style="margin-top: 10px; margin-bottom: 10px; font-size:smaller;">{{validationReportDescription?.message}}</p>
+                                    </div>
+
                                     <button class="button is-rounded" style="width: fit-content; flex-shrink: 0; margin-bottom: 12px;" v-on:click="copyToClipboard(JSON.stringify(validationReport, undefined, 4))">Copy</button>
                                     <button class="button is-rounded" style="width: fit-content; flex-shrink: 0;" v-on:click="downloadJSON(validationReport?.uri?.substring(validationReport.uri.lastIndexOf('/') + 1) + '.report.json', validationReport)">Download</button>
                                     <span style="margin-top: 5px;">Powered by <a href="https://github.com/KhronosGroup/glTF-Validator" target="_blank" rel="noopener noreferrer">glTF-Validator</a></span>

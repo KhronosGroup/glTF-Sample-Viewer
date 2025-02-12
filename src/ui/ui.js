@@ -74,6 +74,7 @@ const appCreated = createApp({
             disabledAnimations: [],
 
             validationReport: {},
+            validationReportDescription: {},
 
             ibl: true,
             iblIntensity: 0.0,
@@ -222,25 +223,71 @@ const appCreated = createApp({
             element.click();
             document.body.removeChild(element);
         },
-        getValidationCounter: function(){
-            let number = 0;
+
+        /**
+         * Creates a div string summarizing the given issues.
+         * 
+         * If the given issues are empty or do not contain any errors,
+         * warnings, or infos, then the empty string is returned.
+         * 
+         * Otherwise, the div contains the number of errors/warnings/infos
+         * with an appropriate background color. When all warnings of
+         * the given report are ignored, then this will only be a
+         * small "info" div. Clicking on that will expand the details
+         * about the ignored warnings.
+         * 
+         * @param {any} issues The `issues` property that is part of
+         * the validation report of the glTF Validator
+         * @returns The div string
+         */
+        getValidationInfoDiv : function(issues) {
+            if (!issues) {
+                return "";
+            }
+            let info = "";
             let color = "white";
-            if (this.validationReport?.issues?.numErrors > 0) {
-                number = this.validationReport?.issues?.numErrors;
+            if (issues.numErrors > 0) {
+                info = `${issues.numErrors}`;
                 color = "red";
-            } else if (this.validationReport?.issues?.numWarnings > 0) {
-                number = this.validationReport?.issues?.numWarnings;
-                color = "yellow";
-            } else if (this.validationReport?.issues?.numInfos > 0) {
-                number = this.validationReport?.issues?.numInfos;
+            } else if (issues.numWarnings > 0) {
+                const allIgnored = issues.numWarnings ===
+                    this.validationReportDescription?.numIgnoredWarnings;
+                if (allIgnored) {
+                    info = "i";
+                    color = "lightBlue";
+                } else {
+                    info = `${issues.numWarnings}`;
+                    color = "yellow";
+                }
+            } else if (issues.numInfos > 0) {
+                info = `${issues.numInfos}`;
             }
-            if (number !== 0) {
-                return `<div style="display:flex;color:black; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${number}</div>`;
+            if (info.length > 3) {
+                info = "999+";
             }
-            if (this.tabsHidden === false && this.activeTab === 2) {
-                return `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">`;
+            if (info === "") {
+                return "";
             }
-            return '<img src="assets/ui/Capture 30X30.svg" width="30px">';
+            const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
+            const infoDiv =
+                `<div style="display:flex;color:black; position:absolute; ${padding} ` +
+                `font-size:80%; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
+                `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
+            return infoDiv;
+        },
+
+        getValidationCounter: function(){
+            const infoDiv = this.getValidationInfoDiv(this.validationReport?.issues);
+            if (this.tabContentHidden === false && this.activeTab === 2) {
+                return `<div style="position:relative; width:50px; height:100%">` 
+                    + `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` 
+                    + infoDiv  
+                    + `</div>`;
+            }
+            return `<div style="position:relative; width:50px; height:100%">` 
+                + `<img src="assets/ui/Capture 30X30.svg" width="30px">` 
+                + infoDiv  
+                + `</div>`;
         },
         setAnimationState: function(value)
         {
