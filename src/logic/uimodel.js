@@ -53,6 +53,7 @@ class UIModel
         this.dispersionEnabled = app.dispersionChanged.pipe();
         this.specularEnabled = app.specularChanged.pipe();
         this.emissiveStrengthEnabled = app.emissiveStrengthChanged.pipe();
+        this.volumeScatteringEnabled = app.volumeScatteringChanged.pipe();
         this.iblEnabled = app.iblChanged.pipe();
         this.iblIntensity = app.iblIntensityChanged.pipe();
         this.punctualLightsEnabled = app.punctualLightsChanged.pipe();
