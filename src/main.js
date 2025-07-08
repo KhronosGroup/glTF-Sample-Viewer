@@ -49,7 +49,7 @@ export default async () => {
     let disableValidator = undefined;
     if (chromeVersionString) {
         if (parseInt(chromeVersionString[2]) == 138) {
-            disableValidator = of({"error" : "Due to a bug in Chrome 138, glTF Validator is disabled in this specific Chrome version."});
+            disableValidator = of({"error" : "Due to a bug in Chromium 138, glTF Validator is disabled in browsers with this specific Chromium version."});
         }
     }
 
