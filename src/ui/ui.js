@@ -241,11 +241,19 @@ const appCreated = createApp({
          * @returns The div string
          */
         getValidationInfoDiv : function(issues) {
+            let info = "";
+            let color = "white";
+            const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
+            if (this.validationReport.error) {
+                info = "X";
+                color = "red";
+                return `<div style="display:flex;color:black; position:absolute; ${padding} ` +
+                    `font-size:80%; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
+                    `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
+            }
             if (!issues) {
                 return "";
             }
-            let info = "";
-            let color = "white";
             if (issues.numErrors > 0) {
                 info = `${issues.numErrors}`;
                 color = "red";
@@ -268,7 +276,6 @@ const appCreated = createApp({
             if (info === "") {
                 return "";
             }
-            const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
             const infoDiv =
                 `<div style="display:flex;color:black; position:absolute; ${padding} ` +
                 `font-size:80%; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
