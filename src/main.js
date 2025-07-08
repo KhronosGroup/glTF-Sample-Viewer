@@ -2,7 +2,7 @@ import { GltfView } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
 import { app } from "./ui/ui.js";
-import { EMPTY, from, merge } from "rxjs";
+import { EMPTY, from, merge, of } from "rxjs";
 import { mergeMap, map, share, catchError } from "rxjs/operators";
 import {
     GltfModelPathProvider,
@@ -45,8 +45,15 @@ export default async () => {
 
     const uiModel = new UIModel(app, pathProvider, environmentPaths);
 
+    const chromeVersionString = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+    let disableValidator = undefined;
+    if (chromeVersionString) {
+        if (parseInt(chromeVersionString[2]) == 138) {
+            disableValidator = of({"error" : "Due to a bug in Chrome 138, glTF Validator is disabled in this specific Chrome version."});
+        }
+    }
 
-    const validation = uiModel.model.pipe(
+    const validation = disableValidator ? disableValidator.pipe() : uiModel.model.pipe(
         mergeMap((model) => {
             const func = async(model) => {
                 try {
@@ -107,7 +114,7 @@ export default async () => {
                     console.error(error);
                 }
             };
-            return from(func(model)).pipe(catchError((error) => { console.error(`Validation failed: ${error}`); return EMPTY; }));
+            return from(func(model)).pipe(catchError((error) => { console.error(`Validation failed: ${error}`); return {"error" : `Validation failed: ${error}`}; }));
         })
     );
 
