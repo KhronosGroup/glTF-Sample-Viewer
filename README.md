@@ -3,13 +3,55 @@ glTF Sample Viewer Web App
 
 [![](../assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer-Release/)
 
-This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL](https://www.khronos.org/webgl/): [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/)
+This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL 2.0](https://www.khronos.org/webgl/):
 
 
 Viewer
 ======
 
 Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/).
+
+Features
+--------
+
+### glTF
+- [x] glTF 2.0
+- [x] [KHR_animation_pointer](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer)
+- [x] [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_draco_mesh_compression)
+- [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_lights_punctual)
+- [x] [KHR_materials_anisotropy](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
+- [x] [KHR_materials_clearcoat](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_clearcoat)
+- [x] [KHR_materials_diffuse_transmission](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_diffuse_transmission/README.md)
+- [x] [KHR_materials_dispersion](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_dispersion)
+- [x] [KHR_materials_emissive_strength](https://github.com/KhronosGroup/glTF/tree/KHR_materials_emissive_strength/extensions/2.0/Khronos/KHR_materials_emissive_strength)
+- [x] [KHR_materials_ior](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior)
+- [x] [KHR_materials_iridescence](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_iridescence)
+- [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
+- [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_sheen)
+- [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular)
+- [x] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_transmission)
+- [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_unlit)
+- [x] [KHR_materials_variants](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_variants)
+- [x] [KHR_materials_volume](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_volume)
+- [x] [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
+- [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
+- [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform)
+- [x] [KHR_xmp_json_ld](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_xmp_json_ld)
+- [x] [EXT_mesh_gpu_instancing](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing)
+- [x] [EXT_texture_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp)
+
+### UI
+- Select all [glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets) directly via UI
+- Load your own glTF/glb and HDR files via drag and drop
+- Customize lighting and tone mapping
+- Check validation errors with the integrated [glTF-Validator](https://github.com/KhronosGroup/glTF-Validator)
+- Select different material variants
+- Enable/disable specific animations
+- Enable/disable glTF features/extensions and view debug channels
+- Download renderings and current camera properties
+- Show statistics about the currently loaded file
+- Specify URL parameters to modify behavior on load
+
 
 Usage
 -----
@@ -18,7 +60,11 @@ Usage
 
 `click + drag` : Rotate model
 
-`scroll` : Zoom camera
+`shift + drag` \
+`middle mouse button + drag` : Pan camera
+
+`scroll` \
+`right click + drag` : Zoom camera
 
 `GUI` : Use to change models and settings
 
@@ -29,6 +75,17 @@ Usage
 
 ### Change the environment map
 * Drag and drop a .hdr panorama file
+
+### URL parameters
+URL parameters are added at the end of the sample viewer URL: \
+`?key=value&another_key=another_value`
+
+Possible parameters:
+- `model=URL_to_file`: Load glTF/glb from specified URL
+- `noUI`: Disable UI 
+- `yaw=90`: Orbit the camera around the model along the Y-axis in degrees. With 90 degrees you look at the model from the left side.
+- `pitch=90`: Orbit the camera around the model along the X-axis in degrees. With 90 degrees you look at the model from the top. Value range: -90 to 90
+- `distance=5`: The models gets smaller with positive and bigger with negative numbers. Relative to the initial camera position.
 
 Setup
 -----

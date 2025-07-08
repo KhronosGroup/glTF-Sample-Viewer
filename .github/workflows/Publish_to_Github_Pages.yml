@@ -36,4 +36,5 @@ jobs:
           clean-exclude: |
             docs/glxf
             glxf
+            volume-scatter
 
