@@ -392,6 +392,16 @@ const appCreated = createApp({
         toggleUI() {
             this.uiVisible = !this.uiVisible;
         },
+        resetAnimation() {
+            // Pause and immediately play to reset animation
+            this.setAnimationState(false);
+            this.animationPlayChanged.next(false);
+            // Small timeout to ensure state change
+            setTimeout(() => {
+                this.setAnimationState(true);
+                this.animationPlayChanged.next(true);
+            }, 50);
+        },
     }
 });
 
