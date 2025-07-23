@@ -45,15 +45,7 @@ export default async () => {
 
     const uiModel = new UIModel(app, pathProvider, environmentPaths);
 
-    const chromeVersionString = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-    let disableValidator = undefined;
-    if (chromeVersionString) {
-        if (parseInt(chromeVersionString[2]) == 138) {
-            disableValidator = of({"error" : "Due to a bug in Chromium 138, glTF Validator is disabled in browsers with this specific Chromium version."});
-        }
-    }
-
-    const validation = disableValidator ? disableValidator.pipe() : uiModel.model.pipe(
+    const validation = uiModel.model.pipe(
         mergeMap((model) => {
             const func = async(model) => {
                 try {
