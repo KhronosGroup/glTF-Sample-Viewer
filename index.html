@@ -380,7 +380,7 @@
                                 <b-field label="Graphs"
                                     v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                     <div v-for="animation in animations" v-bind:key="animation.index" style="margin-bottom: 0.5em;">
-                                        <b-radio v-model="selectedGraph" :native-value="animation.index" :disabled="disabledAnimations.includes(animation.index)">
+                                        <b-radio v-model="selectedGraph" :native-value="animation.index">
                                             {{ animation.title }}
                                         </b-radio>
                                     </div>
@@ -399,9 +399,8 @@
                                         <b-switch v-model="customEventEnabled" v-on:input="customEventToggleChanged.next($event.target.checked)"></b-switch>
                                     </div>
                                     <div style="margin-top: 1em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number inputs (float only)</label>
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number inputs</label>
                                         <b-input type="number" step="any" v-model="customEventNumberInput" @blur="validateCustomEventNumberInput"></b-input>
-                                        <p v-if="customEventNumberInputError" style="color: #ff3860; font-size: 0.9em; margin-top: 0.3em;">{{ customEventNumberInputError }}</p>
                                     </div>
                                     <div style="margin-top: 1em;">
                                         <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number input (whole)</label>
@@ -431,7 +430,6 @@
                                     <button class="button is-rounded"
                                         :style="customEventSendFeedback ? 'background: #888888; color: #f2f2f2; min-width: 70px; border: none;' : 'background: #87c540; color: #f2f2f2; min-width: 70px; border: none;'"
                                         v-on:click="sendCustomEvent"
-                                        :disabled="customEventSendFeedback"
                                     >
                                         <span v-if="!customEventSendFeedback">Send</span>
                                         <span v-else>Sent <span style='font-size: 1.2em; vertical-align: middle;'>&#10003;</span></span>

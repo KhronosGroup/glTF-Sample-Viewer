@@ -120,7 +120,6 @@ const appCreated = createApp({
             volumeEnabledPrefState: true,
             customEventEnabled: false,
             customEventNumberInput: 0,
-            customEventNumberInputError: '',
             customEventNumberInputWhole: '',
             customEventNumberInputWholeError: '',
             customEventMatrix2x2: [0, 0, 0, 0],
@@ -425,19 +424,6 @@ const appCreated = createApp({
             setTimeout(() => {
                 this.customEventSendFeedback = false;
             }, 3000);
-        },
-        validateCustomEventNumberInput() {
-            const val = this.customEventNumberInput;
-            if (val === '' || val === null || val === undefined) {
-                this.customEventNumberInputError = '';
-                return;
-            }
-            // Only allow floats (must have a decimal point)
-            if (!/^[-+]?\d*\.\d+$/.test(String(val))) {
-                this.customEventNumberInputError = 'Please enter a floating point number (e.g., 1.23)';
-            } else {
-                this.customEventNumberInputError = '';
-            }
         },
         validateCustomEventNumberInputWhole() {
             const val = this.customEventNumberInputWhole;
