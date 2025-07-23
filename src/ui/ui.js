@@ -72,6 +72,7 @@ const appCreated = createApp({
             selectedVariant: "None",
             selectedAnimations: [],
             disabledAnimations: [],
+            selectedGraph: null,
 
             validationReport: {},
             validationReportDescription: {},
@@ -117,6 +118,16 @@ const appCreated = createApp({
             // these are handles for certain ui change related things
             environmentVisiblePrefState: true,
             volumeEnabledPrefState: true,
+            customEventEnabled: false,
+            customEventNumberInput: 0,
+            customEventNumberInputError: '',
+            customEventNumberInputWhole: '',
+            customEventNumberInputWholeError: '',
+            customEventMatrix2x2: [0, 0, 0, 0],
+            customEventMatrix3x3: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            customEventMatrix4x4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            customEventSendClicked: new Subject(),
+            customEventSendFeedback: false,
         };
     },
     watch: {
@@ -401,6 +412,45 @@ const appCreated = createApp({
                 this.setAnimationState(true);
                 this.animationPlayChanged.next(true);
             }, 50);
+        },
+        sendCustomEvent() {
+            this.customEventSendClicked.next({
+                enabled: this.customEventEnabled,
+                number: this.customEventNumberInput,
+                matrix2x2: this.customEventMatrix2x2,
+                matrix3x3: this.customEventMatrix3x3,
+                matrix4x4: this.customEventMatrix4x4
+            });
+            this.customEventSendFeedback = true;
+            setTimeout(() => {
+                this.customEventSendFeedback = false;
+            }, 3000);
+        },
+        validateCustomEventNumberInput() {
+            const val = this.customEventNumberInput;
+            if (val === '' || val === null || val === undefined) {
+                this.customEventNumberInputError = '';
+                return;
+            }
+            // Only allow floats (must have a decimal point)
+            if (!/^[-+]?\d*\.\d+$/.test(String(val))) {
+                this.customEventNumberInputError = 'Please enter a floating point number (e.g., 1.23)';
+            } else {
+                this.customEventNumberInputError = '';
+            }
+        },
+        validateCustomEventNumberInputWhole() {
+            const val = this.customEventNumberInputWhole;
+            if (val === '' || val === null || val === undefined) {
+                this.customEventNumberInputWholeError = '';
+                return;
+            }
+            // Only allow whole numbers (no decimal point)
+            if (!/^[-+]?\d+$/.test(String(val))) {
+                this.customEventNumberInputWholeError = 'Please enter a whole number (e.g., 5)';
+            } else {
+                this.customEventNumberInputWholeError = '';
+            }
         },
     }
 });

@@ -363,7 +363,6 @@
                                     @click="collapseActiveTab($event, 3)">
                                 <!-- Change animation section title -->
                                 <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Interactivity Graphs</h2>
-                                <!-- Graph Controls subtitle -->
                                 <label class="subtitle" style="margin-bottom: 0.5em;">Graph Controls</label>
                                 <!-- Play/Pause and Reset buttons -->
                                 <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em;">
@@ -377,25 +376,66 @@
                                     </button>
                                 </div>
                                 <!-- Hide if no animations -->
-                                <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No Animations available</label>
+                                <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No graphs available</label>
                                 <b-field label="Graphs"
                                     v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
-                                    <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                        <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations"
-                                            :disabled="disabledAnimations.includes(animation.index)">
+                                    <div v-for="animation in animations" v-bind:key="animation.index" style="margin-bottom: 0.5em;">
+                                        <b-radio v-model="selectedGraph" :native-value="animation.index" :disabled="disabledAnimations.includes(animation.index)">
                                             {{ animation.title }}
-                                        </b-checkbox>
-                                    </b-field>
+                                        </b-radio>
+                                    </div>
                                 </b-field>
                                 <!-- Custom events subtitle and dropdown -->
-                                <div style="margin-top: 2.5em;">
-                                    <label class="subtitle" style="margin-bottom: 0.5em;">Custom events</label>
+                                <div style="margin-top: 2.5em; margin-bottom: 1.5em;">
+                                    <label class="subtitle" style="margin-bottom: 0.5em; display: block;">Custom events</label>
                                     <b-field>
                                         <b-select placeholder="Select event">
                                             <option value="" disabled selected>Select event</option>
                                             <!-- Add your custom event options here -->
                                         </b-select>
                                     </b-field>
+                                    <div style="margin-top: 1em; display: flex; align-items: center; justify-content: space-between;">
+                                        <label class="smallerLabel" style="margin-bottom: 0;">Enable toggle switch</label>
+                                        <b-switch v-model="customEventEnabled" v-on:input="customEventToggleChanged.next($event.target.checked)"></b-switch>
+                                    </div>
+                                    <div style="margin-top: 1em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number inputs (float only)</label>
+                                        <b-input type="number" step="any" v-model="customEventNumberInput" @blur="validateCustomEventNumberInput"></b-input>
+                                        <p v-if="customEventNumberInputError" style="color: #ff3860; font-size: 0.9em; margin-top: 0.3em;">{{ customEventNumberInputError }}</p>
+                                    </div>
+                                    <div style="margin-top: 1em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number input (whole)</label>
+                                        <b-input type="number" step="1" v-model="customEventNumberInputWhole" @blur="validateCustomEventNumberInputWhole"></b-input>
+                                        <p v-if="customEventNumberInputWholeError" style="color: #ff3860; font-size: 0.9em; margin-top: 0.3em;">{{ customEventNumberInputWholeError }}</p>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">2x2 Matrix</label>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5em; width: max-content;">
+                                            <b-input v-for="(val, idx) in customEventMatrix2x2" :key="'2x2-' + idx" type="number" v-model="customEventMatrix2x2[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">3x3 Matrix</label>
+                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5em; width: max-content;">
+                                            <b-input v-for="(val, idx) in customEventMatrix3x3" :key="'3x3-' + idx" type="number" v-model="customEventMatrix3x3[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">4x4 Matrix</label>
+                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5em; width: max-content;">
+                                            <b-input v-for="(val, idx) in customEventMatrix4x4" :key="'4x4-' + idx" type="number" v-model="customEventMatrix4x4[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 2em; display: flex; justify-content: flex-end;">
+                                    <button class="button is-rounded"
+                                        :style="customEventSendFeedback ? 'background: #888888; color: #f2f2f2; min-width: 70px; border: none;' : 'background: #87c540; color: #f2f2f2; min-width: 70px; border: none;'"
+                                        v-on:click="sendCustomEvent"
+                                        :disabled="customEventSendFeedback"
+                                    >
+                                        <span v-if="!customEventSendFeedback">Send</span>
+                                        <span v-else>Sent <span style='font-size: 1.2em; vertical-align: middle;'>&#10003;</span></span>
+                                    </button>
                                 </div>
                             </div>
                         </b-tab-item>
