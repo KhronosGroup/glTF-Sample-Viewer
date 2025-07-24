@@ -372,7 +372,7 @@
                                         btn-class="round-green-btn">
                                     </toggle-button>
                                     <!-- Reset button -->
-                                    <button class="button is-rounded is-outlined" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
+                                    <button class="button is-rounded reset-btn-green" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
                                         v-on:click="resetAnimation" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                         Reset
                                     </button>
@@ -428,19 +428,19 @@
                                         </div>
                                     </div>
                                     <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 2x2</label>
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 2</label>
                                         <div style="display: flex; gap: 0.5em;">
                                             <b-input v-for="(val, idx) in customEventVector2" :key="'vec2-' + idx" type="number" v-model="customEventVector2[idx]" style="width: 60px;"></b-input>
                                         </div>
                                     </div>
                                     <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 3x3</label>
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 3</label>
                                         <div style="display: flex; gap: 0.5em;">
                                             <b-input v-for="(val, idx) in customEventVector3" :key="'vec3-' + idx" type="number" v-model="customEventVector3[idx]" style="width: 60px;"></b-input>
                                         </div>
                                     </div>
                                     <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 4x4</label>
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 4</label>
                                         <div style="display: flex; gap: 0.5em;">
                                             <b-input v-for="(val, idx) in customEventVector4" :key="'vec4-' + idx" type="number" v-model="customEventVector4[idx]" style="width: 60px;"></b-input>
                                         </div>
@@ -609,6 +609,15 @@
 }
 .round-green-btn:active {
     background: #5e8c2f;
+}
+.reset-btn-green {
+    transition: background 0.15s;
+}
+.reset-btn-green:hover {
+    background: #385117 !important;
+}
+.reset-btn-green:active {
+    background: #5e8c2f !important;
 }
 </style>
 
