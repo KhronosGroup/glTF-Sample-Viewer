@@ -125,8 +125,10 @@ const appCreated = createApp({
             customEventMatrix2x2: [0, 0, 0, 0],
             customEventMatrix3x3: [0, 0, 0, 0, 0, 0, 0, 0, 0],
             customEventMatrix4x4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            customEventVector2: [0, 0],
+            customEventVector3: [0, 0, 0],
+            customEventVector4: [0, 0, 0, 0],
             customEventSendClicked: new Subject(),
-            customEventSendFeedback: false,
         };
     },
     watch: {
@@ -420,10 +422,11 @@ const appCreated = createApp({
                 matrix3x3: this.customEventMatrix3x3,
                 matrix4x4: this.customEventMatrix4x4
             });
-            this.customEventSendFeedback = true;
-            setTimeout(() => {
-                this.customEventSendFeedback = false;
-            }, 3000);
+            this.$buefy.toast.open({
+                message: 'Custom event sent successfully!',
+                type: 'is-success',
+                duration: 3000
+            });
         },
         validateCustomEventNumberInputWhole() {
             const val = this.customEventNumberInputWhole;
@@ -445,7 +448,7 @@ appCreated.use(Buefy);
 
 // general components
 appCreated.component('toggle-button', {
-    props: ['ontext', 'offtext'],
+    props: ['ontext', 'offtext', 'btnClass'],
     template:'#toggleButtonTemplate',
     data(){
         return {

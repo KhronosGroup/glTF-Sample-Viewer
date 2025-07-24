@@ -47,7 +47,7 @@
 <!-- general templates -->
 <script id="toggleButtonTemplate" type="text/x-template">
     <div>
-        <b-button v-on:click="buttonclicked" rounded>{{ name }}</b-button>
+        <b-button v-on:click="buttonclicked" rounded :class="btnClass">{{ name }}</b-button>
     </div>
 </script>
 <script id="jsonToUITemplate" type="text/x-template">
@@ -368,7 +368,9 @@
                                 <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em;">
                                     <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
                                         ref="animationState"
-                                        v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"></toggle-button>
+                                        v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"
+                                        btn-class="round-green-btn">
+                                    </toggle-button>
                                     <!-- Reset button -->
                                     <button class="button is-rounded is-outlined" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
                                         v-on:click="resetAnimation" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
@@ -425,14 +427,28 @@
                                             <b-input v-for="(val, idx) in customEventMatrix4x4" :key="'4x4-' + idx" type="number" v-model="customEventMatrix4x4[idx]" style="width: 60px;"></b-input>
                                         </div>
                                     </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 2x2</label>
+                                        <div style="display: flex; gap: 0.5em;">
+                                            <b-input v-for="(val, idx) in customEventVector2" :key="'vec2-' + idx" type="number" v-model="customEventVector2[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 3x3</label>
+                                        <div style="display: flex; gap: 0.5em;">
+                                            <b-input v-for="(val, idx) in customEventVector3" :key="'vec3-' + idx" type="number" v-model="customEventVector3[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 4x4</label>
+                                        <div style="display: flex; gap: 0.5em;">
+                                            <b-input v-for="(val, idx) in customEventVector4" :key="'vec4-' + idx" type="number" v-model="customEventVector4[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div style="margin-top: 2em; display: flex; justify-content: flex-end;">
-                                    <button class="button is-rounded"
-                                        :style="customEventSendFeedback ? 'background: #888888; color: #f2f2f2; min-width: 70px; border: none;' : 'background: #87c540; color: #f2f2f2; min-width: 70px; border: none;'"
-                                        v-on:click="sendCustomEvent"
-                                    >
-                                        <span v-if="!customEventSendFeedback">Send</span>
-                                        <span v-else>Sent <span style='font-size: 1.2em; vertical-align: middle;'>&#10003;</span></span>
+                                    <button class="button is-rounded round-green-btn" v-on:click="sendCustomEvent">
+                                        Send
                                     </button>
                                 </div>
                             </div>
@@ -573,5 +589,27 @@
 </body>
 
 <script type="module" src="main.js"></script>
+
+<style>
+.round-green-btn {
+    background: #87c540;
+    color: #f2f2f2;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    border: none;
+    transition: background 0.15s;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    display: inline-flex;
+}
+.round-green-btn:hover {
+    background: #6fa32e;
+}
+.round-green-btn:active {
+    background: #5e8c2f;
+}
+</style>
 
 </html>
