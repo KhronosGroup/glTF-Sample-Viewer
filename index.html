@@ -363,9 +363,9 @@
                                     @click="collapseActiveTab($event, 3)">
                                 <!-- Change animation section title -->
                                 <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Interactivity Graphs</h2>
-                                <label class="subtitle" style="margin-bottom: 0.5em;">Graph Controls</label>
+                                <label class="subtitle">Graph Controls</label>
                                 <!-- Play/Pause and Reset buttons -->
-                                <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em;">
+                                <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em; margin-top: 1em;">
                                     <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
                                         ref="animationState"
                                         v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"
@@ -392,13 +392,13 @@
                                     <label class="subtitle" style="margin-bottom: 0.5em; display: block;">Custom events</label>
                                     <b-field>
                                         <b-select placeholder="Select event">
-                                            <option value="" disabled selected>Select event</option>
+                                            <option value=""> Custom event 1</option>
                                             <!-- Add your custom event options here -->
                                         </b-select>
                                     </b-field>
                                     <div style="margin-top: 1em; display: flex; align-items: center; justify-content: space-between;">
-                                        <label class="smallerLabel" style="margin-bottom: 0;">Enable toggle switch</label>
-                                        <b-switch v-model="customEventEnabled" v-on:input="customEventToggleChanged.next($event.target.checked)"></b-switch>
+                                        <label class="smallerLabel" style="margin-bottom: 0;">Boolean switch</label>
+                                        <b-switch v-model="customEventEnabled"></b-switch>
                                     </div>
                                     <div style="margin-top: 1em;">
                                         <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number inputs</label>
@@ -531,6 +531,7 @@
                                 <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                                 <br>
                                 <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
+                                <b-switch v-model="interactivity">Interactivity</b-switch>
                                 <b-field label="Current Camera Values" class="subtitle">
                                     <button v-on:click="cameraExport.next($event.target.value)" type="button" class="button is-rounded"><i
                                             class="fa fa-download downloadIcon"></i>Download as .gltf</button>
