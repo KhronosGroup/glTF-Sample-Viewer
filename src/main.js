@@ -147,18 +147,24 @@ export default async () => {
                             state.userCamera.orbit(yaw, pitch);
                             state.userCamera.zoomBy(distance);
 
-                            // Try to start as many animations as possible without generating conficts.
-                            state.animationIndices = [];
-                            for (let i = 0; i < gltf.animations.length; i++) {
-                                if (
-                                    !gltf
-                                        .nonDisjointAnimations(state.animationIndices)
-                                        .includes(i)
-                                ) {
-                                    state.animationIndices.push(i);
+                            if (state.gltf?.extensions?.KHR_interactivity.graphs !== undefined) {
+                                state.graphController.initializeGraphs(state);
+                                const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
+                                state.graphController.startGraph(graphIndex);
+                            } else {
+                                // Try to start as many animations as possible without generating conficts.
+                                state.animationIndices = [];
+                                for (let i = 0; i < gltf.animations.length; i++) {
+                                    if (
+                                        !gltf
+                                            .nonDisjointAnimations(state.animationIndices)
+                                            .includes(i)
+                                    ) {
+                                        state.animationIndices.push(i);
+                                    }
                                 }
+                                state.animationTimer.start();
                             }
-                            state.animationTimer.start();
                         }
 
                         uiModel.exitLoadingState();
@@ -478,6 +484,7 @@ export default async () => {
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
 
         // Refit view if canvas changes significantly
