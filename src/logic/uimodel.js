@@ -78,6 +78,7 @@ class UIModel
 
         this.animationPlay = app.animationPlayChanged.pipe();
         this.graphPlay = app.graphPlayChanged.pipe();
+        this.customEventSend = app.customEventSendClicked.pipe();
         this.activeAnimations = app.selectedAnimationsChanged.pipe();
         this.selectedGraph = app.selectedGraphChanged.pipe();
 
@@ -223,8 +224,10 @@ class UIModel
                     index: index
                 }));
                 this.app.selectedGraph = state.graphController.graphIndex;
+                this.app.customEvents = state.graphController.customEvents || [];
             } else {
                 this.app.graphs = [];
+                this.app.customEvents = [];
             }
 
             this.app.xmp = gltf?.extensions?.KHR_xmp_json_ld?.packets[gltf?.asset?.extensions?.KHR_xmp_json_ld.packet] ?? null;

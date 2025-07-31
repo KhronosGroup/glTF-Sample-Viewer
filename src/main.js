@@ -454,6 +454,13 @@ export default async () => {
         }
     });
 
+    uiModel.customEventSend.subscribe((eventData) => {
+        if (eventData && eventData.eventId) {
+            state.graphController.dispatchEvent(eventData.eventId, eventData.values);
+            console.log('Sending custom event:', eventData.eventId, eventData.values);
+        }
+    });
+
     uiModel.hdr.subscribe((hdr) => {
         resourceLoader.loadEnvironment(hdr.hdr_path).then((environment) => {
             state.environment = environment;

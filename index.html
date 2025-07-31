@@ -419,65 +419,141 @@
                                     </div>
                                 </b-field>
                                 <!-- Custom events subtitle and dropdown -->
-                                <div style="margin-top: 2.5em; margin-bottom: 1.5em;">
+                                <div style="margin-top: 2.5em; margin-bottom: 1.5em;" v-if="customEvents.length > 0">
                                     <label class="subtitle" style="margin-bottom: 0.5em; display: block;">Custom events</label>
                                     <b-field>
-                                        <b-select placeholder="Select event">
-                                            <option value=""> Custom event 1</option>
-                                            <!-- Add your custom event options here -->
+                                        <b-select placeholder="Select event" v-model="selectedCustomEvent">
+                                            <option v-for="event in customEvents" :key="event.id" :value="event.id">
+                                                {{ event.id }}
+                                            </option>
                                         </b-select>
                                     </b-field>
-                                    <div style="margin-top: 1em; display: flex; align-items: center; justify-content: space-between;">
-                                        <label class="smallerLabel" style="margin-bottom: 0;">Boolean switch</label>
-                                        <b-switch v-model="customEventEnabled"></b-switch>
-                                    </div>
-                                    <div style="margin-top: 1em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number inputs</label>
-                                        <b-input type="number" step="any" v-model="customEventNumberInput" @blur="validateCustomEventNumberInput"></b-input>
-                                    </div>
-                                    <div style="margin-top: 1em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number input (whole)</label>
-                                        <b-input type="number" step="1" v-model="customEventNumberInputWhole" @blur="validateCustomEventNumberInputWhole"></b-input>
-                                        <p v-if="customEventNumberInputWholeError" style="color: #ff3860; font-size: 0.9em; margin-top: 0.3em;">{{ customEventNumberInputWholeError }}</p>
-                                    </div>
-                                    <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">2x2 Matrix</label>
-                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5em; width: max-content;">
-                                            <b-input v-for="(val, idx) in customEventMatrix2x2" :key="'2x2-' + idx" type="number" v-model="customEventMatrix2x2[idx]" style="width: 60px;"></b-input>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">3x3 Matrix</label>
-                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5em; width: max-content;">
-                                            <b-input v-for="(val, idx) in customEventMatrix3x3" :key="'3x3-' + idx" type="number" v-model="customEventMatrix3x3[idx]" style="width: 60px;"></b-input>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">4x4 Matrix</label>
-                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5em; width: max-content;">
-                                            <b-input v-for="(val, idx) in customEventMatrix4x4" :key="'4x4-' + idx" type="number" v-model="customEventMatrix4x4[idx]" style="width: 60px;"></b-input>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 2</label>
-                                        <div style="display: flex; gap: 0.5em;">
-                                            <b-input v-for="(val, idx) in customEventVector2" :key="'vec2-' + idx" type="number" v-model="customEventVector2[idx]" style="width: 60px;"></b-input>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 3</label>
-                                        <div style="display: flex; gap: 0.5em;">
-                                            <b-input v-for="(val, idx) in customEventVector3" :key="'vec3-' + idx" type="number" v-model="customEventVector3[idx]" style="width: 60px;"></b-input>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top: 1.5em;">
-                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 4</label>
-                                        <div style="display: flex; gap: 0.5em;">
-                                            <b-input v-for="(val, idx) in customEventVector4" :key="'vec4-' + idx" type="number" v-model="customEventVector4[idx]" style="width: 60px;"></b-input>
+                                    
+                                    <!-- Dynamic inputs based on selected custom event -->
+                                    <div v-if="selectedCustomEvent && currentCustomEvent">
+                                        <div v-for="input in customEventInputs" :key="input.name" style="margin-top: 1em;">
+                                            <!-- Boolean switch for bool type -->
+                                            <div v-if="input.type === 'bool'" style="display: flex; align-items: center; justify-content: space-between;">
+                                                <label class="smallerLabel" style="margin-bottom: 0;">{{ input.name }}</label>
+                                                <b-switch v-model="customEventValues[input.name]"></b-switch>
+                                            </div>
+                                            
+                                            <!-- Number input for float type -->
+                                            <div v-if="input.type === 'float'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-input type="number" step="any" v-model="customEventValues[input.name]"></b-input>
+                                            </div>
+                                            
+                                            <!-- Number input (whole) for int type -->
+                                            <div v-if="input.type === 'int'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-input type="number" step="1" v-model="customEventValues[input.name]"></b-input>
+                                            </div>
+                                            
+                                            <!-- 2x2 Matrix for float2x2 type -->
+                                            <div v-if="input.type === 'float2x2'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3em; width: max-content;">
+                                                    <!-- Column 1 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][0]" style="width: 60px;" placeholder="m00"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][1]" style="width: 60px;" placeholder="m10"></b-input>
+                                                    </div>
+                                                    <!-- Column 2 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][2]" style="width: 60px;" placeholder="m01"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][3]" style="width: 60px;" placeholder="m11"></b-input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- 3x3 Matrix for float3x3 type -->
+                                            <div v-if="input.type === 'float3x3'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3em; width: max-content;">
+                                                    <!-- Column 1 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][0]" style="width: 60px;" placeholder="m00"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][1]" style="width: 60px;" placeholder="m10"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][2]" style="width: 60px;" placeholder="m20"></b-input>
+                                                    </div>
+                                                    <!-- Column 2 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][3]" style="width: 60px;" placeholder="m01"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][4]" style="width: 60px;" placeholder="m11"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][5]" style="width: 60px;" placeholder="m21"></b-input>
+                                                    </div>
+                                                    <!-- Column 3 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][6]" style="width: 60px;" placeholder="m02"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][7]" style="width: 60px;" placeholder="m12"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][8]" style="width: 60px;" placeholder="m22"></b-input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- 4x4 Matrix for float4x4 type -->
+                                            <div v-if="input.type === 'float4x4'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.3em; width: max-content;">
+                                                    <!-- Column 1 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][0]" style="width: 50px;" placeholder="m00"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][1]" style="width: 50px;" placeholder="m10"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][2]" style="width: 50px;" placeholder="m20"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][3]" style="width: 50px;" placeholder="m30"></b-input>
+                                                    </div>
+                                                    <!-- Column 2 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][4]" style="width: 50px;" placeholder="m01"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][5]" style="width: 50px;" placeholder="m11"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][6]" style="width: 50px;" placeholder="m21"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][7]" style="width: 50px;" placeholder="m31"></b-input>
+                                                    </div>
+                                                    <!-- Column 3 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][8]" style="width: 50px;" placeholder="m02"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][9]" style="width: 50px;" placeholder="m12"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][10]" style="width: 50px;" placeholder="m22"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][11]" style="width: 50px;" placeholder="m32"></b-input>
+                                                    </div>
+                                                    <!-- Column 4 -->
+                                                    <div style="display: flex; flex-direction: column; gap: 0.3em;">
+                                                        <b-input type="number" v-model="customEventValues[input.name][12]" style="width: 50px;" placeholder="m03"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][13]" style="width: 50px;" placeholder="m13"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][14]" style="width: 50px;" placeholder="m23"></b-input>
+                                                        <b-input type="number" v-model="customEventValues[input.name][15]" style="width: 50px;" placeholder="m33"></b-input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Vector 2 for float2 type -->
+                                            <div v-if="input.type === 'float2'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <div style="display: flex; gap: 0.5em;">
+                                                    <b-input v-for="(val, idx) in customEventValues[input.name]" :key="'vec2-' + idx" type="number" v-model="customEventValues[input.name][idx]" style="width: 60px;"></b-input>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Vector 3 for float3 type -->
+                                            <div v-if="input.type === 'float3'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <div style="display: flex; gap: 0.5em;">
+                                                    <b-input v-for="(val, idx) in customEventValues[input.name]" :key="'vec3-' + idx" type="number" v-model="customEventValues[input.name][idx]" style="width: 60px;"></b-input>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Vector 4 for float4 type -->
+                                            <div v-if="input.type === 'float4'">
+                                                <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <div style="display: flex; gap: 0.5em;">
+                                                    <b-input v-for="(val, idx) in customEventValues[input.name]" :key="'vec4-' + idx" type="number" v-model="customEventValues[input.name][idx]" style="width: 60px;"></b-input>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div style="margin-top: 2em; display: flex; justify-content: flex-end;">
+                                <div style="margin-top: 2em; display: flex; justify-content: flex-end;" v-if="selectedCustomEvent">
                                     <button class="button is-rounded round-green-btn" v-on:click="sendCustomEvent">
                                         Send
                                     </button>
