@@ -47,7 +47,7 @@
 <!-- general templates -->
 <script id="toggleButtonTemplate" type="text/x-template">
     <div>
-        <b-button v-on:click="buttonclicked" rounded>{{ name }}</b-button>
+        <b-button v-on:click="buttonclicked" rounded :class="btnClass">{{ name }}</b-button>
     </div>
 </script>
 <script id="jsonToUITemplate" type="text/x-template">
@@ -343,17 +343,17 @@
     
 
 
-                        <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
+                        <!-- Rename Animation tab to Graphs -->
+                        <b-tab-item label="Graphs" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 3)"
                                     v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
-                                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                                     <img v-bind:src="[tabContentHidden === false && activeTab === 3 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
                                         v-bind:width="[tabContentHidden === false && activeTab === 3 ? '50px' : '30px']"
                                         v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
                                     <span 
                                         v-show='isMobile === false && (tabContentHidden === true || activeTab !== 3 )'>
-                                        Animation
+                                        Graphs
                                     </span>
                                 </div>
                             </template>
@@ -361,23 +361,96 @@
                             <div class="tabContent">
                                 <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                     @click="collapseActiveTab($event, 3)">
-                                <h2 class="title is-spaced">Animation</h2>
-                                <label class="subtitle" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">Animation Controls</label>
-                                <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
-                                    ref="animationState"
-                                    v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"></toggle-button>
-                                
-                                <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No Animations available</label>
-
-                                <b-field label="Animations"
+                                <!-- Change animation section title -->
+                                <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Interactivity Graphs</h2>
+                                <label class="subtitle">Graph Controls</label>
+                                <!-- Play/Pause and Reset buttons -->
+                                <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em; margin-top: 1em;">
+                                    <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
+                                        ref="animationState"
+                                        v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]"
+                                        btn-class="round-green-btn">
+                                    </toggle-button>
+                                    <!-- Reset button -->
+                                    <button class="button is-rounded reset-btn-green" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
+                                        v-on:click="resetAnimation" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
+                                        Reset
+                                    </button>
+                                </div>
+                                <!-- Hide if no animations -->
+                                <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No graphs available</label>
+                                <b-field label="Graphs"
                                     v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
-                                    <b-field v-for="animation in animations" v-bind:key="animation.index">
-                                        <b-checkbox v-bind:native-value="animation.index" v-model="selectedAnimations"
-                                            :disabled="disabledAnimations.includes(animation.index)">
+                                    <div v-for="animation in animations" v-bind:key="animation.index" style="margin-bottom: 0.5em;">
+                                        <b-radio v-model="selectedGraph" :native-value="animation.index">
                                             {{ animation.title }}
-                                        </b-checkbox>
-                                    </b-field>
+                                        </b-radio>
+                                    </div>
                                 </b-field>
+                                <!-- Custom events subtitle and dropdown -->
+                                <div style="margin-top: 2.5em; margin-bottom: 1.5em;">
+                                    <label class="subtitle" style="margin-bottom: 0.5em; display: block;">Custom events</label>
+                                    <b-field>
+                                        <b-select placeholder="Select event">
+                                            <option value=""> Custom event 1</option>
+                                            <!-- Add your custom event options here -->
+                                        </b-select>
+                                    </b-field>
+                                    <div style="margin-top: 1em; display: flex; align-items: center; justify-content: space-between;">
+                                        <label class="smallerLabel" style="margin-bottom: 0;">Boolean switch</label>
+                                        <b-switch v-model="customEventEnabled"></b-switch>
+                                    </div>
+                                    <div style="margin-top: 1em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number inputs</label>
+                                        <b-input type="number" step="any" v-model="customEventNumberInput" @blur="validateCustomEventNumberInput"></b-input>
+                                    </div>
+                                    <div style="margin-top: 1em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Number input (whole)</label>
+                                        <b-input type="number" step="1" v-model="customEventNumberInputWhole" @blur="validateCustomEventNumberInputWhole"></b-input>
+                                        <p v-if="customEventNumberInputWholeError" style="color: #ff3860; font-size: 0.9em; margin-top: 0.3em;">{{ customEventNumberInputWholeError }}</p>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">2x2 Matrix</label>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5em; width: max-content;">
+                                            <b-input v-for="(val, idx) in customEventMatrix2x2" :key="'2x2-' + idx" type="number" v-model="customEventMatrix2x2[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">3x3 Matrix</label>
+                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5em; width: max-content;">
+                                            <b-input v-for="(val, idx) in customEventMatrix3x3" :key="'3x3-' + idx" type="number" v-model="customEventMatrix3x3[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">4x4 Matrix</label>
+                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5em; width: max-content;">
+                                            <b-input v-for="(val, idx) in customEventMatrix4x4" :key="'4x4-' + idx" type="number" v-model="customEventMatrix4x4[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 2</label>
+                                        <div style="display: flex; gap: 0.5em;">
+                                            <b-input v-for="(val, idx) in customEventVector2" :key="'vec2-' + idx" type="number" v-model="customEventVector2[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 3</label>
+                                        <div style="display: flex; gap: 0.5em;">
+                                            <b-input v-for="(val, idx) in customEventVector3" :key="'vec3-' + idx" type="number" v-model="customEventVector3[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5em;">
+                                        <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">Vector 4</label>
+                                        <div style="display: flex; gap: 0.5em;">
+                                            <b-input v-for="(val, idx) in customEventVector4" :key="'vec4-' + idx" type="number" v-model="customEventVector4[idx]" style="width: 60px;"></b-input>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 2em; display: flex; justify-content: flex-end;">
+                                    <button class="button is-rounded round-green-btn" v-on:click="sendCustomEvent">
+                                        Send
+                                    </button>
+                                </div>
                             </div>
                         </b-tab-item>
 
@@ -458,6 +531,7 @@
                                 <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                                 <br>
                                 <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
+                                <b-switch v-model="interactivity">Interactivity</b-switch>
                                 <b-field label="Current Camera Values" class="subtitle">
                                     <button v-on:click="cameraExport.next($event.target.value)" type="button" class="button is-rounded"><i
                                             class="fa fa-download downloadIcon"></i>Download as .gltf</button>
@@ -516,5 +590,36 @@
 </body>
 
 <script type="module" src="main.js"></script>
+
+<style>
+.round-green-btn {
+    background: #87c540;
+    color: #f2f2f2;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    border: none;
+    transition: background 0.15s;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    display: inline-flex;
+}
+.round-green-btn:hover {
+    background: #6fa32e;
+}
+.round-green-btn:active {
+    background: #5e8c2f;
+}
+.reset-btn-green {
+    transition: background 0.15s;
+}
+.reset-btn-green:hover {
+    background: #385117 !important;
+}
+.reset-btn-green:active {
+    background: #5e8c2f !important;
+}
+</style>
 
 </html>

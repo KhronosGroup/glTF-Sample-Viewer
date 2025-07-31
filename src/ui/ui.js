@@ -72,6 +72,7 @@ const appCreated = createApp({
             selectedVariant: "None",
             selectedAnimations: [],
             disabledAnimations: [],
+            selectedGraph: null,
 
             validationReport: {},
             validationReportDescription: {},
@@ -92,6 +93,7 @@ const appCreated = createApp({
             toneMap: "Khronos PBR Neutral",
             skinning: true,
             morphing: true,
+            interactivity: true,
             clearcoatEnabled: true,
             sheenEnabled: true,
             transmissionEnabled: true,
@@ -117,6 +119,17 @@ const appCreated = createApp({
             // these are handles for certain ui change related things
             environmentVisiblePrefState: true,
             volumeEnabledPrefState: true,
+            customEventEnabled: false,
+            customEventNumberInput: 0,
+            customEventNumberInputWhole: 0,
+            customEventNumberInputWholeError: '',
+            customEventMatrix2x2: [0, 0, 0, 0],
+            customEventMatrix3x3: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            customEventMatrix4x4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            customEventVector2: [0, 0],
+            customEventVector3: [0, 0, 0],
+            customEventVector4: [0, 0, 0, 0],
+            customEventSendClicked: new Subject(),
         };
     },
     watch: {
@@ -392,6 +405,43 @@ const appCreated = createApp({
         toggleUI() {
             this.uiVisible = !this.uiVisible;
         },
+        resetAnimation() {
+            // Pause and immediately play to reset animation
+            this.setAnimationState(false);
+            this.animationPlayChanged.next(false);
+            // Small timeout to ensure state change
+            setTimeout(() => {
+                this.setAnimationState(true);
+                this.animationPlayChanged.next(true);
+            }, 50);
+        },
+        sendCustomEvent() {
+            this.customEventSendClicked.next({
+                enabled: this.customEventEnabled,
+                number: this.customEventNumberInput,
+                matrix2x2: this.customEventMatrix2x2,
+                matrix3x3: this.customEventMatrix3x3,
+                matrix4x4: this.customEventMatrix4x4
+            });
+            this.$buefy.toast.open({
+                message: 'Custom event sent successfully!',
+                type: 'is-success',
+                duration: 3000
+            });
+        },
+        validateCustomEventNumberInputWhole() {
+            const val = this.customEventNumberInputWhole;
+            if (val === '' || val === null || val === undefined) {
+                this.customEventNumberInputWholeError = '';
+                return;
+            }
+            // Only allow whole numbers (no decimal point)
+            if (!/^[-+]?\d+$/.test(String(val))) {
+                this.customEventNumberInputWholeError = 'Please enter a whole number (e.g., 5)';
+            } else {
+                this.customEventNumberInputWholeError = '';
+            }
+        },
     }
 });
 
@@ -399,7 +449,7 @@ appCreated.use(Buefy);
 
 // general components
 appCreated.component('toggle-button', {
-    props: ['ontext', 'offtext'],
+    props: ['ontext', 'offtext', 'btnClass'],
     template:'#toggleButtonTemplate',
     data(){
         return {

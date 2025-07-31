@@ -400,3 +400,16 @@ button.button
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+// Outlined Reset button style for Graphs tab
+.button.is-outlined {
+    border: 1.5px solid #87c540;
+    color: #f2f2f2;
+    background: transparent;
+    box-shadow: none;
+}
+
+// Margin for custom events section in Graphs tab
+.tabContent .subtitle + div[style*="margin-top: 2.5em;"] {
+    margin-top: 2.5em !important;
+}
