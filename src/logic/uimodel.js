@@ -77,7 +77,9 @@ class UIModel
         );
 
         this.animationPlay = app.animationPlayChanged.pipe();
+        this.graphPlay = app.graphPlayChanged.pipe();
         this.activeAnimations = app.selectedAnimationsChanged.pipe();
+        this.selectedGraph = app.selectedGraphChanged.pipe();
 
         const canvas = document.getElementById("canvas");
         canvas.addEventListener('dragenter', () => this.app.showDropDownOverlay = true);
@@ -213,6 +215,17 @@ class UIModel
                 title: animation.name ?? `Animation ${index}`,
                 index: index
             }));
+
+            // Set up interactivity graphs if available
+            if (gltf?.extensions?.KHR_interactivity?.graphs !== undefined && state.renderingParameters.enabledExtensions.KHR_interactivity) {
+                this.app.graphs = gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
+                    title: graph.name ?? `Graph ${index}`,
+                    index: index
+                }));
+                this.app.selectedGraph = state.graphController.graphIndex;
+            } else {
+                this.app.graphs = [];
+            }
 
             this.app.xmp = gltf?.extensions?.KHR_xmp_json_ld?.packets[gltf?.asset?.extensions?.KHR_xmp_json_ld.packet] ?? null;
         });

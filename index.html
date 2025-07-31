@@ -343,27 +343,28 @@
     
 
 
-                        <!-- Rename Animation tab to Graphs -->
-                        <b-tab-item label="Graphs" icon="video" class="tabItemScrollable tab-item">
+                        <!-- Animations tab - shown when no interactivity graphs are available -->
+                        <b-tab-item label="Animations" icon="video" class="tabItemScrollable tab-item">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 3)"
                                     v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
                                     <img v-bind:src="[tabContentHidden === false && activeTab === 3 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
                                         v-bind:width="[tabContentHidden === false && activeTab === 3 ? '50px' : '30px']"
                                         v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
-                                    <span 
-                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 3 )'>
+                                    <span v-show='isMobile === false && (tabContentHidden === true || activeTab !== 3 )' v-if="!showGraphsTab">
+                                        Animations
+                                    </span>
+                                    <span v-show='isMobile === false && (tabContentHidden === true || activeTab !== 3 )' v-if="showGraphsTab">
                                         Graphs
                                     </span>
                                 </div>
                             </template>
 
-                            <div class="tabContent">
+                            <div class="tabContent" v-if="!showGraphsTab">
                                 <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                     @click="collapseActiveTab($event, 3)">
-                                <!-- Change animation section title -->
-                                <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Interactivity Graphs</h2>
-                                <label class="subtitle">Graph Controls</label>
+                                <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Animations</h2>
+                                <label class="subtitle">Animation Controls</label>
                                 <!-- Play/Pause and Reset buttons -->
                                 <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em; margin-top: 1em;">
                                     <toggle-button v-on:buttonclicked="animationPlayChanged.next($event)" ontext="Pause" offtext="Play"
@@ -378,12 +379,42 @@
                                     </button>
                                 </div>
                                 <!-- Hide if no animations -->
-                                <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No graphs available</label>
-                                <b-field label="Graphs"
+                                <label class="subtitle" v-bind:style="[animations.length != 0 ? {'display': 'none'} : {}]">No animations available</label>
+                                <b-field label="Animations"
                                     v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                     <div v-for="animation in animations" v-bind:key="animation.index" style="margin-bottom: 0.5em;">
-                                        <b-radio v-model="selectedGraph" :native-value="animation.index">
+                                        <b-checkbox v-model="selectedAnimations" :native-value="animation.index"
+                                            :disabled="disabledAnimations.includes(animation.index)">
                                             {{ animation.title }}
+                                        </b-checkbox>
+                                    </div>
+                                </b-field>
+                            </div>
+                            <div class="tabContent" v-if="showGraphsTab">
+                                <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                    @click="collapseActiveTab($event, 3)">
+                                <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Interactivity Graphs</h2>
+                                <label class="subtitle">Graph Controls</label>
+                                <!-- Play/Pause and Reset buttons -->
+                                <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em; margin-top: 1em;">
+                                    <toggle-button v-on:buttonclicked="graphPlayChanged.next($event)" ontext="Pause" offtext="Play"
+                                        ref="graphState"
+                                        v-bind:style="[graphs.length == 0 ? {'display': 'none'} : {}]"
+                                        btn-class="round-green-btn">
+                                    </toggle-button>
+                                    <!-- Reset button -->
+                                    <button class="button is-rounded reset-btn-green" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
+                                        v-on:click="resetGraph" v-bind:style="[graphs.length == 0 ? {'display': 'none'} : {}]">
+                                        Reset
+                                    </button>
+                                </div>
+                                <!-- Hide if no graphs -->
+                                <label class="subtitle" v-bind:style="[graphs.length != 0 ? {'display': 'none'} : {}]">No graphs available</label>
+                                <b-field label="Graphs"
+                                    v-bind:style="[graphs.length == 0 ? {'display': 'none'} : {}]">
+                                    <div v-for="graph in graphs" v-bind:key="graph.index" style="margin-bottom: 0.5em;">
+                                        <b-radio v-model="selectedGraph" :native-value="graph.index">
+                                            {{ graph.title }}
                                         </b-radio>
                                     </div>
                                 </b-field>
@@ -590,36 +621,5 @@
 </body>
 
 <script type="module" src="main.js"></script>
-
-<style>
-.round-green-btn {
-    background: #87c540;
-    color: #f2f2f2;
-    width: 90px;
-    min-width: 90px;
-    max-width: 90px;
-    border: none;
-    transition: background 0.15s;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    display: inline-flex;
-}
-.round-green-btn:hover {
-    background: #6fa32e;
-}
-.round-green-btn:active {
-    background: #5e8c2f;
-}
-.reset-btn-green {
-    transition: background 0.15s;
-}
-.reset-btn-green:hover {
-    background: #385117 !important;
-}
-.reset-btn-green:active {
-    background: #5e8c2f !important;
-}
-</style>
 
 </html>

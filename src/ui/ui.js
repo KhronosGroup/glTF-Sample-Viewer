@@ -10,6 +10,7 @@ const appCreated = createApp({
             flavourChanged: new Subject(),
             sceneChanged: new Subject(),
             cameraChanged: new Subject(),
+            selectedGraphChanged: new Subject(),
             
             debugchannelChanged: new Subject(),
             tonemapChanged: new Subject(),
@@ -23,6 +24,7 @@ const appCreated = createApp({
 
             environmentRotationChanged: new Subject(),
             animationPlayChanged: new Subject(),
+            graphPlayChanged: new Subject(),
             variantChanged: new Subject(),
             exposureChanged: new Subject(),
 
@@ -58,6 +60,7 @@ const appCreated = createApp({
             materialVariants: ["None"],
 
             animations: [{title: "None"}],
+            graphs: [],
             tonemaps: [{title: "None"}],
             debugchannels: [{title: "None"}],
             xmp: [{title: "xmp"}],
@@ -135,6 +138,9 @@ const appCreated = createApp({
     watch: {
         selectedAnimations: function (newValue) {
             this.selectedAnimationsChanged.next(newValue);
+        },
+        selectedGraph: function (newValue) {
+            this.selectedGraphChanged.next(newValue);
         }
     },
     beforeMount: function(){
@@ -211,6 +217,17 @@ const appCreated = createApp({
             a.appendChild(img);
         });
 
+    },
+    computed: {
+        hasInteractivityGraphs() {
+            return this.graphs && this.graphs.length > 0;
+        },
+        showAnimationsTab() {
+            return !this.hasInteractivityGraphs;
+        },
+        showGraphsTab() {
+            return this.graphs && this.graphs.length > 0 && this.interactivity;
+        }
     },
     methods:
     {
@@ -311,7 +328,15 @@ const appCreated = createApp({
         },
         setAnimationState: function(value)
         {
-            this.$refs.animationState.setState(value);
+            if (this.$refs.animationState) {
+                this.$refs.animationState.setState(value);
+            }
+        },
+        setGraphState: function(value)
+        {
+            if (this.$refs.graphState) {
+                this.$refs.graphState.setState(value);
+            }
         },
         iblTriggered: function(value)
         {
@@ -406,14 +431,10 @@ const appCreated = createApp({
             this.uiVisible = !this.uiVisible;
         },
         resetAnimation() {
-            // Pause and immediately play to reset animation
-            this.setAnimationState(false);
-            this.animationPlayChanged.next(false);
-            // Small timeout to ensure state change
-            setTimeout(() => {
-                this.setAnimationState(true);
-                this.animationPlayChanged.next(true);
-            }, 50);
+            //TODO
+        },
+        resetGraph() {
+            //TODO
         },
         sendCustomEvent() {
             this.customEventSendClicked.next({

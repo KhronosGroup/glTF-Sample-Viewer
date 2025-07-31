@@ -147,22 +147,24 @@ export default async () => {
                             state.userCamera.orbit(yaw, pitch);
                             state.userCamera.zoomBy(distance);
 
+                            state.animationIndices = [];
+                            for (let i = 0; i < gltf.animations.length; i++) {
+                                if (
+                                    !gltf
+                                        .nonDisjointAnimations(state.animationIndices)
+                                        .includes(i)
+                                ) {
+                                    state.animationIndices.push(i);
+                                }
+                            }
+
                             if (state.gltf?.extensions?.KHR_interactivity.graphs !== undefined) {
                                 state.graphController.initializeGraphs(state);
                                 const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.startGraph(graphIndex);
                             } else {
                                 // Try to start as many animations as possible without generating conficts.
-                                state.animationIndices = [];
-                                for (let i = 0; i < gltf.animations.length; i++) {
-                                    if (
-                                        !gltf
-                                            .nonDisjointAnimations(state.animationIndices)
-                                            .includes(i)
-                                    ) {
-                                        state.animationIndices.push(i);
-                                    }
-                                }
+                                state.graphController.stopGraph();
                                 state.animationTimer.start();
                             }
                         }
@@ -433,10 +435,24 @@ export default async () => {
         }
     });
 
+    uiModel.graphPlay.subscribe((graphPlay) => {
+        if (graphPlay) {
+            state.graphController.playGraph();
+        } else {
+            state.graphController.pauseGraph();
+        }
+    });
+
     uiModel.activeAnimations.subscribe(
         (animations) => (state.animationIndices = animations)
     );
     listenForRedraw(uiModel.activeAnimations);
+
+    uiModel.selectedGraph.subscribe((graphIndex) => {
+        if (graphIndex !== null && graphIndex !== undefined) {
+            state.graphController.startGraph(graphIndex);
+        }
+    });
 
     uiModel.hdr.subscribe((hdr) => {
         resourceLoader.loadEnvironment(hdr.hdr_path).then((environment) => {
