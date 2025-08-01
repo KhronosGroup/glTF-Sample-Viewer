@@ -126,6 +126,7 @@ const appCreated = createApp({
             selectedCustomEvent: null,
             customEventValues: {},
             customEventEnabled: false,
+            customEventFocusedInput: null,
             customEventNumberInput: 0,
             customEventNumberInputWhole: 0,
             customEventNumberInputWholeError: '',
