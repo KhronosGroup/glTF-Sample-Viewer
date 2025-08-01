@@ -127,15 +127,6 @@ const appCreated = createApp({
             customEventValues: {},
             customEventEnabled: false,
             customEventFocusedInput: null,
-            customEventNumberInput: 0,
-            customEventNumberInputWhole: 0,
-            customEventNumberInputWholeError: '',
-            customEventMatrix2x2: [0, 0, 0, 0],
-            customEventMatrix3x3: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            customEventMatrix4x4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            customEventVector2: [0, 0],
-            customEventVector3: [0, 0, 0],
-            customEventVector4: [0, 0, 0, 0],
             customEventSendClicked: new Subject(),
         };
     },
@@ -507,19 +498,6 @@ const appCreated = createApp({
                 type: 'is-success',
                 duration: 3000
             });
-        },
-        validateCustomEventNumberInputWhole() {
-            const val = this.customEventNumberInputWhole;
-            if (val === '' || val === null || val === undefined) {
-                this.customEventNumberInputWholeError = '';
-                return;
-            }
-            // Only allow whole numbers (no decimal point)
-            if (!/^[-+]?\d+$/.test(String(val))) {
-                this.customEventNumberInputWholeError = 'Please enter a whole number (e.g., 5)';
-            } else {
-                this.customEventNumberInputWholeError = '';
-            }
         }
     }
 });
