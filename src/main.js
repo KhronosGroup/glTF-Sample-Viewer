@@ -456,8 +456,12 @@ export default async () => {
 
     uiModel.customEventSend.subscribe((eventData) => {
         if (eventData && eventData.eventId) {
-            state.graphController.dispatchEvent(eventData.eventId, eventData.values);
-            console.log('Sending custom event:', eventData.eventId, eventData.values);
+            const values = {};
+            for (const key in eventData.values) {
+                values[key] = eventData.values[key];
+            
+            }
+            state.graphController.dispatchEvent(eventData.eventId, values);
         }
     });
 
