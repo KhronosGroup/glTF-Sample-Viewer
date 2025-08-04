@@ -139,6 +139,12 @@ const appCreated = createApp({
         },
         selectedCustomEvent: function (newValue) {
             this.updateCustomEventValues(newValue);
+        },
+        customEvents: function (newValue) {
+            // Auto-select the first custom event when the array is populated
+            if (newValue && newValue.length > 0 && !this.selectedCustomEvent) {
+                this.selectedCustomEvent = newValue[0].id;
+            }
         }
     },
     beforeMount: function(){

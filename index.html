@@ -422,7 +422,7 @@
                                 <div style="margin-top: 2.5em; margin-bottom: 1.5em;" v-if="customEvents.length > 0">
                                     <label class="subtitle" style="margin-bottom: 0.5em; display: block;">Custom events</label>
                                     <b-field>
-                                        <b-select placeholder="Select event" v-model="selectedCustomEvent">
+                                        <b-select v-model="selectedCustomEvent">
                                             <option v-for="event in customEvents" :key="event.id" :value="event.id">
                                                 {{ event.id }}
                                             </option>
