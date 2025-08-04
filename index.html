@@ -442,7 +442,7 @@
                                             <div v-if="input.type === 'float'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
                                                 <b-field>
-                                                    <b-input class="longNumberInput" type="number" step="any" v-model.number="customEventValues[input.name]" @focus="customEventFocusedInput = input.name" @blur="customEventFocusedInput = null"></b-input>
+                                                    <b-input class="longNumberInput" type="number" step="any" v-model.number="customEventValues[input.name]" validation-message="Please enter a valid number" required></b-input>
                                                 </b-field>
                                             </div>
                                             
@@ -450,80 +450,86 @@
                                             <div v-if="input.type === 'int'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
                                                 <b-field>
-                                                    <b-input class="longNumberInput" type="text" v-model.number="customEventValues[input.name]" validation-message="Please enter a whole number (e.g. 5)" pattern="[\-]?[0-9]*"></b-input>
+                                                    <b-input class="longNumberInput" type="text" v-model.number="customEventValues[input.name]" validation-message="Please enter a whole number (e.g. 5)" pattern="[\-]?[0-9]*" required></b-input>
                                                 </b-field>
                                             </div>
                                             
                                             <!-- 2x2 Matrix for float2x2 type -->
                                             <div v-if="input.type === 'float2x2'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-tooltip :label="String(customEventValues[input.name][customEventFocusedIndex])" :active="customEventFocusedInput === input.name && String(customEventValues[input.name][customEventFocusedIndex]).length > 4" :auto-close="false" style="width: 100%">
                                                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3em; width: max-content;">
                                                     <div v-for="col in 2" :key="'col-' + col" style="display: flex; flex-direction: column; gap: 0.3em;">
                                                         <div v-for="row in 2" :key="'row-' + row">
-                                                            <b-tooltip :label="String(customEventValues[input.name][(col-1)*2 + (row-1)])" :active="String(customEventValues[input.name][(col-1)*2 + (row-1)]).length > 4 && customEventFocusedInput === input.name + '[' + ((col-1)*2 + (row-1)) + ']'" :auto-close="false">
-                                                                <b-input class="matrixInput" type="number" v-model.number="customEventValues[input.name][(col-1)*2 + (row-1)]" @focus="customEventFocusedInput = input.name + '[' + ((col-1)*2 + (row-1)) + ']'" @blur="customEventFocusedInput = null"></b-input>
-                                                            </b-tooltip>
+                                                                <b-input class="matrixInput" type="number" v-model.number="customEventValues[input.name][(col-1)*2 + (row-1)]" @focus="customEventFocusedInput = input.name; customEventFocusedIndex = (col-1)*2 + (row-1);" @blur="customEventFocusedInput = null" required></b-input>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </b-tooltip>
                                             </div>
                                             
                                             <!-- 3x3 Matrix for float3x3 type -->
                                             <div v-if="input.type === 'float3x3'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-tooltip :label="String(customEventValues[input.name][customEventFocusedIndex])" :active="customEventFocusedInput === input.name && String(customEventValues[input.name][customEventFocusedIndex]).length > 4" :auto-close="false" style="width: 100%">
                                                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3em; width: max-content;">
                                                     <div v-for="col in 3" :key="'col-' + col" style="display: flex; flex-direction: column; gap: 0.3em;">
                                                         <div v-for="row in 3" :key="'row-' + row">
-                                                            <b-tooltip :label="String(customEventValues[input.name][(col-1)*3 + (row-1)])" :active="String(customEventValues[input.name][(col-1)*3 + (row-1)]).length > 4 && customEventFocusedInput === input.name + '[' + ((col-1)*3 + (row-1)) + ']'" :auto-close="false" >
-                                                                <b-input class="matrixInput" type="number" v-model.number="customEventValues[input.name][(col-1)*3 + (row-1)]" @focus="customEventFocusedInput = input.name + '[' + ((col-1)*3 + (row-1)) + ']'" @blur="customEventFocusedInput = null"></b-input>
-                                                            </b-tooltip>
+                                                            <b-input class="matrixInput" type="number" v-model.number="customEventValues[input.name][(col-1)*3 + (row-1)]" @focus="customEventFocusedInput = input.name; customEventFocusedIndex = (col-1)*3 + (row-1);" @blur="customEventFocusedInput = null" required></b-input>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                </b-tooltip>
                                             </div>
                                             
                                             <!-- 4x4 Matrix for float4x4 type -->
                                             <div v-if="input.type === 'float4x4'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-tooltip :label="String(customEventValues[input.name][customEventFocusedIndex])" :active="customEventFocusedInput === input.name && String(customEventValues[input.name][customEventFocusedIndex]).length > 4" :auto-close="false" style="width: 100%">
                                                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.3em; width: max-content;">
                                                     <div v-for="col in 4" :key="'col-' + col" style="display: flex; flex-direction: column; gap: 0.3em;">
                                                         <div v-for="row in 4" :key="'row-' + row">
-                                                            <b-tooltip :label="String(customEventValues[input.name][(col-1)*4 + (row-1)])" :active="String(customEventValues[input.name][(col-1)*4 + (row-1)]).length > 4 && customEventFocusedInput === input.name + '[' + ((col-1)*4 + (row-1)) + ']'" :auto-close="false" >
-                                                                <b-input class="matrixInput" type="number" v-model.number="customEventValues[input.name][(col-1)*4 + (row-1)]" @focus="customEventFocusedInput = input.name + '[' + ((col-1)*4 + (row-1)) + ']'" @blur="customEventFocusedInput = null"></b-input>
-                                                            </b-tooltip>
+                                                                <b-input class="matrixInput" type="number" v-model.number="customEventValues[input.name][(col-1)*4 + (row-1)]" @focus="customEventFocusedInput = input.name; customEventFocusedIndex = (col-1)*4 + (row-1);" @blur="customEventFocusedInput = null" required></b-input>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </b-tooltip>
                                             </div>
                                             
                                             <!-- Vector 2 for float2 type -->
                                             <div v-if="input.type === 'float2'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-tooltip :label="String(customEventValues[input.name][customEventFocusedIndex])" :active="customEventFocusedInput === input.name && String(customEventValues[input.name][customEventFocusedIndex]).length > 4" :auto-close="false" style="width: 100%">
                                                 <div style="display: flex; gap: 0.5em;">
-                                                    <b-tooltip v-for="(val, idx) in customEventValues[input.name]" :key="'vec2-' + idx" :label="String(customEventValues[input.name][idx])" :active="String(customEventValues[input.name][idx]).length > 4 && customEventFocusedInput === input.name + '[' + idx + ']'" :auto-close="false" >
-                                                        <b-input class="vectorInput" type="number" v-model.number="customEventValues[input.name][idx]" @focus="customEventFocusedInput = input.name + '[' + idx + ']'" @blur="customEventFocusedInput = null"></b-input>
-                                                    </b-tooltip>
+                                                    <div v-for="(val, idx) in customEventValues[input.name]" :key="'vec2-' + idx">
+                                                        <b-input class="vectorInput" type="number" v-model.number="customEventValues[input.name][idx]" @focus="customEventFocusedInput = input.name; customEventFocusedIndex = idx;" @blur="customEventFocusedInput = null" required></b-input>
+                                                    </div>
                                                 </div>
+                                                </b-tooltip>
                                             </div>
                                             
                                             <!-- Vector 3 for float3 type -->
                                             <div v-if="input.type === 'float3'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-tooltip :label="String(customEventValues[input.name][customEventFocusedIndex])" :active="customEventFocusedInput === input.name && String(customEventValues[input.name][customEventFocusedIndex]).length > 4" :auto-close="false" style="width: 100%">
                                                 <div style="display: flex; gap: 0.5em;">
-                                                    <b-tooltip v-for="(val, idx) in customEventValues[input.name]" :key="'vec3-' + idx" :label="String(customEventValues[input.name][idx])" :active="String(customEventValues[input.name][idx]).length > 4 && customEventFocusedInput === input.name + '[' + idx + ']'" :auto-close="false" >
-                                                        <b-input class="vectorInput" type="number" v-model.number="customEventValues[input.name][idx]" @focus="customEventFocusedInput = input.name + '[' + idx + ']'" @blur="customEventFocusedInput = null"></b-input>
-                                                    </b-tooltip>
+                                                    <div v-for="(val, idx) in customEventValues[input.name]" :key="'vec3-' + idx">
+                                                        <b-input class="vectorInput" type="number" v-model.number="customEventValues[input.name][idx]" @focus="customEventFocusedInput = input.name; customEventFocusedIndex = idx;" @blur="customEventFocusedInput = null" required></b-input>
+                                                    </div>
                                                 </div>
+                                                </b-tooltip>
                                             </div>
                                             
                                             <!-- Vector 4 for float4 type -->
                                             <div v-if="input.type === 'float4'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
+                                                <b-tooltip :label="String(customEventValues[input.name][customEventFocusedIndex])" :active="customEventFocusedInput === input.name && String(customEventValues[input.name][customEventFocusedIndex]).length > 4" :auto-close="false" style="width: 100%">
                                                 <div style="display: flex; gap: 0.5em;">
-                                                    <b-tooltip v-for="(val, idx) in customEventValues[input.name]" :key="'vec4-' + idx" :label="String(customEventValues[input.name][idx])" :active="String(customEventValues[input.name][idx]).length > 4 && customEventFocusedInput === input.name + '[' + idx + ']'" :auto-close="false" >
-                                                        <b-input class="vectorInput" type="number" v-model.number="customEventValues[input.name][idx]" @focus="customEventFocusedInput = input.name + '[' + idx + ']'" @blur="customEventFocusedInput = null"></b-input>
-                                                    </b-tooltip>
+                                                    <div v-for="(val, idx) in customEventValues[input.name]" :key="'vec4-' + idx">
+                                                        <b-input class="vectorInput" type="number" v-model.number="customEventValues[input.name][idx]" @focus="customEventFocusedInput = input.name; customEventFocusedIndex = idx;" @blur="customEventFocusedInput = null" required></b-input>
+                                                    </div>
                                                 </div>
+                                                </b-tooltip>
                                             </div>
                                         </div>
                                     </div>

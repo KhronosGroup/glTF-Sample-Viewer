@@ -56,6 +56,10 @@ $addColors: (
 );
 $colors: map-merge($colors, $addColors);
 
+// Tooltip
+$tooltip-arrow-size: 0px;
+$tooltip-arrow-margin: 5px;
+
 // Import Bulma and Buefy styles
 @import "../../node_modules/bulma/bulma";
 @import "../../node_modules/@ntohq/buefy-next/src/scss/buefy";
@@ -445,13 +449,13 @@ button.button
 
 .matrixInput input {
     width: 60px !important;
-    padding-right: 2px;
+    padding-right: 6px;
     padding-left: 5px;
 }
 
 .vectorInput input {
     width: 60px !important;
-    padding-right: 2px;
+    padding-right: 6px;
     padding-left: 5px;
 }
 

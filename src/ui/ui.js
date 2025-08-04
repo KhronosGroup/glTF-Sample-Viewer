@@ -127,6 +127,7 @@ const appCreated = createApp({
             customEventValues: {},
             customEventEnabled: false,
             customEventFocusedInput: null,
+            customEventFocusedIndex: null,
             customEventSendClicked: new Subject(),
         };
     },
