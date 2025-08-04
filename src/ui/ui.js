@@ -128,6 +128,7 @@ const appCreated = createApp({
             customEventEnabled: false,
             customEventFocusedInput: null,
             customEventFocusedIndex: null,
+            customEventValid: true,
             customEventSendClicked: new Subject(),
         };
     },
@@ -146,6 +147,9 @@ const appCreated = createApp({
             if (newValue && newValue.length > 0 && !this.selectedCustomEvent) {
                 this.selectedCustomEvent = newValue[0].id;
             }
+        },
+        customEventFocusedInput: function () {
+            this.customEventValid = this.isCustomEventValid();
         }
     },
     beforeMount: function(){
@@ -268,6 +272,12 @@ const appCreated = createApp({
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
+        },
+
+        isCustomEventValid() {
+            const form = document.getElementById("customEventForm");
+            if (!form) return true;
+            return form.checkValidity();
         },
 
         /**

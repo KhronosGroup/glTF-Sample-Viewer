@@ -430,7 +430,7 @@
                                     </b-field>
                                     
                                     <!-- Dynamic inputs based on selected custom event -->
-                                    <div v-if="selectedCustomEvent && currentCustomEvent">
+                                    <form id="customEventForm" v-if="selectedCustomEvent && currentCustomEvent">
                                         <div v-for="input in customEventInputs" :key="input.name" style="margin-top: 1em;">
                                             <!-- Boolean switch for bool type -->
                                             <div v-if="input.type === 'bool'" style="display: flex; align-items: center; justify-content: space-between;">
@@ -442,7 +442,7 @@
                                             <div v-if="input.type === 'float'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
                                                 <b-field>
-                                                    <b-input class="longNumberInput" type="number" step="any" v-model.number="customEventValues[input.name]" validation-message="Please enter a valid number" required></b-input>
+                                                    <b-input class="longNumberInput" type="number" step="any" v-model.number="customEventValues[input.name]" validation-message="Please enter a valid number" required @focus="customEventFocusedInput = input.name" @blur="customEventFocusedInput = null"></b-input>
                                                 </b-field>
                                             </div>
                                             
@@ -450,7 +450,7 @@
                                             <div v-if="input.type === 'int'">
                                                 <label class="smallerLabel" style="display: block; margin-bottom: 0.5em;">{{ input.name }}</label>
                                                 <b-field>
-                                                    <b-input class="longNumberInput" type="text" v-model.number="customEventValues[input.name]" validation-message="Please enter a whole number (e.g. 5)" pattern="[\-]?[0-9]*" required></b-input>
+                                                    <b-input class="longNumberInput" type="text" v-model.number="customEventValues[input.name]" validation-message="Please enter a whole number (e.g. 5)" pattern="[\-]?[0-9]*" required @focus="customEventFocusedInput = input.name" @blur="customEventFocusedInput = null"></b-input>
                                                 </b-field>
                                             </div>
                                             
@@ -532,10 +532,10 @@
                                                 </b-tooltip>
                                             </div>
                                         </div>
-                                    </div>
+                                    </form>
                                 </div>
                                 <div style="margin-top: 2em; display: flex; justify-content: flex-end;" v-if="selectedCustomEvent">
-                                    <button class="button is-rounded round-green-btn" v-on:click="sendCustomEvent">
+                                    <button class="button is-rounded round-green-btn" v-on:click="sendCustomEvent" :disabled="!customEventValid">
                                         Send
                                     </button>
                                 </div>
