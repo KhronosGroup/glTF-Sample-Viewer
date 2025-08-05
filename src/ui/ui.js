@@ -79,6 +79,9 @@ const appCreated = createApp({
             disabledAnimations: [],
             selectedGraph: null,
 
+            animationState: true,
+            graphState: true,
+
             validationReport: {},
             validationReportDescription: {},
 
@@ -354,18 +357,6 @@ const appCreated = createApp({
                 + infoDiv  
                 + `</div>`;
         },
-        setAnimationState: function(value)
-        {
-            if (this.$refs.animationState) {
-                this.$refs.animationState.setState(value);
-            }
-        },
-        setGraphState: function(value)
-        {
-            if (this.$refs.graphState) {
-                this.$refs.graphState.setState(value);
-            }
-        },
         iblTriggered: function(value)
         {
             if(value == false) {
@@ -519,7 +510,8 @@ appCreated.use(Buefy);
 
 // general components
 appCreated.component('toggle-button', {
-    props: ['ontext', 'offtext', 'btnClass'],
+    props: ['ontext', 'offtext', 'btnClass', 'modelValue'],
+    emits: ['buttonclicked', 'update:modelValue'],
     template:'#toggleButtonTemplate',
     data(){
         return {
@@ -528,7 +520,21 @@ appCreated.component('toggle-button', {
         };
     },
     mounted(){
-        this.name = this.ontext;
+        this.name = this.offtext;
+        // Initialize state from modelValue prop if provided
+        if (this.modelValue !== undefined) {
+            this.isOn = this.modelValue;
+            this.name = this.isOn ? this.ontext : this.offtext;
+        }
+    },
+    watch: {
+        // Watch for external changes to modelValue
+        modelValue(newValue) {
+            if (newValue !== this.isOn) {
+                this.isOn = newValue;
+                this.name = this.isOn ? this.ontext : this.offtext;
+            }
+        }
     },
     methods:
     {
@@ -537,11 +543,13 @@ appCreated.component('toggle-button', {
             this.isOn = !this.isOn;
             this.name = this.isOn ? this.ontext : this.offtext;
             this.$emit('buttonclicked', this.isOn);
+            this.$emit('update:modelValue', this.isOn);
         },
         setState: function(value)
         {
             this.isOn = value;
             this.name = this.isOn ? this.ontext : this.offtext;
+            this.$emit('update:modelValue', this.isOn);
         }
     }
 });

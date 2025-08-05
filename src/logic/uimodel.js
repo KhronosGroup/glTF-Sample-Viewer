@@ -206,14 +206,14 @@ class UIModel
             }));
 
             this.app.selectedAnimations = state.animationIndices;
+            this.app.animationState = true;
+            this.app.graphState = true;
 
             if (gltf && gltf?.extensions?.KHR_materials_variants?.variants !== undefined) {
                 this.app.materialVariants = ["None", ...gltf.extensions.KHR_materials_variants.variants.map(variant => variant?.name ?? "Unnamed")];
             } else {
                 this.app.materialVariants = ["None"];
             }
-
-            this.app.setAnimationState(true);
             this.app.animations = gltf.animations.map((animation, index) => ({
                 title: animation.name ?? `Animation ${index}`,
                 index: index
