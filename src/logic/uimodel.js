@@ -78,6 +78,8 @@ class UIModel
 
         this.animationPlay = app.animationPlayChanged.pipe();
         this.graphPlay = app.graphPlayChanged.pipe();
+        this.animationReset = app.animationResetChanged.pipe();
+        this.graphReset = app.graphResetChanged.pipe();
         this.customEventSend = app.customEventSendClicked.pipe();
         this.activeAnimations = app.selectedAnimationsChanged.pipe();
         this.selectedGraph = app.selectedGraphChanged.pipe();

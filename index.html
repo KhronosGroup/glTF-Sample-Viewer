@@ -374,7 +374,7 @@
                                     </toggle-button>
                                     <!-- Reset button -->
                                     <button class="button is-rounded reset-btn-green" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
-                                        v-on:click="resetAnimation" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
+                                        v-on:click="animationResetChanged.next($event)" v-bind:style="[animations.length == 0 ? {'display': 'none'} : {}]">
                                         Reset
                                     </button>
                                 </div>
@@ -404,7 +404,7 @@
                                     </toggle-button>
                                     <!-- Reset button -->
                                     <button class="button is-rounded reset-btn-green" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
-                                        v-on:click="resetGraph" v-bind:style="[graphs.length == 0 ? {'display': 'none'} : {}]">
+                                        v-on:click="graphResetChanged.next($event)" v-bind:style="[graphs.length == 0 ? {'display': 'none'} : {}]">
                                         Reset
                                     </button>
                                 </div>

@@ -437,10 +437,20 @@ export default async () => {
 
     uiModel.graphPlay.subscribe((graphPlay) => {
         if (graphPlay) {
-            state.graphController.playGraph();
+            state.graphController.resumeGraph();
         } else {
             state.graphController.pauseGraph();
         }
+    });
+
+    uiModel.animationReset.subscribe(() => {
+        state.animationTimer.reset();
+        redraw = true;
+    });
+
+    uiModel.graphReset.subscribe(() => {
+        state.graphController.resetGraph();
+        redraw = true;
     });
 
     uiModel.activeAnimations.subscribe(

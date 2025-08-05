@@ -25,6 +25,8 @@ const appCreated = createApp({
             environmentRotationChanged: new Subject(),
             animationPlayChanged: new Subject(),
             graphPlayChanged: new Subject(),
+            animationResetChanged: new Subject(),
+            graphResetChanged: new Subject(),
             variantChanged: new Subject(),
             exposureChanged: new Subject(),
 
@@ -144,7 +146,7 @@ const appCreated = createApp({
         },
         customEvents: function (newValue) {
             // Auto-select the first custom event when the array is populated
-            if (newValue && newValue.length > 0 && !this.selectedCustomEvent) {
+            if (newValue && newValue.length > 0) {
                 this.selectedCustomEvent = newValue[0].id;
             }
         },
@@ -455,12 +457,6 @@ const appCreated = createApp({
 
         toggleUI() {
             this.uiVisible = !this.uiVisible;
-        },
-        resetAnimation() {
-            //TODO
-        },
-        resetGraph() {
-            //TODO
         },
         updateCustomEventValues(selectedEventId) {
             if (!selectedEventId || !this.customEvents) {
