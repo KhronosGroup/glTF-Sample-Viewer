@@ -157,15 +157,13 @@ export default async () => {
                                     state.animationIndices.push(i);
                                 }
                             }
-
+                            state.animationTimer.start();
                             if (state.gltf?.extensions?.KHR_interactivity.graphs !== undefined) {
                                 state.graphController.initializeGraphs(state);
                                 const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.startGraph(graphIndex);
                             } else {
-                                // Try to start as many animations as possible without generating conficts.
                                 state.graphController.stopGraph();
-                                state.animationTimer.start();
                             }
                         }
 

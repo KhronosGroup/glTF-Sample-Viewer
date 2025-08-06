@@ -237,7 +237,7 @@ const appCreated = createApp({
             return this.graphs && this.graphs.length > 0;
         },
         showGraphsTab() {
-            return this.hasInteractivityGraphs;
+            return this.hasInteractivityGraphs && this.interactivity;
         },
         currentCustomEvent() {
             if (!this.selectedCustomEvent || !this.customEvents) return null;
