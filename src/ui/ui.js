@@ -20,6 +20,7 @@ const appCreated = createApp({
             iblChanged: new Subject(),
             blurEnvChanged: new Subject(),
             morphingChanged: new Subject(),
+            interactivityChanged: new Subject(),
             colorChanged: new Subject(),
 
             environmentRotationChanged: new Subject(),

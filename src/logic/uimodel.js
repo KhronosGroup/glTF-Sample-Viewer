@@ -61,6 +61,7 @@ class UIModel
         this.addEnvironment = app.addEnvironmentChanged.pipe();
         this.captureCanvas = app.captureCanvas.pipe();
         this.cameraValuesExport = app.cameraExport.pipe();
+        this.interactivityEnabled = app.interactivityChanged.pipe();
 
         const initialClearColor = "#303542";
         this.app.clearColor = initialClearColor;

@@ -619,7 +619,7 @@
                                 <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                                 <br>
                                 <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
-                                <b-switch v-model="interactivity">Interactivity</b-switch>
+                                <b-switch v-model="interactivity" v-on:input="interactivityChanged.next($event.target.checked)">Interactivity</b-switch>
                                 <b-field label="Current Camera Values" class="subtitle">
                                     <button v-on:click="cameraExport.next($event.target.value)" type="button" class="button is-rounded"><i
                                             class="fa fa-download downloadIcon"></i>Download as .gltf</button>

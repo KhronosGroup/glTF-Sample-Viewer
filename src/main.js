@@ -296,6 +296,21 @@ export default async () => {
     );
     listenForRedraw(uiModel.morphingEnabled);
 
+    uiModel.interactivityEnabled.subscribe(
+        (interactivityEnabled) =>
+        {
+            state.renderingParameters.enabledExtensions.KHR_interactivity = interactivityEnabled
+            if (interactivityEnabled) {
+                state.graphController.initializeGraphs(state);
+                const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
+                state.graphController.startGraph(graphIndex);
+            } else {
+                state.graphController.stopGraph();
+            }
+        }
+    );
+    listenForRedraw(uiModel.interactivityEnabled);
+
     uiModel.clearcoatEnabled.subscribe(
         (clearcoatEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_clearcoat =
@@ -436,8 +451,10 @@ export default async () => {
     uiModel.graphPlay.subscribe((graphPlay) => {
         if (graphPlay) {
             state.graphController.resumeGraph();
+            state.animationTimer.unpause();
         } else {
             state.graphController.pauseGraph();
+            state.animationTimer.pause();
         }
     });
 
