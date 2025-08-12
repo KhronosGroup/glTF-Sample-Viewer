@@ -311,13 +311,16 @@ class UIModel
                 let cameraIndices = [{title: "User Camera", index: -1}];
                 if (gltf.scenes[state.sceneIndex] !== undefined)
                 {
-                    cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                        if(gltf.scenes[state.sceneIndex].includesNode(gltf, camera.node))
+                    cameraIndices.push(...gltf.nodes.map( (node, index) => {
+                        if(node.camera !== undefined && gltf.scenes[state.sceneIndex].includesNode(gltf, index))
                         {
-                            let name = camera.name;
-                            if(name === "" || name === undefined)
+                            let name = node.name ?? "Node " + index;
+                            const camera = gltf.cameras[node.camera];
+                            if(camera.name !== undefined && camera.name !== "")
                             {
-                                name = index;
+                                name += ": " + camera.name;
+                            } else {
+                                name += ": Camera " + node.camera;
                             }
                             return {title: name, index: index};
                         }
@@ -330,7 +333,7 @@ class UIModel
             })
         );
         cameraIndices.subscribe(cameras => this.app.cameras = cameras);
-        const loadedCameraIndex = sceneChangeObservable.pipe(map(state => state.cameraIndex));
+        const loadedCameraIndex = sceneChangeObservable.pipe(map(state => state.cameraNodeIndex));
         loadedCameraIndex.subscribe(index => this.app.selectedCamera = index !== undefined ? index : -1 );
     }
 
