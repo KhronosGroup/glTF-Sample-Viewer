@@ -126,7 +126,7 @@ export default async () => {
                         state.gltf = gltf;
                         const defaultScene = state.gltf.scene;
                         state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
-                        state.cameraIndex = undefined;
+                        state.cameraNodeIndex = undefined;
 
                         if (state.gltf.scenes.length != 0) {
                             if (state.sceneIndex > state.gltf.scenes.length - 1) {
@@ -171,7 +171,7 @@ export default async () => {
                             .then((gltf) => {
                                 state.gltf = gltf;
                                 state.sceneIndex = 0;
-                                state.cameraIndex = undefined;
+                                state.cameraNodeIndex = undefined;
 
                                 uiModel.exitLoadingState();
                                 redraw = true;
@@ -200,7 +200,7 @@ export default async () => {
     const sceneChangedObservable = uiModel.scene.pipe(
         map((sceneIndex) => {
             state.sceneIndex = sceneIndex;
-            state.cameraIndex = undefined;
+            state.cameraNodeIndex = undefined;
             const scene = state.gltf.scenes[state.sceneIndex];
             if (scene !== undefined) {
                 scene.applyTransformHierarchy(state.gltf);
@@ -218,9 +218,9 @@ export default async () => {
     const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe(
         map(() => {
             const camera =
-        state.cameraIndex === undefined
+        state.cameraNodeIndex === undefined
             ? state.userCamera
-            : state.gltf.cameras[state.cameraIndex];
+            : state.gltf.cameras[state.cameraNodeIndex];
             return camera.getDescription(state.gltf);
         })
     );
@@ -257,7 +257,7 @@ export default async () => {
     listenForRedraw(uiModel.scene);
 
     uiModel.camera.subscribe(
-        (camera) => (state.cameraIndex = camera !== -1 ? camera : undefined)
+        (camera) => (state.cameraNodeIndex = camera !== -1 ? camera : undefined)
     );
     listenForRedraw(uiModel.camera);
 
@@ -447,21 +447,21 @@ export default async () => {
     uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
 
     uiModel.orbit.subscribe((orbit) => {
-        if (state.cameraIndex === undefined) {
+        if (state.cameraNodeIndex === undefined) {
             state.userCamera.orbit(orbit.deltaPhi, orbit.deltaTheta);
         }
     });
     listenForRedraw(uiModel.orbit);
 
     uiModel.pan.subscribe((pan) => {
-        if (state.cameraIndex === undefined) {
+        if (state.cameraNodeIndex === undefined) {
             state.userCamera.pan(pan.deltaX, -pan.deltaY);
         }
     });
     listenForRedraw(uiModel.pan);
 
     uiModel.zoom.subscribe((zoom) => {
-        if (state.cameraIndex === undefined) {
+        if (state.cameraNodeIndex === undefined) {
             state.userCamera.zoomBy(zoom.deltaZoom);
         }
     });
