@@ -152,6 +152,8 @@ const appCreated = createApp({
             // Auto-select the first custom event when the array is populated
             if (newValue && newValue.length > 0) {
                 this.selectedCustomEvent = newValue[0].id;
+            } else {
+                this.selectedCustomEvent = null;
             }
         },
         customEventFocusedInput: function () {

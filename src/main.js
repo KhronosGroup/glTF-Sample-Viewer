@@ -163,7 +163,7 @@ export default async () => {
                                 const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.startGraph(graphIndex);
                             } else {
-                                state.graphController.stopGraph();
+                                state.graphController.stopGraphEngine();
                             }
                         }
 
@@ -299,13 +299,16 @@ export default async () => {
     uiModel.interactivityEnabled.subscribe(
         (interactivityEnabled) =>
         {
-            state.renderingParameters.enabledExtensions.KHR_interactivity = interactivityEnabled
+            state.renderingParameters.enabledExtensions.KHR_interactivity = interactivityEnabled;
+            if (state.gltf?.extensions?.KHR_interactivity === undefined) {
+                return;
+            }
             if (interactivityEnabled) {
                 state.graphController.initializeGraphs(state);
                 const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
                 state.graphController.startGraph(graphIndex);
             } else {
-                state.graphController.stopGraph();
+                state.graphController.stopGraphEngine();
             }
         }
     );
