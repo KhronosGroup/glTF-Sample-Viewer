@@ -53,6 +53,9 @@ class UIModel
         this.dispersionEnabled = app.dispersionChanged.pipe();
         this.specularEnabled = app.specularChanged.pipe();
         this.emissiveStrengthEnabled = app.emissiveStrengthChanged.pipe();
+        this.hoverabilityEnabled = app.hoverabilityChanged.pipe();
+        this.selectabilityEnabled = app.selectabilityChanged.pipe();
+        this.nodeVisibilityEnabled = app.nodeVisibilityChanged.pipe();
         this.iblEnabled = app.iblChanged.pipe();
         this.iblIntensity = app.iblIntensityChanged.pipe();
         this.punctualLightsEnabled = app.punctualLightsChanged.pipe();

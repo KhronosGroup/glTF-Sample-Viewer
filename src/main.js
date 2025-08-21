@@ -391,6 +391,27 @@ export default async () => {
     );
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 
+    uiModel.hoverabilityEnabled.subscribe(
+        (hoverabilityEnabled) =>
+            (state.renderingParameters.enabledExtensions.KHR_node_hoverability =
+        hoverabilityEnabled)
+    );
+    listenForRedraw(uiModel.hoverabilityEnabled);
+
+    uiModel.selectabilityEnabled.subscribe(
+        (selectabilityEnabled) =>
+            (state.renderingParameters.enabledExtensions.KHR_node_selectability =
+        selectabilityEnabled)
+    );
+    listenForRedraw(uiModel.selectabilityEnabled);
+
+    uiModel.nodeVisibilityEnabled.subscribe(
+        (nodeVisibilityEnabled) =>
+            (state.renderingParameters.enabledExtensions.KHR_node_visibility =
+        nodeVisibilityEnabled)
+    );
+    listenForRedraw(uiModel.nodeVisibilityEnabled);
+
     uiModel.iblEnabled.subscribe(
         (iblEnabled) => (state.renderingParameters.useIBL = iblEnabled)
     );

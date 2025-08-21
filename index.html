@@ -619,7 +619,10 @@
                                 <b-switch v-model="skinning" v-on:input="skinningChanged.next($event.target.checked)">Skinning</b-switch>
                                 <br>
                                 <b-switch v-model="morphing" v-on:input="morphingChanged.next($event.target.checked)">Morphing</b-switch>
-                                <b-switch v-model="interactivity" v-on:input="interactivityChanged.next($event.target.checked)">Interactivity</b-switch>
+                                <b-switch v-model="interactivity" v-on:input="interactivityChanged.next($event.target.checked)">KHR_interactivity</b-switch>
+                                <b-switch v-model="hoverabilityEnabled" v-on:input="hoverabilityChanged.next($event.target.checked)">KHR_node_hoverability</b-switch>
+                                <b-switch v-model="selectabilityEnabled" v-on:input="selectabilityChanged.next($event.target.checked)">KHR_node_selectability</b-switch>
+                                <b-switch v-model="nodeVisibilityEnabled" v-on:input="nodeVisibilityChanged.next($event.target.checked)">KHR_node_visibility</b-switch>
                                 <b-field label="Current Camera Values" class="subtitle">
                                     <button v-on:click="cameraExport.next($event.target.value)" type="button" class="button is-rounded"><i
                                             class="fa fa-download downloadIcon"></i>Download as .gltf</button>
