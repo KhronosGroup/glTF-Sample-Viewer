@@ -349,6 +349,10 @@ button.button
     -moz-user-select: none;
 }
 
+#canvasUI {
+    position:relative;
+}
+
 .canvasUIMaximize {
     left: 25px;
     bottom: 25px;

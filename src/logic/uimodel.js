@@ -192,6 +192,8 @@ class UIModel
         this.orbit = inputObservables.orbit;
         this.pan = inputObservables.pan;
         this.zoom = inputObservables.zoom;
+        this.selection = inputObservables.selection;
+        this.moveSelection = inputObservables.move;
     }
 
     attachGltfLoaded(gltfLoaded)
@@ -384,10 +386,24 @@ const getInputObservables = (inputElement, app) => {
     const mouseMove = fromEvent(document, 'mousemove');
     const mouseDown = fromEvent(inputElement, 'mousedown');
     const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
+    const click = fromEvent(inputElement, 'click');
     
     inputElement.addEventListener('mousemove', event => event.preventDefault());
     inputElement.addEventListener('mousedown', event => event.preventDefault());
     inputElement.addEventListener('mouseup', event => event.preventDefault());
+    inputElement.addEventListener('dblclick', event => event.preventDefault());
+    inputElement.addEventListener('click', event => event.preventDefault());
+
+    const selection = click.pipe(
+        filter(event => event.button === 0),
+        map((clickEvent) => {
+            return {x: clickEvent.pageX, y: clickEvent.pageY};
+        }));
+
+    const move = mouseMove.pipe(
+        map((moveEvent) => {
+            return {x: moveEvent.pageX, y: moveEvent.pageY};
+        }));
 
     const mouseOrbit = mouseDown.pipe(
         filter(event => event.button === 0 && event.shiftKey === false),
@@ -472,7 +488,8 @@ const getInputObservables = (inputElement, app) => {
     observables.orbit = merge(mouseOrbit, touchOrbit);
     observables.pan = mousePan;
     observables.zoom = merge(mouseZoom, touchZoom);
-
+    observables.selection = selection;
+    observables.move = move;
     // disable context menu
     inputElement.oncontextmenu = () => false;
 
