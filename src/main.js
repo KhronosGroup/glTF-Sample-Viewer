@@ -158,7 +158,7 @@ export default async () => {
                                 }
                             }
                             state.animationTimer.start();
-                            if (state.gltf?.extensions?.KHR_interactivity.graphs !== undefined) {
+                            if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
                                 state.graphController.initializeGraphs(state);
                                 const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.startGraph(graphIndex);
