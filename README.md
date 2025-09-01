@@ -16,6 +16,11 @@ Features
 
 ### glTF
 - [x] glTF 2.0
+- [KHR_accessor_float64](https://github.com/KhronosGroup/glTF/pull/2397)
+  - [x] Animations
+  - [x] KHR_animation_pointer
+  - [ ] Mesh Attributes not supported since WebGL2 only supports 32 bit
+  - [ ] Skins not supported since WebGL2 only supports 32 bit
 - [x] [KHR_animation_pointer](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer)
 - [x] [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_draco_mesh_compression)
 - [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_lights_punctual)
