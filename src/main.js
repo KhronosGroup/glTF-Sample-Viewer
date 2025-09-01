@@ -163,6 +163,7 @@ export default async () => {
                                 state.graphController.initializeGraphs(state);
                                 const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.startGraph(graphIndex);
+                                state.graphController.resumeGraph();
                             } else {
                                 state.graphController.stopGraphEngine();
                             }
