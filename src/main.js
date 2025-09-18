@@ -367,6 +367,13 @@ export default async () => {
     );
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 
+    uiModel.volumeScatteringEnabled.subscribe(
+        (enabled) =>
+            (state.renderingParameters.enabledExtensions.KHR_materials_volume_scatter =
+        enabled)
+    );
+    listenForRedraw(uiModel.volumeScatteringEnabled);
+
     uiModel.iblEnabled.subscribe(
         (iblEnabled) => (state.renderingParameters.useIBL = iblEnabled)
     );
