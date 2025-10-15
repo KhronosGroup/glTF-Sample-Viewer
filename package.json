@@ -13,6 +13,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
+    "prettier": "npx prettier src/**/*.js main.js glTF-Sample-Renderer/source/**/*.js --check",
+    "prettier:fix": "npm run prettier -- --write",
+    "format": "npm run prettier:fix && npm run lint:fix",
     "postversion": "git push && git push --tags"
   },
   "watch": {
@@ -66,8 +69,10 @@
     "@rollup/plugin-wasm": "^6.2.2",
     "concurrently": "^8.2.2",
     "eslint": "^9.5.0",
+    "eslint-config-prettier": "^10.1.8",
     "http-server": "^14.1.1",
     "npm-watch": "^0.13.0",
+    "prettier": "^3.6.2",
     "rollup": "^4.23.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-delete": "^2.0.0",

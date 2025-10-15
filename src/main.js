@@ -6,16 +6,16 @@ import { EMPTY, from, merge, of } from "rxjs";
 import { mergeMap, map, share, catchError } from "rxjs/operators";
 import {
     GltfModelPathProvider,
-    fillEnvironmentWithPaths,
+    fillEnvironmentWithPaths
 } from "./model_path_provider.js";
 
-import {validateBytes} from "gltf-validator";
+import { validateBytes } from "gltf-validator";
 
 export default async () => {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", {
         alpha: false,
-        antialias: true,
+        antialias: true
     });
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
@@ -38,7 +38,7 @@ export default async () => {
             papermill: "Papermill Ruins",
             neutral: "Studio Neutral",
             Colorful_Studio: "Colorful Studio",
-            Wide_Street: "Wide Street",
+            Wide_Street: "Wide Street"
         },
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/"
     );
@@ -47,22 +47,30 @@ export default async () => {
 
     const validation = uiModel.model.pipe(
         mergeMap((model) => {
-            const func = async(model) => {
+            const func = async (model) => {
                 try {
                     const fileType = typeof model.mainFile;
-                    if (fileType == "string"){
+                    if (fileType == "string") {
                         const externalRefFunction = (uri) => {
-                            const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
+                            const parent = model.mainFile.substring(
+                                0,
+                                model.mainFile.lastIndexOf("/") + 1
+                            );
                             return new Promise((resolve, reject) => {
-                                fetch(parent + uri).then(response => {
-                                    response.arrayBuffer().then(buffer => {
-                                        resolve(new Uint8Array(buffer));
-                                    }).catch(error => {
+                                fetch(parent + uri)
+                                    .then((response) => {
+                                        response
+                                            .arrayBuffer()
+                                            .then((buffer) => {
+                                                resolve(new Uint8Array(buffer));
+                                            })
+                                            .catch((error) => {
+                                                reject(error);
+                                            });
+                                    })
+                                    .catch((error) => {
                                         reject(error);
                                     });
-                                }).catch(error => {
-                                    reject(error);
-                                });
                             });
                         };
                         const response = await fetch(model.mainFile);
@@ -76,7 +84,11 @@ export default async () => {
                             uri = "/" + uri;
                             return new Promise((resolve, reject) => {
                                 let foundFile = undefined;
-                                for (let i = 0; i < model.additionalFiles.length; i++) {
+                                for (
+                                    let i = 0;
+                                    i < model.additionalFiles.length;
+                                    i++
+                                ) {
                                     const file = model.additionalFiles[i];
                                     if (file[0] == uri) {
                                         foundFile = file[1];
@@ -84,11 +96,14 @@ export default async () => {
                                     }
                                 }
                                 if (foundFile) {
-                                    foundFile.arrayBuffer().then((buffer) => {
-                                        resolve(new Uint8Array(buffer));
-                                    }).catch((error) => {
-                                        reject(error);
-                                    });
+                                    foundFile
+                                        .arrayBuffer()
+                                        .then((buffer) => {
+                                            resolve(new Uint8Array(buffer));
+                                        })
+                                        .catch((error) => {
+                                            reject(error);
+                                        });
                                 } else {
                                     reject("File not found");
                                 }
@@ -96,17 +111,21 @@ export default async () => {
                         };
 
                         const buffer = await model.mainFile[1].arrayBuffer();
-                        return await validateBytes(new Uint8Array(buffer),
-                            {
-                                externalResourceFunction: externalRefFunction,
-                                uri: model.mainFile[0]
-                            });
+                        return await validateBytes(new Uint8Array(buffer), {
+                            externalResourceFunction: externalRefFunction,
+                            uri: model.mainFile[0]
+                        });
                     }
                 } catch (error) {
                     console.error(error);
                 }
             };
-            return from(func(model)).pipe(catchError((error) => { console.error(`Validation failed: ${error}`); return {"error" : `Validation failed: ${error}`}; }));
+            return from(func(model)).pipe(
+                catchError((error) => {
+                    console.error(`Validation failed: ${error}`);
+                    return { error: `Validation failed: ${error}` };
+                })
+            );
         })
     );
 
@@ -125,24 +144,36 @@ export default async () => {
                     .then((gltf) => {
                         state.gltf = gltf;
                         const defaultScene = state.gltf.scene;
-                        state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
+                        state.sceneIndex =
+                            defaultScene === undefined ? 0 : defaultScene;
                         state.cameraNodeIndex = undefined;
 
                         if (state.gltf.scenes.length != 0) {
-                            if (state.sceneIndex > state.gltf.scenes.length - 1) {
+                            if (
+                                state.sceneIndex >
+                                state.gltf.scenes.length - 1
+                            ) {
                                 state.sceneIndex = 0;
                             }
                             const scene = state.gltf.scenes[state.sceneIndex];
                             scene.applyTransformHierarchy(state.gltf);
-                            state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
-                            state.userCamera.resetView(state.gltf, state.sceneIndex);
+                            state.userCamera.perspective.aspectRatio =
+                                canvas.width / canvas.height;
+                            state.userCamera.resetView(
+                                state.gltf,
+                                state.sceneIndex
+                            );
 
                             const queryString = window.location.search;
                             const urlParams = new URLSearchParams(queryString);
                             let yaw = urlParams.get("yaw") ?? 0;
-                            yaw = yaw * (Math.PI / 180) / state.userCamera.orbitSpeed;
+                            yaw =
+                                (yaw * (Math.PI / 180)) /
+                                state.userCamera.orbitSpeed;
                             let pitch = urlParams.get("pitch") ?? 0;
-                            pitch = pitch * (Math.PI / 180) / state.userCamera.orbitSpeed;
+                            pitch =
+                                (pitch * (Math.PI / 180)) /
+                                state.userCamera.orbitSpeed;
                             const distance = urlParams.get("distance") ?? 0;
                             state.userCamera.orbit(yaw, pitch);
                             state.userCamera.zoomBy(distance);
@@ -152,7 +183,9 @@ export default async () => {
                             for (let i = 0; i < gltf.animations.length; i++) {
                                 if (
                                     !gltf
-                                        .nonDisjointAnimations(state.animationIndices)
+                                        .nonDisjointAnimations(
+                                            state.animationIndices
+                                        )
                                         .includes(i)
                                 ) {
                                     state.animationIndices.push(i);
@@ -164,8 +197,9 @@ export default async () => {
                         uiModel.exitLoadingState();
 
                         return state;
-                    }).catch((error) => {
-                        console.error("Loading failed: "+ error);
+                    })
+                    .catch((error) => {
+                        console.error("Loading failed: " + error);
                         resourceLoader
                             .loadGltf(undefined, undefined)
                             .then((gltf) => {
@@ -175,7 +209,7 @@ export default async () => {
 
                                 uiModel.exitLoadingState();
                                 redraw = true;
-                            }); 
+                            });
                         return state;
                     })
             );
@@ -218,9 +252,9 @@ export default async () => {
     const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe(
         map(() => {
             const camera =
-        state.cameraNodeIndex === undefined
-            ? state.userCamera
-            : state.gltf.cameras[state.cameraNodeIndex];
+                state.cameraNodeIndex === undefined
+                    ? state.userCamera
+                    : state.gltf.cameras[state.cameraNodeIndex];
             return camera.getDescription(state.gltf);
         })
     );
@@ -237,7 +271,8 @@ export default async () => {
 
     cameraExportChangedObservable.subscribe((cameraDesc) => {
         const gltf = JSON.stringify(cameraDesc, undefined, 4);
-        const dataURL = "data:text/plain;charset=utf-8," + encodeURIComponent(gltf);
+        const dataURL =
+            "data:text/plain;charset=utf-8," + encodeURIComponent(gltf);
         downloadDataURL("camera.gltf", dataURL);
     });
 
@@ -275,7 +310,8 @@ export default async () => {
     listenForRedraw(uiModel.debugchannel);
 
     uiModel.skinningEnabled.subscribe(
-        (skinningEnabled) => (state.renderingParameters.skinning = skinningEnabled)
+        (skinningEnabled) =>
+            (state.renderingParameters.skinning = skinningEnabled)
     );
     listenForRedraw(uiModel.skinningEnabled);
 
@@ -286,91 +322,92 @@ export default async () => {
     listenForRedraw(uiModel.exposure);
 
     uiModel.morphingEnabled.subscribe(
-        (morphingEnabled) => (state.renderingParameters.morphing = morphingEnabled)
+        (morphingEnabled) =>
+            (state.renderingParameters.morphing = morphingEnabled)
     );
     listenForRedraw(uiModel.morphingEnabled);
 
     uiModel.clearcoatEnabled.subscribe(
         (clearcoatEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_clearcoat =
-        clearcoatEnabled)
+                clearcoatEnabled)
     );
     listenForRedraw(uiModel.clearcoatEnabled);
 
     uiModel.sheenEnabled.subscribe(
         (sheenEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_sheen =
-        sheenEnabled)
+                sheenEnabled)
     );
     listenForRedraw(uiModel.sheenEnabled);
 
     uiModel.transmissionEnabled.subscribe(
         (transmissionEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_transmission =
-        transmissionEnabled)
+                transmissionEnabled)
     );
     listenForRedraw(uiModel.transmissionEnabled);
 
     uiModel.diffuseTransmissionEnabled.subscribe(
         (diffuseTransmissionEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission =
-        diffuseTransmissionEnabled)
+                diffuseTransmissionEnabled)
     );
     listenForRedraw(uiModel.diffuseTransmissionEnabled);
 
     uiModel.volumeEnabled.subscribe(
         (volumeEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_volume =
-        volumeEnabled)
+                volumeEnabled)
     );
     listenForRedraw(uiModel.volumeEnabled);
 
     uiModel.iorEnabled.subscribe(
         (iorEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_ior =
-        iorEnabled)
+                iorEnabled)
     );
     listenForRedraw(uiModel.iorEnabled);
 
     uiModel.iridescenceEnabled.subscribe(
         (iridescenceEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_iridescence =
-        iridescenceEnabled)
+                iridescenceEnabled)
     );
     listenForRedraw(uiModel.iridescenceEnabled);
 
     uiModel.anisotropyEnabled.subscribe(
         (anisotropyEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_anisotropy =
-        anisotropyEnabled)
+                anisotropyEnabled)
     );
     listenForRedraw(uiModel.anisotropyEnabled);
 
     uiModel.dispersionEnabled.subscribe(
         (dispersionEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_dispersion =
-        dispersionEnabled)
+                dispersionEnabled)
     );
     listenForRedraw(uiModel.dispersionEnabled);
 
     uiModel.specularEnabled.subscribe(
         (specularEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_specular =
-        specularEnabled)
+                specularEnabled)
     );
     listenForRedraw(uiModel.specularEnabled);
 
     uiModel.emissiveStrengthEnabled.subscribe(
         (enabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength =
-        enabled)
+                enabled)
     );
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 
     uiModel.volumeScatteringEnabled.subscribe(
         (enabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_volume_scatter =
-        enabled)
+                enabled)
     );
     listenForRedraw(uiModel.volumeScatteringEnabled);
 
@@ -381,7 +418,10 @@ export default async () => {
 
     uiModel.iblIntensity.subscribe(
         (iblIntensity) =>
-            (state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity))
+            (state.renderingParameters.iblIntensity = Math.pow(
+                10,
+                iblIntensity
+            ))
     );
     listenForRedraw(uiModel.iblIntensity);
 
@@ -484,17 +524,21 @@ export default async () => {
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
-        redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |=
+            !state.animationTimer.paused && state.animationIndices.length > 0;
         redraw |= past.width != canvas.width || past.height != canvas.height;
 
         // Refit view if canvas changes significantly
-        if((canvas.width/past.width <0.5 || canvas.width/past.width>2.0 )||
-            (canvas.height/past.height <0.5 || canvas.height/past.height>2.0 ))
-        {
-            state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+        if (
+            canvas.width / past.width < 0.5 ||
+            canvas.width / past.width > 2.0 ||
+            canvas.height / past.height < 0.5 ||
+            canvas.height / past.height > 2.0
+        ) {
+            state.userCamera.perspective.aspectRatio =
+                canvas.width / canvas.height;
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
         }
-
 
         past.width = canvas.width;
         past.height = canvas.height;
