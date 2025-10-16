@@ -2,7 +2,7 @@ import { GltfView } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
 import { app } from "./ui/ui.js";
-import { EMPTY, from, merge, of } from "rxjs";
+import { EMPTY, from, merge } from "rxjs";
 import { mergeMap, map, share, catchError } from "rxjs/operators";
 import {
     GltfModelPathProvider,
@@ -10,7 +10,6 @@ import {
 } from "./model_path_provider.js";
 
 import {validateBytes} from "gltf-validator";
-import { mat4, quat, vec3 } from 'gl-matrix';
 
 export default async () => {
     const canvas = document.getElementById("canvas");
@@ -23,6 +22,21 @@ export default async () => {
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
+    state.graphController.addCustomEventListener("test/onStart", (event) => {
+        console.log("Test duration: ", event);
+    });
+    state.graphController.addCustomEventListener("test/onSuccess", () => {
+        const message = "Interactivity test succeeded";
+        console.log(message);
+        app.$buefy.toast.open({
+            message: message,
+            type: 'is-success'
+        });
+    });
+    state.graphController.addCustomEventListener("test/onFail", () => {
+        const message = "Interactivity test failed";
+        console.error(message);
+    });
     const pathProvider = new GltfModelPathProvider(
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main"
     );
