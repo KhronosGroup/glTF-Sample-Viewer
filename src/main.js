@@ -33,7 +33,7 @@ export default async () => {
             type: 'is-success'
         });
     });
-    state.graphController.addCustomEventListener("test/onFail", () => {
+    state.graphController.addCustomEventListener("test/onFailed", () => {
         const message = "Interactivity test failed";
         console.error(message);
     });
