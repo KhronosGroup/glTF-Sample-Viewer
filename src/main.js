@@ -579,6 +579,11 @@ export default async () => {
         if (!state.enableHover) {
             return;
         }
+        if (selection.x === undefined || selection.y === undefined) {
+            state.pickingX = undefined;
+            state.pickingY = undefined;
+            return;
+        }
         const devicePixelRatio = window.devicePixelRatio || 1;
         state.pickingX = Math.floor(selection.x * devicePixelRatio);
         state.pickingY = Math.floor(selection.y * devicePixelRatio);

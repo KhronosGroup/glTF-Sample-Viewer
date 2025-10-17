@@ -383,7 +383,7 @@ const getInputObservables = (inputElement, app) => {
         map(file => ({hdr_path: file}))
     );
 
-    const mouseMove = fromEvent(document, 'mousemove');
+    const mouseMove = merge(fromEvent(inputElement, 'mousemove'), fromEvent(inputElement, 'mouseout'));
     const mouseDown = fromEvent(inputElement, 'mousedown');
     const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
     const click = fromEvent(inputElement, 'click');
@@ -393,6 +393,7 @@ const getInputObservables = (inputElement, app) => {
     inputElement.addEventListener('mouseup', event => event.preventDefault());
     inputElement.addEventListener('dblclick', event => event.preventDefault());
     inputElement.addEventListener('click', event => event.preventDefault());
+    inputElement.addEventListener('mouseout', event => event.preventDefault());
 
     const selection = click.pipe(
         filter(event => event.button === 0),
@@ -402,6 +403,9 @@ const getInputObservables = (inputElement, app) => {
 
     const move = mouseMove.pipe(
         map((moveEvent) => {
+            if (moveEvent.type === 'mouseout') {
+                return {x: undefined, y: undefined};
+            }
             return {x: moveEvent.pageX, y: moveEvent.pageY};
         }));
 
