@@ -382,6 +382,36 @@ const getInputObservables = (inputElement, app) => {
                 (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
             )
         })),
+        map(({ mainFile, additionalFiles }) => {
+            if (mainFile[0].endsWith(".gltf")) {
+                // extract folder path from gltf file
+                let folderPath = mainFile[0];
+                // replace all \ by /
+                folderPath = folderPath.replaceAll("\\", "/");
+                // remove filename
+                folderPath = folderPath.substr(0, folderPath.lastIndexOf("/"));
+
+                if (folderPath !== "") {
+                    // remove folder path from additional files
+                    additionalFiles = additionalFiles.map((file) => {
+                        let filePath = file[0].replaceAll("\\", "/");
+                        if (filePath.startsWith(folderPath)) {
+                            return [
+                                filePath.substr(folderPath.length),
+                                file[1]
+                            ];
+                        } else {
+                            return file;
+                        }
+                    });
+                }
+            }
+
+            return {
+                mainFile: mainFile,
+                additionalFiles: additionalFiles
+            };
+        }),
         filter((files) => files.mainFile !== undefined)
     );
 
