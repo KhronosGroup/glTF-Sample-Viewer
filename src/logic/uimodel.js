@@ -1,15 +1,23 @@
-import { Observable, merge, fromEvent } from 'rxjs';
-import { map, filter, startWith, pluck, takeUntil, mergeMap, pairwise, share } from 'rxjs/operators';
-import { GltfState } from '@khronosgroup/gltf-viewer';
-import { SimpleDropzone } from 'simple-dropzone';
-import { vec2 } from 'gl-matrix';
-import normalizeWheel from 'normalize-wheel';
+import { Observable, merge, fromEvent } from "rxjs";
+import {
+    map,
+    filter,
+    startWith,
+    pluck,
+    takeUntil,
+    mergeMap,
+    pairwise,
+    share
+} from "rxjs/operators";
+import { GltfState } from "@khronosgroup/gltf-viewer";
+import { SimpleDropzone } from "simple-dropzone";
+import { vec2 } from "gl-matrix";
+import normalizeWheel from "normalize-wheel";
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
 // as close as possible
-class UIModel
-{
+class UIModel {
     constructor(app, modelPathProvider, environments) {
         this.app = app;
 
@@ -24,20 +32,20 @@ class UIModel
         this.environmentRotation = app.environmentRotationChanged.pipe();
         this.app.environments = environments;
         const selectedEnvironment = app.selectedEnvironmentChanged.pipe(
-            map(environmentName => this.app.environments[environmentName])
+            map((environmentName) => this.app.environments[environmentName])
         );
         const initialEnvironment = "Cannon_Exterior";
         this.app.selectedEnvironment = initialEnvironment;
 
-        this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({title: GltfState.ToneMaps[key]}));
-        this.tonemap = app.tonemapChanged.pipe(
-            startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL)
-        );
+        this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({
+            title: GltfState.ToneMaps[key]
+        }));
+        this.tonemap = app.tonemapChanged.pipe(startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL));
 
-        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({title: GltfState.DebugOutput[key]}));
-        this.debugchannel = app.debugchannelChanged.pipe(
-            startWith(GltfState.DebugOutput.NONE)
-        );
+        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({
+            title: GltfState.DebugOutput[key]
+        }));
+        this.debugchannel = app.debugchannelChanged.pipe(startWith(GltfState.DebugOutput.NONE));
 
         this.exposure = app.exposureChanged.pipe();
         this.skinningEnabled = app.skinningChanged.pipe();
@@ -53,6 +61,7 @@ class UIModel
         this.dispersionEnabled = app.dispersionChanged.pipe();
         this.specularEnabled = app.specularChanged.pipe();
         this.emissiveStrengthEnabled = app.emissiveStrengthChanged.pipe();
+        this.volumeScatteringEnabled = app.volumeScatteringChanged.pipe();
         this.hoverabilityEnabled = app.hoverabilityChanged.pipe();
         this.selectabilityEnabled = app.selectabilityChanged.pipe();
         this.nodeVisibilityEnabled = app.nodeVisibilityChanged.pipe();
@@ -70,9 +79,9 @@ class UIModel
         this.app.clearColor = initialClearColor;
         this.clearColor = app.colorChanged.pipe(
             startWith(initialClearColor),
-            map(hex => /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)),
-            filter(color => color !== null),
-            map(color => [
+            map((hex) => /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)),
+            filter((color) => color !== null),
+            map((color) => [
                 parseInt(color[1], 16) / 255.0,
                 parseInt(color[2], 16) / 255.0,
                 parseInt(color[3], 16) / 255.0,
@@ -89,38 +98,44 @@ class UIModel
         this.selectedGraph = app.selectedGraphChanged.pipe();
 
         const canvas = document.getElementById("canvas");
-        canvas.addEventListener('dragenter', () => this.app.showDropDownOverlay = true);
-        canvas.addEventListener('dragleave', () => this.app.showDropDownOverlay = false);
+        canvas.addEventListener("dragenter", () => (this.app.showDropDownOverlay = true));
+        canvas.addEventListener("dragleave", () => (this.app.showDropDownOverlay = false));
 
         const inputObservables = getInputObservables(canvas, this.app);
 
         const dropdownGltfChanged = app.modelChanged.pipe(
             startWith(modelURL === null ? "DamagedHelmet" : null),
-            filter(value => value !== null),
-            map(value => {
+            filter((value) => value !== null),
+            map((value) => {
                 app.flavours = modelPathProvider.getModelFlavours(value);
-                if (app.flavours.includes("glTF")){
+                if (app.flavours.includes("glTF")) {
                     app.selectedFlavour = "glTF";
                 } else {
                     app.selectedFlavour = app.flavours[0];
                 }
                 return modelPathProvider.resolve(value, app.selectedFlavour);
             }),
-            map(value => ({mainFile: value})),
+            map((value) => ({ mainFile: value }))
         );
 
         const dropdownFlavourChanged = app.flavourChanged.pipe(
-            map(value => modelPathProvider.resolve(app.selectedModel, value)),
-            map(value => ({mainFile: value})),
+            map((value) => modelPathProvider.resolve(app.selectedModel, value)),
+            map((value) => ({ mainFile: value }))
         );
 
-        this.model = merge(dropdownGltfChanged, dropdownFlavourChanged, inputObservables.droppedGltf);
-
-        this.hdr = merge(selectedEnvironment, this.addEnvironment, inputObservables.droppedHdr).pipe(
-            startWith(environments[initialEnvironment])
+        this.model = merge(
+            dropdownGltfChanged,
+            dropdownFlavourChanged,
+            inputObservables.droppedGltf
         );
 
-        this.hdr.subscribe(async hdr => {
+        this.hdr = merge(
+            selectedEnvironment,
+            this.addEnvironment,
+            inputObservables.droppedHdr
+        ).pipe(startWith(environments[initialEnvironment]));
+
+        this.hdr.subscribe(async (hdr) => {
             if (hdr.license_path !== undefined) {
                 try {
                     const response = await fetch(hdr.license_path);
@@ -131,30 +146,33 @@ class UIModel
                     const license = text.split("SPDX-License-Identifier: ")[1];
                     console.log(license);
                     text = text.replace("SPDX-FileCopyrightText: ", "");
-                    text = text.replace(/SPDX-License-Identifier:(.)*/g, `, <a href="${hdr.hdr_path}">Source</a>, License: `);
+                    text = text.replace(
+                        /SPDX-License-Identifier:(.)*/g,
+                        `, <a href="${hdr.hdr_path}">Source</a>, License: `
+                    );
                     text += `<a href="${hdr.base_path}/LICENSES/${license}.txt">${license}</a>`;
                     text = "(c) " + text;
-                    text = text.replaceAll("\n","");
+                    text = text.replaceAll("\n", "");
                     text = text.replaceAll(" ,", ",");
                     this.app.environmentLicense = text;
+
+                    // eslint-disable-next-line no-unused-vars
                 } catch (error) {
                     this.app.environmentLicense = "N/A";
                 }
-                
             } else {
                 this.app.environmentLicense = "N/A";
             }
         });
 
-        merge(this.addEnvironment, inputObservables.droppedHdr)
-            .subscribe(hdr => {
-                const hdrPath = hdr.hdr_path;
-                this.app.environments[hdrPath.name] = {
-                    title: hdrPath.name,
-                    hdr_path: hdrPath,
-                };
-                this.app.selectedEnvironment = hdrPath.name;
-            });
+        merge(this.addEnvironment, inputObservables.droppedHdr).subscribe((hdr) => {
+            const hdrPath = hdr.hdr_path;
+            this.app.environments[hdrPath.name] = {
+                title: hdrPath.name,
+                hdr_path: hdrPath
+            };
+            this.app.selectedEnvironment = hdrPath.name;
+        });
 
         this.variant = app.variantChanged.pipe();
 
@@ -166,20 +184,27 @@ class UIModel
                 this.lastDroppedFilename = undefined;
             });
 
-        let droppedGLtfFileName = inputObservables.droppedGltf.pipe(map(droppedGltf => droppedGltf.mainFile.name));
+        let droppedGLtfFileName = inputObservables.droppedGltf.pipe(
+            map((droppedGltf) => droppedGltf.mainFile.name)
+        );
 
         if (modelURL !== null) {
-            const loadFromUrlObservable = new Observable(subscriber => subscriber.next({mainFile: modelURL}));
-            droppedGLtfFileName = merge(droppedGLtfFileName, loadFromUrlObservable.pipe(map(data => data.mainFile)));
+            const loadFromUrlObservable = new Observable((subscriber) =>
+                subscriber.next({ mainFile: modelURL })
+            );
+            droppedGLtfFileName = merge(
+                droppedGLtfFileName,
+                loadFromUrlObservable.pipe(map((data) => data.mainFile))
+            );
             this.model = merge(this.model, loadFromUrlObservable);
         }
 
         droppedGLtfFileName
-            .pipe(filter(filename => filename !== undefined))
-            .subscribe(filename => {
-                filename = filename.split('/').pop();
-                const fileExtension = filename.split('.').pop();
-                filename = filename.substr(0, filename.lastIndexOf('.'));
+            .pipe(filter((filename) => filename !== undefined))
+            .subscribe((filename) => {
+                filename = filename.split("/").pop();
+                const fileExtension = filename.split(".").pop();
+                filename = filename.substr(0, filename.lastIndexOf("."));
 
                 this.app.models.push(filename);
                 this.app.selectedModel = filename;
@@ -196,15 +221,14 @@ class UIModel
         this.moveSelection = inputObservables.move;
     }
 
-    attachGltfLoaded(gltfLoaded)
-    {
+    attachGltfLoaded(gltfLoaded) {
         this.attachCameraChangeObservable(gltfLoaded);
-        gltfLoaded.subscribe(state => {
+        gltfLoaded.subscribe((state) => {
             const gltf = state.gltf;
 
             this.app.assetCopyright = gltf.asset.copyright ?? "N/A";
             this.app.assetGenerator = gltf.asset.generator ?? "N/A";
-            
+
             this.app.selectedScene = state.sceneIndex;
             this.app.scenes = gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
@@ -242,29 +266,29 @@ class UIModel
         });
     }
 
-    updateStatistics(statisticsUpdateObservable)
-    {
+    updateStatistics(statisticsUpdateObservable) {
         statisticsUpdateObservable.subscribe(
-            data => this.app.statistics = {
-                "Mesh Count": data.meshCount,
-                "Triangle Count": data.faceCount,
-                "Opaque Material Count": data.opaqueMaterialsCount,
-                "Transparent Material Count": data.transparentMaterialsCount
-            }
+            (data) =>
+                (this.app.statistics = {
+                    "Mesh Count": data.meshCount,
+                    "Triangle Count": data.faceCount,
+                    "Opaque Material Count": data.opaqueMaterialsCount,
+                    "Transparent Material Count": data.transparentMaterialsCount
+                })
         );
     }
 
     /**
      * Creates a descriptive summary of the given validation report.
-     * 
-     * If there are no issues, messages, or warnings in the given 
+     *
+     * If there are no issues, messages, or warnings in the given
      * report, then an empty object is returned.
-     * 
-     * Otherwise, the result will be an object that contains 
-     * `numIgnoredWarnings:number` that counts the number of warnings 
-     * that are ignored by the sample viewer, and a `message:string` 
+     *
+     * Otherwise, the result will be an object that contains
+     * `numIgnoredWarnings:number` that counts the number of warnings
+     * that are ignored by the sample viewer, and a `message:string`
      * that explains why these warnings are ignored.
-     * 
+     *
      * @param {any} validationReport The glTF validator validation report
      * @returns The description
      */
@@ -286,82 +310,83 @@ class UIModel
         }
         return {
             numIgnoredWarnings: numIgnoredWarnings,
-            message: `The validation generated ${issues.numWarnings} warnings. `
-                +`${numIgnoredWarnings} of these warnings have been about missing `
-                +`tangent space information. Omitting the tangent space information `
-                +`may be a conscious decision by the designer, but it may limit `
-                +`the portability of the asset. The glTF-Sample-Viewer generates `
-                +`tangents using the default MikkTSpace algorithm in this case.`
+            message:
+                `The validation generated ${issues.numWarnings} warnings. ` +
+                `${numIgnoredWarnings} of these warnings have been about missing ` +
+                `tangent space information. Omitting the tangent space information ` +
+                `may be a conscious decision by the designer, but it may limit ` +
+                `the portability of the asset. The glTF-Sample-Viewer generates ` +
+                `tangents using the default MikkTSpace algorithm in this case.`
         };
     }
 
-    updateValidationReport(validationReportObservable)
-    {
-        validationReportObservable.subscribe(data => {
+    updateValidationReport(validationReportObservable) {
+        validationReportObservable.subscribe((data) => {
             this.app.validationReport = data;
             this.app.validationReportDescription = this.createValidationReportDescription(data);
         });
     }
 
-    disabledAnimations(disabledAnimationsObservable)
-    {
-        disabledAnimationsObservable.subscribe(data => this.app.disabledAnimations = data);
+    disabledAnimations(disabledAnimationsObservable) {
+        disabledAnimationsObservable.subscribe((data) => (this.app.disabledAnimations = data));
     }
 
-    attachCameraChangeObservable(sceneChangeObservable)
-    {
+    attachCameraChangeObservable(sceneChangeObservable) {
         const cameraIndices = sceneChangeObservable.pipe(
-            map(state => {
+            map((state) => {
                 let gltf = state.gltf;
-                let cameraIndices = [{title: "User Camera", index: -1}];
-                if (gltf.scenes[state.sceneIndex] !== undefined)
-                {
-                    cameraIndices.push(...gltf.nodes.map( (node, index) => {
-                        if(node.camera !== undefined && gltf.scenes[state.sceneIndex].includesNode(gltf, index))
-                        {
-                            let name = node.name ?? "Node " + index;
-                            const camera = gltf.cameras[node.camera];
-                            if(camera.name !== undefined && camera.name !== "")
-                            {
-                                name += ": " + camera.name;
-                            } else {
-                                name += ": Camera " + node.camera;
+                let cameraIndices = [{ title: "User Camera", index: -1 }];
+                if (gltf.scenes[state.sceneIndex] !== undefined) {
+                    cameraIndices.push(
+                        ...gltf.nodes.map((node, index) => {
+                            if (
+                                node.camera !== undefined &&
+                                gltf.scenes[state.sceneIndex].includesNode(gltf, index)
+                            ) {
+                                let name = node.name ?? "Node " + index;
+                                const camera = gltf.cameras[node.camera];
+                                if (camera.name !== undefined && camera.name !== "") {
+                                    name += ": " + camera.name;
+                                } else {
+                                    name += ": Camera " + node.camera;
+                                }
+                                return { title: name, index: index };
                             }
-                            return {title: name, index: index};
-                        }
-                    }));
+                        })
+                    );
                 }
-                cameraIndices = cameraIndices.filter(function(el) {
+                cameraIndices = cameraIndices.filter(function (el) {
                     return el !== undefined;
                 });
                 return cameraIndices;
             })
         );
-        cameraIndices.subscribe(cameras => this.app.cameras = cameras);
-        const loadedCameraIndex = sceneChangeObservable.pipe(map(state => state.cameraNodeIndex));
-        loadedCameraIndex.subscribe(index => this.app.selectedCamera = index !== undefined ? index : -1 );
+        cameraIndices.subscribe((cameras) => (this.app.cameras = cameras));
+        const loadedCameraIndex = sceneChangeObservable.pipe(map((state) => state.cameraNodeIndex));
+        loadedCameraIndex.subscribe(
+            (index) => (this.app.selectedCamera = index !== undefined ? index : -1)
+        );
     }
 
     goToLoadingState() {
         this.app.goToLoadingState();
     }
 
-    exitLoadingState()
-    {
+    exitLoadingState() {
         this.app.exitLoadingState();
     }
 }
 
 const getInputObservables = (inputElement, app) => {
     const observables = {};
-    
-    const droppedFiles = new Observable(subscriber => {
+
+    const droppedFiles = new Observable((subscriber) => {
         const dropZone = new SimpleDropzone(inputElement, inputElement);
-        dropZone.on('drop', ({files}) => {
+        dropZone.on("drop", ({ files }) => {
             app.showDropDownOverlay = false;
             subscriber.next(Array.from(files.entries()));
         });
-        dropZone.on('droperror', () => {
+        dropZone.on("droperror", () => {
             app.showDropDownOverlay = false;
             subscriber.error();
         });
@@ -369,18 +394,50 @@ const getInputObservables = (inputElement, app) => {
 
     // Partition files into a .gltf or .glb and additional files like buffers and textures
     observables.droppedGltf = droppedFiles.pipe(
-        map(files => ({
+        map((files) => ({
             mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
-            additionalFiles: files.filter(file => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf"))
+            additionalFiles: files.filter(
+                (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
+            )
         })),
-        filter(files => files.mainFile !== undefined),
+        map(({ mainFile, additionalFiles }) => {
+            if (mainFile[0].endsWith(".gltf")) {
+                // extract folder path from gltf file
+                let folderPath = mainFile[0];
+                // replace all \ by /
+                folderPath = folderPath.replaceAll("\\", "/");
+                // remove filename
+                folderPath = folderPath.substr(0, folderPath.lastIndexOf("/"));
+
+                if (folderPath !== "") {
+                    // remove folder path from additional files
+                    additionalFiles = additionalFiles.map((file) => {
+                        let filePath = file[0].replaceAll("\\", "/");
+                        if (filePath.startsWith(folderPath)) {
+                            return [
+                                filePath.substr(folderPath.length),
+                                file[1]
+                            ];
+                        } else {
+                            return file;
+                        }
+                    });
+                }
+            }
+
+            return {
+                mainFile: mainFile,
+                additionalFiles: additionalFiles
+            };
+        }),
+        filter((files) => files.mainFile !== undefined)
     );
 
     observables.droppedHdr = droppedFiles.pipe(
-        map(files => files.find(([path]) => path.endsWith(".hdr"))),
-        filter(file => file !== undefined),
+        map((files) => files.find(([path]) => path.endsWith(".hdr"))),
+        filter((file) => file !== undefined),
         pluck("1"),
-        map(file => ({hdr_path: file}))
+        map((file) => ({ hdr_path: file }))
     );
 
     const mouseMove = merge(fromEvent(inputElement, 'mousemove'), fromEvent(inputElement, 'mouseout'));
@@ -410,84 +467,113 @@ const getInputObservables = (inputElement, app) => {
         }));
 
     const mouseOrbit = mouseDown.pipe(
-        filter(event => event.button === 0 && event.shiftKey === false),
-        mergeMap(() => mouseMove.pipe(
-            pairwise(),
-            map( ([oldMouse, newMouse]) => {
-                return {
-                    deltaPhi: newMouse.pageX - oldMouse.pageX, 
-                    deltaTheta: newMouse.pageY - oldMouse.pageY 
-                };
-            }),
-            takeUntil(mouseUp)
-        ))
+        filter((event) => event.button === 0 && event.shiftKey === false),
+        mergeMap(() =>
+            mouseMove.pipe(
+                pairwise(),
+                map(([oldMouse, newMouse]) => {
+                    return {
+                        deltaPhi: newMouse.pageX - oldMouse.pageX,
+                        deltaTheta: newMouse.pageY - oldMouse.pageY
+                    };
+                }),
+                takeUntil(mouseUp)
+            )
+        )
     );
 
     const mousePan = mouseDown.pipe(
-        filter( event => event.button === 1 || event.shiftKey === true),
-        mergeMap(() => mouseMove.pipe(
-            pairwise(),
-            map( ([oldMouse, newMouse]) => {
-                return {
-                    deltaX: newMouse.pageX - oldMouse.pageX, 
-                    deltaY: newMouse.pageY - oldMouse.pageY 
-                };
-            }),
-            takeUntil(mouseUp)
-        ))
+        filter((event) => event.button === 1 || event.shiftKey === true),
+        mergeMap(() =>
+            mouseMove.pipe(
+                pairwise(),
+                map(([oldMouse, newMouse]) => {
+                    return {
+                        deltaX: newMouse.pageX - oldMouse.pageX,
+                        deltaY: newMouse.pageY - oldMouse.pageY
+                    };
+                }),
+                takeUntil(mouseUp)
+            )
+        )
     );
 
     const dragZoom = mouseDown.pipe(
-        filter( event => event.button === 2),
+        filter((event) => event.button === 2),
         mergeMap(() => mouseMove.pipe(takeUntil(mouseUp))),
-        map( mouse => ({deltaZoom: mouse.movementY}))
+        map((mouse) => ({ deltaZoom: mouse.movementY }))
     );
-    const wheelZoom = fromEvent(inputElement, 'wheel').pipe(
-        map(wheelEvent => normalizeWheel(wheelEvent)),
-        map(normalizedZoom => ({deltaZoom: normalizedZoom.spinY }))
+    const wheelZoom = fromEvent(inputElement, "wheel").pipe(
+        map((wheelEvent) => normalizeWheel(wheelEvent)),
+        map((normalizedZoom) => ({ deltaZoom: normalizedZoom.spinY }))
     );
-    inputElement.addEventListener('scroll', event => event.preventDefault(), { passive: false });
-    inputElement.addEventListener('wheel', event => event.preventDefault(), { passive: false });
+    inputElement.addEventListener("scroll", (event) => event.preventDefault(), {
+        passive: false
+    });
+    inputElement.addEventListener("wheel", (event) => event.preventDefault(), {
+        passive: false
+    });
     const mouseZoom = merge(dragZoom, wheelZoom);
 
-    const touchmove = fromEvent(document, 'touchmove');
-    const touchstart = fromEvent(inputElement, 'touchstart');
-    const touchend = merge(fromEvent(inputElement, 'touchend'), fromEvent(inputElement, 'touchcancel'));
+    const touchmove = fromEvent(document, "touchmove");
+    const touchstart = fromEvent(inputElement, "touchstart");
+    const touchend = merge(
+        fromEvent(inputElement, "touchend"),
+        fromEvent(inputElement, "touchcancel")
+    );
 
     const touchOrbit = touchstart.pipe(
-        filter(event => event.touches.length === 1),
-        mergeMap(() => touchmove.pipe(
-            filter(event => event.touches.length === 1),
-            map(event => event.touches[0]),
-            pairwise(),
-            map(([oldTouch, newTouch]) => {
-                return {
-                    deltaPhi: 2.0 * (newTouch.clientX - oldTouch.clientX),
-                    deltaTheta: 2.0 * (newTouch.clientY - oldTouch.clientY),
-                };
-            }),
-            takeUntil(touchend)
-        )),
+        filter((event) => event.touches.length === 1),
+        mergeMap(() =>
+            touchmove.pipe(
+                filter((event) => event.touches.length === 1),
+                map((event) => event.touches[0]),
+                pairwise(),
+                map(([oldTouch, newTouch]) => {
+                    return {
+                        deltaPhi: 2.0 * (newTouch.clientX - oldTouch.clientX),
+                        deltaTheta: 2.0 * (newTouch.clientY - oldTouch.clientY)
+                    };
+                }),
+                takeUntil(touchend)
+            )
+        )
     );
 
     const touchZoom = touchstart.pipe(
-        filter(event => event.touches.length === 2),
-        mergeMap(() => touchmove.pipe(
-            filter(event => event.touches.length === 2),
-            map(event => {
-                const pos1 = vec2.fromValues(event.touches[0].clientX, event.touches[0].clientY);
-                const pos2 = vec2.fromValues(event.touches[1].clientX, event.touches[1].clientY);
-                return vec2.dist(pos1, pos2);
-            }),
-            pairwise(),
-            map(([oldDist, newDist]) => ({ deltaZoom: 0.1 * (oldDist - newDist) })),
-            takeUntil(touchend))
-        ),
+        filter((event) => event.touches.length === 2),
+        mergeMap(() =>
+            touchmove.pipe(
+                filter((event) => event.touches.length === 2),
+                map((event) => {
+                    const pos1 = vec2.fromValues(
+                        event.touches[0].clientX,
+                        event.touches[0].clientY
+                    );
+                    const pos2 = vec2.fromValues(
+                        event.touches[1].clientX,
+                        event.touches[1].clientY
+                    );
+                    return vec2.dist(pos1, pos2);
+                }),
+                pairwise(),
+                map(([oldDist, newDist]) => ({
+                    deltaZoom: 0.1 * (oldDist - newDist)
+                })),
+                takeUntil(touchend)
+            )
+        )
     );
 
-    inputElement.addEventListener('ontouchmove', event => event.preventDefault(), { passive: false });
-    inputElement.addEventListener('ontouchstart', event => event.preventDefault(), { passive: false });
-    inputElement.addEventListener('ontouchend', event => event.preventDefault(), { passive: false });
+    inputElement.addEventListener("ontouchmove", (event) => event.preventDefault(), {
+        passive: false
+    });
+    inputElement.addEventListener("ontouchstart", (event) => event.preventDefault(), {
+        passive: false
+    });
+    inputElement.addEventListener("ontouchend", (event) => event.preventDefault(), {
+        passive: false
+    });
 
     observables.orbit = merge(mouseOrbit, touchOrbit);
     observables.pan = mousePan;

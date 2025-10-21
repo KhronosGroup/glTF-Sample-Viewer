@@ -648,6 +648,10 @@
                                         v-model="volumeEnabled" v-on:input="volumeChanged.next($event.target.checked)">
                                         Volume
                                     </b-switch>
+                                    <b-switch class="smallerLabel" v-model="volumeScatteringEnabled" v-on:input="volumeScatteringChanged.next($event.target.checked)"
+                                        v-bind:disabled="!volumeEnabled">
+                                        Volume Scattering
+                                    </b-switch>
                                     <b-switch class="smallerLabel" v-model="iorEnabled" v-on:input="iorChanged.next($event.target.checked)">IOR</b-switch>
                                     <b-switch class="smallerLabel" v-model="specularEnabled" v-on:input="specularChanged.next($event.target.checked)">
                                         Specular                                        

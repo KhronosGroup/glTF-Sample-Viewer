@@ -1,7 +1,7 @@
-import { createApp } from 'vue/dist/vue.cjs.js';
-import { Subject } from 'rxjs';
-import './sass.scss';
-import Buefy from '@ntohq/buefy-next';
+import { createApp } from "vue/dist/vue.cjs.js";
+import { Subject } from "rxjs";
+import "./sass.scss";
+import Buefy from "@ntohq/buefy-next";
 
 const appCreated = createApp({
     data() {
@@ -47,6 +47,7 @@ const appCreated = createApp({
             dispersionChanged: new Subject(),
             specularChanged: new Subject(),
             emissiveStrengthChanged: new Subject(),
+            volumeScatteringChanged: new Subject(),
             hoverabilityChanged: new Subject(),
             selectabilityChanged: new Subject(),
             nodeVisibilityChanged: new Subject(),
@@ -60,9 +61,15 @@ const appCreated = createApp({
             fullheight: true,
             right: true,
             models: ["DamagedHelmet"],
-            flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
-            scenes: [{title: "0"}, {title: "1"}],
-            cameras: [{title: "User Camera", index: -1}],
+            flavours: [
+                "glTF",
+                "glTF-Binary",
+                "glTF-Quantized",
+                "glTF-Draco",
+                "glTF-pbrSpecularGlossiness"
+            ],
+            scenes: [{ title: "0" }, { title: "1" }],
+            cameras: [{ title: "User Camera", index: -1 }],
             materialVariants: ["None"],
 
             animations: [{title: "None"}],
@@ -95,9 +102,14 @@ const appCreated = createApp({
             renderEnv: true,
             blurEnv: true,
             clearColor: "",
-            environmentRotations: [{title: "+Z"}, {title: "-X"}, {title: "-Z"}, {title: "+X"}],
+            environmentRotations: [
+                { title: "+Z" },
+                { title: "-X" },
+                { title: "-Z" },
+                { title: "+X" }
+            ],
             selectedEnvironmentRotation: "+Z",
-            environments: [{index: 0, name: ""}],
+            environments: [{ index: 0, name: "" }],
             selectedEnvironment: 0,
 
             debugChannel: "None",
@@ -117,6 +129,7 @@ const appCreated = createApp({
             dispersionEnabled: true,
             specularEnabled: true,
             emissiveStrengthEnabled: true,
+            volumeScatteringEnabled: true,
             hoverabilityEnabled: true,
             selectabilityEnabled: true,
             nodeVisibilityEnabled: true,
@@ -129,7 +142,6 @@ const appCreated = createApp({
             uiVisible: false,
             isMobile: false,
             noUi: false,
-            
 
             // these are handles for certain ui change related things
             environmentVisiblePrefState: true,
@@ -166,13 +178,13 @@ const appCreated = createApp({
             this.customEventValid = this.isCustomEventValid();
         }
     },
-    beforeMount: function(){
+    beforeMount: function () {
         // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
-        if(document.documentElement.clientWidth > 768) { 
+        if (document.documentElement.clientWidth > 768) {
             this.uiVisible = true;
             this.isMobile = false;
         } else {
-            this.uiVisible=false;
+            this.uiVisible = false;
             this.isMobile = true;
         }
         const queryString = window.location.search;
@@ -183,19 +195,24 @@ const appCreated = createApp({
             this.noUI = true;
         }
     },
-    mounted: function()
-    {
+    mounted: function () {
         // remove input class from color picker (added by default by buefy)
         const colorPicker = document.getElementById("clearColorPicker");
         colorPicker.classList.remove("input");
 
         // test if webgl is present
         const canvas = document.getElementById("canvas");
-        const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
+        const context = canvas.getContext("webgl2", {
+            alpha: false,
+            antialias: true
+        });
         if (context === undefined || context === null) {
-            this.error("The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " + 
-            "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
-            "if you believe you are seeing this message in error.", 15000);
+            this.error(
+                "The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " +
+                    "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
+                    "if you believe you are seeing this message in error.",
+                15000
+            );
         }
 
         // change styling of tab-bar
@@ -205,7 +222,7 @@ const appCreated = createApp({
 
             let navElement = document.getElementById("tabsContainer").childNodes[0];
 
-            if(!this.isMobile){
+            if (!this.isMobile) {
                 navElement.style.width = "100px";
             }
 
@@ -218,8 +235,8 @@ const appCreated = createApp({
             }
 
             // Avoid margin on top for mobile devices
-            if(this.isMobile) { 
-                let liElement =ulElement.childNodes[0];
+            if (this.isMobile) {
+                let liElement = ulElement.childNodes[0];
                 while (liElement) {
                     if (liElement.nodeName === "LI") {
                         break;
@@ -230,16 +247,15 @@ const appCreated = createApp({
             }
 
             // add github logo to tab-bar
-            var a = document.createElement('a');
+            var a = document.createElement("a");
             a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
-            var img = document.createElement('img');
-            img.src ="assets/ui/GitHub-Mark-Light-32px.png";
+            var img = document.createElement("img");
+            img.src = "assets/ui/GitHub-Mark-Light-32px.png";
             img.style.width = "22px";
             img.style.height = "22px";
             ulElement.appendChild(a);
             a.appendChild(img);
         });
-
     },
     computed: {
         hasInteractivityGraphs() {
@@ -270,8 +286,9 @@ const appCreated = createApp({
                 await navigator.clipboard.writeText(text);
                 this.$buefy.toast.open({
                     message: "Copied to clipboard",
-                    type: 'is-success'
+                    type: "is-success"
                 });
+                // eslint-disable-next-line no-unused-vars
             } catch (err) {
                 this.error("Error copying to clipboard.");
             }
@@ -296,30 +313,32 @@ const appCreated = createApp({
 
         /**
          * Creates a div string summarizing the given issues.
-         * 
+         *
          * If the given issues are empty or do not contain any errors,
          * warnings, or infos, then the empty string is returned.
-         * 
+         *
          * Otherwise, the div contains the number of errors/warnings/infos
          * with an appropriate background color. When all warnings of
          * the given report are ignored, then this will only be a
          * small "info" div. Clicking on that will expand the details
          * about the ignored warnings.
-         * 
+         *
          * @param {any} issues The `issues` property that is part of
          * the validation report of the glTF Validator
          * @returns The div string
          */
-        getValidationInfoDiv : function(issues) {
+        getValidationInfoDiv: function (issues) {
             let info = "";
             let color = "white";
             const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
             if (this.validationReport.error) {
                 info = "X";
                 color = "red";
-                return `<div style="display:flex;color:black; position:absolute; ${padding} ` +
+                return (
+                    `<div style="display:flex;color:black; position:absolute; ${padding} ` +
                     `font-size:80%; font-weight:bold; background-color:${color}; border-radius:50%; width:fit-content; ` +
-                    `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`;
+                    `min-width:2rem; align-items:center;aspect-ratio:1/1;justify-content:center;">${info}</div>`
+                );
             }
             if (!issues) {
                 return "";
@@ -328,8 +347,8 @@ const appCreated = createApp({
                 info = `${issues.numErrors}`;
                 color = "red";
             } else if (issues.numWarnings > 0) {
-                const allIgnored = issues.numWarnings ===
-                    this.validationReportDescription?.numIgnoredWarnings;
+                const allIgnored =
+                    issues.numWarnings === this.validationReportDescription?.numIgnoredWarnings;
                 if (allIgnored) {
                     info = "i";
                     color = "lightBlue";
@@ -353,18 +372,22 @@ const appCreated = createApp({
             return infoDiv;
         },
 
-        getValidationCounter: function(){
+        getValidationCounter: function () {
             const infoDiv = this.getValidationInfoDiv(this.validationReport?.issues);
             if (this.tabContentHidden === false && this.activeTab === 2) {
-                return `<div style="position:relative; width:50px; height:100%">` 
-                    + `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` 
-                    + infoDiv  
-                    + `</div>`;
+                return (
+                    `<div style="position:relative; width:50px; height:100%">` +
+                    `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` +
+                    infoDiv +
+                    `</div>`
+                );
             }
-            return `<div style="position:relative; width:50px; height:100%">` 
-                + `<img src="assets/ui/Capture 30X30.svg" width="30px">` 
-                + infoDiv  
-                + `</div>`;
+            return (
+                `<div style="position:relative; width:50px; height:100%">` +
+                `<img src="assets/ui/Capture 30X30.svg" width="30px">` +
+                infoDiv +
+                `</div>`
+            );
         },
         iblTriggered: function(value)
         {
@@ -377,8 +400,7 @@ const appCreated = createApp({
                 this.renderEnvChanged.next(this.renderEnv);
             }
         },
-        transmissionTriggered: function(value)
-        {
+        transmissionTriggered: function (value) {
             if (value == false && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
@@ -386,8 +408,7 @@ const appCreated = createApp({
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
-        diffuseTransmissionTriggered: function(value)
-        {
+        diffuseTransmissionTriggered: function (value) {
             if (value == false && this.transmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
@@ -395,56 +416,56 @@ const appCreated = createApp({
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
-        collapseActiveTab : function(event, item) {
+        collapseActiveTab: function (event, item) {
             if (item === this.activeTab) {
                 this.tabContentHidden = !this.tabContentHidden;
-                
-                if(this.tabContentHidden) {
+
+                if (this.tabContentHidden) {
                     // remove is-active class if tabs are hidden
                     event.stopPropagation();
-                    
-                    let navElements = document.getElementById("tabsContainer").children[0].children[0].children;
-                    for(let elem of navElements) {
-                        elem.classList.remove('is-active');
+
+                    let navElements =
+                        document.getElementById("tabsContainer").children[0].children[0].children;
+                    for (let elem of navElements) {
+                        elem.classList.remove("is-active");
                     }
                 } else {
                     // add is-active class to correct element
-                    let activeNavElement = document.getElementById("tabsContainer").children[0].children[0].children[item];
-                    activeNavElement.classList.add('is-active');
+                    let activeNavElement =
+                        document.getElementById("tabsContainer").children[0].children[0].children[
+                            item
+                        ];
+                    activeNavElement.classList.add("is-active");
                 }
                 return;
             } else {
                 // reset tab visibility
                 this.tabContentHidden = false;
             }
-            
         },
         warn(message) {
             this.$buefy.toast.open({
                 message: message,
-                type: 'is-warning'
+                type: "is-warning"
             });
         },
         error(message, duration = 5000) {
             this.$buefy.toast.open({
                 message: message,
-                type: 'is-danger',
+                type: "is-danger",
                 duration: duration
             });
         },
         goToLoadingState() {
-            if(this.loadingComponent !== undefined)
-            {
+            if (this.loadingComponent !== undefined) {
                 return;
             }
             this.loadingComponent = this.$buefy.loading.open({
                 container: null
             });
         },
-        exitLoadingState()
-        {
-            if(this.loadingComponent === undefined)
-            {
+        exitLoadingState() {
+            if (this.loadingComponent === undefined) {
                 return;
             }
             this.loadingComponent.close();
@@ -452,7 +473,7 @@ const appCreated = createApp({
         },
         onFileChange(e) {
             const file = e.target.files[0];
-            this.addEnvironmentChanged.next({hdr_path: file});
+            this.addEnvironmentChanged.next({ hdr_path: file });
         },
 
         toggleUI() {
@@ -545,29 +566,26 @@ appCreated.component('toggle-button', {
             }
         }
     },
-    methods:
-    {
-        buttonclicked: function()
-        {
+    methods: {
+        buttonclicked: function () {
             this.isOn = !this.isOn;
             this.name = this.isOn ? this.ontext : this.offtext;
             this.$emit('buttonclicked', this.isOn);
             this.$emit('update:modelValue', this.isOn);
         },
-        setState: function(value)
-        {
+        setState: function (value) {
             this.isOn = value;
             this.name = this.isOn ? this.ontext : this.offtext;
             this.$emit('update:modelValue', this.isOn);
         }
     }
 });
-appCreated.component('json-to-ui-template', {
-    props: ['data', 'isinner'],
-    template:'#jsonToUITemplate'
+appCreated.component("json-to-ui-template", {
+    props: ["data", "isinner"],
+    template: "#jsonToUITemplate"
 });
 
-export const app = appCreated.mount('#app');
+export const app = appCreated.mount("#app");
 
 const canvasUI = createApp({
     data() {
@@ -575,42 +593,40 @@ const canvasUI = createApp({
             timer: null
         };
     },
-    methods:
-    {
-    }
-
+    methods: {}
 });
 
 canvasUI.use(Buefy);
 
-canvasUI.mount('#canvasUI');
+canvasUI.mount("#canvasUI");
 
 // pipe error messages to UI
 (() => {
     const originalWarn = console.warn;
     const originalError = console.error;
 
-    console.warn = function(txt) {
+    console.warn = function (txt) {
         app.warn(txt);
         originalWarn.apply(console, arguments);
     };
-    console.error = function(txt) {
+    console.error = function (txt) {
         app.error(txt);
         originalError.apply(console, arguments);
     };
 
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
         // If error is not from the sample viewer, ignore it
         if (url === undefined || url === null || url === "") {
             return;
         }
-        app.error([
-            'Message: ' + msg,
-            'URL: ' + url,
-            'Line: ' + lineNo,
-            'Column: ' + columnNo,
-            'Error object: ' + JSON.stringify(error)
-        ].join(' - '));
+        app.error(
+            [
+                "Message: " + msg,
+                "URL: " + url,
+                "Line: " + lineNo,
+                "Column: " + columnNo,
+                "Error object: " + JSON.stringify(error)
+            ].join(" - ")
+        );
     };
 })();
-
