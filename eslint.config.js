@@ -1,12 +1,13 @@
-
+import eslint from '@eslint/js';
 import js from "@eslint/js";
 import globals from 'globals';
 
 export default [
+    eslint.configs.recommended,
     js.configs.recommended,
     {
         languageOptions: {
-            ecmaVersion: 2020,
+            ecmaVersion: 2022,
             sourceType: "module",
             globals: {
                 ...globals.browser,
@@ -38,6 +39,6 @@ export default [
         }
     },
     {
-        ignores: ["/**/dist/*", "/**/libs/*"]
+        ignores: ["/**/dist/*", "**/libs/*"]
     }
 ];
