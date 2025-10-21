@@ -240,7 +240,12 @@ class UIModel {
             this.app.graphState = true;
 
             if (gltf && gltf?.extensions?.KHR_materials_variants?.variants !== undefined) {
-                this.app.materialVariants = ["None", ...gltf.extensions.KHR_materials_variants.variants.map(variant => variant?.name ?? "Unnamed")];
+                this.app.materialVariants = [
+                    "None",
+                    ...gltf.extensions.KHR_materials_variants.variants.map(
+                        (variant) => variant?.name ?? "Unnamed"
+                    )
+                ];
             } else {
                 this.app.materialVariants = ["None"];
             }
@@ -250,7 +255,10 @@ class UIModel {
             }));
 
             // Set up interactivity graphs if available
-            if (gltf?.extensions?.KHR_interactivity?.graphs !== undefined && state.renderingParameters.enabledExtensions.KHR_interactivity) {
+            if (
+                gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
+                state.renderingParameters.enabledExtensions.KHR_interactivity
+            ) {
                 this.app.graphs = gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
                     title: graph.name ?? `Graph ${index}`,
                     index: index
@@ -262,7 +270,10 @@ class UIModel {
                 this.app.customEvents = [];
             }
 
-            this.app.xmp = gltf?.extensions?.KHR_xmp_json_ld?.packets[gltf?.asset?.extensions?.KHR_xmp_json_ld.packet] ?? null;
+            this.app.xmp =
+                gltf?.extensions?.KHR_xmp_json_ld?.packets[
+                    gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
+                ] ?? null;
         });
     }
 
@@ -414,10 +425,7 @@ const getInputObservables = (inputElement, app) => {
                     additionalFiles = additionalFiles.map((file) => {
                         let filePath = file[0].replaceAll("\\", "/");
                         if (filePath.startsWith(folderPath)) {
-                            return [
-                                filePath.substr(folderPath.length),
-                                file[1]
-                            ];
+                            return [filePath.substr(folderPath.length), file[1]];
                         } else {
                             return file;
                         }
@@ -440,31 +448,36 @@ const getInputObservables = (inputElement, app) => {
         map((file) => ({ hdr_path: file }))
     );
 
-    const mouseMove = merge(fromEvent(inputElement, 'mousemove'), fromEvent(inputElement, 'mouseout'));
-    const mouseDown = fromEvent(inputElement, 'mousedown');
-    const mouseUp = merge(fromEvent(document, 'mouseup'), fromEvent(document, 'mouseleave'));
-    const click = fromEvent(inputElement, 'click');
-    
-    inputElement.addEventListener('mousemove', event => event.preventDefault());
-    inputElement.addEventListener('mousedown', event => event.preventDefault());
-    inputElement.addEventListener('mouseup', event => event.preventDefault());
-    inputElement.addEventListener('dblclick', event => event.preventDefault());
-    inputElement.addEventListener('click', event => event.preventDefault());
-    inputElement.addEventListener('mouseout', event => event.preventDefault());
+    const mouseMove = merge(
+        fromEvent(inputElement, "mousemove"),
+        fromEvent(inputElement, "mouseout")
+    );
+    const mouseDown = fromEvent(inputElement, "mousedown");
+    const mouseUp = merge(fromEvent(document, "mouseup"), fromEvent(document, "mouseleave"));
+    const click = fromEvent(inputElement, "click");
+
+    inputElement.addEventListener("mousemove", (event) => event.preventDefault());
+    inputElement.addEventListener("mousedown", (event) => event.preventDefault());
+    inputElement.addEventListener("mouseup", (event) => event.preventDefault());
+    inputElement.addEventListener("dblclick", (event) => event.preventDefault());
+    inputElement.addEventListener("click", (event) => event.preventDefault());
+    inputElement.addEventListener("mouseout", (event) => event.preventDefault());
 
     const selection = click.pipe(
-        filter(event => event.button === 0),
+        filter((event) => event.button === 0),
         map((clickEvent) => {
-            return {x: clickEvent.pageX, y: clickEvent.pageY};
-        }));
+            return { x: clickEvent.pageX, y: clickEvent.pageY };
+        })
+    );
 
     const move = mouseMove.pipe(
         map((moveEvent) => {
-            if (moveEvent.type === 'mouseout') {
-                return {x: undefined, y: undefined};
+            if (moveEvent.type === "mouseout") {
+                return { x: undefined, y: undefined };
             }
-            return {x: moveEvent.pageX, y: moveEvent.pageY};
-        }));
+            return { x: moveEvent.pageX, y: moveEvent.pageY };
+        })
+    );
 
     const mouseOrbit = mouseDown.pipe(
         filter((event) => event.button === 0 && event.shiftKey === false),

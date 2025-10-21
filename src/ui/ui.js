@@ -11,7 +11,7 @@ const appCreated = createApp({
             sceneChanged: new Subject(),
             cameraChanged: new Subject(),
             selectedGraphChanged: new Subject(),
-            
+
             debugchannelChanged: new Subject(),
             tonemapChanged: new Subject(),
             skinningChanged: new Subject(),
@@ -72,11 +72,11 @@ const appCreated = createApp({
             cameras: [{ title: "User Camera", index: -1 }],
             materialVariants: ["None"],
 
-            animations: [{title: "None"}],
+            animations: [{ title: "None" }],
             graphs: [],
-            tonemaps: [{title: "None"}],
-            debugchannels: [{title: "None"}],
-            xmp: [{title: "xmp"}],
+            tonemaps: [{ title: "None" }],
+            debugchannels: [{ title: "None" }],
+            xmp: [{ title: "xmp" }],
             assetCopyright: "",
             assetGenerator: "",
             statistics: [],
@@ -153,7 +153,7 @@ const appCreated = createApp({
             customEventFocusedInput: null,
             customEventFocusedIndex: null,
             customEventValid: true,
-            customEventSendClicked: new Subject(),
+            customEventSendClicked: new Subject()
         };
     },
     watch: {
@@ -266,14 +266,14 @@ const appCreated = createApp({
         },
         currentCustomEvent() {
             if (!this.selectedCustomEvent || !this.customEvents) return null;
-            return this.customEvents.find(event => event.id === this.selectedCustomEvent);
+            return this.customEvents.find((event) => event.id === this.selectedCustomEvent);
         },
         customEventInputs() {
             if (!this.currentCustomEvent) return [];
             const event = this.currentCustomEvent;
             if (!event.values) return [];
-            
-            return Object.keys(event.values).map(key => ({
+
+            return Object.keys(event.values).map((key) => ({
                 name: key,
                 type: event.values[key].type,
                 value: event.values[key].value
@@ -389,9 +389,8 @@ const appCreated = createApp({
                 `</div>`
             );
         },
-        iblTriggered: function(value)
-        {
-            if(value == false) {
+        iblTriggered: function (value) {
+            if (value == false) {
                 this.environmentVisiblePrefState = this.renderEnv;
                 this.renderEnv = false;
                 this.renderEnvChanged.next(false);
@@ -484,52 +483,65 @@ const appCreated = createApp({
                 this.customEventValues = {};
                 return;
             }
-            
-            const event = this.customEvents.find(e => e.id === selectedEventId);
+
+            const event = this.customEvents.find((e) => e.id === selectedEventId);
             if (!event || !event.values) {
                 this.customEventValues = {};
                 return;
             }
-            
+
             // Initialize all input values based on the event definition
             const values = {};
-            Object.keys(event.values).forEach(key => {
+            Object.keys(event.values).forEach((key) => {
                 const valueDefn = event.values[key];
-                values[key] = valueDefn.value !== undefined ? valueDefn.value : this.getDefaultValue(valueDefn.type);
+                values[key] =
+                    valueDefn.value !== undefined
+                        ? valueDefn.value
+                        : this.getDefaultValue(valueDefn.type);
             });
             this.customEventValues = values;
         },
         getDefaultValue(type) {
-            switch(type) {
-            case 'bool': return false;
-            case 'int': return 0;
-            case 'float': return 0.0;
-            case 'float2': return [0, 0];
-            case 'float3': return [0, 0, 0];
-            case 'float4': return [0, 0, 0, 0];
-            case 'float2x2': return [1, 0, 0, 1];
-            case 'float3x3': return [1, 0, 0, 0, 1, 0, 0, 0, 1];
-            case 'float4x4': return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-            default: return null;
+            switch (type) {
+            case "bool":
+                return false;
+            case "int":
+                return 0;
+            case "float":
+                return 0.0;
+            case "float2":
+                return [0, 0];
+            case "float3":
+                return [0, 0, 0];
+            case "float4":
+                return [0, 0, 0, 0];
+            case "float2x2":
+                return [1, 0, 0, 1];
+            case "float3x3":
+                return [1, 0, 0, 0, 1, 0, 0, 0, 1];
+            case "float4x4":
+                return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+            default:
+                return null;
             }
         },
         sendCustomEvent() {
             if (!this.selectedCustomEvent || !this.currentCustomEvent) {
                 this.$buefy.toast.open({
-                    message: 'Please select a custom event first',
-                    type: 'is-warning',
+                    message: "Please select a custom event first",
+                    type: "is-warning",
                     duration: 3000
                 });
                 return;
             }
-            
+
             this.customEventSendClicked.next({
                 eventId: this.selectedCustomEvent,
                 values: this.customEventValues
             });
             this.$buefy.toast.open({
                 message: `Custom event '${this.selectedCustomEvent}' sent successfully!`,
-                type: 'is-success',
+                type: "is-success",
                 duration: 3000
             });
         }
@@ -539,17 +551,17 @@ const appCreated = createApp({
 appCreated.use(Buefy);
 
 // general components
-appCreated.component('toggle-button', {
-    props: ['ontext', 'offtext', 'btnClass', 'modelValue'],
-    emits: ['buttonclicked', 'update:modelValue'],
-    template:'#toggleButtonTemplate',
-    data(){
+appCreated.component("toggle-button", {
+    props: ["ontext", "offtext", "btnClass", "modelValue"],
+    emits: ["buttonclicked", "update:modelValue"],
+    template: "#toggleButtonTemplate",
+    data() {
         return {
             name: "Play",
             isOn: false
         };
     },
-    mounted(){
+    mounted() {
         this.name = this.offtext;
         // Initialize state from modelValue prop if provided
         if (this.modelValue !== undefined) {
@@ -570,13 +582,13 @@ appCreated.component('toggle-button', {
         buttonclicked: function () {
             this.isOn = !this.isOn;
             this.name = this.isOn ? this.ontext : this.offtext;
-            this.$emit('buttonclicked', this.isOn);
-            this.$emit('update:modelValue', this.isOn);
+            this.$emit("buttonclicked", this.isOn);
+            this.$emit("update:modelValue", this.isOn);
         },
         setState: function (value) {
             this.isOn = value;
             this.name = this.isOn ? this.ontext : this.offtext;
-            this.$emit('update:modelValue', this.isOn);
+            this.$emit("update:modelValue", this.isOn);
         }
     }
 });

@@ -27,7 +27,7 @@ export default async () => {
         console.log(message);
         app.$buefy.toast.open({
             message: message,
-            type: 'is-success'
+            type: "is-success"
         });
     });
     state.graphController.addCustomEventListener("test/onFailed", () => {
@@ -185,7 +185,8 @@ export default async () => {
                             state.animationTimer.start();
                             if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
                                 state.graphController.initializeGraphs(state);
-                                const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
+                                const graphIndex =
+                                    state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.startGraph(graphIndex);
                                 state.graphController.resumeGraph();
                             } else {
@@ -313,22 +314,19 @@ export default async () => {
     );
     listenForRedraw(uiModel.morphingEnabled);
 
-    uiModel.interactivityEnabled.subscribe(
-        (interactivityEnabled) =>
-        {
-            state.renderingParameters.enabledExtensions.KHR_interactivity = interactivityEnabled;
-            if (state.gltf?.extensions?.KHR_interactivity === undefined) {
-                return;
-            }
-            if (interactivityEnabled) {
-                state.graphController.initializeGraphs(state);
-                const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
-                state.graphController.startGraph(graphIndex);
-            } else {
-                state.graphController.stopGraphEngine();
-            }
+    uiModel.interactivityEnabled.subscribe((interactivityEnabled) => {
+        state.renderingParameters.enabledExtensions.KHR_interactivity = interactivityEnabled;
+        if (state.gltf?.extensions?.KHR_interactivity === undefined) {
+            return;
         }
-    );
+        if (interactivityEnabled) {
+            state.graphController.initializeGraphs(state);
+            const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
+            state.graphController.startGraph(graphIndex);
+        } else {
+            state.graphController.stopGraphEngine();
+        }
+    });
     listenForRedraw(uiModel.interactivityEnabled);
 
     uiModel.clearcoatEnabled.subscribe(
@@ -404,33 +402,31 @@ export default async () => {
     uiModel.volumeScatteringEnabled.subscribe(
         (enabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_volume_scatter = enabled)
-	);
-	listenForRedraw(uiModel.volumeScatteringEnabled);
-	
+    );
+    listenForRedraw(uiModel.volumeScatteringEnabled);
+
     uiModel.hoverabilityEnabled.subscribe(
         (hoverabilityEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_node_hoverability =
-        hoverabilityEnabled)
+                hoverabilityEnabled)
     );
     listenForRedraw(uiModel.hoverabilityEnabled);
 
     uiModel.selectabilityEnabled.subscribe(
         (selectabilityEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_node_selectability =
-        selectabilityEnabled)
+                selectabilityEnabled)
     );
     listenForRedraw(uiModel.selectabilityEnabled);
 
     uiModel.nodeVisibilityEnabled.subscribe(
         (nodeVisibilityEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_node_visibility =
-        nodeVisibilityEnabled)
+                nodeVisibilityEnabled)
     );
     listenForRedraw(uiModel.nodeVisibilityEnabled);
 
-    uiModel.iblEnabled.subscribe(
-        (iblEnabled) => (state.renderingParameters.useIBL = iblEnabled)
-    );
+    uiModel.iblEnabled.subscribe((iblEnabled) => (state.renderingParameters.useIBL = iblEnabled));
     listenForRedraw(uiModel.iblEnabled);
 
     uiModel.iblIntensity.subscribe(
@@ -504,9 +500,7 @@ export default async () => {
         redraw = true;
     });
 
-    uiModel.activeAnimations.subscribe(
-        (animations) => (state.animationIndices = animations)
-    );
+    uiModel.activeAnimations.subscribe((animations) => (state.animationIndices = animations));
     listenForRedraw(uiModel.activeAnimations);
 
     uiModel.selectedGraph.subscribe((graphIndex) => {
@@ -520,7 +514,6 @@ export default async () => {
             const values = {};
             for (const key in eventData.values) {
                 values[key] = eventData.values[key];
-            
             }
             state.graphController.dispatchEvent(eventData.eventId, values);
         }
@@ -563,7 +556,7 @@ export default async () => {
 
     listenForRedraw(gltfLoaded);
 
-    uiModel.selection.subscribe(selection => {
+    uiModel.selection.subscribe((selection) => {
         const devicePixelRatio = window.devicePixelRatio || 1;
         state.pickingX = Math.floor(selection.x * devicePixelRatio);
         state.pickingY = Math.floor(selection.y * devicePixelRatio);
@@ -571,7 +564,7 @@ export default async () => {
     });
     listenForRedraw(uiModel.selection);
 
-    uiModel.moveSelection.subscribe(selection => {
+    uiModel.moveSelection.subscribe((selection) => {
         if (!state.enableHover) {
             return;
         }
@@ -585,7 +578,6 @@ export default async () => {
         state.pickingY = Math.floor(selection.y * devicePixelRatio);
     });
     listenForRedraw(uiModel.moveSelection);
-
 
     // configure the animation loop
     const past = {};
