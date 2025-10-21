@@ -35,13 +35,7 @@ export class GltfModelPathProvider {
 
                 const fileName = entry.variants[variant];
                 variants[variant] =
-                    modelsFolder +
-                    "/" +
-                    entry.name +
-                    "/" +
-                    variant +
-                    "/" +
-                    fileName;
+                    modelsFolder + "/" + entry.name + "/" + variant + "/" + fileName;
             }
             this.modelsDictionary[entry.name] = variants;
         }
@@ -55,10 +49,7 @@ export class GltfModelPathProvider {
     }
 }
 
-export function fillEnvironmentWithPaths(
-    environmentNames,
-    environmentsBasePath
-) {
+export function fillEnvironmentWithPaths(environmentNames, environmentsBasePath) {
     Object.keys(environmentNames).map(function (name, index) {
         const title = environmentNames[name];
         environmentNames[name] = {

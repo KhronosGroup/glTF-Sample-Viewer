@@ -40,18 +40,12 @@ class UIModel {
         this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({
             title: GltfState.ToneMaps[key]
         }));
-        this.tonemap = app.tonemapChanged.pipe(
-            startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL)
-        );
+        this.tonemap = app.tonemapChanged.pipe(startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL));
 
-        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map(
-            (key) => ({
-                title: GltfState.DebugOutput[key]
-            })
-        );
-        this.debugchannel = app.debugchannelChanged.pipe(
-            startWith(GltfState.DebugOutput.NONE)
-        );
+        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({
+            title: GltfState.DebugOutput[key]
+        }));
+        this.debugchannel = app.debugchannelChanged.pipe(startWith(GltfState.DebugOutput.NONE));
 
         this.exposure = app.exposureChanged.pipe();
         this.skinningEnabled = app.skinningChanged.pipe();
@@ -95,14 +89,8 @@ class UIModel {
         this.activeAnimations = app.selectedAnimationsChanged.pipe();
 
         const canvas = document.getElementById("canvas");
-        canvas.addEventListener(
-            "dragenter",
-            () => (this.app.showDropDownOverlay = true)
-        );
-        canvas.addEventListener(
-            "dragleave",
-            () => (this.app.showDropDownOverlay = false)
-        );
+        canvas.addEventListener("dragenter", () => (this.app.showDropDownOverlay = true));
+        canvas.addEventListener("dragleave", () => (this.app.showDropDownOverlay = false));
 
         const inputObservables = getInputObservables(canvas, this.app);
 
@@ -158,6 +146,7 @@ class UIModel {
                     text = text.replaceAll("\n", "");
                     text = text.replaceAll(" ,", ",");
                     this.app.environmentLicense = text;
+
                     // eslint-disable-next-line no-unused-vars
                 } catch (error) {
                     this.app.environmentLicense = "N/A";
@@ -167,26 +156,20 @@ class UIModel {
             }
         });
 
-        merge(this.addEnvironment, inputObservables.droppedHdr).subscribe(
-            (hdr) => {
-                const hdrPath = hdr.hdr_path;
-                this.app.environments[hdrPath.name] = {
-                    title: hdrPath.name,
-                    hdr_path: hdrPath
-                };
-                this.app.selectedEnvironment = hdrPath.name;
-            }
-        );
+        merge(this.addEnvironment, inputObservables.droppedHdr).subscribe((hdr) => {
+            const hdrPath = hdr.hdr_path;
+            this.app.environments[hdrPath.name] = {
+                title: hdrPath.name,
+                hdr_path: hdrPath
+            };
+            this.app.selectedEnvironment = hdrPath.name;
+        });
 
         this.variant = app.variantChanged.pipe();
 
         // remove last filename
         this.model
-            .pipe(
-                filter(
-                    () => this.app.models.at(-1) === this.lastDroppedFilename
-                )
-            )
+            .pipe(filter(() => this.app.models.at(-1) === this.lastDroppedFilename))
             .subscribe(() => {
                 this.app.models.pop();
                 this.lastDroppedFilename = undefined;
@@ -246,9 +229,7 @@ class UIModel {
             if (gltf && gltf.variants) {
                 this.app.materialVariants = [
                     "None",
-                    ...gltf.variants.map(
-                        (variant) => variant?.name ?? "Unnamed"
-                    )
+                    ...gltf.variants.map((variant) => variant?.name ?? "Unnamed")
                 ];
             } else {
                 this.app.materialVariants = ["None"];
@@ -324,15 +305,12 @@ class UIModel {
     updateValidationReport(validationReportObservable) {
         validationReportObservable.subscribe((data) => {
             this.app.validationReport = data;
-            this.app.validationReportDescription =
-                this.createValidationReportDescription(data);
+            this.app.validationReportDescription = this.createValidationReportDescription(data);
         });
     }
 
     disabledAnimations(disabledAnimationsObservable) {
-        disabledAnimationsObservable.subscribe(
-            (data) => (this.app.disabledAnimations = data)
-        );
+        disabledAnimationsObservable.subscribe((data) => (this.app.disabledAnimations = data));
     }
 
     attachCameraChangeObservable(sceneChangeObservable) {
@@ -345,17 +323,11 @@ class UIModel {
                         ...gltf.nodes.map((node, index) => {
                             if (
                                 node.camera !== undefined &&
-                                gltf.scenes[state.sceneIndex].includesNode(
-                                    gltf,
-                                    index
-                                )
+                                gltf.scenes[state.sceneIndex].includesNode(gltf, index)
                             ) {
                                 let name = node.name ?? "Node " + index;
                                 const camera = gltf.cameras[node.camera];
-                                if (
-                                    camera.name !== undefined &&
-                                    camera.name !== ""
-                                ) {
+                                if (camera.name !== undefined && camera.name !== "") {
                                     name += ": " + camera.name;
                                 } else {
                                     name += ": Camera " + node.camera;
@@ -372,12 +344,9 @@ class UIModel {
             })
         );
         cameraIndices.subscribe((cameras) => (this.app.cameras = cameras));
-        const loadedCameraIndex = sceneChangeObservable.pipe(
-            map((state) => state.cameraNodeIndex)
-        );
+        const loadedCameraIndex = sceneChangeObservable.pipe(map((state) => state.cameraNodeIndex));
         loadedCameraIndex.subscribe(
-            (index) =>
-                (this.app.selectedCamera = index !== undefined ? index : -1)
+            (index) => (this.app.selectedCamera = index !== undefined ? index : -1)
         );
     }
 
@@ -408,12 +377,9 @@ const getInputObservables = (inputElement, app) => {
     // Partition files into a .gltf or .glb and additional files like buffers and textures
     observables.droppedGltf = droppedFiles.pipe(
         map((files) => ({
-            mainFile: files.find(
-                ([path]) => path.endsWith(".glb") || path.endsWith(".gltf")
-            ),
+            mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
             additionalFiles: files.filter(
-                (file) =>
-                    !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
+                (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
             )
         })),
         map(({ mainFile, additionalFiles }) => {
@@ -458,17 +424,10 @@ const getInputObservables = (inputElement, app) => {
 
     const mouseMove = fromEvent(document, "mousemove");
     const mouseDown = fromEvent(inputElement, "mousedown");
-    const mouseUp = merge(
-        fromEvent(document, "mouseup"),
-        fromEvent(document, "mouseleave")
-    );
+    const mouseUp = merge(fromEvent(document, "mouseup"), fromEvent(document, "mouseleave"));
 
-    inputElement.addEventListener("mousemove", (event) =>
-        event.preventDefault()
-    );
-    inputElement.addEventListener("mousedown", (event) =>
-        event.preventDefault()
-    );
+    inputElement.addEventListener("mousemove", (event) => event.preventDefault());
+    inputElement.addEventListener("mousedown", (event) => event.preventDefault());
     inputElement.addEventListener("mouseup", (event) => event.preventDefault());
 
     const mouseOrbit = mouseDown.pipe(
@@ -570,21 +529,15 @@ const getInputObservables = (inputElement, app) => {
         )
     );
 
-    inputElement.addEventListener(
-        "ontouchmove",
-        (event) => event.preventDefault(),
-        { passive: false }
-    );
-    inputElement.addEventListener(
-        "ontouchstart",
-        (event) => event.preventDefault(),
-        { passive: false }
-    );
-    inputElement.addEventListener(
-        "ontouchend",
-        (event) => event.preventDefault(),
-        { passive: false }
-    );
+    inputElement.addEventListener("ontouchmove", (event) => event.preventDefault(), {
+        passive: false
+    });
+    inputElement.addEventListener("ontouchstart", (event) => event.preventDefault(), {
+        passive: false
+    });
+    inputElement.addEventListener("ontouchend", (event) => event.preventDefault(), {
+        passive: false
+    });
 
     observables.orbit = merge(mouseOrbit, touchOrbit);
     observables.pan = mousePan;

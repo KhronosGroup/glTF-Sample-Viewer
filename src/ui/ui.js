@@ -178,8 +178,7 @@ const appCreated = createApp({
             // Code that will run only after the
             // entire view has been rendered
 
-            let navElement =
-                document.getElementById("tabsContainer").childNodes[0];
+            let navElement = document.getElementById("tabsContainer").childNodes[0];
 
             if (!this.isMobile) {
                 navElement.style.width = "100px";
@@ -224,15 +223,14 @@ const appCreated = createApp({
                     message: "Copied to clipboard",
                     type: "is-success"
                 });
+                // eslint-disable-next-line no-unused-vars
             } catch (err) {
                 this.error("Error copying to clipboard.");
             }
         },
         downloadJSON(filename, json) {
             const text = JSON.stringify(json, undefined, 4);
-            const dataURL =
-                "data:application/json;charset=utf-8," +
-                encodeURIComponent(text);
+            const dataURL = "data:application/json;charset=utf-8," + encodeURIComponent(text);
             const element = document.createElement("a");
             element.setAttribute("href", dataURL);
             element.setAttribute("download", filename);
@@ -261,9 +259,7 @@ const appCreated = createApp({
         getValidationInfoDiv: function (issues) {
             let info = "";
             let color = "white";
-            const padding = this.isMobile
-                ? "right:-3px;top:-18px;"
-                : "right:-18px;top:-18px;";
+            const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
             if (this.validationReport.error) {
                 info = "X";
                 color = "red";
@@ -281,8 +277,7 @@ const appCreated = createApp({
                 color = "red";
             } else if (issues.numWarnings > 0) {
                 const allIgnored =
-                    issues.numWarnings ===
-                    this.validationReportDescription?.numIgnoredWarnings;
+                    issues.numWarnings === this.validationReportDescription?.numIgnoredWarnings;
                 if (allIgnored) {
                     info = "i";
                     color = "lightBlue";
@@ -307,9 +302,7 @@ const appCreated = createApp({
         },
 
         getValidationCounter: function () {
-            const infoDiv = this.getValidationInfoDiv(
-                this.validationReport?.issues
-            );
+            const infoDiv = this.getValidationInfoDiv(this.validationReport?.issues);
             if (this.tabContentHidden === false && this.activeTab === 2) {
                 return (
                     `<div style="position:relative; width:50px; height:100%">` +
@@ -342,10 +335,7 @@ const appCreated = createApp({
             if (value == false && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabledPrefState = this.volumeEnabled;
                 this.volumeEnabled = false;
-            } else if (
-                value == true &&
-                this.diffuseTransmissionEnabled == false
-            ) {
+            } else if (value == true && this.diffuseTransmissionEnabled == false) {
                 this.volumeEnabled = this.volumeEnabledPrefState;
             }
         },
@@ -366,16 +356,16 @@ const appCreated = createApp({
                     event.stopPropagation();
 
                     let navElements =
-                        document.getElementById("tabsContainer").children[0]
-                            .children[0].children;
+                        document.getElementById("tabsContainer").children[0].children[0].children;
                     for (let elem of navElements) {
                         elem.classList.remove("is-active");
                     }
                 } else {
                     // add is-active class to correct element
                     let activeNavElement =
-                        document.getElementById("tabsContainer").children[0]
-                            .children[0].children[item];
+                        document.getElementById("tabsContainer").children[0].children[0].children[
+                            item
+                        ];
                     activeNavElement.classList.add("is-active");
                 }
                 return;
