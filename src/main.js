@@ -187,7 +187,7 @@ export default async () => {
                                 state.graphController.initializeGraphs(state);
                                 const graphIndex =
                                     state.gltf.extensions.KHR_interactivity.graph ?? 0;
-                                state.graphController.startGraph(graphIndex);
+                                state.graphController.loadGraph(graphIndex);
                                 state.graphController.resumeGraph();
                             } else {
                                 state.graphController.stopGraphEngine();
@@ -322,7 +322,7 @@ export default async () => {
         if (interactivityEnabled) {
             state.graphController.initializeGraphs(state);
             const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
-            state.graphController.startGraph(graphIndex);
+            state.graphController.loadGraph(graphIndex);
         } else {
             state.graphController.stopGraphEngine();
         }
@@ -505,7 +505,7 @@ export default async () => {
 
     uiModel.selectedGraph.subscribe((graphIndex) => {
         if (graphIndex !== null && graphIndex !== undefined) {
-            state.graphController.startGraph(graphIndex);
+            state.graphController.loadGraph(graphIndex);
         }
     });
 
@@ -558,24 +558,21 @@ export default async () => {
 
     uiModel.selection.subscribe((selection) => {
         const devicePixelRatio = window.devicePixelRatio || 1;
-        state.pickingX = Math.floor(selection.x * devicePixelRatio);
-        state.pickingY = Math.floor(selection.y * devicePixelRatio);
+        state.selectionPositions[0].x = Math.floor(selection.x * devicePixelRatio);
+        state.selectionPositions[0].y = Math.floor(selection.y * devicePixelRatio);
         state.triggerSelection = true;
     });
     listenForRedraw(uiModel.selection);
 
     uiModel.moveSelection.subscribe((selection) => {
-        if (!state.enableHover) {
-            return;
-        }
         if (selection.x === undefined || selection.y === undefined) {
-            state.pickingX = undefined;
-            state.pickingY = undefined;
+            state.hoverPositions[0].x = undefined;
+            state.hoverPositions[0].y = undefined;
             return;
         }
         const devicePixelRatio = window.devicePixelRatio || 1;
-        state.pickingX = Math.floor(selection.x * devicePixelRatio);
-        state.pickingY = Math.floor(selection.y * devicePixelRatio);
+        state.hoverPositions[0].x = Math.floor(selection.x * devicePixelRatio);
+        state.hoverPositions[0].y = Math.floor(selection.y * devicePixelRatio);
     });
     listenForRedraw(uiModel.moveSelection);
 
