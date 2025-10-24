@@ -1,9 +1,8 @@
-import eslint from '@eslint/js';
 import js from "@eslint/js";
-import globals from 'globals';
+import globals from "globals";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 export default [
-    eslint.configs.recommended,
     js.configs.recommended,
     {
         languageOptions: {
@@ -13,15 +12,15 @@ export default [
                 ...globals.browser,
                 ...globals.commonjs,
                 ...globals.es2015,
-                ...globals.node,
+                ...globals.node
             }
         }
     },
     {
         rules: {
-            "indent": "warn",
+            indent: "warn",
             "linebreak-style": "warn",
-            "semi": "warn",
+            semi: "warn",
             "no-extra-semi": "warn",
             "no-undef": "warn",
             "no-unused-vars": "warn",
@@ -40,5 +39,6 @@ export default [
     },
     {
         ignores: ["/**/dist/*", "**/libs/*"]
-    }
+    },
+    eslintConfigPrettier
 ];
