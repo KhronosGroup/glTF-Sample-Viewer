@@ -396,10 +396,7 @@ const getInputObservables = (inputElement, app) => {
                     additionalFiles = additionalFiles.map((file) => {
                         let filePath = file[0].replaceAll("\\", "/");
                         if (filePath.startsWith(folderPath)) {
-                            return [
-                                filePath.substr(folderPath.length),
-                                file[1]
-                            ];
+                            return [filePath.substr(folderPath.length), file[1]];
                         } else {
                             return file;
                         }

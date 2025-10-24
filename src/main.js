@@ -392,18 +392,18 @@ export default async () => {
 
     uiModel.environmentRotation.subscribe((environmentRotation) => {
         switch (environmentRotation) {
-        case "+Z":
-            state.renderingParameters.environmentRotation = 90.0;
-            break;
-        case "-X":
-            state.renderingParameters.environmentRotation = 180.0;
-            break;
-        case "-Z":
-            state.renderingParameters.environmentRotation = 270.0;
-            break;
-        case "+X":
-            state.renderingParameters.environmentRotation = 0.0;
-            break;
+            case "+Z":
+                state.renderingParameters.environmentRotation = 90.0;
+                break;
+            case "-X":
+                state.renderingParameters.environmentRotation = 180.0;
+                break;
+            case "-Z":
+                state.renderingParameters.environmentRotation = 270.0;
+                break;
+            case "+X":
+                state.renderingParameters.environmentRotation = 0.0;
+                break;
         }
     });
     listenForRedraw(uiModel.environmentRotation);
