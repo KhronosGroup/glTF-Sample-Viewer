@@ -97,6 +97,10 @@ class UIModel {
         this.activeAnimations = app.selectedAnimationsChanged.pipe();
         this.selectedGraph = app.selectedGraphChanged.pipe();
 
+        this.physicsReset = app.physicsResetChanged.pipe();
+        this.physicsEngine = app.physicsEngineChanged.pipe();
+        this.physicsEnabled = app.physicsEnabledChanged.pipe();
+
         const canvas = document.getElementById("canvas");
         canvas.addEventListener("dragenter", () => (this.app.showDropDownOverlay = true));
         canvas.addEventListener("dragleave", () => (this.app.showDropDownOverlay = false));
@@ -238,6 +242,7 @@ class UIModel {
             this.app.selectedAnimations = state.animationIndices;
             this.app.animationState = true;
             this.app.graphState = true;
+            this.app.physicsState = true;
 
             if (gltf && gltf?.extensions?.KHR_materials_variants?.variants !== undefined) {
                 this.app.materialVariants = [
@@ -269,6 +274,8 @@ class UIModel {
                 this.app.graphs = [];
                 this.app.customEvents = [];
             }
+
+            this.app.hasPhysics = gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies");
 
             this.app.xmp =
                 gltf?.extensions?.KHR_xmp_json_ld?.packets[

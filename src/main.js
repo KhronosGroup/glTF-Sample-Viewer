@@ -502,6 +502,16 @@ export default async () => {
         }
     });
 
+    uiModel.physicsEnabled.subscribe((physicsEnabled) => {
+        if (physicsEnabled) {
+            // TODO: Enable physics simulation
+            console.log("Physics enabled");
+        } else {
+            // TODO: Disable physics simulation
+            console.log("Physics disabled");
+        }
+    });
+
     uiModel.animationReset.subscribe(() => {
         state.animationTimer.reset();
         redraw = true;
@@ -529,6 +539,18 @@ export default async () => {
             }
             state.graphController.dispatchEvent(eventData.eventId, values);
         }
+    });
+
+    uiModel.physicsReset.subscribe(() => {
+        // TODO: Implement physics reset functionality
+        console.log("Physics reset requested");
+        redraw = true;
+    });
+
+    uiModel.physicsEngine.subscribe((engine) => {
+        // TODO: Implement physics engine switching
+        console.log("Physics engine changed to:", engine);
+        redraw = true;
     });
 
     uiModel.hdr.subscribe((hdr) => {

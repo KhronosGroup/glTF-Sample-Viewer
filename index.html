@@ -125,15 +125,13 @@
                     <!-- Tabs -->
                     <b-tabs id="tabsContainer" 
                         vertical position="is-right" 
-                        v-model="activeTab"
+                        v-model="activeTabIndex"
                         v-bind:class="[tabContentHidden ? 'is-flex-wrap-nowrap hideTabs tabsContainer' : 'is-flex-wrap-nowrap tabsContainer']" 
                         type="is-toggle" v-bind:animated="false">
 
                         <!-- Tab Category: Models -->
-                        <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable" 
-                        title-item-class="d-none">
-                            
-                            
+                        <b-tab-item label="Models" icon="google-photos" class="tab-item tabItemScrollable" :order="0" title-item-class="d-none">
+
                             <!-- Tab Header -->
                             <template #header  >
                                 <div id="test-id" @click="collapseActiveTab($event, 0)"
@@ -205,7 +203,7 @@
                         </b-tab-item>
 
 
-                        <b-tab-item label="Display" icon="library-music" class="tabItemScrollable tab-item">
+                        <b-tab-item label="Display" icon="library-music" class="tabItemScrollable tab-item" :order="1">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 1)"
                                     v-bind:style="[tabContentHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
@@ -302,7 +300,7 @@
                             </div>
                         </b-tab-item>
 
-                        <b-tab-item label="Validator" icon="video" class="tabItemScrollable tab-item">
+                        <b-tab-item label="Validator" icon="video" class="tabItemScrollable tab-item" :order="2">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 2)"
                                 v-bind:style="[tabContent === false && activeTab === 2 ? {'height': '100%'} : {}]">
@@ -344,7 +342,7 @@
 
 
                         <!-- Animations tab - shown when no interactivity graphs are available -->
-                        <b-tab-item label="Animations" icon="video" class="tabItemScrollable tab-item">
+                        <b-tab-item label="Animations" icon="video" class="tabItemScrollable tab-item" :order="3">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 3)"
                                     v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
@@ -542,18 +540,17 @@
                             </div>
                         </b-tab-item>
 
-
-                        <b-tab-item label="Credits" icon="video" class="tabItemScrollable tab-item">
+                        <!-- Physics tab -->
+                        <b-tab-item label="Physics" icon="video" class="tabItemScrollable tab-item" v-if="hasPhysics" :order="4">
                             <template #header>
                                 <div @click="collapseActiveTab($event, 4)"
                                     v-bind:style="[tabContentHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
-                                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabContentHidden === false && activeTab === 4 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 4 ? 'assets/ui/Physics 50X50.svg' : 'assets/ui/Physics 30X30.svg']"
                                         v-bind:width="[tabContentHidden === false && activeTab === 4 ? '50px' : '30px']"
                                         v-bind:style="[tabContentHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
                                     <span 
                                         v-show='isMobile === false && (tabContentHidden === true || activeTab !== 4)'>
-                                        Credits
+                                        Physics
                                     </span>
                                 </div>
                             </template>
@@ -561,6 +558,50 @@
                             <div class="tabContent">
                                 <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                                     @click="collapseActiveTab($event, 4)">
+                                <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Physics</h2>
+                                <label class="subtitle">Physics Controls</label>
+                                
+                                <!-- Enable/Disable and Reset buttons -->
+                                <div style="display: flex; gap: 1em; align-items: center; margin-bottom: 1.5em; margin-top: 1em;">
+                                    <toggle-button v-on:buttonclicked="physicsEnabledChanged.next($event)" ontext="Disable" offtext="Enable"
+                                        v-model="physicsState"
+                                        btn-class="round-green-btn">
+                                    </toggle-button>
+                                    <!-- Reset button -->
+                                    <button class="button is-rounded reset-btn-green" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
+                                        v-on:click="physicsResetChanged.next($event)">
+                                        Reset
+                                    </button>
+                                </div>
+
+                                <!-- Physics Engine Dropdown -->
+                                <b-field label="Physics Engine">
+                                    <b-select v-model="selectedPhysicsEngine" v-on:input="physicsEngineChanged.next($event)">
+                                        <option value="nvidia-physx">Nvidia PhysX</option>
+                                    </b-select>
+                                </b-field>
+                            </div>
+                        </b-tab-item>
+
+
+                        <b-tab-item label="Credits" icon="video" class="tabItemScrollable tab-item" :order="5">
+                            <template #header>
+                                <div @click="collapseActiveTab($event, 5)"
+                                    v-bind:style="[tabContentHidden === false && activeTab === 5 ? {'height': '100%'} : {}]">
+                                    <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 5 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 5 ? '50px' : '30px']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 5 ? {'height': '100%'} : {}]">
+                                    <span 
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 5)'>
+                                        Credits
+                                    </span>
+                                </div>
+                            </template>
+
+                            <div class="tabContent">
+                                <img src="assets/ui/Navigation_right_20px.svg" width="30px"
+                                    @click="collapseActiveTab($event, 5)">
                                 <h2 class="title">Model Credits</h2>
                                 <div class="modelCredit"><i>Copyright:</i><br/>{{ assetCopyright }}</div>
                                 <div class="modelCredit"><i>Generated by:</i><br/>{{ assetGenerator }}</div>
@@ -579,16 +620,16 @@
                         </b-tab-item>-->
 
 
-                        <b-tab-item label="Advanced Controls" icon="video" class="tabItemScrollable tab-item">
+                        <b-tab-item label="Advanced Controls" icon="video" class="tabItemScrollable tab-item" :order="6">
                             <template #header>
-                                <div @click="collapseActiveTab($event, 5)"
-                                    v-bind:style="[tabContentHidden === false && activeTab === 5 ? {'height': '100%'} : {}]">
+                                <div @click="collapseActiveTab($event, 6)"
+                                    v-bind:style="[tabContentHidden === false && activeTab === 6 ? {'height': '100%'} : {}]">
                                     <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                                    <img v-bind:src="[tabContentHidden === false && activeTab === 5 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
-                                        v-bind:width="[tabContentHidden === false && activeTab === 5 ? '50px' : '30px']"
-                                        v-bind:style="[tabContentHidden === false && activeTab === 5 ? {'height': '100%'} : {}]">
+                                    <img v-bind:src="[tabContentHidden === false && activeTab === 6 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
+                                        v-bind:width="[tabContentHidden === false && activeTab === 6 ? '50px' : '30px']"
+                                        v-bind:style="[tabContentHidden === false && activeTab === 6 ? {'height': '100%'} : {}]">
                                     <span
-                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 5)'>
+                                        v-show='isMobile === false && (tabContentHidden === true || activeTab !== 6)'>
                                         Advanced<br>
                                         Controls
                                     </span>
@@ -597,7 +638,7 @@
 
                             <div class="tabContent">
                                 <img src="assets/ui/Navigation_right_20px.svg" width="30px"
-                                    @click="collapseActiveTab($event, 5)">
+                                    @click="collapseActiveTab($event, 6)">
                                 <h2 class="title is-spaced">Advanced Controls</h2>
                                 <b-field label="Capture Canvas" class="subtitle">
                                     <button v-on:click="captureCanvas.next($event.target.value)" type="button" class="button is-rounded"><i
