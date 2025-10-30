@@ -19,6 +19,21 @@ export default async () => {
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
+    state.graphController.addCustomEventListener("test/onStart", (event) => {
+        console.log("Test duration: ", event);
+    });
+    state.graphController.addCustomEventListener("test/onSuccess", () => {
+        const message = "Interactivity test succeeded";
+        console.log(message);
+        app.$buefy.toast.open({
+            message: message,
+            type: "is-success"
+        });
+    });
+    state.graphController.addCustomEventListener("test/onFailed", () => {
+        const message = "Interactivity test failed";
+        console.error(message);
+    });
     const pathProvider = new GltfModelPathProvider(
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main"
     );
@@ -170,32 +185,6 @@ export default async () => {
                             state.animationTimer.start();
                             if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
                                 state.graphController.initializeGraphs(state);
-
-                                state.graphController.addCustomEventListener(
-                                    "test/onStart",
-                                    (event) => {
-                                        console.log("Test duration: ", event);
-                                    }
-                                );
-                                state.graphController.addCustomEventListener(
-                                    "test/onSuccess",
-                                    () => {
-                                        const message = "Interactivity test succeeded";
-                                        console.log(message);
-                                        app.$buefy.toast.open({
-                                            message: message,
-                                            type: "is-success"
-                                        });
-                                    }
-                                );
-                                state.graphController.addCustomEventListener(
-                                    "test/onFailed",
-                                    () => {
-                                        const message = "Interactivity test failed";
-                                        console.error(message);
-                                    }
-                                );
-
                                 const graphIndex =
                                     state.gltf.extensions.KHR_interactivity.graph ?? 0;
                                 state.graphController.loadGraph(graphIndex);
