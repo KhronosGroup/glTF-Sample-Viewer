@@ -10,6 +10,7 @@ const appCreated = createApp({
             flavourChanged: new Subject(),
             sceneChanged: new Subject(),
             cameraChanged: new Subject(),
+            selectedGraphChanged: new Subject(),
 
             debugchannelChanged: new Subject(),
             tonemapChanged: new Subject(),
@@ -19,10 +20,14 @@ const appCreated = createApp({
             iblChanged: new Subject(),
             blurEnvChanged: new Subject(),
             morphingChanged: new Subject(),
+            interactivityChanged: new Subject(),
             colorChanged: new Subject(),
 
             environmentRotationChanged: new Subject(),
             animationPlayChanged: new Subject(),
+            graphPlayChanged: new Subject(),
+            animationResetChanged: new Subject(),
+            graphResetChanged: new Subject(),
             variantChanged: new Subject(),
             exposureChanged: new Subject(),
 
@@ -43,6 +48,9 @@ const appCreated = createApp({
             specularChanged: new Subject(),
             emissiveStrengthChanged: new Subject(),
             volumeScatteringChanged: new Subject(),
+            hoverabilityChanged: new Subject(),
+            selectabilityChanged: new Subject(),
+            nodeVisibilityChanged: new Subject(),
             renderEnvChanged: new Subject(),
             addEnvironmentChanged: new Subject(),
             selectedAnimationsChanged: new Subject(),
@@ -65,6 +73,7 @@ const appCreated = createApp({
             materialVariants: ["None"],
 
             animations: [{ title: "None" }],
+            graphs: [],
             tonemaps: [{ title: "None" }],
             debugchannels: [{ title: "None" }],
             xmp: [{ title: "xmp" }],
@@ -79,6 +88,10 @@ const appCreated = createApp({
             selectedVariant: "None",
             selectedAnimations: [],
             disabledAnimations: [],
+            selectedGraph: null,
+
+            animationState: true,
+            graphState: true,
 
             validationReport: {},
             validationReportDescription: {},
@@ -104,6 +117,7 @@ const appCreated = createApp({
             toneMap: "Khronos PBR Neutral",
             skinning: true,
             morphing: true,
+            interactivity: true,
             clearcoatEnabled: true,
             sheenEnabled: true,
             transmissionEnabled: true,
@@ -116,6 +130,9 @@ const appCreated = createApp({
             specularEnabled: true,
             emissiveStrengthEnabled: true,
             volumeScatteringEnabled: true,
+            hoverabilityEnabled: true,
+            selectabilityEnabled: true,
+            nodeVisibilityEnabled: true,
 
             activeTab: 0,
             tabContentHidden: true,
@@ -128,12 +145,37 @@ const appCreated = createApp({
 
             // these are handles for certain ui change related things
             environmentVisiblePrefState: true,
-            volumeEnabledPrefState: true
+            volumeEnabledPrefState: true,
+            customEvents: [],
+            selectedCustomEvent: null,
+            customEventValues: {},
+            customEventEnabled: false,
+            customEventFocusedInput: null,
+            customEventFocusedIndex: null,
+            customEventValid: true,
+            customEventSendClicked: new Subject()
         };
     },
     watch: {
         selectedAnimations: function (newValue) {
             this.selectedAnimationsChanged.next(newValue);
+        },
+        selectedGraph: function (newValue) {
+            this.selectedGraphChanged.next(newValue);
+        },
+        selectedCustomEvent: function (newValue) {
+            this.updateCustomEventValues(newValue);
+        },
+        customEvents: function (newValue) {
+            // Auto-select the first custom event when the array is populated
+            if (newValue && newValue.length > 0) {
+                this.selectedCustomEvent = newValue[0].id;
+            } else {
+                this.selectedCustomEvent = null;
+            }
+        },
+        customEventFocusedInput: function () {
+            this.customEventValid = this.isCustomEventValid();
         }
     },
     beforeMount: function () {
@@ -215,6 +257,29 @@ const appCreated = createApp({
             a.appendChild(img);
         });
     },
+    computed: {
+        hasInteractivityGraphs() {
+            return this.graphs && this.graphs.length > 0;
+        },
+        showGraphsTab() {
+            return this.hasInteractivityGraphs && this.interactivity;
+        },
+        currentCustomEvent() {
+            if (!this.selectedCustomEvent || !this.customEvents) return null;
+            return this.customEvents.find((event) => event.id === this.selectedCustomEvent);
+        },
+        customEventInputs() {
+            if (!this.currentCustomEvent) return [];
+            const event = this.currentCustomEvent;
+            if (!event.values) return [];
+
+            return Object.keys(event.values).map((key) => ({
+                name: key,
+                type: event.values[key].type,
+                value: event.values[key].value
+            }));
+        }
+    },
     methods: {
         async copyToClipboard(text) {
             try {
@@ -238,6 +303,12 @@ const appCreated = createApp({
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
+        },
+
+        isCustomEventValid() {
+            const form = document.getElementById("customEventForm");
+            if (!form) return true;
+            return form.checkValidity();
         },
 
         /**
@@ -317,9 +388,6 @@ const appCreated = createApp({
                 infoDiv +
                 `</div>`
             );
-        },
-        setAnimationState: function (value) {
-            this.$refs.animationState.setState(value);
         },
         iblTriggered: function (value) {
             if (value == false) {
@@ -409,6 +477,73 @@ const appCreated = createApp({
 
         toggleUI() {
             this.uiVisible = !this.uiVisible;
+        },
+        updateCustomEventValues(selectedEventId) {
+            if (!selectedEventId || !this.customEvents) {
+                this.customEventValues = {};
+                return;
+            }
+
+            const event = this.customEvents.find((e) => e.id === selectedEventId);
+            if (!event || !event.values) {
+                this.customEventValues = {};
+                return;
+            }
+
+            // Initialize all input values based on the event definition
+            const values = {};
+            Object.keys(event.values).forEach((key) => {
+                const valueDefn = event.values[key];
+                values[key] =
+                    valueDefn.value !== undefined
+                        ? valueDefn.value
+                        : this.getDefaultValue(valueDefn.type);
+            });
+            this.customEventValues = values;
+        },
+        getDefaultValue(type) {
+            switch (type) {
+            case "bool":
+                return false;
+            case "int":
+                return 0;
+            case "float":
+                return 0.0;
+            case "float2":
+                return [0, 0];
+            case "float3":
+                return [0, 0, 0];
+            case "float4":
+                return [0, 0, 0, 0];
+            case "float2x2":
+                return [1, 0, 0, 1];
+            case "float3x3":
+                return [1, 0, 0, 0, 1, 0, 0, 0, 1];
+            case "float4x4":
+                return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+            default:
+                return null;
+            }
+        },
+        sendCustomEvent() {
+            if (!this.selectedCustomEvent || !this.currentCustomEvent) {
+                this.$buefy.toast.open({
+                    message: "Please select a custom event first",
+                    type: "is-warning",
+                    duration: 3000
+                });
+                return;
+            }
+
+            this.customEventSendClicked.next({
+                eventId: this.selectedCustomEvent,
+                values: this.customEventValues
+            });
+            this.$buefy.toast.open({
+                message: `Custom event '${this.selectedCustomEvent}' sent successfully!`,
+                type: "is-success",
+                duration: 3000
+            });
         }
     }
 });
@@ -417,7 +552,8 @@ appCreated.use(Buefy);
 
 // general components
 appCreated.component("toggle-button", {
-    props: ["ontext", "offtext"],
+    props: ["ontext", "offtext", "btnClass", "modelValue"],
+    emits: ["buttonclicked", "update:modelValue"],
     template: "#toggleButtonTemplate",
     data() {
         return {
@@ -426,17 +562,33 @@ appCreated.component("toggle-button", {
         };
     },
     mounted() {
-        this.name = this.ontext;
+        this.name = this.offtext;
+        // Initialize state from modelValue prop if provided
+        if (this.modelValue !== undefined) {
+            this.isOn = this.modelValue;
+            this.name = this.isOn ? this.ontext : this.offtext;
+        }
+    },
+    watch: {
+        // Watch for external changes to modelValue
+        modelValue(newValue) {
+            if (newValue !== this.isOn) {
+                this.isOn = newValue;
+                this.name = this.isOn ? this.ontext : this.offtext;
+            }
+        }
     },
     methods: {
         buttonclicked: function () {
             this.isOn = !this.isOn;
             this.name = this.isOn ? this.ontext : this.offtext;
             this.$emit("buttonclicked", this.isOn);
+            this.$emit("update:modelValue", this.isOn);
         },
         setState: function (value) {
             this.isOn = value;
             this.name = this.isOn ? this.ontext : this.offtext;
+            this.$emit("update:modelValue", this.isOn);
         }
     }
 });

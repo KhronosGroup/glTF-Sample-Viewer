@@ -23,7 +23,12 @@ export default [
             semi: "warn",
             "no-extra-semi": "warn",
             "no-undef": "warn",
-            "no-unused-vars": "warn",
+            "no-unused-vars": [
+                "warn",
+                {
+                    argsIgnorePattern: "^_"
+                }
+            ],
             "no-empty": "warn",
             "no-redeclare": "warn",
             "no-prototype-builtins": "warn",

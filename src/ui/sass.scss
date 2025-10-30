@@ -56,6 +56,10 @@ $addColors: (
 );
 $colors: map-merge($colors, $addColors);
 
+// Tooltip
+$tooltip-arrow-size: 0px;
+$tooltip-arrow-margin: 5px;
+
 // Import Bulma and Buefy styles
 @import "../../node_modules/bulma/bulma";
 @import "../../node_modules/@ntohq/buefy-next/src/scss/buefy";
@@ -345,6 +349,10 @@ button.button
     -moz-user-select: none;
 }
 
+#canvasUI {
+    position:relative;
+}
+
 .canvasUIMaximize {
     left: 25px;
     bottom: 25px;
@@ -399,4 +407,72 @@ button.button
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+// Outlined Reset button style for Graphs tab
+.button.is-outlined {
+    border: 1.5px solid #87c540;
+    color: #f2f2f2;
+    background: transparent;
+    box-shadow: none;
+}
+
+// Margin for custom events section in Graphs tab
+.tabContent .subtitle + div[style*="margin-top: 2.5em;"] {
+    margin-top: 2.5em !important;
+}
+
+.round-green-btn {
+    background: #87c540;
+    color: #f2f2f2;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    border: none;
+    transition: background 0.15s;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    display: inline-flex;
+}
+.round-green-btn:hover {
+    background: #6fa32e;
+}
+.round-green-btn:active {
+    background: #5e8c2f;
+}
+.reset-btn-green {
+    transition: background 0.15s;
+}
+.reset-btn-green:hover {
+    background: #385117 !important;
+}
+.reset-btn-green:active {
+    background: #5e8c2f !important;
+}
+
+.matrixInput input {
+    width: 60px !important;
+    padding-right: 6px;
+    padding-left: 5px;
+}
+
+.vectorInput input {
+    width: 60px !important;
+    padding-right: 6px;
+    padding-left: 5px;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input:invalid {
+    border-color: #ff3860;
 }
