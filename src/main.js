@@ -323,8 +323,20 @@ export default async () => {
             state.graphController.initializeGraphs(state);
             const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
             state.graphController.loadGraph(graphIndex);
+            if (app.graphState) {
+                state.graphController.resumeGraph();
+                state.animationTimer.unpause();
+            } else {
+                state.graphController.pauseGraph();
+                state.animationTimer.pause();
+            }
         } else {
             state.graphController.stopGraphEngine();
+            if (app.animationState) {
+                state.animationTimer.unpause();
+            } else {
+                state.animationTimer.pause();
+            }
         }
     });
     listenForRedraw(uiModel.interactivityEnabled);
