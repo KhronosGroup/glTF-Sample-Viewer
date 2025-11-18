@@ -382,6 +382,15 @@ const getInputObservables = (inputElement, app) => {
                 (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
             )
         })),
+        filter(({ mainFile }) => {
+            let isDefined = mainFile !== undefined;
+
+            if (!isDefined) {
+                console.warn("Only glTF, glb and hdr files can be loaded on drop.");
+            }
+
+            return isDefined;
+        }),
         map(({ mainFile, additionalFiles }) => {
             if (mainFile[0].endsWith(".gltf")) {
                 // extract folder path from gltf file
