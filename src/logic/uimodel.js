@@ -177,9 +177,9 @@ class UIModel {
 
         let droppedGLtfFileName = inputObservables.droppedGltf.pipe(
             map((droppedGltf) => {
-                // right now mainFile should always be an array of length
-                // the first element is just the filename as string, the second element is the File object
-                // to prevent potential errors where this might not be the case,
+                // Right now mainFile should always be an array of length.
+                // The first element is just the filename as string, the second element is the File object.
+                // To prevent potential errors where this might not be the case,
                 // we have this if and return undefined
                 if (droppedGltf.mainFile.length > 1) {
                     return droppedGltf.mainFile[1].name;
