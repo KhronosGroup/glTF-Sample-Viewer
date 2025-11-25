@@ -78,8 +78,8 @@ export default {
         copyFile(".", "./dist", "main.js", true),
         copyFiles("./assets/images", "./dist/assets/images", true),
         copyFiles("./assets/ui", "./dist/assets/ui", true),
-        copyFiles("./glTF-Sample-Renderer/source/libs", "./dist/libs", true),
-        copyFiles("./glTF-Sample-Renderer/assets/images", "./dist/assets/images", true),
+        copyFiles("./glTF-Sample-Renderer/dist/libs", "./dist/libs", true),
+        copyFiles("./glTF-Sample-Renderer/dist/assets", "./dist/assets/images", true),
         replace({
             "process.env.NODE_ENV": JSON.stringify("production"), // This resolves an issue with vue
             preventAssignment: true
