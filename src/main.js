@@ -17,6 +17,9 @@ export default async () => {
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
+
+    await state.physicsController.initializeEngine("NvidiaPhysX");
+
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
     state.graphController.addCustomEventListener("test/onStart", (event) => {
@@ -192,6 +195,9 @@ export default async () => {
                             } else {
                                 state.graphController.stopGraphEngine();
                             }
+
+                            state.physicsController.loadScene(state, state.sceneIndex);
+                            //state.physicsController.resumeSimulation();
                         }
 
                         uiModel.exitLoadingState();
@@ -200,6 +206,7 @@ export default async () => {
                     })
                     .catch((error) => {
                         console.error("Loading failed: " + error);
+                        console.trace(error);
                         resourceLoader.loadGltf(undefined, undefined).then((gltf) => {
                             state.gltf = gltf;
                             state.sceneIndex = 0;
@@ -235,6 +242,7 @@ export default async () => {
             if (scene !== undefined) {
                 scene.applyTransformHierarchy(state.gltf);
                 state.userCamera.resetView(state.gltf, state.sceneIndex);
+                state.physicsController.loadScene(state, state.sceneIndex);
             }
         }),
         share()
@@ -504,11 +512,9 @@ export default async () => {
 
     uiModel.physicsEnabled.subscribe((physicsEnabled) => {
         if (physicsEnabled) {
-            // TODO: Enable physics simulation
-            console.log("Physics enabled");
+            state.physicsController.resumeSimulation();
         } else {
-            // TODO: Disable physics simulation
-            console.log("Physics disabled");
+            state.physicsController.pauseSimulation();
         }
     });
 
@@ -544,13 +550,12 @@ export default async () => {
     uiModel.physicsReset.subscribe(() => {
         // TODO: Implement physics reset functionality
         console.log("Physics reset requested");
+        state.physicsController.simulateStep(state, 1 / 60);
         redraw = true;
     });
 
     uiModel.physicsEngine.subscribe((engine) => {
-        // TODO: Implement physics engine switching
-        console.log("Physics engine changed to:", engine);
-        redraw = true;
+        // There are currently no other engines supported besides PhysX
     });
 
     uiModel.hdr.subscribe((hdr) => {
@@ -621,6 +626,7 @@ export default async () => {
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
+        redraw |= state.physicsController.enabled && state.physicsController.playing;
 
         // Refit view if canvas changes significantly
         if (
