@@ -628,6 +628,11 @@ export default async () => {
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.physicsController.enabled && state.physicsController.playing;
 
+        // Do not redraw when loading is in progress
+        if (app.loadingComponent !== undefined) {
+            redraw = false;
+        }
+
         // Refit view if canvas changes significantly
         if (
             canvas.width / past.width < 0.5 ||
