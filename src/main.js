@@ -600,6 +600,11 @@ export default async () => {
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
 
+        // Do not redraw when loading is in progress
+        if (app.loadingComponent !== undefined) {
+            redraw = false;
+        }
+
         // Refit view if canvas changes significantly
         if (
             canvas.width / past.width < 0.5 ||
