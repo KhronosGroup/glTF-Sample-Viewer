@@ -582,12 +582,15 @@
                                 </b-field>
 
                                 <!-- Debug Section -->
-                                <b-field label="Debug" class="subtitle">
+                                <div class="subtitle">Debug</div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5em; margin-bottom: 1em;">
                                     <button class="button is-rounded" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
                                         v-on:click="physicsStepChanged.next($event)">
                                         Step
                                     </button>
-                                </b-field>
+                                    <b-switch v-model="physicsColliderDebug" v-on:input="physicsColliderDebugChanged.next($event.target.checked)">Show Colliders</b-switch>
+                                    <b-switch v-model="physicsJointDebug" v-on:input="physicsJointDebugChanged.next($event.target.checked)">Show Joints</b-switch>
+                                </div>
                             </div>
                         </b-tab-item>
 

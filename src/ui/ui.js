@@ -60,6 +60,8 @@ const appCreated = createApp({
             physicsResetChanged: new Subject(),
             physicsEngineChanged: new Subject(),
             physicsStepChanged: new Subject(),
+            physicsColliderDebugChanged: new Subject(),
+            physicsJointDebugChanged: new Subject(),
 
             validatorChanged: new Subject(),
 
@@ -95,6 +97,8 @@ const appCreated = createApp({
             disabledAnimations: [],
             selectedGraph: null,
             selectedPhysicsEngine: "nvidia-physx",
+            physicsColliderDebug: true,
+            physicsJointDebug: true,
 
             animationState: true,
             graphState: true,

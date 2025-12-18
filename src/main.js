@@ -523,6 +523,16 @@ export default async () => {
         redraw = true;
     });
 
+    uiModel.physicsColliderDebug.subscribe((enabled) => {
+        state.physicsController.enableDebugColliders(enabled);
+        redraw = true;
+    });
+
+    uiModel.physicsJointDebug.subscribe((enabled) => {
+        state.physicsController.enableDebugJoints(enabled);
+        redraw = true;
+    });
+
     uiModel.animationReset.subscribe(() => {
         state.animationTimer.reset();
         redraw = true;

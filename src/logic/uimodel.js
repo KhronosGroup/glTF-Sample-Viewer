@@ -101,6 +101,8 @@ class UIModel {
         this.physicsEngine = app.physicsEngineChanged.pipe();
         this.physicsEnabled = app.physicsEnabledChanged.pipe();
         this.physicsStep = app.physicsStepChanged.pipe();
+        this.physicsColliderDebug = app.physicsColliderDebugChanged.pipe();
+        this.physicsJointDebug = app.physicsJointDebugChanged.pipe();
 
         const canvas = document.getElementById("canvas");
         canvas.addEventListener("dragenter", () => (this.app.showDropDownOverlay = true));
