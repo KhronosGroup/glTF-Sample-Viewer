@@ -59,6 +59,7 @@ const appCreated = createApp({
             physicsEnabledChanged: new Subject(),
             physicsResetChanged: new Subject(),
             physicsEngineChanged: new Subject(),
+            physicsStepChanged: new Subject(),
 
             validatorChanged: new Subject(),
 
@@ -97,7 +98,7 @@ const appCreated = createApp({
 
             animationState: true,
             graphState: true,
-            physicsState: true,
+            physicsState: false, //TODO change to true before merge
 
             validationReport: {},
             validationReportDescription: {},

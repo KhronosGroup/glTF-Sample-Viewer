@@ -518,6 +518,11 @@ export default async () => {
         }
     });
 
+    uiModel.physicsStep.subscribe(() => {
+        state.physicsController.simulateStep(state, 1 / 60);
+        redraw = true;
+    });
+
     uiModel.animationReset.subscribe(() => {
         state.animationTimer.reset();
         redraw = true;
@@ -548,10 +553,8 @@ export default async () => {
     });
 
     uiModel.physicsReset.subscribe(() => {
-        // TODO: Implement physics reset functionality
-        console.log("Physics reset requested");
-        state.physicsController.simulateStep(state, 1 / 60);
-        redraw = true;
+        // TODO reset properly
+        state.physicsController.loadScene(state, state.sceneIndex);
     });
 
     uiModel.physicsEngine.subscribe((engine) => {

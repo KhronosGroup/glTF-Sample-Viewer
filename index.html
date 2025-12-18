@@ -580,6 +580,14 @@
                                         <option value="nvidia-physx">Nvidia PhysX</option>
                                     </b-select>
                                 </b-field>
+
+                                <!-- Debug Section -->
+                                <b-field label="Debug" class="subtitle">
+                                    <button class="button is-rounded" style="border: 1.5px solid #87c540; color: #f2f2f2; background: transparent; min-width: 70px;"
+                                        v-on:click="physicsStepChanged.next($event)">
+                                        Step
+                                    </button>
+                                </b-field>
                             </div>
                         </b-tab-item>
 

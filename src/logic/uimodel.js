@@ -100,6 +100,7 @@ class UIModel {
         this.physicsReset = app.physicsResetChanged.pipe();
         this.physicsEngine = app.physicsEngineChanged.pipe();
         this.physicsEnabled = app.physicsEnabledChanged.pipe();
+        this.physicsStep = app.physicsStepChanged.pipe();
 
         const canvas = document.getElementById("canvas");
         canvas.addEventListener("dragenter", () => (this.app.showDropDownOverlay = true));
@@ -242,7 +243,7 @@ class UIModel {
             this.app.selectedAnimations = state.animationIndices;
             this.app.animationState = true;
             this.app.graphState = true;
-            this.app.physicsState = true;
+            //this.app.physicsState = true; //TODO comment back in before merge
 
             if (gltf && gltf?.extensions?.KHR_materials_variants?.variants !== undefined) {
                 this.app.materialVariants = [
