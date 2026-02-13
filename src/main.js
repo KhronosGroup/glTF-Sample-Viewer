@@ -563,7 +563,8 @@ export default async () => {
     });
 
     uiModel.physicsReset.subscribe(() => {
-        // TODO reset properly
+        state.physicsController.resetScene();
+        state.gltf.resetAnimatedProperties();
         state.physicsController.loadScene(state, state.sceneIndex);
     });
 
