@@ -97,12 +97,12 @@ const appCreated = createApp({
             disabledAnimations: [],
             selectedGraph: null,
             selectedPhysicsEngine: "nvidia-physx",
-            physicsColliderDebug: true,
-            physicsJointDebug: true,
+            physicsColliderDebug: false,
+            physicsJointDebug: false,
 
             animationState: true,
             graphState: true,
-            physicsState: false, //TODO change to true before merge
+            physicsState: true,
 
             validationReport: {},
             validationReportDescription: {},

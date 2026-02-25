@@ -197,7 +197,7 @@ export default async () => {
                             }
 
                             state.physicsController.loadScene(state, state.sceneIndex);
-                            //state.physicsController.resumeSimulation();
+                            state.physicsController.resumeSimulation();
                         }
 
                         uiModel.exitLoadingState();
@@ -520,6 +520,7 @@ export default async () => {
 
     uiModel.physicsStep.subscribe(() => {
         state.physicsController.simulateStep(state, 1 / 60);
+        state.gltf.resetAllDirtyFlags();
         redraw = true;
     });
 
@@ -563,9 +564,10 @@ export default async () => {
     });
 
     uiModel.physicsReset.subscribe(() => {
-        state.physicsController.resetScene();
+        state.physicsController.resetScene(state.gltf);
         state.gltf.resetAnimatedProperties();
         state.physicsController.loadScene(state, state.sceneIndex);
+        redraw = true;
     });
 
     uiModel.physicsEngine.subscribe((engine) => {
