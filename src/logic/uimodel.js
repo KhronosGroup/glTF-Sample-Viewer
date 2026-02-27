@@ -245,7 +245,7 @@ class UIModel {
             this.app.selectedAnimations = state.animationIndices;
             this.app.animationState = true;
             this.app.graphState = true;
-            //this.app.physicsState = true; //TODO comment back in before merge
+            this.app.physicsState = true;
 
             if (gltf && gltf?.extensions?.KHR_materials_variants?.variants !== undefined) {
                 this.app.materialVariants = [
