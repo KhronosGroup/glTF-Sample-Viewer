@@ -565,7 +565,7 @@ export default async () => {
 
     uiModel.physicsReset.subscribe(() => {
         state.physicsController.resetScene(state.gltf);
-        state.gltf.resetAnimatedProperties();
+        state.gltf.resetAnimatedProperties(state.sceneIndex);
         state.physicsController.loadScene(state, state.sceneIndex);
         redraw = true;
     });
