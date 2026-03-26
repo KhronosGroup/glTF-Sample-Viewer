@@ -20,6 +20,7 @@ Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample
     - [ ] Skins not supported since WebGL2 only supports 32 bit
 - [x] [KHR_animation_pointer](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer)
 - [x] [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_draco_mesh_compression)
+- [x] [KHR_implicit_shapes](https://github.com/eoineoineoin/glTF_Physics/blob/master/extensions/2.0/Khronos/KHR_implicit_shapes/README.md)
 - [x] [KHR_interactivity](https://github.com/KhronosGroup/glTF/pull/2293)
 - [x] [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_lights_punctual)
 - [x] [KHR_materials_anisotropy](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
@@ -43,6 +44,9 @@ Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample
 - [x] [KHR_node_hoverability](https://github.com/KhronosGroup/glTF/pull/2426)
 - [x] [KHR_node_selectability](https://github.com/KhronosGroup/glTF/pull/2422)
 - [x] [KHR_node_visibility](https://github.com/KhronosGroup/glTF/pull/2410)
+- [x] [KHR_physics_rigid_bodies](https://github.com/eoineoineoin/glTF_Physics/blob/master/extensions/2.0/Khronos/KHR_physics_rigid_bodies/README.md)\
+    Supported Engines:
+  - NVIDIA PhysX ([limitations](./glTF-Sample-Renderer/PhysicsEngines.md))
 - [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform)
 - [x] [KHR_xmp_json_ld](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_xmp_json_ld)
@@ -61,6 +65,7 @@ Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample
 - Download renderings and current camera properties
 - Show statistics about the currently loaded file
 - Specify URL parameters to modify behavior on load
+- The Physics tab will only be visible if a loaded glTF contains the `KHR_physics_rigid_bodies` extension. It provides functionality to enable/disable/reset the physics simulation, select a physics engine, manually step through the simulation and enable/disable debug visualization.
 
 ## Usage
 

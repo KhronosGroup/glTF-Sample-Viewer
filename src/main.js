@@ -17,6 +17,9 @@ export default async () => {
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
+
+    await state.physicsController.initializeEngine("NvidiaPhysX");
+
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
     state.graphController.addCustomEventListener("test/onStart", (event) => {
@@ -192,6 +195,9 @@ export default async () => {
                             } else {
                                 state.graphController.stopGraphEngine();
                             }
+
+                            state.physicsController.loadScene(state, state.sceneIndex);
+                            state.physicsController.resumeSimulation();
                         }
 
                         uiModel.exitLoadingState();
@@ -200,6 +206,7 @@ export default async () => {
                     })
                     .catch((error) => {
                         console.error("Loading failed: " + error);
+                        console.trace(error);
                         resourceLoader.loadGltf(undefined, undefined).then((gltf) => {
                             state.gltf = gltf;
                             state.sceneIndex = 0;
@@ -235,6 +242,7 @@ export default async () => {
             if (scene !== undefined) {
                 scene.applyTransformHierarchy(state.gltf);
                 state.userCamera.resetView(state.gltf, state.sceneIndex);
+                state.physicsController.loadScene(state, state.sceneIndex);
             }
         }),
         share()
@@ -502,6 +510,30 @@ export default async () => {
         }
     });
 
+    uiModel.physicsEnabled.subscribe((physicsEnabled) => {
+        if (physicsEnabled) {
+            state.physicsController.resumeSimulation();
+        } else {
+            state.physicsController.pauseSimulation();
+        }
+    });
+
+    uiModel.physicsStep.subscribe(() => {
+        state.physicsController.simulateStep(state, 1 / 60);
+        state.gltf.resetAllDirtyFlags();
+        redraw = true;
+    });
+
+    uiModel.physicsColliderDebug.subscribe((enabled) => {
+        state.physicsController.enableDebugColliders(enabled);
+        redraw = true;
+    });
+
+    uiModel.physicsJointDebug.subscribe((enabled) => {
+        state.physicsController.enableDebugJoints(enabled);
+        redraw = true;
+    });
+
     uiModel.animationReset.subscribe(() => {
         state.animationTimer.reset();
         redraw = true;
@@ -529,6 +561,17 @@ export default async () => {
             }
             state.graphController.dispatchEvent(eventData.eventId, values);
         }
+    });
+
+    uiModel.physicsReset.subscribe(() => {
+        state.physicsController.resetScene(state.gltf);
+        state.gltf.resetAnimatedProperties(state.sceneIndex);
+        state.physicsController.loadScene(state, state.sceneIndex);
+        redraw = true;
+    });
+
+    uiModel.physicsEngine.subscribe((engine) => {
+        // There are currently no other engines supported besides PhysX
     });
 
     uiModel.hdr.subscribe((hdr) => {
@@ -599,6 +642,12 @@ export default async () => {
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
+        redraw |= state.physicsController.enabled && state.physicsController.playing;
+
+        // Do not redraw when loading is in progress
+        if (app.loadingComponent !== undefined) {
+            redraw = false;
+        }
 
         // Refit view if canvas changes significantly
         if (
