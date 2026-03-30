@@ -38,3 +38,4 @@ jobs:
                       glxf
                       interactivity
                       physics
+                      scatter
