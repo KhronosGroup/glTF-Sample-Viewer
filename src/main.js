@@ -19,6 +19,8 @@ export default async () => {
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
+    const emptyGltf = await resourceLoader.loadGltf(undefined, undefined, false);
+
     const pathProvider = new GltfModelPathProvider(
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main"
     );
@@ -133,7 +135,7 @@ export default async () => {
 
             return from(
                 resourceLoader
-                    .loadGltf(model.mainFile, model.additionalFiles)
+                    .loadGltf(model.mainFile, model.additionalFiles, false)
                     .then((gltf) => {
                         state.gltf = gltf;
                         const defaultScene = state.gltf.scene;
@@ -177,14 +179,11 @@ export default async () => {
                     })
                     .catch((error) => {
                         console.error("Loading failed: " + error);
-                        resourceLoader.loadGltf(undefined, undefined).then((gltf) => {
-                            state.gltf = gltf;
-                            state.sceneIndex = 0;
-                            state.cameraNodeIndex = undefined;
-
-                            uiModel.exitLoadingState();
-                            redraw = true;
-                        });
+                        state.gltf = emptyGltf;
+                        state.sceneIndex = 0;
+                        state.cameraNodeIndex = undefined;
+                        uiModel.exitLoadingState();
+                        redraw = true;
                         return state;
                     })
             );

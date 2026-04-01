@@ -260,7 +260,7 @@ const appCreated = createApp({
             let info = "";
             let color = "white";
             const padding = this.isMobile ? "right:-3px;top:-18px;" : "right:-18px;top:-18px;";
-            if (this.validationReport.error) {
+            if (this.validationReport?.error) {
                 info = "X";
                 color = "red";
                 return (

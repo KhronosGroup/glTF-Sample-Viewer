@@ -392,10 +392,13 @@ const getInputObservables = (inputElement, app) => {
                 (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
             )
         })),
-        filter(({ mainFile }) => {
+        filter(({ mainFile, additionalFiles }) => {
             let isDefined = mainFile !== undefined;
 
-            if (!isDefined) {
+            if (
+                !isDefined &&
+                !(additionalFiles.length === 1 && additionalFiles[0][0].endsWith(".hdr"))
+            ) {
                 console.warn("Only glTF, glb and hdr files can be loaded on drop.");
             }
 
