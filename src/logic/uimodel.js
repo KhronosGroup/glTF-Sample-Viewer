@@ -386,12 +386,18 @@ const getInputObservables = (inputElement, app) => {
 
     // Partition files into a .gltf or .glb and additional files like buffers and textures
     observables.droppedGltf = droppedFiles.pipe(
-        map((files) => ({
-            mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
-            additionalFiles: files.filter(
-                (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
-            )
-        })),
+        map((files) => {
+            files = files.map((file) => {
+                let filePath = file[0].replaceAll("\\", "/");
+                return [filePath.substring(1), file[1]]; // remove leading slash
+            });
+            return {
+                mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
+                additionalFiles: files.filter(
+                    (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
+                )
+            };
+        }),
         filter(({ mainFile, additionalFiles }) => {
             let isDefined = mainFile !== undefined;
 
@@ -403,33 +409,6 @@ const getInputObservables = (inputElement, app) => {
             }
 
             return isDefined;
-        }),
-        map(({ mainFile, additionalFiles }) => {
-            if (mainFile[0].endsWith(".gltf")) {
-                // extract folder path from gltf file
-                let folderPath = mainFile[0];
-                // replace all \ by /
-                folderPath = folderPath.replaceAll("\\", "/");
-                // remove filename
-                folderPath = folderPath.substr(0, folderPath.lastIndexOf("/"));
-
-                if (folderPath !== "") {
-                    // remove folder path from additional files
-                    additionalFiles = additionalFiles.map((file) => {
-                        let filePath = file[0].replaceAll("\\", "/");
-                        if (filePath.startsWith(folderPath)) {
-                            return [filePath.substr(folderPath.length), file[1]];
-                        } else {
-                            return file;
-                        }
-                    });
-                }
-            }
-
-            return {
-                mainFile: mainFile,
-                additionalFiles: additionalFiles
-            };
         }),
         filter((files) => files.mainFile !== undefined)
     );
