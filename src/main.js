@@ -1,4 +1,4 @@
-import { GltfView } from "@khronosgroup/gltf-viewer";
+import { GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
 import { app } from "./ui/ui.js";
@@ -80,12 +80,20 @@ export default async () => {
                         });
                     } else if (Array.isArray(model.mainFile)) {
                         const externalRefFunction = (uri) => {
-                            uri = "/" + uri;
                             return new Promise((resolve, reject) => {
                                 let foundFile = undefined;
                                 for (let i = 0; i < model.additionalFiles.length; i++) {
                                     const file = model.additionalFiles[i];
-                                    if (file[0] == uri) {
+                                    let actualPath = uri;
+                                    if (!ResourceLoaderUtils.isAbsoluteUrl(uri)) {
+                                        const parentPath = ResourceLoaderUtils.getContainingFolder(
+                                            model.mainFile[0]
+                                        );
+                                        actualPath = ResourceLoaderUtils.cleanRelativePath(
+                                            parentPath + uri
+                                        );
+                                    }
+                                    if (file[0] == actualPath) {
                                         foundFile = file[1];
                                         break;
                                     }
