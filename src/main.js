@@ -1,4 +1,4 @@
-import { GltfView } from "@khronosgroup/gltf-viewer";
+import { GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
 import { app } from "./ui/ui.js";
@@ -18,6 +18,8 @@ export default async () => {
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
+
+    const emptyGltf = await resourceLoader.loadGltf(undefined, undefined, false);
 
     const pathProvider = new GltfModelPathProvider(
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main"
@@ -78,12 +80,20 @@ export default async () => {
                         });
                     } else if (Array.isArray(model.mainFile)) {
                         const externalRefFunction = (uri) => {
-                            uri = "/" + uri;
                             return new Promise((resolve, reject) => {
                                 let foundFile = undefined;
                                 for (let i = 0; i < model.additionalFiles.length; i++) {
                                     const file = model.additionalFiles[i];
-                                    if (file[0] == uri) {
+                                    let actualPath = uri;
+                                    if (!ResourceLoaderUtils.isAbsoluteUrl(uri)) {
+                                        const parentPath = ResourceLoaderUtils.getContainingFolder(
+                                            model.mainFile[0]
+                                        );
+                                        actualPath = ResourceLoaderUtils.cleanRelativePath(
+                                            parentPath + uri
+                                        );
+                                    }
+                                    if (file[0] == actualPath) {
                                         foundFile = file[1];
                                         break;
                                     }
@@ -133,7 +143,7 @@ export default async () => {
 
             return from(
                 resourceLoader
-                    .loadGltf(model.mainFile, model.additionalFiles)
+                    .loadGltf(model.mainFile, model.additionalFiles, false)
                     .then((gltf) => {
                         state.gltf = gltf;
                         const defaultScene = state.gltf.scene;
@@ -177,14 +187,11 @@ export default async () => {
                     })
                     .catch((error) => {
                         console.error("Loading failed: " + error);
-                        resourceLoader.loadGltf(undefined, undefined).then((gltf) => {
-                            state.gltf = gltf;
-                            state.sceneIndex = 0;
-                            state.cameraNodeIndex = undefined;
-
-                            uiModel.exitLoadingState();
-                            redraw = true;
-                        });
+                        state.gltf = emptyGltf;
+                        state.sceneIndex = 0;
+                        state.cameraNodeIndex = undefined;
+                        uiModel.exitLoadingState();
+                        redraw = true;
                         return state;
                     })
             );
