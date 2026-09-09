@@ -718,6 +718,9 @@
                                     <b-switch class="smallerLabel" v-model="iridescenceEnabled" v-on:input="iridescenceChanged.next($event.target.checked)">
                                         Iridescence
                                     </b-switch>
+                                    <b-switch class="smallerLabel" v-model="retroreflectionEnabled" v-on:input="retroreflectionChanged.next($event.target.checked)">
+                                        Retroreflection
+                                    </b-switch>
                                     <b-switch class="smallerLabel" v-model="anisotropyEnabled" v-on:input="anisotropyChanged.next($event.target.checked)">
                                         Anisotropy
                                     </b-switch>
