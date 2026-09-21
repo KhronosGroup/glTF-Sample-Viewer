@@ -58,6 +58,7 @@ class UIModel {
         this.volumeEnabled = app.volumeChanged.pipe();
         this.iorEnabled = app.iorChanged.pipe();
         this.iridescenceEnabled = app.iridescenceChanged.pipe();
+        this.retroreflectionEnabled = app.retroreflectionChanged.pipe();
         this.anisotropyEnabled = app.anisotropyChanged.pipe();
         this.dispersionEnabled = app.dispersionChanged.pipe();
         this.specularEnabled = app.specularChanged.pipe();

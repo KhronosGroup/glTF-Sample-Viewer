@@ -406,6 +406,13 @@ export default async () => {
     );
     listenForRedraw(uiModel.iridescenceEnabled);
 
+    uiModel.retroreflectionEnabled.subscribe(
+        (retroreflectionEnabled) =>
+            (state.renderingParameters.enabledExtensions.KHR_materials_retroreflection =
+                retroreflectionEnabled)
+    );
+    listenForRedraw(uiModel.retroreflectionEnabled);
+
     uiModel.anisotropyEnabled.subscribe(
         (anisotropyEnabled) =>
             (state.renderingParameters.enabledExtensions.KHR_materials_anisotropy =
