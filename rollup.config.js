@@ -72,7 +72,10 @@ export default {
             preferBuiltins: true,
             dedupe: ["gl-matrix", "jpeg-js", "fast-png"]
         }),
-        scss(), // Version 4 is not working
+        scss({
+            // Version 4 is not working
+            quietDeps: true // silence legacy-API deprecation warnings from bulma (node_modules)
+        }),
         del({ targets: "dist/*" }),
         copyFile(".", "./dist", "index.html", true),
         copyFile(".", "./dist", "main.js", true),
