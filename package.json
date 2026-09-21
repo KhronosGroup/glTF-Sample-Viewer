@@ -7,8 +7,9 @@
   "type": "module",
   "scripts": {
     "preinstall": "cd ./glTF-Sample-Renderer && npm install && npm run build",
-    "build": "cd ./glTF-Sample-Renderer && npm run build && cd .. && rollup -c",
-    "build:ui": "rollup -c",
+    "build": "cd ./glTF-Sample-Renderer && npm run build && cd .. && NODE_OPTIONS=--max-old-space-size=4096 rollup -c",
+    "build:ui": "NODE_OPTIONS=--max-old-space-size=4096 rollup -c",
+    "predev": "mkdir -p dist",
     "dev": "concurrently \"npm-watch\" \"cd ./dist && http-server -p 8000 -c-1\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
