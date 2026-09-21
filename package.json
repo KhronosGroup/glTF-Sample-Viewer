@@ -9,8 +9,11 @@
     "preinstall": "cd ./glTF-Sample-Renderer && npm install && npm run build",
     "build": "cd ./glTF-Sample-Renderer && npm run build && cd .. && NODE_OPTIONS=--max-old-space-size=4096 rollup -c",
     "build:ui": "NODE_OPTIONS=--max-old-space-size=4096 rollup -c",
-    "predev": "mkdir -p dist",
-    "dev": "concurrently \"npm-watch\" \"cd ./dist && http-server -p 8000 -c-1\"",
+    "watch:ui": "NODE_OPTIONS=--max-old-space-size=4096 rollup -c -w",
+    "watch:ui:fast": "SOURCEMAP=false NODE_OPTIONS=--max-old-space-size=4096 rollup -c -w",
+    "predev": "mkdir -p dist && cd ./glTF-Sample-Renderer && npm run build",
+    "dev": "concurrently -k -n renderer,ui,server \"tail -f /dev/null | npm run watch --prefix ./glTF-Sample-Renderer\" \"tail -f /dev/null | npm run watch:ui\" \"cd ./dist && http-server -p 8000 -c-1\"",
+    "dev:fast": "concurrently -k -n renderer,ui,server \"tail -f /dev/null | npm run watch --prefix ./glTF-Sample-Renderer\" \"tail -f /dev/null | npm run watch:ui:fast\" \"cd ./dist && http-server -p 8000 -c-1\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
     "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
@@ -18,25 +21,6 @@
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "postversion": "git push && git push --tags"
-  },
-  "watch": {
-    "build": {
-      "patterns": [
-        "glTF-Sample-Renderer/source"
-      ],
-      "extensions": "js,scss,html,glsl,vert,frag",
-      "delay": 1000
-    },
-    "build:ui": {
-      "patterns": [
-        "src",
-        "main.js",
-        "index.html"
-      ],
-      "extensions": "js,scss,html",
-      "delay": 1000,
-      "runOnChangeOnly": true
-    }
   },
   "repository": {
     "type": "git",
@@ -72,7 +56,6 @@
     "eslint": "^9.5.0",
     "eslint-config-prettier": "^10.1.8",
     "http-server": "^14.1.1",
-    "npm-watch": "^0.13.0",
     "prettier": "^3.6.2",
     "rollup": "^4.23.0",
     "rollup-plugin-copy": "^3.5.0",

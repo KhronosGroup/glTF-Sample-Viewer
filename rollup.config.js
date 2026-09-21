@@ -47,6 +47,11 @@ function copyFile(from, to, file, overwrite = false) {
     };
 }
 
+// Generating the full merged sourcemap for the whole bundle is one of the most expensive parts
+// of a rebuild (it re-walks every included module on every build, not just changed ones), so it
+// can be turned off for fast dev iteration via `SOURCEMAP=false npm run dev:fast`.
+const sourcemap = process.env.SOURCEMAP !== "false";
+
 export default {
     strictDeprecations: true,
     input: "src/main.js",
@@ -55,7 +60,7 @@ export default {
             name: "SampleViewerApp",
             file: "dist/GltfSVApp.js",
             format: "esm",
-            sourcemap: true
+            sourcemap
         }
     ],
     plugins: [
