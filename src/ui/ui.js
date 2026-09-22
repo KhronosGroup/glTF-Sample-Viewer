@@ -1,4 +1,4 @@
-import { createApp } from "vue/dist/vue.cjs.js";
+import { createApp } from "vue";
 import "./sass.scss";
 import Buefy from "@ntohq/buefy-next";
 import ToggleButton from "./components/ToggleButton.vue";
