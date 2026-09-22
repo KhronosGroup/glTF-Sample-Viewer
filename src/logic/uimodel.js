@@ -11,7 +11,6 @@ import {
 } from "rxjs/operators";
 import { GltfState } from "@khronosgroup/gltf-viewer";
 import { SimpleDropzone } from "simple-dropzone";
-import { vec2 } from "gl-matrix";
 import normalizeWheel from "normalize-wheel";
 
 // this class wraps all the observables for the gltf sample viewer state
@@ -574,15 +573,9 @@ const getInputObservables = (inputElement, app) => {
             touchmove.pipe(
                 filter((event) => event.touches.length === 2),
                 map((event) => {
-                    const pos1 = vec2.fromValues(
-                        event.touches[0].clientX,
-                        event.touches[0].clientY
-                    );
-                    const pos2 = vec2.fromValues(
-                        event.touches[1].clientX,
-                        event.touches[1].clientY
-                    );
-                    return vec2.dist(pos1, pos2);
+                    const dx = event.touches[1].clientX - event.touches[0].clientX;
+                    const dy = event.touches[1].clientY - event.touches[0].clientY;
+                    return Math.hypot(dx, dy);
                 }),
                 pairwise(),
                 map(([oldDist, newDist]) => ({

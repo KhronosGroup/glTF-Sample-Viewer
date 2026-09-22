@@ -65,7 +65,7 @@ export default {
         resolve({
             browser: true,
             preferBuiltins: false,
-            dedupe: ["gl-matrix", "jpeg-js", "fast-png"]
+            dedupe: ["jpeg-js", "fast-png"]
         }),
         scss({
             // Version 4 is not working
