@@ -2,6 +2,8 @@ import { createApp } from "vue/dist/vue.cjs.js";
 import { Subject } from "rxjs";
 import "./sass.scss";
 import Buefy from "@ntohq/buefy-next";
+import ToggleButton from "./components/ToggleButton.vue";
+import JsonToUiTemplate from "./components/JsonToUiTemplate.vue";
 
 const appCreated = createApp({
     data() {
@@ -577,51 +579,8 @@ const appCreated = createApp({
 appCreated.use(Buefy);
 
 // general components
-appCreated.component("toggle-button", {
-    props: ["ontext", "offtext", "btnClass", "modelValue"],
-    emits: ["buttonclicked", "update:modelValue"],
-    template: "#toggleButtonTemplate",
-    data() {
-        return {
-            name: "Play",
-            isOn: false
-        };
-    },
-    mounted() {
-        this.name = this.offtext;
-        // Initialize state from modelValue prop if provided
-        if (this.modelValue !== undefined) {
-            this.isOn = this.modelValue;
-            this.name = this.isOn ? this.ontext : this.offtext;
-        }
-    },
-    watch: {
-        // Watch for external changes to modelValue
-        modelValue(newValue) {
-            if (newValue !== this.isOn) {
-                this.isOn = newValue;
-                this.name = this.isOn ? this.ontext : this.offtext;
-            }
-        }
-    },
-    methods: {
-        buttonclicked: function () {
-            this.isOn = !this.isOn;
-            this.name = this.isOn ? this.ontext : this.offtext;
-            this.$emit("buttonclicked", this.isOn);
-            this.$emit("update:modelValue", this.isOn);
-        },
-        setState: function (value) {
-            this.isOn = value;
-            this.name = this.isOn ? this.ontext : this.offtext;
-            this.$emit("update:modelValue", this.isOn);
-        }
-    }
-});
-appCreated.component("json-to-ui-template", {
-    props: ["data", "isinner"],
-    template: "#jsonToUITemplate"
-});
+appCreated.component("toggle-button", ToggleButton);
+appCreated.component("json-to-ui-template", JsonToUiTemplate);
 
 export const app = appCreated.mount("#app");
 
