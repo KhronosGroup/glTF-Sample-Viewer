@@ -7,17 +7,16 @@
   "type": "module",
   "scripts": {
     "preinstall": "cd ./glTF-Sample-Renderer && npm install && npm run build",
-    "build": "cd ./glTF-Sample-Renderer && npm run build && cd .. && NODE_OPTIONS=--max-old-space-size=4096 rollup -c",
-    "build:ui": "NODE_OPTIONS=--max-old-space-size=4096 rollup -c",
-    "watch:ui": "NODE_OPTIONS=--max-old-space-size=4096 rollup -c -w",
-    "watch:ui:fast": "SOURCEMAP=false NODE_OPTIONS=--max-old-space-size=4096 rollup -c -w",
-    "predev": "mkdir -p dist && cd ./glTF-Sample-Renderer && npm run build",
-    "dev": "concurrently -k -n renderer,ui,server \"tail -f /dev/null | npm run watch --prefix ./glTF-Sample-Renderer\" \"tail -f /dev/null | npm run watch:ui\" \"cd ./dist && http-server -p 8000 -c-1\"",
-    "dev:fast": "concurrently -k -n renderer,ui,server \"tail -f /dev/null | npm run watch --prefix ./glTF-Sample-Renderer\" \"tail -f /dev/null | npm run watch:ui:fast\" \"cd ./dist && http-server -p 8000 -c-1\"",
+    "sync:renderer-assets": "mkdir -p public/libs public/assets/images && cp -R glTF-Sample-Renderer/dist/libs/. public/libs/ && cp -R glTF-Sample-Renderer/dist/assets/. public/assets/images/",
+    "predev": "cd ./glTF-Sample-Renderer && npm run build && cd .. && npm run sync:renderer-assets",
+    "dev": "vite",
+    "prebuild": "cd ./glTF-Sample-Renderer && npm run build && cd .. && npm run sync:renderer-assets",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
-    "lint:fix": "eslint --fix src/**/*.js main.js rollup.config.js glTF-Sample-Renderer/source/**/*.js",
-    "prettier": "npx prettier src/**/*.js main.js glTF-Sample-Renderer/source/**/*.js --check",
+    "lint": "eslint src/**/*.js vite.config.js glTF-Sample-Renderer/source/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js vite.config.js glTF-Sample-Renderer/source/**/*.js",
+    "prettier": "npx prettier src/**/*.js glTF-Sample-Renderer/source/**/*.js --check",
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "postversion": "git push && git push --tags"
@@ -44,25 +43,13 @@
     "vue": "^3.4.29"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^29.0.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.7",
     "@vitejs/plugin-vue": "^6.0.9",
-    "concurrently": "^8.2.2",
     "eslint": "^9.5.0",
     "eslint-config-prettier": "^10.1.8",
-    "http-server": "^14.1.1",
     "prettier": "^3.6.2",
-    "rollup": "^4.23.0",
-    "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-license": "^3.5.1",
-    "rollup-plugin-scss": "^3.0.0",
-    "rollup-plugin-sourcemaps2": "^0.5.3",
     "sass": "^1.77.5",
     "vite": "^8.3.0"
-  },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.23.0"
   },
   "bugs": {
     "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"
