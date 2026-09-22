@@ -2,6 +2,12 @@ yarn.lock
 
 dist
 node_modules
+
+# Only the renderer-derived files under public/ are generated (by sync:renderer-assets).
+# The rest of public/ is checked-in source, so this must not ignore the whole directory.
+public/libs/
+public/assets/images/lut_*.png
+
 npm-debug.log
 debug.log
 
