@@ -220,8 +220,9 @@ What is guaranteed to match, and was verified:
   differences are hex colour literals reformatted by the CSS minifier.
 - **`index.html`**: meta tags and the inline bootstrap script are identical; all four
   external CDN references (Draco, Google Fonts, Material Design Icons, FontAwesome) are
-  present in both. The remaining diff is the migration itself (markup moved into SFCs, asset
-  paths gained a leading `/`, hashed bundle tags replace the fixed `GltfSVApp.*` names).
+  present in both. The remaining diff is the migration itself (markup moved into SFCs, and
+  hashed bundle tags replacing the fixed `GltfSVApp.*` names); asset paths stay relative in
+  both, as the subpath fix above restored.
 - **Runtime behaviour matches**: both builds served and driven headless render a 1300x900
   canvas with WebGL2, fetch the same 10 remote assets, report zero console/page errors, and
   produce visually identical screenshots.
