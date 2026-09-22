@@ -4,6 +4,7 @@ import Buefy from "@ntohq/buefy-next";
 import ToggleButton from "./components/ToggleButton.vue";
 import JsonToUiTemplate from "./components/JsonToUiTemplate.vue";
 import App from "./App.vue";
+import CanvasUI from "./CanvasUI.vue";
 
 const appCreated = createApp(App);
 
@@ -15,14 +16,7 @@ appCreated.component("json-to-ui-template", JsonToUiTemplate);
 
 export const app = appCreated.mount("#app");
 
-const canvasUI = createApp({
-    data() {
-        return {
-            timer: null
-        };
-    },
-    methods: {}
-});
+const canvasUI = createApp(CanvasUI);
 
 canvasUI.use(Buefy);
 
