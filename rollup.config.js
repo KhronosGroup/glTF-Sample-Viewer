@@ -3,7 +3,6 @@ import scss from "rollup-plugin-scss";
 import commonjs from "@rollup/plugin-commonjs";
 import del from "rollup-plugin-delete";
 import replace from "@rollup/plugin-replace";
-import { wasm } from "@rollup/plugin-wasm";
 import sourcemaps from "rollup-plugin-sourcemaps2";
 import license from "rollup-plugin-license";
 import path from "path";
@@ -63,7 +62,6 @@ export default {
         }
     ],
     plugins: [
-        wasm(),
         resolve({
             browser: true,
             preferBuiltins: true,
