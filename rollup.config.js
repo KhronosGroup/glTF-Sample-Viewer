@@ -64,7 +64,7 @@ export default {
     plugins: [
         resolve({
             browser: true,
-            preferBuiltins: true,
+            preferBuiltins: false,
             dedupe: ["gl-matrix", "jpeg-js", "fast-png"]
         }),
         scss({
