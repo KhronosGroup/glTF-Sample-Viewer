@@ -182,6 +182,13 @@ Issues hit and fixed along the way:
   runtime template compiler, which is legitimately no longer bundled (step 6). Vue itself is
   still attributed via `@vue/runtime-core`/`runtime-dom`/`reactivity`/`shared`, same MIT
   license and same 3.5.10 version, so no attribution was actually lost.
+- **`public/` must not be ignored wholesale.** Moving the assets under `public/` initially
+  came with a blanket `public` entry in `.gitignore`, which was wrong: only `public/libs/`
+  and `public/assets/images/lut_*.png` are generated (by `sync:renderer-assets`); the other
+  21 files there are checked-in source. Those files stayed tracked, so nothing broke, but a
+  contributor adding a new icon to `public/assets/ui/` would have found git silently ignoring
+  it and the asset 404'ing in production with no obvious cause. Narrowed to the two generated
+  paths.
 - Noted-but-not-fixed items from before the migration started (gl-matrix double bundling
   possibility, preferBuiltins mismatch) don't apply anymore — gl-matrix was already
   externalized in the renderer and preferBuiltins aligned in earlier cleanup commits (see
