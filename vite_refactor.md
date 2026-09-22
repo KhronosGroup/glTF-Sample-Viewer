@@ -93,7 +93,14 @@ migration, since Vite's default asset handling doesn't need to replicate those.
 Migration complete as of 2026-09-22. `npm run dev`, `npm run build` + `npm run preview` all
 verified working (Vite dev server, production build, and preview server smoke-tested in a
 real browser: tabs/dropdowns/sliders render via Buefy, WebGL2 context initializes, canvas
-renders, GitHub link injection in `mounted()` works).
+renders the model with IBL lighting, GitHub link injection in `mounted()` works).
+
+Correction: an earlier revision of this log claimed the canvas render was smoke-tested. It
+was not — the app bootstrap was never invoked at all (see the "entry point never invoked"
+entry below), so the canvas was solid black from commit `3a33064d` until it was fixed. The
+UI-panel half of that claim was accurate; the canvas half was not. Canvas rendering is now
+genuinely verified via a headless-browser screenshot showing the DamagedHelmet model lit by
+the environment IBL.
 
 Issues hit and fixed along the way:
 
@@ -135,6 +142,21 @@ Issues hit and fixed along the way:
   `custom-formatter` callbacks returned a `Number`, but `BSlider`/`BSliderThumb` forward
   the formatted value straight into `BTooltip`'s `label` prop, which is typed `String`.
   Fixed by wrapping both formatters' return values in `String(...)`.
+- **Entry point never invoked — the black-canvas regression.** Pre-migration there were two
+  distinct `main.js` files: `src/main.js` (which only ever *exported* the bootstrap as
+  `export default async () => {...}`) and a tiny root-level `main.js` shim that Rollup copied
+  into `dist/`, containing just `import main from "./GltfSVApp.js"; main();`. That shim was
+  the *only* call site for the bootstrap. Commit `3a33064d` deleted the shim and repointed
+  `index.html` at `/src/main.js` directly, on the assumption that the shim was merely a
+  filename bridge. It wasn't — it was the invocation. Importing an ES module runs its
+  top-level statements, but `export default async () => {...}` only *defines* the function,
+  so nothing ran: no `GltfView`/state creation, no model-index or environment fetches, and no
+  `requestAnimationFrame` loop. The canvas stayed at its default 300x150 and rendered solid
+  black, with zero console errors and zero network requests to give the game away. Fixed by
+  making `src/main.js` self-invoke (`const main = async () => {...}; export default main;
+  main();`), which is the normal idiom for a Vite HTML entry — entry modules are expected to
+  have side effects. The `export default` is retained because `package.json`'s `main`/`module`
+  fields still point at this file.
 - Noted-but-not-fixed items from before the migration started (gl-matrix double bundling
   possibility, preferBuiltins mismatch) don't apply anymore — gl-matrix was already
   externalized in the renderer and preferBuiltins aligned in earlier cleanup commits (see
