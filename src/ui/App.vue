@@ -3,7 +3,7 @@
     <div class="canvasUIMaximize">
         <img v-bind:src="[uiVisible ? '/assets/ui/Icon_Expand.svg' : '/assets/ui/Icon_Collapse.svg']"
             @click="toggleUI()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px"
-            v-show='!(isMobile && tabContentHidden === false) && !noUI'
+            v-show='!(isMobile && tabContentHidden === false) && !noUi'
             >
     </div>
     <div class="column" v-show='uiVisible'>
@@ -131,7 +131,7 @@
                                 Lighting</b-switch>
                         </b-field>
                         <b-field label="IBL Intensity" class="smallerLabel">
-                            <b-slider rounded v-model="iblIntensity" :min="-2" v-bind:max="5" :step=0.01 :custom-formatter="val => Math.round(Math.pow(10,val)*100.0)/100.0"
+                            <b-slider rounded v-model="iblIntensity" :min="-2" v-bind:max="5" :step=0.01 :custom-formatter="val => String(Math.round(Math.pow(10,val)*100.0)/100.0)"
                                 class="iblIntensitySlider" v-on:dragging="iblIntensityChanged.next($event)">
                                 <b-slider-tick :value="-2" class="iblIntensitySliderMarker">0.01</b-slider-tick>
                                 <b-slider-tick :value="0" class="iblIntensitySliderMarker">1</b-slider-tick>
@@ -141,7 +141,7 @@
                         </b-field>
                         <b-field class="subtitle"  label="Exposure"></b-field>
                         <b-slider rounded v-model="exposureSetting" :min="21" v-bind:max="-6" :step=0.1 
-                        :custom-formatter="val => Math.round((1.0 / Math.pow(2.0, val))*100000)/100000" class="exposureSlider" ticks v-on:dragging="exposureChanged.next($event)">
+                        :custom-formatter="val => String(Math.round((1.0 / Math.pow(2.0, val))*100000)/100000)" class="exposureSlider" ticks v-on:dragging="exposureChanged.next($event)">
                             <b-slider-tick :value="-6" class="exposureSliderMarker">64</b-slider-tick>
                             <b-slider-tick :value="0" class="exposureSliderMarker">1</b-slider-tick>
                             <b-slider-tick :value="9.966" class="exposureSliderMarker">0.001</b-slider-tick>
@@ -204,7 +204,7 @@
                 <b-tab-item label="Validator" icon="video" class="tabItemScrollable tab-item" :order="2">
                     <template #header>
                         <div @click="collapseActiveTab($event, 2)"
-                        v-bind:style="[tabContent === false && activeTab === 2 ? {'height': '100%'} : {}]">
+                        v-bind:style="[tabContentHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
                         <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                         <div style="max-width:fit-content; margin-left: auto; margin-right: auto;" v-html="getValidationCounter()"></div>
                         <span
@@ -807,6 +807,7 @@ export default {
             loadingComponent: undefined,
             showDropDownOverlay: false,
             uploadedHDR: undefined,
+            environmentLicense: undefined,
             uiVisible: false,
             isMobile: false,
             noUi: false,
@@ -860,7 +861,7 @@ export default {
         const noUI = urlParams.get("noUI");
         if (noUI !== null) {
             this.uiVisible = false;
-            this.noUI = true;
+            this.noUi = true;
         }
     },
     mounted: function () {

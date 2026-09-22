@@ -122,13 +122,19 @@ Issues hit and fixed along the way:
   `"./libs/physx-js-webidl.wasm"` string (via `locateFile`), not the static import Vite
   warns about; this matches the pre-Vite behavior where root's `wasm()` Rollup plugin was
   already confirmed to be a no-op for this exact reason.
-- **Pre-existing latent bugs, left untouched (out of scope for this migration)**: Vue dev
-  warnings for `noUI` (typo for `noUi`), `environmentLicense` (never defined in `data()`),
-  and `tabContent` (typo for `tabContentHidden`, in the Validator tab's header) being
-  accessed but undefined. These were already broken in the original runtime-compiled
-  template/data — the SFC conversion just makes Vue's warnings about them visible in the
-  dev console (same runtime behavior either way, `undefined` in the template just becomes
-  empty/falsy). Worth a follow-up cleanup ticket, not part of this refactor.
+- **Pre-existing latent bugs, since fixed**: Vue dev warnings for `noUI` (typo for `noUi`),
+  `environmentLicense` (never defined in `data()`), and `tabContent` (typo for
+  `tabContentHidden`, in the Validator tab's header) being accessed but undefined. These
+  were already broken in the original runtime-compiled template/data — the SFC conversion
+  just made Vue's warnings about them visible in the dev console (same runtime behavior
+  either way, `undefined` in the template just became empty/falsy). Fixed by aligning the
+  template/`beforeMount` on the `noUi` data key, correcting the `tabContent` typo to
+  `tabContentHidden`, and adding `environmentLicense` to `data()` so `uimodel.js`'s
+  `this.app.environmentLicense = ...` assignment is actually reactive.
+- **Buefy `BTooltip` prop-type warning on the IBL Intensity / Exposure sliders**: their
+  `custom-formatter` callbacks returned a `Number`, but `BSlider`/`BSliderThumb` forward
+  the formatted value straight into `BTooltip`'s `label` prop, which is typed `String`.
+  Fixed by wrapping both formatters' return values in `String(...)`.
 - Noted-but-not-fixed items from before the migration started (gl-matrix double bundling
   possibility, preferBuiltins mismatch) don't apply anymore — gl-matrix was already
   externalized in the renderer and preferBuiltins aligned in earlier cleanup commits (see
