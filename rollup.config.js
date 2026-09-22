@@ -1,4 +1,3 @@
-import glslify from "rollup-plugin-glslify";
 import resolve from "@rollup/plugin-node-resolve";
 import scss from "rollup-plugin-scss";
 import commonjs from "@rollup/plugin-commonjs";
@@ -65,13 +64,6 @@ export default {
     ],
     plugins: [
         wasm(),
-        glslify({
-            include: [
-                "./glTF-Sample-Renderer/source/Renderer/shaders/*",
-                "./glTF-Sample-Renderer/source/shaders/*"
-            ],
-            compress: false
-        }),
         resolve({
             browser: true,
             preferBuiltins: true,
