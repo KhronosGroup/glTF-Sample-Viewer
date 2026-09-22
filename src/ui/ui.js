@@ -14,13 +14,15 @@ appCreated.use(Buefy);
 appCreated.component("toggle-button", ToggleButton);
 appCreated.component("json-to-ui-template", JsonToUiTemplate);
 
-export const app = appCreated.mount("#app");
-
+// Must mount before App: App's mounted() hook looks up the #canvas element,
+// which CanvasUI's template renders (it used to be static HTML in index.html).
 const canvasUI = createApp(CanvasUI);
 
 canvasUI.use(Buefy);
 
 canvasUI.mount("#canvasUI");
+
+export const app = appCreated.mount("#app");
 
 // pipe error messages to UI
 (() => {
