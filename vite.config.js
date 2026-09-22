@@ -28,6 +28,12 @@ export default defineConfig({
         emptyOutDir: true,
         sourcemap,
         rollupOptions: {
+            output: {
+                // The minifier strips the rollup-plugin-license banner unless legal comments
+                // are explicitly kept; without this the whole third-party attribution block
+                // silently disappears from the production bundle.
+                comments: { legal: true }
+            },
             plugins: [
                 license({
                     banner: {

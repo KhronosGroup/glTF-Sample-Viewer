@@ -157,8 +157,64 @@ Issues hit and fixed along the way:
   main();`), which is the normal idiom for a Vite HTML entry — entry modules are expected to
   have side effects. The `export default` is retained because `package.json`'s `main`/`module`
   fields still point at this file.
+- **License banner was silently dropped from the production bundle.** This is the item the
+  "Anticipated issues" section above flagged, and it did regress. `rollup-plugin-license`
+  *does* still run correctly under Vite 8 (which bundles with rolldown, not Rollup) and the
+  banner is generated — but rolldown's minifier stripped it, so the shipped bundle carried no
+  third-party attribution at all. Confirmed by building with `--minify false`, where the
+  banner reappears. Fixed with two changes: `@license` added as the first line of
+  `LICENSE_BANNER.txt`, and `build.rollupOptions.output.comments = { legal: true }` in
+  `vite.config.js`. Both are needed — the marker alone is not enough, because Vite's default
+  is to strip legal comments. Verified: the minified bundle again carries the banner with all
+  13 attributed packages.
+- **Banner dependency list diff (main vs Vite), after the fix**: 13 packages vs main's 16.
+  The only three dropped are `vue`, `@vue/compiler-core` and `@vue/compiler-dom` — the
+  runtime template compiler, which is legitimately no longer bundled (step 6). Vue itself is
+  still attributed via `@vue/runtime-core`/`runtime-dom`/`reactivity`/`shared`, same MIT
+  license and same 3.5.10 version, so no attribution was actually lost.
 - Noted-but-not-fixed items from before the migration started (gl-matrix double bundling
   possibility, preferBuiltins mismatch) don't apply anymore — gl-matrix was already
   externalized in the renderer and preferBuiltins aligned in earlier cleanup commits (see
   `/memories/repo/vite-migration-notes.md`).
+
+## Verifying the Vite build against main's Rollup build
+
+Byte-identical output is impossible (different bundler, minifier, chunking and hashed
+filenames), so equivalence was established on the properties that actually matter. Method:
+build `main` in a throwaway `git worktree` (its submodule pin is identical to this branch's,
+so the renderer can be symlinked and `npm install --ignore-scripts` used to skip the
+expensive preinstall), build this branch, then compare.
+
+What is guaranteed to match, and was verified:
+
+- **Copied static assets are byte-identical.** All 31 files under `assets/images`,
+  `assets/ui` and `libs` (LUT PNGs, SVG icons, `libktx.js`, all `.wasm`) match by sha256.
+  These pass through both builds untouched, so any difference here is a real defect.
+- **The runtime module inventory is equivalent.** Compared via the `sources` arrays of both
+  builds' sourcemaps, which is bundler-agnostic. Raw counts differ a lot (385 vs 166) but
+  that is representation, not content: Vite resolves `@khronosgroup/gltf-viewer` to its
+  prebuilt `dist/gltf-viewer.module.js` (one source entry) whereas Rollup walked the
+  renderer's source tree (200+ entries). Verified the code is genuinely present by grepping
+  both bundles for distinctive string literals, which survive minification —
+  `event/onStart`, `flow/branch`, `meshopt`, `IHDR`, `KHR_draco_mesh_compression` etc. all
+  appear in both. The rxjs path difference (`rxjs/src` vs `rxjs/_esm5`) is a sourcemap
+  attribution artifact of `rollup-plugin-sourcemaps2`, same library and version.
+- **CSS is equivalent**: 1236 of ~1237 class/id selectors shared; the handful of apparent
+  differences are hex colour literals reformatted by the CSS minifier.
+- **`index.html`**: meta tags and the inline bootstrap script are identical; all four
+  external CDN references (Draco, Google Fonts, Material Design Icons, FontAwesome) are
+  present in both. The remaining diff is the migration itself (markup moved into SFCs, asset
+  paths gained a leading `/`, hashed bundle tags replace the fixed `GltfSVApp.*` names).
+- **Runtime behaviour matches**: both builds served and driven headless render a 1300x900
+  canvas with WebGL2, fetch the same 10 remote assets, report zero console/page errors, and
+  produce visually identical screenshots.
+
+Expected differences that are *not* defects: bundle size (7.8 MB → 4.0 MB, because main was
+never minified — its Rollup config has no terser), hashed filenames and chunk splitting, the
+dropped root `main.js` shim, and the dropped Vue runtime compiler. That last one is safe
+only because no runtime template compilation remains: main's `index.html` had two
+`text/x-template` blocks, and this branch has none.
+
+Re-running this comparison is worthwhile after any future bundler or major dependency
+upgrade — it is what surfaced the silently-dropped license banner above.
 
