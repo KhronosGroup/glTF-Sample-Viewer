@@ -1,6 +1,7 @@
 yarn.lock
 
 dist
+public
 node_modules
 npm-debug.log
 debug.log
