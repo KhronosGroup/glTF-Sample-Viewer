@@ -90,4 +90,47 @@ migration, since Vite's default asset handling doesn't need to replicate those.
 
 ## Findings / log (updated as work proceeds)
 
-- (empty so far — filled in as each step lands)
+Migration complete as of 2026-09-22. `npm run dev`, `npm run build` + `npm run preview` all
+verified working (Vite dev server, production build, and preview server smoke-tested in a
+real browser: tabs/dropdowns/sliders render via Buefy, WebGL2 context initializes, canvas
+renders, GitHub link injection in `mounted()` works).
+
+Issues hit and fixed along the way:
+
+- **Buefy Next + Vite pre-bundling**: no issues. Works out of the box, no special config
+  needed beyond the standard `@vitejs/plugin-vue`.
+- **Two orphan `</b-field>` closing tags in the old HTML** (Display tab's exposure slider,
+  Validator tab) — browsers silently tolerated the mismatched tags in the old runtime-
+  compiled markup, but Vue's strict SFC parser treats it as a hard syntax error. Fixed by
+  removing the stray closing tags (DOM output unchanged).
+- **Static `src="assets/..."` attributes needed a leading slash.** Vite's SFC compiler
+  statically resolves literal (non-dynamic) `src="..."` attributes as module imports
+  relative to the `.vue` file's location. Since these assets live in `public/`, they need
+  root-absolute paths (`/assets/ui/...`) so Vite treats them as public asset URLs instead of
+  trying (and failing) to resolve them as local imports. Dynamic `v-bind:src="[...]"`
+  expressions were never affected (Vite doesn't statically analyze JS expressions), but were
+  updated too for consistency.
+- **Real mount-order bug surfaced by the SFC conversion**: the `<canvas>` element used to be
+  static HTML in `index.html`, always present at page load regardless of Vue mount order.
+  After converting it to `CanvasUI.vue`, it only exists once `canvasUI.mount()` runs. `App`
+  was mounting first and its `mounted()` hook called
+  `document.getElementById('canvas').getContext(...)` before the canvas existed, throwing on
+  load. Fixed by mounting `canvasUI` before `appCreated` in `ui.js`.
+- **`.wasm` runtime resolution warning** (`physx-js-webidl.wasm`, `mikktspace_bg.wasm`
+  "could not be resolved at build time and remain runtime URLs") appears during `vite build`
+  but is harmless — the actual runtime loading path uses a hardcoded relative
+  `"./libs/physx-js-webidl.wasm"` string (via `locateFile`), not the static import Vite
+  warns about; this matches the pre-Vite behavior where root's `wasm()` Rollup plugin was
+  already confirmed to be a no-op for this exact reason.
+- **Pre-existing latent bugs, left untouched (out of scope for this migration)**: Vue dev
+  warnings for `noUI` (typo for `noUi`), `environmentLicense` (never defined in `data()`),
+  and `tabContent` (typo for `tabContentHidden`, in the Validator tab's header) being
+  accessed but undefined. These were already broken in the original runtime-compiled
+  template/data — the SFC conversion just makes Vue's warnings about them visible in the
+  dev console (same runtime behavior either way, `undefined` in the template just becomes
+  empty/falsy). Worth a follow-up cleanup ticket, not part of this refactor.
+- Noted-but-not-fixed items from before the migration started (gl-matrix double bundling
+  possibility, preferBuiltins mismatch) don't apply anymore — gl-matrix was already
+  externalized in the renderer and preferBuiltins aligned in earlier cleanup commits (see
+  `/memories/repo/vite-migration-notes.md`).
+
