@@ -110,13 +110,23 @@ Issues hit and fixed along the way:
   Validator tab) — browsers silently tolerated the mismatched tags in the old runtime-
   compiled markup, but Vue's strict SFC parser treats it as a hard syntax error. Fixed by
   removing the stray closing tags (DOM output unchanged).
-- **Static `src="assets/..."` attributes needed a leading slash.** Vite's SFC compiler
-  statically resolves literal (non-dynamic) `src="..."` attributes as module imports
-  relative to the `.vue` file's location. Since these assets live in `public/`, they need
-  root-absolute paths (`/assets/ui/...`) so Vite treats them as public asset URLs instead of
-  trying (and failing) to resolve them as local imports. Dynamic `v-bind:src="[...]"`
-  expressions were never affected (Vite doesn't statically analyze JS expressions), but were
-  updated too for consistency.
+- **Static `src="assets/..."` attributes and the subpath-deployment regression.** Vite's SFC
+  compiler statically resolves literal (non-dynamic) `src="..."` attributes as module imports
+  relative to the `.vue` file's location. The first attempt at fixing this made every asset
+  path root-absolute (`/assets/ui/...`) so Vite would treat them as public asset URLs. That
+  worked locally and was badly wrong for production: the site is deployed to a *subpath*
+  (`github.khronos.org/glTF-Sample-Viewer-Release/`), and main's Rollup build had always
+  emitted *relative* paths, which work at any depth. Served from a subpath, root-absolute
+  URLs resolve against the domain root instead — verified by serving the build under a
+  subpath, where the JS, CSS and `libs/libktx.js` all 404'd and the page came up completely
+  blank (no canvas, no tabs, empty body). The `Publish_to_Github_Pages.yml` workflow would
+  have deployed exactly that. Fixed properly by restoring main's relative-path behaviour:
+  `base: "./"` in `vite.config.js` (so Vite emits `./assets/...` for the tags it injects),
+  `template: { transformAssetUrls: false }` on `@vitejs/plugin-vue` (so the SFC compiler stops
+  trying to resolve literal `src` attributes as module imports), and all 26 `/assets/...`
+  references in `App.vue` plus the two in `index.html` reverted to relative. Verified working
+  from the dev server, from the site root, and from a subpath — 14/14 images load, zero 404s
+  and zero console errors in all three.
 - **Real mount-order bug surfaced by the SFC conversion**: the `<canvas>` element used to be
   static HTML in `index.html`, always present at page load regardless of Vue mount order.
   After converting it to `CanvasUI.vue`, it only exists once `canvasUI.mount()` runs. `App`
@@ -217,4 +227,14 @@ only because no runtime template compilation remains: main's `index.html` had tw
 
 Re-running this comparison is worthwhile after any future bundler or major dependency
 upgrade — it is what surfaced the silently-dropped license banner above.
+
+One thing the comparison did *not* catch on its own, because both builds were served from a
+root: asset paths must stay relative for the subpath deployment. Serve `dist/` from a
+subdirectory and load it before trusting a build, e.g.
+
+    mkdir -p /tmp/t/glTF-Sample-Viewer-Release && cp -R dist/. /tmp/t/glTF-Sample-Viewer-Release/
+    python3 -m http.server 8080 --directory /tmp/t
+    # then open http://localhost:8080/glTF-Sample-Viewer-Release/
+
+A blank page with 404s for `assets/*.js` means something reintroduced root-absolute URLs.
 

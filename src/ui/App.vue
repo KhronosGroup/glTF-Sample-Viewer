@@ -1,7 +1,7 @@
 <template>
     <!-- UI -->
     <div class="canvasUIMaximize">
-        <img v-bind:src="[uiVisible ? '/assets/ui/Icon_Expand.svg' : '/assets/ui/Icon_Collapse.svg']"
+        <img v-bind:src="[uiVisible ? 'assets/ui/Icon_Expand.svg' : 'assets/ui/Icon_Collapse.svg']"
             @click="toggleUI()" ref="fullscreenIcon" class="maximizeCanvasIcon" width="30px"
             v-show='!(isMobile && tabContentHidden === false) && !noUi'
             >
@@ -41,7 +41,7 @@
                             v-bind:width="[isMobile ? '200px' : '100px']"
                             >
                             <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[tabContentHidden === false && activeTab === 0 ? '/assets/ui/Model 50X50.svg' : '/assets/ui/Model 30X30.svg']"
+                            <img v-bind:src="[tabContentHidden === false && activeTab === 0 ? 'assets/ui/Model 50X50.svg' : 'assets/ui/Model 30X30.svg']"
                                 v-bind:style="[tabContentHidden === false && activeTab === 0 ? {'height': '100%'} : {}]">
                             <span
                               
@@ -53,7 +53,7 @@
 
                     <!-- Tab Content: Models -->
                     <div class="tabContent">
-                        <img src="/assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
                             @click="collapseActiveTab($event, 0)">
                         <h2 class="title is-spaced">Models</h2>
                         <b-field label="Models" class="subtitle">
@@ -110,7 +110,7 @@
                         <div @click="collapseActiveTab($event, 1)"
                             v-bind:style="[tabContentHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
                             <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[tabContentHidden === false && activeTab === 1 ? '/assets/ui/Display 50X50.svg' : '/assets/ui/Display 30X30.svg']"
+                            <img v-bind:src="[tabContentHidden === false && activeTab === 1 ? 'assets/ui/Display 50X50.svg' : 'assets/ui/Display 30X30.svg']"
                                 v-bind:width="[tabContentHidden === false && activeTab === 1 ? '50px' : '30px']"
                                 v-bind:style="[tabContentHidden === false && activeTab === 1 ? {'height': '100%'} : {}]">
                             <span
@@ -121,7 +121,7 @@
                     </template>
 
                     <div class="tabContent">
-                        <img src="/assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
                             @click="collapseActiveTab($event, 1)">
                         <h2 class="title  is-spaced">Display</h2>
                         <b-field label="Lighting" class="subtitle">
@@ -216,7 +216,7 @@
                     </template>
 
                     <div class="tabContent" style="display: flex; flex-direction: column; height: inherit;">
-                        <img src="/assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
                             @click="collapseActiveTab($event, 2)">
                         <h2 class="title is-spaced" v-bind:data="validationReport">glTF Validator</h2>
                             <div class="modelCredit" v-show='validationReport?.error === undefined'>
@@ -246,7 +246,7 @@
                     <template #header>
                         <div @click="collapseActiveTab($event, 3)"
                             v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
-                            <img v-bind:src="[tabContentHidden === false && activeTab === 3 ? '/assets/ui/Animation 50X50.svg' : '/assets/ui/Animation 30X30.svg']"
+                            <img v-bind:src="[tabContentHidden === false && activeTab === 3 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
                                 v-bind:width="[tabContentHidden === false && activeTab === 3 ? '50px' : '30px']"
                                 v-bind:style="[tabContentHidden === false && activeTab === 3 ? {'height': '100%'} : {}]">
                             <span v-show='isMobile === false && (tabContentHidden === true || activeTab !== 3 )' v-if="!showGraphsTab">
@@ -259,7 +259,7 @@
                     </template>
 
                     <div class="tabContent" v-if="!showGraphsTab">
-                        <img src="/assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
                             @click="collapseActiveTab($event, 3)">
                         <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Animations</h2>
                         <label class="subtitle">Animation Controls</label>
@@ -289,7 +289,7 @@
                         </b-field>
                     </div>
                     <div class="tabContent" v-if="showGraphsTab">
-                        <img src="/assets/ui/Navigation_right_20px.svg" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                             @click="collapseActiveTab($event, 3)">
                         <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Interactivity Graphs</h2>
                         <label class="subtitle">Graph Controls</label>
@@ -445,7 +445,7 @@
                     <template #header>
                         <div @click="collapseActiveTab($event, 4)"
                             v-bind:style="[tabContentHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
-                            <img v-bind:src="[tabContentHidden === false && activeTab === 4 ? '/assets/ui/Physics 50X50.svg' : '/assets/ui/Physics 30X30.svg']"
+                            <img v-bind:src="[tabContentHidden === false && activeTab === 4 ? 'assets/ui/Physics 50X50.svg' : 'assets/ui/Physics 30X30.svg']"
                                 v-bind:width="[tabContentHidden === false && activeTab === 4 ? '50px' : '30px']"
                                 v-bind:style="[tabContentHidden === false && activeTab === 4 ? {'height': '100%'} : {}]">
                             <span 
@@ -456,7 +456,7 @@
                     </template>
 
                     <div class="tabContent">
-                        <img src="/assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
                             @click="collapseActiveTab($event, 4)">
                         <h2 class="title is-spaced" style="margin-bottom: 0.5em;">Physics</h2>
                         <label class="subtitle">Physics Controls</label>
@@ -500,7 +500,7 @@
                         <div @click="collapseActiveTab($event, 5)"
                             v-bind:style="[tabContentHidden === false && activeTab === 5 ? {'height': '100%'} : {}]">
                             <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[tabContentHidden === false && activeTab === 5 ? '/assets/ui/XMP 50X50.svg' : '/assets/ui/XMP 30X30.svg']"
+                            <img v-bind:src="[tabContentHidden === false && activeTab === 5 ? 'assets/ui/XMP 50X50.svg' : 'assets/ui/XMP 30X30.svg']"
                                 v-bind:width="[tabContentHidden === false && activeTab === 5 ? '50px' : '30px']"
                                 v-bind:style="[tabContentHidden === false && activeTab === 5 ? {'height': '100%'} : {}]">
                             <span 
@@ -511,7 +511,7 @@
                     </template>
 
                     <div class="tabContent">
-                        <img src="/assets/ui/Navigation_right_20px.svg" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" width="30px"
                             @click="collapseActiveTab($event, 5)">
                         <h2 class="title">Model Credits</h2>
                         <div class="modelCredit"><i>Copyright:</i><br/>{{ assetCopyright }}</div>
@@ -525,7 +525,7 @@
                 <!--<b-tab-item label="Capture" icon="video">
                     <template #header>
                         to get colored icons use: https://stackoverflow.com/a/43916743
-                        <img src="/assets/ui/Capture 30X30.svg" width="30px" height="30px">
+                        <img src="assets/ui/Capture 30X30.svg" width="30px" height="30px">
                         <span>Capture</span>
                     </template>
                 </b-tab-item>-->
@@ -536,7 +536,7 @@
                         <div @click="collapseActiveTab($event, 6)"
                             v-bind:style="[tabContentHidden === false && activeTab === 6 ? {'height': '100%'} : {}]">
                             <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
-                            <img v-bind:src="[tabContentHidden === false && activeTab === 6 ? '/assets/ui/Developer 50X50.svg' : '/assets/ui/Developer 30X30.svg']"
+                            <img v-bind:src="[tabContentHidden === false && activeTab === 6 ? 'assets/ui/Developer 50X50.svg' : 'assets/ui/Developer 30X30.svg']"
                                 v-bind:width="[tabContentHidden === false && activeTab === 6 ? '50px' : '30px']"
                                 v-bind:style="[tabContentHidden === false && activeTab === 6 ? {'height': '100%'} : {}]">
                             <span
@@ -548,7 +548,7 @@
                     </template>
 
                     <div class="tabContent">
-                        <img src="/assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
+                        <img src="assets/ui/Navigation_right_20px.svg" class="tabNavigationIcon" width="30px"
                             @click="collapseActiveTab($event, 6)">
                         <h2 class="title is-spaced">Advanced Controls</h2>
                         <b-field label="Capture Canvas" class="subtitle">
@@ -919,7 +919,7 @@ export default {
             var a = document.createElement("a");
             a.href = "https://github.com/KhronosGroup/glTF-Sample-Viewer";
             var img = document.createElement("img");
-            img.src = "/assets/ui/GitHub-Mark-Light-32px.png";
+            img.src = "assets/ui/GitHub-Mark-Light-32px.png";
             img.style.width = "22px";
             img.style.height = "22px";
             ulElement.appendChild(a);
@@ -1049,14 +1049,14 @@ export default {
             if (this.tabContentHidden === false && this.activeTab === 2) {
                 return (
                     `<div style="position:relative; width:50px; height:100%">` +
-                    `<img src="/assets/ui/Capture 50X50.svg" width="50px" height="100%">` +
+                    `<img src="assets/ui/Capture 50X50.svg" width="50px" height="100%">` +
                     infoDiv +
                     `</div>`
                 );
             }
             return (
                 `<div style="position:relative; width:50px; height:100%">` +
-                `<img src="/assets/ui/Capture 30X30.svg" width="30px">` +
+                `<img src="assets/ui/Capture 30X30.svg" width="30px">` +
                 infoDiv +
                 `</div>`
             );

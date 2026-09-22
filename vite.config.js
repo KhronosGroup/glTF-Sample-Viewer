@@ -10,7 +10,18 @@ const sourcemap = process.env.SOURCEMAP !== "false";
 // public/libs and public/assets/images by the predev/prebuild npm scripts, since Vite's
 // public/ dir can't be populated from another package's build output at Vite build time.
 export default defineConfig({
-    plugins: [vue()],
+    // The deployed site lives under a subpath (github.khronos.org/glTF-Sample-Viewer-Release/),
+    // so emitted asset URLs must be relative. Vite's default of "/" would resolve them against
+    // the domain root and 404 every bundle, stylesheet and public asset in production.
+    base: "./",
+    plugins: [
+        vue({
+            // All static assets live in public/ and are referenced by plain relative URLs.
+            // Without this, the SFC compiler tries to resolve every literal src="..." as a
+            // module import relative to the .vue file and fails to find them.
+            template: { transformAssetUrls: false }
+        })
+    ],
     resolve: {
         // Leftover from before gl-matrix/jpeg-js/fast-png were audited: root no longer imports
         // gl-matrix directly, but jpeg-js/fast-png dedupe stays in case that ever changes.
