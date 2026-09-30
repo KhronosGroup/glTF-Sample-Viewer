@@ -6,13 +6,17 @@ import { Tabs, useTabState } from "./Tabs.jsx";
 import { LoadingOverlay, Toasts } from "./Notices.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { DisplayTab } from "./tabs/DisplayTab.jsx";
+import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
+import { CreditsTab } from "./tabs/CreditsTab.jsx";
 
 // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
 const MOBILE_BREAKPOINT = 768;
 
 const TAB_META = [
     { id: "models", label: "Models", icon: "Model" },
-    { id: "display", label: "Display", icon: "Display" }
+    { id: "display", label: "Display", icon: "Display" },
+    { id: "validator", label: "Validator", icon: "Capture" },
+    { id: "credits", label: "Credits", icon: "XMP" }
 ];
 
 const INITIAL_LIGHTING = {
@@ -91,12 +95,23 @@ export function App() {
                         onLightingChange={updateLighting}
                     />
                 );
+            case "validator":
+                return <ValidatorTab onCollapse={collapse} />;
+            case "credits":
+                return <CreditsTab onCollapse={collapse} />;
             default:
                 return null;
         }
     };
 
-    const tabs = TAB_META.map((tab) => ({ ...tab, render: () => renderTab(tab.id) }));
+    const tabs = TAB_META.map((tab) => ({
+        ...tab,
+        render: () => renderTab(tab.id),
+        renderHeader:
+            tab.id === "validator"
+                ? (expanded) => <ValidationCounter expanded={expanded} isMobile={layout.isMobile} />
+                : undefined
+    }));
 
     return (
         <>

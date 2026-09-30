@@ -55,5 +55,23 @@ for (const target of UIS) {
             await expectCanvasToRender(page, "no-ibl.png");
             expectNoConsoleErrors(errors);
         });
+
+        test("credits and validator reflect the loaded model", async ({ page }) => {
+            const errors = collectConsoleErrors(page);
+
+            await page.goto(`/${target.query}`);
+            await waitForLoadingToSettle(page);
+
+            await openTab(page, "credits");
+            await expect(page.getByTestId("asset-copyright")).not.toBeEmpty();
+            await expect(page.getByTestId("asset-generator")).not.toBeEmpty();
+            await expect(page.getByTestId("environment-license")).not.toHaveText("N/A");
+
+            await openTab(page, "validator");
+            await expect(page.getByText(/Number of errors: \d+/)).toBeVisible();
+            await expect(page.getByText(/Number of warnings: \d+/)).toBeVisible();
+
+            expectNoConsoleErrors(errors);
+        });
     });
 }

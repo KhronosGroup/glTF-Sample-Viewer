@@ -18,6 +18,29 @@ import { uiEvents } from "./ui_events.js";
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
 // as close as possible
+
+/**
+ * Splits an SPDX licence file into parts the UI can render as elements. It used
+ * to be assembled into an HTML string and injected with v-html, which meant
+ * remote text reached innerHTML.
+ */
+function parseEnvironmentLicense(text, hdr) {
+    const licenseName = text.split("SPDX-License-Identifier: ")[1]?.trim();
+    const copyright = text
+        .replace("SPDX-FileCopyrightText: ", "")
+        .replace(/SPDX-License-Identifier:(.)*/g, "")
+        .replaceAll("\n", "")
+        .trim()
+        .replace(/,$/, "");
+
+    return {
+        copyright,
+        sourceUrl: hdr.hdr_path,
+        licenseName,
+        licenseUrl: `${hdr.base_path}/LICENSES/${licenseName}.txt`
+    };
+}
+
 class UIModel {
     constructor(modelPathProvider, environments) {
         setViewerState({ models: modelPathProvider.getAllKeys() });
@@ -145,32 +168,21 @@ class UIModel {
         ).pipe(startWith(environments[initialEnvironment]));
 
         this.hdr.subscribe(async (hdr) => {
-            if (hdr.license_path !== undefined) {
-                try {
-                    const response = await fetch(hdr.license_path);
-                    if (!response.ok) {
-                        throw new Error("License file not found");
-                    }
-                    let text = await response.text();
-                    const license = text.split("SPDX-License-Identifier: ")[1];
-                    console.log(license);
-                    text = text.replace("SPDX-FileCopyrightText: ", "");
-                    text = text.replace(
-                        /SPDX-License-Identifier:(.)*/g,
-                        `, <a href="${hdr.hdr_path}">Source</a>, License: `
-                    );
-                    text += `<a href="${hdr.base_path}/LICENSES/${license}.txt">${license}</a>`;
-                    text = "(c) " + text;
-                    text = text.replaceAll("\n", "");
-                    text = text.replaceAll(" ,", ",");
-                    setViewerState({ environmentLicense: text });
-
-                    // eslint-disable-next-line no-unused-vars
-                } catch (error) {
-                    setViewerState({ environmentLicense: "N/A" });
+            if (hdr.license_path === undefined) {
+                setViewerState({ environmentLicense: null });
+                return;
+            }
+            try {
+                const response = await fetch(hdr.license_path);
+                if (!response.ok) {
+                    throw new Error("License file not found");
                 }
-            } else {
-                setViewerState({ environmentLicense: "N/A" });
+                setViewerState({
+                    environmentLicense: parseEnvironmentLicense(await response.text(), hdr)
+                });
+                // eslint-disable-next-line no-unused-vars
+            } catch (error) {
+                setViewerState({ environmentLicense: null });
             }
         });
 
