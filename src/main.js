@@ -1,7 +1,6 @@
 import { GltfState, GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
-import "./ui/ui.jsx";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
 import { getViewerState, setViewerState } from "./logic/viewer_store.js";
 import { uiEvents } from "./logic/ui_events.js";
@@ -32,8 +31,15 @@ const EXTENSION_TOGGLES = {
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
-const main = async () => {
-    const canvas = document.getElementById("canvas");
+/**
+ * Boots the viewer against a canvas and returns a teardown function.
+ *
+ * Everything acquired here — the render loop, the WebGL context, the physics
+ * engine, the canvas listeners and the event subscriptions — is released again,
+ * so the whole thing can be started twice in a row without leaking. React's
+ * StrictMode does exactly that in development.
+ */
+export const initViewer = async (canvas) => {
     const context = canvas.getContext("webgl2", {
         alpha: false,
         antialias: true
@@ -92,6 +98,13 @@ const main = async () => {
 
     const uiModel = new UIModel(pathProvider, environmentPaths, canvas);
 
+    // Collected so every listener can be removed again on teardown.
+    const subscriptions = [];
+    const on = (event, handler) => subscriptions.push(event.on(handler));
+
+    // True once torn down, so in-flight async work stops applying state.
+    let disposed = false;
+
     // Only redraw glTF view upon user inputs, or when an animation is playing.
     let redraw = false;
 
@@ -142,7 +155,7 @@ const main = async () => {
             report = { error: `Validation failed: ${error}` };
         }
 
-        if (validationId === latestValidationId) {
+        if (validationId === latestValidationId && !disposed) {
             uiModel.publishValidationReport(report);
         }
     };
@@ -204,7 +217,7 @@ const main = async () => {
         uiModel.goToLoadingState();
 
         const run = queuedLoads.then(async () => {
-            if (loadId !== latestLoadId) {
+            if (loadId !== latestLoadId || disposed) {
                 return;
             }
 
@@ -258,7 +271,7 @@ const main = async () => {
 
     // Most handlers only write a rendering parameter and ask for a repaint.
     const onChange = (event, apply) =>
-        event.on((value) => {
+        on(event, (value) => {
             apply(value);
             redraw = true;
         });
@@ -353,7 +366,7 @@ const main = async () => {
         state.animationIndices = indices;
     });
 
-    uiEvents.animationPlayChanged.on((playing) => {
+    on(uiEvents.animationPlayChanged, (playing) => {
         if (playing) {
             state.animationTimer.unpause();
         } else {
@@ -361,12 +374,12 @@ const main = async () => {
         }
     });
 
-    uiEvents.animationResetChanged.on(() => {
+    on(uiEvents.animationResetChanged, () => {
         state.animationTimer.reset();
         redraw = true;
     });
 
-    uiEvents.graphPlayChanged.on((playing) => {
+    on(uiEvents.graphPlayChanged, (playing) => {
         if (playing) {
             state.graphController.resumeGraph();
             state.animationTimer.unpause();
@@ -376,25 +389,25 @@ const main = async () => {
         }
     });
 
-    uiEvents.graphResetChanged.on(() => {
+    on(uiEvents.graphResetChanged, () => {
         state.graphController.resetGraph();
         redraw = true;
     });
 
-    uiEvents.selectedGraphChanged.on((graphIndex) => {
+    on(uiEvents.selectedGraphChanged, (graphIndex) => {
         if (graphIndex !== null && graphIndex !== undefined) {
             state.graphController.loadGraph(graphIndex);
         }
     });
 
-    uiEvents.customEventSendClicked.on((eventData) => {
+    on(uiEvents.customEventSendClicked, (eventData) => {
         if (eventData && eventData.eventId) {
             state.graphController.dispatchEvent(eventData.eventId, { ...eventData.values });
         }
     });
 
     // physicsEngineChanged is deliberately unhandled: PhysX is the only engine.
-    uiEvents.physicsEnabledChanged.on((enabled) => {
+    on(uiEvents.physicsEnabledChanged, (enabled) => {
         if (enabled) {
             state.physicsController.resumeSimulation();
         } else {
@@ -402,14 +415,14 @@ const main = async () => {
         }
     });
 
-    uiEvents.physicsResetChanged.on(() => {
+    on(uiEvents.physicsResetChanged, () => {
         state.physicsController.resetScene(state.gltf);
         state.gltf.resetAnimatedProperties(state.sceneIndex);
         state.physicsController.loadScene(state, state.sceneIndex);
         redraw = true;
     });
 
-    uiEvents.physicsStepChanged.on(() => {
+    on(uiEvents.physicsStepChanged, () => {
         state.physicsController.simulateStep(state, 1 / 60);
         state.gltf.resetAllDirtyFlags();
         redraw = true;
@@ -434,7 +447,7 @@ const main = async () => {
         document.body.removeChild(element);
     };
 
-    uiEvents.cameraExport.on(() => {
+    on(uiEvents.cameraExport, () => {
         const camera =
             state.cameraNodeIndex === undefined
                 ? state.userCamera
@@ -443,7 +456,7 @@ const main = async () => {
         downloadDataURL("camera.gltf", "data:text/plain;charset=utf-8," + encodeURIComponent(gltf));
     });
 
-    uiEvents.captureCanvas.on(() => {
+    on(uiEvents.captureCanvas, () => {
         view.renderFrame(state, canvas.width, canvas.height);
         downloadDataURL("capture.png", canvas.toDataURL());
     });
@@ -502,7 +515,7 @@ const main = async () => {
         };
     })();
 
-    uiEvents.inputSmoothingChanged.on((enabled) => dragSmoother.setSmoothMs(enabled ? 330 : 0));
+    on(uiEvents.inputSmoothingChanged, (enabled) => dragSmoother.setSmoothMs(enabled ? 330 : 0));
 
     uiModel.onOrbit((orbit) => {
         dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
@@ -543,6 +556,7 @@ const main = async () => {
     // ------------------------------------------------------------ render loop
 
     const past = {};
+    let animationFrame = null;
     const update = () => {
         const devicePixelRatio = window.devicePixelRatio || 1;
 
@@ -581,13 +595,25 @@ const main = async () => {
             view.renderFrame(state, canvas.width, canvas.height);
         }
 
-        window.requestAnimationFrame(update);
+        animationFrame = window.requestAnimationFrame(update);
     };
 
     // After this start executing animation loop.
-    window.requestAnimationFrame(update);
+    animationFrame = window.requestAnimationFrame(update);
+
+    return () => {
+        disposed = true;
+        if (animationFrame !== null) {
+            window.cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        for (const unsubscribe of subscriptions) {
+            unsubscribe();
+        }
+        subscriptions.length = 0;
+        uiModel.dispose();
+        state.graphController.stopGraphEngine();
+        state.physicsController.pauseSimulation();
+        setViewerState({ isLoading: false });
+    };
 };
-
-export default main;
-
-main();

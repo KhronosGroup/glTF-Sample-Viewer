@@ -55,6 +55,8 @@ class UIModel {
         this.lastDroppedFilename = undefined;
         this.modelHandlers = [];
         this.hdrHandlers = [];
+        this.subscriptions = [];
+        this.canvas = canvas;
 
         this.modelURL = new URLSearchParams(window.location.search).get("model");
 
@@ -71,20 +73,23 @@ class UIModel {
             }))
         });
 
-        uiEvents.modelChanged.on((name) => this.selectModel(name));
-        uiEvents.flavourChanged.on((flavour) => {
-            this.emitModel({
-                mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
-            });
-        });
+        this.subscriptions.push(
+            uiEvents.modelChanged.on((name) => this.selectModel(name)),
+            uiEvents.flavourChanged.on((flavour) => {
+                this.emitModel({
+                    mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
+                });
+            }),
+            uiEvents.selectedEnvironmentChanged.on((name) => {
+                this.emitHdr(getViewerState().environments[name]);
+            }),
+            uiEvents.addEnvironmentChanged.on((hdr) => this.addEnvironment(hdr))
+        );
 
-        uiEvents.selectedEnvironmentChanged.on((name) => {
-            this.emitHdr(getViewerState().environments[name]);
-        });
-        uiEvents.addEnvironmentChanged.on((hdr) => this.addEnvironment(hdr));
-
-        canvas.addEventListener("dragenter", () => setViewerState({ showDropDownOverlay: true }));
-        canvas.addEventListener("dragleave", () => setViewerState({ showDropDownOverlay: false }));
+        this.showOverlay = () => setViewerState({ showDropDownOverlay: true });
+        this.hideOverlay = () => setViewerState({ showDropDownOverlay: false });
+        canvas.addEventListener("dragenter", this.showOverlay);
+        canvas.addEventListener("dragleave", this.hideOverlay);
 
         this.detachInput = attachCanvasInput(canvas, {
             onOrbit: (delta) => this.orbitHandler?.(delta),
@@ -143,12 +148,14 @@ class UIModel {
 
     onClearColor(handler) {
         this.clearColorHandler = handler;
-        uiEvents.colorChanged.on((hex) => {
-            const color = hexToLinearColor(hex);
-            if (color !== undefined) {
-                handler(color);
-            }
-        });
+        this.subscriptions.push(
+            uiEvents.colorChanged.on((hex) => {
+                const color = hexToLinearColor(hex);
+                if (color !== undefined) {
+                    handler(color);
+                }
+            })
+        );
     }
 
     selectModel(name) {
@@ -401,6 +408,14 @@ class UIModel {
 
     dispose() {
         this.detachInput?.();
+        for (const unsubscribe of this.subscriptions) {
+            unsubscribe();
+        }
+        this.subscriptions.length = 0;
+        this.canvas.removeEventListener("dragenter", this.showOverlay);
+        this.canvas.removeEventListener("dragleave", this.hideOverlay);
+        this.modelHandlers.length = 0;
+        this.hdrHandlers.length = 0;
     }
 }
 

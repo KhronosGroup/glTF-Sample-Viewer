@@ -1,17 +1,24 @@
-import { flushSync } from "react-dom";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./sass.scss";
-import { Canvas } from "./Canvas.jsx";
-import { App } from "./react/App.jsx";
-import { notify } from "../logic/notifications.js";
+import "./ui/sass.scss";
+import { Viewer } from "./ui/react/Viewer.jsx";
+import { App } from "./ui/react/App.jsx";
+import { notify } from "./logic/notifications.js";
 
-// main.js looks up the #canvas element as soon as it runs, so the React tree
-// that renders it has to be committed synchronously here. This goes away once
-// main.js moves into an effect that owns the canvas ref.
-const canvasRoot = createRoot(document.getElementById("canvasUI"));
-flushSync(() => canvasRoot.render(<Canvas />));
+// Two roots rather than one, because index.html's column layout owns the split
+// between the canvas and the panel. The viewer starts from its own effect, so
+// there is no ordering dependency between them.
+createRoot(document.getElementById("canvasUI")).render(
+    <StrictMode>
+        <Viewer />
+    </StrictMode>
+);
 
-createRoot(document.getElementById("app")).render(<App />);
+createRoot(document.getElementById("app")).render(
+    <StrictMode>
+        <App />
+    </StrictMode>
+);
 
 // pipe error messages to UI
 (() => {
