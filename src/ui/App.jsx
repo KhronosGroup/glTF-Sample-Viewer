@@ -247,8 +247,7 @@ export function App() {
 
             <div className="h-full" style={uiVisible ? undefined : { display: "none" }}>
                 <div
-                    id="dropZone"
-                    className={`pointer-events-none fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
+                    className={`pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
                         showDropDownOverlay ? "opacity-100" : "opacity-0"
                     }`}
                 >
