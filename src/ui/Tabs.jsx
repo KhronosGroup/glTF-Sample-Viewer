@@ -1,13 +1,11 @@
-import { PanelRightClose } from "lucide-react";
 import { useState } from "react";
-import { IconButton } from "./controls.jsx";
 
 /**
  * Vertical tab rail down the right-hand edge, with the panel to its left.
  *
  * Clicking the active tab collapses the panel; clicking another expands it.
  */
-export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, canHide }) {
+export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
     return (
         <div id="tabsContainer" className="flex h-dvh justify-end">
             {/* Width changes are deliberately instant: animating them would resize
@@ -26,16 +24,6 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, c
                 aria-orientation="vertical"
                 role="tablist"
             >
-                {canHide && (
-                    <IconButton
-                        label="Hide the control panel"
-                        onClick={onHide}
-                        className="hover:bg-rail-hover mt-2 self-center"
-                    >
-                        <PanelRightClose size={22} aria-hidden="true" />
-                    </IconButton>
-                )}
-
                 {/* The rail itself stays flush with the screen edge; only its
                     contents slide when the panel opens. */}
                 <div

@@ -3,10 +3,11 @@ import {
     Atom,
     Box,
     Braces,
+    ChevronLeft,
+    ChevronRight,
     CirclePlay,
     FolderOpen,
     Image,
-    PanelRightOpen,
     ShieldCheck,
     SlidersHorizontal
 } from "lucide-react";
@@ -220,16 +221,18 @@ export function App() {
             <Toasts />
             <LoadingOverlay active={isLoading} />
 
-            {!uiVisible && canToggleUi && (
-                <div className="fixed top-4 right-4 z-20">
-                    <IconButton
-                        label="Show the control panel"
-                        onClick={() => setUiVisible(true)}
-                        className="bg-rail/80 hover:bg-rail p-2 backdrop-blur-sm"
-                    >
-                        <PanelRightOpen size={22} aria-hidden="true" />
-                    </IconButton>
-                </div>
+            {canToggleUi && (
+                <IconButton
+                    label={uiVisible ? "Hide the controls" : "Show the controls"}
+                    onClick={() => setUiVisible((visible) => !visible)}
+                    className="bg-rail/80 hover:bg-rail fixed top-4 right-4 z-20 p-2 backdrop-blur-sm"
+                >
+                    {uiVisible ? (
+                        <ChevronRight size={22} aria-hidden="true" />
+                    ) : (
+                        <ChevronLeft size={22} aria-hidden="true" />
+                    )}
+                </IconButton>
             )}
 
             <div className="h-full" style={uiVisible ? undefined : { display: "none" }}>
@@ -251,8 +254,6 @@ export function App() {
                     onSelect={select}
                     collapsed={collapsed}
                     isMobile={layout.isMobile}
-                    canHide={canToggleUi}
-                    onHide={() => setUiVisible(false)}
                 />
             </div>
         </>
