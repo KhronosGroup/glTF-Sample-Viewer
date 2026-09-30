@@ -6,7 +6,6 @@ import {
     CirclePlay,
     FolderOpen,
     Image,
-    PanelRightClose,
     PanelRightOpen,
     ShieldCheck,
     SlidersHorizontal
@@ -227,42 +226,38 @@ export function App() {
                 : undefined
     }));
 
+    const canToggleUi = !(layout.isMobile && !collapsed) && !layout.noUi;
+
     return (
         <>
             <Toasts />
             <LoadingOverlay active={isLoading} />
 
-            <div className="fixed bottom-[25px] left-[25px] z-20">
-                {!(layout.isMobile && !collapsed) && !layout.noUi && (
+            {!uiVisible && canToggleUi && (
+                <div className="fixed top-4 right-4 z-20">
                     <IconButton
-                        label={uiVisible ? "Hide the control panel" : "Show the control panel"}
-                        onClick={() => setUiVisible((visible) => !visible)}
+                        label="Show the control panel"
+                        onClick={() => setUiVisible(true)}
                         className="bg-rail/80 hover:bg-rail p-2 backdrop-blur-sm"
                     >
-                        {uiVisible ? (
-                            <PanelRightClose size={22} aria-hidden="true" />
-                        ) : (
-                            <PanelRightOpen size={22} aria-hidden="true" />
-                        )}
+                        <PanelRightOpen size={22} aria-hidden="true" />
                     </IconButton>
-                )}
-            </div>
+                </div>
+            )}
 
             <div className="h-full" style={uiVisible ? undefined : { display: "none" }}>
-                {showDropDownOverlay && (
-                    <div
-                        id="dropZone"
-                        className="pointer-events-none fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm"
-                    >
-                        <div className="border-accent text-ink flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed px-16 py-12 text-center">
-                            <FolderOpen size={72} strokeWidth={1.25} aria-hidden="true" />
-                            <p className="text-3xl font-light">Drag and drop files here</p>
-                            <p className="text-ink/70 text-lg">
-                                Supported files: glTF, glb &amp; hdr
-                            </p>
-                        </div>
+                <div
+                    id="dropZone"
+                    className={`pointer-events-none fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
+                        showDropDownOverlay ? "opacity-100" : "opacity-0"
+                    }`}
+                >
+                    <div className="border-accent text-ink flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed px-16 py-12 text-center">
+                        <FolderOpen size={72} strokeWidth={1.25} aria-hidden="true" />
+                        <p className="text-3xl font-light">Drag and drop files here</p>
+                        <p className="text-ink/70 text-lg">Supported files: glTF, glb &amp; hdr</p>
                     </div>
-                )}
+                </div>
 
                 <Tabs
                     tabs={tabs}
@@ -270,6 +265,8 @@ export function App() {
                     onSelect={select}
                     collapsed={collapsed}
                     isMobile={layout.isMobile}
+                    canHide={canToggleUi}
+                    onHide={() => setUiVisible(false)}
                 />
             </div>
         </>
