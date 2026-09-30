@@ -13,26 +13,25 @@ import { GltfState } from "@khronosgroup/gltf-viewer";
 import { SimpleDropzone } from "simple-dropzone";
 import normalizeWheel from "normalize-wheel";
 import { getViewerState, setViewerState } from "./viewer_store.js";
+import { uiEvents } from "./ui_events.js";
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
 // as close as possible
 class UIModel {
-    constructor(app, modelPathProvider, environments) {
-        this.app = app;
-
+    constructor(modelPathProvider, environments) {
         setViewerState({ models: modelPathProvider.getAllKeys() });
 
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const modelURL = urlParams.get("model");
 
-        this.scene = app.sceneChanged.pipe();
-        this.camera = app.cameraChanged.pipe();
-        this.environmentRotation = app.environmentRotationChanged.pipe();
+        this.scene = uiEvents.sceneChanged.pipe();
+        this.camera = uiEvents.cameraChanged.pipe();
+        this.environmentRotation = uiEvents.environmentRotationChanged.pipe();
         const initialEnvironment = "Cannon_Exterior";
         setViewerState({ environments, selectedEnvironment: initialEnvironment });
-        const selectedEnvironment = app.selectedEnvironmentChanged.pipe(
+        const selectedEnvironment = uiEvents.selectedEnvironmentChanged.pipe(
             map((environmentName) => getViewerState().environments[environmentName])
         );
 
@@ -44,44 +43,46 @@ class UIModel {
                 title: GltfState.DebugOutput[key]
             }))
         });
-        this.tonemap = app.tonemapChanged.pipe(startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL));
-        this.debugchannel = app.debugchannelChanged.pipe(startWith(GltfState.DebugOutput.NONE));
+        this.tonemap = uiEvents.tonemapChanged.pipe(startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL));
+        this.debugchannel = uiEvents.debugchannelChanged.pipe(
+            startWith(GltfState.DebugOutput.NONE)
+        );
 
-        this.exposure = app.exposureChanged.pipe();
-        this.skinningEnabled = app.skinningChanged.pipe();
-        this.inputSmoothingEnabled = app.inputSmoothingChanged.pipe();
-        this.morphingEnabled = app.morphingChanged.pipe();
-        this.clearcoatEnabled = app.clearcoatChanged.pipe();
-        this.sheenEnabled = app.sheenChanged.pipe();
-        this.transmissionEnabled = app.transmissionChanged.pipe();
-        this.diffuseTransmissionEnabled = app.diffuseTransmissionChanged.pipe();
-        this.volumeEnabled = app.volumeChanged.pipe();
-        this.iorEnabled = app.iorChanged.pipe();
-        this.iridescenceEnabled = app.iridescenceChanged.pipe();
-        this.retroreflectionEnabled = app.retroreflectionChanged.pipe();
-        this.anisotropyEnabled = app.anisotropyChanged.pipe();
-        this.dispersionEnabled = app.dispersionChanged.pipe();
-        this.specularEnabled = app.specularChanged.pipe();
-        this.emissiveStrengthEnabled = app.emissiveStrengthChanged.pipe();
-        this.volumeScatteringEnabled = app.volumeScatteringChanged.pipe();
-        this.hoverabilityEnabled = app.hoverabilityChanged.pipe();
-        this.selectabilityEnabled = app.selectabilityChanged.pipe();
-        this.nodeVisibilityEnabled = app.nodeVisibilityChanged.pipe();
-        this.gaussianSplattingEnabled = app.gaussianSplattingChanged.pipe();
-        this.floatingPointFramebufferEnabled = app.floatingPointFramebufferChanged.pipe();
-        this.iblEnabled = app.iblChanged.pipe();
-        this.iblIntensity = app.iblIntensityChanged.pipe();
-        this.punctualLightsEnabled = app.punctualLightsChanged.pipe();
-        this.renderEnvEnabled = app.renderEnvChanged.pipe();
-        this.blurEnvEnabled = app.blurEnvChanged.pipe();
-        this.addEnvironment = app.addEnvironmentChanged.pipe();
-        this.captureCanvas = app.captureCanvas.pipe();
-        this.cameraValuesExport = app.cameraExport.pipe();
-        this.interactivityEnabled = app.interactivityChanged.pipe();
+        this.exposure = uiEvents.exposureChanged.pipe();
+        this.skinningEnabled = uiEvents.skinningChanged.pipe();
+        this.inputSmoothingEnabled = uiEvents.inputSmoothingChanged.pipe();
+        this.morphingEnabled = uiEvents.morphingChanged.pipe();
+        this.clearcoatEnabled = uiEvents.clearcoatChanged.pipe();
+        this.sheenEnabled = uiEvents.sheenChanged.pipe();
+        this.transmissionEnabled = uiEvents.transmissionChanged.pipe();
+        this.diffuseTransmissionEnabled = uiEvents.diffuseTransmissionChanged.pipe();
+        this.volumeEnabled = uiEvents.volumeChanged.pipe();
+        this.iorEnabled = uiEvents.iorChanged.pipe();
+        this.iridescenceEnabled = uiEvents.iridescenceChanged.pipe();
+        this.retroreflectionEnabled = uiEvents.retroreflectionChanged.pipe();
+        this.anisotropyEnabled = uiEvents.anisotropyChanged.pipe();
+        this.dispersionEnabled = uiEvents.dispersionChanged.pipe();
+        this.specularEnabled = uiEvents.specularChanged.pipe();
+        this.emissiveStrengthEnabled = uiEvents.emissiveStrengthChanged.pipe();
+        this.volumeScatteringEnabled = uiEvents.volumeScatteringChanged.pipe();
+        this.hoverabilityEnabled = uiEvents.hoverabilityChanged.pipe();
+        this.selectabilityEnabled = uiEvents.selectabilityChanged.pipe();
+        this.nodeVisibilityEnabled = uiEvents.nodeVisibilityChanged.pipe();
+        this.gaussianSplattingEnabled = uiEvents.gaussianSplattingChanged.pipe();
+        this.floatingPointFramebufferEnabled = uiEvents.floatingPointFramebufferChanged.pipe();
+        this.iblEnabled = uiEvents.iblChanged.pipe();
+        this.iblIntensity = uiEvents.iblIntensityChanged.pipe();
+        this.punctualLightsEnabled = uiEvents.punctualLightsChanged.pipe();
+        this.renderEnvEnabled = uiEvents.renderEnvChanged.pipe();
+        this.blurEnvEnabled = uiEvents.blurEnvChanged.pipe();
+        this.addEnvironment = uiEvents.addEnvironmentChanged.pipe();
+        this.captureCanvas = uiEvents.captureCanvas.pipe();
+        this.cameraValuesExport = uiEvents.cameraExport.pipe();
+        this.interactivityEnabled = uiEvents.interactivityChanged.pipe();
 
         const initialClearColor = "#303542";
         setViewerState({ clearColor: initialClearColor });
-        this.clearColor = app.colorChanged.pipe(
+        this.clearColor = uiEvents.colorChanged.pipe(
             startWith(initialClearColor),
             map((hex) => /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)),
             filter((color) => color !== null),
@@ -93,20 +94,20 @@ class UIModel {
             ])
         );
 
-        this.animationPlay = app.animationPlayChanged.pipe();
-        this.graphPlay = app.graphPlayChanged.pipe();
-        this.animationReset = app.animationResetChanged.pipe();
-        this.graphReset = app.graphResetChanged.pipe();
-        this.customEventSend = app.customEventSendClicked.pipe();
-        this.activeAnimations = app.selectedAnimationsChanged.pipe();
-        this.selectedGraph = app.selectedGraphChanged.pipe();
+        this.animationPlay = uiEvents.animationPlayChanged.pipe();
+        this.graphPlay = uiEvents.graphPlayChanged.pipe();
+        this.animationReset = uiEvents.animationResetChanged.pipe();
+        this.graphReset = uiEvents.graphResetChanged.pipe();
+        this.customEventSend = uiEvents.customEventSendClicked.pipe();
+        this.activeAnimations = uiEvents.selectedAnimationsChanged.pipe();
+        this.selectedGraph = uiEvents.selectedGraphChanged.pipe();
 
-        this.physicsReset = app.physicsResetChanged.pipe();
-        this.physicsEngine = app.physicsEngineChanged.pipe();
-        this.physicsEnabled = app.physicsEnabledChanged.pipe();
-        this.physicsStep = app.physicsStepChanged.pipe();
-        this.physicsColliderDebug = app.physicsColliderDebugChanged.pipe();
-        this.physicsJointDebug = app.physicsJointDebugChanged.pipe();
+        this.physicsReset = uiEvents.physicsResetChanged.pipe();
+        this.physicsEngine = uiEvents.physicsEngineChanged.pipe();
+        this.physicsEnabled = uiEvents.physicsEnabledChanged.pipe();
+        this.physicsStep = uiEvents.physicsStepChanged.pipe();
+        this.physicsColliderDebug = uiEvents.physicsColliderDebugChanged.pipe();
+        this.physicsJointDebug = uiEvents.physicsJointDebugChanged.pipe();
 
         const canvas = document.getElementById("canvas");
         canvas.addEventListener("dragenter", () => setViewerState({ showDropDownOverlay: true }));
@@ -114,7 +115,7 @@ class UIModel {
 
         const inputObservables = getInputObservables(canvas);
 
-        const dropdownGltfChanged = app.modelChanged.pipe(
+        const dropdownGltfChanged = uiEvents.modelChanged.pipe(
             startWith(modelURL === null ? "DamagedHelmet" : null),
             filter((value) => value !== null),
             map((value) => {
@@ -126,7 +127,7 @@ class UIModel {
             map((value) => ({ mainFile: value }))
         );
 
-        const dropdownFlavourChanged = app.flavourChanged.pipe(
+        const dropdownFlavourChanged = uiEvents.flavourChanged.pipe(
             map((value) => modelPathProvider.resolve(getViewerState().selectedModel, value)),
             map((value) => ({ mainFile: value }))
         );
@@ -184,7 +185,7 @@ class UIModel {
             });
         });
 
-        this.variant = app.variantChanged.pipe();
+        this.variant = uiEvents.variantChanged.pipe();
 
         // remove last filename
         this.model
@@ -413,12 +414,10 @@ class UIModel {
 
     goToLoadingState() {
         setViewerState({ isLoading: true });
-        this.app.goToLoadingState();
     }
 
     exitLoadingState() {
         setViewerState({ isLoading: false });
-        this.app.exitLoadingState();
     }
 }
 

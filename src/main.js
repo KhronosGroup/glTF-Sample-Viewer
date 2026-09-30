@@ -1,11 +1,12 @@
 import { GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
-import { app } from "./ui/ui.jsx";
+import "./ui/ui.jsx";
 import { EMPTY, from, merge } from "rxjs";
 import { switchMap, map, share, catchError, filter } from "rxjs/operators";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
 import { getViewerState, setViewerState } from "./logic/viewer_store.js";
+import { notify } from "./logic/notifications.js";
 
 import { validateBytes } from "gltf-validator";
 
@@ -35,10 +36,7 @@ const main = async () => {
     state.graphController.addCustomEventListener("test/onSuccess", () => {
         const message = "Interactivity test succeeded";
         console.log(message);
-        app.$buefy.toast.open({
-            message: message,
-            type: "is-success"
-        });
+        notify(message, "is-success");
     });
     state.graphController.addCustomEventListener("test/onFailed", () => {
         const message = "Interactivity test failed";
@@ -68,7 +66,7 @@ const main = async () => {
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/"
     );
 
-    const uiModel = new UIModel(app, pathProvider, environmentPaths);
+    const uiModel = new UIModel(pathProvider, environmentPaths);
 
     const validation = uiModel.model.pipe(
         switchMap((model) => {

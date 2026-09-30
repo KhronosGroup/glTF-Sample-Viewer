@@ -645,76 +645,21 @@
 </template>
 
 <script>
-import { Subject } from "rxjs";
+import { markRaw } from "vue";
 import { viewerStoreMixin } from "./viewer_store_mixin.js";
+import { uiEvents } from "../logic/ui_events.js";
+import { setNotificationSink } from "../logic/notifications.js";
 
 export default {
     name: "App",
     mixins: [viewerStoreMixin],
     data() {
         return {
-            modelChanged: new Subject(),
-            flavourChanged: new Subject(),
-            sceneChanged: new Subject(),
-            cameraChanged: new Subject(),
-            selectedGraphChanged: new Subject(),
-
-            debugchannelChanged: new Subject(),
-            tonemapChanged: new Subject(),
-            skinningChanged: new Subject(),
-            inputSmoothingChanged: new Subject(),
-            punctualLightsChanged: new Subject(),
-
-            iblChanged: new Subject(),
-            blurEnvChanged: new Subject(),
-            morphingChanged: new Subject(),
-            interactivityChanged: new Subject(),
-            colorChanged: new Subject(),
-
-            environmentRotationChanged: new Subject(),
-            animationPlayChanged: new Subject(),
-            graphPlayChanged: new Subject(),
-            animationResetChanged: new Subject(),
-            graphResetChanged: new Subject(),
-            variantChanged: new Subject(),
-            exposureChanged: new Subject(),
-
-            clearcoatChanged: new Subject(),
-            sheenChanged: new Subject(),
-            transmissionChanged: new Subject(),
-            diffuseTransmissionChanged: new Subject(),
-            cameraExport: new Subject(),
-
-            captureCanvas: new Subject(),
-            iblIntensityChanged: new Subject(),
-
-            volumeChanged: new Subject(),
-            iorChanged: new Subject(),
-            iridescenceChanged: new Subject(),
-            retroreflectionChanged: new Subject(),
-            anisotropyChanged: new Subject(),
-            dispersionChanged: new Subject(),
-            specularChanged: new Subject(),
-            emissiveStrengthChanged: new Subject(),
-            volumeScatteringChanged: new Subject(),
-            hoverabilityChanged: new Subject(),
-            selectabilityChanged: new Subject(),
-            nodeVisibilityChanged: new Subject(),
-            gaussianSplattingChanged: new Subject(),
-            floatingPointFramebufferChanged: new Subject(),
-            renderEnvChanged: new Subject(),
-            addEnvironmentChanged: new Subject(),
-            selectedAnimationsChanged: new Subject(),
-            selectedEnvironmentChanged: new Subject(),
-
-            physicsEnabledChanged: new Subject(),
-            physicsResetChanged: new Subject(),
-            physicsEngineChanged: new Subject(),
-            physicsStepChanged: new Subject(),
-            physicsColliderDebugChanged: new Subject(),
-            physicsJointDebugChanged: new Subject(),
-
-            validatorChanged: new Subject(),
+            // markRaw keeps Vue from deep-proxying the Subjects; the template
+            // refers to them by their bare names.
+            ...Object.fromEntries(
+                Object.entries(uiEvents).map(([name, subject]) => [name, markRaw(subject)])
+            ),
 
             fullheight: true,
             right: true,
@@ -780,11 +725,17 @@ export default {
             customEventEnabled: false,
             customEventFocusedInput: null,
             customEventFocusedIndex: null,
-            customEventValid: true,
-            customEventSendClicked: new Subject()
+            customEventValid: true
         };
     },
     watch: {
+        isLoading: function (loading) {
+            if (loading) {
+                this.openLoadingOverlay();
+            } else {
+                this.closeLoadingOverlay();
+            }
+        },
         selectedAnimations: function (newValue) {
             this.selectedAnimationsChanged.next(newValue);
         },
@@ -807,6 +758,10 @@ export default {
         }
     },
     beforeMount: function () {
+        setNotificationSink((message, type) => {
+            this.$buefy.toast.open({ message, type });
+        });
+
         // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
         if (document.documentElement.clientWidth > 768) {
             this.uiVisible = true;
@@ -1086,7 +1041,7 @@ export default {
                 duration: duration
             });
         },
-        goToLoadingState() {
+        openLoadingOverlay() {
             if (this.loadingComponent !== undefined) {
                 return;
             }
@@ -1094,7 +1049,7 @@ export default {
                 container: null
             });
         },
-        exitLoadingState() {
+        closeLoadingOverlay() {
             if (this.loadingComponent === undefined) {
                 return;
             }
