@@ -93,3 +93,19 @@ export function Checkbox({ checked, onChange, disabled = false, children }) {
         </label>
     );
 }
+
+export function ToggleButton({ on, onText, offText, className, style, onToggle }) {
+    return (
+        <Button className={className} style={style} onClick={() => onToggle(!on)}>
+            {on ? onText : offText}
+        </Button>
+    );
+}
+
+export function Input({ className, ...rest }) {
+    return (
+        <div className="control is-clearfix">
+            <input className={classNames("input", className)} {...rest} />
+        </div>
+    );
+}

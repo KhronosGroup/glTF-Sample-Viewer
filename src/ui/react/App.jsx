@@ -8,6 +8,8 @@ import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { DisplayTab } from "./tabs/DisplayTab.jsx";
 import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
 import { CreditsTab } from "./tabs/CreditsTab.jsx";
+import { AnimationsTab } from "./tabs/AnimationsTab.jsx";
+import { GraphsTab } from "./tabs/GraphsTab.jsx";
 
 // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
 const MOBILE_BREAKPOINT = 768;
@@ -16,6 +18,7 @@ const TAB_META = [
     { id: "models", label: "Models", icon: "Model" },
     { id: "display", label: "Display", icon: "Display" },
     { id: "validator", label: "Validator", icon: "Capture" },
+    { id: "animations", label: "Animations", icon: "Animation" },
     { id: "credits", label: "Credits", icon: "XMP" }
 ];
 
@@ -30,6 +33,11 @@ const INITIAL_LIGHTING = {
     rotation: "+Z"
 };
 
+// Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
+const INITIAL_EXTENSIONS = {
+    interactivity: true
+};
+
 function readInitialLayout() {
     const isMobile = document.documentElement.clientWidth <= MOBILE_BREAKPOINT;
     const noUi = new URLSearchParams(window.location.search).get("noUI") !== null;
@@ -41,12 +49,21 @@ export function App() {
     const [uiVisible, setUiVisible] = useState(layout.uiVisible);
     const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
+    const [extensions] = useState(INITIAL_EXTENSIONS);
     const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
 
     const isLoading = useViewerStore((state) => state.isLoading);
     const showDropDownOverlay = useViewerStore((state) => state.showDropDownOverlay);
+    const graphs = useViewerStore((state) => state.graphs);
 
-    const tabIds = TAB_META.map((tab) => tab.id);
+    // The Animations tab becomes the Graphs tab when the asset carries
+    // KHR_interactivity and the extension is enabled.
+    const showGraphs = graphs.length > 0 && extensions.interactivity;
+
+    const tabMeta = TAB_META.map((tab) =>
+        tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs", icon: "Animation" } : tab
+    );
+    const tabIds = tabMeta.map((tab) => tab.id);
     const { activeTab, collapsed, select, collapse } = useTabState(tabIds);
 
     useEffect(() => {
@@ -97,6 +114,12 @@ export function App() {
                 );
             case "validator":
                 return <ValidatorTab onCollapse={collapse} />;
+            case "animations":
+                return showGraphs ? (
+                    <GraphsTab onCollapse={collapse} />
+                ) : (
+                    <AnimationsTab onCollapse={collapse} />
+                );
             case "credits":
                 return <CreditsTab onCollapse={collapse} />;
             default:
@@ -104,7 +127,7 @@ export function App() {
         }
     };
 
-    const tabs = TAB_META.map((tab) => ({
+    const tabs = tabMeta.map((tab) => ({
         ...tab,
         render: () => renderTab(tab.id),
         renderHeader:

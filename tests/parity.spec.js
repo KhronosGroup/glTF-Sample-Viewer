@@ -73,5 +73,23 @@ for (const target of UIS) {
 
             expectNoConsoleErrors(errors);
         });
+
+        test("an animated model lists its animations and plays them", async ({ page }) => {
+            const errors = collectConsoleErrors(page);
+
+            await page.goto(`/${target.query}`);
+            await waitForLoadingToSettle(page);
+            await openTab(page, "models");
+            await page.locator(ui.modelSelect).selectOption("BoxAnimated");
+            await waitForLoadingToSettle(page);
+
+            await openTab(page, "animations");
+
+            // Animations start playing, so the toggle offers to pause.
+            await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+            await expect(page.getByRole("checkbox").first()).toBeChecked();
+
+            expectNoConsoleErrors(errors);
+        });
     });
 }
