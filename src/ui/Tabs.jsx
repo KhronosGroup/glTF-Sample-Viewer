@@ -11,9 +11,10 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, c
     return (
         <div id="tabsContainer" className="flex h-dvh justify-end">
             {/* Width changes are deliberately instant: animating them would resize
-                the canvas on every frame of the transition. */}
+                the canvas on every frame of the transition. The panel and rail
+                widths add up to a constant, so the canvas keeps its size. */}
             <section
-                className={collapsed ? "hidden" : "w-75 shrink-0 overflow-x-hidden overflow-y-auto"}
+                className={collapsed ? "hidden" : "w-72 shrink-0 overflow-x-hidden overflow-y-auto"}
             >
                 {tabs.map((tab) =>
                     tab.id === activeTab ? <div key={tab.id}>{tab.render()}</div> : null
@@ -21,9 +22,7 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, c
             </section>
 
             <nav
-                className={`bg-rail flex w-25 shrink-0 flex-col overflow-x-hidden overflow-y-auto transition-transform duration-200 ease-out ${
-                    collapsed ? "translate-x-0" : "-translate-x-1"
-                }`}
+                className="bg-rail flex w-28 shrink-0 flex-col overflow-x-hidden overflow-y-auto"
                 aria-orientation="vertical"
                 role="tablist"
             >
@@ -37,7 +36,13 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, c
                     </IconButton>
                 )}
 
-                <div className={isMobile ? undefined : "pt-[8dvh]"}>
+                {/* The rail itself stays flush with the screen edge; only its
+                    contents slide when the panel opens. */}
+                <div
+                    className={`transition-transform duration-200 ease-out ${
+                        isMobile ? "" : "pt-[8dvh]"
+                    } ${collapsed ? "translate-x-0" : "-translate-x-1"}`}
+                >
                     {tabs.map((tab) => {
                         const expanded = !collapsed && tab.id === activeTab;
                         const Icon = tab.icon;
@@ -49,7 +54,7 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, c
                                 aria-selected={expanded}
                                 data-testid={`tab-${tab.id}`}
                                 onClick={() => onSelect(tab.id)}
-                                className={`focus-visible:outline-accent flex w-full flex-col items-center justify-center gap-2 border-r-8 px-2 py-5 text-center transition-colors focus-visible:-outline-offset-2 focus-visible:outline ${
+                                className={`focus-visible:outline-accent flex w-full flex-col items-center justify-center gap-2 border-r-8 px-3 py-5 text-center transition-colors focus-visible:-outline-offset-2 focus-visible:outline ${
                                     expanded
                                         ? "border-accent bg-rail-active"
                                         : "hover:bg-rail-hover border-transparent"
@@ -61,7 +66,7 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile, onHide, c
                                     <Icon size={26} strokeWidth={1.75} aria-hidden="true" />
                                 )}
                                 {!isMobile && (
-                                    <span className="text-base leading-tight">{tab.label}</span>
+                                    <span className="text-sm leading-tight">{tab.label}</span>
                                 )}
                             </button>
                         );

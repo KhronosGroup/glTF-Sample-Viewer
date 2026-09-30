@@ -222,7 +222,7 @@ export function App() {
         render: () => renderTab(tab.id),
         renderHeader:
             tab.id === "validator"
-                ? (expanded) => <ValidationCounter expanded={expanded} isMobile={layout.isMobile} />
+                ? () => <ValidationCounter isMobile={layout.isMobile} />
                 : undefined
     }));
 
