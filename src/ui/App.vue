@@ -125,7 +125,7 @@
                             @click="collapseActiveTab($event, 1)">
                         <h2 class="title  is-spaced">Display</h2>
                         <b-field label="Lighting" class="subtitle">
-                            <b-switch class="smallerLabel" v-model="ibl" v-on:input="iblChanged.next($event.target.checked); iblTriggered($event.target.checked);">Image Based
+                            <b-switch data-testid="switch-ibl" class="smallerLabel" v-model="ibl" v-on:input="iblChanged.next($event.target.checked); iblTriggered($event.target.checked);">Image Based
                             </b-switch>
                             <b-switch class="smallerLabel" v-model="punctualLights" v-on:input="punctualLightsChanged.next($event.target.checked)">Punctual
                                 Lighting</b-switch>

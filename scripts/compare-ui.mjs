@@ -1,6 +1,8 @@
 import { chromium } from "@playwright/test";
 
-// Throwaway: side-by-side screenshots of the Vue and React panels.
+// Throwaway: side-by-side screenshots of a Vue and React panel.
+const tab = process.argv[2] ?? "models";
+
 const browser = await chromium.launch({
     args: ["--enable-unsafe-swiftshader", "--use-gl=angle", "--use-angle=swiftshader"]
 });
@@ -11,10 +13,12 @@ for (const [name, url] of [
 ]) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
     await page.goto(url);
-    await page.locator(".loading-overlay").waitFor({ state: "detached", timeout: 120_000 });
-    await page.locator("[data-testid='tab-models']").click();
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: `dom-dump/${name}-models.png` });
+    const overlay = page.locator(".loading-overlay");
+    await overlay.waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+    await overlay.waitFor({ state: "detached", timeout: 120_000 });
+    await page.locator(`[data-testid='tab-${tab}']`).click();
+    await page.waitForTimeout(700);
+    await page.screenshot({ path: `dom-dump/${name}-${tab}.png` });
     await page.close();
 }
 

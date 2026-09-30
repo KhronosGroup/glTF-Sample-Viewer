@@ -25,9 +25,13 @@ export function Field({ label, className, grouped = false, children }) {
     );
 }
 
-export function Switch({ checked, onChange, className, disabled = false, children }) {
+export function Switch({ checked, onChange, className, disabled = false, children, ...rest }) {
     return (
-        <label className={classNames("switch", "is-rounded", className)} disabled={disabled}>
+        <label
+            className={classNames("switch", "is-rounded", className)}
+            disabled={disabled}
+            {...rest}
+        >
             <input
                 type="checkbox"
                 checked={checked}

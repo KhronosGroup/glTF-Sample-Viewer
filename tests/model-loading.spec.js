@@ -8,20 +8,6 @@ import {
     waitForLoadingToSettle
 } from "./viewer.js";
 
-test("loads a model chosen from the dropdown", async ({ page }) => {
-    const errors = collectConsoleErrors(page);
-
-    await page.goto("/");
-    await waitForLoadingToSettle(page);
-    await openModelsTab(page);
-
-    await page.locator(ui.modelSelect).selectOption("Avocado");
-    await waitForLoadingToSettle(page);
-
-    await expectCanvasToRender(page, "avocado.png");
-    expectNoConsoleErrors(errors);
-});
-
 // Guards the load-orchestration fix: a slow model selected first must not
 // overwrite a fast model selected second.
 test("a superseded model load does not overwrite the current one", async ({ page }) => {

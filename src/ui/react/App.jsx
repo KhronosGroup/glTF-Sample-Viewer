@@ -1,14 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { notify } from "../../logic/notifications.js";
+import { uiEvents } from "../../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { LoadingOverlay, Toasts } from "./Notices.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
+import { DisplayTab } from "./tabs/DisplayTab.jsx";
 
 // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
 const MOBILE_BREAKPOINT = 768;
 
-const TAB_META = [{ id: "models", label: "Models", icon: "Model" }];
+const TAB_META = [
+    { id: "models", label: "Models", icon: "Model" },
+    { id: "display", label: "Display", icon: "Display" }
+];
+
+const INITIAL_LIGHTING = {
+    ibl: true,
+    punctualLights: true,
+    renderEnv: true,
+    blurEnv: true,
+    iblIntensity: 0.0,
+    exposure: 0,
+    toneMap: "Khronos PBR Neutral",
+    rotation: "+Z"
+};
 
 function readInitialLayout() {
     const isMobile = document.documentElement.clientWidth <= MOBILE_BREAKPOINT;
@@ -20,6 +36,8 @@ export function App() {
     const [layout] = useState(readInitialLayout);
     const [uiVisible, setUiVisible] = useState(layout.uiVisible);
     const [selectedVariant, setSelectedVariant] = useState("None");
+    const [lighting, setLighting] = useState(INITIAL_LIGHTING);
+    const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
 
     const isLoading = useViewerStore((state) => state.isLoading);
     const showDropDownOverlay = useViewerStore((state) => state.showDropDownOverlay);
@@ -40,6 +58,21 @@ export function App() {
         }
     }, []);
 
+    // Turning IBL off hides the background and remembers the previous choice, so
+    // turning it back on restores it rather than forcing it visible.
+    const updateLighting = (partial) => {
+        let next = partial;
+        if (partial.ibl === false) {
+            environmentVisiblePref.current = lighting.renderEnv;
+            next = { ...partial, renderEnv: false };
+            uiEvents.renderEnvChanged.next(false);
+        } else if (partial.ibl === true) {
+            next = { ...partial, renderEnv: environmentVisiblePref.current };
+            uiEvents.renderEnvChanged.next(environmentVisiblePref.current);
+        }
+        setLighting((current) => ({ ...current, ...next }));
+    };
+
     const renderTab = (id) => {
         switch (id) {
             case "models":
@@ -48,6 +81,14 @@ export function App() {
                         onCollapse={collapse}
                         selectedVariant={selectedVariant}
                         onSelectVariant={setSelectedVariant}
+                    />
+                );
+            case "display":
+                return (
+                    <DisplayTab
+                        onCollapse={collapse}
+                        lighting={lighting}
+                        onLightingChange={updateLighting}
                     />
                 );
             default:
