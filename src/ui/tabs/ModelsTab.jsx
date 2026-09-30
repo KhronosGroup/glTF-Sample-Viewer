@@ -5,7 +5,7 @@ import { Field, Panel, Radio, Select } from "../controls.jsx";
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
 
-export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
+export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const models = useViewerStore((state) => state.models);
     const flavours = useViewerStore((state) => state.flavours);
     const scenes = useViewerStore((state) => state.scenes);
@@ -22,7 +22,7 @@ export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
     };
 
     return (
-        <Panel title="Models" onCollapse={onCollapse}>
+        <Panel title="Models">
             <Field label="Models">
                 <Select
                     data-testid="model-select"

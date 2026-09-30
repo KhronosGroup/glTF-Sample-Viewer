@@ -11,11 +11,11 @@ import {
     Switch
 } from "../controls.jsx";
 
-export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
+export function PhysicsTab({ debug, onDebugChange }) {
     const physicsState = useViewerStore((state) => state.physicsState);
 
     return (
-        <Panel title="Physics" onCollapse={onCollapse}>
+        <Panel title="Physics">
             <SectionLabel>Physics Controls</SectionLabel>
 
             <PlaybackControls

@@ -99,5 +99,5 @@ export function useTabState(tabIds) {
         setSelectedTab(id);
     };
 
-    return { activeTab, collapsed, select, collapse: () => setCollapsed(true) };
+    return { activeTab, collapsed, select };
 }

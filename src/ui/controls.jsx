@@ -6,7 +6,7 @@
  * control ended up with three different paddings and two different greens.
  */
 
-import { ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronDown, RotateCcw } from "lucide-react";
 
 function classNames(...values) {
     return values.filter(Boolean).join(" ");
@@ -205,7 +205,7 @@ export function Input({ className, ...rest }) {
 }
 
 export function Title({ children }) {
-    return <h2 className="mt-10 mb-8 text-3xl leading-tight font-bold">{children}</h2>;
+    return <h2 className="mb-8 text-3xl leading-tight font-bold">{children}</h2>;
 }
 
 export function Subtitle({ children }) {
@@ -216,16 +216,13 @@ export function SectionLabel({ className, children }) {
     return <p className={classNames("mt-8 mb-2 font-medium", className)}>{children}</p>;
 }
 
-/** Shared chrome for a tab panel: the collapse control and the heading. */
-export function Panel({ title, onCollapse, className, children }) {
+/** Shared chrome for a tab panel: the heading and the scroll padding. */
+export function Panel({ title, className, children }) {
     return (
         <div
             data-testid="panel"
-            className="animate-panel-in flex min-h-full flex-col px-5 pt-4 pb-12"
+            className="animate-panel-in flex min-h-full flex-col px-5 pt-6 pb-12"
         >
-            <IconButton label="Collapse panel" onClick={onCollapse} className="-ml-1.5 self-start">
-                <ChevronRight size={24} aria-hidden="true" />
-            </IconButton>
             <Title>{title}</Title>
             <div className={classNames("min-h-0 flex-1", className)}>{children}</div>
         </div>

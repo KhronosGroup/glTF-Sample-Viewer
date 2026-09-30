@@ -38,7 +38,6 @@ const MATERIAL_EXTENSIONS = [
 ];
 
 export function AdvancedTab({
-    onCollapse,
     extensions,
     onExtensionsChange,
     debugChannel,
@@ -80,7 +79,7 @@ export function AdvancedTab({
         ));
 
     return (
-        <Panel title="Advanced Controls" onCollapse={onCollapse}>
+        <Panel title="Advanced Controls">
             <Switch
                 checked={extensions.inputSmoothing}
                 onChange={toggle({ key: "inputSmoothing", event: "inputSmoothingChanged" })}

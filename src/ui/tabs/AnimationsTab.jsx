@@ -3,7 +3,7 @@ import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Checkbox, Field, Panel, PlaybackControls, SectionLabel } from "../controls.jsx";
 
-export function AnimationsTab({ onCollapse }) {
+export function AnimationsTab() {
     const animations = useViewerStore((state) => state.animations);
     const selectedAnimations = useViewerStore((state) => state.selectedAnimations);
     const disabledAnimations = useViewerStore((state) => state.disabledAnimations);
@@ -20,7 +20,7 @@ export function AnimationsTab({ onCollapse }) {
     };
 
     return (
-        <Panel title="Animations" onCollapse={onCollapse}>
+        <Panel title="Animations">
             <SectionLabel>Animation Controls</SectionLabel>
 
             {hasAnimations && (

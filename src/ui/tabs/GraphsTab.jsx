@@ -26,7 +26,7 @@ function initialValues(event) {
     );
 }
 
-export function GraphsTab({ onCollapse }) {
+export function GraphsTab() {
     const graphs = useViewerStore((state) => state.graphs);
     const selectedGraph = useViewerStore((state) => state.selectedGraph);
     const graphState = useViewerStore((state) => state.graphState);
@@ -56,7 +56,7 @@ export function GraphsTab({ onCollapse }) {
     };
 
     return (
-        <Panel title="Interactivity Graphs" onCollapse={onCollapse}>
+        <Panel title="Interactivity Graphs">
             <SectionLabel>Graph Controls</SectionLabel>
 
             {hasGraphs && (

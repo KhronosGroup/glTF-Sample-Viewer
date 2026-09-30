@@ -111,7 +111,7 @@ export function App() {
         tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
     );
     const tabIds = tabMeta.map((tab) => tab.id);
-    const { activeTab, collapsed, select, collapse } = useTabState(tabIds);
+    const { activeTab, collapsed, select } = useTabState(tabIds);
 
     useEffect(() => {
         const canvas = document.getElementById("canvas");
@@ -169,33 +169,21 @@ export function App() {
             case "models":
                 return (
                     <ModelsTab
-                        onCollapse={collapse}
                         selectedVariant={selectedVariant}
                         onSelectVariant={setSelectedVariant}
                     />
                 );
             case "display":
-                return (
-                    <DisplayTab
-                        onCollapse={collapse}
-                        lighting={lighting}
-                        onLightingChange={updateLighting}
-                    />
-                );
+                return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
-                return <ValidatorTab onCollapse={collapse} />;
+                return <ValidatorTab />;
             case "animations":
-                return showGraphs ? (
-                    <GraphsTab onCollapse={collapse} />
-                ) : (
-                    <AnimationsTab onCollapse={collapse} />
-                );
+                return showGraphs ? <GraphsTab /> : <AnimationsTab />;
             case "credits":
-                return <CreditsTab onCollapse={collapse} />;
+                return <CreditsTab />;
             case "physics":
                 return (
                     <PhysicsTab
-                        onCollapse={collapse}
                         debug={physicsDebug}
                         onDebugChange={(partial) =>
                             setPhysicsDebug((current) => ({ ...current, ...partial }))
@@ -205,7 +193,6 @@ export function App() {
             case "advanced":
                 return (
                     <AdvancedTab
-                        onCollapse={collapse}
                         extensions={extensions}
                         onExtensionsChange={updateExtensions}
                         debugChannel={debugChannel}

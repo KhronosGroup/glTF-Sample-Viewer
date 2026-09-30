@@ -25,7 +25,7 @@ const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 10
 const formatExposure = (value) =>
     String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
 
-export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
+export function DisplayTab({ lighting, onLightingChange }) {
     const tonemaps = useViewerStore((state) => state.tonemaps);
     const environments = useViewerStore((state) => state.environments);
     const selectedEnvironment = useViewerStore((state) => state.selectedEnvironment);
@@ -40,7 +40,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
     }));
 
     return (
-        <Panel title="Display" onCollapse={onCollapse}>
+        <Panel title="Display">
             <Field label="Lighting" grouped>
                 <Switch
                     data-testid="switch-ibl"

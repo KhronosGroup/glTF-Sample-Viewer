@@ -11,14 +11,14 @@ function Credit({ label, children, ...rest }) {
     );
 }
 
-export function CreditsTab({ onCollapse }) {
+export function CreditsTab() {
     const assetCopyright = useViewerStore((state) => state.assetCopyright);
     const assetGenerator = useViewerStore((state) => state.assetGenerator);
     const environmentLicense = useViewerStore((state) => state.environmentLicense);
     const xmp = useViewerStore((state) => state.xmp);
 
     return (
-        <Panel title="Model Credits" onCollapse={onCollapse}>
+        <Panel title="Model Credits">
             <Credit label="Copyright" data-testid="asset-copyright">
                 {assetCopyright}
             </Credit>
