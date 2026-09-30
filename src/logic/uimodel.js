@@ -12,6 +12,7 @@ import {
 import { GltfState } from "@khronosgroup/gltf-viewer";
 import { SimpleDropzone } from "simple-dropzone";
 import normalizeWheel from "normalize-wheel";
+import { getViewerState, setViewerState } from "./viewer_store.js";
 
 // this class wraps all the observables for the gltf sample viewer state
 // the data streams coming out of this should match the data required in GltfState
@@ -20,7 +21,7 @@ class UIModel {
     constructor(app, modelPathProvider, environments) {
         this.app = app;
 
-        this.app.models = modelPathProvider.getAllKeys();
+        setViewerState({ models: modelPathProvider.getAllKeys() });
 
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -29,21 +30,21 @@ class UIModel {
         this.scene = app.sceneChanged.pipe();
         this.camera = app.cameraChanged.pipe();
         this.environmentRotation = app.environmentRotationChanged.pipe();
-        this.app.environments = environments;
-        const selectedEnvironment = app.selectedEnvironmentChanged.pipe(
-            map((environmentName) => this.app.environments[environmentName])
-        );
         const initialEnvironment = "Cannon_Exterior";
-        this.app.selectedEnvironment = initialEnvironment;
+        setViewerState({ environments, selectedEnvironment: initialEnvironment });
+        const selectedEnvironment = app.selectedEnvironmentChanged.pipe(
+            map((environmentName) => getViewerState().environments[environmentName])
+        );
 
-        this.app.tonemaps = Object.keys(GltfState.ToneMaps).map((key) => ({
-            title: GltfState.ToneMaps[key]
-        }));
+        setViewerState({
+            tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
+                title: GltfState.ToneMaps[key]
+            })),
+            debugchannels: Object.keys(GltfState.DebugOutput).map((key) => ({
+                title: GltfState.DebugOutput[key]
+            }))
+        });
         this.tonemap = app.tonemapChanged.pipe(startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL));
-
-        this.app.debugchannels = Object.keys(GltfState.DebugOutput).map((key) => ({
-            title: GltfState.DebugOutput[key]
-        }));
         this.debugchannel = app.debugchannelChanged.pipe(startWith(GltfState.DebugOutput.NONE));
 
         this.exposure = app.exposureChanged.pipe();
@@ -79,7 +80,7 @@ class UIModel {
         this.interactivityEnabled = app.interactivityChanged.pipe();
 
         const initialClearColor = "#303542";
-        this.app.clearColor = initialClearColor;
+        setViewerState({ clearColor: initialClearColor });
         this.clearColor = app.colorChanged.pipe(
             startWith(initialClearColor),
             map((hex) => /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)),
@@ -108,28 +109,25 @@ class UIModel {
         this.physicsJointDebug = app.physicsJointDebugChanged.pipe();
 
         const canvas = document.getElementById("canvas");
-        canvas.addEventListener("dragenter", () => (this.app.showDropDownOverlay = true));
-        canvas.addEventListener("dragleave", () => (this.app.showDropDownOverlay = false));
+        canvas.addEventListener("dragenter", () => setViewerState({ showDropDownOverlay: true }));
+        canvas.addEventListener("dragleave", () => setViewerState({ showDropDownOverlay: false }));
 
-        const inputObservables = getInputObservables(canvas, this.app);
+        const inputObservables = getInputObservables(canvas);
 
         const dropdownGltfChanged = app.modelChanged.pipe(
             startWith(modelURL === null ? "DamagedHelmet" : null),
             filter((value) => value !== null),
             map((value) => {
-                app.flavours = modelPathProvider.getModelFlavours(value);
-                if (app.flavours.includes("glTF")) {
-                    app.selectedFlavour = "glTF";
-                } else {
-                    app.selectedFlavour = app.flavours[0];
-                }
-                return modelPathProvider.resolve(value, app.selectedFlavour);
+                const flavours = modelPathProvider.getModelFlavours(value);
+                const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
+                setViewerState({ flavours, selectedFlavour });
+                return modelPathProvider.resolve(value, selectedFlavour);
             }),
             map((value) => ({ mainFile: value }))
         );
 
         const dropdownFlavourChanged = app.flavourChanged.pipe(
-            map((value) => modelPathProvider.resolve(app.selectedModel, value)),
+            map((value) => modelPathProvider.resolve(getViewerState().selectedModel, value)),
             map((value) => ({ mainFile: value }))
         );
 
@@ -164,33 +162,35 @@ class UIModel {
                     text = "(c) " + text;
                     text = text.replaceAll("\n", "");
                     text = text.replaceAll(" ,", ",");
-                    this.app.environmentLicense = text;
+                    setViewerState({ environmentLicense: text });
 
                     // eslint-disable-next-line no-unused-vars
                 } catch (error) {
-                    this.app.environmentLicense = "N/A";
+                    setViewerState({ environmentLicense: "N/A" });
                 }
             } else {
-                this.app.environmentLicense = "N/A";
+                setViewerState({ environmentLicense: "N/A" });
             }
         });
 
         merge(this.addEnvironment, inputObservables.droppedHdr).subscribe((hdr) => {
             const hdrPath = hdr.hdr_path;
-            this.app.environments[hdrPath.name] = {
-                title: hdrPath.name,
-                hdr_path: hdrPath
-            };
-            this.app.selectedEnvironment = hdrPath.name;
+            setViewerState({
+                environments: {
+                    ...getViewerState().environments,
+                    [hdrPath.name]: { title: hdrPath.name, hdr_path: hdrPath }
+                },
+                selectedEnvironment: hdrPath.name
+            });
         });
 
         this.variant = app.variantChanged.pipe();
 
         // remove last filename
         this.model
-            .pipe(filter(() => this.app.models.at(-1) === this.lastDroppedFilename))
+            .pipe(filter(() => getViewerState().models.at(-1) === this.lastDroppedFilename))
             .subscribe(() => {
-                this.app.models.pop();
+                setViewerState({ models: getViewerState().models.slice(0, -1) });
                 this.lastDroppedFilename = undefined;
             });
 
@@ -226,12 +226,13 @@ class UIModel {
                 const fileExtension = filename.split(".").pop();
                 filename = filename.substr(0, filename.lastIndexOf("."));
 
-                this.app.models.push(filename);
-                this.app.selectedModel = filename;
+                setViewerState({
+                    models: [...getViewerState().models, filename],
+                    selectedModel: filename,
+                    flavours: [fileExtension],
+                    selectedFlavour: fileExtension
+                });
                 this.lastDroppedFilename = filename;
-
-                app.flavours = [fileExtension];
-                app.selectedFlavour = fileExtension;
             });
 
         this.orbit = inputObservables.orbit;
@@ -246,69 +247,73 @@ class UIModel {
         gltfLoaded.subscribe((state) => {
             const gltf = state.gltf;
 
-            this.app.assetCopyright = gltf.asset.copyright ?? "N/A";
-            this.app.assetGenerator = gltf.asset.generator ?? "N/A";
+            const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
 
-            this.app.selectedScene = state.sceneIndex;
-            this.app.scenes = gltf.scenes.map((scene, index) => ({
-                title: scene.name ?? `Scene ${index}`,
-                index: index
-            }));
-
-            this.app.selectedAnimations = state.animationIndices;
-            this.app.animationState = true;
-            this.app.graphState = true;
-            this.app.physicsState = true;
-
-            if (gltf && gltf?.extensions?.KHR_materials_variants?.variants !== undefined) {
-                this.app.materialVariants = [
-                    "None",
-                    ...gltf.extensions.KHR_materials_variants.variants.map(
-                        (variant) => variant?.name ?? "Unnamed"
-                    )
-                ];
-            } else {
-                this.app.materialVariants = ["None"];
-            }
-            this.app.animations = gltf.animations.map((animation, index) => ({
-                title: animation.name ?? `Animation ${index}`,
-                index: index
-            }));
-
-            // Set up interactivity graphs if available
-            if (
+            const hasInteractivity =
                 gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
-                state.renderingParameters.enabledExtensions.KHR_interactivity
-            ) {
-                this.app.graphs = gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
-                    title: graph.name ?? `Graph ${index}`,
+                state.renderingParameters.enabledExtensions.KHR_interactivity;
+
+            setViewerState({
+                assetCopyright: gltf.asset.copyright ?? "N/A",
+                assetGenerator: gltf.asset.generator ?? "N/A",
+
+                selectedScene: state.sceneIndex,
+                scenes: gltf.scenes.map((scene, index) => ({
+                    title: scene.name ?? `Scene ${index}`,
                     index: index
-                }));
-                this.app.selectedGraph = state.graphController.graphIndex;
-                this.app.customEvents = state.graphController.customEvents || [];
-            } else {
-                this.app.graphs = [];
-                this.app.customEvents = [];
+                })),
+
+                selectedAnimations: state.animationIndices,
+                animationState: true,
+                graphState: true,
+                physicsState: true,
+
+                materialVariants: hasVariants
+                    ? [
+                          "None",
+                          ...gltf.extensions.KHR_materials_variants.variants.map(
+                              (variant) => variant?.name ?? "Unnamed"
+                          )
+                      ]
+                    : ["None"],
+
+                animations: gltf.animations.map((animation, index) => ({
+                    title: animation.name ?? `Animation ${index}`,
+                    index: index
+                })),
+
+                graphs: hasInteractivity
+                    ? gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
+                          title: graph.name ?? `Graph ${index}`,
+                          index: index
+                      }))
+                    : [],
+                customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
+
+                hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
+
+                xmp:
+                    gltf?.extensions?.KHR_xmp_json_ld?.packets[
+                        gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
+                    ] ?? null
+            });
+
+            if (hasInteractivity) {
+                setViewerState({ selectedGraph: state.graphController.graphIndex });
             }
-
-            this.app.hasPhysics = gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies");
-
-            this.app.xmp =
-                gltf?.extensions?.KHR_xmp_json_ld?.packets[
-                    gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
-                ] ?? null;
         });
     }
 
     updateStatistics(statisticsUpdateObservable) {
-        statisticsUpdateObservable.subscribe(
-            (data) =>
-                (this.app.statistics = {
+        statisticsUpdateObservable.subscribe((data) =>
+            setViewerState({
+                statistics: {
                     "Mesh Count": data.meshCount,
                     "Triangle Count": data.faceCount,
                     "Opaque Material Count": data.opaqueMaterialsCount,
                     "Transparent Material Count": data.transparentMaterialsCount
-                })
+                }
+            })
         );
     }
 
@@ -356,13 +361,17 @@ class UIModel {
 
     updateValidationReport(validationReportObservable) {
         validationReportObservable.subscribe((data) => {
-            this.app.validationReport = data;
-            this.app.validationReportDescription = this.createValidationReportDescription(data);
+            setViewerState({
+                validationReport: data,
+                validationReportDescription: this.createValidationReportDescription(data)
+            });
         });
     }
 
     disabledAnimations(disabledAnimationsObservable) {
-        disabledAnimationsObservable.subscribe((data) => (this.app.disabledAnimations = data));
+        disabledAnimationsObservable.subscribe((data) =>
+            setViewerState({ disabledAnimations: data })
+        );
     }
 
     attachCameraChangeObservable(sceneChangeObservable) {
@@ -395,33 +404,35 @@ class UIModel {
                 return cameraIndices;
             })
         );
-        cameraIndices.subscribe((cameras) => (this.app.cameras = cameras));
+        cameraIndices.subscribe((cameras) => setViewerState({ cameras }));
         const loadedCameraIndex = sceneChangeObservable.pipe(map((state) => state.cameraNodeIndex));
-        loadedCameraIndex.subscribe(
-            (index) => (this.app.selectedCamera = index !== undefined ? index : -1)
+        loadedCameraIndex.subscribe((index) =>
+            setViewerState({ selectedCamera: index !== undefined ? index : -1 })
         );
     }
 
     goToLoadingState() {
+        setViewerState({ isLoading: true });
         this.app.goToLoadingState();
     }
 
     exitLoadingState() {
+        setViewerState({ isLoading: false });
         this.app.exitLoadingState();
     }
 }
 
-const getInputObservables = (inputElement, app) => {
+const getInputObservables = (inputElement) => {
     const observables = {};
 
     const droppedFiles = new Observable((subscriber) => {
         const dropZone = new SimpleDropzone(inputElement, inputElement);
         dropZone.on("drop", ({ files }) => {
-            app.showDropDownOverlay = false;
+            setViewerState({ showDropDownOverlay: false });
             subscriber.next(Array.from(files.entries()));
         });
         dropZone.on("droperror", () => {
-            app.showDropDownOverlay = false;
+            setViewerState({ showDropDownOverlay: false });
             subscriber.error();
         });
     }).pipe(share());

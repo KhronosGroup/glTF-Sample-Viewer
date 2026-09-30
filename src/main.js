@@ -5,6 +5,7 @@ import { app } from "./ui/ui.js";
 import { EMPTY, from, merge } from "rxjs";
 import { switchMap, map, share, catchError, filter } from "rxjs/operators";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
+import { getViewerState, setViewerState } from "./logic/viewer_store.js";
 
 import { validateBytes } from "gltf-validator";
 
@@ -14,9 +15,11 @@ const main = async () => {
         alpha: false,
         antialias: true
     });
-    app.supportsFloatingPointFramebuffer =
-        !!context.getExtension("EXT_color_buffer_half_float") ||
-        !!context.getExtension("EXT_color_buffer_float");
+    setViewerState({
+        supportsFloatingPointFramebuffer:
+            !!context.getExtension("EXT_color_buffer_half_float") ||
+            !!context.getExtension("EXT_color_buffer_float")
+    });
 
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader();
@@ -370,7 +373,7 @@ const main = async () => {
             state.graphController.initializeGraphs(state);
             const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
             state.graphController.loadGraph(graphIndex);
-            if (app.graphState) {
+            if (getViewerState().graphState) {
                 state.graphController.resumeGraph();
                 state.animationTimer.unpause();
             } else {
@@ -379,7 +382,7 @@ const main = async () => {
             }
         } else {
             state.graphController.stopGraphEngine();
-            if (app.animationState) {
+            if (getViewerState().animationState) {
                 state.animationTimer.unpause();
             } else {
                 state.animationTimer.pause();
@@ -746,7 +749,7 @@ const main = async () => {
         redraw |= state.needsRedraw;
 
         // Do not redraw when loading is in progress
-        if (app.loadingComponent !== undefined) {
+        if (getViewerState().isLoading) {
             redraw = false;
         }
 

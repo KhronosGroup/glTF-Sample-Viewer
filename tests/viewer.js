@@ -8,7 +8,7 @@ export const ui = {
     canvas: "#canvas",
     loadingOverlay: ".loading-overlay",
     tabs: "#tabsContainer",
-    modelsTab: "[data-testid='tab-models']",
+    tab: (name) => `[data-testid='tab-${name}']`,
     // Buefy forwards attributes to the inner <select>, React will not.
     modelSelect: ":is(select[data-testid='model-select'], [data-testid='model-select'] select)"
 };
@@ -47,11 +47,15 @@ export async function waitForLoadingToSettle(page) {
 }
 
 /**
- * Tab content starts collapsed, so the panel has to be opened before any of its
+ * Tab content starts collapsed, so a panel has to be opened before any of its
  * controls can be interacted with.
  */
+export async function openTab(page, name) {
+    await page.locator(ui.tab(name)).click();
+}
+
 export async function openModelsTab(page) {
-    await page.locator(ui.modelsTab).click();
+    await openTab(page, "models");
     await expect(page.locator(ui.modelSelect)).toBeVisible();
 }
 

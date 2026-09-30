@@ -41,7 +41,8 @@
     "normalize-wheel": "^1.0.1",
     "rxjs": "^6.6.7",
     "simple-dropzone": "^0.8.0",
-    "vue": "^3.4.29"
+    "vue": "^3.4.29",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
