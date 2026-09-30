@@ -24,11 +24,6 @@ test("loads a model chosen from the dropdown", async ({ page }) => {
 // Guards the load-orchestration fix: a slow model selected first must not
 // overwrite a fast model selected second.
 test("a superseded model load does not overwrite the current one", async ({ page }) => {
-    // Currently broken: `mergeMap` runs both loads to completion, so the
-    // superseded BoomBox load corrupts the Avocado materials. Phase 0 removes
-    // this annotation.
-    test.fail();
-
     const errors = collectConsoleErrors(page);
 
     await page.goto("/");

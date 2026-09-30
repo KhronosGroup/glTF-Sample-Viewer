@@ -3,7 +3,7 @@ import { GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 import { UIModel } from "./logic/uimodel.js";
 import { app } from "./ui/ui.js";
 import { EMPTY, from, merge } from "rxjs";
-import { mergeMap, map, share, catchError } from "rxjs/operators";
+import { switchMap, map, share, catchError, filter } from "rxjs/operators";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
 
 import { validateBytes } from "gltf-validator";
@@ -68,7 +68,7 @@ const main = async () => {
     const uiModel = new UIModel(app, pathProvider, environmentPaths);
 
     const validation = uiModel.model.pipe(
-        mergeMap((model) => {
+        switchMap((model) => {
             const func = async (model) => {
                 try {
                     const fileType = typeof model.mainFile;
@@ -159,79 +159,105 @@ const main = async () => {
 
     // whenever a new model is selected, load it and when complete pass the loaded gltf
     // into a stream back into the UI
-    const gltfLoaded = uiModel.model.pipe(
-        mergeMap((model) => {
-            uiModel.goToLoadingState();
+    //
+    // A glTF load cannot be cancelled once it has started, and two of them running at the
+    // same time corrupt each other's texture state. Queue the loads instead, and discard
+    // any result that a newer selection has already superseded.
+    let queuedLoads = Promise.resolve();
+    let latestLoadId = 0;
+
+    const loadModel = (model) => {
+        const loadId = ++latestLoadId;
+        uiModel.goToLoadingState();
+
+        const run = queuedLoads.then(async () => {
+            if (loadId !== latestLoadId) {
+                return undefined;
+            }
 
             // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
             resourceLoader.initKtxLib();
 
-            return from(
-                resourceLoader
-                    .loadGltf(model.mainFile, model.additionalFiles, false)
-                    .then((gltf) => {
-                        state.gltf = gltf;
-                        const defaultScene = state.gltf.scene;
-                        state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
-                        state.cameraNodeIndex = undefined;
+            try {
+                const gltf = await resourceLoader.loadGltf(
+                    model.mainFile,
+                    model.additionalFiles,
+                    false
+                );
 
-                        if (state.gltf.scenes.length != 0) {
-                            if (state.sceneIndex > state.gltf.scenes.length - 1) {
-                                state.sceneIndex = 0;
-                            }
-                            const scene = state.gltf.scenes[state.sceneIndex];
-                            scene.applyTransformHierarchy(state.gltf);
-                            state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
-                            state.userCamera.resetView(state.gltf, state.sceneIndex);
+                if (loadId !== latestLoadId) {
+                    return undefined;
+                }
 
-                            const queryString = window.location.search;
-                            const urlParams = new URLSearchParams(queryString);
-                            let yaw = urlParams.get("yaw") ?? 0;
-                            yaw = (yaw * (Math.PI / 180)) / state.userCamera.orbitSpeed;
-                            let pitch = urlParams.get("pitch") ?? 0;
-                            pitch = (pitch * (Math.PI / 180)) / state.userCamera.orbitSpeed;
-                            const distance = urlParams.get("distance") ?? 0;
-                            state.userCamera.orbit(yaw, pitch);
-                            state.userCamera.zoomBy(distance);
+                state.gltf = gltf;
+                const defaultScene = state.gltf.scene;
+                state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
+                state.cameraNodeIndex = undefined;
 
-                            state.animationIndices = [];
-                            for (let i = 0; i < gltf.animations.length; i++) {
-                                if (
-                                    !gltf.nonDisjointAnimations(state.animationIndices).includes(i)
-                                ) {
-                                    state.animationIndices.push(i);
-                                }
-                            }
-                            state.animationTimer.start();
-                            if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
-                                state.graphController.initializeGraphs(state);
-                                const graphIndex =
-                                    state.gltf.extensions.KHR_interactivity.graph ?? 0;
-                                state.graphController.loadGraph(graphIndex);
-                                state.graphController.resumeGraph();
-                            } else {
-                                state.graphController.stopGraphEngine();
-                            }
-
-                            state.physicsController.loadScene(state, state.sceneIndex);
-                            state.physicsController.resumeSimulation();
-                        }
-
-                        uiModel.exitLoadingState();
-
-                        return state;
-                    })
-                    .catch((error) => {
-                        console.error("Loading failed: " + error);
-                        state.gltf = emptyGltf;
+                if (state.gltf.scenes.length != 0) {
+                    if (state.sceneIndex > state.gltf.scenes.length - 1) {
                         state.sceneIndex = 0;
-                        state.cameraNodeIndex = undefined;
-                        uiModel.exitLoadingState();
-                        redraw = true;
-                        return state;
-                    })
-            );
-        }),
+                    }
+                    const scene = state.gltf.scenes[state.sceneIndex];
+                    scene.applyTransformHierarchy(state.gltf);
+                    state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+                    state.userCamera.resetView(state.gltf, state.sceneIndex);
+
+                    const queryString = window.location.search;
+                    const urlParams = new URLSearchParams(queryString);
+                    let yaw = urlParams.get("yaw") ?? 0;
+                    yaw = (yaw * (Math.PI / 180)) / state.userCamera.orbitSpeed;
+                    let pitch = urlParams.get("pitch") ?? 0;
+                    pitch = (pitch * (Math.PI / 180)) / state.userCamera.orbitSpeed;
+                    const distance = urlParams.get("distance") ?? 0;
+                    state.userCamera.orbit(yaw, pitch);
+                    state.userCamera.zoomBy(distance);
+
+                    state.animationIndices = [];
+                    for (let i = 0; i < gltf.animations.length; i++) {
+                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
+                            state.animationIndices.push(i);
+                        }
+                    }
+                    state.animationTimer.start();
+                    if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
+                        state.graphController.initializeGraphs(state);
+                        const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
+                        state.graphController.loadGraph(graphIndex);
+                        state.graphController.resumeGraph();
+                    } else {
+                        state.graphController.stopGraphEngine();
+                    }
+
+                    state.physicsController.loadScene(state, state.sceneIndex);
+                    state.physicsController.resumeSimulation();
+                }
+
+                uiModel.exitLoadingState();
+                return state;
+            } catch (error) {
+                console.error("Loading failed: " + error);
+
+                if (loadId !== latestLoadId) {
+                    return undefined;
+                }
+
+                state.gltf = emptyGltf;
+                state.sceneIndex = 0;
+                state.cameraNodeIndex = undefined;
+                uiModel.exitLoadingState();
+                redraw = true;
+                return state;
+            }
+        });
+
+        queuedLoads = run.catch(() => {});
+        return run;
+    };
+
+    const gltfLoaded = uiModel.model.pipe(
+        switchMap((model) => from(loadModel(model))),
+        filter((loadedState) => loadedState !== undefined),
         catchError((error) => {
             console.error(error);
             uiModel.exitLoadingState();

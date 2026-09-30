@@ -17,11 +17,7 @@ export default defineConfig({
         trace: "retain-on-failure",
         launchOptions: {
             // Headless Chromium has no GPU, so WebGL2 has to come from SwiftShader.
-            args: [
-                "--enable-unsafe-swiftshader",
-                "--use-gl=angle",
-                "--use-angle=swiftshader"
-            ]
+            args: ["--enable-unsafe-swiftshader", "--use-gl=angle", "--use-angle=swiftshader"]
         }
     },
     projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

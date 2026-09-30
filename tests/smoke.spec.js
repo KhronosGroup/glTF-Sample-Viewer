@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { collectConsoleErrors, expectCanvasToRender, ui, waitForLoadingToSettle } from "./viewer.js";
+import {
+    collectConsoleErrors,
+    expectCanvasToRender,
+    ui,
+    waitForLoadingToSettle
+} from "./viewer.js";
 
 test("renders the default model", async ({ page }) => {
     const errors = collectConsoleErrors(page);
