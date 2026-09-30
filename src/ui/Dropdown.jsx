@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-/**
- * Reproduces Buefy's b-dropdown markup for a single-select list.
- */
 export function Dropdown({ label, items, value, onSelect }) {
     const [open, setOpen] = useState(false);
     const rootRef = useRef(null);
@@ -21,49 +18,49 @@ export function Dropdown({ label, items, value, onSelect }) {
     }, [open]);
 
     return (
-        <div
-            ref={rootRef}
-            className={`dropdown dropdown-menu-animation is-mobile-modal${open ? " is-active" : ""}`}
-        >
-            <div tabIndex={0} className="dropdown-trigger" aria-haspopup="true">
-                <button
-                    className="button is-primary is-rounded"
-                    type="button"
-                    onClick={() => setOpen((wasOpen) => !wasOpen)}
-                >
-                    <span>{label}</span>
-                    <span className="icon is-small">
-                        <i className={`mdi mdi-menu-${open ? "up" : "down"}`} />
-                    </span>
-                </button>
-            </div>
-            <div
-                className="background"
-                aria-hidden="true"
-                style={open ? undefined : { display: "none" }}
-            />
-            <div
-                className="dropdown-menu"
-                aria-hidden={!open}
-                style={open ? undefined : { display: "none" }}
+        <div ref={rootRef} className="relative">
+            <button
+                type="button"
+                className="bg-accent text-ink-dim hover:bg-accent-hover flex w-full items-center justify-between gap-2 rounded-full px-4 py-1 transition-colors"
+                onClick={() => setOpen((wasOpen) => !wasOpen)}
             >
-                <div className="dropdown-content" role="list">
+                <span className="truncate">{label}</span>
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    aria-hidden="true"
+                    className={open ? "rotate-180" : undefined}
+                >
+                    <path
+                        d="M2 5l6 6 6-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                    />
+                </svg>
+            </button>
+
+            {open && (
+                <div className="bg-card absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded shadow-lg">
                     {items.map((item) => (
-                        <a
+                        <button
+                            type="button"
                             key={item.value}
-                            className={`dropdown-item${item.value === value ? " is-active" : ""}`}
-                            role="listitem"
-                            tabIndex={0}
+                            className={`hover:bg-card-inner block w-full px-4 py-2 text-left ${
+                                item.value === value ? "bg-accent text-ink-dim" : ""
+                            }`}
                             onClick={() => {
                                 onSelect(item.value);
                                 setOpen(false);
                             }}
                         >
                             {item.label}
-                        </a>
+                        </button>
                     ))}
                 </div>
-            </div>
+            )}
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { useViewerStore } from "../store.js";
-import { Field, Select, Switch } from "../controls.jsx";
+import { Button, DownloadIcon, Field, Panel, Select, Switch } from "../controls.jsx";
 import { JsonTree } from "../JsonTree.jsx";
 
 // The Vue template repeated a near-identical switch for each of these.
@@ -78,27 +78,15 @@ export function AdvancedTab({
     };
 
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced">Advanced Controls</h2>
-
-            <Field label="Capture Canvas" className="subtitle">
-                <button
-                    type="button"
-                    className="button is-rounded"
-                    onClick={() => uiEvents.captureCanvas.emit(true)}
-                >
-                    <i className="fa fa-download downloadIcon" />
+        <Panel title="Advanced Controls" onCollapse={onCollapse}>
+            <Field label="Capture Canvas">
+                <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
+                    <DownloadIcon />
                     Download as .png
-                </button>
+                </Button>
             </Field>
 
-            <Field label="Debug Channels" className="subtitle">
+            <Field label="Debug Channels">
                 <Select
                     value={debugChannel}
                     onChange={(value) => {
@@ -143,22 +131,18 @@ export function AdvancedTab({
                 Floating-Point Framebuffer
             </Switch>
 
-            <Field label="Current Camera Values" className="subtitle">
-                <button
-                    type="button"
-                    className="button is-rounded"
-                    onClick={() => uiEvents.cameraExport.emit(true)}
-                >
-                    <i className="fa fa-download downloadIcon" />
+            <Field label="Current Camera Values">
+                <Button onClick={() => uiEvents.cameraExport.emit(true)}>
+                    <DownloadIcon />
                     Download as .gltf
-                </button>
+                </Button>
             </Field>
 
-            <Field label="KHR Materials Extensions" className="subtitle" grouped>
+            <Field label="KHR Materials Extensions" grouped>
                 {MATERIAL_EXTENSIONS.map((entry) => (
                     <Switch
                         key={entry.key}
-                        className="smallerLabel"
+                        className="mb-1 text-sm"
                         checked={extensions[entry.key]}
                         disabled={disabledFor(entry.key)}
                         onChange={toggle(entry)}
@@ -168,11 +152,11 @@ export function AdvancedTab({
                 ))}
             </Field>
 
-            <Field label="Statistics" className="subtitle">
+            <Field label="Statistics">
                 <JsonTree data={statistics} />
             </Field>
 
-            <div className="pb-6" />
-        </div>
+            <div className="pb-12" />
+        </Panel>
     );
 }

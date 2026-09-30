@@ -2,23 +2,17 @@ import { useState } from "react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { notify } from "../../logic/notifications.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Radio, Select, ToggleButton } from "../controls.jsx";
+import {
+    Button,
+    Field,
+    OutlineButton,
+    Panel,
+    Radio,
+    SectionLabel,
+    Select,
+    ToggleButton
+} from "../controls.jsx";
 import { CustomEventInput, defaultValueForType } from "./CustomEventInput.jsx";
-
-const RESET_BUTTON_STYLE = {
-    border: "1.5px solid #87c540",
-    color: "#f2f2f2",
-    background: "transparent",
-    minWidth: "70px"
-};
-
-const CONTROL_ROW_STYLE = {
-    display: "flex",
-    gap: "1em",
-    alignItems: "center",
-    marginBottom: "1.5em",
-    marginTop: "1em"
-};
 
 function initialValues(event) {
     if (!event?.values) {
@@ -58,46 +52,40 @@ export function GraphsTab({ onCollapse }) {
             eventId: currentEventId,
             values: editedValues.values
         });
-        notify(`Custom event '${currentEventId}' sent successfully!`, "is-success");
+        notify(`Custom event '${currentEventId}' sent successfully!`, "success");
     };
 
     return (
-        <div className="tabContent">
-            <img src="assets/ui/Navigation_right_20px.svg" width="30px" onClick={onCollapse} />
-            <h2 className="title is-spaced" style={{ marginBottom: "0.5em" }}>
-                Interactivity Graphs
-            </h2>
-            <label className="subtitle">Graph Controls</label>
+        <Panel title="Interactivity Graphs" onCollapse={onCollapse}>
+            <SectionLabel>Graph Controls</SectionLabel>
 
-            <div style={CONTROL_ROW_STYLE}>
-                <ToggleButton
-                    on={graphState}
-                    onText="Pause"
-                    offText="Play"
-                    className="round-green-btn"
-                    style={hasGraphs ? undefined : { display: "none" }}
-                    onToggle={(on) => {
-                        setViewerState({ graphState: on });
-                        uiEvents.graphPlayChanged.emit(on);
-                    }}
-                />
-                <button
-                    className="button is-rounded reset-btn-green"
-                    style={
-                        hasGraphs ? RESET_BUTTON_STYLE : { ...RESET_BUTTON_STYLE, display: "none" }
-                    }
-                    onClick={() => uiEvents.graphResetChanged.emit(true)}
-                >
-                    Reset
-                </button>
-            </div>
+            {hasGraphs && (
+                <div className="mt-4 mb-6 flex items-center gap-4">
+                    <ToggleButton
+                        on={graphState}
+                        onText="Pause"
+                        offText="Play"
+                        className="w-[90px]"
+                        onToggle={(on) => {
+                            setViewerState({ graphState: on });
+                            uiEvents.graphPlayChanged.emit(on);
+                        }}
+                    />
+                    <OutlineButton
+                        className="min-w-[70px]"
+                        onClick={() => uiEvents.graphResetChanged.emit(true)}
+                    >
+                        Reset
+                    </OutlineButton>
+                </div>
+            )}
 
-            {!hasGraphs && <label className="subtitle">No graphs available</label>}
+            {!hasGraphs && <SectionLabel>No graphs available</SectionLabel>}
 
             {hasGraphs && (
                 <Field label="Graphs">
                     {graphs.map((graph) => (
-                        <div key={graph.index} style={{ marginBottom: "0.5em" }}>
+                        <div key={graph.index} className="mb-2">
                             <Radio
                                 name="interactivity-graph"
                                 value={graph.index}
@@ -115,10 +103,8 @@ export function GraphsTab({ onCollapse }) {
             )}
 
             {customEvents.length > 0 && (
-                <div style={{ marginTop: "2.5em", marginBottom: "1.5em" }}>
-                    <label className="subtitle" style={{ marginBottom: "0.5em", display: "block" }}>
-                        Custom events
-                    </label>
+                <div className="mt-10 mb-6">
+                    <SectionLabel>Custom events</SectionLabel>
                     <Field>
                         <Select value={currentEventId ?? ""} onChange={setSelectedEventId}>
                             {customEvents.map((event) => (
@@ -132,7 +118,7 @@ export function GraphsTab({ onCollapse }) {
                     {currentEvent && (
                         <form id="customEventForm">
                             {Object.entries(currentEvent.values ?? {}).map(([name, definition]) => (
-                                <div key={name} style={{ marginTop: "1em" }}>
+                                <div key={name} className="mt-4">
                                     <CustomEventInput
                                         name={name}
                                         type={definition.type}
@@ -152,12 +138,12 @@ export function GraphsTab({ onCollapse }) {
             )}
 
             {currentEventId && (
-                <div style={{ marginTop: "2em", display: "flex", justifyContent: "flex-end" }}>
-                    <button className="button is-rounded round-green-btn" onClick={sendCustomEvent}>
+                <div className="mt-8 flex justify-end">
+                    <Button className="w-[90px]" onClick={sendCustomEvent}>
                         Send
-                    </button>
+                    </Button>
                 </div>
             )}
-        </div>
+        </Panel>
     );
 }

@@ -1,23 +1,23 @@
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Select, Switch } from "../controls.jsx";
+import { Field, Panel, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { Dropdown } from "../Dropdown.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
 
 const IBL_INTENSITY_TICKS = [
-    { value: -2, label: "0.01", className: "iblIntensitySliderMarker" },
-    { value: 0, label: "1", className: "iblIntensitySliderMarker" },
-    { value: 2, label: "100", className: "iblIntensitySliderMarker" },
-    { value: 4, label: "10000", className: "iblIntensitySliderMarker" }
+    { value: -2, label: "0.01" },
+    { value: 0, label: "1" },
+    { value: 2, label: "100" },
+    { value: 4, label: "10000" }
 ];
 
 const EXPOSURE_TICKS = [
-    { value: -6, label: "64", className: "exposureSliderMarker" },
-    { value: 0, label: "1", className: "exposureSliderMarker" },
-    { value: 9.966, label: "0.001", className: "exposureSliderMarker" },
-    { value: 21, label: "0", className: "exposureSliderMarker" }
+    { value: -6, label: "64" },
+    { value: 0, label: "1" },
+    { value: 9.966, label: "0.001" },
+    { value: 21, label: "0" }
 ];
 
 const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 100.0) / 100.0);
@@ -39,19 +39,11 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
     }));
 
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced">Display</h2>
-
-            <Field label="Lighting" className="subtitle" grouped>
+        <Panel title="Display" onCollapse={onCollapse}>
+            <Field label="Lighting" grouped>
                 <Switch
                     data-testid="switch-ibl"
-                    className="smallerLabel"
+                    className="mb-1 text-sm"
                     checked={ibl}
                     onChange={(checked) => {
                         uiEvents.iblChanged.emit(checked);
@@ -61,7 +53,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     Image Based{" "}
                 </Switch>
                 <Switch
-                    className="smallerLabel"
+                    className="mb-1 text-sm"
                     checked={punctualLights}
                     onChange={(checked) => {
                         uiEvents.punctualLightsChanged.emit(checked);
@@ -72,9 +64,8 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Switch>
             </Field>
 
-            <Field label="IBL Intensity" className="smallerLabel">
+            <Field label="IBL Intensity">
                 <Slider
-                    className="iblIntensitySlider"
                     value={iblIntensity}
                     min={-2}
                     max={5}
@@ -88,9 +79,8 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 />
             </Field>
 
-            <Field label="Exposure" className="subtitle" />
+            <Field label="Exposure" />
             <Slider
-                className="exposureSlider"
                 value={exposure}
                 min={21}
                 max={-6}
@@ -103,7 +93,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 }}
             />
 
-            <Field label="Tone Map" className="subtitle">
+            <Field label="Tone Map">
                 <Select
                     value={toneMap}
                     onChange={(value) => {
@@ -119,9 +109,9 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="Background" className="subtitle" grouped>
+            <Field label="Background" grouped>
                 <Switch
-                    className="smallerLabel"
+                    className="mb-1 text-sm"
                     checked={renderEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
@@ -132,7 +122,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     Environment Map
                 </Switch>
                 <Switch
-                    className="smallerLabel"
+                    className="mb-1 text-sm"
                     checked={blurEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
@@ -142,10 +132,10 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 >
                     Blur
                 </Switch>
-                <Field label="Background Color" className="smallerLabel" />
-                <div className="control is-clearfix" id="clearColorPicker">
+                <Field label="Background Color" />
+                <div id="clearColorPicker">
                     <input
-                        className="colorInput"
+                        className="color-swatch"
                         type="color"
                         value={clearColor}
                         onChange={(event) => {
@@ -156,7 +146,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </div>
             </Field>
 
-            <Field label="Environment Rotation" className="smallerLabel">
+            <Field label="Environment Rotation">
                 <Select
                     value={rotation}
                     onChange={(value) => {
@@ -172,10 +162,10 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="Image Based Lighting" className="subtitle" grouped>
-                <button className="button is-rounded">
+            <Field label="Image Based Lighting" grouped>
+                <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center self-start rounded-full px-4 py-1 transition-colors">
                     <input
-                        className="file-input"
+                        className="sr-only"
                         type="file"
                         accept=".hdr"
                         onChange={(event) =>
@@ -184,10 +174,10 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                             })
                         }
                     />
-                    <i className="fas fa-plus" /> Add New HDR
-                </button>
+                    Add New HDR
+                </label>
 
-                <Field label="Active Environment" className="subtitle">
+                <Field label="Active Environment">
                     <Dropdown
                         label={environments[selectedEnvironment]?.title}
                         items={environmentItems}
@@ -200,7 +190,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Field>
             </Field>
 
-            <div className="pb-6" />
-        </div>
+            <div className="pb-12" />
+        </Panel>
     );
 }

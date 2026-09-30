@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens carried over from the Bulma/Buefy theme this replaces.
+ * Tailwind v4 is configured here rather than in a JS file, which is why the
+ * project no longer needs Sass.
+ */
+@theme {
+    --font-sans: "Roboto", sans-serif;
+
+    --color-accent: #87c540;
+    --color-accent-hover: #6fa32e;
+    --color-accent-active: #5e8c2f;
+    --color-accent-dim: #385117;
+
+    --color-surface: #363636;
+    --color-rail: #1b1b1b;
+    --color-rail-active: #373737;
+    --color-rail-hover: #2c2c2c;
+    --color-card: #424242;
+    --color-card-inner: #4d4d4d;
+    --color-track: #dbdbdb;
+
+    --color-ink: #f5f5f5;
+    --color-ink-dim: #f2f2f2;
+
+    --text-base: 18px;
+}
+
+@layer base {
+    html {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+
+    body {
+        margin: 0;
+        height: 100%;
+        display: flex;
+        background-color: var(--color-surface);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: var(--text-base);
+        line-height: 1.5;
+    }
+
+    a:hover {
+        color: var(--color-accent);
+    }
+
+    /* Spinners on number inputs fight the fixed-width matrix cells. */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input:invalid {
+        border-color: #ff3860;
+    }
+}
+
+/*
+ * Widget internals that utility classes cannot reach: pseudo-elements, the
+ * native colour swatch, and the keyframed spinner.
+ */
+@layer components {
+    .switch-track {
+        background-color: var(--color-track);
+        transition: background-color 0.15s ease-out;
+    }
+
+    .switch-track::after {
+        content: "";
+        display: block;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 9999px;
+        background-color: #fff;
+        transform: translateX(0);
+        transition: transform 0.15s ease-out;
+    }
+
+    .peer:checked ~ .switch-track {
+        background-color: var(--color-accent);
+    }
+
+    .peer:checked ~ .switch-track::after {
+        transform: translateX(1.25rem);
+    }
+
+    .peer:disabled ~ .switch-track {
+        opacity: 0.5;
+    }
+
+    .color-swatch {
+        appearance: none;
+        -webkit-appearance: none;
+        border: solid 1px var(--color-ink-dim);
+        padding: 0;
+    }
+
+    .color-swatch::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    .color-swatch::-webkit-color-swatch {
+        border: solid 1px var(--color-ink-dim);
+    }
+
+    .spinner {
+        border: 5px solid rgba(245, 245, 245, 0.35);
+        border-top-color: var(--color-accent);
+        border-radius: 9999px;
+        width: 4rem;
+        height: 4rem;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+}
+
+/*
+ * App shell: a flex row of canvas and control panel. The canvas takes the space
+ * the panel leaves, so opening a tab resizes the render target rather than
+ * hiding part of the model behind an overlay.
+ */
+#canvasUI {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+#app {
+    flex: none;
+}
+
+/* The canvas is sized by its container and must not receive text selection. */
+#canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background: rgb(51, 51, 51);
+    user-select: none;
+    -webkit-user-select: none;
+}

@@ -66,7 +66,7 @@ export const initViewer = async (canvas) => {
     state.graphController.addCustomEventListener("test/onSuccess", () => {
         const message = "Interactivity test succeeded";
         console.log(message);
-        notify(message, "is-success");
+        notify(message, "success");
     });
     state.graphController.addCustomEventListener("test/onFailed", () => {
         const message = "Interactivity test failed";

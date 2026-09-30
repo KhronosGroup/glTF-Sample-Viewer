@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./ui/sass.scss";
+import "./ui/styles.css";
 import { Viewer } from "./ui/Viewer.jsx";
 import { App } from "./ui/App.jsx";
 import { notify } from "./logic/notifications.js";
@@ -26,11 +26,11 @@ createRoot(document.getElementById("app")).render(
     const originalError = console.error;
 
     console.warn = function (txt) {
-        notify(txt, "is-warning");
+        notify(txt, "warning");
         originalWarn.apply(console, arguments);
     };
     console.error = function (txt) {
-        notify(txt, "is-danger");
+        notify(txt, "error");
         originalError.apply(console, arguments);
     };
 
@@ -47,7 +47,7 @@ createRoot(document.getElementById("app")).render(
                 "Column: " + columnNo,
                 "Error object: " + JSON.stringify(error)
             ].join(" - "),
-            "is-danger"
+            "error"
         );
     };
 })();

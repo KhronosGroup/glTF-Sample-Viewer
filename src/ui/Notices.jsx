@@ -4,14 +4,20 @@ import { setNotificationSink } from "../logic/notifications.js";
 let nextId = 0;
 
 const DURATIONS = {
-    "is-danger": 5000,
-    "is-warning": 3000
+    "error": 5000,
+    "warning": 3000
+};
+
+const TONES = {
+    "error": "bg-red-600",
+    "warning": "bg-amber-500",
+    "success": "bg-accent",
+    "info": "bg-sky-600"
 };
 
 /**
- * Replaces Buefy's programmatic toast API. Messages arrive from the logic layer
- * through the notification sink, so they can be raised without a component
- * reference.
+ * Messages arrive from the logic layer through the notification sink, so they
+ * can be raised without a component reference.
  */
 export function Toasts() {
     const [toasts, setToasts] = useState([]);
@@ -33,10 +39,16 @@ export function Toasts() {
     }
 
     return (
-        <div className="toast-notices is-top">
+        <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex flex-col items-center gap-2">
             {toasts.map((toast) => (
-                <div key={toast.id} className={`toast ${toast.type} is-top`} role="alert">
-                    <div>{toast.message}</div>
+                <div
+                    key={toast.id}
+                    role="alert"
+                    className={`max-w-lg rounded px-4 py-2 text-white shadow-lg ${
+                        TONES[toast.type] ?? TONES["info"]
+                    }`}
+                >
+                    {toast.message}
                 </div>
             ))}
         </div>
@@ -48,9 +60,8 @@ export function LoadingOverlay({ active }) {
         return null;
     }
     return (
-        <div className="loading-overlay is-active">
-            <div className="loading-background" />
-            <div className="loading-icon" />
+        <div className="loading-overlay fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+            <div className="spinner" />
         </div>
     );
 }

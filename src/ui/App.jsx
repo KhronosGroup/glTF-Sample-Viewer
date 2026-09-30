@@ -109,7 +109,7 @@ export function App() {
                 "The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " +
                     "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
                     "if you believe you are seeing this message in error.",
-                "is-danger"
+                "error"
             );
         }
     }, []);
@@ -219,37 +219,41 @@ export function App() {
             <Toasts />
             <LoadingOverlay active={isLoading} />
 
-            <div className="canvasUIMaximize">
+            <div className="fixed bottom-[25px] left-[25px] z-20">
                 {!(layout.isMobile && !collapsed) && !layout.noUi && (
                     <img
                         src={
                             uiVisible ? "assets/ui/Icon_Expand.svg" : "assets/ui/Icon_Collapse.svg"
                         }
                         onClick={() => setUiVisible((visible) => !visible)}
-                        className="maximizeCanvasIcon"
-                        width="30px"
+                        className="w-[30px] cursor-pointer transition-transform hover:scale-125"
+                        alt={uiVisible ? "Hide panel" : "Show panel"}
                     />
                 )}
             </div>
 
-            <div className="column" style={uiVisible ? undefined : { display: "none" }}>
-                <div
-                    className={showDropDownOverlay ? "" : "is-hidden"}
-                    id="dropZone"
-                    style={{ pointerEvents: "none" }}
-                >
-                    <div className="is-overlay is-dropAreaCard is-flex" style={{ zIndex: 999 }}>
-                        <div className="box has-text-centered">
-                            <span className="icon is-large">
-                                <i className="fas fa-folder-open fa-4x" />
-                            </span>
-                            <p className="is-size-2 has-text-weight-light">
-                                Drag and drop files here
-                            </p>
-                            <p className="is-size-4">Supported files: glTF, glb &amp; hdr</p>
+            <div className="h-full" style={uiVisible ? undefined : { display: "none" }}>
+                {showDropDownOverlay && (
+                    <div
+                        id="dropZone"
+                        className="pointer-events-none fixed inset-0 z-[999] flex items-center justify-center"
+                    >
+                        <div className="rounded-[30px] bg-white/60 p-12 text-center text-black">
+                            <svg
+                                width="96"
+                                height="96"
+                                viewBox="0 0 24 24"
+                                className="mx-auto"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
+                            </svg>
+                            <p className="text-4xl font-light">Drag and drop files here</p>
+                            <p className="text-xl">Supported files: glTF, glb &amp; hdr</p>
                         </div>
                     </div>
-                </div>
+                )}
 
                 <Tabs
                     tabs={tabs}

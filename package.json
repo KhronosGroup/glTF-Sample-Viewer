@@ -43,17 +43,16 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@ntohq/buefy-next": "^0.1.3",
     "@playwright/test": "^1.63.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
-    "bulma": "^0.9.4",
     "eslint": "^9.5.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.6.2",
     "rollup-plugin-license": "^3.5.1",
-    "sass": "^1.77.5",
+    "tailwindcss": "^4.3.3",
     "vite": "^8.3.0"
   },
   "bugs": {

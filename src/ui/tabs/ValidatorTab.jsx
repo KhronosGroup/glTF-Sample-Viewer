@@ -1,5 +1,6 @@
 import { notify } from "../../logic/notifications.js";
 import { useViewerStore } from "../store.js";
+import { Button, Panel } from "../controls.jsx";
 
 function downloadJson(filename, json) {
     const text = JSON.stringify(json, undefined, 4);
@@ -15,10 +16,10 @@ function downloadJson(filename, json) {
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
-        notify("Copied to clipboard", "is-success");
+        notify("Copied to clipboard", "success");
         // eslint-disable-next-line no-unused-vars
     } catch (error) {
-        notify("Error copying to clipboard.", "is-danger");
+        notify("Error copying to clipboard.", "error");
     }
 }
 
@@ -30,62 +31,37 @@ export function ValidatorTab({ onCollapse }) {
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
 
     return (
-        <div
-            className="tabContent"
-            style={{ display: "flex", flexDirection: "column", height: "inherit" }}
-        >
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced">glTF Validator</h2>
-
+        <Panel title="glTF Validator" onCollapse={onCollapse} className="flex h-full flex-col">
             {!failed && (
-                <div className="modelCredit">
+                <div className="my-6 break-words">
                     <p>Number of errors: {report?.issues?.numErrors ?? 0}</p>
                     <p>Number of warnings: {report?.issues?.numWarnings ?? 0}</p>
                     <p>Number of infos: {report?.issues?.numInfos ?? 0}</p>
                 </div>
             )}
 
-            {description?.message && (
-                <div>
-                    <p style={{ marginTop: "10px", marginBottom: "10px", fontSize: "smaller" }}>
-                        {description.message}
-                    </p>
-                </div>
-            )}
+            {description?.message && <p className="my-2.5 text-sm">{description.message}</p>}
 
-            {failed && (
-                <div>
-                    <p style={{ marginTop: "10px", marginBottom: "10px", color: "red" }}>
-                        {report.error}
-                    </p>
-                </div>
-            )}
+            {failed && <p className="my-2.5 text-red-500">{report.error}</p>}
 
             {!failed && (
                 <>
-                    <button
-                        className="button is-rounded"
-                        style={{ width: "fit-content", flexShrink: 0, marginBottom: "12px" }}
+                    <Button
+                        className="mb-3 w-fit shrink-0"
                         onClick={() => copyToClipboard(JSON.stringify(report, undefined, 4))}
                     >
                         Copy
-                    </button>
-                    <button
-                        className="button is-rounded"
-                        style={{ width: "fit-content", flexShrink: 0 }}
+                    </Button>
+                    <Button
+                        className="w-fit shrink-0"
                         onClick={() => downloadJson(`${reportName}.report.json`, report)}
                     >
                         Download
-                    </button>
+                    </Button>
                 </>
             )}
 
-            <span style={{ marginTop: "5px" }}>
+            <span className="mt-1.5">
                 Powered by{" "}
                 <a
                     href="https://github.com/KhronosGroup/glTF-Validator"
@@ -95,7 +71,7 @@ export function ValidatorTab({ onCollapse }) {
                     glTF-Validator
                 </a>
             </span>
-        </div>
+        </Panel>
     );
 }
 
@@ -134,31 +110,18 @@ export function ValidationCounter({ expanded, isMobile }) {
     }
 
     return (
-        <div style={{ maxWidth: "fit-content", marginLeft: "auto", marginRight: "auto" }}>
-            <div style={{ position: "relative", width: "50px", height: "100%" }}>
+        <div className="mx-auto max-w-fit">
+            <div className="relative h-full w-[50px]">
                 <img
                     src={`assets/ui/Capture ${expanded ? "50X50" : "30X30"}.svg`}
                     width={expanded ? "50px" : "30px"}
                     height={expanded ? "100%" : undefined}
+                    alt=""
                 />
                 {info !== "" && (
                     <div
-                        style={{
-                            display: "flex",
-                            color: "black",
-                            position: "absolute",
-                            right: isMobile ? "-3px" : "-18px",
-                            top: "-18px",
-                            fontSize: "80%",
-                            fontWeight: "bold",
-                            backgroundColor: color,
-                            borderRadius: "50%",
-                            width: "fit-content",
-                            minWidth: "2rem",
-                            alignItems: "center",
-                            aspectRatio: "1/1",
-                            justifyContent: "center"
-                        }}
+                        className="absolute -top-[18px] flex aspect-square w-fit min-w-[2rem] items-center justify-center rounded-full text-[80%] font-bold text-black"
+                        style={{ right: isMobile ? "-3px" : "-18px", backgroundColor: color }}
                     >
                         {info}
                     </div>

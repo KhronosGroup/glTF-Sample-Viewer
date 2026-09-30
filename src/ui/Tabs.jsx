@@ -1,80 +1,73 @@
 import { useState } from "react";
 
 /**
- * Vertical tab bar, reproducing the DOM Buefy's b-tabs emitted so the existing
- * stylesheet keeps applying.
+ * Vertical tab rail down the right-hand edge, with the panel to its left.
  *
  * Clicking the active tab collapses the panel; clicking another expands it.
- * Buefy could not express that, so the Vue version reached into the generated
- * markup to add and remove `is-active` by hand. Here it is just state.
  */
 export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
     return (
-        <div
-            id="tabsContainer"
-            className={`b-tabs is-vertical is-right is-flex-wrap-nowrap ${
-                collapsed ? "hideTabs " : ""
-            }tabsContainer`}
-        >
-            <nav className="tabs is-toggle" style={isMobile ? undefined : { width: "100px" }}>
-                <ul aria-orientation="vertical" role="tablist">
-                    {tabs.map((tab) => {
-                        const expanded = !collapsed && tab.id === activeTab;
-                        return (
-                            <li
-                                key={tab.id}
-                                className={expanded ? "is-active" : ""}
-                                role="tab"
-                                aria-selected={expanded}
-                                style={
-                                    isMobile && tab.id === tabs[0].id ? { marginTop: 0 } : undefined
-                                }
-                            >
-                                <a tabIndex={tab.id === activeTab ? 0 : -1}>
-                                    <div
-                                        data-testid={`tab-${tab.id}`}
-                                        onClick={() => onSelect(tab.id)}
-                                        style={expanded ? { height: "100%" } : undefined}
-                                    >
-                                        {tab.renderHeader ? (
-                                            tab.renderHeader(expanded)
-                                        ) : (
-                                            <img
-                                                src={`assets/ui/${tab.icon} ${
-                                                    expanded ? "50X50" : "30X30"
-                                                }.svg`}
-                                                width={expanded ? "50px" : "30px"}
-                                                style={expanded ? { height: "100%" } : undefined}
-                                            />
-                                        )}
-                                        {!isMobile && !expanded && <span>{tab.label}</span>}
-                                    </div>
-                                </a>
-                            </li>
-                        );
-                    })}
-                    <a href="https://github.com/KhronosGroup/glTF-Sample-Viewer">
-                        <img
-                            src="assets/ui/GitHub-Mark-Light-32px.png"
-                            style={{ width: "22px", height: "22px" }}
-                        />
-                    </a>
-                </ul>
-            </nav>
-            <section className="tab-content">
+        <div id="tabsContainer" className="flex h-dvh justify-end">
+            <section
+                className={
+                    collapsed ? "hidden" : "w-[300px] shrink-0 overflow-x-hidden overflow-y-auto"
+                }
+            >
                 {tabs.map((tab) =>
-                    tab.id === activeTab ? (
-                        <div
-                            key={tab.id}
-                            className="tab-item tabItemScrollable"
-                            role="tabpanel"
-                            tabIndex={0}
-                        >
-                            {tab.render()}
-                        </div>
-                    ) : null
+                    tab.id === activeTab ? <div key={tab.id}>{tab.render()}</div> : null
                 )}
             </section>
+
+            <nav
+                className="bg-rail flex shrink-0 flex-col overflow-x-hidden overflow-y-auto"
+                style={isMobile ? undefined : { width: "100px" }}
+                aria-orientation="vertical"
+                role="tablist"
+            >
+                {tabs.map((tab, index) => {
+                    const expanded = !collapsed && tab.id === activeTab;
+                    return (
+                        <button
+                            type="button"
+                            key={tab.id}
+                            role="tab"
+                            aria-selected={expanded}
+                            data-testid={`tab-${tab.id}`}
+                            onClick={() => onSelect(tab.id)}
+                            style={index === 0 && !isMobile ? { marginTop: "11dvh" } : undefined}
+                            className={`flex h-[100px] shrink-0 flex-col items-center justify-center gap-1 border-r-[7.5px] px-1 text-center transition-colors ${
+                                expanded
+                                    ? "border-accent bg-rail-active"
+                                    : "hover:bg-rail-hover border-transparent"
+                            }`}
+                        >
+                            {tab.renderHeader ? (
+                                tab.renderHeader(expanded)
+                            ) : (
+                                <img
+                                    src={`assets/ui/${tab.icon} ${expanded ? "50X50" : "30X30"}.svg`}
+                                    width={expanded ? "50" : "30"}
+                                    alt=""
+                                />
+                            )}
+                            {!isMobile && !expanded && (
+                                <span className="text-base leading-tight">{tab.label}</span>
+                            )}
+                        </button>
+                    );
+                })}
+
+                <a
+                    href="https://github.com/KhronosGroup/glTF-Sample-Viewer"
+                    className="mt-auto mb-4 flex shrink-0 justify-center pt-4"
+                >
+                    <img
+                        src="assets/ui/GitHub-Mark-Light-32px.png"
+                        className="h-[22px] w-[22px]"
+                        alt="GitHub"
+                    />
+                </a>
+            </nav>
         </div>
     );
 }

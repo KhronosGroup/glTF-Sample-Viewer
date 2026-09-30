@@ -1,56 +1,39 @@
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Select, Switch, ToggleButton } from "../controls.jsx";
-
-const OUTLINE_BUTTON_STYLE = {
-    border: "1.5px solid #87c540",
-    color: "#f2f2f2",
-    background: "transparent",
-    minWidth: "70px"
-};
+import {
+    Field,
+    OutlineButton,
+    Panel,
+    SectionLabel,
+    Select,
+    Switch,
+    ToggleButton
+} from "../controls.jsx";
 
 export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
     const physicsState = useViewerStore((state) => state.physicsState);
 
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced" style={{ marginBottom: "0.5em" }}>
-                Physics
-            </h2>
-            <label className="subtitle">Physics Controls</label>
+        <Panel title="Physics" onCollapse={onCollapse}>
+            <SectionLabel>Physics Controls</SectionLabel>
 
-            <div
-                style={{
-                    display: "flex",
-                    gap: "1em",
-                    alignItems: "center",
-                    marginBottom: "1.5em",
-                    marginTop: "1em"
-                }}
-            >
+            <div className="mt-4 mb-6 flex items-center gap-4">
                 <ToggleButton
                     on={physicsState}
                     onText="Disable"
                     offText="Enable"
-                    className="round-green-btn"
+                    className="w-[90px]"
                     onToggle={(on) => {
                         setViewerState({ physicsState: on });
                         uiEvents.physicsEnabledChanged.emit(on);
                     }}
                 />
-                <button
-                    className="button is-rounded reset-btn-green"
-                    style={OUTLINE_BUTTON_STYLE}
+                <OutlineButton
+                    className="min-w-[70px]"
                     onClick={() => uiEvents.physicsResetChanged.emit(true)}
                 >
                     Reset
-                </button>
+                </OutlineButton>
             </div>
 
             <Field label="Physics Engine">
@@ -65,22 +48,14 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                 </Select>
             </Field>
 
-            <div className="subtitle">Debug</div>
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5em",
-                    marginBottom: "1em"
-                }}
-            >
-                <button
-                    className="button is-rounded"
-                    style={OUTLINE_BUTTON_STYLE}
+            <SectionLabel>Debug</SectionLabel>
+            <div className="mb-4 flex flex-col items-start gap-2">
+                <OutlineButton
+                    className="min-w-[70px]"
                     onClick={() => uiEvents.physicsStepChanged.emit(true)}
                 >
                     Step
-                </button>
+                </OutlineButton>
                 <Switch
                     checked={debug.colliders}
                     onChange={(checked) => {
@@ -100,6 +75,6 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                     Show Joints
                 </Switch>
             </div>
-        </div>
+        </Panel>
     );
 }
