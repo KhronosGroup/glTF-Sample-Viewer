@@ -36,6 +36,10 @@ export function collectConsoleErrors(page) {
     return errors;
 }
 
+export function expectNoConsoleErrors(errors) {
+    expect(errors, `console errors:\n${errors.join("\n")}`).toEqual([]);
+}
+
 /**
  * Waits for the in-flight glTF load to finish. The overlay may already be gone
  * by the time this is called, so its absence is not treated as an error.

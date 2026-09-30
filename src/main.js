@@ -1,7 +1,7 @@
 import { GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
-import { app } from "./ui/ui.js";
+import { app } from "./ui/ui.jsx";
 import { EMPTY, from, merge } from "rxjs";
 import { switchMap, map, share, catchError, filter } from "rxjs/operators";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";

@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import react from "@vitejs/plugin-react";
 import license from "rollup-plugin-license";
 
 // Generating the full merged sourcemap for the whole bundle is one of the most expensive parts
@@ -15,12 +16,15 @@ export default defineConfig({
     // the domain root and 404 every bundle, stylesheet and public asset in production.
     base: "./",
     plugins: [
+        // Vue and React run side by side while the UI is ported component by
+        // component. The Vue half goes away once the last panel is React.
         vue({
             // All static assets live in public/ and are referenced by plain relative URLs.
             // Without this, the SFC compiler tries to resolve every literal src="..." as a
             // module import relative to the .vue file and fails to find them.
             template: { transformAssetUrls: false }
-        })
+        }),
+        react()
     ],
     resolve: {
         // Leftover from before gl-matrix/jpeg-js/fast-png were audited: root no longer imports

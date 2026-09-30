@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
     collectConsoleErrors,
     expectCanvasToRender,
+    expectNoConsoleErrors,
     ui,
     waitForLoadingToSettle
 } from "./viewer.js";
@@ -15,7 +16,7 @@ test("renders the default model", async ({ page }) => {
     await waitForLoadingToSettle(page);
 
     await expectCanvasToRender(page, "default-model.png");
-    expect(errors).toEqual([]);
+    expectNoConsoleErrors(errors);
 });
 
 test("boots the full UI without errors", async ({ page }) => {
@@ -26,5 +27,5 @@ test("boots the full UI without errors", async ({ page }) => {
 
     await expect(page.locator(ui.canvas)).toBeVisible();
     await expect(page.locator(ui.tabs)).toBeVisible();
-    expect(errors).toEqual([]);
+    expectNoConsoleErrors(errors);
 });

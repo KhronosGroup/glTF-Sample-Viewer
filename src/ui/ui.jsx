@@ -1,10 +1,12 @@
 import { createApp } from "vue";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 import "./sass.scss";
 import Buefy from "@ntohq/buefy-next";
 import ToggleButton from "./components/ToggleButton.vue";
 import JsonToUiTemplate from "./components/JsonToUiTemplate.vue";
 import App from "./App.vue";
-import CanvasUI from "./CanvasUI.vue";
+import { Canvas } from "./Canvas.jsx";
 
 const appCreated = createApp(App);
 
@@ -14,13 +16,10 @@ appCreated.use(Buefy);
 appCreated.component("toggle-button", ToggleButton);
 appCreated.component("json-to-ui-template", JsonToUiTemplate);
 
-// Must mount before App: App's mounted() hook looks up the #canvas element,
-// which CanvasUI's template renders (it used to be static HTML in index.html).
-const canvasUI = createApp(CanvasUI);
-
-canvasUI.use(Buefy);
-
-canvasUI.mount("#canvasUI");
+// App's mounted() hook looks up the #canvas element, so the React tree that
+// renders it has to be committed before Vue mounts.
+const canvasRoot = createRoot(document.getElementById("canvasUI"));
+flushSync(() => canvasRoot.render(<Canvas />));
 
 export const app = appCreated.mount("#app");
 

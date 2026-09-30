@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
     collectConsoleErrors,
     expectCanvasToRender,
+    expectNoConsoleErrors,
     openModelsTab,
     ui,
     waitForLoadingToSettle
@@ -18,7 +19,7 @@ test("loads a model chosen from the dropdown", async ({ page }) => {
     await waitForLoadingToSettle(page);
 
     await expectCanvasToRender(page, "avocado.png");
-    expect(errors).toEqual([]);
+    expectNoConsoleErrors(errors);
 });
 
 // Guards the load-orchestration fix: a slow model selected first must not
@@ -41,5 +42,5 @@ test("a superseded model load does not overwrite the current one", async ({ page
 
     await expect(modelSelect).toHaveValue("Avocado");
     await expectCanvasToRender(page, "avocado.png");
-    expect(errors).toEqual([]);
+    expectNoConsoleErrors(errors);
 });

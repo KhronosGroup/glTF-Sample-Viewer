@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { collectConsoleErrors, openTab, waitForLoadingToSettle } from "./viewer.js";
+import {
+    collectConsoleErrors,
+    expectNoConsoleErrors,
+    openTab,
+    waitForLoadingToSettle
+} from "./viewer.js";
 
 // Everything asserted here is published by the loading/rendering layer rather
 // than typed by the user, so it covers the renderer-to-UI direction end to end.
@@ -22,5 +27,5 @@ test("panels reflect the loaded model", async ({ page }) => {
     await expect(page.getByText(/Number of errors: \d+/)).toBeVisible();
     await expect(page.getByText(/Number of warnings: \d+/)).toBeVisible();
 
-    expect(errors).toEqual([]);
+    expectNoConsoleErrors(errors);
 });
