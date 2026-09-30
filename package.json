@@ -13,9 +13,10 @@
     "prebuild": "cd ./glTF-Sample-Renderer && npm run build && cd .. && npm run sync:renderer-assets",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.js vite.config.js glTF-Sample-Renderer/source/**/*.js",
-    "lint:fix": "eslint --fix src/**/*.js vite.config.js glTF-Sample-Renderer/source/**/*.js",
+    "test": "playwright test",
+    "test:update-snapshots": "playwright test --update-snapshots",
+    "lint": "eslint src/**/*.js tests/**/*.js vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
+    "lint:fix": "eslint --fix src/**/*.js tests/**/*.js vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
     "prettier": "npx prettier src/**/*.js glTF-Sample-Renderer/source/**/*.js --check",
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
@@ -43,6 +44,7 @@
     "vue": "^3.4.29"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@vitejs/plugin-vue": "^6.0.9",
     "eslint": "^9.5.0",
     "eslint-config-prettier": "^10.1.8",

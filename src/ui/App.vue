@@ -36,7 +36,7 @@
 
                     <!-- Tab Header -->
                     <template #header  >
-                        <div id="test-id" @click="collapseActiveTab($event, 0)"
+                        <div id="test-id" data-testid="tab-models" @click="collapseActiveTab($event, 0)"
                             v-bind:style="[tabContentHidden === false && activeTab === 0 ? {'height': '100%'} : {}]"
                             v-bind:width="[isMobile ? '200px' : '100px']"
                             >
@@ -57,7 +57,7 @@
                             @click="collapseActiveTab($event, 0)">
                         <h2 class="title is-spaced">Models</h2>
                         <b-field label="Models" class="subtitle">
-                            <b-select v-model="selectedModel" v-on:input="modelChanged.next($event.target.value);">
+                            <b-select data-testid="model-select" v-model="selectedModel" v-on:input="modelChanged.next($event.target.value);">
                                 <option v-for="(item) in models" v-bind:value="item">
                                     {{ item }}
                                 </option>

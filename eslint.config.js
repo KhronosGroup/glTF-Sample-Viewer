@@ -43,7 +43,7 @@ export default [
         }
     },
     {
-        ignores: ["/**/dist/*", "**/libs/*"]
+        ignores: ["/**/dist/*", "**/libs/*", "test-results/*", "playwright-report/*"]
     },
     eslintConfigPrettier
 ];
