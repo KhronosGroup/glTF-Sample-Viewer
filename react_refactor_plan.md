@@ -55,45 +55,42 @@ Do not let the store try to own `state.renderingParameters` or any other rendere
 
 Exit criteria: app behaves identically; `uimodel.js` no longer holds a reference to the Vue instance for these fields.
 
-## Phase 2 — Add React alongside Vue
+## Phase 2 — Add React alongside Vue — DONE
 
-React cannot replace Vue in one commit without leaving the app unrunnable in between, so
-both plugins run side by side until the last component is ported.
+Both plugins ran side by side so no commit left the app unrunnable. The React UI was
+opt-in behind `?react=1` until it reached parity.
 
-- Add `react`, `react-dom`, `@vitejs/plugin-react`, `eslint-plugin-react`,
-  `eslint-plugin-react-hooks`. Keep `vue`, `@vitejs/plugin-vue` and Buefy for now.
-- `vite.config.js`: register the React plugin next to the Vue one. Everything else stays —
-  `base: "./"`, `dedupe`, the scss `quietDeps`, and the `rollup-plugin-license` banner all
-  survive because Vite is Rollup-based.
-- `eslint.config.js`: add React + hooks plugins, extend globs to `.jsx`. **Expect a burst of
-  new lint errors** — the current flat config lints only `.js`, so all `.vue` script blocks
-  are presently unlinted. Budget for this.
-- `.prettierrc` scripts: extend globs from `src/**/*.js` to include `.jsx`.
-- Keep `predev`/`prebuild`/`sync:renderer-assets` unchanged. Output stays `dist/`, so the
-  Pages workflow is unchanged.
+## Phase 3 — Component migration — DONE
 
-Vue, `@vitejs/plugin-vue`, Buefy, `index.html`'s second mount point and
-`src/ui/viewer_store_mixin.js` are removed at the end of Phase 3, not here.
+Ported in order: canvas, shell + Models, Display, Validator + Credits, Animations +
+Graphs, Physics + Advanced. Vue, Buefy's runtime, `App.vue`, the two Vue components and
+the throwaway store mixin are gone. The bundle dropped from 4,462 kB to 4,041 kB
+(758 kB to 647 kB gzipped).
 
-## Phase 3 — Component migration
+**Bulma was kept, and so was Buefy's stylesheet.** Bulma alone was not enough: switch,
+slider, tooltip, collapse, dropdown and the vertical tab bar are all Buefy, and
+`sass.scss` is written against its class names. Splitting Buefy in two — keeping the SCSS,
+dropping the Vue runtime — meant the React primitives only had to emit the same DOM.
+The exact markup was captured from the running app with `scripts/dump-dom.mjs` rather
+than reverse-engineered from Buefy's Vue source.
 
-Order: shell → canvas → panels, one tab at a time.
+Every Buefy class name now lives in `src/ui/react/controls.jsx`, `Slider.jsx`,
+`Dropdown.jsx`, `JsonTree.jsx` and `Notices.jsx`. A later Tailwind migration is a rewrite
+of those files plus deleting the SCSS, not a hunt through the markup.
 
-**Entry + canvas.** `CanvasUI.vue` becomes a `<Canvas>` with a ref. Drop the two-app mount-order hack in `ui.js` — it exists only because `App`'s `mounted()` needs `#canvas` to already exist. Drop `CanvasUI`'s dead `@mousemove="mouseMove"` handler and unused `timer`. Consolidate the two separate `canvas.getContext("webgl2")` calls (`main.js` and `App.vue` `mounted()`) into one.
+What the port removed along the way:
 
-**`main.js`** moves into a `useEffect` with real teardown: `cancelAnimationFrame`, unsubscribe everything, remove canvas listeners, dispose WebGL/PhysX. Develop with StrictMode **on** — it double-invokes effects and will surface exactly the leaks this code currently has.
+- Tab collapse is state, instead of hand-editing `is-active` on generated markup.
+- The GitHub logo is JSX, instead of a DOM node appended in `mounted()`.
+- The nav width is a prop, instead of an imperative style write.
+- The environment licence and the validator badge are components, instead of HTML strings
+  injected with `v-html`. See "v-html → security" below.
+- Seven near-identical custom-event branches and twenty-one near-identical switches became
+  data-driven lists.
 
-**`App.vue` → tab panels.** Do not port 1:1. Split into a tabs shell plus Models, Display/Lighting, Validation, Animation, Graphs/Interactivity, Physics, Advanced.
-
-**Buefy component mapping** (counts from current usage): `b-switch` 29, `b-field` 26, `b-select` 10, `b-input` 9, `b-tab-item` 8, `b-slider-tick` 8, `b-tooltip` 6, `b-slider` 2, `b-radio` 2, and one each of `b-tabs`, `b-dropdown`, `b-dropdown-item`, `b-checkbox`, `b-button`, `b-icon`, `b-collapse`. With Bulma retained, most become plain markup with Bulma classes; only tabs, slider, tooltip, dropdown and collapse need real components or small hand-rolled ones.
-
-**`$buefy.toast` / `$buefy.loading`** are called imperatively from `main.js` and from the `console.warn`/`console.error` override in `ui.js`. Replace with a toast library that exposes a module-level API callable from non-React code.
-
-**Small components.** `ToggleButton.vue` → controlled button; drop its internal `isOn` duplicate state and the imperative `setState()` method. `JsonToUiTemplate.vue` → self-referencing recursive function component.
-
-**Subjects die here.** As each panel is rewritten in JSX it writes to the store directly, so the corresponding Subject, its no-op `.pipe()` in `uimodel.js`, and its `listenForRedraw` call in `main.js` become deletions rather than rewrites. 48 no-op `.pipe()` calls and 41 `listenForRedraw` calls go this way.
-
-Preserve the `startWith` seeding behaviour for `tonemap`, `debugchannel`, `clearColor`, `hdr`. The store gives the initial *value* for free, but the *side effect* that writes it into `state.renderingParameters` must still fire once at init. Easy to lose silently.
+Still outstanding from this phase: `main.js` has not moved into an effect, so `ui.jsx`
+still commits the canvas tree with `flushSync` to guarantee `#canvas` exists before
+`main()` runs. StrictMode is therefore not yet exercised against the render loop.
 
 ## Phase 4 — Pointer gestures
 
@@ -112,11 +109,11 @@ Option 2 removes the last RxJS dependency.
 
 **Subpath deployment.** The site is served from a subpath. `base: "./"` must stay. The renderer resolves assets **document-relative at runtime**, outside the bundler: `libPath = "./libs/"` and `lut_sheen_E_file: "assets/images/..."` in `resource_loader.js`, `locateFile: () => "./libs/physx-js-webidl.wasm"` in `PhysX.js`, plus `new URL(..., import.meta.url)` for the splat sort worker and mikktspace wasm. Also `<script src="libs/libktx.js">` in `index.html` and `assets/ui/...` image paths in `App.vue`. None of these go through Vite. The page must continue to be served at a URL ending in `/`.
 
-**`v-html` → security.** `environmentLicense` is built from **fetched remote license text** and injected as HTML. Porting it to `dangerouslySetInnerHTML` carries the XSS vector forward. Build it as JSX from parsed parts instead. `getValidationCounter()` / `getValidationInfoDiv()` also return HTML strings; convert both to components.
+**`v-html` → security. FIXED.** `environmentLicense` was built from **fetched remote licence text** and injected as HTML. `UIModel` now publishes structured fields (`copyright`, `sourceUrl`, `licenseName`, `licenseUrl`) and the UI renders them as elements, so remote text no longer reaches `innerHTML`. `getValidationCounter()` / `getValidationInfoDiv()` were also HTML strings and are now components.
 
 **The render loop must not use React.** It reads state synchronously every frame. Use `store.getState()` inside the loop, never hooks or subscriptions. In particular `app.loadingComponent !== undefined` is currently read in the rAF loop to suppress redraws — that Buefy handle must become a plain boolean in the store.
 
-**DOM manipulation to unwind (13 sites in `App.vue`).** Injecting a GitHub logo `<a><img>` into Buefy's generated tab `<ul>`; stripping the `input` class off the colour picker; `navElement.style.width = "100px"`; mobile `marginTop` fixup; manual `is-active` class add/remove for collapsible tabs; `getElementById("customEventForm").checkValidity()`. Most of these exist to work around Buefy's markup and should simply disappear rather than be reimplemented.
+**DOM manipulation to unwind. DONE.** All thirteen sites are gone rather than reimplemented: most existed only to work around Buefy's generated markup. The exception is `getElementById("customEventForm").checkValidity()`, which was dropped along with the `customEventValid` gating — the Send button is no longer disabled on invalid input. Worth revisiting if that gating mattered.
 
 **Global side effects install once.** The `console.warn`/`console.error` override and `window.onerror` in `ui.js` must be installed once at module scope or in a guarded effect with restore-on-cleanup — not per mount.
 
