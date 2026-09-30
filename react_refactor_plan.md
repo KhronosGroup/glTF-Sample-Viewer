@@ -88,26 +88,40 @@ What the port removed along the way:
 - Seven near-identical custom-event branches and twenty-one near-identical switches became
   data-driven lists.
 
-Still outstanding from this phase: `main.js` has not moved into an effect, so `ui.jsx`
-still commits the canvas tree with `flushSync` to guarantee `#canvas` exists before
-`main()` runs. StrictMode is therefore not yet exercised against the render loop.
+Still outstanding from this phase: nothing. `main.js` now exports `initViewer(canvas)` with a
+teardown, the `Viewer` component owns the canvas, the `flushSync` hack is gone and both roots
+run under `StrictMode`.
 
-## Phase 4 — Pointer gestures
+## Phase 4 — Drop RxJS — DONE
 
-Independent of everything above; can land at any point.
+RxJS is removed entirely. The Subjects are a plain module-level event bus; the gesture
+streams are an imperative translation in `src/logic/canvas_input.js`.
 
-`getInputObservables` uses `mergeMap` + `pairwise` + `takeUntil` for `mouseOrbit`, `mousePan`, `dragZoom`, `touchOrbit`, `touchZoom`. This is the only place RxJS earns its keep. Two options:
+This was **not** the Pointer Events rewrite. That is a behavioural change — the mouse and
+touch paths are not equivalent, since touch orbit is doubled and pinch has no mouse
+counterpart — and bundling it into a dependency removal would have made any regression
+impossible to attribute. It remains available as a separate change.
 
-1. Keep RxJS solely for this (bump to v7 — `pluck` is used once and is removed in v8).
-2. Rewrite to Pointer Events with `setPointerCapture`. This collapses the duplicated mouse/touch paths, removes the `mouseup`-on-`document` + `mouseleave` capture workaround, and fixes the inconsistency where `dragZoom` uses `movementY` while the touch path uses computed deltas. Likely *smaller* than the RxJS version.
+Camera specs were added first, and caught a real regression: `pairwise()` only emits from
+the second `mousemove`, so seeding the drag from the `mousedown` position added an extra
+delta segment and over-rotated.
 
-Note that `dragSmoother` in `main.js` already dumps every emission into an imperative pulse buffer, so the stream semantics are discarded one line downstream regardless.
+## Known gaps
 
-Option 2 removes the last RxJS dependency.
+- **No test covers the viewer teardown.** It was verified once by forcing an unmount with
+  temporary instrumentation (two starts, one stop, one canvas, correct render after
+  remount), but exercising it from a spec needs a remount hook the app does not have. If
+  `dispose()` breaks, nothing will fail.
+- **The custom event Send button no longer gates on validity.** The Vue version called
+  `checkValidity()` on the form and disabled Send; that went with the DOM access and was
+  not replaced.
+- **`physicsEngineChanged` has no listener.** PhysX is the only engine, as before.
+- **Volume/transmission coupling** is reproduced as-is and tracked upstream in
+  KhronosGroup/glTF-Sample-Viewer#674.
 
 ## Cross-cutting things to watch
 
-**Subpath deployment.** The site is served from a subpath. `base: "./"` must stay. The renderer resolves assets **document-relative at runtime**, outside the bundler: `libPath = "./libs/"` and `lut_sheen_E_file: "assets/images/..."` in `resource_loader.js`, `locateFile: () => "./libs/physx-js-webidl.wasm"` in `PhysX.js`, plus `new URL(..., import.meta.url)` for the splat sort worker and mikktspace wasm. Also `<script src="libs/libktx.js">` in `index.html` and `assets/ui/...` image paths in `App.vue`. None of these go through Vite. The page must continue to be served at a URL ending in `/`.
+**Subpath deployment.** The site is served from a subpath. `base: "./"` must stay. The renderer resolves assets **document-relative at runtime**, outside the bundler: `libPath = "./libs/"` and `lut_sheen_E_file: "assets/images/..."` in `resource_loader.js`, `locateFile: () => "./libs/physx-js-webidl.wasm"` in `PhysX.js`, plus `new URL(..., import.meta.url)` for the splat sort worker and mikktspace wasm. Also `<script src="libs/libktx.js">` in `index.html` and `assets/ui/...` image paths in the tab components. None of these go through Vite. The page must continue to be served at a URL ending in `/`.
 
 **`v-html` → security. FIXED.** `environmentLicense` was built from **fetched remote licence text** and injected as HTML. `UIModel` now publishes structured fields (`copyright`, `sourceUrl`, `licenseName`, `licenseUrl`) and the UI renders them as elements, so remote text no longer reaches `innerHTML`. `getValidationCounter()` / `getValidationInfoDiv()` were also HTML strings and are now components.
 
