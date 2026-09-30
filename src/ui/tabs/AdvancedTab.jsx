@@ -1,30 +1,19 @@
-import { Fragment } from "react";
 import { Download } from "lucide-react";
-import { uiEvents } from "../../logic/ui_events.js";
 import { useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
-import { JsonTree } from "../JsonTree.jsx";
+import { StatList } from "../StatList.jsx";
+import { uiEvents } from "../../logic/ui_events.js";
 
-// The Vue template repeated a near-identical switch for each of these.
-// `breakAfter` reproduces where it placed <br> between groups.
-const FEATURE_TOGGLES = [
-    {
-        key: "inputSmoothing",
-        label: "Input Smoothing",
-        event: "inputSmoothingChanged",
-        breakAfter: true
-    },
-    { key: "skinning", label: "Skinning", event: "skinningChanged", breakAfter: true },
-    { key: "morphing", label: "Morphing", event: "morphingChanged" },
+const RENDERING_TOGGLES = [
+    { key: "skinning", label: "Skinning", event: "skinningChanged" },
+    { key: "morphing", label: "Morphing", event: "morphingChanged" }
+];
+
+const EXTENSION_TOGGLES = [
     { key: "interactivity", label: "KHR_interactivity", event: "interactivityChanged" },
     { key: "hoverability", label: "KHR_node_hoverability", event: "hoverabilityChanged" },
     { key: "selectability", label: "KHR_node_selectability", event: "selectabilityChanged" },
-    {
-        key: "nodeVisibility",
-        label: "KHR_node_visibility",
-        event: "nodeVisibilityChanged",
-        breakAfter: true
-    }
+    { key: "nodeVisibility", label: "KHR_node_visibility", event: "nodeVisibilityChanged" }
 ];
 
 const MATERIAL_EXTENSIONS = [
@@ -78,14 +67,26 @@ export function AdvancedTab({
         return false;
     };
 
+    const renderToggles = (entries) =>
+        entries.map((entry) => (
+            <Switch
+                key={entry.key}
+                checked={extensions[entry.key]}
+                disabled={disabledFor(entry.key)}
+                onChange={toggle(entry)}
+            >
+                {entry.label}
+            </Switch>
+        ));
+
     return (
         <Panel title="Advanced Controls" onCollapse={onCollapse}>
-            <Field label="Capture Canvas">
-                <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
-                    <Download size={16} aria-hidden="true" />
-                    Download as .png
-                </Button>
-            </Field>
+            <Switch
+                checked={extensions.inputSmoothing}
+                onChange={toggle({ key: "inputSmoothing", event: "inputSmoothingChanged" })}
+            >
+                Input Smoothing
+            </Switch>
 
             <Field label="Debug Channels">
                 <Select
@@ -112,25 +113,27 @@ export function AdvancedTab({
                 </Select>
             </Field>
 
-            {FEATURE_TOGGLES.map((entry) => (
-                <Fragment key={entry.key}>
-                    <Switch checked={extensions[entry.key]} onChange={toggle(entry)}>
-                        {entry.label}
-                    </Switch>
-                    {entry.breakAfter && <br />}
-                </Fragment>
-            ))}
+            <Field label="Rendering" grouped>
+                {renderToggles(RENDERING_TOGGLES)}
+                <Switch
+                    checked={extensions.floatingPointFramebuffer}
+                    disabled={!supportsFloatingPointFramebuffer}
+                    onChange={toggle({
+                        key: "floatingPointFramebuffer",
+                        event: "floatingPointFramebufferChanged"
+                    })}
+                >
+                    Floating-Point Framebuffer
+                </Switch>
+            </Field>
 
-            <Switch
-                checked={extensions.floatingPointFramebuffer}
-                disabled={!supportsFloatingPointFramebuffer}
-                onChange={toggle({
-                    key: "floatingPointFramebuffer",
-                    event: "floatingPointFramebufferChanged"
-                })}
-            >
-                Floating-Point Framebuffer
-            </Switch>
+            <Field label="Extensions" grouped>
+                {renderToggles(EXTENSION_TOGGLES)}
+            </Field>
+
+            <Field label="Material Extensions" grouped>
+                {renderToggles(MATERIAL_EXTENSIONS)}
+            </Field>
 
             <Field label="Current Camera Values">
                 <Button onClick={() => uiEvents.cameraExport.emit(true)}>
@@ -139,24 +142,9 @@ export function AdvancedTab({
                 </Button>
             </Field>
 
-            <Field label="KHR Materials Extensions" grouped>
-                {MATERIAL_EXTENSIONS.map((entry) => (
-                    <Switch
-                        key={entry.key}
-                        checked={extensions[entry.key]}
-                        disabled={disabledFor(entry.key)}
-                        onChange={toggle(entry)}
-                    >
-                        {entry.label}
-                    </Switch>
-                ))}
-            </Field>
-
             <Field label="Statistics">
-                <JsonTree data={statistics} />
+                <StatList data={statistics} />
             </Field>
-
-            <div className="pb-12" />
         </Panel>
     );
 }

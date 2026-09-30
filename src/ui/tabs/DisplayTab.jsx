@@ -1,7 +1,7 @@
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Panel, Select, Switch } from "../controls.jsx";
+import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { Dropdown } from "../Dropdown.jsx";
 
@@ -189,7 +189,12 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Field>
             </Field>
 
-            <div className="pb-12" />
+            <Field label="Capture Canvas">
+                <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
+                    <Download size={16} aria-hidden="true" />
+                    Download as .png
+                </Button>
+            </Field>
         </Panel>
     );
 }

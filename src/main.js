@@ -29,6 +29,9 @@ const EXTENSION_TOGGLES = {
     gaussianSplattingChanged: "KHR_gaussian_splatting"
 };
 
+// How long a single drag or wheel delta keeps feeding motion into the camera.
+const SMOOTHING_MS = 200;
+
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
 /**
@@ -468,7 +471,7 @@ export const initViewer = async (canvas) => {
     // easeInOutSine, so motion accelerates and decelerates smoothly instead of
     // snapping with raw mousemove/wheel timing.
     const dragSmoother = (() => {
-        let smoothMs = 330;
+        let smoothMs = SMOOTHING_MS;
         const easeInOutSine = (t) => 0.5 * (1 - Math.cos(Math.PI * t));
         const orbitPulses = [];
         const panPulses = [];
@@ -515,7 +518,9 @@ export const initViewer = async (canvas) => {
         };
     })();
 
-    on(uiEvents.inputSmoothingChanged, (enabled) => dragSmoother.setSmoothMs(enabled ? 330 : 0));
+    on(uiEvents.inputSmoothingChanged, (enabled) =>
+        dragSmoother.setSmoothMs(enabled ? SMOOTHING_MS : 0)
+    );
 
     uiModel.onOrbit((orbit) => {
         dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
