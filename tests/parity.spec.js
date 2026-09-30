@@ -3,6 +3,7 @@ import {
     collectConsoleErrors,
     expectCanvasToRender,
     expectNoConsoleErrors,
+    openPanel,
     openTab,
     ui,
     waitForLoadingToSettle
@@ -88,6 +89,22 @@ for (const target of UIS) {
             // Animations start playing, so the toggle offers to pause.
             await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
             await expect(page.getByRole("checkbox").first()).toBeChecked();
+
+            expectNoConsoleErrors(errors);
+        });
+
+        test("the advanced panel shows statistics and extension toggles", async ({ page }) => {
+            const errors = collectConsoleErrors(page);
+
+            await page.goto(`/${target.query}`);
+            await waitForLoadingToSettle(page);
+            await openTab(page, "advanced");
+
+            const panel = openPanel(page);
+            await expect(panel.getByText("Mesh Count", { exact: true })).toBeVisible();
+            await expect(panel.getByText("Triangle Count", { exact: true })).toBeVisible();
+            await expect(panel.getByText("Clearcoat", { exact: true })).toBeVisible();
+            await expect(panel.getByText("Gaussian Splatting", { exact: true })).toBeVisible();
 
             expectNoConsoleErrors(errors);
         });

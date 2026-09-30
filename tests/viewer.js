@@ -51,6 +51,14 @@ export async function waitForLoadingToSettle(page) {
 }
 
 /**
+ * The Vue UI keeps inactive panels in the DOM, so assertions have to be scoped
+ * to the open one or they can match hidden content from another tab.
+ */
+export function openPanel(page) {
+    return page.locator(".tabContent:visible").first();
+}
+
+/**
  * Tab content starts collapsed, so a panel has to be opened before any of its
  * controls can be interacted with.
  */

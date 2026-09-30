@@ -10,6 +10,8 @@ import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
 import { CreditsTab } from "./tabs/CreditsTab.jsx";
 import { AnimationsTab } from "./tabs/AnimationsTab.jsx";
 import { GraphsTab } from "./tabs/GraphsTab.jsx";
+import { PhysicsTab } from "./tabs/PhysicsTab.jsx";
+import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
 
 // Definition of mobile: https://bulma.io/documentation/start/responsiveness/
 const MOBILE_BREAKPOINT = 768;
@@ -19,7 +21,9 @@ const TAB_META = [
     { id: "display", label: "Display", icon: "Display" },
     { id: "validator", label: "Validator", icon: "Capture" },
     { id: "animations", label: "Animations", icon: "Animation" },
-    { id: "credits", label: "Credits", icon: "XMP" }
+    { id: "physics", label: "Physics", icon: "Physics", needsPhysics: true },
+    { id: "credits", label: "Credits", icon: "XMP" },
+    { id: "advanced", label: "Advanced Controls", icon: "Developer" }
 ];
 
 const INITIAL_LIGHTING = {
@@ -35,7 +39,34 @@ const INITIAL_LIGHTING = {
 
 // Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
 const INITIAL_EXTENSIONS = {
-    interactivity: true
+    inputSmoothing: true,
+    skinning: true,
+    morphing: true,
+    interactivity: true,
+    hoverability: true,
+    selectability: true,
+    nodeVisibility: true,
+    floatingPointFramebuffer: true,
+    clearcoat: true,
+    sheen: true,
+    transmission: true,
+    diffuseTransmission: true,
+    volume: true,
+    volumeScattering: true,
+    ior: true,
+    specular: true,
+    emissiveStrength: true,
+    iridescence: true,
+    retroreflection: true,
+    anisotropy: true,
+    dispersion: true,
+    gaussianSplatting: true
+};
+
+const INITIAL_PHYSICS_DEBUG = {
+    engine: "nvidia-physx",
+    colliders: false,
+    joints: false
 };
 
 function readInitialLayout() {
@@ -49,19 +80,23 @@ export function App() {
     const [uiVisible, setUiVisible] = useState(layout.uiVisible);
     const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
-    const [extensions] = useState(INITIAL_EXTENSIONS);
+    const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
+    const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
+    const [debugChannel, setDebugChannel] = useState("None");
     const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
+    const volumePref = useRef(INITIAL_EXTENSIONS.volume);
 
     const isLoading = useViewerStore((state) => state.isLoading);
     const showDropDownOverlay = useViewerStore((state) => state.showDropDownOverlay);
     const graphs = useViewerStore((state) => state.graphs);
+    const hasPhysics = useViewerStore((state) => state.hasPhysics);
 
     // The Animations tab becomes the Graphs tab when the asset carries
     // KHR_interactivity and the extension is enabled.
     const showGraphs = graphs.length > 0 && extensions.interactivity;
 
-    const tabMeta = TAB_META.map((tab) =>
-        tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs", icon: "Animation" } : tab
+    const tabMeta = TAB_META.filter((tab) => !tab.needsPhysics || hasPhysics).map((tab) =>
+        tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
     );
     const tabIds = tabMeta.map((tab) => tab.id);
     const { activeTab, collapsed, select, collapse } = useTabState(tabIds);
@@ -94,6 +129,29 @@ export function App() {
         setLighting((current) => ({ ...current, ...next }));
     };
 
+    // Volume is meaningless without either transmission, so it follows them and
+    // remembers the user's choice. Like the Vue original this only moves the
+    // switch; the renderer is not notified until volume is toggled directly.
+    const updateExtensions = (partial) => {
+        let next = partial;
+        const otherTransmission = (key) =>
+            key === "transmission" ? extensions.diffuseTransmission : extensions.transmission;
+
+        for (const key of ["transmission", "diffuseTransmission"]) {
+            if (partial[key] === undefined || otherTransmission(key)) {
+                continue;
+            }
+            if (partial[key] === false) {
+                volumePref.current = extensions.volume;
+                next = { ...next, volume: false };
+            } else {
+                next = { ...next, volume: volumePref.current };
+            }
+        }
+
+        setExtensions((current) => ({ ...current, ...next }));
+    };
+
     const renderTab = (id) => {
         switch (id) {
             case "models":
@@ -122,6 +180,26 @@ export function App() {
                 );
             case "credits":
                 return <CreditsTab onCollapse={collapse} />;
+            case "physics":
+                return (
+                    <PhysicsTab
+                        onCollapse={collapse}
+                        debug={physicsDebug}
+                        onDebugChange={(partial) =>
+                            setPhysicsDebug((current) => ({ ...current, ...partial }))
+                        }
+                    />
+                );
+            case "advanced":
+                return (
+                    <AdvancedTab
+                        onCollapse={collapse}
+                        extensions={extensions}
+                        onExtensionsChange={updateExtensions}
+                        debugChannel={debugChannel}
+                        onDebugChannelChange={setDebugChannel}
+                    />
+                );
             default:
                 return null;
         }
