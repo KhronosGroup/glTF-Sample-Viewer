@@ -24,17 +24,22 @@ Must be usable outside React: the rAF loop and `uimodel.js` both read and write 
 **Do not plan a standalone "drop RxJS" milestone.**
 RxJS usage splits three ways and each has a different answer — see Phase 1, Phase 3, Phase 4.
 
-## Phase 0 — Load orchestration fix (still Vue)
+## Phase 0 — Load orchestration fix (still Vue) — DONE
 
 Self-contained in `main.js`. Verifiable by hand today. Survives the migration untouched.
 
-- `uiModel.model` is consumed by `mergeMap` in two places (validation, `gltfLoaded`). `mergeMap` is **concurrent, not cancelling**: switching models while one is loading lets both complete, and whichever finishes last wins. Replace with `switchMap`, or replace the whole thing with an async function plus an explicit load-generation counter.
-- `share()` on `gltfLoaded` is load-bearing — it has three subscribers (`attachGltfLoaded`, `statisticsUpdateObservable` via `merge`, `listenForRedraw`). Without it the model loads three times. Same for `droppedFiles`, consumed by both `droppedGltf` and `droppedHdr`.
-- Preserve the existing `catchError` behaviour: a failed load must not kill the stream, and must still call `exitLoadingState()`.
+`mergeMap` ran both loads to completion, and the correction turned out to be larger than
+swapping the operator: the state-applying side effects lived inside the promise chain
+(`loadGltf().then(...)`), not in the observable, so unsubscribing would not have stopped
+them. Concurrent loads corrupted each other's texture state, leaving the visible model
+untextured.
 
-Exit criteria: rapid model switching and drag-drop-during-load behave correctly; no duplicate network fetches.
+glTF loads cannot be cancelled once started, so they are now queued, and a load whose id
+is no longer the latest applies nothing. Validation does use `switchMap`, which is enough
+there because it returns its result through the stream instead of mutating shared state.
+`share()` on `gltfLoaded` is load-bearing and was preserved: it has three subscribers.
 
-## Phase 1 — Introduce the store, renderer→UI direction only (still Vue)
+## Phase 1 — Introduce the store, renderer→UI direction only (still Vue) — DONE
 
 This is the real design work and all of it survives the migration.
 
@@ -50,16 +55,25 @@ Do not let the store try to own `state.renderingParameters` or any other rendere
 
 Exit criteria: app behaves identically; `uimodel.js` no longer holds a reference to the Vue instance for these fields.
 
-## Phase 2 — Vite/React config swap
+## Phase 2 — Add React alongside Vue
 
-Small, mechanical.
+React cannot replace Vue in one commit without leaving the app unrunnable in between, so
+both plugins run side by side until the last component is ported.
 
-- Remove `vue`, `@vitejs/plugin-vue`, `@ntohq/buefy-next`. Add `react`, `react-dom`, `@vitejs/plugin-react`, `eslint-plugin-react`, `eslint-plugin-react-hooks`.
-- `vite.config.js`: swap the plugin. Everything else stays — `base: "./"`, `dedupe`, the scss `quietDeps`, and the `rollup-plugin-license` banner config all survive because Vite is Rollup-based.
-- `index.html`: keep the Draco and `libs/libktx.js` script tags, keep the CDN stylesheets for now, collapse the two mount points (`#canvasUI`, `#app`) into one React root.
-- `eslint.config.js`: add React + hooks plugins, extend globs to `.jsx`. **Expect a burst of new lint errors** — the current flat config lints only `.js`, so all `.vue` script blocks are presently unlinted. Budget for this.
+- Add `react`, `react-dom`, `@vitejs/plugin-react`, `eslint-plugin-react`,
+  `eslint-plugin-react-hooks`. Keep `vue`, `@vitejs/plugin-vue` and Buefy for now.
+- `vite.config.js`: register the React plugin next to the Vue one. Everything else stays —
+  `base: "./"`, `dedupe`, the scss `quietDeps`, and the `rollup-plugin-license` banner all
+  survive because Vite is Rollup-based.
+- `eslint.config.js`: add React + hooks plugins, extend globs to `.jsx`. **Expect a burst of
+  new lint errors** — the current flat config lints only `.js`, so all `.vue` script blocks
+  are presently unlinted. Budget for this.
 - `.prettierrc` scripts: extend globs from `src/**/*.js` to include `.jsx`.
-- Keep `predev`/`prebuild`/`sync:renderer-assets` unchanged. Output stays `dist/`, so the Pages workflow is unchanged.
+- Keep `predev`/`prebuild`/`sync:renderer-assets` unchanged. Output stays `dist/`, so the
+  Pages workflow is unchanged.
+
+Vue, `@vitejs/plugin-vue`, Buefy, `index.html`'s second mount point and
+`src/ui/viewer_store_mixin.js` are removed at the end of Phase 3, not here.
 
 ## Phase 3 — Component migration
 
@@ -110,8 +124,10 @@ Option 2 removes the last RxJS dependency.
 
 **Ordering dependency.** `main.js` sets `app.supportsFloatingPointFramebuffer` before UI logic runs. That must land in the store before the relevant control renders.
 
-**No test safety net.** `npm test` is a stub. All verification is manual. Consider adding a Playwright smoke test (load default model, screenshot, toggle a few switches) before Phase 3 — it is the only phase large enough to hide a regression.
-
+**No test safety net.** `npm test` now runs Playwright. The specs assert on the rendered
+canvas rather than on markup so they stay meaningful across the rewrite; framework-specific
+selectors are confined to `tests/viewer.js`. Run `npm test` after every step, and
+`npm run test:update-snapshots` only when a canvas change is intended.
 **RxJS version.** `rxjs@^6.6.7` is past EOL. If any RxJS survives past Phase 3, bump to 7.x.
 
 ## Manual QA checklist
