@@ -1,8 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./ui/sass.scss";
-import { Viewer } from "./ui/react/Viewer.jsx";
-import { App } from "./ui/react/App.jsx";
+import { Viewer } from "./ui/Viewer.jsx";
+import { App } from "./ui/App.jsx";
 import { notify } from "./logic/notifications.js";
 
 // Two roots rather than one, because index.html's column layout owns the split

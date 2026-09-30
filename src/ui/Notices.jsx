@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { setNotificationSink } from "../../logic/notifications.js";
+import { setNotificationSink } from "../logic/notifications.js";
 
 let nextId = 0;
 

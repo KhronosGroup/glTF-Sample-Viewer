@@ -1,4 +1,4 @@
-import { uiEvents } from "../../../logic/ui_events.js";
+import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Checkbox, Field, ToggleButton } from "../controls.jsx";
 

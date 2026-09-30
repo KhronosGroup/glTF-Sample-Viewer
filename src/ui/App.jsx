@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { notify } from "../../logic/notifications.js";
-import { uiEvents } from "../../logic/ui_events.js";
+import { notify } from "../logic/notifications.js";
+import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { LoadingOverlay, Toasts } from "./Notices.jsx";

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { uiEvents } from "../../../logic/ui_events.js";
-import { notify } from "../../../logic/notifications.js";
+import { uiEvents } from "../../logic/ui_events.js";
+import { notify } from "../../logic/notifications.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Field, Radio, Select, ToggleButton } from "../controls.jsx";
 import { CustomEventInput, defaultValueForType } from "./CustomEventInput.jsx";

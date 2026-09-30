@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { uiEvents } from "../../../logic/ui_events.js";
+import { uiEvents } from "../../logic/ui_events.js";
 import { useViewerStore } from "../store.js";
 import { Field, Select, Switch } from "../controls.jsx";
 import { JsonTree } from "../JsonTree.jsx";

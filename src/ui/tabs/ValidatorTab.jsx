@@ -1,4 +1,4 @@
-import { notify } from "../../../logic/notifications.js";
+import { notify } from "../../logic/notifications.js";
 import { useViewerStore } from "../store.js";
 
 function downloadJson(filename, json) {
