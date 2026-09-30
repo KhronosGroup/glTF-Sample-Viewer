@@ -26,16 +26,18 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
             >
                 {tabs.map((tab, index) => {
                     const expanded = !collapsed && tab.id === activeTab;
+                    const Icon = tab.icon;
                     return (
                         <button
                             type="button"
                             key={tab.id}
                             role="tab"
                             aria-selected={expanded}
+                            aria-label={tab.label}
                             data-testid={`tab-${tab.id}`}
                             onClick={() => onSelect(tab.id)}
                             style={index === 0 && !isMobile ? { marginTop: "11dvh" } : undefined}
-                            className={`flex h-[100px] shrink-0 flex-col items-center justify-center gap-1 border-r-[7.5px] px-1 text-center transition-colors ${
+                            className={`focus-visible:outline-accent flex h-[100px] shrink-0 flex-col items-center justify-center gap-1.5 border-r-[7.5px] px-1 text-center transition-colors focus-visible:-outline-offset-2 focus-visible:outline ${
                                 expanded
                                     ? "border-accent bg-rail-active"
                                     : "hover:bg-rail-hover border-transparent"
@@ -44,10 +46,10 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
                             {tab.renderHeader ? (
                                 tab.renderHeader(expanded)
                             ) : (
-                                <img
-                                    src={`assets/ui/${tab.icon} ${expanded ? "50X50" : "30X30"}.svg`}
-                                    width={expanded ? "50" : "30"}
-                                    alt=""
+                                <Icon
+                                    size={expanded ? 34 : 26}
+                                    strokeWidth={1.75}
+                                    aria-hidden="true"
                                 />
                             )}
                             {!isMobile && !expanded && (
@@ -59,12 +61,13 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
 
                 <a
                     href="https://github.com/KhronosGroup/glTF-Sample-Viewer"
-                    className="mt-auto mb-4 flex shrink-0 justify-center pt-4"
+                    className="mt-auto mb-4 flex shrink-0 justify-center pt-4 opacity-70 transition-opacity hover:opacity-100"
+                    aria-label="View this project on GitHub"
                 >
                     <img
                         src="assets/ui/GitHub-Mark-Light-32px.png"
                         className="h-[22px] w-[22px]"
-                        alt="GitHub"
+                        alt=""
                     />
                 </a>
             </nav>

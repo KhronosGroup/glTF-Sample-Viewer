@@ -1,6 +1,7 @@
+import { Pause, Play } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Checkbox, Field, OutlineButton, Panel, SectionLabel, ToggleButton } from "../controls.jsx";
+import { Checkbox, Field, Panel, PlaybackControls, SectionLabel } from "../controls.jsx";
 
 export function AnimationsTab({ onCollapse }) {
     const animations = useViewerStore((state) => state.animations);
@@ -23,24 +24,18 @@ export function AnimationsTab({ onCollapse }) {
             <SectionLabel>Animation Controls</SectionLabel>
 
             {hasAnimations && (
-                <div className="mt-4 mb-6 flex items-center gap-4">
-                    <ToggleButton
-                        on={animationState}
-                        onText="Pause"
-                        offText="Play"
-                        className="w-[90px]"
-                        onToggle={(on) => {
-                            setViewerState({ animationState: on });
-                            uiEvents.animationPlayChanged.emit(on);
-                        }}
-                    />
-                    <OutlineButton
-                        className="min-w-[70px]"
-                        onClick={() => uiEvents.animationResetChanged.emit(true)}
-                    >
-                        Reset
-                    </OutlineButton>
-                </div>
+                <PlaybackControls
+                    active={animationState}
+                    onText="Pause"
+                    offText="Play"
+                    onIcon={<Pause size={16} aria-hidden="true" />}
+                    offIcon={<Play size={16} aria-hidden="true" />}
+                    onToggle={(on) => {
+                        setViewerState({ animationState: on });
+                        uiEvents.animationPlayChanged.emit(on);
+                    }}
+                    onReset={() => uiEvents.animationResetChanged.emit(true)}
+                />
             )}
 
             {!hasAnimations && <SectionLabel>No animations available</SectionLabel>}

@@ -1,3 +1,4 @@
+import { Pause, Play, Send } from "lucide-react";
 import { useState } from "react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { notify } from "../../logic/notifications.js";
@@ -5,12 +6,11 @@ import { setViewerState, useViewerStore } from "../store.js";
 import {
     Button,
     Field,
-    OutlineButton,
     Panel,
+    PlaybackControls,
     Radio,
     SectionLabel,
-    Select,
-    ToggleButton
+    Select
 } from "../controls.jsx";
 import { CustomEventInput, defaultValueForType } from "./CustomEventInput.jsx";
 
@@ -60,24 +60,18 @@ export function GraphsTab({ onCollapse }) {
             <SectionLabel>Graph Controls</SectionLabel>
 
             {hasGraphs && (
-                <div className="mt-4 mb-6 flex items-center gap-4">
-                    <ToggleButton
-                        on={graphState}
-                        onText="Pause"
-                        offText="Play"
-                        className="w-[90px]"
-                        onToggle={(on) => {
-                            setViewerState({ graphState: on });
-                            uiEvents.graphPlayChanged.emit(on);
-                        }}
-                    />
-                    <OutlineButton
-                        className="min-w-[70px]"
-                        onClick={() => uiEvents.graphResetChanged.emit(true)}
-                    >
-                        Reset
-                    </OutlineButton>
-                </div>
+                <PlaybackControls
+                    active={graphState}
+                    onText="Pause"
+                    offText="Play"
+                    onIcon={<Pause size={16} aria-hidden="true" />}
+                    offIcon={<Play size={16} aria-hidden="true" />}
+                    onToggle={(on) => {
+                        setViewerState({ graphState: on });
+                        uiEvents.graphPlayChanged.emit(on);
+                    }}
+                    onReset={() => uiEvents.graphResetChanged.emit(true)}
+                />
             )}
 
             {!hasGraphs && <SectionLabel>No graphs available</SectionLabel>}
@@ -139,7 +133,8 @@ export function GraphsTab({ onCollapse }) {
 
             {currentEventId && (
                 <div className="mt-8 flex justify-end">
-                    <Button className="w-[90px]" onClick={sendCustomEvent}>
+                    <Button className="w-[110px]" onClick={sendCustomEvent}>
+                        <Send size={16} aria-hidden="true" />
                         Send
                     </Button>
                 </div>

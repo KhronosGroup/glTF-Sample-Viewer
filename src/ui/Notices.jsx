@@ -4,15 +4,15 @@ import { setNotificationSink } from "../logic/notifications.js";
 let nextId = 0;
 
 const DURATIONS = {
-    "error": 5000,
-    "warning": 3000
+    error: 5000,
+    warning: 3000
 };
 
 const TONES = {
-    "error": "bg-red-600",
-    "warning": "bg-amber-500",
-    "success": "bg-accent",
-    "info": "bg-sky-600"
+    error: "bg-red-600",
+    warning: "bg-amber-500",
+    success: "bg-accent",
+    info: "bg-sky-600"
 };
 
 /**

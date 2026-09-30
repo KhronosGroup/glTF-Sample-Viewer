@@ -1,3 +1,4 @@
+import { Copy, Download, ShieldCheck } from "lucide-react";
 import { notify } from "../../logic/notifications.js";
 import { useViewerStore } from "../store.js";
 import { Button, Panel } from "../controls.jsx";
@@ -33,7 +34,7 @@ export function ValidatorTab({ onCollapse }) {
     return (
         <Panel title="glTF Validator" onCollapse={onCollapse} className="flex h-full flex-col">
             {!failed && (
-                <div className="my-6 break-words">
+                <div className="my-6 space-y-1 break-words">
                     <p>Number of errors: {report?.issues?.numErrors ?? 0}</p>
                     <p>Number of warnings: {report?.issues?.numWarnings ?? 0}</p>
                     <p>Number of infos: {report?.issues?.numInfos ?? 0}</p>
@@ -42,26 +43,22 @@ export function ValidatorTab({ onCollapse }) {
 
             {description?.message && <p className="my-2.5 text-sm">{description.message}</p>}
 
-            {failed && <p className="my-2.5 text-red-500">{report.error}</p>}
+            {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
 
             {!failed && (
-                <>
-                    <Button
-                        className="mb-3 w-fit shrink-0"
-                        onClick={() => copyToClipboard(JSON.stringify(report, undefined, 4))}
-                    >
+                <div className="flex shrink-0 flex-col items-start gap-3">
+                    <Button onClick={() => copyToClipboard(JSON.stringify(report, undefined, 4))}>
+                        <Copy size={16} aria-hidden="true" />
                         Copy
                     </Button>
-                    <Button
-                        className="w-fit shrink-0"
-                        onClick={() => downloadJson(`${reportName}.report.json`, report)}
-                    >
+                    <Button onClick={() => downloadJson(`${reportName}.report.json`, report)}>
+                        <Download size={16} aria-hidden="true" />
                         Download
                     </Button>
-                </>
+                </div>
             )}
 
-            <span className="mt-1.5">
+            <span className="text-ink/70 mt-6 text-sm">
                 Powered by{" "}
                 <a
                     href="https://github.com/KhronosGroup/glTF-Validator"
@@ -85,21 +82,21 @@ export function ValidationCounter({ expanded, isMobile }) {
     const issues = report?.issues;
 
     let info = "";
-    let color = "white";
+    let tone = "bg-white";
 
     if (report?.error) {
         info = "X";
-        color = "red";
+        tone = "bg-red-500";
     } else if (issues?.numErrors > 0) {
         info = `${issues.numErrors}`;
-        color = "red";
+        tone = "bg-red-500";
     } else if (issues?.numWarnings > 0) {
         if (issues.numWarnings === description?.numIgnoredWarnings) {
             info = "i";
-            color = "lightBlue";
+            tone = "bg-sky-300";
         } else {
             info = `${issues.numWarnings}`;
-            color = "yellow";
+            tone = "bg-amber-400";
         }
     } else if (issues?.numInfos > 0) {
         info = `${issues.numInfos}`;
@@ -110,23 +107,16 @@ export function ValidationCounter({ expanded, isMobile }) {
     }
 
     return (
-        <div className="mx-auto max-w-fit">
-            <div className="relative h-full w-[50px]">
-                <img
-                    src={`assets/ui/Capture ${expanded ? "50X50" : "30X30"}.svg`}
-                    width={expanded ? "50px" : "30px"}
-                    height={expanded ? "100%" : undefined}
-                    alt=""
-                />
-                {info !== "" && (
-                    <div
-                        className="absolute -top-[18px] flex aspect-square w-fit min-w-[2rem] items-center justify-center rounded-full text-[80%] font-bold text-black"
-                        style={{ right: isMobile ? "-3px" : "-18px", backgroundColor: color }}
-                    >
-                        {info}
-                    </div>
-                )}
-            </div>
-        </div>
+        <span className="relative inline-flex">
+            <ShieldCheck size={expanded ? 34 : 26} strokeWidth={1.75} aria-hidden="true" />
+            {info !== "" && (
+                <span
+                    className={`absolute -top-2 flex aspect-square min-w-[1.5rem] items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
+                    style={{ right: isMobile ? "-6px" : "-16px" }}
+                >
+                    {info}
+                </span>
+            )}
+        </span>
     );
 }

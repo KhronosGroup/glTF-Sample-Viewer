@@ -1,7 +1,8 @@
 import { Fragment } from "react";
+import { Download } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { useViewerStore } from "../store.js";
-import { Button, DownloadIcon, Field, Panel, Select, Switch } from "../controls.jsx";
+import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { JsonTree } from "../JsonTree.jsx";
 
 // The Vue template repeated a near-identical switch for each of these.
@@ -81,7 +82,7 @@ export function AdvancedTab({
         <Panel title="Advanced Controls" onCollapse={onCollapse}>
             <Field label="Capture Canvas">
                 <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
-                    <DownloadIcon />
+                    <Download size={16} aria-hidden="true" />
                     Download as .png
                 </Button>
             </Field>
@@ -133,7 +134,7 @@ export function AdvancedTab({
 
             <Field label="Current Camera Values">
                 <Button onClick={() => uiEvents.cameraExport.emit(true)}>
-                    <DownloadIcon />
+                    <Download size={16} aria-hidden="true" />
                     Download as .gltf
                 </Button>
             </Field>
@@ -142,7 +143,6 @@ export function AdvancedTab({
                 {MATERIAL_EXTENSIONS.map((entry) => (
                     <Switch
                         key={entry.key}
-                        className="mb-1 text-sm"
                         checked={extensions[entry.key]}
                         disabled={disabledFor(entry.key)}
                         onChange={toggle(entry)}

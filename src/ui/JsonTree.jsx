@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 /**
@@ -22,28 +23,21 @@ function JsonEntry({ name, value, inner }) {
     const isObject = value !== null && value !== undefined && value.constructor === Object;
 
     return (
-        <div className={`mb-2 px-2 py-1 break-words ${inner ? "bg-card-inner" : "bg-card"}`}>
+        <div
+            className={`mb-2 rounded-md px-3 py-2 break-words ${inner ? "bg-card-inner" : "bg-card"}`}
+        >
             <button
                 type="button"
-                className="flex w-full items-center justify-between text-left"
+                aria-expanded={open}
+                className="flex w-full items-center justify-between gap-2 text-left"
                 onClick={() => setOpen(!open)}
             >
                 <span className="font-light">{name}</span>
-                <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
+                <ChevronDown
+                    size={16}
                     aria-hidden="true"
-                    className={open ? undefined : "rotate-180"}
-                >
-                    <path
-                        d="M2 5l6 6 6-6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                    />
-                </svg>
+                    className={`shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+                />
             </button>
 
             {open && (

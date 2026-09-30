@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export function Dropdown({ label, items, value, onSelect }) {
@@ -21,34 +22,25 @@ export function Dropdown({ label, items, value, onSelect }) {
         <div ref={rootRef} className="relative">
             <button
                 type="button"
-                className="bg-accent text-ink-dim hover:bg-accent-hover flex w-full items-center justify-between gap-2 rounded-full px-4 py-1 transition-colors"
+                aria-expanded={open}
+                className="bg-accent text-ink-dim hover:bg-accent-hover focus-visible:outline-accent flex w-full items-center justify-between gap-2 rounded-full px-4 py-1.5 transition-colors focus-visible:outline focus-visible:outline-offset-2"
                 onClick={() => setOpen((wasOpen) => !wasOpen)}
             >
                 <span className="truncate">{label}</span>
-                <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
+                <ChevronDown
+                    size={16}
                     aria-hidden="true"
-                    className={open ? "rotate-180" : undefined}
-                >
-                    <path
-                        d="M2 5l6 6 6-6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                    />
-                </svg>
+                    className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+                />
             </button>
 
             {open && (
-                <div className="bg-card absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded shadow-lg">
+                <div className="bg-card animate-panel-in absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-md shadow-lg">
                     {items.map((item) => (
                         <button
                             type="button"
                             key={item.value}
-                            className={`hover:bg-card-inner block w-full px-4 py-2 text-left ${
+                            className={`hover:bg-card-inner block w-full px-4 py-2 text-left transition-colors ${
                                 item.value === value ? "bg-accent text-ink-dim" : ""
                             }`}
                             onClick={() => {

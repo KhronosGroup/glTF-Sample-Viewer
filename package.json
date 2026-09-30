@@ -36,6 +36,7 @@
   "dependencies": {
     "@khronosgroup/gltf-viewer": "./glTF-Sample-Renderer",
     "gltf-validator": "^2.0.0-dev.3.10",
+    "lucide-react": "^1.49.0",
     "normalize-wheel": "^1.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

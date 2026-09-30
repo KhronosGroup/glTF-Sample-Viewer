@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import {
+    Atom,
+    Box,
+    Braces,
+    CirclePlay,
+    FolderOpen,
+    Image,
+    PanelRightClose,
+    PanelRightOpen,
+    ShieldCheck,
+    SlidersHorizontal
+} from "lucide-react";
 import { notify } from "../logic/notifications.js";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
+import { IconButton } from "./controls.jsx";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { LoadingOverlay, Toasts } from "./Notices.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
@@ -13,17 +26,17 @@ import { GraphsTab } from "./tabs/GraphsTab.jsx";
 import { PhysicsTab } from "./tabs/PhysicsTab.jsx";
 import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
 
-// Definition of mobile: https://bulma.io/documentation/start/responsiveness/
+// Definition of mobile, inherited from the stylesheet this UI replaced.
 const MOBILE_BREAKPOINT = 768;
 
 const TAB_META = [
-    { id: "models", label: "Models", icon: "Model" },
-    { id: "display", label: "Display", icon: "Display" },
-    { id: "validator", label: "Validator", icon: "Capture" },
-    { id: "animations", label: "Animations", icon: "Animation" },
-    { id: "physics", label: "Physics", icon: "Physics", needsPhysics: true },
-    { id: "credits", label: "Credits", icon: "XMP" },
-    { id: "advanced", label: "Advanced Controls", icon: "Developer" }
+    { id: "models", label: "Models", icon: Box },
+    { id: "display", label: "Display", icon: Image },
+    { id: "validator", label: "Validator", icon: ShieldCheck },
+    { id: "animations", label: "Animations", icon: CirclePlay },
+    { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
+    { id: "credits", label: "Credits", icon: Braces },
+    { id: "advanced", label: "Advanced Controls", icon: SlidersHorizontal }
 ];
 
 const INITIAL_LIGHTING = {
@@ -221,14 +234,17 @@ export function App() {
 
             <div className="fixed bottom-[25px] left-[25px] z-20">
                 {!(layout.isMobile && !collapsed) && !layout.noUi && (
-                    <img
-                        src={
-                            uiVisible ? "assets/ui/Icon_Expand.svg" : "assets/ui/Icon_Collapse.svg"
-                        }
+                    <IconButton
+                        label={uiVisible ? "Hide the control panel" : "Show the control panel"}
                         onClick={() => setUiVisible((visible) => !visible)}
-                        className="w-[30px] cursor-pointer transition-transform hover:scale-125"
-                        alt={uiVisible ? "Hide panel" : "Show panel"}
-                    />
+                        className="bg-rail/80 hover:bg-rail p-2 backdrop-blur-sm"
+                    >
+                        {uiVisible ? (
+                            <PanelRightClose size={22} aria-hidden="true" />
+                        ) : (
+                            <PanelRightOpen size={22} aria-hidden="true" />
+                        )}
+                    </IconButton>
                 )}
             </div>
 
@@ -236,21 +252,14 @@ export function App() {
                 {showDropDownOverlay && (
                     <div
                         id="dropZone"
-                        className="pointer-events-none fixed inset-0 z-[999] flex items-center justify-center"
+                        className="pointer-events-none fixed inset-0 z-[999] flex items-center justify-center bg-black/30 backdrop-blur-sm"
                     >
-                        <div className="rounded-[30px] bg-white/60 p-12 text-center text-black">
-                            <svg
-                                width="96"
-                                height="96"
-                                viewBox="0 0 24 24"
-                                className="mx-auto"
-                                fill="currentColor"
-                                aria-hidden="true"
-                            >
-                                <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-                            </svg>
-                            <p className="text-4xl font-light">Drag and drop files here</p>
-                            <p className="text-xl">Supported files: glTF, glb &amp; hdr</p>
+                        <div className="border-accent text-ink flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed px-16 py-12 text-center">
+                            <FolderOpen size={72} strokeWidth={1.25} aria-hidden="true" />
+                            <p className="text-3xl font-light">Drag and drop files here</p>
+                            <p className="text-ink/70 text-lg">
+                                Supported files: glTF, glb &amp; hdr
+                            </p>
                         </div>
                     </div>
                 )}

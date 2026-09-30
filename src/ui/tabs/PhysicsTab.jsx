@@ -1,13 +1,14 @@
+import { CirclePause, CirclePlay, StepForward } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import {
     Field,
     OutlineButton,
     Panel,
+    PlaybackControls,
     SectionLabel,
     Select,
-    Switch,
-    ToggleButton
+    Switch
 } from "../controls.jsx";
 
 export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
@@ -17,24 +18,18 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
         <Panel title="Physics" onCollapse={onCollapse}>
             <SectionLabel>Physics Controls</SectionLabel>
 
-            <div className="mt-4 mb-6 flex items-center gap-4">
-                <ToggleButton
-                    on={physicsState}
-                    onText="Disable"
-                    offText="Enable"
-                    className="w-[90px]"
-                    onToggle={(on) => {
-                        setViewerState({ physicsState: on });
-                        uiEvents.physicsEnabledChanged.emit(on);
-                    }}
-                />
-                <OutlineButton
-                    className="min-w-[70px]"
-                    onClick={() => uiEvents.physicsResetChanged.emit(true)}
-                >
-                    Reset
-                </OutlineButton>
-            </div>
+            <PlaybackControls
+                active={physicsState}
+                onText="Disable"
+                offText="Enable"
+                onIcon={<CirclePause size={16} aria-hidden="true" />}
+                offIcon={<CirclePlay size={16} aria-hidden="true" />}
+                onToggle={(on) => {
+                    setViewerState({ physicsState: on });
+                    uiEvents.physicsEnabledChanged.emit(on);
+                }}
+                onReset={() => uiEvents.physicsResetChanged.emit(true)}
+            />
 
             <Field label="Physics Engine">
                 <Select
@@ -50,10 +45,8 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
 
             <SectionLabel>Debug</SectionLabel>
             <div className="mb-4 flex flex-col items-start gap-2">
-                <OutlineButton
-                    className="min-w-[70px]"
-                    onClick={() => uiEvents.physicsStepChanged.emit(true)}
-                >
+                <OutlineButton onClick={() => uiEvents.physicsStepChanged.emit(true)}>
+                    <StepForward size={16} aria-hidden="true" />
                     Step
                 </OutlineButton>
                 <Switch

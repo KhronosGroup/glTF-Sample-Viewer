@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Field, Panel, Select, Switch } from "../controls.jsx";
@@ -43,7 +44,6 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
             <Field label="Lighting" grouped>
                 <Switch
                     data-testid="switch-ibl"
-                    className="mb-1 text-sm"
                     checked={ibl}
                     onChange={(checked) => {
                         uiEvents.iblChanged.emit(checked);
@@ -53,7 +53,6 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     Image Based{" "}
                 </Switch>
                 <Switch
-                    className="mb-1 text-sm"
                     checked={punctualLights}
                     onChange={(checked) => {
                         uiEvents.punctualLightsChanged.emit(checked);
@@ -79,19 +78,20 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 />
             </Field>
 
-            <Field label="Exposure" />
-            <Slider
-                value={exposure}
-                min={21}
-                max={-6}
-                step={0.1}
-                ticks={EXPOSURE_TICKS}
-                formatter={formatExposure}
-                onChange={(value) => {
-                    uiEvents.exposureChanged.emit(value);
-                    onLightingChange({ exposure: value });
-                }}
-            />
+            <Field label="Exposure">
+                <Slider
+                    value={exposure}
+                    min={21}
+                    max={-6}
+                    step={0.1}
+                    ticks={EXPOSURE_TICKS}
+                    formatter={formatExposure}
+                    onChange={(value) => {
+                        uiEvents.exposureChanged.emit(value);
+                        onLightingChange({ exposure: value });
+                    }}
+                />
+            </Field>
 
             <Field label="Tone Map">
                 <Select
@@ -111,7 +111,6 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
 
             <Field label="Background" grouped>
                 <Switch
-                    className="mb-1 text-sm"
                     checked={renderEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
@@ -122,7 +121,6 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     Environment Map
                 </Switch>
                 <Switch
-                    className="mb-1 text-sm"
                     checked={blurEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
@@ -132,10 +130,9 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 >
                     Blur
                 </Switch>
-                <Field label="Background Color" />
-                <div id="clearColorPicker">
+                <label className="mt-4 flex items-center gap-3">
                     <input
-                        className="color-swatch"
+                        className="color-swatch h-8 w-12 rounded-md"
                         type="color"
                         value={clearColor}
                         onChange={(event) => {
@@ -143,7 +140,8 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                             uiEvents.colorChanged.emit(event.target.value);
                         }}
                     />
-                </div>
+                    <span className="text-base font-light">Background Color</span>
+                </label>
             </Field>
 
             <Field label="Environment Rotation">
@@ -163,7 +161,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
             </Field>
 
             <Field label="Image Based Lighting" grouped>
-                <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center self-start rounded-full px-4 py-1 transition-colors">
+                <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
                     <input
                         className="sr-only"
                         type="file"
@@ -174,6 +172,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                             })
                         }
                     />
+                    <Plus size={16} aria-hidden="true" />
                     Add New HDR
                 </label>
 

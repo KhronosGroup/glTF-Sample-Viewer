@@ -128,6 +128,24 @@
             transform: rotate(360deg);
         }
     }
+
+    /* Panels swap instantly otherwise, which reads as a flicker. */
+    .animate-panel-in {
+        animation: panel-in 0.18s ease-out;
+    }
+
+    @keyframes panel-in {
+        from {
+            opacity: 0;
+            transform: translateX(8px);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-panel-in {
+            animation: none;
+        }
+    }
 }
 
 /*

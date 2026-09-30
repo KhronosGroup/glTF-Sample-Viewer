@@ -21,6 +21,12 @@ export default defineConfig({
         // gl-matrix directly, but jpeg-js/fast-png dedupe stays in case that ever changes.
         dedupe: ["jpeg-js", "fast-png"]
     },
+    // lucide-react ships one module per icon. Without pre-bundling it, the dev
+    // server discovers new icons panel by panel, re-runs dependency optimisation
+    // and reloads the page each time.
+    optimizeDeps: {
+        include: ["lucide-react"]
+    },
     build: {
         outDir: "dist",
         emptyOutDir: true,
