@@ -50,6 +50,11 @@
         color: var(--color-accent);
     }
 
+    button:not(:disabled),
+    [role="tab"]:not(:disabled) {
+        cursor: pointer;
+    }
+
     /* Spinners on number inputs fight the fixed-width matrix cells. */
     input[type="number"] {
         -moz-appearance: textfield;

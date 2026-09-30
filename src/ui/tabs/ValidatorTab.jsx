@@ -32,7 +32,7 @@ export function ValidatorTab({ onCollapse }) {
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
 
     return (
-        <Panel title="glTF Validator" onCollapse={onCollapse} className="flex h-full flex-col">
+        <Panel title="glTF Validator" onCollapse={onCollapse}>
             {!failed && (
                 <div className="my-6 space-y-1 break-words">
                     <p>Number of errors: {report?.issues?.numErrors ?? 0}</p>

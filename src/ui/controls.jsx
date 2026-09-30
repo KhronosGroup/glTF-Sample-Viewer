@@ -221,13 +221,13 @@ export function Panel({ title, onCollapse, className, children }) {
     return (
         <div
             data-testid="panel"
-            className={classNames("animate-panel-in px-5 pt-4 pb-12", className)}
+            className="animate-panel-in flex min-h-full flex-col px-5 pt-4 pb-12"
         >
-            <IconButton label="Collapse panel" onClick={onCollapse} className="-ml-1.5">
+            <IconButton label="Collapse panel" onClick={onCollapse} className="-ml-1.5 self-start">
                 <ChevronRight size={24} aria-hidden="true" />
             </IconButton>
             <Title>{title}</Title>
-            {children}
+            <div className={classNames("min-h-0 flex-1", className)}>{children}</div>
         </div>
     );
 }
