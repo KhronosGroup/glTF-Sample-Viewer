@@ -1,12 +1,26 @@
-import { Subject } from "rxjs";
-
 /**
  * Every UI input the viewer reacts to, as a plain module-level event bus.
  *
- * These used to live in the Vue root component's `data()`, which meant the
- * logic layer could only reach them through a component instance. Keeping them
- * here lets any UI implementation publish to the same streams.
+ * These were RxJS Subjects, but nothing here needed stream composition: each is
+ * published by one control and consumed by one or two handlers.
  */
+
+function createEvent() {
+    const listeners = new Set();
+    return {
+        emit(value) {
+            // Copied so a listener may unsubscribe itself while being called.
+            for (const listener of [...listeners]) {
+                listener(value);
+            }
+        },
+        on(listener) {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+        }
+    };
+}
+
 const eventNames = [
     "modelChanged",
     "flavourChanged",
@@ -71,4 +85,4 @@ const eventNames = [
     "cameraExport"
 ];
 
-export const uiEvents = Object.fromEntries(eventNames.map((name) => [name, new Subject()]));
+export const uiEvents = Object.fromEntries(eventNames.map((name) => [name, createEvent()]));

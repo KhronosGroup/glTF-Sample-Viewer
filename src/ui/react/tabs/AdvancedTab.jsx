@@ -64,7 +64,7 @@ export function AdvancedTab({
         ({ key, event }) =>
         (checked) => {
             onExtensionsChange({ [key]: checked });
-            uiEvents[event].next(checked);
+            uiEvents[event].emit(checked);
         };
 
     const disabledFor = (key) => {
@@ -91,7 +91,7 @@ export function AdvancedTab({
                 <button
                     type="button"
                     className="button is-rounded"
-                    onClick={() => uiEvents.captureCanvas.next(true)}
+                    onClick={() => uiEvents.captureCanvas.emit(true)}
                 >
                     <i className="fa fa-download downloadIcon" />
                     Download as .png
@@ -103,7 +103,7 @@ export function AdvancedTab({
                     value={debugChannel}
                     onChange={(value) => {
                         onDebugChannelChange(value);
-                        uiEvents.debugchannelChanged.next(value);
+                        uiEvents.debugchannelChanged.emit(value);
                     }}
                 >
                     {debugchannels
@@ -147,7 +147,7 @@ export function AdvancedTab({
                 <button
                     type="button"
                     className="button is-rounded"
-                    onClick={() => uiEvents.cameraExport.next(true)}
+                    onClick={() => uiEvents.cameraExport.emit(true)}
                 >
                     <i className="fa fa-download downloadIcon" />
                     Download as .gltf

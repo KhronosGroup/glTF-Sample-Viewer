@@ -18,7 +18,7 @@ export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
 
     const selectVariant = (value) => {
         onSelectVariant(value);
-        uiEvents.variantChanged.next(value);
+        uiEvents.variantChanged.emit(value);
     };
 
     return (
@@ -37,7 +37,7 @@ export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
                     value={selectedModel}
                     onChange={(value) => {
                         setViewerState({ selectedModel: value });
-                        uiEvents.modelChanged.next(value);
+                        uiEvents.modelChanged.emit(value);
                     }}
                 >
                     {models.map((item) => (
@@ -53,7 +53,7 @@ export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
                     value={selectedFlavour}
                     onChange={(value) => {
                         setViewerState({ selectedFlavour: value });
-                        uiEvents.flavourChanged.next(value);
+                        uiEvents.flavourChanged.emit(value);
                     }}
                 >
                     {flavours.map((item) => (
@@ -69,7 +69,7 @@ export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
                     value={selectedScene}
                     onChange={(value) => {
                         setViewerState({ selectedScene: value });
-                        uiEvents.sceneChanged.next(value);
+                        uiEvents.sceneChanged.emit(value);
                     }}
                 >
                     {scenes.map((item, index) => (
@@ -85,7 +85,7 @@ export function ModelsTab({ onCollapse, selectedVariant, onSelectVariant }) {
                     value={selectedCamera}
                     onChange={(value) => {
                         setViewerState({ selectedCamera: value });
-                        uiEvents.cameraChanged.next(parseInt(value));
+                        uiEvents.cameraChanged.emit(parseInt(value));
                     }}
                 >
                     {cameras.map((item, index) => (

@@ -121,10 +121,10 @@ export function App() {
         if (partial.ibl === false) {
             environmentVisiblePref.current = lighting.renderEnv;
             next = { ...partial, renderEnv: false };
-            uiEvents.renderEnvChanged.next(false);
+            uiEvents.renderEnvChanged.emit(false);
         } else if (partial.ibl === true) {
             next = { ...partial, renderEnv: environmentVisiblePref.current };
-            uiEvents.renderEnvChanged.next(environmentVisiblePref.current);
+            uiEvents.renderEnvChanged.emit(environmentVisiblePref.current);
         }
         setLighting((current) => ({ ...current, ...next }));
     };

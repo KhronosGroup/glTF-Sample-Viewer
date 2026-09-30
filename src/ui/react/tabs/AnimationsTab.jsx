@@ -30,7 +30,7 @@ export function AnimationsTab({ onCollapse }) {
             ? [...selectedAnimations, index]
             : selectedAnimations.filter((item) => item !== index);
         setViewerState({ selectedAnimations: next });
-        uiEvents.selectedAnimationsChanged.next(next);
+        uiEvents.selectedAnimationsChanged.emit(next);
     };
 
     return (
@@ -55,7 +55,7 @@ export function AnimationsTab({ onCollapse }) {
                     style={hasAnimations ? undefined : { display: "none" }}
                     onToggle={(on) => {
                         setViewerState({ animationState: on });
-                        uiEvents.animationPlayChanged.next(on);
+                        uiEvents.animationPlayChanged.emit(on);
                     }}
                 />
                 <button
@@ -65,7 +65,7 @@ export function AnimationsTab({ onCollapse }) {
                             ? RESET_BUTTON_STYLE
                             : { ...RESET_BUTTON_STYLE, display: "none" }
                     }
-                    onClick={() => uiEvents.animationResetChanged.next(true)}
+                    onClick={() => uiEvents.animationResetChanged.emit(true)}
                 >
                     Reset
                 </button>

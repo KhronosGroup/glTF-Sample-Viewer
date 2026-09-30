@@ -54,7 +54,7 @@ export function GraphsTab({ onCollapse }) {
     const hasGraphs = graphs.length !== 0;
 
     const sendCustomEvent = () => {
-        uiEvents.customEventSendClicked.next({
+        uiEvents.customEventSendClicked.emit({
             eventId: currentEventId,
             values: editedValues.values
         });
@@ -78,7 +78,7 @@ export function GraphsTab({ onCollapse }) {
                     style={hasGraphs ? undefined : { display: "none" }}
                     onToggle={(on) => {
                         setViewerState({ graphState: on });
-                        uiEvents.graphPlayChanged.next(on);
+                        uiEvents.graphPlayChanged.emit(on);
                     }}
                 />
                 <button
@@ -86,7 +86,7 @@ export function GraphsTab({ onCollapse }) {
                     style={
                         hasGraphs ? RESET_BUTTON_STYLE : { ...RESET_BUTTON_STYLE, display: "none" }
                     }
-                    onClick={() => uiEvents.graphResetChanged.next(true)}
+                    onClick={() => uiEvents.graphResetChanged.emit(true)}
                 >
                     Reset
                 </button>
@@ -104,7 +104,7 @@ export function GraphsTab({ onCollapse }) {
                                 checked={selectedGraph === graph.index}
                                 onChange={(value) => {
                                     setViewerState({ selectedGraph: value });
-                                    uiEvents.selectedGraphChanged.next(value);
+                                    uiEvents.selectedGraphChanged.emit(value);
                                 }}
                             >
                                 {graph.title}

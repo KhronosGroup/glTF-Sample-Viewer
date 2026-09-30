@@ -54,7 +54,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     className="smallerLabel"
                     checked={ibl}
                     onChange={(checked) => {
-                        uiEvents.iblChanged.next(checked);
+                        uiEvents.iblChanged.emit(checked);
                         onLightingChange({ ibl: checked });
                     }}
                 >
@@ -64,7 +64,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     className="smallerLabel"
                     checked={punctualLights}
                     onChange={(checked) => {
-                        uiEvents.punctualLightsChanged.next(checked);
+                        uiEvents.punctualLightsChanged.emit(checked);
                         onLightingChange({ punctualLights: checked });
                     }}
                 >
@@ -82,7 +82,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     ticks={IBL_INTENSITY_TICKS}
                     formatter={formatIblIntensity}
                     onChange={(value) => {
-                        uiEvents.iblIntensityChanged.next(value);
+                        uiEvents.iblIntensityChanged.emit(value);
                         onLightingChange({ iblIntensity: value });
                     }}
                 />
@@ -98,7 +98,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 ticks={EXPOSURE_TICKS}
                 formatter={formatExposure}
                 onChange={(value) => {
-                    uiEvents.exposureChanged.next(value);
+                    uiEvents.exposureChanged.emit(value);
                     onLightingChange({ exposure: value });
                 }}
             />
@@ -107,7 +107,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 <Select
                     value={toneMap}
                     onChange={(value) => {
-                        uiEvents.tonemapChanged.next(value);
+                        uiEvents.tonemapChanged.emit(value);
                         onLightingChange({ toneMap: value });
                     }}
                 >
@@ -125,7 +125,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     checked={renderEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
-                        uiEvents.renderEnvChanged.next(checked);
+                        uiEvents.renderEnvChanged.emit(checked);
                         onLightingChange({ renderEnv: checked });
                     }}
                 >
@@ -136,7 +136,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     checked={blurEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
-                        uiEvents.blurEnvChanged.next(checked);
+                        uiEvents.blurEnvChanged.emit(checked);
                         onLightingChange({ blurEnv: checked });
                     }}
                 >
@@ -150,7 +150,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                         value={clearColor}
                         onChange={(event) => {
                             setViewerState({ clearColor: event.target.value });
-                            uiEvents.colorChanged.next(event.target.value);
+                            uiEvents.colorChanged.emit(event.target.value);
                         }}
                     />
                 </div>
@@ -160,7 +160,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 <Select
                     value={rotation}
                     onChange={(value) => {
-                        uiEvents.environmentRotationChanged.next(value);
+                        uiEvents.environmentRotationChanged.emit(value);
                         onLightingChange({ rotation: value });
                     }}
                 >
@@ -179,7 +179,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                         type="file"
                         accept=".hdr"
                         onChange={(event) =>
-                            uiEvents.addEnvironmentChanged.next({
+                            uiEvents.addEnvironmentChanged.emit({
                                 hdr_path: event.target.files[0]
                             })
                         }
@@ -194,7 +194,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                         value={selectedEnvironment}
                         onSelect={(name) => {
                             setViewerState({ selectedEnvironment: name });
-                            uiEvents.selectedEnvironmentChanged.next(name);
+                            uiEvents.selectedEnvironmentChanged.emit(name);
                         }}
                     />
                 </Field>

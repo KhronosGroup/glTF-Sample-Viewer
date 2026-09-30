@@ -1,14 +1,36 @@
-import { GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
+import { GltfState, GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 import { UIModel } from "./logic/uimodel.js";
 import "./ui/ui.jsx";
-import { EMPTY, from, merge } from "rxjs";
-import { switchMap, map, share, catchError, filter } from "rxjs/operators";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
 import { getViewerState, setViewerState } from "./logic/viewer_store.js";
+import { uiEvents } from "./logic/ui_events.js";
 import { notify } from "./logic/notifications.js";
 
 import { validateBytes } from "gltf-validator";
+
+// Toggles that only flip a flag in renderingParameters.enabledExtensions.
+const EXTENSION_TOGGLES = {
+    clearcoatChanged: "KHR_materials_clearcoat",
+    sheenChanged: "KHR_materials_sheen",
+    transmissionChanged: "KHR_materials_transmission",
+    diffuseTransmissionChanged: "KHR_materials_diffuse_transmission",
+    volumeChanged: "KHR_materials_volume",
+    volumeScatteringChanged: "KHR_materials_volume_scatter",
+    iorChanged: "KHR_materials_ior",
+    iridescenceChanged: "KHR_materials_iridescence",
+    retroreflectionChanged: "KHR_materials_retroreflection",
+    anisotropyChanged: "KHR_materials_anisotropy",
+    dispersionChanged: "KHR_materials_dispersion",
+    specularChanged: "KHR_materials_specular",
+    emissiveStrengthChanged: "KHR_materials_emissive_strength",
+    hoverabilityChanged: "KHR_node_hoverability",
+    selectabilityChanged: "KHR_node_selectability",
+    nodeVisibilityChanged: "KHR_node_visibility",
+    gaussianSplattingChanged: "KHR_gaussian_splatting"
+};
+
+const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
 const main = async () => {
     const canvas = document.getElementById("canvas");
@@ -29,6 +51,8 @@ const main = async () => {
     await state.physicsController.initializeEngine("NvidiaPhysX");
 
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
+    state.renderingParameters.toneMap = GltfState.ToneMaps.KHR_PBR_NEUTRAL;
+    state.renderingParameters.debugOutput = GltfState.DebugOutput.NONE;
 
     state.graphController.addCustomEventListener("test/onStart", (event) => {
         console.log("Test duration: ", event);
@@ -66,106 +90,114 @@ const main = async () => {
         "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Environments/low_resolution_hdrs/"
     );
 
-    const uiModel = new UIModel(pathProvider, environmentPaths);
+    const uiModel = new UIModel(pathProvider, environmentPaths, canvas);
 
-    const validation = uiModel.model.pipe(
-        switchMap((model) => {
-            const func = async (model) => {
-                try {
-                    const fileType = typeof model.mainFile;
-                    // TODO: Remove ignoredIssues once validator is updated to support KHR_gaussian_splatting extension
-                    const validateOptions = {
-                        ignoredIssues: ["MESH_PRIMITIVE_INVALID_ATTRIBUTE"]
-                    };
-                    if (fileType == "string") {
-                        const externalRefFunction = (uri) => {
-                            const parent = model.mainFile.substring(
-                                0,
-                                model.mainFile.lastIndexOf("/") + 1
-                            );
-                            return new Promise((resolve, reject) => {
-                                fetch(parent + uri)
-                                    .then((response) => {
-                                        response
-                                            .arrayBuffer()
-                                            .then((buffer) => {
-                                                resolve(new Uint8Array(buffer));
-                                            })
-                                            .catch((error) => {
-                                                reject(error);
-                                            });
-                                    })
-                                    .catch((error) => {
-                                        reject(error);
-                                    });
-                            });
-                        };
-                        const response = await fetch(model.mainFile);
-                        const buffer = await response.arrayBuffer();
-                        validateOptions.uri = model.mainFile;
-                        validateOptions.externalResourceFunction = externalRefFunction;
-                        return await validateBytes(new Uint8Array(buffer), validateOptions);
-                    } else if (Array.isArray(model.mainFile)) {
-                        const externalRefFunction = (uri) => {
-                            return new Promise((resolve, reject) => {
-                                let foundFile = undefined;
-                                for (let i = 0; i < model.additionalFiles.length; i++) {
-                                    const file = model.additionalFiles[i];
-                                    let actualPath = uri;
-                                    if (!ResourceLoaderUtils.isAbsoluteUrl(uri)) {
-                                        const parentPath = ResourceLoaderUtils.getContainingFolder(
-                                            model.mainFile[0]
-                                        );
-                                        actualPath = ResourceLoaderUtils.cleanRelativePath(
-                                            parentPath + uri
-                                        );
-                                    }
-                                    if (file[0] == actualPath) {
-                                        foundFile = file[1];
-                                        break;
-                                    }
-                                }
-                                if (foundFile) {
-                                    foundFile
-                                        .arrayBuffer()
-                                        .then((buffer) => {
-                                            resolve(new Uint8Array(buffer));
-                                        })
-                                        .catch((error) => {
-                                            reject(error);
-                                        });
-                                } else {
-                                    reject("File not found");
-                                }
-                            });
-                        };
+    // Only redraw glTF view upon user inputs, or when an animation is playing.
+    let redraw = false;
 
-                        const buffer = await model.mainFile[1].arrayBuffer();
-                        validateOptions.uri = model.mainFile[0];
-                        validateOptions.externalResourceFunction = externalRefFunction;
-                        return await validateBytes(new Uint8Array(buffer), validateOptions);
+    // ---------------------------------------------------------------- loading
+
+    // Validation and loading both consume model selections. A newer selection
+    // makes an older result irrelevant, so each carries an id and anything
+    // stale is dropped rather than applied.
+    let latestValidationId = 0;
+
+    const validateModel = async (model) => {
+        const validationId = ++latestValidationId;
+        // TODO: Remove ignoredIssues once validator is updated to support KHR_gaussian_splatting extension
+        const validateOptions = { ignoredIssues: ["MESH_PRIMITIVE_INVALID_ATTRIBUTE"] };
+        let report;
+
+        try {
+            if (typeof model.mainFile === "string") {
+                const parent = model.mainFile.substring(0, model.mainFile.lastIndexOf("/") + 1);
+                validateOptions.uri = model.mainFile;
+                validateOptions.externalResourceFunction = async (uri) =>
+                    new Uint8Array(await (await fetch(parent + uri)).arrayBuffer());
+
+                const buffer = await (await fetch(model.mainFile)).arrayBuffer();
+                report = await validateBytes(new Uint8Array(buffer), validateOptions);
+            } else if (Array.isArray(model.mainFile)) {
+                validateOptions.uri = model.mainFile[0];
+                validateOptions.externalResourceFunction = async (uri) => {
+                    let actualPath = uri;
+                    if (!ResourceLoaderUtils.isAbsoluteUrl(uri)) {
+                        const parentPath = ResourceLoaderUtils.getContainingFolder(
+                            model.mainFile[0]
+                        );
+                        actualPath = ResourceLoaderUtils.cleanRelativePath(parentPath + uri);
                     }
-                } catch (error) {
-                    console.error(error);
-                }
-            };
-            return from(func(model)).pipe(
-                catchError((error) => {
-                    console.error(`Validation failed: ${error}`);
-                    return { error: `Validation failed: ${error}` };
-                })
-            );
-        })
-    );
+                    const found = model.additionalFiles.find(([path]) => path === actualPath);
+                    if (found === undefined) {
+                        throw new Error("File not found");
+                    }
+                    return new Uint8Array(await found[1].arrayBuffer());
+                };
 
-    // whenever a new model is selected, load it and when complete pass the loaded gltf
-    // into a stream back into the UI
-    //
+                const buffer = await model.mainFile[1].arrayBuffer();
+                report = await validateBytes(new Uint8Array(buffer), validateOptions);
+            }
+        } catch (error) {
+            console.error(`Validation failed: ${error}`);
+            report = { error: `Validation failed: ${error}` };
+        }
+
+        if (validationId === latestValidationId) {
+            uiModel.publishValidationReport(report);
+        }
+    };
+
     // A glTF load cannot be cancelled once it has started, and two of them running at the
     // same time corrupt each other's texture state. Queue the loads instead, and discard
     // any result that a newer selection has already superseded.
     let queuedLoads = Promise.resolve();
     let latestLoadId = 0;
+
+    const applyLoadedGltf = (gltf) => {
+        state.gltf = gltf;
+        const defaultScene = state.gltf.scene;
+        state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
+        state.cameraNodeIndex = undefined;
+
+        if (state.gltf.scenes.length != 0) {
+            if (state.sceneIndex > state.gltf.scenes.length - 1) {
+                state.sceneIndex = 0;
+            }
+            const scene = state.gltf.scenes[state.sceneIndex];
+            scene.applyTransformHierarchy(state.gltf);
+            state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+            state.userCamera.resetView(state.gltf, state.sceneIndex);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const yaw = urlParams.get("yaw") ?? 0;
+            const pitch = urlParams.get("pitch") ?? 0;
+            const distance = urlParams.get("distance") ?? 0;
+            state.userCamera.orbit(
+                (yaw * (Math.PI / 180)) / state.userCamera.orbitSpeed,
+                (pitch * (Math.PI / 180)) / state.userCamera.orbitSpeed
+            );
+            state.userCamera.zoomBy(distance);
+
+            state.animationIndices = [];
+            for (let i = 0; i < gltf.animations.length; i++) {
+                if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
+                    state.animationIndices.push(i);
+                }
+            }
+            state.animationTimer.start();
+            if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
+                state.graphController.initializeGraphs(state);
+                const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
+                state.graphController.loadGraph(graphIndex);
+                state.graphController.resumeGraph();
+            } else {
+                state.graphController.stopGraphEngine();
+            }
+
+            state.physicsController.loadScene(state, state.sceneIndex);
+            state.physicsController.resumeSimulation();
+        }
+    };
 
     const loadModel = (model) => {
         const loadId = ++latestLoadId;
@@ -173,7 +205,7 @@ const main = async () => {
 
         const run = queuedLoads.then(async () => {
             if (loadId !== latestLoadId) {
-                return undefined;
+                return;
             }
 
             // Workaround for errors in ktx lib after loading an asset with ktx2 files for the second time:
@@ -185,192 +217,99 @@ const main = async () => {
                     model.additionalFiles,
                     false
                 );
-
                 if (loadId !== latestLoadId) {
-                    return undefined;
+                    return;
                 }
-
-                state.gltf = gltf;
-                const defaultScene = state.gltf.scene;
-                state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
-                state.cameraNodeIndex = undefined;
-
-                if (state.gltf.scenes.length != 0) {
-                    if (state.sceneIndex > state.gltf.scenes.length - 1) {
-                        state.sceneIndex = 0;
-                    }
-                    const scene = state.gltf.scenes[state.sceneIndex];
-                    scene.applyTransformHierarchy(state.gltf);
-                    state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
-                    state.userCamera.resetView(state.gltf, state.sceneIndex);
-
-                    const queryString = window.location.search;
-                    const urlParams = new URLSearchParams(queryString);
-                    let yaw = urlParams.get("yaw") ?? 0;
-                    yaw = (yaw * (Math.PI / 180)) / state.userCamera.orbitSpeed;
-                    let pitch = urlParams.get("pitch") ?? 0;
-                    pitch = (pitch * (Math.PI / 180)) / state.userCamera.orbitSpeed;
-                    const distance = urlParams.get("distance") ?? 0;
-                    state.userCamera.orbit(yaw, pitch);
-                    state.userCamera.zoomBy(distance);
-
-                    state.animationIndices = [];
-                    for (let i = 0; i < gltf.animations.length; i++) {
-                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
-                            state.animationIndices.push(i);
-                        }
-                    }
-                    state.animationTimer.start();
-                    if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
-                        state.graphController.initializeGraphs(state);
-                        const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
-                        state.graphController.loadGraph(graphIndex);
-                        state.graphController.resumeGraph();
-                    } else {
-                        state.graphController.stopGraphEngine();
-                    }
-
-                    state.physicsController.loadScene(state, state.sceneIndex);
-                    state.physicsController.resumeSimulation();
-                }
-
-                uiModel.exitLoadingState();
-                return state;
+                applyLoadedGltf(gltf);
             } catch (error) {
                 console.error("Loading failed: " + error);
-
                 if (loadId !== latestLoadId) {
-                    return undefined;
+                    return;
                 }
-
                 state.gltf = emptyGltf;
                 state.sceneIndex = 0;
                 state.cameraNodeIndex = undefined;
-                uiModel.exitLoadingState();
-                redraw = true;
-                return state;
             }
+
+            uiModel.publishGltfLoaded(state);
+            uiModel.publishStatistics(view.gatherStatistics(state));
+            uiModel.exitLoadingState();
+            redraw = true;
         });
 
-        queuedLoads = run.catch(() => {});
-        return run;
-    };
-
-    const gltfLoaded = uiModel.model.pipe(
-        switchMap((model) => from(loadModel(model))),
-        filter((loadedState) => loadedState !== undefined),
-        catchError((error) => {
+        queuedLoads = run.catch((error) => {
             console.error(error);
             uiModel.exitLoadingState();
-            return EMPTY;
-        }),
-        share()
-    );
-
-    // Disable all animations which are not disjoint to the current selection of animations.
-    uiModel.disabledAnimations(
-        uiModel.activeAnimations.pipe(
-            map((animationIndices) => state.gltf.nonDisjointAnimations(animationIndices))
-        )
-    );
-
-    const sceneChangedObservable = uiModel.scene.pipe(
-        map((sceneIndex) => {
-            state.sceneIndex = sceneIndex;
-            state.cameraNodeIndex = undefined;
-            const scene = state.gltf.scenes[state.sceneIndex];
-            if (scene !== undefined) {
-                scene.applyTransformHierarchy(state.gltf);
-                state.userCamera.resetView(state.gltf, state.sceneIndex);
-                state.physicsController.loadScene(state, state.sceneIndex);
-            }
-        }),
-        share()
-    );
-
-    const statisticsUpdateObservable = merge(sceneChangedObservable, gltfLoaded).pipe(
-        map(() => view.gatherStatistics(state))
-    );
-
-    const cameraExportChangedObservable = uiModel.cameraValuesExport.pipe(
-        map(() => {
-            const camera =
-                state.cameraNodeIndex === undefined
-                    ? state.userCamera
-                    : state.gltf.cameras[state.cameraNodeIndex];
-            return camera.getDescription(state.gltf);
-        })
-    );
-
-    const downloadDataURL = (filename, dataURL) => {
-        const element = document.createElement("a");
-        element.setAttribute("href", dataURL);
-        element.setAttribute("download", filename);
-        element.style.display = "none";
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
+        });
     };
 
-    cameraExportChangedObservable.subscribe((cameraDesc) => {
-        const gltf = JSON.stringify(cameraDesc, undefined, 4);
-        const dataURL = "data:text/plain;charset=utf-8," + encodeURIComponent(gltf);
-        downloadDataURL("camera.gltf", dataURL);
+    uiModel.onModel((model) => validateModel(model));
+    uiModel.onModel((model) => loadModel(model));
+
+    uiModel.onHdr((hdr) => {
+        resourceLoader.loadEnvironment(hdr.hdr_path).then((environment) => {
+            state.environment = environment;
+            // We need to wait until the environment is loaded to redraw
+            redraw = true;
+        });
     });
 
-    uiModel.captureCanvas.subscribe(() => {
-        view.renderFrame(state, canvas.width, canvas.height);
-        const dataURL = canvas.toDataURL();
-        downloadDataURL("capture.png", dataURL);
+    // ------------------------------------------------------------ user inputs
+
+    // Most handlers only write a rendering parameter and ask for a repaint.
+    const onChange = (event, apply) =>
+        event.on((value) => {
+            apply(value);
+            redraw = true;
+        });
+
+    for (const [eventName, extension] of Object.entries(EXTENSION_TOGGLES)) {
+        onChange(uiEvents[eventName], (enabled) => {
+            state.renderingParameters.enabledExtensions[extension] = enabled;
+        });
+    }
+
+    onChange(uiEvents.tonemapChanged, (v) => (state.renderingParameters.toneMap = v));
+    onChange(uiEvents.debugchannelChanged, (v) => (state.renderingParameters.debugOutput = v));
+    onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
+    onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
+    onChange(uiEvents.iblChanged, (v) => (state.renderingParameters.useIBL = v));
+    onChange(uiEvents.punctualLightsChanged, (v) => (state.renderingParameters.usePunctual = v));
+    onChange(
+        uiEvents.renderEnvChanged,
+        (v) => (state.renderingParameters.renderEnvironmentMap = v)
+    );
+    onChange(uiEvents.blurEnvChanged, (v) => (state.renderingParameters.blurEnvironmentMap = v));
+    onChange(
+        uiEvents.floatingPointFramebufferChanged,
+        (v) => (state.renderingParameters.floatingPointFramebuffer = v)
+    );
+    onChange(
+        uiEvents.exposureChanged,
+        (v) => (state.renderingParameters.exposure = 1.0 / Math.pow(2.0, v))
+    );
+    onChange(
+        uiEvents.iblIntensityChanged,
+        (v) => (state.renderingParameters.iblIntensity = Math.pow(10, v))
+    );
+    onChange(uiEvents.environmentRotationChanged, (v) => {
+        state.renderingParameters.environmentRotation = ENVIRONMENT_ROTATIONS[v];
+    });
+    onChange(uiEvents.variantChanged, (v) => (state.variant = v));
+
+    uiModel.onClearColor((color) => {
+        state.renderingParameters.clearColor = color;
+        redraw = true;
     });
 
-    // Only redraw glTF view upon user inputs, or when an animation is playing.
-    let redraw = false;
-    const listenForRedraw = (stream) => stream.subscribe(() => (redraw = true));
-
-    uiModel.scene.subscribe((scene) => (state.sceneIndex = scene !== -1 ? scene : undefined));
-    listenForRedraw(uiModel.scene);
-
-    uiModel.camera.subscribe(
-        (camera) => (state.cameraNodeIndex = camera !== -1 ? camera : undefined)
-    );
-    listenForRedraw(uiModel.camera);
-
-    uiModel.variant.subscribe((variant) => (state.variant = variant));
-    listenForRedraw(uiModel.variant);
-
-    uiModel.tonemap.subscribe((tonemap) => (state.renderingParameters.toneMap = tonemap));
-    listenForRedraw(uiModel.tonemap);
-
-    uiModel.debugchannel.subscribe(
-        (debugchannel) => (state.renderingParameters.debugOutput = debugchannel)
-    );
-    listenForRedraw(uiModel.debugchannel);
-
-    uiModel.skinningEnabled.subscribe(
-        (skinningEnabled) => (state.renderingParameters.skinning = skinningEnabled)
-    );
-    listenForRedraw(uiModel.skinningEnabled);
-
-    uiModel.exposure.subscribe(
-        (exposure) => (state.renderingParameters.exposure = 1.0 / Math.pow(2.0, exposure))
-    );
-    listenForRedraw(uiModel.exposure);
-
-    uiModel.morphingEnabled.subscribe(
-        (morphingEnabled) => (state.renderingParameters.morphing = morphingEnabled)
-    );
-    listenForRedraw(uiModel.morphingEnabled);
-
-    uiModel.interactivityEnabled.subscribe((interactivityEnabled) => {
-        state.renderingParameters.enabledExtensions.KHR_interactivity = interactivityEnabled;
+    onChange(uiEvents.interactivityChanged, (enabled) => {
+        state.renderingParameters.enabledExtensions.KHR_interactivity = enabled;
         if (state.gltf?.extensions?.KHR_interactivity === undefined) {
             return;
         }
-        if (interactivityEnabled) {
+        if (enabled) {
             state.graphController.initializeGraphs(state);
-            const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
-            state.graphController.loadGraph(graphIndex);
+            state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
             if (getViewerState().graphState) {
                 state.graphController.resumeGraph();
                 state.animationTimer.unpause();
@@ -387,178 +326,48 @@ const main = async () => {
             }
         }
     });
-    listenForRedraw(uiModel.interactivityEnabled);
 
-    uiModel.clearcoatEnabled.subscribe(
-        (clearcoatEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_clearcoat = clearcoatEnabled)
-    );
-    listenForRedraw(uiModel.clearcoatEnabled);
+    onChange(uiEvents.sceneChanged, (value) => {
+        const sceneIndex = Number(value);
+        state.sceneIndex = sceneIndex !== -1 ? sceneIndex : undefined;
+        state.cameraNodeIndex = undefined;
 
-    uiModel.sheenEnabled.subscribe(
-        (sheenEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_sheen = sheenEnabled)
-    );
-    listenForRedraw(uiModel.sheenEnabled);
-
-    uiModel.transmissionEnabled.subscribe(
-        (transmissionEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_transmission =
-                transmissionEnabled)
-    );
-    listenForRedraw(uiModel.transmissionEnabled);
-
-    uiModel.diffuseTransmissionEnabled.subscribe(
-        (diffuseTransmissionEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission =
-                diffuseTransmissionEnabled)
-    );
-    listenForRedraw(uiModel.diffuseTransmissionEnabled);
-
-    uiModel.volumeEnabled.subscribe(
-        (volumeEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_volume = volumeEnabled)
-    );
-    listenForRedraw(uiModel.volumeEnabled);
-
-    uiModel.iorEnabled.subscribe(
-        (iorEnabled) => (state.renderingParameters.enabledExtensions.KHR_materials_ior = iorEnabled)
-    );
-    listenForRedraw(uiModel.iorEnabled);
-
-    uiModel.iridescenceEnabled.subscribe(
-        (iridescenceEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_iridescence =
-                iridescenceEnabled)
-    );
-    listenForRedraw(uiModel.iridescenceEnabled);
-
-    uiModel.retroreflectionEnabled.subscribe(
-        (retroreflectionEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_retroreflection =
-                retroreflectionEnabled)
-    );
-    listenForRedraw(uiModel.retroreflectionEnabled);
-
-    uiModel.anisotropyEnabled.subscribe(
-        (anisotropyEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_anisotropy =
-                anisotropyEnabled)
-    );
-    listenForRedraw(uiModel.anisotropyEnabled);
-
-    uiModel.dispersionEnabled.subscribe(
-        (dispersionEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_dispersion =
-                dispersionEnabled)
-    );
-    listenForRedraw(uiModel.dispersionEnabled);
-
-    uiModel.specularEnabled.subscribe(
-        (specularEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled)
-    );
-    listenForRedraw(uiModel.specularEnabled);
-
-    uiModel.emissiveStrengthEnabled.subscribe(
-        (enabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled)
-    );
-    listenForRedraw(uiModel.emissiveStrengthEnabled);
-
-    uiModel.volumeScatteringEnabled.subscribe(
-        (enabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_materials_volume_scatter = enabled)
-    );
-    listenForRedraw(uiModel.volumeScatteringEnabled);
-
-    uiModel.hoverabilityEnabled.subscribe(
-        (hoverabilityEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_node_hoverability =
-                hoverabilityEnabled)
-    );
-    listenForRedraw(uiModel.hoverabilityEnabled);
-
-    uiModel.selectabilityEnabled.subscribe(
-        (selectabilityEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_node_selectability =
-                selectabilityEnabled)
-    );
-    listenForRedraw(uiModel.selectabilityEnabled);
-
-    uiModel.nodeVisibilityEnabled.subscribe(
-        (nodeVisibilityEnabled) =>
-            (state.renderingParameters.enabledExtensions.KHR_node_visibility =
-                nodeVisibilityEnabled)
-    );
-    listenForRedraw(uiModel.nodeVisibilityEnabled);
-
-    uiModel.gaussianSplattingEnabled.subscribe(
-        (enabled) => (state.renderingParameters.enabledExtensions.KHR_gaussian_splatting = enabled)
-    );
-    listenForRedraw(uiModel.gaussianSplattingEnabled);
-
-    uiModel.floatingPointFramebufferEnabled.subscribe(
-        (enabled) => (state.renderingParameters.floatingPointFramebuffer = enabled)
-    );
-    listenForRedraw(uiModel.floatingPointFramebufferEnabled);
-
-    uiModel.iblEnabled.subscribe((iblEnabled) => (state.renderingParameters.useIBL = iblEnabled));
-    listenForRedraw(uiModel.iblEnabled);
-
-    uiModel.iblIntensity.subscribe(
-        (iblIntensity) => (state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity))
-    );
-    listenForRedraw(uiModel.iblIntensity);
-
-    uiModel.renderEnvEnabled.subscribe(
-        (renderEnvEnabled) => (state.renderingParameters.renderEnvironmentMap = renderEnvEnabled)
-    );
-    listenForRedraw(uiModel.renderEnvEnabled);
-
-    uiModel.blurEnvEnabled.subscribe(
-        (blurEnvEnabled) => (state.renderingParameters.blurEnvironmentMap = blurEnvEnabled)
-    );
-    listenForRedraw(uiModel.blurEnvEnabled);
-
-    uiModel.punctualLightsEnabled.subscribe(
-        (punctualLightsEnabled) => (state.renderingParameters.usePunctual = punctualLightsEnabled)
-    );
-    listenForRedraw(uiModel.punctualLightsEnabled);
-
-    uiModel.environmentRotation.subscribe((environmentRotation) => {
-        switch (environmentRotation) {
-            case "+Z":
-                state.renderingParameters.environmentRotation = 90.0;
-                break;
-            case "-X":
-                state.renderingParameters.environmentRotation = 180.0;
-                break;
-            case "-Z":
-                state.renderingParameters.environmentRotation = 270.0;
-                break;
-            case "+X":
-                state.renderingParameters.environmentRotation = 0.0;
-                break;
+        const scene = state.gltf.scenes[state.sceneIndex];
+        if (scene !== undefined) {
+            scene.applyTransformHierarchy(state.gltf);
+            state.userCamera.resetView(state.gltf, state.sceneIndex);
+            state.physicsController.loadScene(state, state.sceneIndex);
         }
+
+        uiModel.publishCameras(state);
+        uiModel.publishStatistics(view.gatherStatistics(state));
     });
-    listenForRedraw(uiModel.environmentRotation);
 
-    uiModel.clearColor.subscribe(
-        (clearColor) => (state.renderingParameters.clearColor = clearColor)
-    );
-    listenForRedraw(uiModel.clearColor);
+    onChange(uiEvents.cameraChanged, (camera) => {
+        state.cameraNodeIndex = camera !== -1 ? camera : undefined;
+    });
 
-    uiModel.animationPlay.subscribe((animationPlay) => {
-        if (animationPlay) {
+    onChange(uiEvents.selectedAnimationsChanged, (indices) => {
+        // Disable all animations which are not disjoint to the current selection.
+        uiModel.publishDisabledAnimations(state.gltf.nonDisjointAnimations(indices));
+        state.animationIndices = indices;
+    });
+
+    uiEvents.animationPlayChanged.on((playing) => {
+        if (playing) {
             state.animationTimer.unpause();
         } else {
             state.animationTimer.pause();
         }
     });
 
-    uiModel.graphPlay.subscribe((graphPlay) => {
-        if (graphPlay) {
+    uiEvents.animationResetChanged.on(() => {
+        state.animationTimer.reset();
+        redraw = true;
+    });
+
+    uiEvents.graphPlayChanged.on((playing) => {
+        if (playing) {
             state.graphController.resumeGraph();
             state.animationTimer.unpause();
         } else {
@@ -567,83 +376,79 @@ const main = async () => {
         }
     });
 
-    uiModel.physicsEnabled.subscribe((physicsEnabled) => {
-        if (physicsEnabled) {
+    uiEvents.graphResetChanged.on(() => {
+        state.graphController.resetGraph();
+        redraw = true;
+    });
+
+    uiEvents.selectedGraphChanged.on((graphIndex) => {
+        if (graphIndex !== null && graphIndex !== undefined) {
+            state.graphController.loadGraph(graphIndex);
+        }
+    });
+
+    uiEvents.customEventSendClicked.on((eventData) => {
+        if (eventData && eventData.eventId) {
+            state.graphController.dispatchEvent(eventData.eventId, { ...eventData.values });
+        }
+    });
+
+    // physicsEngineChanged is deliberately unhandled: PhysX is the only engine.
+    uiEvents.physicsEnabledChanged.on((enabled) => {
+        if (enabled) {
             state.physicsController.resumeSimulation();
         } else {
             state.physicsController.pauseSimulation();
         }
     });
 
-    uiModel.physicsStep.subscribe(() => {
-        state.physicsController.simulateStep(state, 1 / 60);
-        state.gltf.resetAllDirtyFlags();
-        redraw = true;
-    });
-
-    uiModel.physicsColliderDebug.subscribe((enabled) => {
-        state.physicsController.enableDebugColliders(enabled);
-        redraw = true;
-    });
-
-    uiModel.physicsJointDebug.subscribe((enabled) => {
-        state.physicsController.enableDebugJoints(enabled);
-        redraw = true;
-    });
-
-    uiModel.animationReset.subscribe(() => {
-        state.animationTimer.reset();
-        redraw = true;
-    });
-
-    uiModel.graphReset.subscribe(() => {
-        state.graphController.resetGraph();
-        redraw = true;
-    });
-
-    uiModel.activeAnimations.subscribe((animations) => (state.animationIndices = animations));
-    listenForRedraw(uiModel.activeAnimations);
-
-    uiModel.selectedGraph.subscribe((graphIndex) => {
-        if (graphIndex !== null && graphIndex !== undefined) {
-            state.graphController.loadGraph(graphIndex);
-        }
-    });
-
-    uiModel.customEventSend.subscribe((eventData) => {
-        if (eventData && eventData.eventId) {
-            const values = {};
-            for (const key in eventData.values) {
-                values[key] = eventData.values[key];
-            }
-            state.graphController.dispatchEvent(eventData.eventId, values);
-        }
-    });
-
-    uiModel.physicsReset.subscribe(() => {
+    uiEvents.physicsResetChanged.on(() => {
         state.physicsController.resetScene(state.gltf);
         state.gltf.resetAnimatedProperties(state.sceneIndex);
         state.physicsController.loadScene(state, state.sceneIndex);
         redraw = true;
     });
 
-    uiModel.physicsEngine.subscribe((engine) => {
-        // There are currently no other engines supported besides PhysX
+    uiEvents.physicsStepChanged.on(() => {
+        state.physicsController.simulateStep(state, 1 / 60);
+        state.gltf.resetAllDirtyFlags();
+        redraw = true;
     });
 
-    uiModel.hdr.subscribe((hdr) => {
-        resourceLoader.loadEnvironment(hdr.hdr_path).then((environment) => {
-            state.environment = environment;
-            // We need to wait until the environment is loaded to redraw
-            redraw = true;
-        });
+    onChange(uiEvents.physicsColliderDebugChanged, (enabled) =>
+        state.physicsController.enableDebugColliders(enabled)
+    );
+    onChange(uiEvents.physicsJointDebugChanged, (enabled) =>
+        state.physicsController.enableDebugJoints(enabled)
+    );
+
+    // ------------------------------------------------------------- downloads
+
+    const downloadDataURL = (filename, dataURL) => {
+        const element = document.createElement("a");
+        element.setAttribute("href", dataURL);
+        element.setAttribute("download", filename);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    };
+
+    uiEvents.cameraExport.on(() => {
+        const camera =
+            state.cameraNodeIndex === undefined
+                ? state.userCamera
+                : state.gltf.cameras[state.cameraNodeIndex];
+        const gltf = JSON.stringify(camera.getDescription(state.gltf), undefined, 4);
+        downloadDataURL("camera.gltf", "data:text/plain;charset=utf-8," + encodeURIComponent(gltf));
     });
 
-    uiModel.attachGltfLoaded(gltfLoaded);
-    uiModel.updateValidationReport(validation);
-    uiModel.updateStatistics(statisticsUpdateObservable);
-    const sceneChangedStateObservable = uiModel.scene.pipe(map(() => state));
-    uiModel.attachCameraChangeObservable(sceneChangedStateObservable);
+    uiEvents.captureCanvas.on(() => {
+        view.renderFrame(state, canvas.width, canvas.height);
+        downloadDataURL("capture.png", canvas.toDataURL());
+    });
+
+    // ---------------------------------------------------------- camera motion
 
     // Smooths discrete drag/scroll input deltas into per-frame motion.
     // Each input delta becomes a short pulse that fades in then out following
@@ -697,42 +502,46 @@ const main = async () => {
         };
     })();
 
-    uiModel.orbit.subscribe((orbit) => dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta));
-    listenForRedraw(uiModel.orbit);
+    uiEvents.inputSmoothingChanged.on((enabled) => dragSmoother.setSmoothMs(enabled ? 330 : 0));
 
-    uiModel.pan.subscribe((pan) => dragSmoother.pushPan(pan.deltaX, -pan.deltaY));
-    listenForRedraw(uiModel.pan);
+    uiModel.onOrbit((orbit) => {
+        dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
+        redraw = true;
+    });
+    uiModel.onPan((pan) => {
+        dragSmoother.pushPan(pan.deltaX, -pan.deltaY);
+        redraw = true;
+    });
+    uiModel.onZoom((zoom) => {
+        dragSmoother.pushZoom(zoom.deltaZoom);
+        redraw = true;
+    });
 
-    uiModel.zoom.subscribe((zoom) => dragSmoother.pushZoom(zoom.deltaZoom));
-    listenForRedraw(uiModel.zoom);
-
-    uiModel.inputSmoothingEnabled.subscribe((enabled) =>
-        dragSmoother.setSmoothMs(enabled ? 330 : 0)
-    );
-
-    listenForRedraw(gltfLoaded);
-
-    uiModel.selection.subscribe((selection) => {
+    uiModel.onSelection((selection) => {
         const devicePixelRatio = window.devicePixelRatio || 1;
         state.selectionPositions[0].x = Math.floor(selection.x * devicePixelRatio);
         state.selectionPositions[0].y = Math.floor(selection.y * devicePixelRatio);
         state.triggerSelection = true;
+        redraw = true;
     });
-    listenForRedraw(uiModel.selection);
 
-    uiModel.moveSelection.subscribe((selection) => {
+    uiModel.onHover((selection) => {
         if (selection.x === undefined || selection.y === undefined) {
             state.hoverPositions[0].x = undefined;
             state.hoverPositions[0].y = undefined;
-            return;
+        } else {
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            state.hoverPositions[0].x = Math.floor(selection.x * devicePixelRatio);
+            state.hoverPositions[0].y = Math.floor(selection.y * devicePixelRatio);
         }
-        const devicePixelRatio = window.devicePixelRatio || 1;
-        state.hoverPositions[0].x = Math.floor(selection.x * devicePixelRatio);
-        state.hoverPositions[0].y = Math.floor(selection.y * devicePixelRatio);
+        redraw = true;
     });
-    listenForRedraw(uiModel.moveSelection);
 
-    // configure the animation loop
+    // Handlers are registered, so the initial model and environment can go out.
+    uiModel.start();
+
+    // ------------------------------------------------------------ render loop
+
     const past = {};
     const update = () => {
         const devicePixelRatio = window.devicePixelRatio || 1;

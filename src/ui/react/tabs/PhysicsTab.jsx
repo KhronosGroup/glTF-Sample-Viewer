@@ -41,13 +41,13 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                     className="round-green-btn"
                     onToggle={(on) => {
                         setViewerState({ physicsState: on });
-                        uiEvents.physicsEnabledChanged.next(on);
+                        uiEvents.physicsEnabledChanged.emit(on);
                     }}
                 />
                 <button
                     className="button is-rounded reset-btn-green"
                     style={OUTLINE_BUTTON_STYLE}
-                    onClick={() => uiEvents.physicsResetChanged.next(true)}
+                    onClick={() => uiEvents.physicsResetChanged.emit(true)}
                 >
                     Reset
                 </button>
@@ -58,7 +58,7 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                     value={debug.engine}
                     onChange={(value) => {
                         onDebugChange({ engine: value });
-                        uiEvents.physicsEngineChanged.next(value);
+                        uiEvents.physicsEngineChanged.emit(value);
                     }}
                 >
                     <option value="nvidia-physx">Nvidia PhysX</option>
@@ -77,7 +77,7 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                 <button
                     className="button is-rounded"
                     style={OUTLINE_BUTTON_STYLE}
-                    onClick={() => uiEvents.physicsStepChanged.next(true)}
+                    onClick={() => uiEvents.physicsStepChanged.emit(true)}
                 >
                     Step
                 </button>
@@ -85,7 +85,7 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                     checked={debug.colliders}
                     onChange={(checked) => {
                         onDebugChange({ colliders: checked });
-                        uiEvents.physicsColliderDebugChanged.next(checked);
+                        uiEvents.physicsColliderDebugChanged.emit(checked);
                     }}
                 >
                     Show Colliders
@@ -94,7 +94,7 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                     checked={debug.joints}
                     onChange={(checked) => {
                         onDebugChange({ joints: checked });
-                        uiEvents.physicsJointDebugChanged.next(checked);
+                        uiEvents.physicsJointDebugChanged.emit(checked);
                     }}
                 >
                     Show Joints

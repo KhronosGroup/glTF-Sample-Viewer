@@ -1,23 +1,7 @@
-import { Observable, merge, fromEvent } from "rxjs";
-import {
-    map,
-    filter,
-    startWith,
-    pluck,
-    takeUntil,
-    mergeMap,
-    pairwise,
-    share
-} from "rxjs/operators";
 import { GltfState } from "@khronosgroup/gltf-viewer";
-import { SimpleDropzone } from "simple-dropzone";
-import normalizeWheel from "normalize-wheel";
 import { getViewerState, setViewerState } from "./viewer_store.js";
 import { uiEvents } from "./ui_events.js";
-
-// this class wraps all the observables for the gltf sample viewer state
-// the data streams coming out of this should match the data required in GltfState
-// as close as possible
+import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
 
 /**
  * Splits an SPDX licence file into parts the UI can render as elements. It used
@@ -41,24 +25,44 @@ function parseEnvironmentLicense(text, hdr) {
     };
 }
 
+function hexToLinearColor(hex) {
+    const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (match === null) {
+        return undefined;
+    }
+    return [
+        parseInt(match[1], 16) / 255.0,
+        parseInt(match[2], 16) / 255.0,
+        parseInt(match[3], 16) / 255.0,
+        1.0
+    ];
+}
+
+const INITIAL_ENVIRONMENT = "Cannon_Exterior";
+const INITIAL_CLEAR_COLOR = "#303542";
+
+/**
+ * Bridges the UI and the viewer: resolves selections into things to load, and
+ * publishes what the loader produces back into the store.
+ *
+ * `start()` must be called after the caller has registered its handlers, since
+ * it emits the initial model and environment.
+ */
 class UIModel {
-    constructor(modelPathProvider, environments) {
-        setViewerState({ models: modelPathProvider.getAllKeys() });
+    constructor(modelPathProvider, environments, canvas) {
+        this.modelPathProvider = modelPathProvider;
+        this.environments = environments;
+        this.lastDroppedFilename = undefined;
+        this.modelHandlers = [];
+        this.hdrHandlers = [];
 
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        const modelURL = urlParams.get("model");
-
-        this.scene = uiEvents.sceneChanged.pipe();
-        this.camera = uiEvents.cameraChanged.pipe();
-        this.environmentRotation = uiEvents.environmentRotationChanged.pipe();
-        const initialEnvironment = "Cannon_Exterior";
-        setViewerState({ environments, selectedEnvironment: initialEnvironment });
-        const selectedEnvironment = uiEvents.selectedEnvironmentChanged.pipe(
-            map((environmentName) => getViewerState().environments[environmentName])
-        );
+        this.modelURL = new URLSearchParams(window.location.search).get("model");
 
         setViewerState({
+            models: modelPathProvider.getAllKeys(),
+            environments,
+            selectedEnvironment: INITIAL_ENVIRONMENT,
+            clearColor: INITIAL_CLEAR_COLOR,
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
@@ -66,268 +70,276 @@ class UIModel {
                 title: GltfState.DebugOutput[key]
             }))
         });
-        this.tonemap = uiEvents.tonemapChanged.pipe(startWith(GltfState.ToneMaps.KHR_PBR_NEUTRAL));
-        this.debugchannel = uiEvents.debugchannelChanged.pipe(
-            startWith(GltfState.DebugOutput.NONE)
-        );
 
-        this.exposure = uiEvents.exposureChanged.pipe();
-        this.skinningEnabled = uiEvents.skinningChanged.pipe();
-        this.inputSmoothingEnabled = uiEvents.inputSmoothingChanged.pipe();
-        this.morphingEnabled = uiEvents.morphingChanged.pipe();
-        this.clearcoatEnabled = uiEvents.clearcoatChanged.pipe();
-        this.sheenEnabled = uiEvents.sheenChanged.pipe();
-        this.transmissionEnabled = uiEvents.transmissionChanged.pipe();
-        this.diffuseTransmissionEnabled = uiEvents.diffuseTransmissionChanged.pipe();
-        this.volumeEnabled = uiEvents.volumeChanged.pipe();
-        this.iorEnabled = uiEvents.iorChanged.pipe();
-        this.iridescenceEnabled = uiEvents.iridescenceChanged.pipe();
-        this.retroreflectionEnabled = uiEvents.retroreflectionChanged.pipe();
-        this.anisotropyEnabled = uiEvents.anisotropyChanged.pipe();
-        this.dispersionEnabled = uiEvents.dispersionChanged.pipe();
-        this.specularEnabled = uiEvents.specularChanged.pipe();
-        this.emissiveStrengthEnabled = uiEvents.emissiveStrengthChanged.pipe();
-        this.volumeScatteringEnabled = uiEvents.volumeScatteringChanged.pipe();
-        this.hoverabilityEnabled = uiEvents.hoverabilityChanged.pipe();
-        this.selectabilityEnabled = uiEvents.selectabilityChanged.pipe();
-        this.nodeVisibilityEnabled = uiEvents.nodeVisibilityChanged.pipe();
-        this.gaussianSplattingEnabled = uiEvents.gaussianSplattingChanged.pipe();
-        this.floatingPointFramebufferEnabled = uiEvents.floatingPointFramebufferChanged.pipe();
-        this.iblEnabled = uiEvents.iblChanged.pipe();
-        this.iblIntensity = uiEvents.iblIntensityChanged.pipe();
-        this.punctualLightsEnabled = uiEvents.punctualLightsChanged.pipe();
-        this.renderEnvEnabled = uiEvents.renderEnvChanged.pipe();
-        this.blurEnvEnabled = uiEvents.blurEnvChanged.pipe();
-        this.addEnvironment = uiEvents.addEnvironmentChanged.pipe();
-        this.captureCanvas = uiEvents.captureCanvas.pipe();
-        this.cameraValuesExport = uiEvents.cameraExport.pipe();
-        this.interactivityEnabled = uiEvents.interactivityChanged.pipe();
+        uiEvents.modelChanged.on((name) => this.selectModel(name));
+        uiEvents.flavourChanged.on((flavour) => {
+            this.emitModel({
+                mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
+            });
+        });
 
-        const initialClearColor = "#303542";
-        setViewerState({ clearColor: initialClearColor });
-        this.clearColor = uiEvents.colorChanged.pipe(
-            startWith(initialClearColor),
-            map((hex) => /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)),
-            filter((color) => color !== null),
-            map((color) => [
-                parseInt(color[1], 16) / 255.0,
-                parseInt(color[2], 16) / 255.0,
-                parseInt(color[3], 16) / 255.0,
-                1.0
-            ])
-        );
+        uiEvents.selectedEnvironmentChanged.on((name) => {
+            this.emitHdr(getViewerState().environments[name]);
+        });
+        uiEvents.addEnvironmentChanged.on((hdr) => this.addEnvironment(hdr));
 
-        this.animationPlay = uiEvents.animationPlayChanged.pipe();
-        this.graphPlay = uiEvents.graphPlayChanged.pipe();
-        this.animationReset = uiEvents.animationResetChanged.pipe();
-        this.graphReset = uiEvents.graphResetChanged.pipe();
-        this.customEventSend = uiEvents.customEventSendClicked.pipe();
-        this.activeAnimations = uiEvents.selectedAnimationsChanged.pipe();
-        this.selectedGraph = uiEvents.selectedGraphChanged.pipe();
-
-        this.physicsReset = uiEvents.physicsResetChanged.pipe();
-        this.physicsEngine = uiEvents.physicsEngineChanged.pipe();
-        this.physicsEnabled = uiEvents.physicsEnabledChanged.pipe();
-        this.physicsStep = uiEvents.physicsStepChanged.pipe();
-        this.physicsColliderDebug = uiEvents.physicsColliderDebugChanged.pipe();
-        this.physicsJointDebug = uiEvents.physicsJointDebugChanged.pipe();
-
-        const canvas = document.getElementById("canvas");
         canvas.addEventListener("dragenter", () => setViewerState({ showDropDownOverlay: true }));
         canvas.addEventListener("dragleave", () => setViewerState({ showDropDownOverlay: false }));
 
-        const inputObservables = getInputObservables(canvas);
+        this.detachInput = attachCanvasInput(canvas, {
+            onOrbit: (delta) => this.orbitHandler?.(delta),
+            onPan: (delta) => this.panHandler?.(delta),
+            onZoom: (delta) => this.zoomHandler?.(delta),
+            onSelect: (position) => this.selectionHandler?.(position),
+            onHover: (position) => this.hoverHandler?.(position),
+            onDrop: (entries) => this.handleDrop(entries),
+            onDropError: () => setViewerState({ showDropDownOverlay: false })
+        });
+    }
 
-        const dropdownGltfChanged = uiEvents.modelChanged.pipe(
-            startWith(modelURL === null ? "DamagedHelmet" : null),
-            filter((value) => value !== null),
-            map((value) => {
-                const flavours = modelPathProvider.getModelFlavours(value);
-                const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
-                setViewerState({ flavours, selectedFlavour });
-                return modelPathProvider.resolve(value, selectedFlavour);
-            }),
-            map((value) => ({ mainFile: value }))
-        );
+    onModel(handler) {
+        this.modelHandlers.push(handler);
+    }
 
-        const dropdownFlavourChanged = uiEvents.flavourChanged.pipe(
-            map((value) => modelPathProvider.resolve(getViewerState().selectedModel, value)),
-            map((value) => ({ mainFile: value }))
-        );
+    onHdr(handler) {
+        this.hdrHandlers.push(handler);
+    }
 
-        this.model = merge(
-            dropdownGltfChanged,
-            dropdownFlavourChanged,
-            inputObservables.droppedGltf
-        );
+    onOrbit(handler) {
+        this.orbitHandler = handler;
+    }
 
-        this.hdr = merge(
-            selectedEnvironment,
-            this.addEnvironment,
-            inputObservables.droppedHdr
-        ).pipe(startWith(environments[initialEnvironment]));
+    onPan(handler) {
+        this.panHandler = handler;
+    }
 
-        this.hdr.subscribe(async (hdr) => {
-            if (hdr.license_path === undefined) {
-                setViewerState({ environmentLicense: null });
-                return;
-            }
-            try {
-                const response = await fetch(hdr.license_path);
-                if (!response.ok) {
-                    throw new Error("License file not found");
-                }
-                setViewerState({
-                    environmentLicense: parseEnvironmentLicense(await response.text(), hdr)
-                });
-                // eslint-disable-next-line no-unused-vars
-            } catch (error) {
-                setViewerState({ environmentLicense: null });
+    onZoom(handler) {
+        this.zoomHandler = handler;
+    }
+
+    onSelection(handler) {
+        this.selectionHandler = handler;
+    }
+
+    onHover(handler) {
+        this.hoverHandler = handler;
+    }
+
+    /** Emits the initial model and environment, replacing RxJS `startWith`. */
+    start() {
+        this.emitHdr(this.environments[INITIAL_ENVIRONMENT]);
+        setViewerState({
+            clearColor: INITIAL_CLEAR_COLOR
+        });
+        this.clearColorHandler?.(hexToLinearColor(INITIAL_CLEAR_COLOR));
+
+        if (this.modelURL !== null) {
+            this.registerDroppedFilename(this.modelURL);
+            this.emitModel({ mainFile: this.modelURL });
+        } else {
+            this.selectModel("DamagedHelmet");
+        }
+    }
+
+    onClearColor(handler) {
+        this.clearColorHandler = handler;
+        uiEvents.colorChanged.on((hex) => {
+            const color = hexToLinearColor(hex);
+            if (color !== undefined) {
+                handler(color);
             }
         });
+    }
 
-        merge(this.addEnvironment, inputObservables.droppedHdr).subscribe((hdr) => {
-            const hdrPath = hdr.hdr_path;
-            setViewerState({
-                environments: {
-                    ...getViewerState().environments,
-                    [hdrPath.name]: { title: hdrPath.name, hdr_path: hdrPath }
-                },
-                selectedEnvironment: hdrPath.name
-            });
+    selectModel(name) {
+        const flavours = this.modelPathProvider.getModelFlavours(name);
+        const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
+        setViewerState({ flavours, selectedFlavour });
+        this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
+    }
+
+    emitModel(model) {
+        // A dropped file adds a temporary entry to the model list; picking
+        // anything else removes it again.
+        if (getViewerState().models.at(-1) === this.lastDroppedFilename) {
+            setViewerState({ models: getViewerState().models.slice(0, -1) });
+            this.lastDroppedFilename = undefined;
+        }
+        for (const handler of this.modelHandlers) {
+            handler(model);
+        }
+    }
+
+    emitHdr(hdr) {
+        for (const handler of this.hdrHandlers) {
+            handler(hdr);
+        }
+        this.publishEnvironmentLicense(hdr);
+    }
+
+    addEnvironment(hdr) {
+        const hdrPath = hdr.hdr_path;
+        setViewerState({
+            environments: {
+                ...getViewerState().environments,
+                [hdrPath.name]: { title: hdrPath.name, hdr_path: hdrPath }
+            },
+            selectedEnvironment: hdrPath.name
         });
+        this.emitHdr(hdr);
+    }
 
-        this.variant = uiEvents.variantChanged.pipe();
+    handleDrop(entries) {
+        setViewerState({ showDropDownOverlay: false });
+        const { mainFile, additionalFiles, hdrFile } = partitionDroppedFiles(entries);
 
-        // remove last filename
-        this.model
-            .pipe(filter(() => getViewerState().models.at(-1) === this.lastDroppedFilename))
-            .subscribe(() => {
-                setViewerState({ models: getViewerState().models.slice(0, -1) });
-                this.lastDroppedFilename = undefined;
-            });
-
-        let droppedGLtfFileName = inputObservables.droppedGltf.pipe(
-            map((droppedGltf) => {
-                // Right now mainFile should always be an array of length.
-                // The first element is just the filename as string, the second element is the File object.
-                // To prevent potential errors where this might not be the case,
-                // we have this if and return undefined
-                if (droppedGltf.mainFile.length > 1) {
-                    return droppedGltf.mainFile[1].name;
-                } else {
-                    return undefined;
-                }
-            })
-        );
-
-        if (modelURL !== null) {
-            const loadFromUrlObservable = new Observable((subscriber) =>
-                subscriber.next({ mainFile: modelURL })
-            );
-            droppedGLtfFileName = merge(
-                droppedGLtfFileName,
-                loadFromUrlObservable.pipe(map((data) => data.mainFile))
-            );
-            this.model = merge(this.model, loadFromUrlObservable);
+        if (hdrFile !== undefined && mainFile === undefined) {
+            this.addEnvironment({ hdr_path: hdrFile[1] });
+            return;
+        }
+        if (mainFile === undefined) {
+            return;
         }
 
-        droppedGLtfFileName
-            .pipe(filter((filename) => filename !== undefined))
-            .subscribe((filename) => {
-                filename = filename.split("/").pop();
-                const fileExtension = filename.split(".").pop();
-                filename = filename.substr(0, filename.lastIndexOf("."));
-
-                setViewerState({
-                    models: [...getViewerState().models, filename],
-                    selectedModel: filename,
-                    flavours: [fileExtension],
-                    selectedFlavour: fileExtension
-                });
-                this.lastDroppedFilename = filename;
-            });
-
-        this.orbit = inputObservables.orbit;
-        this.pan = inputObservables.pan;
-        this.zoom = inputObservables.zoom;
-        this.selection = inputObservables.selection;
-        this.moveSelection = inputObservables.move;
+        // mainFile is [path, File]; the File carries the name to show.
+        if (mainFile.length > 1) {
+            this.registerDroppedFilename(mainFile[1].name);
+        }
+        this.emitModel({ mainFile, additionalFiles });
     }
 
-    attachGltfLoaded(gltfLoaded) {
-        this.attachCameraChangeObservable(gltfLoaded);
-        gltfLoaded.subscribe((state) => {
-            const gltf = state.gltf;
+    registerDroppedFilename(path) {
+        let filename = path.split("/").pop();
+        const fileExtension = filename.split(".").pop();
+        filename = filename.substr(0, filename.lastIndexOf("."));
 
-            const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
+        setViewerState({
+            models: [...getViewerState().models, filename],
+            selectedModel: filename,
+            flavours: [fileExtension],
+            selectedFlavour: fileExtension
+        });
+        this.lastDroppedFilename = filename;
+    }
 
-            const hasInteractivity =
-                gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
-                state.renderingParameters.enabledExtensions.KHR_interactivity;
-
+    async publishEnvironmentLicense(hdr) {
+        if (hdr?.license_path === undefined) {
+            setViewerState({ environmentLicense: null });
+            return;
+        }
+        try {
+            const response = await fetch(hdr.license_path);
+            if (!response.ok) {
+                throw new Error("License file not found");
+            }
             setViewerState({
-                assetCopyright: gltf.asset.copyright ?? "N/A",
-                assetGenerator: gltf.asset.generator ?? "N/A",
-
-                selectedScene: state.sceneIndex,
-                scenes: gltf.scenes.map((scene, index) => ({
-                    title: scene.name ?? `Scene ${index}`,
-                    index: index
-                })),
-
-                selectedAnimations: state.animationIndices,
-                animationState: true,
-                graphState: true,
-                physicsState: true,
-
-                materialVariants: hasVariants
-                    ? [
-                          "None",
-                          ...gltf.extensions.KHR_materials_variants.variants.map(
-                              (variant) => variant?.name ?? "Unnamed"
-                          )
-                      ]
-                    : ["None"],
-
-                animations: gltf.animations.map((animation, index) => ({
-                    title: animation.name ?? `Animation ${index}`,
-                    index: index
-                })),
-
-                graphs: hasInteractivity
-                    ? gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
-                          title: graph.name ?? `Graph ${index}`,
-                          index: index
-                      }))
-                    : [],
-                customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
-
-                hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
-
-                xmp:
-                    gltf?.extensions?.KHR_xmp_json_ld?.packets[
-                        gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
-                    ] ?? null
+                environmentLicense: parseEnvironmentLicense(await response.text(), hdr)
             });
+            // eslint-disable-next-line no-unused-vars
+        } catch (error) {
+            setViewerState({ environmentLicense: null });
+        }
+    }
 
-            if (hasInteractivity) {
-                setViewerState({ selectedGraph: state.graphController.graphIndex });
+    publishGltfLoaded(state) {
+        this.publishCameras(state);
+
+        const gltf = state.gltf;
+        const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
+        const hasInteractivity =
+            gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
+            state.renderingParameters.enabledExtensions.KHR_interactivity;
+
+        setViewerState({
+            assetCopyright: gltf.asset.copyright ?? "N/A",
+            assetGenerator: gltf.asset.generator ?? "N/A",
+
+            selectedScene: state.sceneIndex,
+            scenes: gltf.scenes.map((scene, index) => ({
+                title: scene.name ?? `Scene ${index}`,
+                index: index
+            })),
+
+            selectedAnimations: state.animationIndices,
+            animationState: true,
+            graphState: true,
+            physicsState: true,
+
+            materialVariants: hasVariants
+                ? [
+                      "None",
+                      ...gltf.extensions.KHR_materials_variants.variants.map(
+                          (variant) => variant?.name ?? "Unnamed"
+                      )
+                  ]
+                : ["None"],
+
+            animations: gltf.animations.map((animation, index) => ({
+                title: animation.name ?? `Animation ${index}`,
+                index: index
+            })),
+
+            graphs: hasInteractivity
+                ? gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
+                      title: graph.name ?? `Graph ${index}`,
+                      index: index
+                  }))
+                : [],
+            customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
+
+            hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
+
+            xmp:
+                gltf?.extensions?.KHR_xmp_json_ld?.packets[
+                    gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
+                ] ?? null
+        });
+
+        if (hasInteractivity) {
+            setViewerState({ selectedGraph: state.graphController.graphIndex });
+        }
+    }
+
+    publishCameras(state) {
+        const gltf = state.gltf;
+        const cameras = [{ title: "User Camera", index: -1 }];
+
+        if (gltf.scenes[state.sceneIndex] !== undefined) {
+            gltf.nodes.forEach((node, index) => {
+                if (
+                    node.camera === undefined ||
+                    !gltf.scenes[state.sceneIndex].includesNode(gltf, index)
+                ) {
+                    return;
+                }
+                const camera = gltf.cameras[node.camera];
+                const suffix =
+                    camera.name !== undefined && camera.name !== ""
+                        ? camera.name
+                        : `Camera ${node.camera}`;
+                cameras.push({ title: `${node.name ?? "Node " + index}: ${suffix}`, index });
+            });
+        }
+
+        setViewerState({
+            cameras,
+            selectedCamera: state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1
+        });
+    }
+
+    publishStatistics(data) {
+        setViewerState({
+            statistics: {
+                "Mesh Count": data.meshCount,
+                "Triangle Count": data.faceCount,
+                "Opaque Material Count": data.opaqueMaterialsCount,
+                "Transparent Material Count": data.transparentMaterialsCount
             }
         });
     }
 
-    updateStatistics(statisticsUpdateObservable) {
-        statisticsUpdateObservable.subscribe((data) =>
-            setViewerState({
-                statistics: {
-                    "Mesh Count": data.meshCount,
-                    "Triangle Count": data.faceCount,
-                    "Opaque Material Count": data.opaqueMaterialsCount,
-                    "Transparent Material Count": data.transparentMaterialsCount
-                }
-            })
-        );
+    publishDisabledAnimations(indices) {
+        setViewerState({ disabledAnimations: indices });
     }
 
     /**
@@ -372,56 +384,11 @@ class UIModel {
         };
     }
 
-    updateValidationReport(validationReportObservable) {
-        validationReportObservable.subscribe((data) => {
-            setViewerState({
-                validationReport: data,
-                validationReportDescription: this.createValidationReportDescription(data)
-            });
+    publishValidationReport(data) {
+        setViewerState({
+            validationReport: data,
+            validationReportDescription: this.createValidationReportDescription(data)
         });
-    }
-
-    disabledAnimations(disabledAnimationsObservable) {
-        disabledAnimationsObservable.subscribe((data) =>
-            setViewerState({ disabledAnimations: data })
-        );
-    }
-
-    attachCameraChangeObservable(sceneChangeObservable) {
-        const cameraIndices = sceneChangeObservable.pipe(
-            map((state) => {
-                let gltf = state.gltf;
-                let cameraIndices = [{ title: "User Camera", index: -1 }];
-                if (gltf.scenes[state.sceneIndex] !== undefined) {
-                    cameraIndices.push(
-                        ...gltf.nodes.map((node, index) => {
-                            if (
-                                node.camera !== undefined &&
-                                gltf.scenes[state.sceneIndex].includesNode(gltf, index)
-                            ) {
-                                let name = node.name ?? "Node " + index;
-                                const camera = gltf.cameras[node.camera];
-                                if (camera.name !== undefined && camera.name !== "") {
-                                    name += ": " + camera.name;
-                                } else {
-                                    name += ": Camera " + node.camera;
-                                }
-                                return { title: name, index: index };
-                            }
-                        })
-                    );
-                }
-                cameraIndices = cameraIndices.filter(function (el) {
-                    return el !== undefined;
-                });
-                return cameraIndices;
-            })
-        );
-        cameraIndices.subscribe((cameras) => setViewerState({ cameras }));
-        const loadedCameraIndex = sceneChangeObservable.pipe(map((state) => state.cameraNodeIndex));
-        loadedCameraIndex.subscribe((index) =>
-            setViewerState({ selectedCamera: index !== undefined ? index : -1 })
-        );
     }
 
     goToLoadingState() {
@@ -431,202 +398,10 @@ class UIModel {
     exitLoadingState() {
         setViewerState({ isLoading: false });
     }
+
+    dispose() {
+        this.detachInput?.();
+    }
 }
-
-const getInputObservables = (inputElement) => {
-    const observables = {};
-
-    const droppedFiles = new Observable((subscriber) => {
-        const dropZone = new SimpleDropzone(inputElement, inputElement);
-        dropZone.on("drop", ({ files }) => {
-            setViewerState({ showDropDownOverlay: false });
-            subscriber.next(Array.from(files.entries()));
-        });
-        dropZone.on("droperror", () => {
-            setViewerState({ showDropDownOverlay: false });
-            subscriber.error();
-        });
-    }).pipe(share());
-
-    // Partition files into a .gltf or .glb and additional files like buffers and textures
-    observables.droppedGltf = droppedFiles.pipe(
-        map((files) => {
-            files = files.map((file) => {
-                let filePath = file[0].replaceAll("\\", "/");
-                return [filePath.substring(1), file[1]]; // remove leading slash
-            });
-            return {
-                mainFile: files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf")),
-                additionalFiles: files.filter(
-                    (file) => !file[0].endsWith(".glb") && !file[0].endsWith(".gltf")
-                )
-            };
-        }),
-        filter(({ mainFile, additionalFiles }) => {
-            let isDefined = mainFile !== undefined;
-
-            if (
-                !isDefined &&
-                !(additionalFiles.length === 1 && additionalFiles[0][0].endsWith(".hdr"))
-            ) {
-                console.warn("Only glTF, glb and hdr files can be loaded on drop.");
-            }
-
-            return isDefined;
-        }),
-        filter((files) => files.mainFile !== undefined)
-    );
-
-    observables.droppedHdr = droppedFiles.pipe(
-        map((files) => files.find(([path]) => path.endsWith(".hdr"))),
-        filter((file) => file !== undefined),
-        pluck("1"),
-        map((file) => ({ hdr_path: file }))
-    );
-
-    const mouseMove = merge(
-        fromEvent(inputElement, "mousemove"),
-        fromEvent(inputElement, "mouseout")
-    );
-    const mouseDown = fromEvent(inputElement, "mousedown");
-    const mouseUp = merge(fromEvent(document, "mouseup"), fromEvent(document, "mouseleave"));
-    const click = fromEvent(inputElement, "click");
-
-    inputElement.addEventListener("mousemove", (event) => event.preventDefault());
-    inputElement.addEventListener("mousedown", (event) => event.preventDefault());
-    inputElement.addEventListener("mouseup", (event) => event.preventDefault());
-    inputElement.addEventListener("dblclick", (event) => event.preventDefault());
-    inputElement.addEventListener("click", (event) => event.preventDefault());
-    inputElement.addEventListener("mouseout", (event) => event.preventDefault());
-
-    const selection = click.pipe(
-        filter((event) => event.button === 0),
-        map((clickEvent) => {
-            return { x: clickEvent.pageX, y: clickEvent.pageY };
-        })
-    );
-
-    const move = mouseMove.pipe(
-        map((moveEvent) => {
-            if (moveEvent.type === "mouseout") {
-                return { x: undefined, y: undefined };
-            }
-            return { x: moveEvent.pageX, y: moveEvent.pageY };
-        })
-    );
-
-    const mouseOrbit = mouseDown.pipe(
-        filter((event) => event.button === 0 && event.shiftKey === false),
-        mergeMap(() =>
-            mouseMove.pipe(
-                pairwise(),
-                map(([oldMouse, newMouse]) => {
-                    return {
-                        deltaPhi: newMouse.pageX - oldMouse.pageX,
-                        deltaTheta: newMouse.pageY - oldMouse.pageY
-                    };
-                }),
-                takeUntil(mouseUp)
-            )
-        )
-    );
-
-    const mousePan = mouseDown.pipe(
-        filter((event) => event.button === 1 || event.shiftKey === true),
-        mergeMap(() =>
-            mouseMove.pipe(
-                pairwise(),
-                map(([oldMouse, newMouse]) => {
-                    return {
-                        deltaX: newMouse.pageX - oldMouse.pageX,
-                        deltaY: newMouse.pageY - oldMouse.pageY
-                    };
-                }),
-                takeUntil(mouseUp)
-            )
-        )
-    );
-
-    const dragZoom = mouseDown.pipe(
-        filter((event) => event.button === 2),
-        mergeMap(() => mouseMove.pipe(takeUntil(mouseUp))),
-        map((mouse) => ({ deltaZoom: mouse.movementY }))
-    );
-    const wheelZoom = fromEvent(inputElement, "wheel").pipe(
-        map((wheelEvent) => normalizeWheel(wheelEvent)),
-        map((normalizedZoom) => ({ deltaZoom: normalizedZoom.spinY }))
-    );
-    inputElement.addEventListener("scroll", (event) => event.preventDefault(), {
-        passive: false
-    });
-    inputElement.addEventListener("wheel", (event) => event.preventDefault(), {
-        passive: false
-    });
-    const mouseZoom = merge(dragZoom, wheelZoom);
-
-    const touchmove = fromEvent(document, "touchmove");
-    const touchstart = fromEvent(inputElement, "touchstart");
-    const touchend = merge(
-        fromEvent(inputElement, "touchend"),
-        fromEvent(inputElement, "touchcancel")
-    );
-
-    const touchOrbit = touchstart.pipe(
-        filter((event) => event.touches.length === 1),
-        mergeMap(() =>
-            touchmove.pipe(
-                filter((event) => event.touches.length === 1),
-                map((event) => event.touches[0]),
-                pairwise(),
-                map(([oldTouch, newTouch]) => {
-                    return {
-                        deltaPhi: 2.0 * (newTouch.clientX - oldTouch.clientX),
-                        deltaTheta: 2.0 * (newTouch.clientY - oldTouch.clientY)
-                    };
-                }),
-                takeUntil(touchend)
-            )
-        )
-    );
-
-    const touchZoom = touchstart.pipe(
-        filter((event) => event.touches.length === 2),
-        mergeMap(() =>
-            touchmove.pipe(
-                filter((event) => event.touches.length === 2),
-                map((event) => {
-                    const dx = event.touches[1].clientX - event.touches[0].clientX;
-                    const dy = event.touches[1].clientY - event.touches[0].clientY;
-                    return Math.hypot(dx, dy);
-                }),
-                pairwise(),
-                map(([oldDist, newDist]) => ({
-                    deltaZoom: 0.1 * (oldDist - newDist)
-                })),
-                takeUntil(touchend)
-            )
-        )
-    );
-
-    inputElement.addEventListener("ontouchmove", (event) => event.preventDefault(), {
-        passive: false
-    });
-    inputElement.addEventListener("ontouchstart", (event) => event.preventDefault(), {
-        passive: false
-    });
-    inputElement.addEventListener("ontouchend", (event) => event.preventDefault(), {
-        passive: false
-    });
-
-    observables.orbit = merge(mouseOrbit, touchOrbit);
-    observables.pan = mousePan;
-    observables.zoom = merge(mouseZoom, touchZoom);
-    observables.selection = selection;
-    observables.move = move;
-    // disable context menu
-    inputElement.oncontextmenu = () => false;
-
-    return observables;
-};
 
 export { UIModel };
