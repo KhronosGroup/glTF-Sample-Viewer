@@ -42,7 +42,7 @@ const main = async () => {
         const message = "Interactivity test failed";
         console.error(message);
     });
-    
+
     const emptyGltf = await resourceLoader.loadGltf(undefined, undefined, false);
 
     const pathProvider = new GltfModelPathProvider(
@@ -492,7 +492,7 @@ const main = async () => {
                 nodeVisibilityEnabled)
     );
     listenForRedraw(uiModel.nodeVisibilityEnabled);
-    
+
     uiModel.gaussianSplattingEnabled.subscribe(
         (enabled) => (state.renderingParameters.enabledExtensions.KHR_gaussian_splatting = enabled)
     );
@@ -685,7 +685,9 @@ const main = async () => {
             pushOrbit: (dPhi, dTheta) => push(orbitPulses, dPhi, dTheta),
             pushPan: (dX, dY) => push(panPulses, dX, dY),
             pushZoom: (dZoom) => push(zoomPulses, dZoom, 0),
-            setSmoothMs: (ms) => { smoothMs = Math.max(0, ms); },
+            setSmoothMs: (ms) => {
+                smoothMs = Math.max(0, ms);
+            },
             tick: () => {
                 const o = drain(orbitPulses, (a, b) => state.userCamera.orbit(a, b));
                 const p = drain(panPulses, (a, b) => state.userCamera.pan(a, b));
@@ -695,9 +697,7 @@ const main = async () => {
         };
     })();
 
-    uiModel.orbit.subscribe((orbit) =>
-        dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta)
-    );
+    uiModel.orbit.subscribe((orbit) => dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta));
     listenForRedraw(uiModel.orbit);
 
     uiModel.pan.subscribe((pan) => dragSmoother.pushPan(pan.deltaX, -pan.deltaY));
@@ -706,7 +706,9 @@ const main = async () => {
     uiModel.zoom.subscribe((zoom) => dragSmoother.pushZoom(zoom.deltaZoom));
     listenForRedraw(uiModel.zoom);
 
-    uiModel.inputSmoothingEnabled.subscribe((enabled) => dragSmoother.setSmoothMs(enabled ? 330 : 0));
+    uiModel.inputSmoothingEnabled.subscribe((enabled) =>
+        dragSmoother.setSmoothMs(enabled ? 330 : 0)
+    );
 
     listenForRedraw(gltfLoaded);
 

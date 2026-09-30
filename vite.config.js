@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
 import react from "@vitejs/plugin-react";
 import license from "rollup-plugin-license";
 
@@ -15,17 +14,7 @@ export default defineConfig({
     // so emitted asset URLs must be relative. Vite's default of "/" would resolve them against
     // the domain root and 404 every bundle, stylesheet and public asset in production.
     base: "./",
-    plugins: [
-        // Vue and React run side by side while the UI is ported component by
-        // component. The Vue half goes away once the last panel is React.
-        vue({
-            // All static assets live in public/ and are referenced by plain relative URLs.
-            // Without this, the SFC compiler tries to resolve every literal src="..." as a
-            // module import relative to the .vue file and fails to find them.
-            template: { transformAssetUrls: false }
-        }),
-        react()
-    ],
+    plugins: [react()],
     resolve: {
         // Leftover from before gl-matrix/jpeg-js/fast-png were audited: root no longer imports
         // gl-matrix directly, but jpeg-js/fast-png dedupe stays in case that ever changes.

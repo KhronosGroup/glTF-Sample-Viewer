@@ -1,33 +1,17 @@
-import { createApp } from "vue";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import "./sass.scss";
-import Buefy from "@ntohq/buefy-next";
-import ToggleButton from "./components/ToggleButton.vue";
-import JsonToUiTemplate from "./components/JsonToUiTemplate.vue";
-import VueApp from "./App.vue";
 import { Canvas } from "./Canvas.jsx";
-import { App as ReactApp } from "./react/App.jsx";
+import { App } from "./react/App.jsx";
 import { notify } from "../logic/notifications.js";
 
-// The React UI is still being filled in panel by panel, so it is opt-in until
-// it reaches parity. Once it does, this branch and the Vue half both go.
-const useReactUi = new URLSearchParams(window.location.search).get("react") !== null;
-
 // main.js looks up the #canvas element as soon as it runs, so the React tree
-// that renders it has to be committed synchronously here.
+// that renders it has to be committed synchronously here. This goes away once
+// main.js moves into an effect that owns the canvas ref.
 const canvasRoot = createRoot(document.getElementById("canvasUI"));
 flushSync(() => canvasRoot.render(<Canvas />));
 
-if (useReactUi) {
-    createRoot(document.getElementById("app")).render(<ReactApp />);
-} else {
-    const appCreated = createApp(VueApp);
-    appCreated.use(Buefy);
-    appCreated.component("toggle-button", ToggleButton);
-    appCreated.component("json-to-ui-template", JsonToUiTemplate);
-    appCreated.mount("#app");
-}
+createRoot(document.getElementById("app")).render(<App />);
 
 // pipe error messages to UI
 (() => {
