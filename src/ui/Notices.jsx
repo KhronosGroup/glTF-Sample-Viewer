@@ -70,7 +70,7 @@ export function LoadingOverlay({ active }) {
     // element is detached rather than merely transparent.
     return (
         <div
-            className={`loading-overlay fixed inset-0 z-40 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
+            className={`loading-overlay fixed inset-0 z-30 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
                 active ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
             onTransitionEnd={() => {

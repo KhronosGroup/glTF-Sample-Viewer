@@ -60,7 +60,7 @@ export function CustomEventInput({ name, type, value, onChange }) {
                 {label}
                 <Field>
                     <Input
-                        className="w-[110px]"
+                        className="w-28"
                         type={type === "float" ? "number" : "text"}
                         step={type === "float" ? "any" : undefined}
                         pattern={type === "int" ? "[\\-]?[0-9]*" : undefined}
@@ -85,7 +85,7 @@ export function CustomEventInput({ name, type, value, onChange }) {
                     {value.map((item, index) => (
                         <div key={index}>
                             <NumberCell
-                                className="w-[60px]"
+                                className="w-16"
                                 value={item}
                                 onChange={(next) => setAt(index, next)}
                             />
@@ -112,7 +112,7 @@ export function CustomEventInput({ name, type, value, onChange }) {
                                 return (
                                     <div key={row}>
                                         <NumberCell
-                                            className="w-[60px]"
+                                            className="w-16"
                                             value={value[index]}
                                             onChange={(next) => setAt(index, next)}
                                         />

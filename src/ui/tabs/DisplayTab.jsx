@@ -65,6 +65,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
 
             <Field label="IBL Intensity">
                 <Slider
+                    label="IBL Intensity"
                     value={iblIntensity}
                     min={-2}
                     max={5}
@@ -80,6 +81,7 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
 
             <Field label="Exposure">
                 <Slider
+                    label="Exposure"
                     value={exposure}
                     min={21}
                     max={-6}

@@ -133,7 +133,7 @@ export function GraphsTab({ onCollapse }) {
 
             {currentEventId && (
                 <div className="mt-8 flex justify-end">
-                    <Button className="w-[110px]" onClick={sendCustomEvent}>
+                    <Button className="w-28" onClick={sendCustomEvent}>
                         <Send size={16} aria-hidden="true" />
                         Send
                     </Button>

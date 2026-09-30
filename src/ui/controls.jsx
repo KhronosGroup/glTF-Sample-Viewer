@@ -146,7 +146,7 @@ export function PlaybackControls({ active, onText, offText, onIcon, offIcon, onT
                 offText={offText}
                 onIcon={onIcon}
                 offIcon={offIcon}
-                className="w-[110px]"
+                className="w-28"
                 onToggle={onToggle}
             />
             <OutlineButton onClick={onReset}>
@@ -205,7 +205,7 @@ export function Input({ className, ...rest }) {
 }
 
 export function Title({ children }) {
-    return <h2 className="mt-10 mb-8 text-[22pt] leading-tight font-bold">{children}</h2>;
+    return <h2 className="mt-10 mb-8 text-3xl leading-tight font-bold">{children}</h2>;
 }
 
 export function Subtitle({ children }) {

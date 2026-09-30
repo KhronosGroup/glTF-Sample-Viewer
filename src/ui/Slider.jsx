@@ -24,6 +24,7 @@ export function Slider({
     step = 1,
     onChange,
     className,
+    label,
     formatter = String,
     ticks = []
 }) {
@@ -113,6 +114,8 @@ export function Slider({
                         aria-valuemax={max}
                         aria-valuenow={value}
                         aria-orientation="horizontal"
+                        aria-label={label}
+                        aria-valuetext={formatter(value)}
                         onKeyDown={onKeyDown}
                     />
                 </div>

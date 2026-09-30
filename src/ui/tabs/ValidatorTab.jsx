@@ -111,7 +111,7 @@ export function ValidationCounter({ expanded, isMobile }) {
             <ShieldCheck size={expanded ? 34 : 26} strokeWidth={1.75} aria-hidden="true" />
             {info !== "" && (
                 <span
-                    className={`absolute -top-2 flex aspect-square min-w-[1.5rem] items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
+                    className={`absolute -top-2 flex aspect-square min-w-6 items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
                     style={{ right: isMobile ? "-6px" : "-16px" }}
                 >
                     {info}
