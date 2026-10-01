@@ -122,7 +122,7 @@ export function AdvancedTab({
                         event: "floatingPointFramebufferChanged"
                     })}
                 >
-                    Floating-Point Framebuffer
+                    32-bit Framebuffer
                 </Switch>
             </Field>
 

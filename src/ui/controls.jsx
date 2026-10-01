@@ -42,7 +42,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
                 onChange={(event) => onChange(event.target.checked)}
             />
             <span className="switch-track h-6 w-11 shrink-0 rounded-full p-0.5" />
-            {children !== undefined && <span className="text-base font-light">{children}</span>}
+            {children !== undefined && <span className="text-base font-light truncate">{children}</span>}
         </label>
     );
 }
