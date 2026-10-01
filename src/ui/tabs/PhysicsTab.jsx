@@ -1,57 +1,35 @@
+import { CirclePause, CirclePlay, StepForward } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Select, Switch, ToggleButton } from "../controls.jsx";
+import {
+    Field,
+    OutlineButton,
+    Panel,
+    PlaybackControls,
+    SectionLabel,
+    Select,
+    Switch
+} from "../controls.jsx";
 
-const OUTLINE_BUTTON_STYLE = {
-    border: "1.5px solid #87c540",
-    color: "#f2f2f2",
-    background: "transparent",
-    minWidth: "70px"
-};
-
-export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
+export function PhysicsTab({ debug, onDebugChange }) {
     const physicsState = useViewerStore((state) => state.physicsState);
 
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced" style={{ marginBottom: "0.5em" }}>
-                Physics
-            </h2>
-            <label className="subtitle">Physics Controls</label>
+        <Panel title="Physics">
+            <SectionLabel>Physics Controls</SectionLabel>
 
-            <div
-                style={{
-                    display: "flex",
-                    gap: "1em",
-                    alignItems: "center",
-                    marginBottom: "1.5em",
-                    marginTop: "1em"
+            <PlaybackControls
+                active={physicsState}
+                onText="Disable"
+                offText="Enable"
+                onIcon={<CirclePause size={16} aria-hidden="true" />}
+                offIcon={<CirclePlay size={16} aria-hidden="true" />}
+                onToggle={(on) => {
+                    setViewerState({ physicsState: on });
+                    uiEvents.physicsEnabledChanged.emit(on);
                 }}
-            >
-                <ToggleButton
-                    on={physicsState}
-                    onText="Disable"
-                    offText="Enable"
-                    className="round-green-btn"
-                    onToggle={(on) => {
-                        setViewerState({ physicsState: on });
-                        uiEvents.physicsEnabledChanged.emit(on);
-                    }}
-                />
-                <button
-                    className="button is-rounded reset-btn-green"
-                    style={OUTLINE_BUTTON_STYLE}
-                    onClick={() => uiEvents.physicsResetChanged.emit(true)}
-                >
-                    Reset
-                </button>
-            </div>
+                onReset={() => uiEvents.physicsResetChanged.emit(true)}
+            />
 
             <Field label="Physics Engine">
                 <Select
@@ -65,22 +43,12 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                 </Select>
             </Field>
 
-            <div className="subtitle">Debug</div>
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5em",
-                    marginBottom: "1em"
-                }}
-            >
-                <button
-                    className="button is-rounded"
-                    style={OUTLINE_BUTTON_STYLE}
-                    onClick={() => uiEvents.physicsStepChanged.emit(true)}
-                >
+            <SectionLabel>Debug</SectionLabel>
+            <div className="mb-4 flex flex-col items-start gap-2">
+                <OutlineButton onClick={() => uiEvents.physicsStepChanged.emit(true)}>
+                    <StepForward size={16} aria-hidden="true" />
                     Step
-                </button>
+                </OutlineButton>
                 <Switch
                     checked={debug.colliders}
                     onChange={(checked) => {
@@ -100,6 +68,6 @@ export function PhysicsTab({ onCollapse, debug, onDebugChange }) {
                     Show Joints
                 </Switch>
             </div>
-        </div>
+        </Panel>
     );
 }

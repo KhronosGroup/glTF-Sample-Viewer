@@ -1,30 +1,31 @@
+import { Download, Plus } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Select, Switch } from "../controls.jsx";
+import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { Dropdown } from "../Dropdown.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
 
 const IBL_INTENSITY_TICKS = [
-    { value: -2, label: "0.01", className: "iblIntensitySliderMarker" },
-    { value: 0, label: "1", className: "iblIntensitySliderMarker" },
-    { value: 2, label: "100", className: "iblIntensitySliderMarker" },
-    { value: 4, label: "10000", className: "iblIntensitySliderMarker" }
+    { value: -2, label: "0.01" },
+    { value: 0, label: "1" },
+    { value: 2, label: "100" },
+    { value: 4, label: "10000" }
 ];
 
 const EXPOSURE_TICKS = [
-    { value: -6, label: "64", className: "exposureSliderMarker" },
-    { value: 0, label: "1", className: "exposureSliderMarker" },
-    { value: 9.966, label: "0.001", className: "exposureSliderMarker" },
-    { value: 21, label: "0", className: "exposureSliderMarker" }
+    { value: -6, label: "64" },
+    { value: 0, label: "1" },
+    { value: 9.966, label: "0.001" },
+    { value: 21, label: "0" }
 ];
 
 const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 100.0) / 100.0);
 const formatExposure = (value) =>
     String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
 
-export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
+export function DisplayTab({ lighting, onLightingChange }) {
     const tonemaps = useViewerStore((state) => state.tonemaps);
     const environments = useViewerStore((state) => state.environments);
     const selectedEnvironment = useViewerStore((state) => state.selectedEnvironment);
@@ -39,19 +40,10 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
     }));
 
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced">Display</h2>
-
-            <Field label="Lighting" className="subtitle" grouped>
+        <Panel title="Display">
+            <Field label="Lighting" grouped>
                 <Switch
                     data-testid="switch-ibl"
-                    className="smallerLabel"
                     checked={ibl}
                     onChange={(checked) => {
                         uiEvents.iblChanged.emit(checked);
@@ -61,7 +53,6 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     Image Based{" "}
                 </Switch>
                 <Switch
-                    className="smallerLabel"
                     checked={punctualLights}
                     onChange={(checked) => {
                         uiEvents.punctualLightsChanged.emit(checked);
@@ -72,9 +63,9 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Switch>
             </Field>
 
-            <Field label="IBL Intensity" className="smallerLabel">
+            <Field label="IBL Intensity">
                 <Slider
-                    className="iblIntensitySlider"
+                    label="IBL Intensity"
                     value={iblIntensity}
                     min={-2}
                     max={5}
@@ -88,22 +79,23 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 />
             </Field>
 
-            <Field label="Exposure" className="subtitle" />
-            <Slider
-                className="exposureSlider"
-                value={exposure}
-                min={21}
-                max={-6}
-                step={0.1}
-                ticks={EXPOSURE_TICKS}
-                formatter={formatExposure}
-                onChange={(value) => {
-                    uiEvents.exposureChanged.emit(value);
-                    onLightingChange({ exposure: value });
-                }}
-            />
+            <Field label="Exposure">
+                <Slider
+                    label="Exposure"
+                    value={exposure}
+                    min={21}
+                    max={-6}
+                    step={0.1}
+                    ticks={EXPOSURE_TICKS}
+                    formatter={formatExposure}
+                    onChange={(value) => {
+                        uiEvents.exposureChanged.emit(value);
+                        onLightingChange({ exposure: value });
+                    }}
+                />
+            </Field>
 
-            <Field label="Tone Map" className="subtitle">
+            <Field label="Tone Map">
                 <Select
                     value={toneMap}
                     onChange={(value) => {
@@ -119,9 +111,8 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="Background" className="subtitle" grouped>
+            <Field label="Background" grouped>
                 <Switch
-                    className="smallerLabel"
                     checked={renderEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
@@ -132,7 +123,6 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                     Environment Map
                 </Switch>
                 <Switch
-                    className="smallerLabel"
                     checked={blurEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
@@ -142,10 +132,9 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 >
                     Blur
                 </Switch>
-                <Field label="Background Color" className="smallerLabel" />
-                <div className="control is-clearfix" id="clearColorPicker">
+                <label className="mt-4 flex items-center gap-3">
                     <input
-                        className="colorInput"
+                        className="color-swatch h-8 w-12 rounded-md"
                         type="color"
                         value={clearColor}
                         onChange={(event) => {
@@ -153,10 +142,11 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                             uiEvents.colorChanged.emit(event.target.value);
                         }}
                     />
-                </div>
+                    <span className="text-base font-light">Background Color</span>
+                </label>
             </Field>
 
-            <Field label="Environment Rotation" className="smallerLabel">
+            <Field label="Environment Rotation">
                 <Select
                     value={rotation}
                     onChange={(value) => {
@@ -172,10 +162,10 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="Image Based Lighting" className="subtitle" grouped>
-                <button className="button is-rounded">
+            <Field label="Image Based Lighting" grouped>
+                <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
                     <input
-                        className="file-input"
+                        className="sr-only"
                         type="file"
                         accept=".hdr"
                         onChange={(event) =>
@@ -184,10 +174,11 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                             })
                         }
                     />
-                    <i className="fas fa-plus" /> Add New HDR
-                </button>
+                    <Plus size={16} aria-hidden="true" />
+                    Add New HDR
+                </label>
 
-                <Field label="Active Environment" className="subtitle">
+                <Field label="Active Environment">
                     <Dropdown
                         label={environments[selectedEnvironment]?.title}
                         items={environmentItems}
@@ -200,7 +191,12 @@ export function DisplayTab({ onCollapse, lighting, onLightingChange }) {
                 </Field>
             </Field>
 
-            <div className="pb-6" />
-        </div>
+            <Field label="Capture Canvas">
+                <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
+                    <Download size={16} aria-hidden="true" />
+                    Download as .png
+                </Button>
+            </Field>
+        </Panel>
     );
 }

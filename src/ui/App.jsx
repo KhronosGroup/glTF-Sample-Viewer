@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import {
+    Atom,
+    Box,
+    Braces,
+    ChevronLeft,
+    ChevronRight,
+    CirclePlay,
+    FolderOpen,
+    Image,
+    ShieldCheck,
+    SlidersHorizontal
+} from "lucide-react";
 import { notify } from "../logic/notifications.js";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
+import { IconButton } from "./controls.jsx";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { LoadingOverlay, Toasts } from "./Notices.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
@@ -13,17 +26,17 @@ import { GraphsTab } from "./tabs/GraphsTab.jsx";
 import { PhysicsTab } from "./tabs/PhysicsTab.jsx";
 import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
 
-// Definition of mobile: https://bulma.io/documentation/start/responsiveness/
+// Definition of mobile, inherited from the stylesheet this UI replaced.
 const MOBILE_BREAKPOINT = 768;
 
 const TAB_META = [
-    { id: "models", label: "Models", icon: "Model" },
-    { id: "display", label: "Display", icon: "Display" },
-    { id: "validator", label: "Validator", icon: "Capture" },
-    { id: "animations", label: "Animations", icon: "Animation" },
-    { id: "physics", label: "Physics", icon: "Physics", needsPhysics: true },
-    { id: "credits", label: "Credits", icon: "XMP" },
-    { id: "advanced", label: "Advanced Controls", icon: "Developer" }
+    { id: "models", label: "Models", icon: Box },
+    { id: "display", label: "Display", icon: Image },
+    { id: "validator", label: "Validator", icon: ShieldCheck },
+    { id: "animations", label: "Animations", icon: CirclePlay },
+    { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
+    { id: "credits", label: "Credits", icon: Braces },
+    { id: "advanced", label: "Advanced Controls", icon: SlidersHorizontal }
 ];
 
 const INITIAL_LIGHTING = {
@@ -72,12 +85,12 @@ const INITIAL_PHYSICS_DEBUG = {
 function readInitialLayout() {
     const isMobile = document.documentElement.clientWidth <= MOBILE_BREAKPOINT;
     const noUi = new URLSearchParams(window.location.search).get("noUI") !== null;
-    return { isMobile, noUi, uiVisible: !isMobile && !noUi };
+    return { isMobile, noUi, navVisible: !isMobile && !noUi };
 }
 
 export function App() {
     const [layout] = useState(readInitialLayout);
-    const [uiVisible, setUiVisible] = useState(layout.uiVisible);
+    const [navVisible, setNavVisible] = useState(layout.navVisible);
     const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
@@ -99,7 +112,7 @@ export function App() {
         tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
     );
     const tabIds = tabMeta.map((tab) => tab.id);
-    const { activeTab, collapsed, select, collapse } = useTabState(tabIds);
+    const { activeTab, select } = useTabState(tabIds);
 
     useEffect(() => {
         const canvas = document.getElementById("canvas");
@@ -109,7 +122,7 @@ export function App() {
                 "The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " +
                     "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
                     "if you believe you are seeing this message in error.",
-                "is-danger"
+                "error"
             );
         }
     }, []);
@@ -157,33 +170,21 @@ export function App() {
             case "models":
                 return (
                     <ModelsTab
-                        onCollapse={collapse}
                         selectedVariant={selectedVariant}
                         onSelectVariant={setSelectedVariant}
                     />
                 );
             case "display":
-                return (
-                    <DisplayTab
-                        onCollapse={collapse}
-                        lighting={lighting}
-                        onLightingChange={updateLighting}
-                    />
-                );
+                return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
-                return <ValidatorTab onCollapse={collapse} />;
+                return <ValidatorTab />;
             case "animations":
-                return showGraphs ? (
-                    <GraphsTab onCollapse={collapse} />
-                ) : (
-                    <AnimationsTab onCollapse={collapse} />
-                );
+                return showGraphs ? <GraphsTab /> : <AnimationsTab />;
             case "credits":
-                return <CreditsTab onCollapse={collapse} />;
+                return <CreditsTab />;
             case "physics":
                 return (
                     <PhysicsTab
-                        onCollapse={collapse}
                         debug={physicsDebug}
                         onDebugChange={(partial) =>
                             setPhysicsDebug((current) => ({ ...current, ...partial }))
@@ -193,7 +194,6 @@ export function App() {
             case "advanced":
                 return (
                     <AdvancedTab
-                        onCollapse={collapse}
                         extensions={extensions}
                         onExtensionsChange={updateExtensions}
                         debugChannel={debugChannel}
@@ -210,44 +210,41 @@ export function App() {
         render: () => renderTab(tab.id),
         renderHeader:
             tab.id === "validator"
-                ? (expanded) => <ValidationCounter expanded={expanded} isMobile={layout.isMobile} />
+                ? () => <ValidationCounter isMobile={layout.isMobile} />
                 : undefined
     }));
+
+    const canToggleNav = !(layout.isMobile && activeTab !== null) && !layout.noUi;
 
     return (
         <>
             <Toasts />
             <LoadingOverlay active={isLoading} />
 
-            <div className="canvasUIMaximize">
-                {!(layout.isMobile && !collapsed) && !layout.noUi && (
-                    <img
-                        src={
-                            uiVisible ? "assets/ui/Icon_Expand.svg" : "assets/ui/Icon_Collapse.svg"
-                        }
-                        onClick={() => setUiVisible((visible) => !visible)}
-                        className="maximizeCanvasIcon"
-                        width="30px"
-                    />
-                )}
-            </div>
-
-            <div className="column" style={uiVisible ? undefined : { display: "none" }}>
-                <div
-                    className={showDropDownOverlay ? "" : "is-hidden"}
-                    id="dropZone"
-                    style={{ pointerEvents: "none" }}
+            {canToggleNav && (
+                <IconButton
+                    label={navVisible ? "Hide the controls" : "Show the controls"}
+                    onClick={() => setNavVisible((visible) => !visible)}
+                    className="bg-rail/80 hover:bg-rail fixed top-4 right-4 z-20 p-2 backdrop-blur-sm"
                 >
-                    <div className="is-overlay is-dropAreaCard is-flex" style={{ zIndex: 999 }}>
-                        <div className="box has-text-centered">
-                            <span className="icon is-large">
-                                <i className="fas fa-folder-open fa-4x" />
-                            </span>
-                            <p className="is-size-2 has-text-weight-light">
-                                Drag and drop files here
-                            </p>
-                            <p className="is-size-4">Supported files: glTF, glb &amp; hdr</p>
-                        </div>
+                    {navVisible ? (
+                        <ChevronRight size={22} aria-hidden="true" />
+                    ) : (
+                        <ChevronLeft size={22} aria-hidden="true" />
+                    )}
+                </IconButton>
+            )}
+
+            <div className="h-full" style={navVisible ? undefined : { display: "none" }}>
+                <div
+                    className={`pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
+                        showDropDownOverlay ? "opacity-100" : "opacity-0"
+                    }`}
+                >
+                    <div className="border-accent text-ink flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed px-16 py-12 text-center">
+                        <FolderOpen size={72} strokeWidth={1.25} aria-hidden="true" />
+                        <p className="text-3xl font-light">Drag and drop files here</p>
+                        <p className="text-ink/70 text-lg">Supported files: glTF, glb &amp; hdr</p>
                     </div>
                 </div>
 
@@ -255,7 +252,6 @@ export function App() {
                     tabs={tabs}
                     activeTab={activeTab}
                     onSelect={select}
-                    collapsed={collapsed}
                     isMobile={layout.isMobile}
                 />
             </div>

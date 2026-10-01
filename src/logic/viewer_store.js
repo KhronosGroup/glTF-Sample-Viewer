@@ -63,5 +63,3 @@ export const viewerStore = createStore(() => ({ ...initialState }));
 export const getViewerState = () => viewerStore.getState();
 
 export const setViewerState = (partial) => viewerStore.setState(partial);
-
-export const viewerStateKeys = Object.keys(initialState);
