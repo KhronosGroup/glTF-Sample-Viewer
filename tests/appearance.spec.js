@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { openTab, waitForLoadingToSettle } from "./viewer.js";
+import { openTab, ui, waitForLoadingToSettle } from "./viewer.js";
 import { expect } from "@playwright/test";
 
 // The canvas baselines say nothing about the panel, so a styling change can pass
@@ -28,6 +28,10 @@ test.describe("appearance", () => {
     }
 
     test("collapsed tab rail", async ({ page }) => {
+        // Models opens by default; clicking it again collapses the panel.
+        await page.locator(ui.tab("models")).click();
+        await page.waitForTimeout(600);
+
         await expect(page.locator("#app")).toHaveScreenshot("panel-collapsed.png", {
             timeout: 60_000,
             maxDiffPixelRatio: 0.01
