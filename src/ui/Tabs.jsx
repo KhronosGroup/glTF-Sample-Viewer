@@ -29,7 +29,7 @@ export function Tabs({ tabs, activeTab, onSelect, isMobile }) {
                 <div
                     className={`transition-transform duration-200 ease-out ${
                         isMobile ? "" : "pt-[8dvh]"
-                    } ${collapsed ? "-translate-x-1" : "translate-x-0"}`}
+                    }`}
                 >
                     {tabs.map((tab) => {
                         const expanded = tab.id === activeTab;
