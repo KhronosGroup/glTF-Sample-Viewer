@@ -68,7 +68,7 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
                     className="mt-auto mb-4 flex shrink-0 justify-center pt-4 opacity-70 transition-opacity hover:opacity-100"
                     aria-label="View this project on GitHub"
                 >
-                    <img src="assets/ui/GitHub-Mark-Light-32px.png" className="size-6" alt="" />
+                    <img src="assets/ui/GitHub_Invertocat_White_Clearspace.svg" className="size-10" alt="" />
                 </a>
             </nav>
         </div>
