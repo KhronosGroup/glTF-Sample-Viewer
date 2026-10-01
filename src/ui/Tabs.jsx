@@ -24,12 +24,10 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
                 aria-orientation="vertical"
                 role="tablist"
             >
-                {/* The rail itself stays flush with the screen edge; only its
-                    contents slide when the panel opens. */}
                 <div
                     className={`transition-transform duration-200 ease-out ${
                         isMobile ? "" : "pt-[8dvh]"
-                    } ${collapsed ? "translate-x-0" : "-translate-x-1"}`}
+                    } ${collapsed ? "-translate-x-1" : "translate-x-0"}`}
                 >
                     {tabs.map((tab) => {
                         const expanded = !collapsed && tab.id === activeTab;
