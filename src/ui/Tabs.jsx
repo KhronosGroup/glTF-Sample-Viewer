@@ -75,7 +75,7 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
 
 export function useTabState(tabIds) {
     const [selectedTab, setSelectedTab] = useState(tabIds[0]);
-    const [collapsed, setCollapsed] = useState(true);
+    const [collapsed, setCollapsed] = useState(false);
     // Physics and graphs tabs come and go with the asset, so the selection is
     // resolved during render rather than corrected afterwards in an effect.
     const activeTab = tabIds.includes(selectedTab) ? selectedTab : tabIds[0];

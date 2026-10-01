@@ -59,11 +59,14 @@ export function openPanel(page) {
 }
 
 /**
- * Tab content starts collapsed, so a panel has to be opened before any of its
- * controls can be interacted with.
+ * Clicking a tab toggles it, so opening one that is already open would collapse
+ * it. `aria-selected` says whether the panel is showing.
  */
 export async function openTab(page, name) {
-    await page.locator(ui.tab(name)).click();
+    const tab = page.locator(ui.tab(name));
+    if ((await tab.getAttribute("aria-selected")) !== "true") {
+        await tab.click();
+    }
 }
 
 export async function openModelsTab(page) {
