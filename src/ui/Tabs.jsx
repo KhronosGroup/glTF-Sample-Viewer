@@ -5,7 +5,9 @@ import { useState } from "react";
  *
  * Clicking the active tab collapses the panel; clicking another expands it.
  */
-export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
+export function Tabs({ tabs, activeTab, onSelect, isMobile }) {
+    const collapsed = activeTab === null;
+
     return (
         <div id="tabsContainer" className="flex h-dvh justify-end">
             {/* Width changes are deliberately instant: animating them would resize
@@ -30,7 +32,7 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
                     } ${collapsed ? "-translate-x-1" : "translate-x-0"}`}
                 >
                     {tabs.map((tab) => {
-                        const expanded = !collapsed && tab.id === activeTab;
+                        const expanded = tab.id === activeTab;
                         const Icon = tab.icon;
                         return (
                             <button
@@ -66,7 +68,11 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
                     className="mt-auto mb-4 flex shrink-0 justify-center pt-4 opacity-70 transition-opacity hover:opacity-100"
                     aria-label="View this project on GitHub"
                 >
-                    <img src="assets/ui/GitHub_Invertocat_White_Clearspace.svg" className="size-10" alt="" />
+                    <img
+                        src="assets/ui/GitHub_Invertocat_White_Clearspace.svg"
+                        className="size-10"
+                        alt=""
+                    />
                 </a>
             </nav>
         </div>
@@ -74,16 +80,15 @@ export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
 }
 
 export function useTabState(tabIds) {
+    // null collapses the panel and leaves only the rail.
     const [selectedTab, setSelectedTab] = useState(tabIds[0]);
-    const [collapsed, setCollapsed] = useState(false);
-    // Physics and graphs tabs come and go with the asset, so the selection is
-    // resolved during render rather than corrected afterwards in an effect.
-    const activeTab = tabIds.includes(selectedTab) ? selectedTab : tabIds[0];
 
-    const select = (id) => {
-        setCollapsed(id === activeTab ? (wasCollapsed) => !wasCollapsed : false);
-        setSelectedTab(id);
-    };
+    // Physics and graphs tabs come and go with the asset, so a selection that
+    // disappeared is resolved during render rather than in an effect.
+    const activeTab =
+        selectedTab !== null && !tabIds.includes(selectedTab) ? tabIds[0] : selectedTab;
 
-    return { activeTab, collapsed, select };
+    const select = (id) => setSelectedTab(id === activeTab ? null : id);
+
+    return { activeTab, select };
 }

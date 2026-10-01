@@ -85,12 +85,12 @@ const INITIAL_PHYSICS_DEBUG = {
 function readInitialLayout() {
     const isMobile = document.documentElement.clientWidth <= MOBILE_BREAKPOINT;
     const noUi = new URLSearchParams(window.location.search).get("noUI") !== null;
-    return { isMobile, noUi, uiVisible: !isMobile && !noUi };
+    return { isMobile, noUi, navVisible: !isMobile && !noUi };
 }
 
 export function App() {
     const [layout] = useState(readInitialLayout);
-    const [uiVisible, setUiVisible] = useState(layout.uiVisible);
+    const [navVisible, setNavVisible] = useState(layout.navVisible);
     const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
@@ -112,7 +112,7 @@ export function App() {
         tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
     );
     const tabIds = tabMeta.map((tab) => tab.id);
-    const { activeTab, collapsed, select } = useTabState(tabIds);
+    const { activeTab, select } = useTabState(tabIds);
 
     useEffect(() => {
         const canvas = document.getElementById("canvas");
@@ -214,20 +214,20 @@ export function App() {
                 : undefined
     }));
 
-    const canToggleUi = !(layout.isMobile && !collapsed) && !layout.noUi;
+    const canToggleNav = !(layout.isMobile && activeTab !== null) && !layout.noUi;
 
     return (
         <>
             <Toasts />
             <LoadingOverlay active={isLoading} />
 
-            {canToggleUi && (
+            {canToggleNav && (
                 <IconButton
-                    label={uiVisible ? "Hide the controls" : "Show the controls"}
-                    onClick={() => setUiVisible((visible) => !visible)}
+                    label={navVisible ? "Hide the controls" : "Show the controls"}
+                    onClick={() => setNavVisible((visible) => !visible)}
                     className="bg-rail/80 hover:bg-rail fixed top-4 right-4 z-20 p-2 backdrop-blur-sm"
                 >
-                    {uiVisible ? (
+                    {navVisible ? (
                         <ChevronRight size={22} aria-hidden="true" />
                     ) : (
                         <ChevronLeft size={22} aria-hidden="true" />
@@ -235,7 +235,7 @@ export function App() {
                 </IconButton>
             )}
 
-            <div className="h-full" style={uiVisible ? undefined : { display: "none" }}>
+            <div className="h-full" style={navVisible ? undefined : { display: "none" }}>
                 <div
                     className={`pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
                         showDropDownOverlay ? "opacity-100" : "opacity-0"
@@ -252,7 +252,6 @@ export function App() {
                     tabs={tabs}
                     activeTab={activeTab}
                     onSelect={select}
-                    collapsed={collapsed}
                     isMobile={layout.isMobile}
                 />
             </div>
