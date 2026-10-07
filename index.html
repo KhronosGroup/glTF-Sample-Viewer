@@ -1,56 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>glTF Sample Viewer</title>
 
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>glTF Sample Viewer</title>
+        <meta name="author" content="Khronos Group Inc." />
+        <meta name="description" content="The official glTF sample viewer" />
+        <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <meta name="author" content="Khronos Group Inc.">
-    <meta name="description" content="The official glTF sample viewer">
-    <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="assets/images/gltf.png" />
 
-    <link rel="icon" href="assets/images/gltf.png">
+        <!-- load fonts -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
 
-    <!-- buefy styles -->
-    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+        <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+        <script src="libs/libktx.js"></script>
+    </head>
 
-    <!-- load fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-
-    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
-    <script src="libs/libktx.js"></script>
-</head>
-<script>
-    function getUrlVars() {
-        var vars = {};
-        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-            vars[key] = value;
-        });
-        return vars;
-    }
-
-    function getUrlParam(parameter, defaultvalue) {
-        var urlparameter = defaultvalue;
-        if (window.location.href.indexOf(parameter) > -1) {
-            urlparameter = getUrlVars()[parameter];
-        }
-        return urlparameter;
-    }
-</script>
-
-
-<body class="" style="touch-action: none">  <!--is-flex -->
-
-    <div class="columns is-mobile">
-        <div class="column" id="canvasUI"></div>
+    <body class="" style="touch-action: none">
+        <div id="canvasUI"></div>
         <div id="app"></div>
-    </div>
-</body>
+    </body>
 
-<script type="module" src="/src/index.jsx"></script>
-
+    <script type="module" src="/src/index.jsx"></script>
 </html>

@@ -1,96 +1,94 @@
 import { useState } from "react";
 
 /**
- * Vertical tab bar, reproducing the DOM Buefy's b-tabs emitted so the existing
- * stylesheet keeps applying.
+ * Vertical tab rail down the right-hand edge, with the panel to its left.
  *
  * Clicking the active tab collapses the panel; clicking another expands it.
- * Buefy could not express that, so the Vue version reached into the generated
- * markup to add and remove `is-active` by hand. Here it is just state.
  */
-export function Tabs({ tabs, activeTab, onSelect, collapsed, isMobile }) {
+export function Tabs({ tabs, activeTab, onSelect, isMobile }) {
+    const collapsed = activeTab === null;
+
     return (
-        <div
-            id="tabsContainer"
-            className={`b-tabs is-vertical is-right is-flex-wrap-nowrap ${
-                collapsed ? "hideTabs " : ""
-            }tabsContainer`}
-        >
-            <nav className="tabs is-toggle" style={isMobile ? undefined : { width: "100px" }}>
-                <ul aria-orientation="vertical" role="tablist">
-                    {tabs.map((tab) => {
-                        const expanded = !collapsed && tab.id === activeTab;
-                        return (
-                            <li
-                                key={tab.id}
-                                className={expanded ? "is-active" : ""}
-                                role="tab"
-                                aria-selected={expanded}
-                                style={
-                                    isMobile && tab.id === tabs[0].id ? { marginTop: 0 } : undefined
-                                }
-                            >
-                                <a tabIndex={tab.id === activeTab ? 0 : -1}>
-                                    <div
-                                        data-testid={`tab-${tab.id}`}
-                                        onClick={() => onSelect(tab.id)}
-                                        style={expanded ? { height: "100%" } : undefined}
-                                    >
-                                        {tab.renderHeader ? (
-                                            tab.renderHeader(expanded)
-                                        ) : (
-                                            <img
-                                                src={`assets/ui/${tab.icon} ${
-                                                    expanded ? "50X50" : "30X30"
-                                                }.svg`}
-                                                width={expanded ? "50px" : "30px"}
-                                                style={expanded ? { height: "100%" } : undefined}
-                                            />
-                                        )}
-                                        {!isMobile && !expanded && <span>{tab.label}</span>}
-                                    </div>
-                                </a>
-                            </li>
-                        );
-                    })}
-                    <a href="https://github.com/KhronosGroup/glTF-Sample-Viewer">
-                        <img
-                            src="assets/ui/GitHub-Mark-Light-32px.png"
-                            style={{ width: "22px", height: "22px" }}
-                        />
-                    </a>
-                </ul>
-            </nav>
-            <section className="tab-content">
+        <div id="tabsContainer" className="flex h-dvh justify-end">
+            {/* Width changes are deliberately instant: animating them would resize
+                the canvas on every frame of the transition. The panel and rail
+                widths add up to a constant, so the canvas keeps its size. */}
+            <section
+                className={collapsed ? "hidden" : "w-72 shrink-0 overflow-x-hidden overflow-y-auto"}
+            >
                 {tabs.map((tab) =>
-                    tab.id === activeTab ? (
-                        <div
-                            key={tab.id}
-                            className="tab-item tabItemScrollable"
-                            role="tabpanel"
-                            tabIndex={0}
-                        >
-                            {tab.render()}
-                        </div>
-                    ) : null
+                    tab.id === activeTab ? <div key={tab.id}>{tab.render()}</div> : null
                 )}
             </section>
+
+            <nav
+                className="bg-rail flex w-28 shrink-0 flex-col overflow-x-hidden overflow-y-auto"
+                aria-orientation="vertical"
+                role="tablist"
+            >
+                <div
+                    className={`transition-transform duration-200 ease-out ${
+                        isMobile ? "" : "pt-[8dvh]"
+                    }`}
+                >
+                    {tabs.map((tab) => {
+                        const expanded = tab.id === activeTab;
+                        const Icon = tab.icon;
+                        return (
+                            <button
+                                type="button"
+                                key={tab.id}
+                                role="tab"
+                                aria-selected={expanded}
+                                data-testid={`tab-${tab.id}`}
+                                onClick={() => onSelect(tab.id)}
+                                className={`focus-visible:outline-accent flex w-full flex-col items-center justify-center gap-2 border-r-8 px-3 py-5 text-center transition-colors focus-visible:-outline-offset-2 focus-visible:outline ${
+                                    expanded
+                                        ? "border-accent bg-rail-active"
+                                        : "hover:bg-rail-hover border-transparent"
+                                }`}
+                            >
+                                {tab.renderHeader ? (
+                                    tab.renderHeader(expanded)
+                                ) : (
+                                    <Icon size={26} strokeWidth={1.75} aria-hidden="true" />
+                                )}
+                                {!isMobile && (
+                                    <span className="text-sm leading-tight">{tab.label}</span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <a
+                    href="https://github.com/KhronosGroup/glTF-Sample-Viewer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-auto mb-4 flex shrink-0 justify-center pt-4 opacity-70 transition-opacity hover:opacity-100"
+                    aria-label="View this project on GitHub"
+                >
+                    <img
+                        src="assets/ui/GitHub_Invertocat_White_Clearspace.svg"
+                        className="size-10"
+                        alt=""
+                    />
+                </a>
+            </nav>
         </div>
     );
 }
 
 export function useTabState(tabIds) {
+    // null collapses the panel and leaves only the rail.
     const [selectedTab, setSelectedTab] = useState(tabIds[0]);
-    const [collapsed, setCollapsed] = useState(true);
 
-    // Physics and graphs tabs come and go with the asset, so the selection is
-    // resolved during render rather than corrected afterwards in an effect.
-    const activeTab = tabIds.includes(selectedTab) ? selectedTab : tabIds[0];
+    // Physics and graphs tabs come and go with the asset, so a selection that
+    // disappeared is resolved during render rather than in an effect.
+    const activeTab =
+        selectedTab !== null && !tabIds.includes(selectedTab) ? tabIds[0] : selectedTab;
 
-    const select = (id) => {
-        setCollapsed(id === activeTab ? (wasCollapsed) => !wasCollapsed : false);
-        setSelectedTab(id);
-    };
+    const select = (id) => setSelectedTab(id === activeTab ? null : id);
 
-    return { activeTab, collapsed, select, collapse: () => setCollapsed(true) };
+    return { activeTab, select };
 }

@@ -51,19 +51,22 @@ export async function waitForLoadingToSettle(page) {
 }
 
 /**
- * The Vue UI keeps inactive panels in the DOM, so assertions have to be scoped
- * to the open one or they can match hidden content from another tab.
+ * Assertions are scoped to the open panel so they cannot match content that
+ * another tab happens to leave in the DOM.
  */
 export function openPanel(page) {
-    return page.locator(".tabContent:visible").first();
+    return page.locator("[data-testid='panel']:visible").first();
 }
 
 /**
- * Tab content starts collapsed, so a panel has to be opened before any of its
- * controls can be interacted with.
+ * Clicking a tab toggles it, so opening one that is already open would collapse
+ * it. `aria-selected` says whether the panel is showing.
  */
 export async function openTab(page, name) {
-    await page.locator(ui.tab(name)).click();
+    const tab = page.locator(ui.tab(name));
+    if ((await tab.getAttribute("aria-selected")) !== "true") {
+        await tab.click();
+    }
 }
 
 export async function openModelsTab(page) {

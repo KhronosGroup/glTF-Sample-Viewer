@@ -45,26 +45,14 @@ function NumberCell({ className, value, onChange }) {
 export function CustomEventInput({ name, type, value, onChange }) {
     if (type === "bool") {
         return (
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between"
-                }}
-            >
-                <label className="smallerLabel" style={{ marginBottom: 0 }}>
-                    {name}
-                </label>
+            <div className="flex items-center justify-between">
+                <label className="text-sm">{name}</label>
                 <Switch checked={Boolean(value)} onChange={onChange} />
             </div>
         );
     }
 
-    const label = (
-        <label className="smallerLabel" style={{ display: "block", marginBottom: "0.5em" }}>
-            {name}
-        </label>
-    );
+    const label = <label className="mb-2 block text-sm">{name}</label>;
 
     if (type === "float" || type === "int") {
         return (
@@ -72,7 +60,7 @@ export function CustomEventInput({ name, type, value, onChange }) {
                 {label}
                 <Field>
                     <Input
-                        className="longNumberInput"
+                        className="w-28"
                         type={type === "float" ? "number" : "text"}
                         step={type === "float" ? "any" : undefined}
                         pattern={type === "int" ? "[\\-]?[0-9]*" : undefined}
@@ -93,11 +81,11 @@ export function CustomEventInput({ name, type, value, onChange }) {
         return (
             <div>
                 {label}
-                <div style={{ display: "flex", gap: "0.5em" }}>
+                <div className="flex gap-2">
                     {value.map((item, index) => (
                         <div key={index}>
                             <NumberCell
-                                className="vectorInput"
+                                className="w-16"
                                 value={item}
                                 onChange={(next) => setAt(index, next)}
                             />
@@ -114,24 +102,17 @@ export function CustomEventInput({ name, type, value, onChange }) {
             <div>
                 {label}
                 <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: `repeat(${matrixSize}, 1fr)`,
-                        gap: "0.3em",
-                        width: "max-content"
-                    }}
+                    className="grid w-max gap-1"
+                    style={{ gridTemplateColumns: `repeat(${matrixSize}, 1fr)` }}
                 >
                     {Array.from({ length: matrixSize }, (_, column) => (
-                        <div
-                            key={column}
-                            style={{ display: "flex", flexDirection: "column", gap: "0.3em" }}
-                        >
+                        <div key={column} className="flex flex-col gap-1">
                             {Array.from({ length: matrixSize }, (_, row) => {
                                 const index = column * matrixSize + row;
                                 return (
                                     <div key={row}>
                                         <NumberCell
-                                            className="matrixInput"
+                                            className="w-16"
                                             value={value[index]}
                                             onChange={(next) => setAt(index, next)}
                                         />

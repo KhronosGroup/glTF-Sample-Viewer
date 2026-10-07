@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * Reproduces Buefy's b-slider markup and drag behaviour.
- *
  * `min` may be greater than `max` (the exposure slider is inverted), so the
  * ratio is derived from the signed span rather than by sorting the bounds.
  */
@@ -26,6 +24,7 @@ export function Slider({
     step = 1,
     onChange,
     className,
+    label,
     formatter = String,
     ticks = []
 }) {
@@ -74,52 +73,51 @@ export function Slider({
     const ratio = ratioOf(value, min, max);
 
     return (
-        <div className={["b-slider is-primary is-rounded", className].filter(Boolean).join(" ")}>
+        <div className={["mx-2 mt-4 mb-10", className].filter(Boolean).join(" ")}>
             <div
-                className="b-slider-track"
                 ref={trackRef}
+                className="bg-track relative h-1.5 cursor-pointer rounded-full"
                 onPointerDown={(event) => {
                     onChange(valueFromClientX(event.clientX));
                     setDragging(true);
                 }}
             >
-                <div className="b-slider-fill" style={{ width: percent(ratio), left: "0%" }} />
+                <div
+                    className="bg-accent absolute h-full rounded-full"
+                    style={{ width: percent(ratio) }}
+                />
+
                 {ticks.map((tick) => (
-                    <div
+                    <span
                         key={tick.value}
-                        className={[
-                            "b-slider-tick",
-                            tick.value === min || tick.value === max ? "is-tick-hidden" : "",
-                            tick.className
-                        ]
-                            .filter(Boolean)
-                            .join(" ")}
+                        className="absolute top-3 -translate-x-1/2 text-xs whitespace-nowrap"
                         style={{ left: percent(ratioOf(tick.value, min, max)) }}
                     >
-                        <span className="b-slider-tick-label">{tick.label}</span>
-                    </div>
+                        {tick.label}
+                    </span>
                 ))}
-                <div className="b-slider-thumb-wrapper" style={{ left: percent(ratio) }}>
-                    <div className="b-tooltip is-primary is-top is-medium">
-                        <div
-                            className="tooltip-content"
-                            style={dragging ? undefined : { display: "none" }}
-                        >
+
+                <div
+                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
+                    style={{ left: percent(ratio) }}
+                >
+                    {dragging && (
+                        <div className="bg-accent text-ink-dim absolute bottom-6 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs whitespace-nowrap">
                             {formatter(value)}
                         </div>
-                        <div className="tooltip-trigger">
-                            <div
-                                className="b-slider-thumb"
-                                tabIndex={0}
-                                role="slider"
-                                aria-valuemin={min}
-                                aria-valuemax={max}
-                                aria-valuenow={value}
-                                aria-orientation="horizontal"
-                                onKeyDown={onKeyDown}
-                            />
-                        </div>
-                    </div>
+                    )}
+                    <div
+                        className="border-surface h-4 w-4 rounded-full border-2 bg-white"
+                        tabIndex={0}
+                        role="slider"
+                        aria-valuemin={min}
+                        aria-valuemax={max}
+                        aria-valuenow={value}
+                        aria-orientation="horizontal"
+                        aria-label={label}
+                        aria-valuetext={formatter(value)}
+                        onKeyDown={onKeyDown}
+                    />
                 </div>
             </div>
         </div>

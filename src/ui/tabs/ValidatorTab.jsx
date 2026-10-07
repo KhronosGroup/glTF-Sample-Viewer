@@ -1,5 +1,7 @@
+import { Copy, Download, ShieldCheck } from "lucide-react";
 import { notify } from "../../logic/notifications.js";
 import { useViewerStore } from "../store.js";
+import { Button, Panel } from "../controls.jsx";
 
 function downloadJson(filename, json) {
     const text = JSON.stringify(json, undefined, 4);
@@ -15,14 +17,14 @@ function downloadJson(filename, json) {
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
-        notify("Copied to clipboard", "is-success");
+        notify("Copied to clipboard", "success");
         // eslint-disable-next-line no-unused-vars
     } catch (error) {
-        notify("Error copying to clipboard.", "is-danger");
+        notify("Error copying to clipboard.", "error");
     }
 }
 
-export function ValidatorTab({ onCollapse }) {
+export function ValidatorTab() {
     const report = useViewerStore((state) => state.validationReport);
     const description = useViewerStore((state) => state.validationReportDescription);
 
@@ -30,62 +32,33 @@ export function ValidatorTab({ onCollapse }) {
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
 
     return (
-        <div
-            className="tabContent"
-            style={{ display: "flex", flexDirection: "column", height: "inherit" }}
-        >
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced">glTF Validator</h2>
-
+        <Panel title="glTF Validator">
             {!failed && (
-                <div className="modelCredit">
+                <div className="my-6 space-y-1 break-words">
                     <p>Number of errors: {report?.issues?.numErrors ?? 0}</p>
                     <p>Number of warnings: {report?.issues?.numWarnings ?? 0}</p>
                     <p>Number of infos: {report?.issues?.numInfos ?? 0}</p>
                 </div>
             )}
 
-            {description?.message && (
-                <div>
-                    <p style={{ marginTop: "10px", marginBottom: "10px", fontSize: "smaller" }}>
-                        {description.message}
-                    </p>
-                </div>
-            )}
+            {description?.message && <p className="my-2.5 text-sm">{description.message}</p>}
 
-            {failed && (
-                <div>
-                    <p style={{ marginTop: "10px", marginBottom: "10px", color: "red" }}>
-                        {report.error}
-                    </p>
-                </div>
-            )}
+            {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
 
             {!failed && (
-                <>
-                    <button
-                        className="button is-rounded"
-                        style={{ width: "fit-content", flexShrink: 0, marginBottom: "12px" }}
-                        onClick={() => copyToClipboard(JSON.stringify(report, undefined, 4))}
-                    >
+                <div className="flex shrink-0 flex-col items-start gap-3">
+                    <Button onClick={() => copyToClipboard(JSON.stringify(report, undefined, 4))}>
+                        <Copy size={16} aria-hidden="true" />
                         Copy
-                    </button>
-                    <button
-                        className="button is-rounded"
-                        style={{ width: "fit-content", flexShrink: 0 }}
-                        onClick={() => downloadJson(`${reportName}.report.json`, report)}
-                    >
+                    </Button>
+                    <Button onClick={() => downloadJson(`${reportName}.report.json`, report)}>
+                        <Download size={16} aria-hidden="true" />
                         Download
-                    </button>
-                </>
+                    </Button>
+                </div>
             )}
 
-            <span style={{ marginTop: "5px" }}>
+            <span className="text-ink/70 mt-6 text-sm">
                 Powered by{" "}
                 <a
                     href="https://github.com/KhronosGroup/glTF-Validator"
@@ -95,7 +68,7 @@ export function ValidatorTab({ onCollapse }) {
                     glTF-Validator
                 </a>
             </span>
-        </div>
+        </Panel>
     );
 }
 
@@ -103,27 +76,27 @@ export function ValidatorTab({ onCollapse }) {
  * Badge shown on the Validator tab header. The Vue version built this as an
  * HTML string and injected it with v-html.
  */
-export function ValidationCounter({ expanded, isMobile }) {
+export function ValidationCounter({ isMobile }) {
     const report = useViewerStore((state) => state.validationReport);
     const description = useViewerStore((state) => state.validationReportDescription);
     const issues = report?.issues;
 
     let info = "";
-    let color = "white";
+    let tone = "bg-white";
 
     if (report?.error) {
         info = "X";
-        color = "red";
+        tone = "bg-red-500";
     } else if (issues?.numErrors > 0) {
         info = `${issues.numErrors}`;
-        color = "red";
+        tone = "bg-red-500";
     } else if (issues?.numWarnings > 0) {
         if (issues.numWarnings === description?.numIgnoredWarnings) {
             info = "i";
-            color = "lightBlue";
+            tone = "bg-sky-300";
         } else {
             info = `${issues.numWarnings}`;
-            color = "yellow";
+            tone = "bg-amber-400";
         }
     } else if (issues?.numInfos > 0) {
         info = `${issues.numInfos}`;
@@ -134,36 +107,16 @@ export function ValidationCounter({ expanded, isMobile }) {
     }
 
     return (
-        <div style={{ maxWidth: "fit-content", marginLeft: "auto", marginRight: "auto" }}>
-            <div style={{ position: "relative", width: "50px", height: "100%" }}>
-                <img
-                    src={`assets/ui/Capture ${expanded ? "50X50" : "30X30"}.svg`}
-                    width={expanded ? "50px" : "30px"}
-                    height={expanded ? "100%" : undefined}
-                />
-                {info !== "" && (
-                    <div
-                        style={{
-                            display: "flex",
-                            color: "black",
-                            position: "absolute",
-                            right: isMobile ? "-3px" : "-18px",
-                            top: "-18px",
-                            fontSize: "80%",
-                            fontWeight: "bold",
-                            backgroundColor: color,
-                            borderRadius: "50%",
-                            width: "fit-content",
-                            minWidth: "2rem",
-                            alignItems: "center",
-                            aspectRatio: "1/1",
-                            justifyContent: "center"
-                        }}
-                    >
-                        {info}
-                    </div>
-                )}
-            </div>
-        </div>
+        <span className="relative inline-flex">
+            <ShieldCheck size={26} strokeWidth={1.75} aria-hidden="true" />
+            {info !== "" && (
+                <span
+                    className={`absolute -top-2 flex aspect-square min-w-6 items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
+                    style={{ right: isMobile ? "-6px" : "-16px" }}
+                >
+                    {info}
+                </span>
+            )}
+        </span>
     );
 }
