@@ -85,3 +85,21 @@ export async function expectCanvasToRender(page, name) {
         maxDiffPixelRatio: 0.02
     });
 }
+
+/**
+ * Loads an asset from public/test-assets/ through the `model` URL parameter,
+ * which is the only way to point the viewer at an arbitrary file without
+ * driving a file picker.
+ */
+export async function loadTestAsset(page, name) {
+    await page.goto(`/?noUI=1&model=test-assets/${name}`);
+    await waitForLoadingToSettle(page);
+}
+
+/**
+ * Returns whatever is currently drawn on the canvas, for comparing two assets
+ * against each other rather than against a recorded baseline.
+ */
+export async function canvasPixels(page) {
+    return page.locator(ui.canvas).screenshot();
+}

@@ -197,7 +197,9 @@ const ASSETS = {
         return toGltfBuffer(json);
     },
 
-    // A single set at a non-zero index, the simplest form of the relaxation.
+    // A single set at a non-zero index, the simplest form of the relaxation. Pairs with
+    // texcoord_0_baseline: the two carry identical UVs, so they must render identically
+    // and no hand-recorded baseline is needed to tell whether the remap is correct.
     "texcoord_5_only.gltf": () => {
         const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([5]), {
             version: "2.1"
@@ -208,6 +210,20 @@ const ASSETS = {
         json.samplers = [{}];
         json.textures = [{ source: 0, sampler: 0 }];
         json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 5 };
+        return toGltfBuffer(json);
+    },
+
+    // The glTF 2.0 spelling of texcoord_5_only, as the equality partner.
+    "texcoord_0_baseline.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0]), {
+            version: "2.0"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 0 };
         return toGltfBuffer(json);
     },
 

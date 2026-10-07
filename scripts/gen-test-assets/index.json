@@ -55,6 +55,10 @@
         "bytes": 2969,
         "sha256": "c6a313bf35916fa5"
     },
+    "texcoord_0_baseline.gltf": {
+        "bytes": 2969,
+        "sha256": "2dae1188b18d7ade"
+    },
     "texcoord_missing_set.gltf": {
         "bytes": 2969,
         "sha256": "681c44a84bfd464f"
