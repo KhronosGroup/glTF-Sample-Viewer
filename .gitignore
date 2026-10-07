@@ -8,6 +8,10 @@ node_modules
 public/libs/
 public/assets/images/lut_*.png
 
+# Synthetic glTF 2.1 test assets, rebuilt by `npm run gen:test-assets`.
+# scripts/gen-test-assets/index.json records their sizes and hashes.
+public/test-assets/
+
 npm-debug.log
 debug.log
 

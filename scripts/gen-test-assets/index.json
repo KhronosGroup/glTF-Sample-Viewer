@@ -1,0 +1,38 @@
+{
+    "glb2_baseline.glb": {
+        "bytes": 1024,
+        "sha256": "c25cad38db7fdfc8"
+    },
+    "glb3_single_bin.glb": {
+        "bytes": 1064,
+        "sha256": "b0b875faefed9fb0"
+    },
+    "glb3_implicit.glb": {
+        "bytes": 1048,
+        "sha256": "f2a9697972fc5c61"
+    },
+    "glb3_multi_bin.glb": {
+        "bytes": 1184,
+        "sha256": "a11c9dcec4b0937f"
+    },
+    "glb3_chunk_before_json.glb": {
+        "bytes": 1096,
+        "sha256": "6ee44e04997c04d3"
+    },
+    "glb3_unknown_chunk_type.glb": {
+        "bytes": 1096,
+        "sha256": "4c5f32b338521197"
+    },
+    "glb3_unknown_encoding.glb": {
+        "bytes": 1064,
+        "sha256": "006a6078142fd7a7"
+    },
+    "glb3_unknown_encoding_json.glb": {
+        "bytes": 1064,
+        "sha256": "7585cd6303c02796"
+    },
+    "glb3_gap_padding.glb": {
+        "bytes": 1064,
+        "sha256": "b0b875faefed9fb0"
+    }
+}
