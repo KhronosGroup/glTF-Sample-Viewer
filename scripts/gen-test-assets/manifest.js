@@ -4,7 +4,7 @@ import {
     binChunk
 } from "../../glTF-Sample-Renderer/tests/helpers/glb_writer.js";
 import { buildMeshDocument } from "./document.js";
-import { quad } from "./primitives.js";
+import { quad, quadWithTexCoordSets } from "./primitives.js";
 
 // Declarative list of generated test assets. Each entry returns an ArrayBuffer.
 //
@@ -177,6 +177,52 @@ const ASSETS = {
             "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
         json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
         json.asset.thumbnail = 0;
+        return toGltfBuffer(json);
+    },
+
+    // glTF 2.1 texture coordinate sets need not start at 0 or be consecutive. Base
+    // colour uses TEXCOORD_1 and occlusion uses TEXCOORD_3, so a renderer that ignores
+    // the remapping will sample the wrong set.
+    "texcoord_1_3.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([1, 3]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 1 };
+        json.materials[0].occlusionTexture = { index: 0, texCoord: 3 };
+        return toGltfBuffer(json);
+    },
+
+    // A single set at a non-zero index, the simplest form of the relaxation.
+    "texcoord_5_only.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([5]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 5 };
+        return toGltfBuffer(json);
+    },
+
+    // The material asks for a set the primitive does not provide. Must warn and fall
+    // back rather than sampling garbage.
+    "texcoord_missing_set.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 2 };
         return toGltfBuffer(json);
     }
 };

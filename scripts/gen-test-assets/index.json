@@ -46,5 +46,17 @@
     "thumbnail_datauri.gltf": {
         "bytes": 2739,
         "sha256": "2dbd8a9627a369a1"
+    },
+    "texcoord_1_3.gltf": {
+        "bytes": 3403,
+        "sha256": "de797354ed208838"
+    },
+    "texcoord_5_only.gltf": {
+        "bytes": 2969,
+        "sha256": "c6a313bf35916fa5"
+    },
+    "texcoord_missing_set.gltf": {
+        "bytes": 2969,
+        "sha256": "681c44a84bfd464f"
     }
 }

@@ -29,4 +29,28 @@ function quad() {
     };
 }
 
-export { quad, FLOAT, UNSIGNED_SHORT };
+/**
+ * A quad whose texture coordinate sets use arbitrary indices, to exercise glTF 2.1's
+ * relaxed rule that they need not start at 0 or be consecutive.
+ *
+ * @param {number[]} setIndices e.g. `[1, 3]` produces TEXCOORD_1 and TEXCOORD_3.
+ */
+function quadWithTexCoordSets(setIndices) {
+    const geometry = quad();
+    const uvAttribute = geometry.attributes.find((a) => a.semantic === "TEXCOORD_0");
+    const others = geometry.attributes.filter((a) => a.semantic !== "TEXCOORD_0");
+
+    // Each set gets distinct UVs so a wrong mapping is visible rather than coincidental.
+    const sets = setIndices.map((index, position) => {
+        const scale = 1 / (position + 1);
+        const data = new Float32Array(uvAttribute.data.length);
+        for (let i = 0; i < data.length; i++) {
+            data[i] = uvAttribute.data[i] * scale;
+        }
+        return { ...uvAttribute, semantic: `TEXCOORD_${index}`, data };
+    });
+
+    return { ...geometry, attributes: [...others, ...sets] };
+}
+
+export { quad, quadWithTexCoordSets, FLOAT, UNSIGNED_SHORT };
