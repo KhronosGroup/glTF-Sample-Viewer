@@ -15,11 +15,22 @@ export function CreditsTab() {
     const assetCopyright = useViewerStore((state) => state.assetCopyright);
     const assetGenerator = useViewerStore((state) => state.assetGenerator);
     const assetVersion = useViewerStore((state) => state.assetVersion);
+    const assetThumbnail = useViewerStore((state) => state.assetThumbnail);
     const environmentLicense = useViewerStore((state) => state.environmentLicense);
     const xmp = useViewerStore((state) => state.xmp);
 
     return (
         <Panel title="Model Credits">
+            {assetThumbnail && (
+                <div className="my-4" data-testid="asset-thumbnail">
+                    <p className="text-ink/60 text-sm">Thumbnail</p>
+                    <img
+                        src={assetThumbnail}
+                        alt="Asset thumbnail"
+                        className="border-ink/20 mt-1 max-h-40 rounded border object-contain"
+                    />
+                </div>
+            )}
             <Credit label="Copyright" data-testid="asset-copyright">
                 {assetCopyright}
             </Credit>

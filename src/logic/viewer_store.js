@@ -29,6 +29,7 @@ const initialState = {
     assetCopyright: "",
     assetGenerator: "",
     assetVersion: "",
+    assetThumbnail: undefined,
     xmp: [{ title: "xmp" }],
     statistics: [],
     validationReport: {},

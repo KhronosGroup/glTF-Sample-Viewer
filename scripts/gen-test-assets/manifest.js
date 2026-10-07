@@ -13,12 +13,26 @@ import { quad } from "./primitives.js";
 
 const CUSTOM_CHUNK_TYPE = 0x4f464e49; // "INFO", an unknown type the loader must ignore
 
+// A 2x2 PNG, small enough to inline. Distinct colours per quadrant so a wrong UV mapping
+// or a wrong thumbnail is visible rather than plausible.
+const TINY_PNG_BASE64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVQI12P8z4AAT" +
+    "AxQwMgAI5gYGBgAEI0CAQbkbgQAAAAASUVORK5CYII=";
+
+function pngBytes() {
+    return Uint8Array.from(Buffer.from(TINY_PNG_BASE64, "base64"));
+}
+
 function singleBinChunk(version, assetVersion) {
     const { json, buffers } = buildMeshDocument(quad(), { version: assetVersion });
     if (version === 3) {
         json.buffers[0].chunk = 1;
     }
     return writeGlb({ version, chunks: [jsonChunk(json), binChunk(buffers[0])] });
+}
+
+function toGltfBuffer(json) {
+    return new TextEncoder().encode(JSON.stringify(json, null, 4)).buffer;
 }
 
 const ASSETS = {
@@ -109,6 +123,61 @@ const ASSETS = {
                 binChunk(buffers[0], { padInside: false })
             ]
         });
+    },
+
+    // A thumbnail stored in a bufferView, the case where no filename extension is
+    // available to infer the media type from.
+    "thumbnail_bufferview.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        const png = pngBytes();
+        const merged = new Uint8Array(buffers[0].length + png.length);
+        merged.set(buffers[0], 0);
+        merged.set(png, buffers[0].length);
+
+        json.buffers[0] = { byteLength: merged.length, chunk: 1 };
+        json.bufferViews.push({
+            buffer: 0,
+            byteOffset: buffers[0].length,
+            byteLength: png.length
+        });
+        json.images = [{ bufferView: json.bufferViews.length - 1, mimeType: "image/png" }];
+        json.asset.thumbnail = 0;
+
+        return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(merged)] });
+    },
+
+    // The same image serves as the thumbnail and as a material texture, so the loader
+    // must not skip loading it.
+    "thumbnail_shared.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        const png = pngBytes();
+        const merged = new Uint8Array(buffers[0].length + png.length);
+        merged.set(buffers[0], 0);
+        merged.set(png, buffers[0].length);
+
+        json.buffers[0] = { byteLength: merged.length, chunk: 1 };
+        json.bufferViews.push({
+            buffer: 0,
+            byteOffset: buffers[0].length,
+            byteLength: png.length
+        });
+        json.images = [{ bufferView: json.bufferViews.length - 1, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0 };
+        json.asset.thumbnail = 0;
+
+        return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(merged)] });
+    },
+
+    // A thumbnail referenced by data URI, which needs no extra fetch at all.
+    "thumbnail_datauri.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.asset.thumbnail = 0;
+        return toGltfBuffer(json);
     }
 };
 

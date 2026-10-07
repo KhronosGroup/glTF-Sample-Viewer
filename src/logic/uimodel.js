@@ -248,6 +248,25 @@ class UIModel {
         }
     }
 
+    /**
+     * Publishes a thumbnail produced by ResourceLoader.loadThumbnail, taking ownership
+     * of its object URL and revoking whatever it replaces.
+     */
+    publishThumbnail(thumbnail) {
+        const previous = getViewerState().assetThumbnail;
+        if (previous !== undefined && previous.startsWith("blob:")) {
+            URL.revokeObjectURL(previous);
+        }
+        setViewerState({ assetThumbnail: thumbnail?.url });
+    }
+
+    /** Discards a thumbnail that arrived too late to be shown. */
+    releaseThumbnail(thumbnail) {
+        if (thumbnail?.url?.startsWith("blob:")) {
+            URL.revokeObjectURL(thumbnail.url);
+        }
+    }
+
     publishGltfLoaded(state) {
         this.publishCameras(state);
 

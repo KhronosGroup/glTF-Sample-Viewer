@@ -34,5 +34,17 @@
     "glb3_gap_padding.glb": {
         "bytes": 1064,
         "sha256": "b0b875faefed9fb0"
+    },
+    "thumbnail_bufferview.glb": {
+        "bytes": 1248,
+        "sha256": "5ae9ad1452c57cb5"
+    },
+    "thumbnail_shared.glb": {
+        "bytes": 1336,
+        "sha256": "ebb1281484a653b8"
+    },
+    "thumbnail_datauri.gltf": {
+        "bytes": 2739,
+        "sha256": "2dbd8a9627a369a1"
     }
 }
