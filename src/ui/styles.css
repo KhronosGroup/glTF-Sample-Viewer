@@ -28,7 +28,9 @@
 }
 
 @layer base {
+    /* The UI is dark-only; this makes native widgets such as scrollbars match. */
     html {
+        color-scheme: dark;
         overflow: hidden;
         position: fixed;
         width: 100%;
@@ -44,6 +46,16 @@
         font-family: var(--font-sans);
         font-size: var(--text-base);
         line-height: 1.5;
+    }
+
+    /*
+     * Selects are transparent so they blend into their card, but Windows
+     * builds the popup from that background and falls back to white.
+     */
+    option,
+    optgroup {
+        background-color: var(--color-card);
+        color: var(--color-ink);
     }
 
     a:hover {
