@@ -70,5 +70,45 @@
     "bv_transform.gltf": {
         "bytes": 3397,
         "sha256": "919f3288c71b9f73"
+    },
+    "external_child.gltf": {
+        "bytes": 2278,
+        "sha256": "6a2084591e4feb25"
+    },
+    "external_child.bin": {
+        "bytes": 140,
+        "sha256": "b2ee6666610f5436"
+    },
+    "external_basic.gltf": {
+        "bytes": 608,
+        "sha256": "11a8e2fd0d428060"
+    },
+    "external_reuse.gltf": {
+        "bytes": 1064,
+        "sha256": "90acd47d00058a40"
+    },
+    "external_diamond.gltf": {
+        "bytes": 1026,
+        "sha256": "8fcf64fe84a30785"
+    },
+    "external_cycle_direct.gltf": {
+        "bytes": 470,
+        "sha256": "3f9eaaf64228d72b"
+    },
+    "external_cycle_a.gltf": {
+        "bytes": 462,
+        "sha256": "5582873d38189e34"
+    },
+    "external_cycle_b.gltf": {
+        "bytes": 462,
+        "sha256": "01024a871b869197"
+    },
+    "external_package.glb": {
+        "bytes": 2944,
+        "sha256": "f683a4329b0b6212"
+    },
+    "external_wrong_mimetype.gltf": {
+        "bytes": 469,
+        "sha256": "7a56ed9a4bac545a"
     }
 }

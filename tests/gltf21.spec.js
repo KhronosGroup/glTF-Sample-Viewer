@@ -66,22 +66,25 @@ test.describe("non-sequential texture coordinate sets", () => {
     // texcoord_5_only carries its UVs at set 5 and texcoord_0_baseline at set 0, with
     // identical values. If the remap is wrong the two renders diverge.
     //
-    // Each asset gets its own page: navigating twice aborts the first load's in-flight
-    // requests, which surfaces as console errors unrelated to what is being tested.
+    // The two assets are loaded in separate pages, opened one at a time. Navigating
+    // twice in one page aborts the first load's in-flight requests, and keeping two
+    // viewers alive at once races the Draco script tag that index.html loads; both
+    // produce console errors that have nothing to do with the assets.
     test("a set at index 5 renders as if it were set 0", async ({ context }) => {
-        const basePage = await context.newPage();
-        const baseErrors = collectConsoleErrors(basePage);
-        await loadTestAsset(basePage, "texcoord_0_baseline.gltf");
-        const baseline = await canvasPixels(basePage);
+        const renderOf = async (asset) => {
+            const page = await context.newPage();
+            const errors = collectConsoleErrors(page);
+            await loadTestAsset(page, asset);
+            const pixels = await canvasPixels(page);
+            expectNoConsoleErrors(errors);
+            await page.close();
+            return pixels;
+        };
 
-        const remapPage = await context.newPage();
-        const remapErrors = collectConsoleErrors(remapPage);
-        await loadTestAsset(remapPage, "texcoord_5_only.gltf");
-        const remapped = await canvasPixels(remapPage);
+        const baseline = await renderOf("texcoord_0_baseline.gltf");
+        const remapped = await renderOf("texcoord_5_only.gltf");
 
         expect(remapped).toEqual(baseline);
-        expectNoConsoleErrors(baseErrors);
-        expectNoConsoleErrors(remapErrors);
     });
 
     test("non-consecutive sets load and render", async ({ page }) => {

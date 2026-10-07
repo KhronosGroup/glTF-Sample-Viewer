@@ -35,6 +35,76 @@ function toGltfBuffer(json) {
     return new TextEncoder().encode(JSON.stringify(json, null, 4)).buffer;
 }
 
+function base64(bytes) {
+    return Buffer.from(bytes).toString("base64");
+}
+
+// A child asset holding one quad, with its buffer named by URI so a parent can alias it.
+function childAsset({ color = [0.2, 0.6, 0.9, 1.0], bufferUri = "child.bin" } = {}) {
+    const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+    json.buffers[0].uri = bufferUri;
+    json.materials[0].pbrMetallicRoughness.baseColorFactor = color;
+    json.nodes[0].name = "ChildMesh";
+    return { json, binary: buffers[0] };
+}
+
+// Wraps children into a package: each child's JSON and .bin become buffer views of one
+// buffer, and the package aliases the child's buffer URI to the packaged copy.
+function packageAsset(children, { nodes, extraFiles = [] } = {}) {
+    const parts = [];
+    let offset = 0;
+    const add = (bytes) => {
+        const aligned = Math.ceil(offset / 4) * 4;
+        parts.push({ bytes, byteOffset: aligned });
+        offset = aligned + bytes.length;
+        return parts.length - 1;
+    };
+
+    const bufferViews = [];
+    const files = [];
+    for (const child of children) {
+        const jsonBytes = new Uint8Array(toGltfBuffer(child.json));
+        const jsonPart = add(jsonBytes);
+        const binPart = add(child.binary);
+
+        const jsonView = bufferViews.push({ buffer: 0, part: jsonPart }) - 1;
+        const binView = bufferViews.push({ buffer: 0, part: binPart }) - 1;
+
+        const binFile =
+            files.push({ bufferView: binView, mimeType: "application/gltf-buffer" }) - 1;
+        files.push({
+            bufferView: jsonView,
+            mimeType: "model/gltf+json",
+            aliases: [{ alias: child.json.buffers[0].uri, file: binFile }]
+        });
+    }
+
+    const total = Math.ceil(offset / 4) * 4;
+    const merged = new Uint8Array(total);
+    for (const part of parts) {
+        merged.set(part.bytes, part.byteOffset);
+    }
+
+    const json = {
+        asset: { version: "2.1" },
+        scene: 0,
+        buffers: [{ byteLength: merged.length, chunk: 1 }],
+        bufferViews: bufferViews.map((view) => ({
+            buffer: 0,
+            byteOffset: parts[view.part].byteOffset,
+            byteLength: parts[view.part].bytes.length
+        })),
+        files: [...files, ...extraFiles],
+        externalAssets: files
+            .map((file, index) => (file.mimeType === "model/gltf+json" ? { file: index } : null))
+            .filter((entry) => entry !== null),
+        nodes,
+        scenes: [{ nodes: [0] }]
+    };
+
+    return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(merged)] });
+}
+
 const ASSETS = {
     // Baseline: the v2 container, to prove the rewrite did not regress glTF 2.0.
     "glb2_baseline.glb": () => singleBinChunk(2, "2.0"),
@@ -299,6 +369,130 @@ const ASSETS = {
         ];
         json.scenes = [{ nodes: [0] }];
 
+        return toGltfBuffer(json);
+    },
+
+    // The child of the external-asset pair below, also loadable on its own so the two
+    // can be compared.
+    "external_child.gltf": () => {
+        const child = childAsset({ bufferUri: "external_child.bin" });
+        return toGltfBuffer(child.json);
+    },
+
+    "external_child.bin": () => childAsset().binary.buffer,
+
+    // The simplest external reference: a parent naming a child by URI.
+    "external_basic.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ name: "Child", file: 0 }],
+            nodes: [
+                { name: "Root", children: [1] },
+                { name: "ChildInstance", externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // The same child instantiated three times at different transforms.
+    "external_reuse.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [
+                { name: "Root", children: [1, 2, 3] },
+                { name: "A", translation: [-1.5, 0, 0], externalAsset: 0 },
+                { name: "B", translation: [0, 0, 0], externalAsset: 0 },
+                { name: "C", translation: [1.5, 0, 0], externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // Two siblings referencing one grandchild. A diamond is not a cycle and must load,
+    // with the shared child parsed once.
+    "external_diamond.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [
+                { uri: "external_basic.gltf", mimeType: "model/gltf+json" },
+                { uri: "external_reuse.gltf", mimeType: "model/gltf+json" }
+            ],
+            externalAssets: [{ file: 0 }, { file: 1 }],
+            nodes: [
+                { name: "Root", children: [1, 2] },
+                { name: "ViaBasic", translation: [-2, 0, 0], externalAsset: 0 },
+                { name: "ViaReuse", translation: [2, 0, 0], externalAsset: 1 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // References itself. Must be reported rather than recursing forever.
+    "external_cycle_direct.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_cycle_direct.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "Self", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    },
+
+    "external_cycle_a.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_cycle_b.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "A", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    },
+
+    "external_cycle_b.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_cycle_a.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "B", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // A package: the child's JSON and its .bin both live in the parent's buffer, and the
+    // child's "child.bin" URI is aliased to the packaged copy.
+    "external_package.glb": () =>
+        packageAsset([childAsset()], {
+            nodes: [
+                { name: "Root", children: [1] },
+                { name: "Packaged", externalAsset: 0 }
+            ]
+        }),
+
+    // An external asset pointed at a file whose media type is not glTF. Must be refused.
+    "external_wrong_mimetype.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_child.bin", mimeType: "application/gltf-buffer" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "Bad", externalAsset: 0 }]
+        };
         return toGltfBuffer(json);
     }
 };
