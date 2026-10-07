@@ -8,7 +8,7 @@ import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_pr
 
 import { validateBytes } from "gltf-validator";
 
-export default async () => {
+const main = async () => {
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("webgl2", {
         alpha: false,
@@ -749,3 +749,7 @@ export default async () => {
     // After this start executing animation loop.
     window.requestAnimationFrame(update);
 };
+
+export default main;
+
+main();
