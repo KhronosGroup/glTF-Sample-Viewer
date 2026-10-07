@@ -224,6 +224,66 @@ const ASSETS = {
         json.textures = [{ source: 0, sampler: 0 }];
         json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 2 };
         return toGltfBuffer(json);
+    },
+
+    // One of every shape type, with bounding volumes referencing them. Half use explicit
+    // parameters and half rely on the 2.1 defaults.
+    "shapes_all.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+
+        json.shapes = [
+            { type: "box", box: { size: [2, 1, 3] } },
+            { type: "box" },
+            { type: "sphere", sphere: { radius: 2 } },
+            { type: "sphere" },
+            { type: "cylinder", cylinder: { height: 3, radiusTop: 0.2, radiusBottom: 1 } },
+            { type: "cylinder" },
+            { type: "capsule", capsule: { height: 2, radiusTop: 0.3, radiusBottom: 0.6 } },
+            { type: "capsule" },
+            { type: "plane", plane: { sizeX: 4, sizeZ: 4 } },
+            { type: "plane" },
+            { type: "mesh", mesh: { mesh: 0 } },
+            { type: "convexMesh", convexMesh: { mesh: 0 } }
+        ];
+
+        json.nodes = json.shapes.map((_, index) => ({
+            name: `Shape${index}`,
+            translation: [index * 2, 0, 0],
+            boundingVolume: { shape: index }
+        }));
+        json.nodes.push({ name: "Mesh", mesh: 0 });
+        json.scenes = [{ nodes: json.nodes.map((_, index) => index) }];
+
+        return toGltfBuffer(json);
+    },
+
+    // A bounding volume with its own TRS on a node that is itself scaled and rotated.
+    // Pins the transform order from KhronosGroup/glTF#2666.
+    "bv_transform.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+
+        json.shapes = [{ type: "box", box: { size: [1, 1, 1] } }];
+        json.nodes = [
+            {
+                name: "ScaledRotated",
+                mesh: 0,
+                scale: [2, 1, 0.5],
+                rotation: [0, 0.3826834, 0, 0.9238795],
+                boundingVolume: {
+                    shape: 0,
+                    translation: [1, 0, 0],
+                    rotation: [0.3826834, 0, 0, 0.9238795],
+                    scale: [1, 2, 1]
+                }
+            }
+        ];
+        json.scenes = [{ nodes: [0] }];
+
+        return toGltfBuffer(json);
     }
 };
 

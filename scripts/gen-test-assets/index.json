@@ -58,5 +58,13 @@
     "texcoord_missing_set.gltf": {
         "bytes": 2969,
         "sha256": "681c44a84bfd464f"
+    },
+    "shapes_all.gltf": {
+        "bytes": 6748,
+        "sha256": "d4afe8e4dc25fd93"
+    },
+    "bv_transform.gltf": {
+        "bytes": 3397,
+        "sha256": "919f3288c71b9f73"
     }
 }
