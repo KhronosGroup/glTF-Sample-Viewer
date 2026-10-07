@@ -260,6 +260,7 @@ class UIModel {
         setViewerState({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
+            assetVersion: gltf.asset.version ?? "N/A",
 
             selectedScene: state.sceneIndex,
             scenes: gltf.scenes.map((scene, index) => ({

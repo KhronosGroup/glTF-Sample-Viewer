@@ -28,6 +28,7 @@ const initialState = {
     hasPhysics: false,
     assetCopyright: "",
     assetGenerator: "",
+    assetVersion: "",
     xmp: [{ title: "xmp" }],
     statistics: [],
     validationReport: {},

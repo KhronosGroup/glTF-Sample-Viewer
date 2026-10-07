@@ -13,7 +13,7 @@ const EXTENSION_TOGGLES = [
     { key: "interactivity", label: "KHR_interactivity", event: "interactivityChanged" },
     { key: "hoverability", label: "KHR_node_hoverability", event: "hoverabilityChanged" },
     { key: "selectability", label: "KHR_node_selectability", event: "selectabilityChanged" },
-    { key: "nodeVisibility", label: "KHR_node_visibility", event: "nodeVisibilityChanged" }
+    { key: "nodeVisibility", label: "Node Visibility (2.1 core)", event: "nodeVisibilityChanged" }
 ];
 
 const MATERIAL_EXTENSIONS = [
@@ -29,7 +29,11 @@ const MATERIAL_EXTENSIONS = [
     { key: "volumeScattering", label: "Volume Scattering", event: "volumeScatteringChanged" },
     { key: "ior", label: "IOR", event: "iorChanged" },
     { key: "specular", label: "Specular", event: "specularChanged" },
-    { key: "emissiveStrength", label: "Emissive Strength", event: "emissiveStrengthChanged" },
+    {
+        key: "emissiveStrength",
+        label: "Emissive Strength (2.1 core)",
+        event: "emissiveStrengthChanged"
+    },
     { key: "iridescence", label: "Iridescence", event: "iridescenceChanged" },
     { key: "retroreflection", label: "Retroreflection", event: "retroreflectionChanged" },
     { key: "anisotropy", label: "Anisotropy", event: "anisotropyChanged" },
