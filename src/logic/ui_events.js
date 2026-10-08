@@ -34,6 +34,7 @@ const eventNames = [
     "environmentRotationChanged",
 
     "debugchannelChanged",
+    "debugShapesChanged",
     "tonemapChanged",
     "exposureChanged",
     "colorChanged",

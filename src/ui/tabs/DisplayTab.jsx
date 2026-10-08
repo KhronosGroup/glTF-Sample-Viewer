@@ -1,4 +1,5 @@
 import { Download, Plus } from "lucide-react";
+import { GltfState } from "@khronosgroup/gltf-viewer";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
@@ -30,9 +31,22 @@ export function DisplayTab({ lighting, onLightingChange }) {
     const environments = useViewerStore((state) => state.environments);
     const selectedEnvironment = useViewerStore((state) => state.selectedEnvironment);
     const clearColor = useViewerStore((state) => state.clearColor);
+    const debugShapes = useViewerStore((state) => state.debugShapes);
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
+
+    const shapesVisible = debugShapes.boundingVolumes || debugShapes.allShapes;
+    const updateDebugShapes = (patch) => {
+        const next = { ...debugShapes, ...patch };
+        setViewerState({ debugShapes: next });
+        uiEvents.debugShapesChanged.emit({
+            ...next,
+            boundingVolumes: next.boundingVolumes
+                ? GltfState.BoundingVolumeMode.ALL
+                : GltfState.BoundingVolumeMode.NONE
+        });
+    };
 
     const environmentItems = Object.keys(environments).map((name) => ({
         value: name,
@@ -189,6 +203,68 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         }}
                     />
                 </Field>
+            </Field>
+
+            <Field label="Shapes (2.1 core)" grouped>
+                <Switch
+                    data-testid="switch-bounding-volumes"
+                    checked={debugShapes.boundingVolumes}
+                    onChange={(checked) => updateDebugShapes({ boundingVolumes: checked })}
+                >
+                    Bounding Volumes
+                </Switch>
+                <Switch
+                    data-testid="switch-collider-shapes"
+                    checked={debugShapes.allShapes}
+                    onChange={(checked) => updateDebugShapes({ allShapes: checked })}
+                >
+                    Collider Shapes
+                </Switch>
+                <Switch
+                    data-testid="switch-shapes-xray"
+                    checked={!debugShapes.depthTest}
+                    disabled={!shapesVisible}
+                    onChange={(checked) => updateDebugShapes({ depthTest: !checked })}
+                >
+                    See Through Geometry
+                </Switch>
+                <Switch
+                    checked={debugShapes.highlightNonEnclosing}
+                    disabled={!debugShapes.boundingVolumes}
+                    onChange={(checked) => updateDebugShapes({ highlightNonEnclosing: checked })}
+                >
+                    Flag Non-Enclosing
+                </Switch>
+            </Field>
+
+            <Field label="Shape Style">
+                <Select
+                    data-testid="select-shape-style"
+                    value={debugShapes.style}
+                    disabled={!shapesVisible}
+                    onChange={(value) => updateDebugShapes({ style: value })}
+                >
+                    {Object.values(GltfState.DebugShapeStyle).map((item) => (
+                        <option key={item} value={item}>
+                            {item}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+
+            <Field label="Shape Color">
+                <Select
+                    data-testid="select-shape-color"
+                    value={debugShapes.colorMode}
+                    disabled={!shapesVisible}
+                    onChange={(value) => updateDebugShapes({ colorMode: value })}
+                >
+                    {Object.values(GltfState.DebugShapeColor).map((item) => (
+                        <option key={item} value={item}>
+                            {item}
+                        </option>
+                    ))}
+                </Select>
             </Field>
 
             <Field label="Capture Canvas">

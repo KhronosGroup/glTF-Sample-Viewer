@@ -55,6 +55,16 @@ const initialState = {
     graphState: true,
     physicsState: true,
 
+    // glTF 2.1 shape debug visualization, mirrored into renderingParameters.debugShapes.
+    debugShapes: {
+        boundingVolumes: false,
+        allShapes: false,
+        style: "Wireframe",
+        colorMode: "Uniform",
+        depthTest: true,
+        highlightNonEnclosing: true
+    },
+
     // Transient UI state that the render loop and drop handler need to read.
     isLoading: false,
     showDropDownOverlay: false
