@@ -69,3 +69,16 @@ test("both spellings of the asset render the same mesh", async ({ context }) => 
     // assets have to render identically despite one carrying a 7 MB image.
     expect(await renderOf("suzanne_thumbnail.gltf")).toEqual(await renderOf("suzanne.gltf"));
 });
+
+test("the shape showcase loads cleanly", async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    const warnings = warningsOf(page);
+
+    await page.goto("/?noUI=1&model=local-assets/shapes_all.gltf");
+    await waitForLoadingToSettle(page);
+
+    // Nothing draws shapes yet, so this only pins that every type parses and every
+    // bounding volume resolves. It becomes a visual test once debug drawing lands.
+    expect(warnings.join("\n")).not.toMatch(/shape|bounding/i);
+    expectNoConsoleErrors(errors);
+});
