@@ -222,7 +222,7 @@ export const initViewer = async (canvas) => {
         // The thumbnail is read separately from the scene, which is the whole point of
         // the feature: it needs only the JSON and one image.
         resourceLoader
-            .loadThumbnail(model.mainFile)
+            .loadThumbnail(model.mainFile, model.additionalFiles)
             .then((thumbnail) => {
                 if (loadId !== latestLoadId || disposed) {
                     uiModel.releaseThumbnail(thumbnail);
@@ -231,6 +231,8 @@ export const initViewer = async (canvas) => {
                 uiModel.publishThumbnail(thumbnail);
             })
             .catch((error) => {
+                // Only reached when the asset declares a thumbnail that cannot be read;
+                // an asset without one resolves to undefined.
                 console.warn("Could not read the asset thumbnail: " + error);
                 if (loadId === latestLoadId && !disposed) {
                     uiModel.publishThumbnail(undefined);
