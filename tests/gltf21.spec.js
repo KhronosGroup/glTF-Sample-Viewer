@@ -157,3 +157,62 @@ test.describe("shapes and bounding volumes", () => {
         });
     }
 });
+
+test.describe("external assets", () => {
+    test("a referenced child renders where the referencing node puts it", async ({ context }) => {
+        const renderOf = async (asset) => {
+            const page = await context.newPage();
+            const errors = collectConsoleErrors(page);
+            await loadTestAsset(page, asset);
+            const pixels = await canvasPixels(page);
+            expectNoConsoleErrors(errors);
+            await page.close();
+            return pixels;
+        };
+
+        // The child is loadable on its own and the node instantiating it has no transform,
+        // so the two have to come out pixel for pixel the same. That catches an instance
+        // placed at the wrong transform, which a "did it draw anything" check would not.
+        expect(await renderOf("external_basic.gltf")).toEqual(
+            await renderOf("external_child.gltf")
+        );
+    });
+
+    test("one child instantiated three times draws three copies", async ({ context }) => {
+        const renderOf = async (asset) => {
+            const page = await context.newPage();
+            const errors = collectConsoleErrors(page);
+            await loadTestAsset(page, asset);
+            const pixels = await canvasPixels(page);
+            expectNoConsoleErrors(errors);
+            await page.close();
+            return pixels;
+        };
+
+        expect(await renderOf("external_reuse.gltf")).not.toEqual(
+            await renderOf("external_basic.gltf")
+        );
+    });
+
+    for (const asset of ["external_diamond.gltf", "external_package.glb"]) {
+        test(`${asset} loads and renders`, async ({ page }) => {
+            const errors = collectConsoleErrors(page);
+
+            await loadTestAsset(page, asset);
+
+            await expect(page.locator("#canvas")).toBeVisible();
+            expectNoConsoleErrors(errors);
+        });
+    }
+
+    for (const asset of ["external_cycle_direct.gltf", "external_cycle_a.gltf"]) {
+        test(`${asset} is refused without taking down the viewer`, async ({ page }) => {
+            const errors = collectConsoleErrors(page);
+
+            await loadTestAsset(page, asset);
+
+            expect(errors.join("\n")).toMatch(/cycle|recursion|depth/i);
+            await expect(page.locator("#canvas")).toBeVisible();
+        });
+    }
+});
