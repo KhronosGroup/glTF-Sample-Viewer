@@ -48,6 +48,60 @@ function childAsset({ color = [0.2, 0.6, 0.9, 1.0], bufferUri = "child.bin" } = 
     return { json, binary: buffers[0] };
 }
 
+// A child that animates itself. Its animation has no entry in the viewer's animation UI,
+// so it exercises the path where an instance drives its own playback.
+function animatedChildAsset({ bufferUri = "external_animated_child.bin" } = {}) {
+    const child = childAsset({ color: [0.9, 0.4, 0.2, 1.0], bufferUri });
+    const json = child.json;
+
+    const times = new Float32Array([0, 0.5, 1]);
+    const offsets = new Float32Array([0, 0, 0, 0, 1.5, 0, 0, 0, 0]);
+    const samplerData = new Uint8Array(times.byteLength + offsets.byteLength);
+    samplerData.set(new Uint8Array(times.buffer), 0);
+    samplerData.set(new Uint8Array(offsets.buffer), times.byteLength);
+
+    const buffer =
+        json.buffers.push({
+            uri: `data:application/gltf-buffer;base64,${base64(samplerData)}`,
+            byteLength: samplerData.length
+        }) - 1;
+    const input =
+        json.bufferViews.push({ buffer, byteOffset: 0, byteLength: times.byteLength }) - 1;
+    const output =
+        json.bufferViews.push({
+            buffer,
+            byteOffset: times.byteLength,
+            byteLength: offsets.byteLength
+        }) - 1;
+
+    const inputAccessor =
+        json.accessors.push({
+            bufferView: input,
+            componentType: 5126,
+            count: times.length,
+            type: "SCALAR",
+            min: [0],
+            max: [1]
+        }) - 1;
+    const outputAccessor =
+        json.accessors.push({
+            bufferView: output,
+            componentType: 5126,
+            count: offsets.length / 3,
+            type: "VEC3"
+        }) - 1;
+
+    json.animations = [
+        {
+            name: "Bob",
+            samplers: [{ input: inputAccessor, output: outputAccessor, interpolation: "LINEAR" }],
+            channels: [{ sampler: 0, target: { node: 0, path: "translation" } }]
+        }
+    ];
+
+    return { json, binary: child.binary };
+}
+
 // Wraps children into a package: each child's JSON and .bin become buffer views of one
 // buffer, and the package aliases the child's buffer URI to the packaged copy.
 function packageAsset(children, { nodes, extraFiles = [] } = {}) {
@@ -410,6 +464,28 @@ const ASSETS = {
                 { name: "A", translation: [-1.5, 0, 0], externalAsset: 0 },
                 { name: "B", translation: [0, 0, 0], externalAsset: 0 },
                 { name: "C", translation: [1.5, 0, 0], externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // Two instances of a child that animates itself. The parent declares no animation of
+    // its own, so nothing in the animation UI refers to what is moving on screen.
+    "external_animated_child.gltf": () => toGltfBuffer(animatedChildAsset().json),
+
+    "external_animated_child.bin": () => animatedChildAsset().binary.buffer,
+
+    "external_animated.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_animated_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [
+                { name: "Root", children: [1, 2] },
+                { name: "Left", translation: [-1.5, 0, 0], externalAsset: 0 },
+                { name: "Right", translation: [1.5, 0, 0], externalAsset: 0 }
             ]
         };
         return toGltfBuffer(json);

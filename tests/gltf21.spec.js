@@ -215,4 +215,22 @@ test.describe("external assets", () => {
             await expect(page.locator("#canvas")).toBeVisible();
         });
     }
+
+    test("an instantiated asset animates itself", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+
+        await loadTestAsset(page, "external_animated.gltf");
+
+        // The parent declares no animation, so nothing in the animation UI refers to what
+        // is moving. If the viewer only redraws for animations it can list, the canvas
+        // goes still and these frames come out identical.
+        const frames = [];
+        for (let i = 0; i < 3; i++) {
+            frames.push((await canvasPixels(page)).toString("base64"));
+            await page.waitForTimeout(400);
+        }
+
+        expect(new Set(frames).size).toBe(3);
+        expectNoConsoleErrors(errors);
+    });
 });

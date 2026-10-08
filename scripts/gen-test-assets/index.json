@@ -87,6 +87,18 @@
         "bytes": 1064,
         "sha256": "90acd47d00058a40"
     },
+    "external_animated_child.gltf": {
+        "bytes": 3558,
+        "sha256": "79f93bec00891028"
+    },
+    "external_animated_child.bin": {
+        "bytes": 140,
+        "sha256": "b2ee6666610f5436"
+    },
+    "external_animated.gltf": {
+        "bytes": 884,
+        "sha256": "133dbf634dedabcc"
+    },
     "external_diamond.gltf": {
         "bytes": 1026,
         "sha256": "8fcf64fe84a30785"

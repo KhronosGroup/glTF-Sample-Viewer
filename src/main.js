@@ -593,7 +593,9 @@ export const initViewer = async (canvas) => {
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
-        redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |=
+            !state.animationTimer.paused &&
+            (state.animationIndices.length > 0 || state.gltf?.hasInstancedAnimations);
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.physicsController.enabled && state.physicsController.playing;
