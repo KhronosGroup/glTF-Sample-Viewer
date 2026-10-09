@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
+    canvasPixels,
     collectConsoleErrors,
     expectCanvasToRender,
     expectNoConsoleErrors,
@@ -37,6 +38,39 @@ test("loads a model chosen from the dropdown", async ({ page }) => {
     await expect(page.locator(ui.modelSelect)).toHaveValue("Avocado");
     await expectCanvasToRender(page, "avocado.png");
     expectNoConsoleErrors(errors);
+});
+
+test("a model switch does not leave the renderer on the dropped debug channel", async ({
+    context
+}) => {
+    // The select recovers on its own: a native one falls back to its first option when
+    // the chosen one stops being offered, and None is first. What goes stale is the
+    // renderer, which keeps drawing the debug view while the panel reads None.
+    const avocadoAfter = async (prepare) => {
+        const page = await context.newPage();
+        await prepare(page);
+        await openTab(page, "models");
+        await page.locator(ui.modelSelect).selectOption("Avocado");
+        await waitForLoadingToSettle(page);
+        const pixels = await canvasPixels(page);
+        await page.close();
+        return pixels;
+    };
+
+    // Avocado numbers its only set 0, so the channel chosen here stops being offered.
+    const afterDebugChannel = await avocadoAfter(async (page) => {
+        await page.goto("/?model=test-assets/texcoord_5_only.gltf");
+        await waitForLoadingToSettle(page);
+        await openTab(page, "advanced");
+        await page.getByTestId("select-debug-channel").selectOption("Texture Coordinates 5");
+    });
+
+    const neverDebugged = await avocadoAfter(async (page) => {
+        await page.goto("/");
+        await waitForLoadingToSettle(page);
+    });
+
+    expect(afterDebugChannel).toEqual(neverDebugged);
 });
 
 test("turning off image based lighting changes the render", async ({ page }) => {

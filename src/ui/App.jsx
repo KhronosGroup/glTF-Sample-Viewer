@@ -95,7 +95,6 @@ export function App() {
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
     const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
-    const [debugChannel, setDebugChannel] = useState("None");
     const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
     const volumePref = useRef(INITIAL_EXTENSIONS.volume);
 
@@ -193,12 +192,7 @@ export function App() {
                 );
             case "advanced":
                 return (
-                    <AdvancedTab
-                        extensions={extensions}
-                        onExtensionsChange={updateExtensions}
-                        debugChannel={debugChannel}
-                        onDebugChannelChange={setDebugChannel}
-                    />
+                    <AdvancedTab extensions={extensions} onExtensionsChange={updateExtensions} />
                 );
             default:
                 return null;

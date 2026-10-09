@@ -43,6 +43,14 @@ function debugChannelsFor(gltf) {
     return channels;
 }
 
+// Plain entries and grouped ones are rendered separately, so what is on offer is the two
+// kinds flattened together.
+function offeredDebugChannels(channels) {
+    return channels.flatMap((item) =>
+        typeof item.title === "string" ? [item.title] : Object.values(item.title)
+    );
+}
+
 function hexToLinearColor(hex) {
     const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (match === null) {
@@ -292,10 +300,27 @@ class UIModel {
             gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
             state.renderingParameters.enabledExtensions.KHR_interactivity;
 
+        // The texture coordinate channels depend on the sets this asset declares, so a
+        // channel chosen for the previous one may no longer exist. Keeping it would leave
+        // the select showing a value it has no option for, and the renderer on a view the
+        // asset cannot produce.
+        const debugchannels = debugChannelsFor(gltf);
+        const selectedDebugChannel = offeredDebugChannels(debugchannels).includes(
+            getViewerState().selectedDebugChannel
+        )
+            ? getViewerState().selectedDebugChannel
+            : GltfState.DebugOutput.NONE;
+        if (selectedDebugChannel !== getViewerState().selectedDebugChannel) {
+            uiEvents.debugchannelChanged.emit(selectedDebugChannel);
+        }
+
         setViewerState({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
             assetVersion: gltf.asset.version ?? "N/A",
+
+            debugchannels,
+            selectedDebugChannel,
 
             selectedScene: state.sceneIndex,
             scenes: gltf.scenes.map((scene, index) => ({
@@ -331,8 +356,6 @@ class UIModel {
             customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
 
             hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
-
-            debugchannels: debugChannelsFor(gltf),
 
             xmp:
                 gltf?.extensions?.KHR_xmp_json_ld?.packets[

@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import { useViewerStore } from "../store.js";
+import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { StatList } from "../StatList.jsx";
 import { uiEvents } from "../../logic/ui_events.js";
@@ -41,13 +41,9 @@ const MATERIAL_EXTENSIONS = [
     { key: "gaussianSplatting", label: "Gaussian Splatting", event: "gaussianSplattingChanged" }
 ];
 
-export function AdvancedTab({
-    extensions,
-    onExtensionsChange,
-    debugChannel,
-    onDebugChannelChange
-}) {
+export function AdvancedTab({ extensions, onExtensionsChange }) {
     const debugchannels = useViewerStore((state) => state.debugchannels);
+    const selectedDebugChannel = useViewerStore((state) => state.selectedDebugChannel);
     const statistics = useViewerStore((state) => state.statistics);
     const supportsFloatingPointFramebuffer = useViewerStore(
         (state) => state.supportsFloatingPointFramebuffer
@@ -94,9 +90,9 @@ export function AdvancedTab({
             <Field label="Debug Channels">
                 <Select
                     data-testid="select-debug-channel"
-                    value={debugChannel}
+                    value={selectedDebugChannel}
                     onChange={(value) => {
-                        onDebugChannelChange(value);
+                        setViewerState({ selectedDebugChannel: value });
                         uiEvents.debugchannelChanged.emit(value);
                     }}
                 >
