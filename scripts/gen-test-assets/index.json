@@ -111,6 +111,22 @@
         "bytes": 1204,
         "sha256": "8dae77251c6d2a52"
     },
+    "physics_same_document.gltf": {
+        "bytes": 3732,
+        "sha256": "eb910caf6092ef31"
+    },
+    "physics_static_reference.gltf": {
+        "bytes": 3045,
+        "sha256": "c2d645f9a26d0361"
+    },
+    "physics_floor_child.gltf": {
+        "bytes": 2957,
+        "sha256": "3338244555ff7aa8"
+    },
+    "physics_cross_document.gltf": {
+        "bytes": 3358,
+        "sha256": "6b702e2a166dde6b"
+    },
     "external_diamond.gltf": {
         "bytes": 1026,
         "sha256": "8fcf64fe84a30785"

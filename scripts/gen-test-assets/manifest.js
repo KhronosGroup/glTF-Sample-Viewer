@@ -102,6 +102,51 @@ function animatedChildAsset({ bufferUri = "external_animated_child.bin" } = {}) 
     return { json, binary: child.binary };
 }
 
+// A box resting above a floor, both as physics bodies. Simulated, the box falls and
+// lands. The two assets below place the same scene differently so their settled states
+// can be compared: if a collider in an external asset does not reach the simulation, the
+// box falls straight through the floor instead of landing on it.
+const PHYSICS_SHAPES = [
+    { name: "Floor", type: "box", box: { size: [6, 0.4, 6] } },
+    { name: "Box", type: "box", box: { size: [1, 1, 1] } }
+];
+
+function floorNode() {
+    return {
+        name: "Floor",
+        translation: [0, -1.5, 0],
+        mesh: 0,
+        extensions: {
+            KHR_physics_rigid_bodies: { collider: { geometry: { shape: 0 } } }
+        }
+    };
+}
+
+function fallingBoxNode() {
+    return {
+        name: "FallingBox",
+        translation: [0, 1.5, 0],
+        mesh: 0,
+        extensions: {
+            KHR_physics_rigid_bodies: {
+                motion: { mass: 1 },
+                collider: { geometry: { shape: 1 } }
+            }
+        }
+    };
+}
+
+function physicsDocument({ nodes, shapes = PHYSICS_SHAPES, extra = {} }) {
+    const { json } = buildMeshDocument(quad(), { version: "2.1" });
+    json.buffers[0].uri = "external_child.bin";
+    json.extensionsUsed = ["KHR_physics_rigid_bodies"];
+    json.shapes = shapes;
+    json.nodes = nodes;
+    json.scenes = [{ nodes: nodes.map((_, index) => index) }];
+    json.scene = 0;
+    return { ...json, ...extra };
+}
+
 // Wraps children into a package: each child's JSON and .bin become buffer views of one
 // buffer, and the package aliases the child's buffer URI to the packaged copy.
 function packageAsset(children, { nodes, extraFiles = [] } = {}) {
@@ -526,6 +571,39 @@ const ASSETS = {
                 { name: "Right", translation: [1.5, 0, 0], externalAsset: 0 }
             ]
         };
+        return toGltfBuffer(json);
+    },
+
+    // Baseline: floor and falling box in one document, which already works.
+    "physics_same_document.gltf": () =>
+        toGltfBuffer(physicsDocument({ nodes: [floorNode(), fallingBoxNode()] })),
+
+    // The same geometry at the same authored transforms with no physics at all, so a test
+    // can tell "the box moved" from "the box was always there" without racing the
+    // simulation, which settles faster than the viewer finishes loading.
+    "physics_static_reference.gltf": () => {
+        const json = physicsDocument({ nodes: [floorNode(), fallingBoxNode()] });
+        delete json.extensionsUsed;
+        for (const node of json.nodes) {
+            delete node.extensions;
+        }
+        return toGltfBuffer(json);
+    },
+
+    // The same scene with the floor moved into an external asset. The box must still land
+    // on it, which only happens if colliders from every document reach one simulation.
+    "physics_floor_child.gltf": () =>
+        toGltfBuffer(physicsDocument({ nodes: [floorNode()], shapes: [PHYSICS_SHAPES[0]] })),
+
+    "physics_cross_document.gltf": () => {
+        const json = physicsDocument({ nodes: [fallingBoxNode()] });
+        // The box references shape 1 in the baseline, but is alone here.
+        json.nodes[0].extensions.KHR_physics_rigid_bodies.collider.geometry.shape = 0;
+        json.shapes = [PHYSICS_SHAPES[1]];
+        json.files = [{ uri: "physics_floor_child.gltf", mimeType: "model/gltf+json" }];
+        json.externalAssets = [{ file: 0 }];
+        json.nodes.push({ name: "FloorInstance", externalAsset: 0 });
+        json.scenes = [{ nodes: [0, 1] }];
         return toGltfBuffer(json);
     },
 
