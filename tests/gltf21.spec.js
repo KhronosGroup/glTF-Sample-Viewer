@@ -274,4 +274,21 @@ test.describe("external assets", () => {
         expect(await canvasPixels(page)).not.toEqual(uniform);
         expectNoConsoleErrors(errors);
     });
+
+    test("culling by bounding volume does not change what is visible", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+
+        // Correct culling only removes geometry that was off screen, so the image must be
+        // identical either way. A volume too small for its node shows up here as a
+        // difference, which is the failure this guards against.
+        await openWithControls(page, "external_shapes.gltf");
+        await expect(page.getByTestId("switch-cull-bounding-volumes")).toBeChecked();
+        const culled = await canvasPixels(page);
+
+        await page.getByTestId("switch-cull-bounding-volumes").click();
+        await waitForLoadingToSettle(page);
+
+        expect(await canvasPixels(page)).toEqual(culled);
+        expectNoConsoleErrors(errors);
+    });
 });

@@ -32,6 +32,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
     const selectedEnvironment = useViewerStore((state) => state.selectedEnvironment);
     const clearColor = useViewerStore((state) => state.clearColor);
     const debugShapes = useViewerStore((state) => state.debugShapes);
+    const cullByBoundingVolume = useViewerStore((state) => state.cullByBoundingVolume);
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
@@ -206,6 +207,16 @@ export function DisplayTab({ lighting, onLightingChange }) {
             </Field>
 
             <Field label="Shapes (2.1 core)" grouped>
+                <Switch
+                    data-testid="switch-cull-bounding-volumes"
+                    checked={cullByBoundingVolume}
+                    onChange={(checked) => {
+                        setViewerState({ cullByBoundingVolume: checked });
+                        uiEvents.cullByBoundingVolumeChanged.emit(checked);
+                    }}
+                >
+                    Cull by Bounding Volume
+                </Switch>
                 <Switch
                     data-testid="switch-bounding-volumes"
                     checked={debugShapes.boundingVolumes}

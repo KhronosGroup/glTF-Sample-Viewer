@@ -64,6 +64,7 @@ const initialState = {
         depthTest: true,
         highlightNonEnclosing: true
     },
+    cullByBoundingVolume: true,
 
     // Transient UI state that the render loop and drop handler need to read.
     isLoading: false,

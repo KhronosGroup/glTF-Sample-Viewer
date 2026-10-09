@@ -35,6 +35,7 @@ const eventNames = [
 
     "debugchannelChanged",
     "debugShapesChanged",
+    "cullByBoundingVolumeChanged",
     "tonemapChanged",
     "exposureChanged",
     "colorChanged",

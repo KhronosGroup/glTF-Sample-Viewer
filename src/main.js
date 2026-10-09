@@ -310,6 +310,10 @@ export const initViewer = async (canvas) => {
     onChange(uiEvents.debugShapesChanged, (v) => {
         Object.assign(state.renderingParameters.debugShapes, v);
     });
+    onChange(
+        uiEvents.cullByBoundingVolumeChanged,
+        (v) => (state.renderingParameters.cullByBoundingVolume = v)
+    );
     onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
     onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
     onChange(uiEvents.iblChanged, (v) => (state.renderingParameters.useIBL = v));
