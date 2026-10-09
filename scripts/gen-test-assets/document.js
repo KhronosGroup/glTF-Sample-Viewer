@@ -20,7 +20,11 @@ function toBytes(typedArray) {
  * @returns {{ json: object, buffers: Uint8Array[] }}
  */
 function buildMeshDocument(geometry, { bufferLayout = "single", version = "2.0" } = {}) {
-    const sources = [...geometry.attributes, geometry.indices];
+    // Morph target accessors sit between the attributes and the indices, so the indices
+    // stay the last accessor, which is how the primitive refers to them.
+    const targetEntries = (geometry.targets ?? []).map((target) => Object.entries(target));
+    const targetSources = targetEntries.flat().map(([, source]) => source);
+    const sources = [...geometry.attributes, ...targetSources, geometry.indices];
     const perAttribute = bufferLayout === "per-attribute";
 
     const buffers = [];
@@ -69,6 +73,11 @@ function buildMeshDocument(geometry, { bufferLayout = "single", version = "2.0" 
         attributes[attribute.semantic] = index;
     });
 
+    let nextTargetAccessor = geometry.attributes.length;
+    const targets = targetEntries.map((entries) =>
+        Object.fromEntries(entries.map(([semantic]) => [semantic, nextTargetAccessor++]))
+    );
+
     const json = {
         asset: { version },
         scene: 0,
@@ -76,7 +85,15 @@ function buildMeshDocument(geometry, { bufferLayout = "single", version = "2.0" 
         nodes: [{ mesh: 0, name: "TestMesh" }],
         meshes: [
             {
-                primitives: [{ attributes, indices: accessors.length - 1, material: 0 }]
+                primitives: [
+                    {
+                        attributes,
+                        indices: accessors.length - 1,
+                        material: 0,
+                        ...(targets.length > 0 ? { targets } : {})
+                    }
+                ],
+                ...(targets.length > 0 ? { weights: geometry.weights ?? targets.map(() => 1) } : {})
             }
         ],
         materials: [

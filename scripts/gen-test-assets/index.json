@@ -75,6 +75,14 @@
         "bytes": 2969,
         "sha256": "681c44a84bfd464f"
     },
+    "morph_texcoord_third_set.gltf": {
+        "bytes": 4442,
+        "sha256": "08bbf4c875343ea0"
+    },
+    "morph_texcoord_baseline.gltf": {
+        "bytes": 3946,
+        "sha256": "56f61334139580e4"
+    },
     "shapes_all.gltf": {
         "bytes": 6748,
         "sha256": "d4afe8e4dc25fd93"

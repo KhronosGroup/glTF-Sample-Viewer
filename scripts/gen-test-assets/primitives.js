@@ -55,4 +55,59 @@ function quadWithTexCoordSets(setIndices, { scales } = {}) {
     return { ...geometry, attributes: [...others, ...sets] };
 }
 
-export { quad, quadWithTexCoordSets, FLOAT, UNSIGNED_SHORT };
+function texCoordAttribute(geometry, setIndex) {
+    const semantic = `TEXCOORD_${setIndex}`;
+    const attribute = geometry.attributes.find((a) => a.semantic === semantic);
+    if (attribute === undefined) {
+        throw new Error(`geometry has no ${semantic}`);
+    }
+    return attribute;
+}
+
+/**
+ * Adds a morph target that shifts one texture coordinate set by a constant.
+ *
+ * @param {number} setIndex The TEXCOORD_n to displace.
+ * @param {number[]} delta Added to every vertex of that set when the weight is 1.
+ */
+function withTexCoordMorphTarget(geometry, setIndex, delta) {
+    const attribute = texCoordAttribute(geometry, setIndex);
+    const data = new Float32Array(attribute.data.length);
+    for (let i = 0; i < data.length; i++) {
+        data[i] = delta[i % 2];
+    }
+    return {
+        ...geometry,
+        targets: [{ [attribute.semantic]: { ...attribute, data } }]
+    };
+}
+
+/**
+ * Shifts a texture coordinate set in the geometry itself, i.e. the result the morph
+ * target above is supposed to produce at weight 1.
+ */
+function withShiftedTexCoords(geometry, setIndex, delta) {
+    const semantic = texCoordAttribute(geometry, setIndex).semantic;
+    return {
+        ...geometry,
+        attributes: geometry.attributes.map((attribute) => {
+            if (attribute.semantic !== semantic) {
+                return attribute;
+            }
+            const data = new Float32Array(attribute.data.length);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = attribute.data[i] + delta[i % 2];
+            }
+            return { ...attribute, data };
+        })
+    };
+}
+
+export {
+    quad,
+    quadWithTexCoordSets,
+    withShiftedTexCoords,
+    withTexCoordMorphTarget,
+    FLOAT,
+    UNSIGNED_SHORT
+};

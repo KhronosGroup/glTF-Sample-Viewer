@@ -4,7 +4,12 @@ import {
     binChunk
 } from "../../glTF-Sample-Renderer/tests/helpers/glb_writer.js";
 import { buildMeshDocument } from "./document.js";
-import { quad, quadWithTexCoordSets } from "./primitives.js";
+import {
+    quad,
+    quadWithTexCoordSets,
+    withShiftedTexCoords,
+    withTexCoordMorphTarget
+} from "./primitives.js";
 
 // Declarative list of generated test assets. Each entry returns an ArrayBuffer.
 //
@@ -22,6 +27,15 @@ const TINY_PNG_BASE64 =
 function pngBytes() {
     return Uint8Array.from(Buffer.from(TINY_PNG_BASE64, "base64"));
 }
+
+// Powers of two so the morphed sum is exact in float32. The third set is left at full
+// scale because that is the one the morph assets displace and compare.
+//
+// Powers of two so the morphed sum is exact in float32. The third set and its shifted
+// range both stay inside 0..1, so the debug view that reads the coordinates back shows
+// the difference rather than clamping it away.
+const MORPH_UV_SCALES = [1 / 8, 1 / 4, 1 / 2, 1];
+const MORPH_UV_DELTA = [0, 0.25];
 
 function singleBinChunk(version, assetVersion) {
     const { json, buffers } = buildMeshDocument(quad(), { version: assetVersion });
@@ -454,6 +468,49 @@ const ASSETS = {
         json.samplers = [{}];
         json.textures = [{ source: 0, sampler: 0 }];
         json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 2 };
+        return toGltfBuffer(json);
+    },
+
+    // A morph target displacing the third texture coordinate set. The shaders only ever
+    // displaced the first two, so the third is where that limit showed.
+    //
+    // morph_texcoord_baseline bakes the same shift into its geometry, so once the morph
+    // is applied the two must carry identical coordinates. Every number involved is a
+    // power of two, so the addition is exact in float32 and the two can be compared
+    // pixel for pixel rather than within a tolerance.
+    "morph_texcoord_third_set.gltf": () => {
+        const { json, buffers } = buildMeshDocument(
+            withTexCoordMorphTarget(
+                quadWithTexCoordSets([0, 2, 4, 6], { scales: MORPH_UV_SCALES }),
+                4,
+                MORPH_UV_DELTA
+            ),
+            { version: "2.1" }
+        );
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 4 };
+        return toGltfBuffer(json);
+    },
+
+    "morph_texcoord_baseline.gltf": () => {
+        const { json, buffers } = buildMeshDocument(
+            withShiftedTexCoords(
+                quadWithTexCoordSets([0, 2, 4, 6], { scales: MORPH_UV_SCALES }),
+                4,
+                MORPH_UV_DELTA
+            ),
+            { version: "2.1" }
+        );
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 4 };
         return toGltfBuffer(json);
     },
 

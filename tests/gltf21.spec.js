@@ -173,6 +173,31 @@ test.describe("non-sequential texture coordinate sets", () => {
     });
 });
 
+test.describe("morph targets", () => {
+    // Read back through the texture coordinate debug view rather than by texturing the
+    // quad. The debug view shows the varying itself, so it measures the displacement
+    // directly instead of through a texture fetch.
+    const slotTwoUnderDebug = async (page, asset) => {
+        await page.goto(`/?model=test-assets/${asset}`);
+        await waitForLoadingToSettle(page);
+        await page.getByRole("tab", { name: "Advanced Controls" }).click();
+        await page.getByTestId("select-debug-channel").selectOption("Texture Coordinates 2");
+        await waitForLoadingToSettle(page);
+        return canvasPixels(page);
+    };
+
+    test("a morph target displaces the third texture coordinate set", async ({ page }) => {
+        // The baseline bakes the same shift into its geometry, so applying the morph has
+        // to reproduce it exactly. Comparing against the unshifted asset instead would
+        // only show that something moved, not that the right set moved by the right
+        // amount - a displacement applied to the wrong slot would still pass that.
+        const morphed = await slotTwoUnderDebug(page, "morph_texcoord_third_set.gltf");
+        const baked = await slotTwoUnderDebug(page, "morph_texcoord_baseline.gltf");
+
+        expect(morphed).toEqual(baked);
+    });
+});
+
 test.describe("thumbnails", () => {
     for (const asset of [
         "thumbnail_bufferview.glb",
