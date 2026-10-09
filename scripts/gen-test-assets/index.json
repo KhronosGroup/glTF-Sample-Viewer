@@ -59,6 +59,18 @@
         "bytes": 2969,
         "sha256": "2dae1188b18d7ade"
     },
+    "texcoord_four_sets.gltf": {
+        "bytes": 3946,
+        "sha256": "8cbf2ac701ec3d9a"
+    },
+    "texcoord_fourth_baseline.gltf": {
+        "bytes": 2969,
+        "sha256": "b502ce7199db42db"
+    },
+    "texcoord_over_limit.gltf": {
+        "bytes": 4273,
+        "sha256": "96f9fcf1b2c7ce24"
+    },
     "texcoord_missing_set.gltf": {
         "bytes": 2969,
         "sha256": "681c44a84bfd464f"

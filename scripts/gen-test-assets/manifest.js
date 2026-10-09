@@ -396,6 +396,52 @@ const ASSETS = {
         return toGltfBuffer(json);
     },
 
+    // More than two sets on one primitive, which glTF 2.0 renderers cap out at. Base
+    // colour addresses the fourth, the one that only exists if the cap is lifted. Its
+    // UVs are a quarter scale, which texcoord_fourth_baseline carries as its only set so
+    // the two must render identically.
+    "texcoord_four_sets.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0, 2, 4, 6]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 6 };
+        return toGltfBuffer(json);
+    },
+
+    "texcoord_fourth_baseline.gltf": () => {
+        const { json, buffers } = buildMeshDocument(
+            quadWithTexCoordSets([0], { scales: [1 / 4] }),
+            { version: "2.0" }
+        );
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 0 };
+        return toGltfBuffer(json);
+    },
+
+    // One set more than the renderer carries. The extra must be dropped with a warning
+    // rather than silently shifting every other set along.
+    "texcoord_over_limit.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0, 1, 2, 3, 4]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 0 };
+        return toGltfBuffer(json);
+    },
+
     // The material asks for a set the primitive does not provide. Must warn and fall
     // back rather than sampling garbage.
     "texcoord_missing_set.gltf": () => {

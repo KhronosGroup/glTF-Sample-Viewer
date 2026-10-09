@@ -110,6 +110,40 @@ test.describe("non-sequential texture coordinate sets", () => {
         expect(warnings.join("\n")).toMatch(/TEXCOORD_2/);
         expectNoConsoleErrors(errors);
     });
+
+    test("a fourth set is reachable, which glTF 2.0 could not do", async ({ context }) => {
+        const renderOf = async (asset) => {
+            const page = await context.newPage();
+            const errors = collectConsoleErrors(page);
+            const warnings = [];
+            page.on("console", (m) => m.type() === "warning" && warnings.push(m.text()));
+            await loadTestAsset(page, asset);
+            const pixels = await canvasPixels(page);
+            expectNoConsoleErrors(errors);
+            await page.close();
+            return { pixels, warnings };
+        };
+
+        // Base colour addresses the fourth of four sets, whose UVs are quarter scale.
+        // The baseline carries those same UVs as its only set, so the two must match.
+        // Capped at two sets the fourth is dropped and the material samples set 0.
+        const baseline = await renderOf("texcoord_fourth_baseline.gltf");
+        const fourSets = await renderOf("texcoord_four_sets.gltf");
+
+        expect(fourSets.pixels).toEqual(baseline.pixels);
+        expect(fourSets.warnings.join("\n")).not.toMatch(/can be used/);
+    });
+
+    test("a set beyond the budget is dropped without shifting the others", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+        const warnings = [];
+        page.on("console", (m) => m.type() === "warning" && warnings.push(m.text()));
+
+        await loadTestAsset(page, "texcoord_over_limit.gltf");
+
+        expect(warnings.join("\n")).toMatch(/can be used/);
+        expectNoConsoleErrors(errors);
+    });
 });
 
 test.describe("thumbnails", () => {
