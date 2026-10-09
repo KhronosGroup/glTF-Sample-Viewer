@@ -491,6 +491,44 @@ const ASSETS = {
         return toGltfBuffer(json);
     },
 
+    // A child carrying its own shapes and bounding volumes, instantiated twice. Shape
+    // indices belong to the child document, so the debug pass has to resolve them there.
+    "external_shapes_child.gltf": () => {
+        const child = childAsset({ bufferUri: "external_shapes_child.bin" });
+        child.json.shapes = [
+            { name: "Box", type: "box", box: { size: [1.5, 1.5, 0.5] } },
+            { name: "Sphere", type: "sphere", sphere: { radius: 0.9 } }
+        ];
+        child.json.nodes[0].boundingVolume = { shape: 0 };
+        child.json.nodes.push({
+            name: "ChildVolume",
+            translation: [0, 1.2, 0],
+            boundingVolume: { shape: 1 }
+        });
+        child.json.nodes[0].children = [1];
+        return toGltfBuffer(child.json);
+    },
+
+    "external_shapes_child.bin": () =>
+        childAsset({ bufferUri: "external_shapes_child.bin" }).binary.buffer,
+
+    "external_shapes.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_shapes_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            shapes: [{ name: "RootBox", type: "box", box: { size: [5, 3, 3] } }],
+            nodes: [
+                { name: "Root", children: [1, 2], boundingVolume: { shape: 0 } },
+                { name: "Left", translation: [-1.5, 0, 0], externalAsset: 0 },
+                { name: "Right", translation: [1.5, 0, 0], externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
     // Two siblings referencing one grandchild. A diamond is not a cycle and must load,
     // with the shared child parsed once.
     "external_diamond.gltf": () => {

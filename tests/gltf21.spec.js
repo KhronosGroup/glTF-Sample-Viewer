@@ -233,4 +233,45 @@ test.describe("external assets", () => {
         expect(new Set(frames).size).toBe(3);
         expectNoConsoleErrors(errors);
     });
+
+    // The debug toggles live in the UI, so these two cannot use loadTestAsset: it hides
+    // the panel with noUI.
+    async function openWithControls(page, asset) {
+        await page.goto(`/?model=test-assets/${asset}`);
+        await waitForLoadingToSettle(page);
+        await page.getByRole("tab", { name: "Display" }).click();
+    }
+
+    test("bounding volumes inside an instantiated asset are drawn", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+
+        await openWithControls(page, "external_shapes.gltf");
+        const before = await canvasPixels(page);
+
+        await page.getByTestId("switch-bounding-volumes").click();
+        await waitForLoadingToSettle(page);
+
+        // The child declares its own shapes, so its volumes only appear if the debug pass
+        // resolves shape indices against the child document rather than the root.
+        expect(await canvasPixels(page)).not.toEqual(before);
+        expectNoConsoleErrors(errors);
+    });
+
+    test("hierarchy colouring tells the documents apart", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+
+        await openWithControls(page, "external_shapes.gltf");
+        await page.getByTestId("switch-bounding-volumes").click();
+        await waitForLoadingToSettle(page);
+        const uniform = await canvasPixels(page);
+
+        await page.getByTestId("select-shape-color").selectOption("Hierarchy Depth");
+        await waitForLoadingToSettle(page);
+
+        // Depth is keyed by node, not by index. Keyed by index, a node of the child
+        // document would borrow the depth of the root node sharing its index and every
+        // instance would come out the same colour as the root.
+        expect(await canvasPixels(page)).not.toEqual(uniform);
+        expectNoConsoleErrors(errors);
+    });
 });

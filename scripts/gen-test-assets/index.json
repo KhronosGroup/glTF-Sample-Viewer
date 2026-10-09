@@ -99,6 +99,18 @@
         "bytes": 884,
         "sha256": "133dbf634dedabcc"
     },
+    "external_shapes_child.gltf": {
+        "bytes": 3048,
+        "sha256": "39dd2d6ee1c95322"
+    },
+    "external_shapes_child.bin": {
+        "bytes": 140,
+        "sha256": "b2ee6666610f5436"
+    },
+    "external_shapes.gltf": {
+        "bytes": 1204,
+        "sha256": "8dae77251c6d2a52"
+    },
     "external_diamond.gltf": {
         "bytes": 1026,
         "sha256": "8fcf64fe84a30785"
