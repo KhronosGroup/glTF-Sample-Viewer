@@ -18,11 +18,12 @@ import {
 
 const CUSTOM_CHUNK_TYPE = 0x4f464e49; // "INFO", an unknown type the loader must ignore
 
-// A 2x2 PNG, small enough to inline. Distinct colours per quadrant so a wrong UV mapping
-// or a wrong thumbnail is visible rather than plausible.
+// A 2x2 PNG, small enough to inline. One distinct colour per quadrant, so a wrong UV
+// mapping or a wrong thumbnail is visible rather than plausible, and so a shift along
+// either axis changes the image.
 const TINY_PNG_BASE64 =
-    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVQI12P8z4AAT" +
-    "AxQwMgAI5gYGBgAEI0CAQbkbgQAAAAASUVORK5CYII=";
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR42mP4z8DA" +
+    "AMIM////ZwAAHu8E/HMcU8wAAAAASUVORK5CYII=";
 
 function pngBytes() {
     return Uint8Array.from(Buffer.from(TINY_PNG_BASE64, "base64"));

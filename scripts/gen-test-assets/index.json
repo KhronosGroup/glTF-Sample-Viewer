@@ -37,51 +37,51 @@
     },
     "thumbnail_bufferview.glb": {
         "bytes": 1248,
-        "sha256": "5ae9ad1452c57cb5"
+        "sha256": "9c056af254ab44e4"
     },
     "thumbnail_shared.glb": {
         "bytes": 1336,
-        "sha256": "ebb1281484a653b8"
+        "sha256": "bc097aca22b4fb09"
     },
     "thumbnail_datauri.gltf": {
-        "bytes": 2739,
-        "sha256": "2dbd8a9627a369a1"
+        "bytes": 2735,
+        "sha256": "a3e7066f548d720b"
     },
     "texcoord_1_3.gltf": {
-        "bytes": 3403,
-        "sha256": "de797354ed208838"
+        "bytes": 3399,
+        "sha256": "0bed82be16a86aa0"
     },
     "texcoord_5_only.gltf": {
-        "bytes": 2969,
-        "sha256": "c6a313bf35916fa5"
+        "bytes": 2965,
+        "sha256": "b91d436dcfa3b52e"
     },
     "texcoord_0_baseline.gltf": {
-        "bytes": 2969,
-        "sha256": "2dae1188b18d7ade"
+        "bytes": 2965,
+        "sha256": "b5feef94160868f5"
     },
     "texcoord_four_sets.gltf": {
-        "bytes": 3946,
-        "sha256": "8cbf2ac701ec3d9a"
+        "bytes": 3942,
+        "sha256": "0197808712bc9484"
     },
     "texcoord_fourth_baseline.gltf": {
-        "bytes": 2969,
-        "sha256": "b502ce7199db42db"
+        "bytes": 2965,
+        "sha256": "1e4bb35c0a5f789e"
     },
     "texcoord_over_limit.gltf": {
-        "bytes": 4273,
-        "sha256": "96f9fcf1b2c7ce24"
+        "bytes": 4269,
+        "sha256": "059006750394489a"
     },
     "texcoord_missing_set.gltf": {
-        "bytes": 2969,
-        "sha256": "681c44a84bfd464f"
+        "bytes": 2965,
+        "sha256": "c26d0716f7dba4ba"
     },
     "morph_texcoord_third_set.gltf": {
-        "bytes": 4442,
-        "sha256": "08bbf4c875343ea0"
+        "bytes": 4438,
+        "sha256": "9cd491be99123dfb"
     },
     "morph_texcoord_baseline.gltf": {
-        "bytes": 3946,
-        "sha256": "56f61334139580e4"
+        "bytes": 3942,
+        "sha256": "39688e18f9bb88be"
     },
     "shapes_all.gltf": {
         "bytes": 6748,
