@@ -144,6 +144,33 @@ test.describe("non-sequential texture coordinate sets", () => {
         expect(warnings.join("\n")).toMatch(/can be used/);
         expectNoConsoleErrors(errors);
     });
+
+    test("every texture coordinate slot has its own debug channel", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+
+        await page.goto("/?model=test-assets/texcoord_four_sets.gltf");
+        await waitForLoadingToSettle(page);
+        await page.getByRole("tab", { name: "Advanced Controls" }).click();
+
+        const channels = page.getByTestId("select-debug-channel");
+        const sets = [
+            "Texture Coordinates 0",
+            "Texture Coordinates 1",
+            "Texture Coordinates 2",
+            "Texture Coordinates 3"
+        ];
+        const frames = [];
+        for (const set of sets) {
+            await channels.selectOption(set);
+            await waitForLoadingToSettle(page);
+            frames.push((await canvasPixels(page)).toString("base64"));
+        }
+
+        // Each set carries differently scaled UVs, so four channels showing the same
+        // image would mean they all resolve to the same slot.
+        expect(new Set(frames).size).toBe(4);
+        expectNoConsoleErrors(errors);
+    });
 });
 
 test.describe("thumbnails", () => {
