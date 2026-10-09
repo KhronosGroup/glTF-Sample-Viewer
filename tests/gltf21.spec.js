@@ -63,6 +63,14 @@ test.describe("unreadable GLB chunks", () => {
 });
 
 test.describe("non-sequential texture coordinate sets", () => {
+    // The options carry their text in a label attribute rather than as children, so
+    // allTextContents would read them all as empty.
+    const debugChannelOptions = (page) =>
+        page
+            .getByTestId("select-debug-channel")
+            .locator("option")
+            .evaluateAll((options) => options.map((option) => option.value));
+
     // texcoord_5_only carries its UVs at set 5 and texcoord_0_baseline at set 0, with
     // identical values. If the remap is wrong the two renders diverge.
     //
@@ -145,7 +153,7 @@ test.describe("non-sequential texture coordinate sets", () => {
         expectNoConsoleErrors(errors);
     });
 
-    test("every texture coordinate slot has its own debug channel", async ({ page }) => {
+    test("every texture coordinate set has its own debug channel", async ({ page }) => {
         const errors = collectConsoleErrors(page);
 
         await page.goto("/?model=test-assets/texcoord_four_sets.gltf");
@@ -153,12 +161,16 @@ test.describe("non-sequential texture coordinate sets", () => {
         await page.getByRole("tab", { name: "Advanced Controls" }).click();
 
         const channels = page.getByTestId("select-debug-channel");
+        // The sets this asset actually declares, not 0..3: the channels are named after
+        // the file's indices rather than the slots they are packed into.
         const sets = [
             "Texture Coordinates 0",
-            "Texture Coordinates 1",
             "Texture Coordinates 2",
-            "Texture Coordinates 3"
+            "Texture Coordinates 4",
+            "Texture Coordinates 6"
         ];
+        expect(await debugChannelOptions(page)).toEqual(expect.arrayContaining(sets));
+
         const frames = [];
         for (const set of sets) {
             await channels.selectOption(set);
@@ -171,6 +183,23 @@ test.describe("non-sequential texture coordinate sets", () => {
         expect(new Set(frames).size).toBe(4);
         expectNoConsoleErrors(errors);
     });
+
+    test("the debug channels name the sets the file uses", async ({ page }) => {
+        const errors = collectConsoleErrors(page);
+
+        await page.goto("/?model=test-assets/texcoord_5_only.gltf");
+        await waitForLoadingToSettle(page);
+        await page.getByRole("tab", { name: "Advanced Controls" }).click();
+
+        const texCoordChannels = (await debugChannelOptions(page)).filter((option) =>
+            option.startsWith("Texture Coordinates")
+        );
+
+        // The set is packed into slot 0, but offering "Texture Coordinates 0" would name
+        // a set this asset does not have.
+        expect(texCoordChannels).toEqual(["Texture Coordinates 5"]);
+        expectNoConsoleErrors(errors);
+    });
 });
 
 test.describe("morph targets", () => {
@@ -181,7 +210,7 @@ test.describe("morph targets", () => {
         await page.goto(`/?model=test-assets/${asset}`);
         await waitForLoadingToSettle(page);
         await page.getByRole("tab", { name: "Advanced Controls" }).click();
-        await page.getByTestId("select-debug-channel").selectOption("Texture Coordinates 2");
+        await page.getByTestId("select-debug-channel").selectOption("Texture Coordinates 4");
         await waitForLoadingToSettle(page);
         return canvasPixels(page);
     };

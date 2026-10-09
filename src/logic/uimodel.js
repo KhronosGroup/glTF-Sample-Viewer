@@ -25,6 +25,24 @@ function parseEnvironmentLicense(text, hdr) {
     };
 }
 
+/**
+ * The debug channels on offer for a loaded asset.
+ *
+ * All but the texture coordinate ones are fixed. Those depend on the asset, because
+ * glTF 2.1 lets a primitive number its sets freely, so they are rebuilt on every load
+ * and sit where they used to, at the head of the list.
+ */
+function debugChannelsFor(gltf) {
+    const channels = Object.keys(GltfState.DebugOutput).map((key) => ({
+        title: GltfState.DebugOutput[key]
+    }));
+    const texCoords = GltfState.textureCoordinateDebugOutputs(gltf);
+    if (texCoords.length > 0) {
+        channels.splice(1, 0, { title: Object.fromEntries(texCoords.map((n) => [n, n])) });
+    }
+    return channels;
+}
+
 function hexToLinearColor(hex) {
     const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (match === null) {
@@ -68,9 +86,7 @@ class UIModel {
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
-            debugchannels: Object.keys(GltfState.DebugOutput).map((key) => ({
-                title: GltfState.DebugOutput[key]
-            }))
+            debugchannels: debugChannelsFor(undefined)
         });
 
         this.subscriptions.push(
@@ -315,6 +331,8 @@ class UIModel {
             customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
 
             hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
+
+            debugchannels: debugChannelsFor(gltf),
 
             xmp:
                 gltf?.extensions?.KHR_xmp_json_ld?.packets[
