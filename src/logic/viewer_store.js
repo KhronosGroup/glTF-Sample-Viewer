@@ -51,6 +51,7 @@ const initialState = {
     selectedGraph: null,
     selectedEnvironment: 0,
     selectedDebugChannel: "None",
+    selectedVariant: "None",
     clearColor: "",
     animationState: true,
     graphState: true,

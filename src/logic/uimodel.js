@@ -314,6 +314,25 @@ class UIModel {
             uiEvents.debugchannelChanged.emit(selectedDebugChannel);
         }
 
+        // A variant names a material set in one asset and means nothing in another, so a
+        // selection the new asset does not define is dropped. Keeping it would leave the
+        // radio group with nothing checked, and would silently reapply the old variant on
+        // returning to an asset that happens to use the same name.
+        const materialVariants = hasVariants
+            ? [
+                  "None",
+                  ...gltf.extensions.KHR_materials_variants.variants.map(
+                      (variant) => variant?.name ?? "Unnamed"
+                  )
+              ]
+            : ["None"];
+        const selectedVariant = materialVariants.includes(getViewerState().selectedVariant)
+            ? getViewerState().selectedVariant
+            : "None";
+        if (selectedVariant !== getViewerState().selectedVariant) {
+            uiEvents.variantChanged.emit(selectedVariant);
+        }
+
         setViewerState({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
@@ -333,14 +352,8 @@ class UIModel {
             graphState: true,
             physicsState: true,
 
-            materialVariants: hasVariants
-                ? [
-                      "None",
-                      ...gltf.extensions.KHR_materials_variants.variants.map(
-                          (variant) => variant?.name ?? "Unnamed"
-                      )
-                  ]
-                : ["None"],
+            materialVariants,
+            selectedVariant,
 
             animations: gltf.animations.map((animation, index) => ({
                 title: animation.name ?? `Animation ${index}`,

@@ -73,6 +73,42 @@ test("a model switch does not leave the renderer on the dropped debug channel", 
     expect(afterDebugChannel).toEqual(neverDebugged);
 });
 
+test("a model switch drops a variant the next model does not define", async ({ context }) => {
+    const variantRadios = (page) => page.locator("label:has(input[name='material-variant'])");
+
+    const chooseModel = async (page, name) => {
+        await openTab(page, "models");
+        await page.locator(ui.modelSelect).selectOption(name);
+        await waitForLoadingToSettle(page);
+    };
+
+    const shoeAfter = async (prepare) => {
+        const page = await context.newPage();
+        await page.goto("/");
+        await waitForLoadingToSettle(page);
+        await chooseModel(page, "MaterialsVariantsShoe");
+        await prepare(page);
+        const pixels = await canvasPixels(page);
+        await page.close();
+        return pixels;
+    };
+
+    // A variant is chosen, then a model defining none is loaded, then the first again.
+    // The name means nothing to the model in between, so it must not survive the trip.
+    const afterRoundTrip = await shoeAfter(async (page) => {
+        const labels = await variantRadios(page).allTextContents();
+        const chosen = labels.findLastIndex((label) => label.trim() !== "None");
+        await variantRadios(page).nth(chosen).locator("input").check();
+
+        await chooseModel(page, "Avocado");
+        await chooseModel(page, "MaterialsVariantsShoe");
+    });
+
+    const freshlyLoaded = await shoeAfter(async () => {});
+
+    expect(afterRoundTrip).toEqual(freshlyLoaded);
+});
+
 test("turning off image based lighting changes the render", async ({ page }) => {
     const errors = collectConsoleErrors(page);
 

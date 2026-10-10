@@ -91,7 +91,6 @@ function readInitialLayout() {
 export function App() {
     const [layout] = useState(readInitialLayout);
     const [navVisible, setNavVisible] = useState(layout.navVisible);
-    const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
     const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
@@ -167,12 +166,7 @@ export function App() {
     const renderTab = (id) => {
         switch (id) {
             case "models":
-                return (
-                    <ModelsTab
-                        selectedVariant={selectedVariant}
-                        onSelectVariant={setSelectedVariant}
-                    />
-                );
+                return <ModelsTab />;
             case "display":
                 return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
