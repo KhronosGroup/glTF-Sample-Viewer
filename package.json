@@ -41,7 +41,7 @@
     "normalize-wheel": "^1.0.1",
     "rxjs": "^6.6.7",
     "simple-dropzone": "^0.8.0",
-    "vue": "^3.4.29"
+    "vue": "^3.5.44"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^29.0.0",
