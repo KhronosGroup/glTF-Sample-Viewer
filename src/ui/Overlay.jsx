@@ -42,7 +42,8 @@ export function Overlay({ dropping, loading }) {
     // reach it: the canvas below owns both the drop zone and the camera.
     return (
         <div
-            className={`${shown === "loading" ? "loading-overlay" : ""} pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+            data-testid={shown === "loading" ? "loading-overlay" : "drop-overlay"}
+            className={`pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
                 active ? "opacity-100" : "opacity-0"
             }`}
             onTransitionEnd={() => {

@@ -6,7 +6,7 @@ import { expect } from "@playwright/test";
  */
 export const ui = {
     canvas: "#canvas",
-    loadingOverlay: ".loading-overlay",
+    loadingOverlay: "[data-testid='loading-overlay']",
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
     // Buefy forwards attributes to the inner <select>, React will not.
