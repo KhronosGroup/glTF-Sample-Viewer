@@ -183,7 +183,7 @@ export function Menu() {
             className={
                 collapsed
                     ? "flex shrink-0"
-                    : "fixed inset-0 z-20 flex md:static md:w-96 md:shrink-0"
+                    : "fixed inset-0 z-20 flex sm:static sm:w-96 sm:shrink-0"
             }
         >
             {!collapsed && (
