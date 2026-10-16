@@ -98,8 +98,8 @@ test("the advanced panel shows statistics and extension toggles", async ({ page 
     await openTab(page, "advanced");
 
     const panel = openPanel(page);
-    await expect(panel.getByText("Mesh Count", { exact: true })).toBeVisible();
-    await expect(panel.getByText("Triangle Count", { exact: true })).toBeVisible();
+    await expect(panel.getByText("Meshes", { exact: true })).toBeVisible();
+    await expect(panel.getByText("Triangles", { exact: true })).toBeVisible();
     await expect(panel.getByText("Clearcoat", { exact: true })).toBeVisible();
     await expect(panel.getByText("Gaussian Splatting", { exact: true })).toBeVisible();
 
