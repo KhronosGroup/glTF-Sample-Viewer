@@ -76,23 +76,3 @@
         border-color: #ff3860;
     }
 }
-
-/*
- * The one widget internal that utility classes cannot reach.
- */
-@layer components {
-    .spinner {
-        border: 5px solid rgba(245, 245, 245, 0.35);
-        border-top-color: var(--color-accent);
-        border-radius: 9999px;
-        width: 4rem;
-        height: 4rem;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-}

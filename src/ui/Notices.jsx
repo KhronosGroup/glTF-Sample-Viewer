@@ -79,7 +79,7 @@ export function LoadingOverlay({ active }) {
                 }
             }}
         >
-            <div className="spinner" />
+            <div className="border-ink/35 border-t-accent size-16 animate-spin rounded-full border-[5px]" />
         </div>
     );
 }
