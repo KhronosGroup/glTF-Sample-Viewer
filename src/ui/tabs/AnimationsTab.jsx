@@ -21,8 +21,6 @@ export function AnimationsTab() {
 
     return (
         <Panel title="Animations">
-            <SectionLabel>Animation Controls</SectionLabel>
-
             {hasAnimations && (
                 <PlaybackControls
                     active={animationState}
@@ -38,7 +36,7 @@ export function AnimationsTab() {
                 />
             )}
 
-            {!hasAnimations && <SectionLabel>No animations available</SectionLabel>}
+            {!hasAnimations && <p className="text-ink/60">No animations available</p>}
 
             {hasAnimations && (
                 <Field label="Animations" grouped>
