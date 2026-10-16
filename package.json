@@ -9,7 +9,7 @@
     "preinstall": "npm --prefix ./glTF-Sample-Renderer install && npm --prefix ./glTF-Sample-Renderer run build",
     "sync:renderer-assets": "npx shx mkdir -p public/libs public/assets/images && npx shx cp -R glTF-Sample-Renderer/dist/libs/. public/libs/ && npx shx cp -R glTF-Sample-Renderer/dist/assets/. public/assets/images/",
     "predev": "npm --prefix ./glTF-Sample-Renderer run build && npm run sync:renderer-assets",
-    "dev": "vite",
+    "dev": "vite --host",
     "prebuild": "npm --prefix ./glTF-Sample-Renderer run build && npm run sync:renderer-assets",
     "build": "vite build",
     "preview": "vite preview",
