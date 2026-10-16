@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { notify } from "../logic/notifications.js";
 import { useViewerStore } from "./store.js";
 import { IconButton } from "./controls.jsx";
-import { Toasts } from "./Notices.jsx";
+import { Toasts } from "./Toasts.jsx";
 import { Overlay } from "./Overlay.jsx";
 import { Menu } from "./Menu.jsx";
 import { Viewer } from "./Viewer.jsx";

@@ -15,6 +15,24 @@ const TONES = {
     info: "bg-sky-600"
 };
 
+/** Drains left to right over the toast's lifetime, so its exit is not a surprise. */
+function Progress({ duration }) {
+    const [drained, setDrained] = useState(false);
+
+    // The transition needs a painted full width to animate away from.
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => setDrained(true));
+        return () => cancelAnimationFrame(frame);
+    }, []);
+
+    return (
+        <div
+            className="h-1 bg-black/25"
+            style={{ width: drained ? "0%" : "100%", transition: `width ${duration}ms linear` }}
+        />
+    );
+}
+
 /**
  * Messages arrive from the logic layer through the notification sink, so they
  * can be raised without a component reference.
@@ -25,10 +43,11 @@ export function Toasts() {
     useEffect(() => {
         setNotificationSink((message, type) => {
             const id = nextId++;
-            setToasts((current) => [...current, { id, message, type }]);
+            const duration = DURATIONS[type] ?? 2000;
+            setToasts((current) => [...current, { id, message, type, duration }]);
             setTimeout(
                 () => setToasts((current) => current.filter((toast) => toast.id !== id)),
-                DURATIONS[type] ?? 2000
+                duration
             );
         });
         return () => setNotificationSink(null);
@@ -44,11 +63,12 @@ export function Toasts() {
                 <div
                     key={toast.id}
                     role="alert"
-                    className={`max-w-lg rounded px-4 py-2 text-white shadow-lg ${
+                    className={`max-w-lg overflow-hidden rounded text-white shadow-lg ${
                         TONES[toast.type] ?? TONES["info"]
                     }`}
                 >
-                    {toast.message}
+                    <p className="px-4 py-2">{toast.message}</p>
+                    <Progress duration={toast.duration} />
                 </div>
             ))}
         </div>
