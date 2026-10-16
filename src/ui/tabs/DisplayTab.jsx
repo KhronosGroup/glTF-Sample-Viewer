@@ -50,7 +50,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         onLightingChange({ ibl: checked });
                     }}
                 >
-                    Image Based{" "}
+                    Image Based
                 </Switch>
                 <Switch
                     checked={punctualLights}
