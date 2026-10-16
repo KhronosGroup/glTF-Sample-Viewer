@@ -134,7 +134,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Switch>
                 <label className="mt-4 flex items-center gap-3">
                     <input
-                        className="color-swatch h-8 w-12 rounded-md"
+                        className="border-ink-dim [&::-webkit-color-swatch]:border-ink-dim h-8 w-12 appearance-none rounded-md border p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border"
                         type="color"
                         value={clearColor}
                         onChange={(event) => {

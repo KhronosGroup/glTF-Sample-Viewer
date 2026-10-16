@@ -78,25 +78,9 @@
 }
 
 /*
- * Widget internals that utility classes cannot reach: the native colour
- * swatch and the keyframed spinner.
+ * The one widget internal that utility classes cannot reach.
  */
 @layer components {
-    .color-swatch {
-        appearance: none;
-        -webkit-appearance: none;
-        border: solid 1px var(--color-ink-dim);
-        padding: 0;
-    }
-
-    .color-swatch::-webkit-color-swatch-wrapper {
-        padding: 0;
-    }
-
-    .color-swatch::-webkit-color-swatch {
-        border: solid 1px var(--color-ink-dim);
-    }
-
     .spinner {
         border: 5px solid rgba(245, 245, 245, 0.35);
         border-top-color: var(--color-accent);
