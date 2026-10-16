@@ -30,7 +30,7 @@ const EXTENSION_TOGGLES = {
 };
 
 // How long a single drag or wheel delta keeps feeding motion into the camera.
-const SMOOTHING_MS = 200;
+const SMOOTHING_MS = 50;
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
