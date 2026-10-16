@@ -88,7 +88,7 @@ function OpenPanel({ children }) {
     }, []);
 
     return (
-        <section ref={ref} className="bg-surface grow overflow-x-hidden overflow-y-auto">
+        <section ref={ref} className="grow overflow-x-hidden overflow-y-auto">
             {children}
         </section>
     );
@@ -212,7 +212,7 @@ export function Menu() {
             className={
                 collapsed
                     ? "flex shrink-0"
-                    : "fixed inset-0 z-20 flex sm:static sm:w-96 sm:shrink-0"
+                    : "fixed inset-0 bg-surface z-20 flex sm:static sm:w-96 sm:shrink-0"
             }
         >
             {!collapsed && <OpenPanel key={activeTab}>{renderTab(activeTab)}</OpenPanel>}
