@@ -13,7 +13,10 @@ function DropPrompt() {
 
 function Spinner() {
     return (
-        <div className="border-ink/35 border-t-accent size-16 animate-spin rounded-full border-[5px]" />
+        <div
+            data-testid="spinner"
+            className="border-ink/35 border-t-accent size-16 animate-spin rounded-full border-[5px]"
+        />
     );
 }
 
@@ -37,12 +40,11 @@ export function Overlay({ dropping, loading }) {
         return null;
     }
 
-    // Unmounts only once the fade has run, so "overlay gone" still means the
+    // Unmounts only once the fade has run, so "spinner gone" still means the
     // element is detached rather than merely transparent. Pointer events never
     // reach it: the canvas below owns both the drop zone and the camera.
     return (
         <div
-            data-testid={shown === "loading" ? "loading-overlay" : "drop-overlay"}
             className={`pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
                 active ? "opacity-100" : "opacity-0"
             }`}

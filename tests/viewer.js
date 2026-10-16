@@ -6,7 +6,7 @@ import { expect } from "@playwright/test";
  */
 export const ui = {
     canvas: "#canvas",
-    loadingOverlay: "[data-testid='loading-overlay']",
+    spinner: "[data-testid='spinner']",
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
     // Buefy forwards attributes to the inner <select>, React will not.
@@ -41,13 +41,13 @@ export function expectNoConsoleErrors(errors) {
 }
 
 /**
- * Waits for the in-flight glTF load to finish. The overlay may already be gone
+ * Waits for the in-flight glTF load to finish. The spinner may already be gone
  * by the time this is called, so its absence is not treated as an error.
  */
 export async function waitForLoadingToSettle(page) {
-    const overlay = page.locator(ui.loadingOverlay);
-    await overlay.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
-    await overlay.waitFor({ state: "detached", timeout: 120_000 });
+    const spinner = page.locator(ui.spinner);
+    await spinner.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
+    await spinner.waitFor({ state: "detached", timeout: 120_000 });
 }
 
 /**
