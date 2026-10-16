@@ -63,8 +63,11 @@ test("credits and validator reflect the loaded model", async ({ page }) => {
     await expect(page.getByTestId("environment-license")).not.toHaveText("N/A");
 
     await openTab(page, "validator");
-    await expect(page.getByText(/Number of errors: \d+/)).toBeVisible();
-    await expect(page.getByText(/Number of warnings: \d+/)).toBeVisible();
+    const validator = openPanel(page);
+    const count = (label) =>
+        validator.locator("dl > div").filter({ has: page.getByText(label, { exact: true }) });
+    await expect(count("Errors").locator("dd")).toHaveText(/^\d+$/);
+    await expect(count("Warnings").locator("dd")).toHaveText(/^\d+$/);
 
     expectNoConsoleErrors(errors);
 });
