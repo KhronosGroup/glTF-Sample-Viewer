@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Atom, Box, Braces, CirclePlay, Image, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
@@ -64,6 +64,35 @@ const INITIAL_PHYSICS_DEBUG = {
     colliders: false,
     joints: false
 };
+
+/**
+ * The open panel, sliding in from the right when a tab is selected.
+ *
+ * Driven by the animation API rather than a class so the element's own styles
+ * stay the end state: if the animation never runs, the panel is simply there.
+ * It animates the scroll container itself because an extra wrapper would break
+ * the `min-h-full` chain the panels size themselves with.
+ */
+function OpenPanel({ children }) {
+    const ref = useRef(null);
+
+    useLayoutEffect(() => {
+        const animation = ref.current.animate(
+            [
+                { opacity: 0, transform: "translateX(8px)" },
+                { opacity: 1, transform: "none" }
+            ],
+            { duration: 180, easing: "ease-out" }
+        );
+        return () => animation.cancel();
+    }, []);
+
+    return (
+        <section ref={ref} className="bg-surface grow overflow-x-hidden overflow-y-auto">
+            {children}
+        </section>
+    );
+}
 
 /**
  * The control surface: the tab rail plus the panel of whichever tab is open.
@@ -186,11 +215,7 @@ export function Menu() {
                     : "fixed inset-0 z-20 flex sm:static sm:w-96 sm:shrink-0"
             }
         >
-            {!collapsed && (
-                <section className="bg-surface grow overflow-y-auto">
-                    {renderTab(activeTab)}
-                </section>
-            )}
+            {!collapsed && <OpenPanel key={activeTab}>{renderTab(activeTab)}</OpenPanel>}
 
             <Tabs tabs={tabs} activeTab={activeTab} onSelect={select} />
         </div>
