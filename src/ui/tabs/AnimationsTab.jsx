@@ -1,7 +1,7 @@
 import { Pause, Play } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Panel, PlaybackControls, SectionLabel, Switch } from "../controls.jsx";
+import { Field, Panel, PlaybackControls, Switch } from "../controls.jsx";
 
 export function AnimationsTab() {
     const animations = useViewerStore((state) => state.animations);
