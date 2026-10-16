@@ -74,7 +74,7 @@ export function Dropdown({ label, items, value, onSelect }) {
                 <div
                     ref={listRef}
                     role="listbox"
-                    className="bg-card animate-panel-in absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-md shadow-lg"
+                    className="bg-card absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-md shadow-lg"
                 >
                     {items.map((item) => (
                         <button

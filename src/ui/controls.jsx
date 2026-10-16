@@ -219,10 +219,7 @@ export function SectionLabel({ className, children }) {
 /** Shared chrome for a tab panel: the heading and the scroll padding. */
 export function Panel({ title, className, children }) {
     return (
-        <div
-            data-testid="panel"
-            className="animate-panel-in flex min-h-full flex-col px-5 pt-6 pb-12"
-        >
+        <div data-testid="panel" className="flex min-h-full flex-col px-5 pt-6 pb-12">
             <Title>{title}</Title>
             <div className={classNames("min-h-0 flex-1", className)}>{children}</div>
         </div>
