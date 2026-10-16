@@ -3,7 +3,6 @@ import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
-import { Dropdown } from "../Dropdown.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
 
@@ -33,11 +32,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
-
-    const environmentItems = Object.keys(environments).map((name) => ({
-        value: name,
-        label: environments[name].title
-    }));
 
     return (
         <Panel title="Display">
@@ -179,15 +173,19 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </label>
 
                 <Field label="Active Environment">
-                    <Dropdown
-                        label={environments[selectedEnvironment]?.title}
-                        items={environmentItems}
+                    <Select
                         value={selectedEnvironment}
-                        onSelect={(name) => {
+                        onChange={(name) => {
                             setViewerState({ selectedEnvironment: name });
                             uiEvents.selectedEnvironmentChanged.emit(name);
                         }}
-                    />
+                    >
+                        {Object.entries(environments).map(([name, environment]) => (
+                            <option key={name} value={name}>
+                                {environment.title}
+                            </option>
+                        ))}
+                    </Select>
                 </Field>
             </Field>
 
