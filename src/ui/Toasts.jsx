@@ -28,7 +28,7 @@ function Progress({ duration }) {
     return (
         <div
             className="h-1 bg-black/25"
-            style={{ width: drained ? "0%" : "100%", transition: `width ${duration}ms linear` }}
+            style={{ width: drained ? "100%" : "0%", transition: `width ${duration}ms linear` }}
         />
     );
 }
