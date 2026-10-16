@@ -11,6 +11,10 @@ public/assets/images/lut_*.png
 npm-debug.log
 debug.log
 
+test-results
+playwright-report
+blob-report
+
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -21,3 +25,4 @@ desktop.ini
 .zed
 .idea
 .project
+
