@@ -54,32 +54,3 @@ export function Toasts() {
         </div>
     );
 }
-
-export function LoadingOverlay({ active }) {
-    const [mounted, setMounted] = useState(active);
-
-    if (active && !mounted) {
-        setMounted(true);
-    }
-
-    if (!mounted) {
-        return null;
-    }
-
-    // Unmounts only once the fade has run, so "overlay gone" still means the
-    // element is detached rather than merely transparent.
-    return (
-        <div
-            className={`loading-overlay fixed inset-0 z-30 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
-                active ? "opacity-100" : "pointer-events-none opacity-0"
-            }`}
-            onTransitionEnd={() => {
-                if (!active) {
-                    setMounted(false);
-                }
-            }}
-        >
-            <div className="border-ink/35 border-t-accent size-16 animate-spin rounded-full border-[5px]" />
-        </div>
-    );
-}

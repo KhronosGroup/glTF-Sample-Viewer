@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, FolderOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { notify } from "../logic/notifications.js";
 import { useViewerStore } from "./store.js";
 import { IconButton } from "./controls.jsx";
-import { LoadingOverlay, Toasts } from "./Notices.jsx";
+import { Toasts } from "./Notices.jsx";
+import { Overlay } from "./Overlay.jsx";
 import { Menu } from "./Menu.jsx";
 import { Viewer } from "./Viewer.jsx";
 
@@ -40,7 +41,7 @@ export function App() {
     return (
         <>
             <Toasts />
-            <LoadingOverlay active={isLoading} />
+            <Overlay dropping={showDropDownOverlay} loading={isLoading} />
 
             {!layout.noUi && (
                 <IconButton
@@ -55,18 +56,6 @@ export function App() {
                     )}
                 </IconButton>
             )}
-
-            <div
-                className={`pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
-                    showDropDownOverlay ? "opacity-100" : "opacity-0"
-                }`}
-            >
-                <div className="border-accent text-ink flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed px-16 py-12 text-center">
-                    <FolderOpen size={72} strokeWidth={1.25} aria-hidden="true" />
-                    <p className="text-3xl font-light">Drag and drop files here</p>
-                    <p className="text-ink/70 text-lg">Supported files: glTF, glb &amp; hdr</p>
-                </div>
-            </div>
 
             <div className="flex h-dvh w-full">
                 <Viewer />
