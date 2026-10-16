@@ -19,8 +19,8 @@ for (const [name, url] of [
     ["react", "http://localhost:5173/?react=1"]
 ]) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-    // index.html loads Draco and icon fonts from CDNs with a blocking script tag,
-    // so navigation can take far longer than the default timeout.
+    // index.html loads icon fonts from CDNs with blocking link tags, so navigation
+    // can take far longer than the default timeout.
     page.setDefaultNavigationTimeout(0);
     await page.goto(url);
     const overlay = page.locator(".loading-overlay");
