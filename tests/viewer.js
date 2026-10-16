@@ -9,8 +9,7 @@ export const ui = {
     spinner: "[data-testid='spinner']",
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
-    // Buefy forwards attributes to the inner <select>, React will not.
-    modelSelect: ":is(select[data-testid='model-select'], [data-testid='model-select'] select)"
+    modelSelect: "select[data-testid='model-select']"
 };
 
 /**

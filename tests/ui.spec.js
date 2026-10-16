@@ -9,9 +9,8 @@ import {
     waitForLoadingToSettle
 } from "./viewer.js";
 
-// These ran against the Vue and React UIs side by side during the migration,
-// against shared canvas baselines. The baselines are unchanged, so they still
-// assert that the rewrite did not alter what reaches the renderer.
+// Canvas baselines pin what reaches the renderer, so these catch a UI change
+// that quietly alters the render rather than the markup.
 
 test("renders the default model", async ({ page }) => {
     const errors = collectConsoleErrors(page);
