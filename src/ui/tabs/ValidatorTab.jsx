@@ -73,8 +73,7 @@ export function ValidatorTab() {
 }
 
 /**
- * Badge shown on the Validator tab header. The Vue version built this as an
- * HTML string and injected it with v-html.
+ * Badge shown on the Validator tab header.
  */
 export function ValidationCounter() {
     const report = useViewerStore((state) => state.validationReport);

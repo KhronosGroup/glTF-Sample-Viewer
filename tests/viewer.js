@@ -1,8 +1,8 @@
 import { expect } from "@playwright/test";
 
 /**
- * DOM hooks that depend on the current UI framework. Phase 3 of the React
- * migration should only need to update this object, not the specs.
+ * DOM hooks that depend on how the UI is built. A markup change should only
+ * need to update this object, not the specs.
  */
 export const ui = {
     canvas: "#canvas",

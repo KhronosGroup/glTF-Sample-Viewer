@@ -1,9 +1,8 @@
 /**
  * Form primitives, styled with Tailwind utilities.
  *
- * Every panel composes these rather than hand-rolling markup. The Vue original
- * had each panel spell out its own buttons and labels, which is how the same
- * control ended up with three different paddings and two different greens.
+ * Every panel composes these rather than hand-rolling markup, so the same
+ * control cannot end up with three different paddings and two different greens.
  */
 
 import { ChevronDown, RotateCcw } from "lucide-react";

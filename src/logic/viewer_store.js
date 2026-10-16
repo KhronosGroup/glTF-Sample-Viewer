@@ -6,7 +6,7 @@ import { createStore } from "zustand/vanilla";
  * Everything the loading/rendering layer needs to publish to the UI lives here,
  * along with the selections the UI and that layer both need to read. It is a
  * vanilla store on purpose: the render loop and `UIModel` both touch it with no
- * React or Vue in scope.
+ * React in scope.
  *
  * It deliberately does not own renderer-owned objects such as
  * `state.renderingParameters`. Those stay mutable and are written by the

@@ -4,9 +4,8 @@ import { uiEvents } from "./ui_events.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
 
 /**
- * Splits an SPDX licence file into parts the UI can render as elements. It used
- * to be assembled into an HTML string and injected with v-html, which meant
- * remote text reached innerHTML.
+ * Splits an SPDX licence file into parts the UI can render as elements, so the
+ * remote text is never handed to innerHTML.
  */
 function parseEnvironmentLicense(text, hdr) {
     const licenseName = text.split("SPDX-License-Identifier: ")[1]?.trim();

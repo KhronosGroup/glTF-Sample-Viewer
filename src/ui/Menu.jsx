@@ -108,8 +108,8 @@ export function Menu() {
     };
 
     // Volume is meaningless without either transmission, so it follows them and
-    // remembers the user's choice. Like the Vue original this only moves the
-    // switch; the renderer is not notified until volume is toggled directly.
+    // remembers the user's choice. This only moves the switch; the renderer is
+    // not notified until volume is toggled directly.
     const updateExtensions = (partial) => {
         let next = partial;
         const otherTransmission = (key) =>
