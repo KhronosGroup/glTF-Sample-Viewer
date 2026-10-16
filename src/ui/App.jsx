@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { notify } from "../logic/notifications.js";
-import { useViewerStore } from "./store.js";
+import { useViewerStore, subscribeToViewerState } from "./store.js";
 import { IconButton } from "./controls.jsx";
 import { Toasts } from "./Toasts.jsx";
 import { Overlay } from "./Overlay.jsx";
 import { Menu } from "./Menu.jsx";
 import { Viewer } from "./Viewer.jsx";
 
-// Matches the `md` breakpoint the layout uses. This only decides whether the
-// menu starts open; how it looks is left to Tailwind.
-const DESKTOP_QUERY = "(min-width: 48rem)";
+// The width at which Menu stops covering the viewer and becomes a column
+// beside it, so "not this" is what the menu-hiding behaviour means by mobile.
+const DESKTOP_QUERY = "(min-width: 40rem)";
+
+function isMobile() {
+    return !window.matchMedia(DESKTOP_QUERY).matches;
+}
 
 function readInitialLayout() {
     const noUi = new URLSearchParams(window.location.search).get("noUI") !== null;
     // The menu covers the whole screen on a phone, so it starts out of the way.
-    return { noUi, menuVisible: !noUi && window.matchMedia(DESKTOP_QUERY).matches };
+    return { noUi, menuVisible: !noUi && !isMobile() };
 }
 
 export function App() {
@@ -24,6 +28,18 @@ export function App() {
 
     const isLoading = useViewerStore((state) => state.isLoading);
     const showDropDownOverlay = useViewerStore((state) => state.showDropDownOverlay);
+
+    // Picking or dropping an asset is a request to see it, and on mobile the
+    // menu is covering it. Both paths land on `selectedModel`.
+    useEffect(
+        () =>
+            subscribeToViewerState((state, previous) => {
+                if (state.selectedModel !== previous.selectedModel && isMobile()) {
+                    setMenuVisible(false);
+                }
+            }),
+        []
+    );
 
     useEffect(() => {
         const canvas = document.getElementById("canvas");
