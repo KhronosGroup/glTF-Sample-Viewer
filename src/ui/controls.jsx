@@ -174,26 +174,6 @@ export function Radio({ name, value, checked, onChange, children }) {
     );
 }
 
-export function Checkbox({ checked, onChange, disabled = false, children }) {
-    return (
-        <label
-            className={classNames(
-                "inline-flex items-center gap-2",
-                disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-            )}
-        >
-            <input
-                type="checkbox"
-                className="accent-accent h-4 w-4"
-                checked={checked}
-                disabled={disabled}
-                onChange={(event) => onChange(event.target.checked)}
-            />
-            <span className="text-base font-light">{children}</span>
-        </label>
-    );
-}
-
 export function Input({ className, ...rest }) {
     return (
         <input
