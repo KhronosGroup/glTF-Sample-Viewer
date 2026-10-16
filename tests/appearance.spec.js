@@ -17,10 +17,10 @@ test.describe("appearance", () => {
     for (const panel of PANELS) {
         test(`${panel} panel`, async ({ page }) => {
             await openTab(page, panel);
-            // The panel animates open and pulls webfonts, so let it settle.
+            // The panel pulls webfonts, so let it settle.
             await page.waitForTimeout(600);
 
-            await expect(page.locator("#app")).toHaveScreenshot(`panel-${panel}.png`, {
+            await expect(page.locator(ui.menu)).toHaveScreenshot(`panel-${panel}.png`, {
                 timeout: 60_000,
                 maxDiffPixelRatio: 0.01
             });
@@ -32,7 +32,7 @@ test.describe("appearance", () => {
         await page.locator(ui.tab("models")).click();
         await page.waitForTimeout(600);
 
-        await expect(page.locator("#app")).toHaveScreenshot("panel-collapsed.png", {
+        await expect(page.locator(ui.menu)).toHaveScreenshot("panel-collapsed.png", {
             timeout: 60_000,
             maxDiffPixelRatio: 0.01
         });

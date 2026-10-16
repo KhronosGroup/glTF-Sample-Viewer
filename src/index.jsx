@@ -1,20 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./ui/styles.css";
-import { Viewer } from "./ui/Viewer.jsx";
 import { App } from "./ui/App.jsx";
 import { notify } from "./logic/notifications.js";
 
-// Two roots rather than one, because index.html's column layout owns the split
-// between the canvas and the panel. The viewer starts from its own effect, so
-// there is no ordering dependency between them.
-createRoot(document.getElementById("canvasUI")).render(
-    <StrictMode>
-        <Viewer />
-    </StrictMode>
-);
-
-createRoot(document.getElementById("app")).render(
+createRoot(document.getElementById("root")).render(
     <StrictMode>
         <App />
     </StrictMode>

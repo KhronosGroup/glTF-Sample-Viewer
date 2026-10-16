@@ -76,7 +76,7 @@ export function ValidatorTab() {
  * Badge shown on the Validator tab header. The Vue version built this as an
  * HTML string and injected it with v-html.
  */
-export function ValidationCounter({ isMobile }) {
+export function ValidationCounter() {
     const report = useViewerStore((state) => state.validationReport);
     const description = useViewerStore((state) => state.validationReportDescription);
     const issues = report?.issues;
@@ -111,8 +111,7 @@ export function ValidationCounter({ isMobile }) {
             <ShieldCheck size={26} strokeWidth={1.75} aria-hidden="true" />
             {info !== "" && (
                 <span
-                    className={`absolute -top-2 flex aspect-square min-w-6 items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
-                    style={{ right: isMobile ? "-6px" : "-16px" }}
+                    className={`absolute -top-2 -right-4 flex aspect-square min-w-6 items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
                 >
                     {info}
                 </span>
