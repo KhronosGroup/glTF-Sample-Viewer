@@ -336,10 +336,10 @@ class UIModel {
     publishStatistics(data) {
         setViewerState({
             statistics: {
-                "Mesh Count": data.meshCount,
-                "Triangle Count": data.faceCount,
-                "Opaque Material Count": data.opaqueMaterialsCount,
-                "Transparent Material Count": data.transparentMaterialsCount
+                "Meshes": data.meshCount,
+                "Triangles": data.faceCount,
+                "Opaque Materials": data.opaqueMaterialsCount,
+                "Transparent Materials": data.transparentMaterialsCount
             }
         });
     }
