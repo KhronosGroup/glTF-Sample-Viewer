@@ -6,11 +6,11 @@
   "module": "src/main.js",
   "type": "module",
   "scripts": {
-    "preinstall": "cd ./glTF-Sample-Renderer && npm install && npm run build",
-    "sync:renderer-assets": "mkdir -p public/libs public/assets/images && cp -R glTF-Sample-Renderer/dist/libs/. public/libs/ && cp -R glTF-Sample-Renderer/dist/assets/. public/assets/images/",
-    "predev": "cd ./glTF-Sample-Renderer && npm run build && cd .. && npm run sync:renderer-assets",
+    "preinstall": "npm --prefix ./glTF-Sample-Renderer install && npm --prefix ./glTF-Sample-Renderer run build",
+    "sync:renderer-assets": "npx shx mkdir -p public/libs public/assets/images && npx shx cp -R glTF-Sample-Renderer/dist/libs/. public/libs/ && npx shx cp -R glTF-Sample-Renderer/dist/assets/. public/assets/images/",
+    "predev": "npm --prefix ./glTF-Sample-Renderer run build && npm run sync:renderer-assets",
     "dev": "vite",
-    "prebuild": "cd ./glTF-Sample-Renderer && npm run build && cd .. && npm run sync:renderer-assets",
+    "prebuild": "npm --prefix ./glTF-Sample-Renderer run build && npm run sync:renderer-assets",
     "build": "vite build",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -49,6 +49,7 @@
     "prettier": "^3.6.2",
     "rollup-plugin-license": "^3.5.1",
     "sass": "^1.77.5",
+    "shx": "^0.4.0",
     "vite": "^8.3.0"
   },
   "bugs": {
