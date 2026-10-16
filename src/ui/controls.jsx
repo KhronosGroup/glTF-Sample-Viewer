@@ -41,8 +41,10 @@ export function Switch({ checked, onChange, className, disabled = false, childre
                 disabled={disabled}
                 onChange={(event) => onChange(event.target.checked)}
             />
-            <span className="switch-track h-6 w-11 shrink-0 rounded-full p-0.5" />
-            {children !== undefined && <span className="text-base font-light truncate">{children}</span>}
+            <span className="bg-track peer-checked:bg-accent peer-disabled:opacity-50 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ease-out after:block after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform after:ease-out peer-checked:after:translate-x-5" />
+            {children !== undefined && (
+                <span className="text-base font-light truncate">{children}</span>
+            )}
         </label>
     );
 }
