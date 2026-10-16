@@ -1,8 +1,5 @@
 /**
  * Form primitives, styled with Tailwind utilities.
- *
- * Every panel composes these rather than hand-rolling markup, so the same
- * control cannot end up with three different paddings and two different greens.
  */
 
 import { ChevronDown, RotateCcw } from "lucide-react";
