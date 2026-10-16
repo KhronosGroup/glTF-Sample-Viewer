@@ -9,12 +9,9 @@ export function Tabs({ tabs, activeTab, onSelect, isMobile }) {
     const collapsed = activeTab === null;
 
     return (
-        <div id="tabsContainer" className="flex h-dvh justify-end">
-            {/* Width changes are deliberately instant: animating them would resize
-                the canvas on every frame of the transition. The panel and rail
-                widths add up to a constant, so the canvas keeps its size. */}
+        <div id="tabsContainer" className="flex w-80 sm:w-96 h-dvh justify-end">
             <section
-                className={collapsed ? "hidden" : "w-72 shrink-0 overflow-x-hidden overflow-y-auto"}
+                className={collapsed ? "hidden" : "grow overflow-y-auto"}
             >
                 {tabs.map((tab) =>
                     tab.id === activeTab ? <div key={tab.id}>{tab.render()}</div> : null
@@ -22,7 +19,7 @@ export function Tabs({ tabs, activeTab, onSelect, isMobile }) {
             </section>
 
             <nav
-                className="bg-rail flex w-28 shrink-0 flex-col overflow-x-hidden overflow-y-auto"
+                className="bg-rail xs:bg-red-500 flex w-28 shrink-0 flex-col overflow-x-hidden overflow-y-auto"
                 aria-orientation="vertical"
                 role="tablist"
             >
