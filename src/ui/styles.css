@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Design tokens carried over from the Bulma/Buefy theme this replaces.
- * Tailwind v4 is configured here rather than in a JS file, which is why the
- * project no longer needs Sass.
- */
 @theme {
     --font-sans: "Roboto", sans-serif;
 
