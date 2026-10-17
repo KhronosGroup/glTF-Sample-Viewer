@@ -147,31 +147,6 @@ node_modules/iobuffer/lib-esm/text-encoding-polyfill.js
 180: //# sourceMappingURL=text-encoding-polyfill.js.map
 ```
 
-The following warning is caused by an old bulma version, which buefy-next currently depends on.
-This should be fixed in an upcoming release: https://github.com/ntohq/buefy-next/issues/208
-
-```
-[0] [build] DEPRECATION WARNING: Sass's behavior for declarations that appear after nested
-[0] rules will be changing to match the behavior specified by CSS in an upcoming
-[0] version. To keep the existing behavior, move the declaration above the nested
-[0] rule. To opt into the new behavior, wrap the declaration in `& {}`.
-[0]
-[0] More info: https://sass-lang.com/d/mixed-decls
-[0]
-[0]    ╷
-[0] 51 │ ┌   &:not(.is-rounded)
-[0] 52 │ │     border-radius: $radius-small
-[0]    │ └─── nested rule
-[0] 53 │     font-size: $size-small
-[0]    │     ^^^^^^^^^^^^^^^^^^^^^^ declaration
-[0]    ╵
-[0]     node_modules\bulma\sass\elements\button.sass 53:3   button-small()
-[0]     node_modules\bulma\sass\elements\button.sass 252:5  @import
-[0]     node_modules\bulma\sass\elements\_all.sass 5:9      @import
-[0]     node_modules\bulma\bulma.sass 5:9                   @import
-[0]     stdin 60:9                                          root stylesheet
-```
-
 The following warnings stem from the rollup copy plugin, which is only used for development to copy files to the dist folder.
 
 ```

@@ -9,6 +9,6 @@ export function setNotificationSink(handler) {
     sink = handler;
 }
 
-export function notify(message, type = "is-info") {
+export function notify(message, type = "info") {
     sink?.(message, type);
 }

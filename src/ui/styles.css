@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Roboto", sans-serif;
+
+    --color-accent: #87c540;
+    --color-accent-hover: #6fa32e;
+    --color-accent-active: #5e8c2f;
+    --color-accent-dim: #385117;
+
+    --color-surface: #363636;
+    --color-rail: #1b1b1b;
+    --color-rail-active: #373737;
+    --color-rail-hover: #2c2c2c;
+    --color-card: #424242;
+    --color-card-inner: #4d4d4d;
+    --color-track: #dbdbdb;
+
+    --color-ink: #f5f5f5;
+    --color-ink-dim: #f2f2f2;
+}
+
+@layer base {
+    /* The UI is dark-only; this makes native widgets such as scrollbars match. */
+    html {
+        color-scheme: dark;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+
+    body {
+        margin: 0;
+        height: 100%;
+        background-color: var(--color-surface);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: var(--text-base);
+        line-height: 1.5;
+    }
+
+    /*
+     * Selects are transparent so they blend into their card, but Windows
+     * builds the popup from that background and falls back to white.
+     */
+    option,
+    optgroup {
+        background-color: var(--color-card);
+        color: var(--color-ink);
+    }
+
+    a:hover {
+        color: var(--color-accent);
+    }
+
+    button:not(:disabled),
+    [role="tab"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    /* Spinners on number inputs fight the fixed-width matrix cells. */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input:invalid {
+        border-color: #ff3860;
+    }
+}

@@ -7,9 +7,6 @@ import {
     waitForLoadingToSettle
 } from "./viewer.js";
 
-// Camera input is the one area with no other coverage, and it is the part of
-// the codebase most easily broken by a rewrite of the input plumbing.
-
 async function dragOnCanvas(page, { from, to, button = "left", modifiers = [] }) {
     for (const key of modifiers) {
         await page.keyboard.down(key);

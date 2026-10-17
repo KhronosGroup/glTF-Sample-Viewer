@@ -1,105 +1,45 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { notify } from "../logic/notifications.js";
-import { uiEvents } from "../logic/ui_events.js";
-import { useViewerStore } from "./store.js";
-import { Tabs, useTabState } from "./Tabs.jsx";
-import { LoadingOverlay, Toasts } from "./Notices.jsx";
-import { ModelsTab } from "./tabs/ModelsTab.jsx";
-import { DisplayTab } from "./tabs/DisplayTab.jsx";
-import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
-import { CreditsTab } from "./tabs/CreditsTab.jsx";
-import { AnimationsTab } from "./tabs/AnimationsTab.jsx";
-import { GraphsTab } from "./tabs/GraphsTab.jsx";
-import { PhysicsTab } from "./tabs/PhysicsTab.jsx";
-import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
+import { useViewerStore, subscribeToViewerState } from "./store.js";
+import { IconButton } from "./controls.jsx";
+import { Toasts } from "./Toasts.jsx";
+import { Overlay } from "./Overlay.jsx";
+import { Menu } from "./Menu.jsx";
+import { Viewer } from "./Viewer.jsx";
 
-// Definition of mobile: https://bulma.io/documentation/start/responsiveness/
-const MOBILE_BREAKPOINT = 768;
+// The width at which Menu stops covering the viewer and becomes a column
+// beside it, so "not this" is what the menu-hiding behaviour means by mobile.
+const DESKTOP_QUERY = "(min-width: 40rem)";
 
-const TAB_META = [
-    { id: "models", label: "Models", icon: "Model" },
-    { id: "display", label: "Display", icon: "Display" },
-    { id: "validator", label: "Validator", icon: "Capture" },
-    { id: "animations", label: "Animations", icon: "Animation" },
-    { id: "physics", label: "Physics", icon: "Physics", needsPhysics: true },
-    { id: "credits", label: "Credits", icon: "XMP" },
-    { id: "advanced", label: "Advanced Controls", icon: "Developer" }
-];
-
-const INITIAL_LIGHTING = {
-    ibl: true,
-    punctualLights: true,
-    renderEnv: true,
-    blurEnv: true,
-    iblIntensity: 0.0,
-    exposure: 0,
-    toneMap: "Khronos PBR Neutral",
-    rotation: "+Z"
-};
-
-// Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
-const INITIAL_EXTENSIONS = {
-    inputSmoothing: true,
-    skinning: true,
-    morphing: true,
-    interactivity: true,
-    hoverability: true,
-    selectability: true,
-    nodeVisibility: true,
-    floatingPointFramebuffer: true,
-    clearcoat: true,
-    sheen: true,
-    transmission: true,
-    diffuseTransmission: true,
-    volume: true,
-    volumeScattering: true,
-    ior: true,
-    specular: true,
-    emissiveStrength: true,
-    iridescence: true,
-    retroreflection: true,
-    anisotropy: true,
-    dispersion: true,
-    gaussianSplatting: true
-};
-
-const INITIAL_PHYSICS_DEBUG = {
-    engine: "nvidia-physx",
-    colliders: false,
-    joints: false
-};
+function isMobile() {
+    return !window.matchMedia(DESKTOP_QUERY).matches;
+}
 
 function readInitialLayout() {
-    const isMobile = document.documentElement.clientWidth <= MOBILE_BREAKPOINT;
     const noUi = new URLSearchParams(window.location.search).get("noUI") !== null;
-    return { isMobile, noUi, uiVisible: !isMobile && !noUi };
+    // The menu covers the whole screen on a phone, so it starts out of the way.
+    return { noUi, menuVisible: !noUi && !isMobile() };
 }
 
 export function App() {
     const [layout] = useState(readInitialLayout);
-    const [uiVisible, setUiVisible] = useState(layout.uiVisible);
-    const [selectedVariant, setSelectedVariant] = useState("None");
-    const [lighting, setLighting] = useState(INITIAL_LIGHTING);
-    const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
-    const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
-    const [debugChannel, setDebugChannel] = useState("None");
-    const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
-    const volumePref = useRef(INITIAL_EXTENSIONS.volume);
+    const [menuVisible, setMenuVisible] = useState(layout.menuVisible);
 
     const isLoading = useViewerStore((state) => state.isLoading);
     const showDropDownOverlay = useViewerStore((state) => state.showDropDownOverlay);
-    const graphs = useViewerStore((state) => state.graphs);
-    const hasPhysics = useViewerStore((state) => state.hasPhysics);
 
-    // The Animations tab becomes the Graphs tab when the asset carries
-    // KHR_interactivity and the extension is enabled.
-    const showGraphs = graphs.length > 0 && extensions.interactivity;
-
-    const tabMeta = TAB_META.filter((tab) => !tab.needsPhysics || hasPhysics).map((tab) =>
-        tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
+    // Picking or dropping an asset is a request to see it, and on mobile the
+    // menu is covering it. Both paths land on `selectedModel`.
+    useEffect(
+        () =>
+            subscribeToViewerState((state, previous) => {
+                if (state.selectedModel !== previous.selectedModel && isMobile()) {
+                    setMenuVisible(false);
+                }
+            }),
+        []
     );
-    const tabIds = tabMeta.map((tab) => tab.id);
-    const { activeTab, collapsed, select, collapse } = useTabState(tabIds);
 
     useEffect(() => {
         const canvas = document.getElementById("canvas");
@@ -109,155 +49,33 @@ export function App() {
                 "The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " +
                     "Please try again with another browser, or check https://get.webgl.org/webgl2/ " +
                     "if you believe you are seeing this message in error.",
-                "is-danger"
+                "error"
             );
         }
     }, []);
 
-    // Turning IBL off hides the background and remembers the previous choice, so
-    // turning it back on restores it rather than forcing it visible.
-    const updateLighting = (partial) => {
-        let next = partial;
-        if (partial.ibl === false) {
-            environmentVisiblePref.current = lighting.renderEnv;
-            next = { ...partial, renderEnv: false };
-            uiEvents.renderEnvChanged.emit(false);
-        } else if (partial.ibl === true) {
-            next = { ...partial, renderEnv: environmentVisiblePref.current };
-            uiEvents.renderEnvChanged.emit(environmentVisiblePref.current);
-        }
-        setLighting((current) => ({ ...current, ...next }));
-    };
-
-    // Volume is meaningless without either transmission, so it follows them and
-    // remembers the user's choice. Like the Vue original this only moves the
-    // switch; the renderer is not notified until volume is toggled directly.
-    const updateExtensions = (partial) => {
-        let next = partial;
-        const otherTransmission = (key) =>
-            key === "transmission" ? extensions.diffuseTransmission : extensions.transmission;
-
-        for (const key of ["transmission", "diffuseTransmission"]) {
-            if (partial[key] === undefined || otherTransmission(key)) {
-                continue;
-            }
-            if (partial[key] === false) {
-                volumePref.current = extensions.volume;
-                next = { ...next, volume: false };
-            } else {
-                next = { ...next, volume: volumePref.current };
-            }
-        }
-
-        setExtensions((current) => ({ ...current, ...next }));
-    };
-
-    const renderTab = (id) => {
-        switch (id) {
-            case "models":
-                return (
-                    <ModelsTab
-                        onCollapse={collapse}
-                        selectedVariant={selectedVariant}
-                        onSelectVariant={setSelectedVariant}
-                    />
-                );
-            case "display":
-                return (
-                    <DisplayTab
-                        onCollapse={collapse}
-                        lighting={lighting}
-                        onLightingChange={updateLighting}
-                    />
-                );
-            case "validator":
-                return <ValidatorTab onCollapse={collapse} />;
-            case "animations":
-                return showGraphs ? (
-                    <GraphsTab onCollapse={collapse} />
-                ) : (
-                    <AnimationsTab onCollapse={collapse} />
-                );
-            case "credits":
-                return <CreditsTab onCollapse={collapse} />;
-            case "physics":
-                return (
-                    <PhysicsTab
-                        onCollapse={collapse}
-                        debug={physicsDebug}
-                        onDebugChange={(partial) =>
-                            setPhysicsDebug((current) => ({ ...current, ...partial }))
-                        }
-                    />
-                );
-            case "advanced":
-                return (
-                    <AdvancedTab
-                        onCollapse={collapse}
-                        extensions={extensions}
-                        onExtensionsChange={updateExtensions}
-                        debugChannel={debugChannel}
-                        onDebugChannelChange={setDebugChannel}
-                    />
-                );
-            default:
-                return null;
-        }
-    };
-
-    const tabs = tabMeta.map((tab) => ({
-        ...tab,
-        render: () => renderTab(tab.id),
-        renderHeader:
-            tab.id === "validator"
-                ? (expanded) => <ValidationCounter expanded={expanded} isMobile={layout.isMobile} />
-                : undefined
-    }));
-
     return (
         <>
             <Toasts />
-            <LoadingOverlay active={isLoading} />
+            <Overlay dropping={showDropDownOverlay} loading={isLoading} />
 
-            <div className="canvasUIMaximize">
-                {!(layout.isMobile && !collapsed) && !layout.noUi && (
-                    <img
-                        src={
-                            uiVisible ? "assets/ui/Icon_Expand.svg" : "assets/ui/Icon_Collapse.svg"
-                        }
-                        onClick={() => setUiVisible((visible) => !visible)}
-                        className="maximizeCanvasIcon"
-                        width="30px"
-                    />
-                )}
-            </div>
-
-            <div className="column" style={uiVisible ? undefined : { display: "none" }}>
-                <div
-                    className={showDropDownOverlay ? "" : "is-hidden"}
-                    id="dropZone"
-                    style={{ pointerEvents: "none" }}
+            {!layout.noUi && (
+                <IconButton
+                    label={menuVisible ? "Hide the controls" : "Show the controls"}
+                    onClick={() => setMenuVisible((visible) => !visible)}
+                    className="bg-rail/80 hover:bg-rail fixed top-4 right-4 z-40 p-2 backdrop-blur-sm"
                 >
-                    <div className="is-overlay is-dropAreaCard is-flex" style={{ zIndex: 999 }}>
-                        <div className="box has-text-centered">
-                            <span className="icon is-large">
-                                <i className="fas fa-folder-open fa-4x" />
-                            </span>
-                            <p className="is-size-2 has-text-weight-light">
-                                Drag and drop files here
-                            </p>
-                            <p className="is-size-4">Supported files: glTF, glb &amp; hdr</p>
-                        </div>
-                    </div>
-                </div>
+                    {menuVisible ? (
+                        <ChevronRight size={22} aria-hidden="true" />
+                    ) : (
+                        <ChevronLeft size={22} aria-hidden="true" />
+                    )}
+                </IconButton>
+            )}
 
-                <Tabs
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onSelect={select}
-                    collapsed={collapsed}
-                    isMobile={layout.isMobile}
-                />
+            <div className="flex h-dvh w-full">
+                <Viewer />
+                {!layout.noUi && <Menu visible={menuVisible} />}
             </div>
         </>
     );

@@ -1,16 +1,15 @@
 import { expect } from "@playwright/test";
 
 /**
- * DOM hooks that depend on the current UI framework. Phase 3 of the React
- * migration should only need to update this object, not the specs.
+ * DOM hooks that depend on how the UI is built. A markup change should only
+ * need to update this object, not the specs.
  */
 export const ui = {
     canvas: "#canvas",
-    loadingOverlay: ".loading-overlay",
-    tabs: "#tabsContainer",
+    spinner: "[data-testid='spinner']",
+    menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
-    // Buefy forwards attributes to the inner <select>, React will not.
-    modelSelect: ":is(select[data-testid='model-select'], [data-testid='model-select'] select)"
+    modelSelect: "select[data-testid='model-select']"
 };
 
 /**
@@ -41,29 +40,32 @@ export function expectNoConsoleErrors(errors) {
 }
 
 /**
- * Waits for the in-flight glTF load to finish. The overlay may already be gone
+ * Waits for the in-flight glTF load to finish. The spinner may already be gone
  * by the time this is called, so its absence is not treated as an error.
  */
 export async function waitForLoadingToSettle(page) {
-    const overlay = page.locator(ui.loadingOverlay);
-    await overlay.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
-    await overlay.waitFor({ state: "detached", timeout: 120_000 });
+    const spinner = page.locator(ui.spinner);
+    await spinner.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
+    await spinner.waitFor({ state: "detached", timeout: 120_000 });
 }
 
 /**
- * The Vue UI keeps inactive panels in the DOM, so assertions have to be scoped
- * to the open one or they can match hidden content from another tab.
+ * Assertions are scoped to the open panel so they cannot match content that
+ * another tab happens to leave in the DOM.
  */
 export function openPanel(page) {
-    return page.locator(".tabContent:visible").first();
+    return page.locator("[data-testid='panel']:visible").first();
 }
 
 /**
- * Tab content starts collapsed, so a panel has to be opened before any of its
- * controls can be interacted with.
+ * Clicking a tab toggles it, so opening one that is already open would collapse
+ * it. `aria-selected` says whether the panel is showing.
  */
 export async function openTab(page, name) {
-    await page.locator(ui.tab(name)).click();
+    const tab = page.locator(ui.tab(name));
+    if ((await tab.getAttribute("aria-selected")) !== "true") {
+        await tab.click();
+    }
 }
 
 export async function openModelsTab(page) {
