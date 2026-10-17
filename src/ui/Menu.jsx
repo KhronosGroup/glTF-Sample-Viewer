@@ -98,9 +98,13 @@ function OpenPanel({ children }) {
  * The control surface: the tab rail plus the panel of whichever tab is open.
  *
  * Takes the full screen on mobile and a fixed-width column beside the viewer
- * from `md` up. Collapsing the open tab leaves only the rail.
+ * from `sm` up. Collapsing the open tab leaves only the rail.
+ *
+ * Hiding it keeps it mounted: the switches here mirror state the renderer
+ * already holds, and unmounting would reset them while the render stayed as it
+ * was.
  */
-export function Menu() {
+export function Menu({ visible }) {
     const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
@@ -206,15 +210,17 @@ export function Menu() {
 
     const collapsed = activeTab === null;
 
+    const shape = () => {
+        if (!visible) {
+            return "hidden";
+        }
+        return collapsed
+            ? "flex shrink-0"
+            : "fixed inset-0 bg-surface z-20 flex sm:static sm:w-96 sm:shrink-0";
+    };
+
     return (
-        <div
-            data-testid="menu"
-            className={
-                collapsed
-                    ? "flex shrink-0"
-                    : "fixed inset-0 bg-surface z-20 flex sm:static sm:w-96 sm:shrink-0"
-            }
-        >
+        <div data-testid="menu" className={shape()}>
             {!collapsed && <OpenPanel key={activeTab}>{renderTab(activeTab)}</OpenPanel>}
 
             <Tabs tabs={tabs} activeTab={activeTab} onSelect={select} />

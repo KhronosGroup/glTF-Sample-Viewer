@@ -75,7 +75,7 @@ export function App() {
 
             <div className="flex h-dvh w-full">
                 <Viewer />
-                {menuVisible && !layout.noUi && <Menu />}
+                {!layout.noUi && <Menu visible={menuVisible} />}
             </div>
         </>
     );

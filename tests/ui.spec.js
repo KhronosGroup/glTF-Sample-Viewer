@@ -105,3 +105,21 @@ test("the advanced panel shows statistics and extension toggles", async ({ page 
 
     expectNoConsoleErrors(errors);
 });
+
+// The menu's switches mirror state the renderer already holds, so losing them
+// on hide leaves the UI claiming a default the render does not reflect.
+test("hiding the menu does not reset it", async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+
+    await page.goto("/");
+    await waitForLoadingToSettle(page);
+    await openTab(page, "credits");
+
+    await page.getByRole("button", { name: "Hide the controls" }).click();
+    await expect(page.locator(ui.menu)).toBeHidden();
+
+    await page.getByRole("button", { name: "Show the controls" }).click();
+    await expect(page.locator(ui.tab("credits"))).toHaveAttribute("aria-selected", "true");
+
+    expectNoConsoleErrors(errors);
+});
