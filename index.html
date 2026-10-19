@@ -1,32 +1,28 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>glTF Sample Viewer</title>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="Khronos Group Inc." />
+    <meta name="description" content="The official glTF sample viewer" />
+    <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <meta name="author" content="Khronos Group Inc." />
-        <meta name="description" content="The official glTF sample viewer" />
-        <meta name="keywords" content="glTF, WebGL, Sample, Viewer, PBR" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>glTF Sample Viewer</title>
 
-        <link rel="icon" href="assets/images/gltf.png" />
+    <link rel="icon" href="assets/images/gltf.png" />
 
-        <!-- load fonts -->
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
-            rel="stylesheet"
-        />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 
-        <script src="libs/draco_decoder_gltf.js"></script>
-        <script src="libs/libktx.js"></script>
-    </head>
+    <script src="libs/libktx.js"></script>
+</head>
 
-    <body class="" style="touch-action: none">
-        <div id="canvasUI"></div>
-        <div id="app"></div>
-    </body>
+<body style="touch-action: none">
+    <div id="root"></div>
+</body>
+
+<script type="module" src="/src/index.jsx"></script>
 
     <script type="module" src="/src/index.jsx"></script>
 </html>

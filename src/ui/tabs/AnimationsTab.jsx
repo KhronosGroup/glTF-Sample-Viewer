@@ -1,7 +1,7 @@
 import { Pause, Play } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Checkbox, Field, Panel, PlaybackControls, SectionLabel } from "../controls.jsx";
+import { Field, Panel, PlaybackControls, Switch } from "../controls.jsx";
 
 export function AnimationsTab() {
     const animations = useViewerStore((state) => state.animations);
@@ -21,8 +21,6 @@ export function AnimationsTab() {
 
     return (
         <Panel title="Animations">
-            <SectionLabel>Animation Controls</SectionLabel>
-
             {hasAnimations && (
                 <PlaybackControls
                     active={animationState}
@@ -38,20 +36,19 @@ export function AnimationsTab() {
                 />
             )}
 
-            {!hasAnimations && <SectionLabel>No animations available</SectionLabel>}
+            {!hasAnimations && <p className="text-ink/60">No animations available</p>}
 
             {hasAnimations && (
-                <Field label="Animations">
+                <Field label="Animations" grouped>
                     {animations.map((animation) => (
-                        <div key={animation.index} className="mb-2">
-                            <Checkbox
-                                checked={selectedAnimations.includes(animation.index)}
-                                disabled={disabledAnimations.includes(animation.index)}
-                                onChange={(checked) => toggleAnimation(animation.index, checked)}
-                            >
-                                {animation.title}
-                            </Checkbox>
-                        </div>
+                        <Switch
+                            key={animation.index}
+                            checked={selectedAnimations.includes(animation.index)}
+                            disabled={disabledAnimations.includes(animation.index)}
+                            onChange={(checked) => toggleAnimation(animation.index, checked)}
+                        >
+                            {animation.title}
+                        </Switch>
                     ))}
                 </Field>
             )}

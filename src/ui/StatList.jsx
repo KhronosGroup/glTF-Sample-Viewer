@@ -12,7 +12,7 @@ export function StatList({ data }) {
             {Object.entries(data).map(([label, value]) => (
                 <div
                     key={label}
-                    className="bg-card flex items-baseline justify-between gap-4 rounded-md px-3 py-2"
+                    className="bg-card flex items-center justify-between gap-4 rounded-md px-3 py-2"
                 >
                     <dt className="font-light">{label}</dt>
                     <dd className="text-ink/60">{String(value)}</dd>

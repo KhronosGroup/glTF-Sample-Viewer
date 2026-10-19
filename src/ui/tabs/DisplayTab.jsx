@@ -4,7 +4,6 @@ import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
-import { Dropdown } from "../Dropdown.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
 
@@ -49,11 +48,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
         });
     };
 
-    const environmentItems = Object.keys(environments).map((name) => ({
-        value: name,
-        label: environments[name].title
-    }));
-
     return (
         <Panel title="Display">
             <Field label="Lighting" grouped>
@@ -65,7 +59,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         onLightingChange({ ibl: checked });
                     }}
                 >
-                    Image Based{" "}
+                    Image Based
                 </Switch>
                 <Switch
                     checked={punctualLights}
@@ -149,7 +143,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Switch>
                 <label className="mt-4 flex items-center gap-3">
                     <input
-                        className="color-swatch h-8 w-12 rounded-md"
+                        className="border-ink-dim [&::-webkit-color-swatch]:border-ink-dim h-8 w-12 appearance-none rounded-md border p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border"
                         type="color"
                         value={clearColor}
                         onChange={(event) => {
@@ -194,15 +188,19 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </label>
 
                 <Field label="Active Environment">
-                    <Dropdown
-                        label={environments[selectedEnvironment]?.title}
-                        items={environmentItems}
+                    <Select
                         value={selectedEnvironment}
-                        onSelect={(name) => {
+                        onChange={(name) => {
                             setViewerState({ selectedEnvironment: name });
                             uiEvents.selectedEnvironmentChanged.emit(name);
                         }}
-                    />
+                    >
+                        {Object.entries(environments).map(([name, environment]) => (
+                            <option key={name} value={name}>
+                                {environment.title}
+                            </option>
+                        ))}
+                    </Select>
                 </Field>
             </Field>
 

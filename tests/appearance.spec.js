@@ -4,7 +4,8 @@ import { expect } from "@playwright/test";
 
 // The canvas baselines say nothing about the panel, so a styling change can pass
 // the rest of the suite untouched. These pin the panel's appearance instead, and
-// are deliberately strict: any pixel move is either intended or a regression.
+// are deliberately strict: the panel is plain DOM, so any pixel move is either
+// intended or a regression. Update them with `-u all`, not `-u`.
 
 const PANELS = ["models", "display", "validator", "animations", "credits", "advanced"];
 
@@ -17,12 +18,11 @@ test.describe("appearance", () => {
     for (const panel of PANELS) {
         test(`${panel} panel`, async ({ page }) => {
             await openTab(page, panel);
-            // The panel animates open and pulls webfonts, so let it settle.
+            // The panel pulls webfonts, so let it settle.
             await page.waitForTimeout(600);
 
-            await expect(page.locator("#app")).toHaveScreenshot(`panel-${panel}.png`, {
-                timeout: 60_000,
-                maxDiffPixelRatio: 0.01
+            await expect(page.locator(ui.menu)).toHaveScreenshot(`panel-${panel}.png`, {
+                timeout: 60_000
             });
         });
     }
@@ -32,9 +32,8 @@ test.describe("appearance", () => {
         await page.locator(ui.tab("models")).click();
         await page.waitForTimeout(600);
 
-        await expect(page.locator("#app")).toHaveScreenshot("panel-collapsed.png", {
-            timeout: 60_000,
-            maxDiffPixelRatio: 0.01
+        await expect(page.locator(ui.menu)).toHaveScreenshot("panel-collapsed.png", {
+            timeout: 60_000
         });
     });
 });

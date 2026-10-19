@@ -10,9 +10,8 @@ import {
     waitForLoadingToSettle
 } from "./viewer.js";
 
-// These ran against the Vue and React UIs side by side during the migration,
-// against shared canvas baselines. The baselines are unchanged, so they still
-// assert that the rewrite did not alter what reaches the renderer.
+// Canvas baselines pin what reaches the renderer, so these catch a UI change
+// that quietly alters the render rather than the markup.
 
 test("renders the default model", async ({ page }) => {
     const errors = collectConsoleErrors(page);
@@ -134,8 +133,11 @@ test("credits and validator reflect the loaded model", async ({ page }) => {
     await expect(page.getByTestId("environment-license")).not.toHaveText("N/A");
 
     await openTab(page, "validator");
-    await expect(page.getByText(/Number of errors: \d+/)).toBeVisible();
-    await expect(page.getByText(/Number of warnings: \d+/)).toBeVisible();
+    const validator = openPanel(page);
+    const count = (label) =>
+        validator.locator("dl > div").filter({ has: page.getByText(label, { exact: true }) });
+    await expect(count("Errors").locator("dd")).toHaveText(/^\d+$/);
+    await expect(count("Warnings").locator("dd")).toHaveText(/^\d+$/);
 
     expectNoConsoleErrors(errors);
 });
@@ -166,10 +168,28 @@ test("the advanced panel shows statistics and extension toggles", async ({ page 
     await openTab(page, "advanced");
 
     const panel = openPanel(page);
-    await expect(panel.getByText("Mesh Count", { exact: true })).toBeVisible();
-    await expect(panel.getByText("Triangle Count", { exact: true })).toBeVisible();
+    await expect(panel.getByText("Meshes", { exact: true })).toBeVisible();
+    await expect(panel.getByText("Triangles", { exact: true })).toBeVisible();
     await expect(panel.getByText("Clearcoat", { exact: true })).toBeVisible();
     await expect(panel.getByText("Gaussian Splatting", { exact: true })).toBeVisible();
+
+    expectNoConsoleErrors(errors);
+});
+
+// The menu's switches mirror state the renderer already holds, so losing them
+// on hide leaves the UI claiming a default the render does not reflect.
+test("hiding the menu does not reset it", async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+
+    await page.goto("/");
+    await waitForLoadingToSettle(page);
+    await openTab(page, "credits");
+
+    await page.getByRole("button", { name: "Hide the controls" }).click();
+    await expect(page.locator(ui.menu)).toBeHidden();
+
+    await page.getByRole("button", { name: "Show the controls" }).click();
+    await expect(page.locator(ui.tab("credits"))).toHaveAttribute("aria-selected", "true");
 
     expectNoConsoleErrors(errors);
 });

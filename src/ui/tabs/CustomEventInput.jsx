@@ -1,7 +1,7 @@
 import { Field, Input, Switch } from "../controls.jsx";
 
-// The Vue template repeated near-identical markup for each of these; they only
-// differ by how many inputs to lay out and in which direction.
+// These types only differ by how many inputs to lay out and in which direction,
+// so one component covers them all.
 const VECTOR_SIZES = { float2: 2, float3: 3, float4: 4 };
 const MATRIX_SIZES = { float2x2: 2, float3x3: 3, float4x4: 4 };
 

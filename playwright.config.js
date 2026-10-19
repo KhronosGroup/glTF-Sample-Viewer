@@ -4,8 +4,7 @@ const PORT = 5173;
 
 export default defineConfig({
     testDir: "./tests",
-    // Shared across spec files so the Vue and React UIs are compared against
-    // the same canvas baselines.
+    // Keeps every spec's baselines in one directory.
     snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{-projectName}{-platform}{ext}",
     // The default model and environment are fetched from GitHub at runtime, so
     // first paint depends on the network rather than on local build output.

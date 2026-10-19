@@ -1,4 +1,6 @@
 import { GltfState, GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
+import createDracoDecoderModule from "draco3d/draco_decoder_nodejs.js";
+import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 
 import { UIModel } from "./logic/uimodel.js";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
@@ -30,9 +32,14 @@ const EXTENSION_TOGGLES = {
 };
 
 // How long a single drag or wheel delta keeps feeding motion into the camera.
-const SMOOTHING_MS = 200;
+const SMOOTHING_MS = 50;
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
+
+// The decoder's Emscripten glue looks for its .wasm next to itself, which is not where
+// the bundler puts it.
+const dracoDecoderLib = (moduleOptions) =>
+    createDracoDecoderModule({ ...moduleOptions, locateFile: () => dracoDecoderWasmUrl });
 
 /**
  * Boots the viewer against a canvas and returns a teardown function.
@@ -54,7 +61,7 @@ export const initViewer = async (canvas) => {
     });
 
     const view = new GltfView(context);
-    const resourceLoader = view.createResourceLoader();
+    const resourceLoader = view.createResourceLoader(dracoDecoderLib);
     const state = view.createState();
 
     await state.physicsController.initializeEngine("NvidiaPhysX");

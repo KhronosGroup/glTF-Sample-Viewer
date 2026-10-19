@@ -1,9 +1,5 @@
 /**
  * Form primitives, styled with Tailwind utilities.
- *
- * Every panel composes these rather than hand-rolling markup. The Vue original
- * had each panel spell out its own buttons and labels, which is how the same
- * control ended up with three different paddings and two different greens.
  */
 
 import { ChevronDown, RotateCcw } from "lucide-react";
@@ -41,8 +37,10 @@ export function Switch({ checked, onChange, className, disabled = false, childre
                 disabled={disabled}
                 onChange={(event) => onChange(event.target.checked)}
             />
-            <span className="switch-track h-6 w-11 shrink-0 rounded-full p-0.5" />
-            {children !== undefined && <span className="text-base font-light truncate">{children}</span>}
+            <span className="bg-track peer-checked:bg-accent peer-disabled:opacity-50 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ease-out after:block after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform after:ease-out peer-checked:after:translate-x-5" />
+            {children !== undefined && (
+                <span className="text-base font-light truncate">{children}</span>
+            )}
         </label>
     );
 }
@@ -172,26 +170,6 @@ export function Radio({ name, value, checked, onChange, children }) {
     );
 }
 
-export function Checkbox({ checked, onChange, disabled = false, children }) {
-    return (
-        <label
-            className={classNames(
-                "inline-flex items-center gap-2",
-                disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-            )}
-        >
-            <input
-                type="checkbox"
-                className="accent-accent h-4 w-4"
-                checked={checked}
-                disabled={disabled}
-                onChange={(event) => onChange(event.target.checked)}
-            />
-            <span className="text-base font-light">{children}</span>
-        </label>
-    );
-}
-
 export function Input({ className, ...rest }) {
     return (
         <input
@@ -219,10 +197,7 @@ export function SectionLabel({ className, children }) {
 /** Shared chrome for a tab panel: the heading and the scroll padding. */
 export function Panel({ title, className, children }) {
     return (
-        <div
-            data-testid="panel"
-            className="animate-panel-in flex min-h-full flex-col px-5 pt-6 pb-12"
-        >
+        <div data-testid="panel" className="flex min-h-full flex-col px-5 pt-6 pb-12">
             <Title>{title}</Title>
             <div className={classNames("min-h-0 flex-1", className)}>{children}</div>
         </div>

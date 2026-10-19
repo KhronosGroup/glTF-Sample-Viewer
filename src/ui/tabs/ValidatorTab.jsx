@@ -2,6 +2,7 @@ import { Copy, Download, ShieldCheck } from "lucide-react";
 import { notify } from "../../logic/notifications.js";
 import { useViewerStore } from "../store.js";
 import { Button, Panel } from "../controls.jsx";
+import { StatList } from "../StatList.jsx";
 
 function downloadJson(filename, json) {
     const text = JSON.stringify(json, undefined, 4);
@@ -34,10 +35,14 @@ export function ValidatorTab() {
     return (
         <Panel title="glTF Validator">
             {!failed && (
-                <div className="my-6 space-y-1 break-words">
-                    <p>Number of errors: {report?.issues?.numErrors ?? 0}</p>
-                    <p>Number of warnings: {report?.issues?.numWarnings ?? 0}</p>
-                    <p>Number of infos: {report?.issues?.numInfos ?? 0}</p>
+                <div className="my-6">
+                    <StatList
+                        data={{
+                            Errors: report?.issues?.numErrors ?? 0,
+                            Warnings: report?.issues?.numWarnings ?? 0,
+                            Infos: report?.issues?.numInfos ?? 0
+                        }}
+                    />
                 </div>
             )}
 
@@ -46,7 +51,7 @@ export function ValidatorTab() {
             {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
 
             {!failed && (
-                <div className="flex shrink-0 flex-col items-start gap-3">
+                <div className="flex shrink-0 flex-col items-start gap-3 my-6">
                     <Button onClick={() => copyToClipboard(JSON.stringify(report, undefined, 4))}>
                         <Copy size={16} aria-hidden="true" />
                         Copy
@@ -73,10 +78,9 @@ export function ValidatorTab() {
 }
 
 /**
- * Badge shown on the Validator tab header. The Vue version built this as an
- * HTML string and injected it with v-html.
+ * Badge shown on the Validator tab header.
  */
-export function ValidationCounter({ isMobile }) {
+export function ValidationCounter() {
     const report = useViewerStore((state) => state.validationReport);
     const description = useViewerStore((state) => state.validationReportDescription);
     const issues = report?.issues;
@@ -111,8 +115,7 @@ export function ValidationCounter({ isMobile }) {
             <ShieldCheck size={26} strokeWidth={1.75} aria-hidden="true" />
             {info !== "" && (
                 <span
-                    className={`absolute -top-2 flex aspect-square min-w-6 items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
-                    style={{ right: isMobile ? "-6px" : "-16px" }}
+                    className={`absolute -top-2 -right-4 flex aspect-square min-w-6 items-center justify-center rounded-full text-sm font-bold text-black ${tone}`}
                 >
                     {info}
                 </span>
