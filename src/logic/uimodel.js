@@ -61,6 +61,7 @@ class UIModel {
 
         setViewerState({
             models: modelPathProvider.getAllKeys(),
+            modelTags: modelPathProvider.getAllTags(),
             environments,
             selectedEnvironment: INITIAL_ENVIRONMENT,
             clearColor: INITIAL_CLEAR_COLOR,
@@ -74,6 +75,7 @@ class UIModel {
 
         this.subscriptions.push(
             uiEvents.modelChanged.on((name) => this.selectModel(name)),
+            uiEvents.modelTagsChanged.on((tags) => this.filterModels(tags)),
             uiEvents.flavourChanged.on((flavour) => {
                 this.emitModel({
                     mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
@@ -162,6 +164,17 @@ class UIModel {
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
         setViewerState({ flavours, selectedFlavour });
         this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
+    }
+
+    /** Narrows the model list to the models carrying every given tag. */
+    filterModels(tags) {
+        const models = this.modelPathProvider.getAllKeys(tags);
+        const selected = getViewerState().selectedModel;
+        // The loaded model stays listed, so filtering never changes what is shown.
+        if (!models.includes(selected)) {
+            models.push(selected);
+        }
+        setViewerState({ selectedModelTags: tags, models });
     }
 
     emitModel(model) {
@@ -336,8 +349,8 @@ class UIModel {
     publishStatistics(data) {
         setViewerState({
             statistics: {
-                "Meshes": data.meshCount,
-                "Triangles": data.faceCount,
+                Meshes: data.meshCount,
+                Triangles: data.faceCount,
                 "Opaque Materials": data.opaqueMaterialsCount,
                 "Transparent Materials": data.transparentMaterialsCount
             }
