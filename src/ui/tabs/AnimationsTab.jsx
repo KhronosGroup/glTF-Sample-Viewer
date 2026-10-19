@@ -1,23 +1,9 @@
+import { Pause, Play } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Checkbox, Field, ToggleButton } from "../controls.jsx";
+import { Field, Panel, PlaybackControls, Switch } from "../controls.jsx";
 
-const RESET_BUTTON_STYLE = {
-    border: "1.5px solid #87c540",
-    color: "#f2f2f2",
-    background: "transparent",
-    minWidth: "70px"
-};
-
-const CONTROL_ROW_STYLE = {
-    display: "flex",
-    gap: "1em",
-    alignItems: "center",
-    marginBottom: "1.5em",
-    marginTop: "1em"
-};
-
-export function AnimationsTab({ onCollapse }) {
+export function AnimationsTab() {
     const animations = useViewerStore((state) => state.animations);
     const selectedAnimations = useViewerStore((state) => state.selectedAnimations);
     const disabledAnimations = useViewerStore((state) => state.disabledAnimations);
@@ -34,60 +20,38 @@ export function AnimationsTab({ onCollapse }) {
     };
 
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced" style={{ marginBottom: "0.5em" }}>
-                Animations
-            </h2>
-            <label className="subtitle">Animation Controls</label>
-
-            <div style={CONTROL_ROW_STYLE}>
-                <ToggleButton
-                    on={animationState}
+        <Panel title="Animations">
+            {hasAnimations && (
+                <PlaybackControls
+                    active={animationState}
                     onText="Pause"
                     offText="Play"
-                    className="round-green-btn"
-                    style={hasAnimations ? undefined : { display: "none" }}
+                    onIcon={<Pause size={16} aria-hidden="true" />}
+                    offIcon={<Play size={16} aria-hidden="true" />}
                     onToggle={(on) => {
                         setViewerState({ animationState: on });
                         uiEvents.animationPlayChanged.emit(on);
                     }}
+                    onReset={() => uiEvents.animationResetChanged.emit(true)}
                 />
-                <button
-                    className="button is-rounded reset-btn-green"
-                    style={
-                        hasAnimations
-                            ? RESET_BUTTON_STYLE
-                            : { ...RESET_BUTTON_STYLE, display: "none" }
-                    }
-                    onClick={() => uiEvents.animationResetChanged.emit(true)}
-                >
-                    Reset
-                </button>
-            </div>
+            )}
 
-            {!hasAnimations && <label className="subtitle">No animations available</label>}
+            {!hasAnimations && <p className="text-ink/60">No animations available</p>}
 
             {hasAnimations && (
-                <Field label="Animations">
+                <Field label="Animations" grouped>
                     {animations.map((animation) => (
-                        <div key={animation.index} style={{ marginBottom: "0.5em" }}>
-                            <Checkbox
-                                checked={selectedAnimations.includes(animation.index)}
-                                disabled={disabledAnimations.includes(animation.index)}
-                                onChange={(checked) => toggleAnimation(animation.index, checked)}
-                            >
-                                {animation.title}
-                            </Checkbox>
-                        </div>
+                        <Switch
+                            key={animation.index}
+                            checked={selectedAnimations.includes(animation.index)}
+                            disabled={disabledAnimations.includes(animation.index)}
+                            onChange={(checked) => toggleAnimation(animation.index, checked)}
+                        >
+                            {animation.title}
+                        </Switch>
                     ))}
                 </Field>
             )}
-        </div>
+        </Panel>
     );
 }
