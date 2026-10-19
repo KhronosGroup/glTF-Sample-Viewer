@@ -24,7 +24,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
     return (
         <label
             className={classNames(
-                "group mt-2 inline-flex items-center gap-3 whitespace-nowrap",
+                "group w-full mt-2 inline-flex items-center gap-3 whitespace-nowrap",
                 disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                 className
             )}
