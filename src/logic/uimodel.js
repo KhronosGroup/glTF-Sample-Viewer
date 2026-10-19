@@ -69,7 +69,8 @@ class UIModel {
             })),
             debugchannels: Object.keys(GltfState.DebugOutput).map((key) => ({
                 title: GltfState.DebugOutput[key]
-            }))
+            })),
+            clippingOrientations: Object.values(GltfState.ClippingOrientations)
         });
 
         this.subscriptions.push(

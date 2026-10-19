@@ -73,7 +73,11 @@ export function Slider({
     const ratio = ratioOf(value, min, max);
 
     return (
-        <div className={["mx-2 mt-4 mb-10", className].filter(Boolean).join(" ")}>
+        <div
+            className={["mx-2 mt-4", ticks.length > 0 ? "mb-10" : "mb-4", className]
+                .filter(Boolean)
+                .join(" ")}
+        >
             <div
                 ref={trackRef}
                 className="bg-track relative h-1.5 cursor-pointer rounded-full"
