@@ -68,6 +68,55 @@ export function Select({ value, onChange, className, children, ...rest }) {
     );
 }
 
+/**
+ * A `Select` whose options carry a preview image. Browsers that support the
+ * customizable select element render the images; the rest fall back to the
+ * native dropdown and show the labels only.
+ */
+export function ThumbnailSelect({ value, onChange, options, className, ...rest }) {
+    return (
+        <div className={classNames("relative", className)}>
+            <select
+                className={classNames(
+                    "thumbnail-select text-ink border-ink/60 hover:border-ink w-full cursor-pointer appearance-none rounded-md border bg-transparent py-2 pr-10 pl-3 transition-colors focus:outline-none",
+                    "focus:border-accent"
+                )}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                {...rest}
+            >
+                {/* Ignored unless the browser supports `appearance: base-select`. */}
+                <button className="flex w-full min-w-0 items-center border-0 bg-transparent p-0 text-left text-inherit">
+                    <selectedcontent className="flex min-w-0 items-center gap-2" />
+                </button>
+                {options.map((option) => (
+                    <option
+                        key={option.value}
+                        value={option.value}
+                        className="hover:bg-card-inner checked:text-accent flex cursor-pointer items-center gap-2 px-3 py-1.5"
+                    >
+                        {option.thumbnail !== undefined && (
+                            <img
+                                src={option.thumbnail}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                className="bg-card-inner size-8 shrink-0 rounded object-cover"
+                            />
+                        )}
+                        <span className="truncate">{option.label}</span>
+                    </option>
+                ))}
+            </select>
+            <ChevronDown
+                size={16}
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 right-3 my-auto"
+            />
+        </div>
+    );
+}
+
 export function Button({ onClick, className, style, children, ...rest }) {
     return (
         <button

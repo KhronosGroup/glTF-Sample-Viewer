@@ -4,6 +4,7 @@ export class GltfModelPathProvider {
         this.ignoredVariants = ignoredVariants;
         this.modelsDictionary = undefined;
         this.tagsDictionary = {};
+        this.screenshotsDictionary = {};
     }
 
     async initialize() {
@@ -26,6 +27,11 @@ export class GltfModelPathProvider {
         );
     }
 
+    /** Model name to preview image URL, for the models that ship one. */
+    getAllScreenshots() {
+        return this.screenshotsDictionary;
+    }
+
     getAllTags() {
         const tags = new Set();
         for (const modelTags of Object.values(this.tagsDictionary)) {
@@ -40,6 +46,7 @@ export class GltfModelPathProvider {
         const modelsFolder = this.url + "/Models";
         this.modelsDictionary = {};
         this.tagsDictionary = {};
+        this.screenshotsDictionary = {};
         for (const entry of modelIndexer) {
             if (entry.variants === undefined || entry.name === undefined) {
                 continue;
@@ -58,6 +65,10 @@ export class GltfModelPathProvider {
             }
             this.modelsDictionary[entry.name] = variants;
             this.tagsDictionary[entry.name] = entry.tags ?? [];
+            if (entry.screenshot !== undefined) {
+                this.screenshotsDictionary[entry.name] =
+                    modelsFolder + "/" + entry.name + "/" + entry.screenshot;
+            }
         }
     }
 

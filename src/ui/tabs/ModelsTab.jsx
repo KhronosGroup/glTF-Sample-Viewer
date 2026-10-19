@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, OutlineButton, Panel, Radio, Select } from "../controls.jsx";
+import { Field, OutlineButton, Panel, Radio, Select, ThumbnailSelect } from "../controls.jsx";
 
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
@@ -31,6 +31,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const models = useViewerStore((state) => state.models);
     const modelCount = useViewerStore((state) => state.modelCount);
     const modelTags = useViewerStore((state) => state.modelTags);
+    const modelThumbnails = useViewerStore((state) => state.modelThumbnails);
     const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
     const flavours = useViewerStore((state) => state.flavours);
     const scenes = useViewerStore((state) => state.scenes);
@@ -58,20 +59,19 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     return (
         <Panel title="Models">
             <Field label="Models">
-                <Select
+                <ThumbnailSelect
                     data-testid="model-select"
                     value={selectedModel}
                     onChange={(value) => {
                         setViewerState({ selectedModel: value });
                         uiEvents.modelChanged.emit(value);
                     }}
-                >
-                    {models.map((item) => (
-                        <option key={item} value={item}>
-                            {item}
-                        </option>
-                    ))}
-                </Select>
+                    options={models.map((item) => ({
+                        value: item,
+                        label: item,
+                        thumbnail: modelThumbnails[item]
+                    }))}
+                />
 
                 {modelTags.length > 0 && (
                     <>

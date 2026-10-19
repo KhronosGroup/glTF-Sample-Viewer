@@ -17,6 +17,7 @@ const initialState = {
     models: ["DamagedHelmet"],
     modelCount: 1,
     modelTags: [],
+    modelThumbnails: {},
     flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
 
     // Published once a glTF has finished loading.
