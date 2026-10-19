@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import license from "rollup-plugin-license";
 
 // Generating the full merged sourcemap for the whole bundle is one of the most expensive parts
@@ -14,18 +15,17 @@ export default defineConfig({
     // so emitted asset URLs must be relative. Vite's default of "/" would resolve them against
     // the domain root and 404 every bundle, stylesheet and public asset in production.
     base: "./",
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     resolve: {
         // Leftover from before gl-matrix/jpeg-js/fast-png were audited: root no longer imports
         // gl-matrix directly, but jpeg-js/fast-png dedupe stays in case that ever changes.
         dedupe: ["jpeg-js", "fast-png"]
     },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                quietDeps: true // silence legacy-API deprecation warnings from bulma (node_modules)
-            }
-        }
+    // lucide-react ships one module per icon. Without pre-bundling it, the dev
+    // server discovers new icons panel by panel, re-runs dependency optimisation
+    // and reloads the page each time.
+    optimizeDeps: {
+        include: ["lucide-react"]
     },
     build: {
         outDir: "dist",

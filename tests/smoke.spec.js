@@ -13,6 +13,6 @@ test("boots the full UI without errors", async ({ page }) => {
     await waitForLoadingToSettle(page);
 
     await expect(page.locator(ui.canvas)).toBeVisible();
-    await expect(page.locator(ui.tabs)).toBeVisible();
+    await expect(page.locator(ui.menu)).toBeVisible();
     expectNoConsoleErrors(errors);
 });

@@ -1,29 +1,19 @@
-import { Fragment } from "react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { Download } from "lucide-react";
 import { useViewerStore } from "../store.js";
-import { Field, Select, Switch } from "../controls.jsx";
-import { JsonTree } from "../JsonTree.jsx";
+import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
+import { StatList } from "../StatList.jsx";
+import { uiEvents } from "../../logic/ui_events.js";
 
-// The Vue template repeated a near-identical switch for each of these.
-// `breakAfter` reproduces where it placed <br> between groups.
-const FEATURE_TOGGLES = [
-    {
-        key: "inputSmoothing",
-        label: "Input Smoothing",
-        event: "inputSmoothingChanged",
-        breakAfter: true
-    },
-    { key: "skinning", label: "Skinning", event: "skinningChanged", breakAfter: true },
-    { key: "morphing", label: "Morphing", event: "morphingChanged" },
+const RENDERING_TOGGLES = [
+    { key: "skinning", label: "Skinning", event: "skinningChanged" },
+    { key: "morphing", label: "Morphing", event: "morphingChanged" }
+];
+
+const EXTENSION_TOGGLES = [
     { key: "interactivity", label: "KHR_interactivity", event: "interactivityChanged" },
     { key: "hoverability", label: "KHR_node_hoverability", event: "hoverabilityChanged" },
     { key: "selectability", label: "KHR_node_selectability", event: "selectabilityChanged" },
-    {
-        key: "nodeVisibility",
-        label: "KHR_node_visibility",
-        event: "nodeVisibilityChanged",
-        breakAfter: true
-    }
+    { key: "nodeVisibility", label: "KHR_node_visibility", event: "nodeVisibilityChanged" }
 ];
 
 const MATERIAL_EXTENSIONS = [
@@ -48,7 +38,6 @@ const MATERIAL_EXTENSIONS = [
 ];
 
 export function AdvancedTab({
-    onCollapse,
     extensions,
     onExtensionsChange,
     debugChannel,
@@ -77,28 +66,28 @@ export function AdvancedTab({
         return false;
     };
 
+    const renderToggles = (entries) =>
+        entries.map((entry) => (
+            <Switch
+                key={entry.key}
+                checked={extensions[entry.key]}
+                disabled={disabledFor(entry.key)}
+                onChange={toggle(entry)}
+            >
+                {entry.label}
+            </Switch>
+        ));
+
     return (
-        <div className="tabContent">
-            <img
-                src="assets/ui/Navigation_right_20px.svg"
-                className="tabNavigationIcon"
-                width="30px"
-                onClick={onCollapse}
-            />
-            <h2 className="title is-spaced">Advanced Controls</h2>
+        <Panel title="Advanced Controls">
+            <Switch
+                checked={extensions.inputSmoothing}
+                onChange={toggle({ key: "inputSmoothing", event: "inputSmoothingChanged" })}
+            >
+                Input Smoothing
+            </Switch>
 
-            <Field label="Capture Canvas" className="subtitle">
-                <button
-                    type="button"
-                    className="button is-rounded"
-                    onClick={() => uiEvents.captureCanvas.emit(true)}
-                >
-                    <i className="fa fa-download downloadIcon" />
-                    Download as .png
-                </button>
-            </Field>
-
-            <Field label="Debug Channels" className="subtitle">
+            <Field label="Debug Channels">
                 <Select
                     value={debugChannel}
                     onChange={(value) => {
@@ -123,56 +112,38 @@ export function AdvancedTab({
                 </Select>
             </Field>
 
-            {FEATURE_TOGGLES.map((entry) => (
-                <Fragment key={entry.key}>
-                    <Switch checked={extensions[entry.key]} onChange={toggle(entry)}>
-                        {entry.label}
-                    </Switch>
-                    {entry.breakAfter && <br />}
-                </Fragment>
-            ))}
-
-            <Switch
-                checked={extensions.floatingPointFramebuffer}
-                disabled={!supportsFloatingPointFramebuffer}
-                onChange={toggle({
-                    key: "floatingPointFramebuffer",
-                    event: "floatingPointFramebufferChanged"
-                })}
-            >
-                Floating-Point Framebuffer
-            </Switch>
-
-            <Field label="Current Camera Values" className="subtitle">
-                <button
-                    type="button"
-                    className="button is-rounded"
-                    onClick={() => uiEvents.cameraExport.emit(true)}
+            <Field label="Rendering" grouped>
+                {renderToggles(RENDERING_TOGGLES)}
+                <Switch
+                    checked={extensions.floatingPointFramebuffer}
+                    disabled={!supportsFloatingPointFramebuffer}
+                    onChange={toggle({
+                        key: "floatingPointFramebuffer",
+                        event: "floatingPointFramebufferChanged"
+                    })}
                 >
-                    <i className="fa fa-download downloadIcon" />
+                    32-bit Framebuffer
+                </Switch>
+            </Field>
+
+            <Field label="Extensions" grouped>
+                {renderToggles(EXTENSION_TOGGLES)}
+            </Field>
+
+            <Field label="Material Extensions" grouped>
+                {renderToggles(MATERIAL_EXTENSIONS)}
+            </Field>
+
+            <Field label="Current Camera Values">
+                <Button onClick={() => uiEvents.cameraExport.emit(true)}>
+                    <Download size={16} aria-hidden="true" />
                     Download as .gltf
-                </button>
+                </Button>
             </Field>
 
-            <Field label="KHR Materials Extensions" className="subtitle" grouped>
-                {MATERIAL_EXTENSIONS.map((entry) => (
-                    <Switch
-                        key={entry.key}
-                        className="smallerLabel"
-                        checked={extensions[entry.key]}
-                        disabled={disabledFor(entry.key)}
-                        onChange={toggle(entry)}
-                    >
-                        {entry.label}
-                    </Switch>
-                ))}
+            <Field label="Statistics">
+                <StatList data={statistics} />
             </Field>
-
-            <Field label="Statistics" className="subtitle">
-                <JsonTree data={statistics} />
-            </Field>
-
-            <div className="pb-6" />
-        </div>
+        </Panel>
     );
 }

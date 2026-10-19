@@ -55,7 +55,11 @@ function ViewerCanvas() {
     useEffect(() => startViewer(canvasRef.current), []);
 
     return (
-        <canvas id="canvas" ref={canvasRef}>
+        <canvas
+            id="canvas"
+            ref={canvasRef}
+            className="block h-full min-w-0 flex-1 bg-[#333] select-none"
+        >
             No Canvas!
         </canvas>
     );
