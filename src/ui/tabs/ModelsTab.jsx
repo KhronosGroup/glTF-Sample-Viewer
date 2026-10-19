@@ -83,9 +83,11 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                                 <Funnel size={16} aria-hidden="true" />
                                 Filter
                             </OutlineButton>
-                            <p data-testid="model-count" className="text-ink/60 text-sm">
-                                {models.length} {models.length === 1 ? "asset" : "assets"}
-                            </p>
+                            {showTags && (
+                                <p data-testid="model-count" className="text-ink/60 text-sm">
+                                    {models.length} {models.length === 1 ? "asset" : "assets"}
+                                </p>
+                            )}
                         </div>
 
                         {showTags && (
