@@ -34,6 +34,7 @@ export function ModelsTab() {
     const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
     const flavours = useViewerStore((state) => state.flavours);
     const scenes = useViewerStore((state) => state.scenes);
+    const showScenes = useViewerStore((state) => state.showScenes);
     const cameras = useViewerStore((state) => state.cameras);
     const materialVariants = useViewerStore((state) => state.materialVariants);
     const selectedModel = useViewerStore((state) => state.selectedModel);
@@ -125,21 +126,23 @@ export function ModelsTab() {
                 </Select>
             </Field>
 
-            <Field label="Scenes">
-                <Select
-                    value={selectedScene}
-                    onChange={(value) => {
-                        setViewerState({ selectedScene: value });
-                        uiEvents.sceneChanged.emit(value);
-                    }}
-                >
-                    {scenes.map((item, index) => (
-                        <option key={item.index ?? index} value={item.index}>
-                            {item.title}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {showScenes && (
+                <Field label="Scenes">
+                    <Select
+                        value={selectedScene}
+                        onChange={(value) => {
+                            setViewerState({ selectedScene: value });
+                            uiEvents.sceneChanged.emit(value);
+                        }}
+                    >
+                        {scenes.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
             <Field label="Cameras">
                 <Select

@@ -21,6 +21,7 @@ const initialState = {
 
     // Published once a glTF has finished loading.
     scenes: [{ title: "0" }, { title: "1" }],
+    showScenes: true,
     cameras: [{ title: "User Camera", index: -1 }],
     materialVariants: ["None"],
     animations: [{ title: "None" }],

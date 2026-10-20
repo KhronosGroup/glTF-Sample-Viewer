@@ -368,6 +368,10 @@ class UIModel {
             selectedDebugChannel,
 
             selectedScene: state.sceneIndex,
+            // glTF 2.1 deprecates multiple scenes, so there is nothing to pick between.
+            // A 2.1 asset that declares several anyway still has to be navigable, which
+            // is what the spec asks importers to keep supporting.
+            showScenes: !gltf.isAtLeast(2, 1) || gltf.scenes.length > 1,
             scenes: gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
                 index: index
