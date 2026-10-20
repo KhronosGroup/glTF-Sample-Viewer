@@ -6,6 +6,7 @@ import {
     expectCanvasToRender,
     expectNoConsoleErrors,
     loadTestAsset,
+    openTab,
     waitForLoadingToSettle
 } from "./viewer.js";
 
@@ -272,6 +273,31 @@ test.describe("shapes and bounding volumes", () => {
             expectNoConsoleErrors(errors);
         });
     }
+});
+
+// glTF 2.1 deprecates multiple scenes, so the picker is only meaningful for 2.0. The
+// exact match matters: the model list holds an entry called MultipleScenes.
+test.describe("deprecated multiple scenes", () => {
+    const scenePicker = (page) =>
+        page.locator("[data-testid='panel']:visible").first().getByText("Scenes", { exact: true });
+
+    const openModels = async (page, asset) => {
+        await page.goto(`/?model=test-assets/${asset}`);
+        await waitForLoadingToSettle(page);
+        await openTab(page, "models");
+    };
+
+    test("a glTF 2.0 asset still offers its scenes", async ({ page }) => {
+        await openModels(page, "glb2_baseline.glb");
+
+        await expect(scenePicker(page)).toBeVisible();
+    });
+
+    test("a glTF 2.1 asset does not", async ({ page }) => {
+        await openModels(page, "shapes_all.gltf");
+
+        await expect(scenePicker(page)).toHaveCount(0);
+    });
 });
 
 test.describe("external assets", () => {
