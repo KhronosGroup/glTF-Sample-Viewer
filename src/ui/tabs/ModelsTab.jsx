@@ -29,6 +29,7 @@ function Tag({ tag, selected, onToggle }) {
 
 export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const models = useViewerStore((state) => state.models);
+    const modelCount = useViewerStore((state) => state.modelCount);
     const modelTags = useViewerStore((state) => state.modelTags);
     const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
     const flavours = useViewerStore((state) => state.flavours);
@@ -85,7 +86,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                             </OutlineButton>
                             {showTags && (
                                 <p data-testid="model-count" className="text-ink/60 text-sm">
-                                    {models.length} {models.length === 1 ? "asset" : "assets"}
+                                    {modelCount} {modelCount === 1 ? "asset" : "assets"}
                                 </p>
                             )}
                         </div>

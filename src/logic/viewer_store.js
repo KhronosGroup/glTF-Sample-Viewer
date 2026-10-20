@@ -15,6 +15,7 @@ import { createStore } from "zustand/vanilla";
 const initialState = {
     // Published by the model path provider and the drop handler.
     models: ["DamagedHelmet"],
+    modelCount: 1,
     modelTags: [],
     flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
 
