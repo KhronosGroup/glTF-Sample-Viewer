@@ -32,6 +32,7 @@ Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample
 - [x] [KHR_materials_ior](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior)
 - [x] [KHR_materials_iridescence](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_iridescence)
 - [x] [KHR_materials_pbrSpecularGlossiness](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
+- [x] [KHR_materials_retroreflection](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_retroreflection)
 - [x] [KHR_materials_sheen](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_sheen)
 - [x] [KHR_materials_specular](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular)
 - [x] [KHR_materials_transmission](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_transmission)
@@ -116,9 +117,9 @@ For local usage and debugging, please follow these instructions:
 
 3. Build the web app
     - run `npm install`
-    - start a demo in the browser with `npm run dev`, and open http://localhost:8000.
+    - start a demo in the browser with `npm run dev`, and open http://localhost:5173.
 
-When making changes, the project is automatically rebuilt and the `./dist` directory is populated with the web app. This directory contains all files necessary for deployment to a webserver.
+When making changes, the project is automatically rebuilt and the `./dist` directory is populated with the web app. This directory contains all files necessary for deployment to a web server.
 
 ## Debugging
 
@@ -130,52 +131,6 @@ When making changes, the project is automatically rebuilt and the `./dist` direc
 - For chrome: Append `/dist` to `${workspaceFolder}` in the `launch.json` file
 - `Debug->Start Debugging` should now launch a Chrome or Firefox window with the sample viewer and VS Code breakpoints should be hit.
 
-### Known Issues
-
-npm install / npm run dev give the following warnings:
-
-The following warning comes from a thirdparty and does not affect sample viewer since the mentioned line 179 is never executed.
-
-```
-(!) "this" has been rewritten to "undefined"
-https://rollupjs.org/troubleshooting/#error-this-is-undefined
-node_modules/iobuffer/lib-esm/text-encoding-polyfill.js
-177:     : typeof self !== 'undefined'
-178:         ? self
-179:         : this);
-               ^
-180: //# sourceMappingURL=text-encoding-polyfill.js.map
-```
-
-The following warnings stem from the rollup copy plugin, which is only used for development to copy files to the dist folder.
-
-```
-npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-npm WARN deprecated source-map-resolve@0.6.0: See https://github.com/lydell/source-map-resolve#deprecated
-npm WARN deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
-npm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-npm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-npm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-npm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-```
-
 ## Formatting
 
-This repository uses [Prettier](https://prettier.io/) for code formatting and [ESLint](https://eslint.org/) for linting.
-
-To check the formatting and linting of the code run:
-
-```bash
-npm run format
-```
-
-Prettier and ESLint are configured to only run on files in the "source" folder and ignore files in "source/libs".
-
-#### Visual Studio Code
-
-There are extensions for both Prettier and ESLint in Visual Studio Code. They can be found in the marketplace:
-
-- [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-
-You are encouraged to run Prettier and ESLint on your code before committing.
+Running `npm run format` normalizes formatting and prints linting issues, fixing if possible.

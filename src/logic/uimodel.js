@@ -85,8 +85,11 @@ class UIModel {
 
         this.modelURL = new URLSearchParams(window.location.search).get("model");
 
+        const models = modelPathProvider.getAllKeys();
         setViewerState({
-            models: modelPathProvider.getAllKeys(),
+            models,
+            modelCount: models.length,
+            modelTags: modelPathProvider.getAllTags(),
             environments,
             selectedEnvironment: INITIAL_ENVIRONMENT,
             clearColor: INITIAL_CLEAR_COLOR,
@@ -98,6 +101,7 @@ class UIModel {
 
         this.subscriptions.push(
             uiEvents.modelChanged.on((name) => this.selectModel(name)),
+            uiEvents.modelTagsChanged.on((tags) => this.filterModels(tags)),
             uiEvents.flavourChanged.on((flavour) => {
                 this.emitModel({
                     mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
@@ -186,6 +190,26 @@ class UIModel {
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
         setViewerState({ flavours, selectedFlavour });
         this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
+        // After emitModel, which needs the list as it was to drop a dropped file.
+        this.publishModels();
+    }
+
+    /** Narrows the model list to the models carrying every given tag. */
+    filterModels(tags) {
+        setViewerState({ selectedModelTags: tags });
+        this.publishModels();
+    }
+
+    publishModels() {
+        const models = this.modelPathProvider.getAllKeys(getViewerState().selectedModelTags);
+        // The loaded model stays listed even when filtered out, so that filtering
+        // never changes what is shown. It is not part of the count.
+        const modelCount = models.length;
+        const selected = getViewerState().selectedModel;
+        if (!models.includes(selected)) {
+            models.push(selected);
+        }
+        setViewerState({ models, modelCount });
     }
 
     emitModel(model) {
@@ -410,8 +434,8 @@ class UIModel {
     publishStatistics(data) {
         setViewerState({
             statistics: {
-                "Meshes": data.meshCount,
-                "Triangles": data.faceCount,
+                Meshes: data.meshCount,
+                Triangles: data.faceCount,
                 "Opaque Materials": data.opaqueMaterialsCount,
                 "Transparent Materials": data.transparentMaterialsCount
             }
