@@ -85,3 +85,32 @@ export async function expectCanvasToRender(page, name) {
         maxDiffPixelRatio: 0.02
     });
 }
+
+/**
+ * Drops files onto the canvas, the only path that exercises side-file
+ * resolution; the `model` parameter fetches everything over HTTP instead.
+ *
+ * simple-dropzone prefers `dataTransfer.items` and walks them as FileSystemEntry
+ * objects, which cannot be produced synthetically, so this fakes the four
+ * members it reads. Each file is given as a `[name, contents]` pair.
+ */
+export async function dropFiles(page, files, folder = "dropped") {
+    await page.evaluate(
+        ({ files, folder, canvas }) => {
+            const items = files.map(([name, contents]) => ({
+                webkitGetAsEntry: () => ({
+                    name,
+                    isFile: true,
+                    isDirectory: false,
+                    fullPath: `/${folder}/${name}`,
+                    file: (callback) => callback(new File([contents], name))
+                })
+            }));
+
+            const event = new Event("drop", { bubbles: true, cancelable: true });
+            Object.defineProperty(event, "dataTransfer", { value: { files: [], items } });
+            document.querySelector(canvas).dispatchEvent(event);
+        },
+        { files, folder, canvas: ui.canvas }
+    );
+}
