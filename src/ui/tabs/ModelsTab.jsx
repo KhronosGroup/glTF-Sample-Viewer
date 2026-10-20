@@ -1,12 +1,37 @@
+import { Funnel } from "lucide-react";
+import { useState } from "react";
+
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Panel, Radio, Select } from "../controls.jsx";
+import { Field, OutlineButton, Panel, Radio, Select } from "../controls.jsx";
 
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
 
+/** A tag the model list can be filtered by. */
+function Tag({ tag, selected, onToggle }) {
+    return (
+        <button
+            type="button"
+            aria-pressed={selected}
+            onClick={() => onToggle(tag)}
+            className={
+                "cursor-pointer rounded-full border px-3 py-0.5 text-sm transition-colors " +
+                (selected
+                    ? "bg-accent text-ink-dim border-accent"
+                    : "border-ink/60 hover:border-ink")
+            }
+        >
+            {tag}
+        </button>
+    );
+}
+
 export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const models = useViewerStore((state) => state.models);
+    const modelCount = useViewerStore((state) => state.modelCount);
+    const modelTags = useViewerStore((state) => state.modelTags);
+    const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
     const flavours = useViewerStore((state) => state.flavours);
     const scenes = useViewerStore((state) => state.scenes);
     const cameras = useViewerStore((state) => state.cameras);
@@ -15,10 +40,19 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
     const selectedScene = useViewerStore((state) => state.selectedScene);
     const selectedCamera = useViewerStore((state) => state.selectedCamera);
+    const [showTags, setShowTags] = useState(false);
 
     const selectVariant = (value) => {
         onSelectVariant(value);
         uiEvents.variantChanged.emit(value);
+    };
+
+    const toggleTag = (tag) => {
+        uiEvents.modelTagsChanged.emit(
+            selectedModelTags.includes(tag)
+                ? selectedModelTags.filter((item) => item !== tag)
+                : [...selectedModelTags, tag]
+        );
     };
 
     return (
@@ -38,6 +72,39 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         </option>
                     ))}
                 </Select>
+
+                {modelTags.length > 0 && (
+                    <>
+                        <div className="mt-3 flex items-center gap-3">
+                            <OutlineButton
+                                data-testid="model-filter"
+                                aria-expanded={showTags}
+                                onClick={() => setShowTags(!showTags)}
+                            >
+                                <Funnel size={16} aria-hidden="true" />
+                                Filter
+                            </OutlineButton>
+                            {showTags && (
+                                <p data-testid="model-count" className="text-ink/60 text-sm">
+                                    {modelCount} {modelCount === 1 ? "asset" : "assets"}
+                                </p>
+                            )}
+                        </div>
+
+                        {showTags && (
+                            <div data-testid="model-tags" className="mt-3 flex flex-wrap gap-2">
+                                {modelTags.map((tag) => (
+                                    <Tag
+                                        key={tag}
+                                        tag={tag}
+                                        selected={selectedModelTags.includes(tag)}
+                                        onToggle={toggleTag}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
             </Field>
 
             <Field label="Flavor">
