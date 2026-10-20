@@ -15,14 +15,15 @@ export class GltfModelPathProvider {
         return this.modelsDictionary[modelKey][flavour];
     }
 
-    /** Model names, optionally narrowed to those carrying every given tag. */
-    getAllKeys(tags = []) {
-        const names = Object.keys(this.modelsDictionary);
-        if (tags.length === 0) {
-            return names;
-        }
-        return names.filter((name) =>
-            tags.every((tag) => (this.tagsDictionary[name] ?? []).includes(tag))
+    /**
+     * Model names, narrowed to those carrying every given tag and offering at
+     * least one of the given flavours.
+     */
+    getAllKeys(tags = [], flavours = this.getAllFlavours()) {
+        return Object.keys(this.modelsDictionary).filter(
+            (name) =>
+                tags.every((tag) => this.tagsDictionary[name].includes(tag)) &&
+                flavours.some((flavour) => this.modelsDictionary[name][flavour] !== undefined)
         );
     }
 
@@ -34,6 +35,16 @@ export class GltfModelPathProvider {
             }
         }
         return [...tags].sort();
+    }
+
+    getAllFlavours() {
+        const flavours = new Set();
+        for (const variants of Object.values(this.modelsDictionary)) {
+            for (const flavour of Object.keys(variants)) {
+                flavours.add(flavour);
+            }
+        }
+        return [...flavours].sort();
     }
 
     populateDictionary(modelIndexer) {

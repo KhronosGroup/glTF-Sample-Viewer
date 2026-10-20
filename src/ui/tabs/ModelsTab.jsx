@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, OutlineButton, Panel, Radio, Select } from "../controls.jsx";
+import { Field, OutlineButton, Panel, Radio, Select, Switch } from "../controls.jsx";
 
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
@@ -31,7 +31,9 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const models = useViewerStore((state) => state.models);
     const modelCount = useViewerStore((state) => state.modelCount);
     const modelTags = useViewerStore((state) => state.modelTags);
+    const modelFlavours = useViewerStore((state) => state.modelFlavours);
     const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
+    const selectedModelFlavours = useViewerStore((state) => state.selectedModelFlavours);
     const flavours = useViewerStore((state) => state.flavours);
     const scenes = useViewerStore((state) => state.scenes);
     const cameras = useViewerStore((state) => state.cameras);
@@ -52,6 +54,14 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
             selectedModelTags.includes(tag)
                 ? selectedModelTags.filter((item) => item !== tag)
                 : [...selectedModelTags, tag]
+        );
+    };
+
+    const toggleFlavour = (flavour, enabled) => {
+        uiEvents.modelFlavoursChanged.emit(
+            enabled
+                ? [...selectedModelFlavours, flavour]
+                : selectedModelFlavours.filter((item) => item !== flavour)
         );
     };
 
@@ -92,16 +102,30 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         </div>
 
                         {showTags && (
-                            <div data-testid="model-tags" className="mt-3 flex flex-wrap gap-2">
-                                {modelTags.map((tag) => (
-                                    <Tag
-                                        key={tag}
-                                        tag={tag}
-                                        selected={selectedModelTags.includes(tag)}
-                                        onToggle={toggleTag}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                <div data-testid="model-tags" className="mt-3 flex flex-wrap gap-2">
+                                    {modelTags.map((tag) => (
+                                        <Tag
+                                            key={tag}
+                                            tag={tag}
+                                            selected={selectedModelTags.includes(tag)}
+                                            onToggle={toggleTag}
+                                        />
+                                    ))}
+                                </div>
+
+                                <div data-testid="model-flavours" className="mt-2 flex flex-col">
+                                    {modelFlavours.map((flavour) => (
+                                        <Switch
+                                            key={flavour}
+                                            checked={selectedModelFlavours.includes(flavour)}
+                                            onChange={(enabled) => toggleFlavour(flavour, enabled)}
+                                        >
+                                            <span className="text-sm">{flavour}</span>
+                                        </Switch>
+                                    ))}
+                                </div>
+                            </>
                         )}
                     </>
                 )}

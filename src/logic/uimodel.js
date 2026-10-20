@@ -64,6 +64,8 @@ class UIModel {
             models,
             modelCount: models.length,
             modelTags: modelPathProvider.getAllTags(),
+            modelFlavours: modelPathProvider.getAllFlavours(),
+            selectedModelFlavours: modelPathProvider.getAllFlavours(),
             environments,
             selectedEnvironment: INITIAL_ENVIRONMENT,
             clearColor: INITIAL_CLEAR_COLOR,
@@ -77,7 +79,10 @@ class UIModel {
 
         this.subscriptions.push(
             uiEvents.modelChanged.on((name) => this.selectModel(name)),
-            uiEvents.modelTagsChanged.on((tags) => this.filterModels(tags)),
+            uiEvents.modelTagsChanged.on((tags) => this.filterModels({ selectedModelTags: tags })),
+            uiEvents.modelFlavoursChanged.on((flavours) =>
+                this.filterModels({ selectedModelFlavours: flavours })
+            ),
             uiEvents.flavourChanged.on((flavour) => {
                 this.emitModel({
                     mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
@@ -170,20 +175,20 @@ class UIModel {
         this.publishModels();
     }
 
-    /** Narrows the model list to the models carrying every given tag. */
-    filterModels(tags) {
-        setViewerState({ selectedModelTags: tags });
+    /** Narrows the model list to the models matching the tag and flavour filters. */
+    filterModels(selection) {
+        setViewerState(selection);
         this.publishModels();
     }
 
     publishModels() {
-        const models = this.modelPathProvider.getAllKeys(getViewerState().selectedModelTags);
+        const { selectedModelTags, selectedModelFlavours, selectedModel } = getViewerState();
+        const models = this.modelPathProvider.getAllKeys(selectedModelTags, selectedModelFlavours);
         // The loaded model stays listed even when filtered out, so that filtering
         // never changes what is shown. It is not part of the count.
         const modelCount = models.length;
-        const selected = getViewerState().selectedModel;
-        if (!models.includes(selected)) {
-            models.push(selected);
+        if (!models.includes(selectedModel)) {
+            models.push(selectedModel);
         }
         setViewerState({ models, modelCount });
     }
