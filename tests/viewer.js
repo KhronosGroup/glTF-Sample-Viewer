@@ -9,7 +9,8 @@ export const ui = {
     spinner: "[data-testid='spinner']",
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
-    modelSelect: "select[data-testid='model-select']"
+    modelSelect: "select[data-testid='model-select']",
+    flavourSelect: "select[data-testid='flavour-select']"
 };
 
 /**

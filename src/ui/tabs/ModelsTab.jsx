@@ -110,6 +110,7 @@ export function ModelsTab() {
 
             <Field label="Flavor">
                 <Select
+                    data-testid="flavour-select"
                     value={selectedFlavour}
                     onChange={(value) => {
                         setViewerState({ selectedFlavour: value });
