@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
     canvasPixels,
     collectConsoleErrors,
+    dropTestAssets,
     expectCanvasToRender,
     expectNoConsoleErrors,
     loadTestAsset,
@@ -307,6 +308,30 @@ test.describe("external assets", () => {
         expect(await renderOf("external_reuse.gltf")).not.toEqual(
             await renderOf("external_basic.gltf")
         );
+    });
+
+    // A dropped parent's children are .gltf files themselves, so the drop handler cannot
+    // tell side files from the main one by extension. Getting that wrong leaves the child
+    // to be fetched from the server, which answers the SPA's index.html with a 200.
+    test("a dropped parent finds the children dropped alongside it", async ({ context }) => {
+        const page = await context.newPage();
+        const errors = collectConsoleErrors(page);
+
+        await dropTestAssets(page, [
+            "external_basic.gltf",
+            "external_child.gltf",
+            "external_child.bin"
+        ]);
+        const dropped = await canvasPixels(page);
+        expectNoConsoleErrors(errors);
+        await page.close();
+
+        const served = await context.newPage();
+        await loadTestAsset(served, "external_basic.gltf");
+        const reference = await canvasPixels(served);
+        await served.close();
+
+        expect(dropped).toEqual(reference);
     });
 
     for (const asset of ["external_diamond.gltf", "external_package.glb"]) {

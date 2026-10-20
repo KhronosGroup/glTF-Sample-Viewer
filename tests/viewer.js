@@ -103,3 +103,43 @@ export async function loadTestAsset(page, name) {
 export async function canvasPixels(page) {
     return page.locator(ui.canvas).screenshot();
 }
+
+/**
+ * Drops files from public/test-assets/ onto the canvas, the only path that
+ * exercises side-file resolution; `model=` fetches everything over HTTP.
+ *
+ * simple-dropzone prefers `dataTransfer.items` and walks them as FileSystemEntry
+ * objects, which cannot be produced synthetically, so this fakes the four members
+ * it reads. The files are fetched in the page rather than read from disk because
+ * Playwright has no API for dropping a directory.
+ */
+export async function dropTestAssets(page, names, folder = "dropped") {
+    await page.goto("/?noUI=1");
+    await page.waitForSelector(ui.canvas);
+
+    await page.evaluate(
+        async ({ names, folder, canvas }) => {
+            const items = [];
+            for (const name of names) {
+                const bytes = await (await fetch(`/test-assets/${name}`)).arrayBuffer();
+                const file = new File([bytes], name);
+                items.push({
+                    webkitGetAsEntry: () => ({
+                        name,
+                        isFile: true,
+                        isDirectory: false,
+                        fullPath: `/${folder}/${name}`,
+                        file: (callback) => callback(file)
+                    })
+                });
+            }
+
+            const event = new Event("drop", { bubbles: true, cancelable: true });
+            Object.defineProperty(event, "dataTransfer", { value: { files: [], items } });
+            document.querySelector(canvas).dispatchEvent(event);
+        },
+        { names, folder, canvas: ui.canvas }
+    );
+
+    await waitForLoadingToSettle(page);
+}

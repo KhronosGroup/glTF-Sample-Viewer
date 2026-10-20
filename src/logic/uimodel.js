@@ -124,7 +124,10 @@ class UIModel {
             onZoom: (delta) => this.zoomHandler?.(delta),
             onSelect: (position) => this.selectionHandler?.(position),
             onHover: (position) => this.hoverHandler?.(position),
-            onDrop: (entries) => this.handleDrop(entries),
+            onDrop: (entries) =>
+                this.handleDrop(entries).catch((error) =>
+                    console.error(`Reading the dropped files failed: ${error}`)
+                ),
             onDropError: () => setViewerState({ showDropDownOverlay: false })
         });
     }
@@ -243,9 +246,9 @@ class UIModel {
         this.emitHdr(hdr);
     }
 
-    handleDrop(entries) {
+    async handleDrop(entries) {
         setViewerState({ showDropDownOverlay: false });
-        const { mainFile, additionalFiles, hdrFile } = partitionDroppedFiles(entries);
+        const { mainFile, additionalFiles, hdrFile } = await partitionDroppedFiles(entries);
 
         if (hdrFile !== undefined && mainFile === undefined) {
             this.addEnvironment({ hdr_path: hdrFile[1] });
