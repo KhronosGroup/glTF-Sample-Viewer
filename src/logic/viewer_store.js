@@ -21,7 +21,7 @@ const initialState = {
     disabledModelTags: [],
     disabledModelFlavours: [],
     modelThumbnails: {},
-    flavours: [],
+    flavours: ["glTF"],
 
     // Published once a glTF has finished loading.
     scenes: [{ title: "0" }, { title: "1" }],
@@ -51,7 +51,7 @@ const initialState = {
     selectedModelExcluded: false,
     selectedModelTags: [],
     selectedModelFlavours: [],
-    selectedFlavour: "",
+    selectedFlavour: "glTF",
     selectedScene: {},
     selectedCamera: {},
     selectedAnimations: [],
