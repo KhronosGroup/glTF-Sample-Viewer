@@ -1,11 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { test } from "@playwright/test";
 import {
     collectConsoleErrors,
     dropFiles,
     expectCanvasToRender,
     expectNoConsoleErrors,
+    expectSelectedModel,
     openModelsTab,
-    ui,
+    selectModel,
     waitForLoadingToSettle
 } from "./viewer.js";
 
@@ -18,16 +19,14 @@ test("a superseded model load does not overwrite the current one", async ({ page
     await waitForLoadingToSettle(page);
     await openModelsTab(page);
 
-    const modelSelect = page.locator(ui.modelSelect);
-    await modelSelect.selectOption("BoomBox");
-    await modelSelect.selectOption("Avocado");
+    await selectModel(page, "BoomBox");
+    await selectModel(page, "Avocado");
 
     // BoomBox is much larger than Avocado, so without cancellation it finishes
-    // last and wins. Draining the network makes that outcome observable.
-    await waitForLoadingToSettle(page);
+    // last and wins. Draining the network makes that outcome observable.    await waitForLoadingToSettle(page);
     await page.waitForLoadState("networkidle");
 
-    await expect(modelSelect).toHaveValue("Avocado");
+    await expectSelectedModel(page, "Avocado");
     await expectCanvasToRender(page, "avocado.png");
     expectNoConsoleErrors(errors);
 });

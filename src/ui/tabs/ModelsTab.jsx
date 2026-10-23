@@ -61,6 +61,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
             <Field label="Models">
                 <ThumbnailSelect
                     data-testid="model-select"
+                    label="Models"
                     value={selectedModel}
                     onChange={(value) => {
                         setViewerState({ selectedModel: value });
