@@ -17,15 +17,14 @@ export class GltfModelPathProvider {
     }
 
     /**
-     * Model names, narrowed to those carrying every given tag and offering at
-     * least one of the given flavours. An empty list does not narrow anything.
+     * Model names, narrowed to those carrying every given tag and offering
+     * every given flavour. An empty list does not narrow anything.
      */
     getAllKeys(tags = [], flavours = []) {
         return Object.keys(this.modelsDictionary).filter(
             (name) =>
                 tags.every((tag) => this.tagsDictionary[name].includes(tag)) &&
-                (flavours.length === 0 ||
-                    flavours.some((flavour) => this.modelsDictionary[name][flavour] !== undefined))
+                flavours.every((flavour) => this.modelsDictionary[name][flavour] !== undefined)
         );
     }
 
