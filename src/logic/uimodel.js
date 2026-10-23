@@ -307,6 +307,7 @@ class UIModel {
 
     publishGltfLoaded(state) {
         this.publishCameras(state);
+        this.publishMorphWeights(state);
 
         const gltf = state.gltf;
         const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
@@ -389,6 +390,53 @@ class UIModel {
             cameras,
             selectedCamera: state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1
         });
+    }
+
+    publishMorphWeights(state) {
+        const gltf = state.gltf;
+        const scene = gltf.scenes[state.sceneIndex];
+        const morphWeights = [];
+        gltf.nodes.forEach((node, nodeIndex) => {
+            const mesh = gltf.meshes[node.mesh];
+            const targetCount = mesh?.primitives[0]?.targets.length ?? 0;
+            if (targetCount === 0 || !scene?.includesNode(gltf, nodeIndex)) {
+                return;
+            }
+            const weights = node.getWeights(gltf);
+            const name = node.name || mesh.name;
+            morphWeights.push({
+                nodeIndex,
+                title: name ? `${name} (Node ${nodeIndex})` : `Node ${nodeIndex}`,
+                targets: Array.from({ length: targetCount }, (_, index) => ({
+                    name: mesh.extras?.targetNames?.[index] || `Target ${index}`,
+                    value: weights?.[index] ?? 0,
+                    overridden: node.morphWeightOverrides?.[index] !== undefined
+                }))
+            });
+        });
+
+        const previous = getViewerState().morphWeights;
+        const hasMorphWeightOverrides = gltf.nodes.some(
+            (node) => node.morphWeightOverrides !== undefined
+        );
+        if (
+            hasMorphWeightOverrides !== getViewerState().hasMorphWeightOverrides ||
+            morphWeights.length !== previous.length ||
+            morphWeights.some(
+                (node, index) =>
+                    node.nodeIndex !== previous[index].nodeIndex ||
+                    node.title !== previous[index].title ||
+                    node.targets.length !== previous[index].targets.length ||
+                    node.targets.some(
+                        (target, targetIndex) =>
+                            target.name !== previous[index].targets[targetIndex].name ||
+                            target.value !== previous[index].targets[targetIndex].value ||
+                            target.overridden !== previous[index].targets[targetIndex].overridden
+                    )
+            )
+        ) {
+            setViewerState({ morphWeights, hasMorphWeightOverrides });
+        }
     }
 
     publishStatistics(data) {

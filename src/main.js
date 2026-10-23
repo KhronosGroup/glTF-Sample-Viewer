@@ -320,6 +320,31 @@ export const initViewer = async (canvas) => {
     });
     onChange(uiEvents.variantChanged, (v) => (state.variant = v));
 
+    onChange(uiEvents.morphWeightChanged, ({ nodeIndex, targetIndex, value }) => {
+        const node = state.gltf?.nodes[nodeIndex];
+        const targetCount = state.gltf?.meshes[node?.mesh]?.primitives[0]?.targets.length ?? 0;
+        if (
+            !node ||
+            !Number.isInteger(targetIndex) ||
+            targetIndex < 0 ||
+            targetIndex >= targetCount ||
+            !Number.isFinite(value)
+        ) {
+            console.error("Invalid morph weight change", { nodeIndex, targetIndex, value });
+            return;
+        }
+        node.morphWeightOverrides ??= [];
+        node.morphWeightOverrides[targetIndex] = value;
+        uiModel.publishMorphWeights(state);
+    });
+
+    onChange(uiEvents.morphWeightsReset, () => {
+        for (const node of state.gltf.nodes) {
+            node.morphWeightOverrides = undefined;
+        }
+        uiModel.publishMorphWeights(state);
+    });
+
     uiModel.onClearColor((color) => {
         state.renderingParameters.clearColor = color;
         redraw = true;
@@ -363,6 +388,7 @@ export const initViewer = async (canvas) => {
         }
 
         uiModel.publishCameras(state);
+        uiModel.publishMorphWeights(state);
         uiModel.publishStatistics(view.gatherStatistics(state));
     });
 
@@ -568,6 +594,7 @@ export const initViewer = async (canvas) => {
     // ------------------------------------------------------------ render loop
 
     const past = {};
+    let lastMorphWeightUpdate = 0;
     let animationFrame = null;
     const update = () => {
         const devicePixelRatio = window.devicePixelRatio || 1;
@@ -605,6 +632,15 @@ export const initViewer = async (canvas) => {
         if (redraw) {
             redraw = false;
             view.renderFrame(state, canvas.width, canvas.height);
+            const now = performance.now();
+            if (
+                now - lastMorphWeightUpdate >= 100 ||
+                state.animationTimer.paused ||
+                state.animationIndices.length === 0
+            ) {
+                uiModel.publishMorphWeights(state);
+                lastMorphWeightUpdate = now;
+            }
         }
 
         animationFrame = window.requestAnimationFrame(update);

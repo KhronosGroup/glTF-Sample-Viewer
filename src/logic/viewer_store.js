@@ -28,6 +28,8 @@ const initialState = {
     cameras: [{ title: "User Camera", index: -1 }],
     materialVariants: ["None"],
     animations: [{ title: "None" }],
+    morphWeights: [],
+    hasMorphWeightOverrides: false,
     disabledAnimations: [],
     graphs: [],
     customEvents: [],

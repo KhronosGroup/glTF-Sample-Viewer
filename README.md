@@ -66,6 +66,12 @@ Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample
 - Select different material variants
 - Enable/disable specific animations
 - Enable/disable glTF features/extensions and view debug channels
+- Edit morph target weights in Advanced Controls using a flat list of nodes in the
+  selected scene. Node names (or mesh names/node indices) and target names from
+  `mesh.extras.targetNames` identify the controls. Numeric inputs have no fixed
+  range. Each edit overrides only that node's target, including animated weights;
+  other targets keep animating. Reset Morph Weights restores asset/animation
+  values for all scenes. Overrides persist across scene changes, but not model loads.
 - Download renderings and current camera properties
 - Show statistics about the currently loaded file
 - Specify URL parameters to modify behavior on load

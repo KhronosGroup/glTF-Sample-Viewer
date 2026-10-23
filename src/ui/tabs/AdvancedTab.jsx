@@ -2,6 +2,7 @@ import { Download } from "lucide-react";
 import { useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { StatList } from "../StatList.jsx";
+import { MorphWeights } from "../MorphWeights.jsx";
 import { uiEvents } from "../../logic/ui_events.js";
 
 const RENDERING_TOGGLES = [
@@ -125,6 +126,8 @@ export function AdvancedTab({
                     32-bit Framebuffer
                 </Switch>
             </Field>
+
+            <MorphWeights disabled={!extensions.morphing} />
 
             <Field label="Extensions" grouped>
                 {renderToggles(EXTENSION_TOGGLES)}
