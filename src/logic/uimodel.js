@@ -65,7 +65,6 @@ class UIModel {
             modelCount: models.length,
             modelTags: modelPathProvider.getAllTags(),
             modelFlavours: modelPathProvider.getAllFlavours(),
-            selectedModelFlavours: modelPathProvider.getAllFlavours(),
             environments,
             selectedEnvironment: INITIAL_ENVIRONMENT,
             clearColor: INITIAL_CLEAR_COLOR,

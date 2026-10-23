@@ -3,18 +3,18 @@ import { useState } from "react";
 
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, OutlineButton, Panel, Radio, Select, Switch } from "../controls.jsx";
+import { Field, Panel, Radio, Select, ToggleButton } from "../controls.jsx";
 
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
 
-/** A tag the model list can be filtered by. */
-function Tag({ tag, selected, onToggle }) {
+/** A value the model list can be filtered by. */
+function Chip({ label, selected, onToggle }) {
     return (
         <button
             type="button"
             aria-pressed={selected}
-            onClick={() => onToggle(tag)}
+            onClick={() => onToggle(label, !selected)}
             className={
                 "cursor-pointer rounded-full border px-3 py-0.5 text-sm transition-colors " +
                 (selected
@@ -22,7 +22,7 @@ function Tag({ tag, selected, onToggle }) {
                     : "border-ink/60 hover:border-ink")
             }
         >
-            {tag}
+            {label}
         </button>
     );
 }
@@ -49,11 +49,9 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
         uiEvents.variantChanged.emit(value);
     };
 
-    const toggleTag = (tag) => {
+    const toggleTag = (tag, enabled) => {
         uiEvents.modelTagsChanged.emit(
-            selectedModelTags.includes(tag)
-                ? selectedModelTags.filter((item) => item !== tag)
-                : [...selectedModelTags, tag]
+            enabled ? [...selectedModelTags, tag] : selectedModelTags.filter((item) => item !== tag)
         );
     };
 
@@ -86,14 +84,14 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                 {modelTags.length > 0 && (
                     <>
                         <div className="mt-3 flex items-center gap-3">
-                            <OutlineButton
+                            <ToggleButton
                                 data-testid="model-filter"
-                                aria-expanded={showTags}
-                                onClick={() => setShowTags(!showTags)}
+                                pressed={showTags}
+                                onToggle={setShowTags}
                             >
                                 <Funnel size={16} aria-hidden="true" />
                                 Filter
-                            </OutlineButton>
+                            </ToggleButton>
                             {showTags && (
                                 <p data-testid="model-count" className="text-ink/60 text-sm">
                                     {modelCount} {modelCount === 1 ? "asset" : "assets"}
@@ -103,26 +101,28 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
 
                         {showTags && (
                             <>
-                                <div data-testid="model-tags" className="mt-3 flex flex-wrap gap-2">
+                                <div data-testid="model-tags" className="flex mt-4 flex-wrap gap-2">
                                     {modelTags.map((tag) => (
-                                        <Tag
+                                        <Chip
                                             key={tag}
-                                            tag={tag}
+                                            label={tag}
                                             selected={selectedModelTags.includes(tag)}
                                             onToggle={toggleTag}
                                         />
                                     ))}
                                 </div>
 
-                                <div data-testid="model-flavours" className="mt-2 flex flex-col">
+                                <div
+                                    data-testid="model-flavours"
+                                    className="mt-6 flex flex-wrap gap-2"
+                                >
                                     {modelFlavours.map((flavour) => (
-                                        <Switch
+                                        <Chip
                                             key={flavour}
-                                            checked={selectedModelFlavours.includes(flavour)}
-                                            onChange={(enabled) => toggleFlavour(flavour, enabled)}
-                                        >
-                                            <span className="text-sm">{flavour}</span>
-                                        </Switch>
+                                            label={flavour}
+                                            selected={selectedModelFlavours.includes(flavour)}
+                                            onToggle={toggleFlavour}
+                                        />
                                     ))}
                                 </div>
                             </>
