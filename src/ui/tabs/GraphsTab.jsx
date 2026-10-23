@@ -9,6 +9,7 @@ import {
     Panel,
     PlaybackControls,
     Radio,
+    RadioGroup,
     SectionLabel,
     Select
 } from "../controls.jsx";
@@ -78,9 +79,10 @@ export function GraphsTab() {
 
             {hasGraphs && (
                 <Field label="Graphs">
-                    {graphs.map((graph) => (
-                        <div key={graph.index} className="mb-2">
+                    <RadioGroup>
+                        {graphs.map((graph) => (
                             <Radio
+                                key={graph.index}
                                 name="interactivity-graph"
                                 value={graph.index}
                                 checked={selectedGraph === graph.index}
@@ -91,8 +93,8 @@ export function GraphsTab() {
                             >
                                 {graph.title}
                             </Radio>
-                        </div>
-                    ))}
+                        ))}
+                    </RadioGroup>
                 </Field>
             )}
 
