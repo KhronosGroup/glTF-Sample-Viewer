@@ -103,56 +103,58 @@ async function loadMorphModel(page, animated = false) {
     await page.goto("/?model=/morph-test.gltf");
     await waitForLoadingToSettle(page);
     await openTab(page, "advanced");
-    await expect(page.getByRole("spinbutton")).toHaveCount(6);
+    await expect(page.getByRole("slider")).toHaveCount(6);
 }
 
-const weight = (page, name) => page.getByRole("spinbutton", { name, exact: true });
+const weight = (page, name) => page.getByRole("slider", { name, exact: true });
+const expectWeight = (page, name, value) =>
+    expect(weight(page, name)).toHaveAttribute("aria-valuenow", value);
 const smile = "Face (Node 0): Smile";
 
-async function editWeight(page, name, value) {
-    await weight(page, name).fill(value);
-    await weight(page, name).blur();
+// Clicks the slider track at the given 0-1 fraction of its width.
+async function setWeight(page, name, fraction) {
+    const box = await weight(page, name).locator("xpath=../..").boundingBox();
+    await page.mouse.click(box.x + box.width * fraction, box.y + box.height / 2);
 }
 
-test("flat named controls resolve node, mesh and implicit-zero defaults and render edits", async ({
+test("flat named sliders resolve node, mesh and implicit-zero defaults and render edits", async ({
     page
 }) => {
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page);
-    await expect(weight(page, smile)).toHaveValue("0.25");
-    await expect(weight(page, "Expressions (Node 1): Smile")).toHaveValue("0.1");
-    await expect(weight(page, "Node 2: Target 0")).toHaveValue("0");
+    await expectWeight(page, smile, "0.25");
+    await expectWeight(page, "Expressions (Node 1): Smile", "0.1");
+    await expectWeight(page, "Node 2: Target 0", "0");
     await expect(page.getByRole("heading", { name: "Other (Node 3)" })).toHaveCount(0);
-    await expect(weight(page, smile)).not.toHaveAttribute("min");
-    await expect(weight(page, smile)).not.toHaveAttribute("max");
-    await weight(page, smile).fill("");
-    await weight(page, smile).blur();
-    await expect(weight(page, smile)).toHaveValue("0.25");
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemin", "0");
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemax", "1");
     await expect(page.getByRole("button", { name: "Reset Morph Weights" })).toBeDisabled();
 
     await page.waitForLoadState("networkidle");
     const canvas = page.locator(ui.canvas);
     const before = await canvas.screenshot();
-    await editWeight(page, smile, "-2.5");
+    await setWeight(page, smile, 1);
+    await expectWeight(page, smile, "1");
     await expect(page.getByRole("button", { name: "Reset Morph Weights" })).toHaveCSS(
         "cursor",
         "pointer"
     );
-    await expect(weight(page, smile)).toHaveValue("-2.5");
-    await expect(weight(page, "Expressions (Node 1): Smile")).toHaveValue("0.1");
+    await expectWeight(page, "Expressions (Node 1): Smile", "0.1");
     await expect.poll(() => canvas.screenshot()).not.toEqual(before);
-    await editWeight(page, "Node 2: Target 0", "3");
-    await expect(weight(page, "Node 2: Target 0")).toHaveValue("3");
+    await setWeight(page, "Node 2: Target 0", 1);
+    await expectWeight(page, "Node 2: Target 0", "1");
 
     const morphingSwitch = page
         .locator("label")
         .filter({ has: page.getByRole("checkbox", { name: "Morphing", exact: true }) });
     await morphingSwitch.click();
-    await expect(weight(page, smile)).toBeDisabled();
+    await expect(
+        weight(page, smile).locator("xpath=ancestor::div[@aria-disabled][1]")
+    ).toHaveAttribute("aria-disabled", "true");
     await morphingSwitch.click();
     await page.getByRole("button", { name: "Reset Morph Weights" }).click();
-    await expect(weight(page, smile)).toHaveValue("0.25");
-    await expect(weight(page, "Node 2: Target 0")).toHaveValue("0");
+    await expectWeight(page, smile, "0.25");
+    await expectWeight(page, "Node 2: Target 0", "0");
     await expect.poll(() => canvas.screenshot()).toEqual(before);
     expectNoConsoleErrors(errors);
 });
@@ -163,12 +165,13 @@ test("overrides survive animation, pause and deselection until explicit reset", 
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page, true);
     const blink = weight(page, "Face (Node 0): Blink");
-    const initialBlink = await blink.inputValue();
-    await expect.poll(() => blink.inputValue()).not.toBe(initialBlink);
-    await editWeight(page, smile, "2.5");
-    const nextBlink = await blink.inputValue();
-    await expect.poll(() => blink.inputValue()).not.toBe(nextBlink);
-    await expect(weight(page, smile)).toHaveValue("2.5");
+    const blinkValue = () => blink.getAttribute("aria-valuenow");
+    const initialBlink = await blinkValue();
+    await expect.poll(blinkValue).not.toBe(initialBlink);
+    await setWeight(page, smile, 1);
+    const nextBlink = await blinkValue();
+    await expect.poll(blinkValue).not.toBe(nextBlink);
+    await expectWeight(page, smile, "1");
 
     await openTab(page, "animations");
     await page.getByRole("button", { name: "Pause", exact: true }).click();
@@ -177,10 +180,10 @@ test("overrides survive animation, pause and deselection until explicit reset", 
         .filter({ has: page.getByRole("checkbox") })
         .click();
     await openTab(page, "advanced");
-    await expect(weight(page, smile)).toHaveValue("2.5");
-    await expect(blink).toHaveValue("0.5");
+    await expectWeight(page, smile, "1");
+    await expectWeight(page, "Face (Node 0): Blink", "0.5");
     await page.getByRole("button", { name: "Reset Morph Weights" }).click();
-    await expect(weight(page, smile)).toHaveValue("0.25");
+    await expectWeight(page, smile, "0.25");
     expectNoConsoleErrors(errors);
 });
 
@@ -189,15 +192,15 @@ test("scene changes retain overrides, global reset clears them, model loads remo
 }) => {
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page);
-    await editWeight(page, smile, "4");
+    await setWeight(page, smile, 1);
     await openTab(page, "models");
     await page
         .getByRole("combobox")
         .filter({ has: page.getByRole("option", { name: "Other Scene", exact: true }) })
         .selectOption("1");
     await openTab(page, "advanced");
-    await expect(page.getByRole("spinbutton")).toHaveCount(2);
-    await expect(weight(page, "Other (Node 3): Smile")).toHaveValue("0.1");
+    await expect(page.getByRole("slider")).toHaveCount(2);
+    await expectWeight(page, "Other (Node 3): Smile", "0.1");
     await page.getByRole("button", { name: "Reset Morph Weights" }).click();
     await openTab(page, "models");
     await page
@@ -205,12 +208,12 @@ test("scene changes retain overrides, global reset clears them, model loads remo
         .filter({ has: page.getByRole("option", { name: "Main", exact: true }) })
         .selectOption("0");
     await openTab(page, "advanced");
-    await expect(weight(page, smile)).toHaveValue("0.25");
+    await expectWeight(page, smile, "0.25");
 
     await openTab(page, "models");
     await selectModel(page, "DamagedHelmet");
     await waitForLoadingToSettle(page);
     await openTab(page, "advanced");
-    await expect(page.getByRole("spinbutton")).toHaveCount(0);
+    await expect(page.getByRole("slider")).toHaveCount(0);
     expectNoConsoleErrors(errors);
 });

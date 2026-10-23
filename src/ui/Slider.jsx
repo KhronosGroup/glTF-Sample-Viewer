@@ -102,7 +102,7 @@ export function Slider({
                     style={{ left: percent(ratio) }}
                 >
                     {dragging && (
-                        <div className="bg-accent text-ink-dim absolute bottom-6 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs whitespace-nowrap">
+                        <div className="bg-accent text-ink-dim absolute bottom-6 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs whitespace-nowrap select-none">
                             {formatter(value)}
                         </div>
                     )}
