@@ -29,7 +29,6 @@ const initialState = {
     materialVariants: ["None"],
     animations: [{ title: "None" }],
     morphWeights: [],
-    hasMorphWeightOverrides: false,
     disabledAnimations: [],
     graphs: [],
     customEvents: [],

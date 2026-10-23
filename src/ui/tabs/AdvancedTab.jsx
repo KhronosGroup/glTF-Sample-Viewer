@@ -46,6 +46,7 @@ export function AdvancedTab({
 }) {
     const debugchannels = useViewerStore((state) => state.debugchannels);
     const statistics = useViewerStore((state) => state.statistics);
+    const hasMorphTargets = useViewerStore((state) => state.morphWeights.length > 0);
     const supportsFloatingPointFramebuffer = useViewerStore(
         (state) => state.supportsFloatingPointFramebuffer
     );
@@ -116,6 +117,21 @@ export function AdvancedTab({
             <Field label="Rendering" grouped>
                 {renderToggles(RENDERING_TOGGLES)}
                 <Switch
+                    checked={extensions.morphOverrides}
+                    disabled={!extensions.morphing || !hasMorphTargets}
+                    onChange={(checked) => {
+                        onExtensionsChange({ morphOverrides: checked });
+                        if (!checked) {
+                            uiEvents.morphWeightsReset.emit();
+                        }
+                    }}
+                >
+                    Morph Overrides
+                </Switch>
+                {extensions.morphOverrides && hasMorphTargets && (
+                    <MorphWeights disabled={!extensions.morphing} />
+                )}
+                <Switch
                     checked={extensions.floatingPointFramebuffer}
                     disabled={!supportsFloatingPointFramebuffer}
                     onChange={toggle({
@@ -126,8 +142,6 @@ export function AdvancedTab({
                     32-bit Framebuffer
                 </Switch>
             </Field>
-
-            <MorphWeights disabled={!extensions.morphing} />
 
             <Field label="Extensions" grouped>
                 {renderToggles(EXTENSION_TOGGLES)}

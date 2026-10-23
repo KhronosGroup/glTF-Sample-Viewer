@@ -414,11 +414,7 @@ class UIModel {
         });
 
         const previous = getViewerState().morphWeights;
-        const hasMorphWeightOverrides = gltf.nodes.some(
-            (node) => node.morphWeightOverrides !== undefined
-        );
         if (
-            hasMorphWeightOverrides !== getViewerState().hasMorphWeightOverrides ||
             morphWeights.length !== previous.length ||
             morphWeights.some(
                 (node, index) =>
@@ -432,7 +428,7 @@ class UIModel {
                     )
             )
         ) {
-            setViewerState({ morphWeights, hasMorphWeightOverrides });
+            setViewerState({ morphWeights });
         }
     }
 

@@ -1,7 +1,5 @@
-import { RotateCcw } from "lucide-react";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
-import { Field, OutlineButton } from "./controls.jsx";
 import { Slider } from "./Slider.jsx";
 
 const formatWeight = (value) => value.toFixed(2);
@@ -43,12 +41,8 @@ function MorphWeightSlider({ node, target, targetIndex, disabled }) {
 export function MorphWeights({ disabled }) {
     const nodes = useViewerStore((state) => state.morphWeights);
     const isLoading = useViewerStore((state) => state.isLoading);
-    const hasOverrides = useViewerStore((state) => state.hasMorphWeightOverrides);
-    if (nodes.length === 0) {
-        return null;
-    }
     return (
-        <Field label="Morph Target Weights">
+        <div className="mt-2 mb-2 ml-14">
             {nodes.map((node) => (
                 <div key={node.nodeIndex} className="mt-3 first:mt-0">
                     <h3 className="mb-1 truncate text-sm font-medium" title={node.title}>
@@ -67,14 +61,6 @@ export function MorphWeights({ disabled }) {
                     </div>
                 </div>
             ))}
-            <OutlineButton
-                className="mt-4 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isLoading || !hasOverrides}
-                onClick={() => uiEvents.morphWeightsReset.emit()}
-            >
-                <RotateCcw size={16} aria-hidden="true" />
-                Reset Morph Weights
-            </OutlineButton>
-        </Field>
+        </div>
     );
 }

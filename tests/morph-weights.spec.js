@@ -103,7 +103,21 @@ async function loadMorphModel(page, animated = false) {
     await page.goto("/?model=/morph-test.gltf");
     await waitForLoadingToSettle(page);
     await openTab(page, "advanced");
+    await expect(page.getByRole("slider")).toHaveCount(0);
+    await overridesSwitch(page).click();
     await expect(page.getByRole("slider")).toHaveCount(6);
+}
+
+const overridesSwitch = (page) =>
+    page
+        .locator("label")
+        .filter({ has: page.getByRole("checkbox", { name: "Morph Overrides", exact: true }) });
+
+// Turning the switch off clears every override; turning it back on shows the sliders again.
+async function resetOverrides(page) {
+    await overridesSwitch(page).click();
+    await expect(page.getByRole("slider")).toHaveCount(0);
+    await overridesSwitch(page).click();
 }
 
 const weight = (page, name) => page.getByRole("slider", { name, exact: true });
@@ -128,17 +142,12 @@ test("flat named sliders start unset and override rendering when set", async ({ 
     await expect(page.getByRole("heading", { name: "Other (Node 3)" })).toHaveCount(0);
     await expect(weight(page, smile)).toHaveAttribute("aria-valuemin", "0");
     await expect(weight(page, smile)).toHaveAttribute("aria-valuemax", "1");
-    await expect(page.getByRole("button", { name: "Reset Morph Weights" })).toBeDisabled();
 
     await page.waitForLoadState("networkidle");
     const canvas = page.locator(ui.canvas);
     const before = await canvas.screenshot();
     await setWeight(page, smile, 1);
     await expectWeight(page, smile, "1");
-    await expect(page.getByRole("button", { name: "Reset Morph Weights" })).toHaveCSS(
-        "cursor",
-        "pointer"
-    );
     await expectUnset(page, "Expressions (Node 1): Smile");
     await expect.poll(() => canvas.screenshot()).not.toEqual(before);
     await setWeight(page, "Node 2: Target 0", 1);
@@ -152,7 +161,7 @@ test("flat named sliders start unset and override rendering when set", async ({ 
         weight(page, smile).locator("xpath=ancestor::div[@aria-disabled][1]")
     ).toHaveAttribute("aria-disabled", "true");
     await morphingSwitch.click();
-    await page.getByRole("button", { name: "Reset Morph Weights" }).click();
+    await resetOverrides(page);
     await expectUnset(page, smile);
     await expectUnset(page, "Node 2: Target 0");
     await expect.poll(() => canvas.screenshot()).toEqual(before);
@@ -176,7 +185,7 @@ test("overrides survive animation, pause and deselection until explicit reset", 
         .click();
     await openTab(page, "advanced");
     await expectWeight(page, smile, "1");
-    await page.getByRole("button", { name: "Reset Morph Weights" }).click();
+    await resetOverrides(page);
     await expectUnset(page, smile);
     expectNoConsoleErrors(errors);
 });
@@ -195,7 +204,7 @@ test("scene changes retain overrides, global reset clears them, model loads remo
     await openTab(page, "advanced");
     await expect(page.getByRole("slider")).toHaveCount(2);
     await expectUnset(page, "Other (Node 3): Smile");
-    await page.getByRole("button", { name: "Reset Morph Weights" }).click();
+    await resetOverrides(page);
     await openTab(page, "models");
     await page
         .getByRole("combobox")
