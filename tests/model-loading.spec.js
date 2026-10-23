@@ -23,7 +23,8 @@ test("a superseded model load does not overwrite the current one", async ({ page
     await selectModel(page, "Avocado");
 
     // BoomBox is much larger than Avocado, so without cancellation it finishes
-    // last and wins. Draining the network makes that outcome observable.    await waitForLoadingToSettle(page);
+    // last and wins. Draining the network makes that outcome observable.
+    await waitForLoadingToSettle(page);
     await page.waitForLoadState("networkidle");
 
     await expectSelectedModel(page, "Avocado");
