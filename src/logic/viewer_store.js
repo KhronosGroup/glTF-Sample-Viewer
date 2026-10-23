@@ -47,7 +47,7 @@ const initialState = {
     supportsFloatingPointFramebuffer: true,
 
     // Selections. Written by the UI, read back by the loading layer.
-    selectedModel: "CarConcept",
+    selectedModel: "DamagedHelmet",
     selectedModelExcluded: false,
     selectedModelTags: [],
     selectedModelFlavours: [],
