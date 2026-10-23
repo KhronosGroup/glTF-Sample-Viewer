@@ -296,6 +296,7 @@ export const initViewer = async (canvas) => {
     onChange(uiEvents.debugchannelChanged, (v) => (state.renderingParameters.debugOutput = v));
     onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
     onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
+    onChange(uiEvents.wireframeChanged, (v) => (state.renderingParameters.wireframe = v));
     onChange(uiEvents.iblChanged, (v) => (state.renderingParameters.useIBL = v));
     onChange(uiEvents.punctualLightsChanged, (v) => (state.renderingParameters.usePunctual = v));
     onChange(

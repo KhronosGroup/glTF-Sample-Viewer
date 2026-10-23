@@ -48,6 +48,7 @@ const eventNames = [
 
     "skinningChanged",
     "morphingChanged",
+    "wireframeChanged",
     "inputSmoothingChanged",
     "interactivityChanged",
     "floatingPointFramebufferChanged",
