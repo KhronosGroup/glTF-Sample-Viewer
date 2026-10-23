@@ -76,6 +76,7 @@ class UIModel {
                 title: GltfState.DebugOutput[key]
             }))
         });
+        this.publishModels();
 
         this.subscriptions.push(
             uiEvents.modelChanged.on((name) => this.selectModel(name)),
@@ -182,7 +183,13 @@ class UIModel {
     }
 
     publishModels() {
-        const { selectedModelTags, selectedModelFlavours, selectedModel } = getViewerState();
+        const {
+            modelTags,
+            modelFlavours,
+            selectedModelTags,
+            selectedModelFlavours,
+            selectedModel
+        } = getViewerState();
         const models = this.modelPathProvider.getAllKeys(selectedModelTags, selectedModelFlavours);
         // The loaded model stays listed even when filtered out, so that filtering
         // never changes what is shown. It is not part of the count.
@@ -190,7 +197,26 @@ class UIModel {
         if (!models.includes(selectedModel)) {
             models.push(selectedModel);
         }
-        setViewerState({ models, modelCount });
+        setViewerState({
+            models,
+            modelCount,
+            disabledModelTags: modelTags.filter(
+                (tag) =>
+                    !selectedModelTags.includes(tag) &&
+                    this.modelPathProvider.getAllKeys(
+                        [...selectedModelTags, tag],
+                        selectedModelFlavours
+                    ).length === 0
+            ),
+            disabledModelFlavours: modelFlavours.filter(
+                (flavour) =>
+                    !selectedModelFlavours.includes(flavour) &&
+                    this.modelPathProvider.getAllKeys(selectedModelTags, [
+                        ...selectedModelFlavours,
+                        flavour
+                    ]).length === 0
+            )
+        });
     }
 
     emitModel(model) {

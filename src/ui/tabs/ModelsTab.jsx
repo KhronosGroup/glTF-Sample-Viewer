@@ -9,17 +9,19 @@ import { Field, Panel, Radio, Select, ThumbnailSelect, ToggleButton } from "../c
 const VARIANT_LIST_LIMIT = 5;
 
 /** A value the model list can be filtered by. */
-function Chip({ label, selected, onToggle }) {
+function Chip({ label, selected, disabled, onToggle }) {
     return (
         <button
             type="button"
             aria-pressed={selected}
+            disabled={disabled}
             onClick={() => onToggle(label, !selected)}
             className={
-                "cursor-pointer rounded-full border px-3 py-0.5 text-sm transition-colors " +
+                "rounded-full border px-3 py-0.5 text-sm transition-colors " +
+                (disabled ? "cursor-not-allowed opacity-40 " : "cursor-pointer ") +
                 (selected
                     ? "bg-accent text-ink-dim border-accent"
-                    : "border-ink/60 hover:border-ink")
+                    : "border-ink/60 " + (disabled ? "" : "hover:border-ink"))
             }
         >
             {label}
@@ -32,6 +34,8 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const modelCount = useViewerStore((state) => state.modelCount);
     const modelTags = useViewerStore((state) => state.modelTags);
     const modelFlavours = useViewerStore((state) => state.modelFlavours);
+    const disabledModelTags = useViewerStore((state) => state.disabledModelTags);
+    const disabledModelFlavours = useViewerStore((state) => state.disabledModelFlavours);
     const modelThumbnails = useViewerStore((state) => state.modelThumbnails);
     const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
     const selectedModelFlavours = useViewerStore((state) => state.selectedModelFlavours);
@@ -108,6 +112,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                                             key={tag}
                                             label={tag}
                                             selected={selectedModelTags.includes(tag)}
+                                            disabled={disabledModelTags.includes(tag)}
                                             onToggle={toggleTag}
                                         />
                                     ))}
@@ -122,6 +127,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                                             key={flavour}
                                             label={flavour}
                                             selected={selectedModelFlavours.includes(flavour)}
+                                            disabled={disabledModelFlavours.includes(flavour)}
                                             onToggle={toggleFlavour}
                                         />
                                     ))}

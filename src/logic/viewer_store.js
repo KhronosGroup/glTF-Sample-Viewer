@@ -18,6 +18,8 @@ const initialState = {
     modelCount: 1,
     modelTags: [],
     modelFlavours: [],
+    disabledModelTags: [],
+    disabledModelFlavours: [],
     modelThumbnails: {},
     flavours: [],
 
