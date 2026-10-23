@@ -64,6 +64,7 @@ class UIModel {
             models,
             modelCount: models.length,
             modelTags: modelPathProvider.getAllTags(),
+            modelThumbnails: modelPathProvider.getAllScreenshots(),
             environments,
             selectedEnvironment: INITIAL_ENVIRONMENT,
             clearColor: INITIAL_CLEAR_COLOR,

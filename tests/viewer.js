@@ -9,7 +9,7 @@ export const ui = {
     spinner: "[data-testid='spinner']",
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
-    modelSelect: "select[data-testid='model-select']",
+    modelSelect: "[data-testid='model-select']",
     flavourSelect: "select[data-testid='flavour-select']"
 };
 
@@ -72,6 +72,19 @@ export async function openTab(page, name) {
 export async function openModelsTab(page) {
     await openTab(page, "models");
     await expect(page.locator(ui.modelSelect)).toBeVisible();
+}
+
+/**
+ * The model picker is a listbox rather than a native select, so a choice is a
+ * pair of clicks and the chosen name is the button's text.
+ */
+export async function selectModel(page, name) {
+    await page.locator(ui.modelSelect).click();
+    await page.getByRole("option", { name, exact: true }).click();
+}
+
+export function expectSelectedModel(page, name) {
+    return expect(page.locator(ui.modelSelect)).toHaveText(name);
 }
 
 /**

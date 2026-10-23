@@ -4,6 +4,7 @@ import {
     expectCanvasToRender,
     expectNoConsoleErrors,
     openTab,
+    selectModel,
     ui,
     waitForLoadingToSettle
 } from "./viewer.js";
@@ -32,7 +33,7 @@ test("decodes Draco geometry with a decoder served from the app's own origin", a
     await waitForLoadingToSettle(page);
     await openTab(page, "models");
 
-    await page.locator(ui.modelSelect).selectOption("Avocado");
+    await selectModel(page, "Avocado");
     await waitForLoadingToSettle(page);
     await page.locator(ui.flavourSelect).selectOption("glTF-Draco");
     await waitForLoadingToSettle(page);
