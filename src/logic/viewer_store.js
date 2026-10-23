@@ -19,7 +19,7 @@ const initialState = {
     modelTags: [],
     modelFlavours: [],
     modelThumbnails: {},
-    flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
+    flavours: [],
 
     // Published once a glTF has finished loading.
     scenes: [{ title: "0" }, { title: "1" }],
