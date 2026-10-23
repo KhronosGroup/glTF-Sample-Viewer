@@ -151,7 +151,7 @@ class UIModel {
             this.registerDroppedFilename(this.modelURL);
             this.emitModel({ mainFile: this.modelURL });
         } else {
-            this.selectModel("DamagedHelmet");
+            this.selectModel("CarConcept");
         }
     }
 
