@@ -18,6 +18,7 @@ const initialState = {
     modelCount: 1,
     modelTags: [],
     modelFlavours: [],
+    modelThumbnails: {},
     flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
 
     // Published once a glTF has finished loading.
