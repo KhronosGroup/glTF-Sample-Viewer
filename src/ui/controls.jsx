@@ -259,7 +259,14 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                 )}
                 {...rest}
             >
-                <span className="min-w-0 truncate">{options[selectedIndex]?.label ?? value}</span>
+                <span
+                    className={classNames(
+                        "min-w-0 truncate",
+                        options[selectedIndex]?.muted === true && "text-ink/50"
+                    )}
+                >
+                    {options[selectedIndex]?.label ?? value}
+                </span>
                 <ChevronDown size={16} aria-hidden="true" className="shrink-0" />
             </button>
 
@@ -306,7 +313,14 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                                         className="bg-card-inner size-8 shrink-0 rounded object-cover"
                                     />
                                 )}
-                                <span className="min-w-0 truncate">{option.label}</span>
+                                <span
+                                    className={classNames(
+                                        "min-w-0 truncate",
+                                        option.muted === true && "text-ink/50"
+                                    )}
+                                >
+                                    {option.label}
+                                </span>
                             </li>
                         ))}
                     </ul>
@@ -351,6 +365,29 @@ export function OutlineButton({ onClick, className, children, ...rest }) {
     );
 }
 
+/**
+ * An outline button that fills in while it is on. Both states carry the same
+ * border, so toggling does not shift what sits below it.
+ */
+export function ToggleButton({ pressed, onToggle, className, children, ...rest }) {
+    return (
+        <button
+            type="button"
+            aria-pressed={pressed}
+            onClick={() => onToggle(!pressed)}
+            className={classNames(
+                "border-accent text-ink-dim inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] px-4 py-1.5 transition-colors",
+                pressed ? "bg-accent" : "hover:bg-accent-dim bg-transparent",
+                FOCUS_RING,
+                className
+            )}
+            {...rest}
+        >
+            {children}
+        </button>
+    );
+}
+
 /** A bare icon control: no chrome until hovered or focused. */
 export function IconButton({ onClick, label, className, children }) {
     return (
@@ -370,15 +407,6 @@ export function IconButton({ onClick, label, className, children }) {
     );
 }
 
-export function ToggleButton({ on, onText, offText, onIcon, offIcon, className, onToggle }) {
-    return (
-        <Button className={className} onClick={() => onToggle(!on)}>
-            {on ? onIcon : offIcon}
-            {on ? onText : offText}
-        </Button>
-    );
-}
-
 /**
  * Play/pause plus reset. The animation, graph and physics panels each had their
  * own copy of this row, with three different reset buttons.
@@ -386,15 +414,10 @@ export function ToggleButton({ on, onText, offText, onIcon, offIcon, className, 
 export function PlaybackControls({ active, onText, offText, onIcon, offIcon, onToggle, onReset }) {
     return (
         <div className="mt-4 mb-6 flex items-center gap-3">
-            <ToggleButton
-                on={active}
-                onText={onText}
-                offText={offText}
-                onIcon={onIcon}
-                offIcon={offIcon}
-                className="w-28"
-                onToggle={onToggle}
-            />
+            <Button className="w-28" onClick={() => onToggle(!active)}>
+                {active ? onIcon : offIcon}
+                {active ? onText : offText}
+            </Button>
             <OutlineButton onClick={onReset}>
                 <RotateCcw size={16} aria-hidden="true" />
                 Reset

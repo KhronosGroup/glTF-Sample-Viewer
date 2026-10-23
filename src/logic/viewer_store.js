@@ -17,8 +17,11 @@ const initialState = {
     models: ["DamagedHelmet"],
     modelCount: 1,
     modelTags: [],
+    modelFlavours: [],
+    disabledModelTags: [],
+    disabledModelFlavours: [],
     modelThumbnails: {},
-    flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
+    flavours: ["glTF"],
 
     // Published once a glTF has finished loading.
     scenes: [{ title: "0" }, { title: "1" }],
@@ -45,8 +48,10 @@ const initialState = {
 
     // Selections. Written by the UI, read back by the loading layer.
     selectedModel: "DamagedHelmet",
+    selectedModelExcluded: false,
     selectedModelTags: [],
-    selectedFlavour: "",
+    selectedModelFlavours: [],
+    selectedFlavour: "glTF",
     selectedScene: {},
     selectedCamera: {},
     selectedAnimations: [],
