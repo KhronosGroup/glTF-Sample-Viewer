@@ -402,15 +402,13 @@ class UIModel {
             if (targetCount === 0 || !scene?.includesNode(gltf, nodeIndex)) {
                 return;
             }
-            const weights = node.getWeights(gltf);
             const name = node.name || mesh.name;
             morphWeights.push({
                 nodeIndex,
                 title: name ? `${name} (Node ${nodeIndex})` : `Node ${nodeIndex}`,
                 targets: Array.from({ length: targetCount }, (_, index) => ({
                     name: mesh.extras?.targetNames?.[index] || `Target ${index}`,
-                    value: weights?.[index] ?? 0,
-                    overridden: node.morphWeightOverrides?.[index] !== undefined
+                    value: node.morphWeightOverrides?.[index] ?? null
                 }))
             });
         });
@@ -430,8 +428,7 @@ class UIModel {
                     node.targets.some(
                         (target, targetIndex) =>
                             target.name !== previous[index].targets[targetIndex].name ||
-                            target.value !== previous[index].targets[targetIndex].value ||
-                            target.overridden !== previous[index].targets[targetIndex].overridden
+                            target.value !== previous[index].targets[targetIndex].value
                     )
             )
         ) {

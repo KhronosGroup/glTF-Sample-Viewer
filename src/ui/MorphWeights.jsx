@@ -17,13 +17,7 @@ function MorphWeightSlider({ node, target, targetIndex, disabled }) {
             aria-disabled={disabled}
             inert={disabled}
         >
-            <span
-                className={classNames(
-                    "w-1/5 shrink-0 truncate text-sm",
-                    target.overridden && "text-accent"
-                )}
-                title={target.name}
-            >
+            <span className="w-1/5 shrink-0 truncate text-sm" title={target.name}>
                 {target.name}
             </span>
             <Slider

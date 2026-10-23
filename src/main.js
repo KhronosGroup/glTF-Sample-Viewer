@@ -594,7 +594,6 @@ export const initViewer = async (canvas) => {
     // ------------------------------------------------------------ render loop
 
     const past = {};
-    let lastMorphWeightUpdate = 0;
     let animationFrame = null;
     const update = () => {
         const devicePixelRatio = window.devicePixelRatio || 1;
@@ -632,15 +631,6 @@ export const initViewer = async (canvas) => {
         if (redraw) {
             redraw = false;
             view.renderFrame(state, canvas.width, canvas.height);
-            const now = performance.now();
-            if (
-                now - lastMorphWeightUpdate >= 100 ||
-                state.animationTimer.paused ||
-                state.animationIndices.length === 0
-            ) {
-                uiModel.publishMorphWeights(state);
-                lastMorphWeightUpdate = now;
-            }
         }
 
         animationFrame = window.requestAnimationFrame(update);

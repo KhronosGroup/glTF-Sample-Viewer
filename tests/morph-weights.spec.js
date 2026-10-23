@@ -109,6 +109,8 @@ async function loadMorphModel(page, animated = false) {
 const weight = (page, name) => page.getByRole("slider", { name, exact: true });
 const expectWeight = (page, name, value) =>
     expect(weight(page, name)).toHaveAttribute("aria-valuenow", value);
+const expectUnset = (page, name) =>
+    expect(weight(page, name)).toHaveAttribute("aria-valuetext", "Not set");
 const smile = "Face (Node 0): Smile";
 
 // Clicks the slider track at the given 0-1 fraction of its width.
@@ -117,14 +119,12 @@ async function setWeight(page, name, fraction) {
     await page.mouse.click(box.x + box.width * fraction, box.y + box.height / 2);
 }
 
-test("flat named sliders resolve node, mesh and implicit-zero defaults and render edits", async ({
-    page
-}) => {
+test("flat named sliders start unset and override rendering when set", async ({ page }) => {
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page);
-    await expectWeight(page, smile, "0.25");
-    await expectWeight(page, "Expressions (Node 1): Smile", "0.1");
-    await expectWeight(page, "Node 2: Target 0", "0");
+    await expectUnset(page, smile);
+    await expectUnset(page, "Expressions (Node 1): Smile");
+    await expectUnset(page, "Node 2: Target 0");
     await expect(page.getByRole("heading", { name: "Other (Node 3)" })).toHaveCount(0);
     await expect(weight(page, smile)).toHaveAttribute("aria-valuemin", "0");
     await expect(weight(page, smile)).toHaveAttribute("aria-valuemax", "1");
@@ -139,7 +139,7 @@ test("flat named sliders resolve node, mesh and implicit-zero defaults and rende
         "cursor",
         "pointer"
     );
-    await expectWeight(page, "Expressions (Node 1): Smile", "0.1");
+    await expectUnset(page, "Expressions (Node 1): Smile");
     await expect.poll(() => canvas.screenshot()).not.toEqual(before);
     await setWeight(page, "Node 2: Target 0", 1);
     await expectWeight(page, "Node 2: Target 0", "1");
@@ -153,8 +153,8 @@ test("flat named sliders resolve node, mesh and implicit-zero defaults and rende
     ).toHaveAttribute("aria-disabled", "true");
     await morphingSwitch.click();
     await page.getByRole("button", { name: "Reset Morph Weights" }).click();
-    await expectWeight(page, smile, "0.25");
-    await expectWeight(page, "Node 2: Target 0", "0");
+    await expectUnset(page, smile);
+    await expectUnset(page, "Node 2: Target 0");
     await expect.poll(() => canvas.screenshot()).toEqual(before);
     expectNoConsoleErrors(errors);
 });
@@ -164,14 +164,9 @@ test("overrides survive animation, pause and deselection until explicit reset", 
 }) => {
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page, true);
-    const blink = weight(page, "Face (Node 0): Blink");
-    const blinkValue = () => blink.getAttribute("aria-valuenow");
-    const initialBlink = await blinkValue();
-    await expect.poll(blinkValue).not.toBe(initialBlink);
     await setWeight(page, smile, 1);
-    const nextBlink = await blinkValue();
-    await expect.poll(blinkValue).not.toBe(nextBlink);
     await expectWeight(page, smile, "1");
+    await expectUnset(page, "Face (Node 0): Blink");
 
     await openTab(page, "animations");
     await page.getByRole("button", { name: "Pause", exact: true }).click();
@@ -181,9 +176,8 @@ test("overrides survive animation, pause and deselection until explicit reset", 
         .click();
     await openTab(page, "advanced");
     await expectWeight(page, smile, "1");
-    await expectWeight(page, "Face (Node 0): Blink", "0.5");
     await page.getByRole("button", { name: "Reset Morph Weights" }).click();
-    await expectWeight(page, smile, "0.25");
+    await expectUnset(page, smile);
     expectNoConsoleErrors(errors);
 });
 
@@ -200,7 +194,7 @@ test("scene changes retain overrides, global reset clears them, model loads remo
         .selectOption("1");
     await openTab(page, "advanced");
     await expect(page.getByRole("slider")).toHaveCount(2);
-    await expectWeight(page, "Other (Node 3): Smile", "0.1");
+    await expectUnset(page, "Other (Node 3): Smile");
     await page.getByRole("button", { name: "Reset Morph Weights" }).click();
     await openTab(page, "models");
     await page
@@ -208,7 +202,7 @@ test("scene changes retain overrides, global reset clears them, model loads remo
         .filter({ has: page.getByRole("option", { name: "Main", exact: true }) })
         .selectOption("0");
     await openTab(page, "advanced");
-    await expectWeight(page, smile, "0.25");
+    await expectUnset(page, smile);
 
     await openTab(page, "models");
     await selectModel(page, "DamagedHelmet");

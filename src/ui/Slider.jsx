@@ -3,6 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /**
  * `min` may be greater than `max` (the exposure slider is inverted), so the
  * ratio is derived from the signed span rather than by sorting the bounds.
+ *
+ * A `null` or `undefined` value is indeterminate: no fill and no visible thumb
+ * until the track is clicked or a key is pressed.
  */
 
 function clamp(value, min, max) {
@@ -60,6 +63,8 @@ export function Slider({
         };
     }, [dragging, onChange, valueFromClientX]);
 
+    const indeterminate = value === null || value === undefined;
+
     const onKeyDown = (event) => {
         const direction =
             { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[event.key] ?? 0;
@@ -67,10 +72,14 @@ export function Slider({
             return;
         }
         event.preventDefault();
+        if (indeterminate) {
+            onChange(min);
+            return;
+        }
         onChange(clamp(value + direction * step * Math.sign(max - min), min, max));
     };
 
-    const ratio = ratioOf(value, min, max);
+    const ratio = indeterminate ? 0 : ratioOf(value, min, max);
 
     return (
         <div className={["mx-2 mt-4 mb-10", className].filter(Boolean).join(" ")}>
@@ -82,10 +91,12 @@ export function Slider({
                     setDragging(true);
                 }}
             >
-                <div
-                    className="bg-accent absolute h-full rounded-full"
-                    style={{ width: percent(ratio) }}
-                />
+                {!indeterminate && (
+                    <div
+                        className="bg-accent absolute h-full rounded-full"
+                        style={{ width: percent(ratio) }}
+                    />
+                )}
 
                 {ticks.map((tick) => (
                     <span
@@ -101,21 +112,26 @@ export function Slider({
                     className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
                     style={{ left: percent(ratio) }}
                 >
-                    {dragging && (
+                    {dragging && !indeterminate && (
                         <div className="bg-accent text-ink-dim absolute bottom-6 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs whitespace-nowrap select-none">
                             {formatter(value)}
                         </div>
                     )}
                     <div
-                        className="border-surface h-4 w-4 rounded-full border-2 bg-white"
+                        className={[
+                            "border-surface h-4 w-4 rounded-full border-2 bg-white",
+                            indeterminate && "opacity-0"
+                        ]
+                            .filter(Boolean)
+                            .join(" ")}
                         tabIndex={0}
                         role="slider"
                         aria-valuemin={min}
                         aria-valuemax={max}
-                        aria-valuenow={value}
+                        aria-valuenow={indeterminate ? undefined : value}
                         aria-orientation="horizontal"
                         aria-label={label}
-                        aria-valuetext={formatter(value)}
+                        aria-valuetext={indeterminate ? "Not set" : formatter(value)}
                         onKeyDown={onKeyDown}
                     />
                 </div>
