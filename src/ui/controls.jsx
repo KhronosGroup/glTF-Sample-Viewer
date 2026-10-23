@@ -259,7 +259,14 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                 )}
                 {...rest}
             >
-                <span className="min-w-0 truncate">{options[selectedIndex]?.label ?? value}</span>
+                <span
+                    className={classNames(
+                        "min-w-0 truncate",
+                        options[selectedIndex]?.muted === true && "text-ink/50"
+                    )}
+                >
+                    {options[selectedIndex]?.label ?? value}
+                </span>
                 <ChevronDown size={16} aria-hidden="true" className="shrink-0" />
             </button>
 
@@ -306,7 +313,14 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                                         className="bg-card-inner size-8 shrink-0 rounded object-cover"
                                     />
                                 )}
-                                <span className="min-w-0 truncate">{option.label}</span>
+                                <span
+                                    className={classNames(
+                                        "min-w-0 truncate",
+                                        option.muted === true && "text-ink/50"
+                                    )}
+                                >
+                                    {option.label}
+                                </span>
                             </li>
                         ))}
                     </ul>

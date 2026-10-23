@@ -44,6 +44,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const cameras = useViewerStore((state) => state.cameras);
     const materialVariants = useViewerStore((state) => state.materialVariants);
     const selectedModel = useViewerStore((state) => state.selectedModel);
+    const selectedModelExcluded = useViewerStore((state) => state.selectedModelExcluded);
     const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
     const selectedScene = useViewerStore((state) => state.selectedScene);
     const selectedCamera = useViewerStore((state) => state.selectedCamera);
@@ -82,7 +83,8 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                     options={models.map((item) => ({
                         value: item,
                         label: item,
-                        thumbnail: modelThumbnails[item]
+                        thumbnail: modelThumbnails[item],
+                        muted: selectedModelExcluded && item === selectedModel
                     }))}
                 />
 

@@ -194,12 +194,14 @@ class UIModel {
         // The loaded model stays listed even when filtered out, so that filtering
         // never changes what is shown. It is not part of the count.
         const modelCount = models.length;
-        if (!models.includes(selectedModel)) {
+        const selectedModelExcluded = !models.includes(selectedModel);
+        if (selectedModelExcluded) {
             models.push(selectedModel);
         }
         setViewerState({
             models,
             modelCount,
+            selectedModelExcluded,
             disabledModelTags: modelTags.filter(
                 (tag) =>
                     !selectedModelTags.includes(tag) &&
@@ -277,6 +279,7 @@ class UIModel {
         setViewerState({
             models: [...getViewerState().models, filename],
             selectedModel: filename,
+            selectedModelExcluded: false,
             flavours: [fileExtension],
             selectedFlavour: fileExtension
         });
