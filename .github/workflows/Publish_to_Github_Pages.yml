@@ -40,3 +40,4 @@ jobs:
                       physics
                       scatter
                       gaussian-splatting
+                      preview
