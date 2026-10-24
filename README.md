@@ -8,6 +8,11 @@ This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Vi
 
 Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/).
 
+Pushes to `main` deploy to the live viewer. Pushes to other branches deploy to
+`https://github.khronos.org/glTF-Sample-Viewer-Release/preview/<branch>/`,
+preserving slashes in branch names (for example, `feature/foo` deploys to
+`preview/feature/foo/`). Main deployments preserve the branch previews.
+
 ## Features
 
 ### glTF
