@@ -12,6 +12,8 @@ Pushes to `main` deploy to the live viewer. Pushes to other branches deploy to
 `https://github.khronos.org/glTF-Sample-Viewer-Release/preview/<branch>/`,
 preserving slashes in branch names (for example, `feature/foo` deploys to
 `preview/feature/foo/`). Main deployments preserve the branch previews.
+Deleting a branch removes its preview directory without affecting the live viewer
+or other branch previews. Preview cleanup runs from the workflow on the default branch.
 
 ## Features
 
