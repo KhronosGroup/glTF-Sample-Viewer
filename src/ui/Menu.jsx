@@ -39,6 +39,7 @@ const INITIAL_EXTENSIONS = {
     skinning: true,
     morphing: true,
     morphOverrides: false,
+    morphOverrideMode: "sliders",
     interactivity: true,
     hoverability: true,
     selectability: true,

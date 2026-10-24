@@ -129,7 +129,11 @@ export function AdvancedTab({
                     Morph Overrides
                 </Switch>
                 {extensions.morphOverrides && hasMorphTargets && (
-                    <MorphWeights disabled={!extensions.morphing} />
+                    <MorphWeights
+                        disabled={!extensions.morphing}
+                        mode={extensions.morphOverrideMode}
+                        onModeChange={(mode) => onExtensionsChange({ morphOverrideMode: mode })}
+                    />
                 )}
                 <Switch
                     checked={extensions.floatingPointFramebuffer}

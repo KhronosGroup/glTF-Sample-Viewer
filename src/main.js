@@ -328,13 +328,17 @@ export const initViewer = async (canvas) => {
             !Number.isInteger(targetIndex) ||
             targetIndex < 0 ||
             targetIndex >= targetCount ||
-            !Number.isFinite(value)
+            (value !== null && !Number.isFinite(value))
         ) {
             console.error("Invalid morph weight change", { nodeIndex, targetIndex, value });
             return;
         }
+        // A null value clears the override, returning the target to its asset/animated weight.
         node.morphWeightOverrides ??= [];
-        node.morphWeightOverrides[targetIndex] = value;
+        node.morphWeightOverrides[targetIndex] = value ?? undefined;
+        if (node.morphWeightOverrides.every((weight) => weight === undefined)) {
+            node.morphWeightOverrides = undefined;
+        }
         uiModel.publishMorphWeights(state);
     });
 

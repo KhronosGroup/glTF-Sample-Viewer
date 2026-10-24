@@ -220,3 +220,27 @@ test("scene changes retain overrides, global reset clears them, model loads remo
     await expect(page.getByRole("slider")).toHaveCount(0);
     expectNoConsoleErrors(errors);
 });
+
+test("numeric mode shares overrides with sliders and clears them when emptied", async ({
+    page
+}) => {
+    const errors = collectConsoleErrors(page);
+    await loadMorphModel(page);
+    await setWeight(page, smile, 1);
+    await page.getByRole("combobox", { name: "Morph override input" }).selectOption("numeric");
+    const numeric = (name) => page.getByRole("spinbutton", { name, exact: true });
+    await expect(numeric(smile)).toHaveValue("1");
+    await expect(numeric("Face (Node 0): Blink")).toHaveValue("");
+    await expect(numeric("Face (Node 0): Blink")).toHaveAttribute("placeholder", "Not set");
+
+    await numeric("Face (Node 0): Blink").fill("-1.5");
+    await numeric("Face (Node 0): Blink").blur();
+    await numeric(smile).fill("");
+    await numeric(smile).blur();
+    await expect(numeric(smile)).toHaveValue("");
+
+    await page.getByRole("combobox", { name: "Morph override input" }).selectOption("sliders");
+    await expectUnset(page, smile);
+    await expectWeight(page, "Face (Node 0): Blink", "-1.5");
+    expectNoConsoleErrors(errors);
+});

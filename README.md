@@ -69,9 +69,10 @@ Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample
 - Override morph target weights by turning on Morph Overrides under Rendering in
   Advanced Controls, which shows a flat list of nodes in the selected scene. Node
   names (or mesh names/node indices) and target names from `mesh.extras.targetNames`
-  identify the sliders. Sliders range from 0 to 1 and start unset; clicking a track
+  identify the controls. A dropdown switches between 0 to 1 sliders and numeric
+  inputs for values outside that range. Controls start unset; setting one
   overrides only that node's target, including animated weights, while unset
-  targets keep their asset/animation values. Turning Morph Overrides off unsets all
+  targets keep their asset/animation values. Clearing a numeric input unsets it. Turning Morph Overrides off unsets all
   sliders in all scenes. Overrides persist across scene changes, but not model loads.
 - Download renderings and current camera properties
 - Show statistics about the currently loaded file
