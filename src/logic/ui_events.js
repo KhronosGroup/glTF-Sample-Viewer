@@ -24,6 +24,7 @@ function createEvent() {
 const eventNames = [
     "modelChanged",
     "modelTagsChanged",
+    "modelFlavoursChanged",
     "flavourChanged",
     "sceneChanged",
     "cameraChanged",

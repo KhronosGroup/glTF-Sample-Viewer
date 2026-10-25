@@ -4,8 +4,10 @@ import {
     collectConsoleErrors,
     expectCanvasToRender,
     expectNoConsoleErrors,
+    expectSelectedModel,
     openPanel,
     openTab,
+    selectModel,
     ui,
     waitForLoadingToSettle
 } from "./viewer.js";
@@ -31,10 +33,10 @@ test("loads a model chosen from the dropdown", async ({ page }) => {
     await waitForLoadingToSettle(page);
     await openTab(page, "models");
 
-    await page.locator(ui.modelSelect).selectOption("Avocado");
+    await selectModel(page, "Avocado");
     await waitForLoadingToSettle(page);
 
-    await expect(page.locator(ui.modelSelect)).toHaveValue("Avocado");
+    await expectSelectedModel(page, "Avocado");
     await expectCanvasToRender(page, "avocado.png");
     expectNoConsoleErrors(errors);
 });
@@ -148,7 +150,7 @@ test("an animated model lists its animations and plays them", async ({ page }) =
     await page.goto("/");
     await waitForLoadingToSettle(page);
     await openTab(page, "models");
-    await page.locator(ui.modelSelect).selectOption("BoxAnimated");
+    await selectModel(page, "BoxAnimated");
     await waitForLoadingToSettle(page);
 
     await openTab(page, "animations");

@@ -1,10 +1,16 @@
 name: Deploy to github pages
 on:
     push:
-        branches: [main]
+        branches: ["**"]
+    delete:
+
+concurrency:
+    group: pages-${{ github.event_name == 'delete' && github.event.ref_type || 'branch' }}-${{ github.event_name == 'delete' && github.event.ref || github.ref_name }}
+    cancel-in-progress: true
 
 jobs:
     build-and-deploy-to-github-pages:
+        if: github.event_name == 'push' && !github.event.deleted
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -25,14 +31,14 @@ jobs:
                   if [[ $SIZE -gt 1073741824 ]]; then echo 'dist folder exceeds limit of 1GB! Aborting'; exit 1; fi
 
             - name: Deploy to Khronos repo
-              continue-on-error: true # If no changes are commited this action fails
+              if: github.actor != 'dependabot[bot]' && !startsWith(github.ref_name, 'dependabot/')
               uses: JamesIves/github-pages-deploy-action@v4.6.3
               with:
                   branch: main
                   folder: dist/
                   token: ${{ secrets.BUILD_GITHUB_PAGES }}
                   repository-name: KhronosGroup/glTF-Sample-Viewer-Release
-                  target-folder: docs
+                  target-folder: ${{ github.ref_name == 'main' && 'docs' || format('docs/preview/{0}', github.ref_name) }}
                   clean-exclude: |
                       docs/glxf
                       glxf
@@ -40,3 +46,39 @@ jobs:
                       physics
                       scatter
                       gaussian-splatting
+                      preview
+
+    remove-branch-preview:
+        if: github.event_name == 'delete' && github.event.ref_type == 'branch' && github.event.ref != 'main'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout deployment repository
+              uses: actions/checkout@v2.3.1
+              with:
+                  repository: KhronosGroup/glTF-Sample-Viewer-Release
+                  ref: main
+                  token: ${{ secrets.BUILD_GITHUB_PAGES }}
+
+            - name: Remove branch preview
+              env:
+                  BRANCH: ${{ github.event.ref }}
+              run: |
+                  git check-ref-format --branch "$BRANCH"
+                  git rm -r --ignore-unmatch -- "docs/preview/$BRANCH"
+                  if git diff --cached --quiet; then
+                      echo "No preview found for branch $BRANCH"
+                      exit 0
+                  fi
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git commit -m "Remove preview for deleted branch $BRANCH"
+                  for attempt in 1 2 3; do
+                      if git push origin HEAD:main; then
+                          exit 0
+                      fi
+                      if [ "$attempt" -lt 3 ]; then
+                          git pull --rebase origin main
+                      fi
+                  done
+                  echo "::error::Failed to push preview removal after 3 attempts"
+                  exit 1

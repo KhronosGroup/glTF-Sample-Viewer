@@ -9,7 +9,7 @@ export const ui = {
     spinner: "[data-testid='spinner']",
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
-    modelSelect: "select[data-testid='model-select']",
+    modelSelect: "[data-testid='model-select']",
     flavourSelect: "select[data-testid='flavour-select']"
 };
 
@@ -75,6 +75,19 @@ export async function openModelsTab(page) {
 }
 
 /**
+ * The model picker is a listbox rather than a native select, so a choice is a
+ * pair of clicks and the chosen name is the button's text.
+ */
+export async function selectModel(page, name) {
+    await page.locator(ui.modelSelect).click();
+    await page.getByRole("option", { name, exact: true }).click();
+}
+
+export function expectSelectedModel(page, name) {
+    return expect(page.locator(ui.modelSelect)).toHaveText(name);
+}
+
+/**
  * Asserts the canvas matches the stored baseline. Callers must have waited for
  * loading to settle first: the overlay tints the canvas, and a screenshot taken
  * while it is up can be stable without being correct.
@@ -105,41 +118,54 @@ export async function canvasPixels(page) {
 }
 
 /**
- * Drops files from public/test-assets/ onto the canvas, the only path that
- * exercises side-file resolution; `model=` fetches everything over HTTP.
+ * Drops files onto the canvas, the only path that exercises side-file
+ * resolution; the `model` parameter fetches everything over HTTP instead.
  *
  * simple-dropzone prefers `dataTransfer.items` and walks them as FileSystemEntry
- * objects, which cannot be produced synthetically, so this fakes the four members
- * it reads. The files are fetched in the page rather than read from disk because
- * Playwright has no API for dropping a directory.
+ * objects, which cannot be produced synthetically, so this fakes the four
+ * members it reads. Each file is given as a `[name, contents]` pair, where
+ * contents is a string or an array of bytes.
  */
-export async function dropTestAssets(page, names, folder = "dropped") {
-    await page.goto("/?noUI=1");
-    await page.waitForSelector(ui.canvas);
-
+export async function dropFiles(page, files, folder = "dropped") {
     await page.evaluate(
-        async ({ names, folder, canvas }) => {
-            const items = [];
-            for (const name of names) {
-                const bytes = await (await fetch(`/test-assets/${name}`)).arrayBuffer();
-                const file = new File([bytes], name);
-                items.push({
-                    webkitGetAsEntry: () => ({
-                        name,
-                        isFile: true,
-                        isDirectory: false,
-                        fullPath: `/${folder}/${name}`,
-                        file: (callback) => callback(file)
-                    })
-                });
-            }
+        ({ files, folder, canvas }) => {
+            const items = files.map(([name, contents]) => ({
+                webkitGetAsEntry: () => ({
+                    name,
+                    isFile: true,
+                    isDirectory: false,
+                    fullPath: `/${folder}/${name}`,
+                    file: (callback) =>
+                        callback(
+                            new File(
+                                [typeof contents === "string" ? contents : new Uint8Array(contents)],
+                                name
+                            )
+                        )
+                })
+            }));
 
             const event = new Event("drop", { bubbles: true, cancelable: true });
             Object.defineProperty(event, "dataTransfer", { value: { files: [], items } });
             document.querySelector(canvas).dispatchEvent(event);
         },
-        { names, folder, canvas: ui.canvas }
+        { files, folder, canvas: ui.canvas }
     );
+}
+
+/**
+ * Drops files from public/test-assets/ onto a fresh viewer and waits for the load.
+ */
+export async function dropTestAssets(page, names, folder = "dropped") {
+    await page.goto("/?noUI=1");
+    await page.waitForSelector(ui.canvas);
+
+    const files = [];
+    for (const name of names) {
+        const body = await (await page.request.get(`/test-assets/${name}`)).body();
+        files.push([name, Array.from(body)]);
+    }
+    await dropFiles(page, files, folder);
 
     await waitForLoadingToSettle(page);
 }
