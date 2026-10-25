@@ -15,7 +15,13 @@ import { createStore } from "zustand/vanilla";
 const initialState = {
     // Published by the model path provider and the drop handler.
     models: ["DamagedHelmet"],
-    flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
+    modelCount: 1,
+    modelTags: [],
+    modelFlavours: [],
+    disabledModelTags: [],
+    disabledModelFlavours: [],
+    modelThumbnails: {},
+    flavours: ["glTF"],
 
     // Published once a glTF has finished loading.
     scenes: [{ title: "0" }, { title: "1" }],
@@ -44,7 +50,10 @@ const initialState = {
 
     // Selections. Written by the UI, read back by the loading layer.
     selectedModel: "DamagedHelmet",
-    selectedFlavour: "",
+    selectedModelExcluded: false,
+    selectedModelTags: [],
+    selectedModelFlavours: [],
+    selectedFlavour: "glTF",
     selectedScene: {},
     selectedCamera: {},
     selectedAnimations: [],

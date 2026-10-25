@@ -232,7 +232,7 @@ export function AdvancedTab({
             <Field label="Current Camera Values">
                 <Button onClick={() => uiEvents.cameraExport.emit(true)}>
                     <Download size={16} aria-hidden="true" />
-                    Download as .gltf
+                    Download as glTF
                 </Button>
             </Field>
 

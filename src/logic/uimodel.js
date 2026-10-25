@@ -59,8 +59,13 @@ class UIModel {
 
         this.modelURL = new URLSearchParams(window.location.search).get("model");
 
+        const models = modelPathProvider.getAllKeys();
         setViewerState({
-            models: modelPathProvider.getAllKeys(),
+            models,
+            modelCount: models.length,
+            modelTags: modelPathProvider.getAllTags(),
+            modelFlavours: modelPathProvider.getAllFlavours(),
+            modelThumbnails: modelPathProvider.getAllScreenshots(),
             environments,
             selectedEnvironment: INITIAL_ENVIRONMENT,
             clearColor: INITIAL_CLEAR_COLOR,
@@ -72,9 +77,14 @@ class UIModel {
             })),
             clippingOrientations: Object.values(GltfState.ClippingOrientations)
         });
+        this.publishModels();
 
         this.subscriptions.push(
             uiEvents.modelChanged.on((name) => this.selectModel(name)),
+            uiEvents.modelTagsChanged.on((tags) => this.filterModels({ selectedModelTags: tags })),
+            uiEvents.modelFlavoursChanged.on((flavours) =>
+                this.filterModels({ selectedModelFlavours: flavours })
+            ),
             uiEvents.flavourChanged.on((flavour) => {
                 this.emitModel({
                     mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
@@ -163,6 +173,53 @@ class UIModel {
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
         setViewerState({ flavours, selectedFlavour });
         this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
+        // After emitModel, which needs the list as it was to drop a dropped file.
+        this.publishModels();
+    }
+
+    /** Narrows the model list to the models matching the tag and flavour filters. */
+    filterModels(selection) {
+        setViewerState(selection);
+        this.publishModels();
+    }
+
+    publishModels() {
+        const {
+            modelTags,
+            modelFlavours,
+            selectedModelTags,
+            selectedModelFlavours,
+            selectedModel
+        } = getViewerState();
+        const models = this.modelPathProvider.getAllKeys(selectedModelTags, selectedModelFlavours);
+        // The loaded model stays listed even when filtered out, so that filtering
+        // never changes what is shown. It is not part of the count.
+        const modelCount = models.length;
+        const selectedModelExcluded = !models.includes(selectedModel);
+        if (selectedModelExcluded) {
+            models.push(selectedModel);
+        }
+        setViewerState({
+            models,
+            modelCount,
+            selectedModelExcluded,
+            disabledModelTags: modelTags.filter(
+                (tag) =>
+                    !selectedModelTags.includes(tag) &&
+                    this.modelPathProvider.getAllKeys(
+                        [...selectedModelTags, tag],
+                        selectedModelFlavours
+                    ).length === 0
+            ),
+            disabledModelFlavours: modelFlavours.filter(
+                (flavour) =>
+                    !selectedModelFlavours.includes(flavour) &&
+                    this.modelPathProvider.getAllKeys(selectedModelTags, [
+                        ...selectedModelFlavours,
+                        flavour
+                    ]).length === 0
+            )
+        });
     }
 
     emitModel(model) {
@@ -223,6 +280,7 @@ class UIModel {
         setViewerState({
             models: [...getViewerState().models, filename],
             selectedModel: filename,
+            selectedModelExcluded: false,
             flavours: [fileExtension],
             selectedFlavour: fileExtension
         });
@@ -337,8 +395,8 @@ class UIModel {
     publishStatistics(data) {
         setViewerState({
             statistics: {
-                "Meshes": data.meshCount,
-                "Triangles": data.faceCount,
+                Meshes: data.meshCount,
+                Triangles: data.faceCount,
                 "Opaque Materials": data.opaqueMaterialsCount,
                 "Transparent Materials": data.transparentMaterialsCount
             }

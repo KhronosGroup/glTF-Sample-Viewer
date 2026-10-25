@@ -153,7 +153,7 @@ export const initViewer = async (canvas) => {
                     }
                     const found = model.additionalFiles.find(([path]) => path === actualPath);
                     if (found === undefined) {
-                        throw new Error("File not found");
+                        throw new Error(`Missing file '${uri}'`);
                     }
                     return new Uint8Array(await found[1].arrayBuffer());
                 };
