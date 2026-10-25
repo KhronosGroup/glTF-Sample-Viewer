@@ -68,19 +68,24 @@ function ClippingControls({ clipping, onChange }) {
     };
 
     return (
-        <Field label="Clipping Planes">
-            <Switch
-                data-testid="switch-clipping"
-                checked={clipping.enabled}
-                disabled={!supportsClipping}
-                onChange={(checked) => update({ enabled: checked })}
-            >
-                {supportsClipping ? "Enabled" : "Unsupported by this browser"}
-            </Switch>
+        <div className="mt-6">
+            <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="font-medium">Clipping Planes</span>
+                <Switch
+                    className="mt-0! w-auto!"
+                    data-testid="switch-clipping"
+                    checked={clipping.enabled}
+                    disabled={!supportsClipping}
+                    onChange={(checked) => update({ enabled: checked })}
+                >
+                    <span className="sr-only">Clipping Planes</span>
+                </Switch>
+            </div>
+            {!supportsClipping && <p className="text-sm font-light">Unsupported by this browser</p>}
 
             {clipping.enabled && (
                 <>
-                    <div className="mt-3 flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                         <Select
                             className="grow"
                             value={clipping.orientation}
@@ -124,7 +129,7 @@ function ClippingControls({ clipping, onChange }) {
                     </div>
                 </>
             )}
-        </Field>
+        </div>
     );
 }
 
