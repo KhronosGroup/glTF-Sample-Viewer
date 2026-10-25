@@ -23,7 +23,7 @@ function MorphWeightRow({ node, target, targetIndex, disabled }) {
             aria-disabled={disabled}
             inert={disabled}
         >
-            <span className="w-1/4 shrink-0 truncate text-sm" title={target.name}>
+            <span className="w-18 shrink-0 truncate text-sm" title={target.name}>
                 {target.name}
             </span>
             <Slider
@@ -38,7 +38,7 @@ function MorphWeightRow({ node, target, targetIndex, disabled }) {
             />
             <Input
                 aria-label={label}
-                className="w-16 shrink-0 py-0.5 text-sm"
+                className="w-12 shrink-0 py-0.5 text-sm"
                 type="number"
                 step="any"
                 placeholder="-"
