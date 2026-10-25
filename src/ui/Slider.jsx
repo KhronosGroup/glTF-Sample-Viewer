@@ -82,11 +82,18 @@ export function Slider({
     const ratio = indeterminate ? 0 : ratioOf(value, min, max);
 
     return (
-        <div className={["mx-2 mt-4 mb-10", className].filter(Boolean).join(" ")}>
+        <div
+            className={["mx-2 mt-4 mb-10 touch-none select-none", className]
+                .filter(Boolean)
+                .join(" ")}
+            // A lingering text selection would otherwise turn the drag into a native drag-and-drop.
+            onDragStart={(event) => event.preventDefault()}
+        >
             <div
                 ref={trackRef}
                 className="bg-track relative h-1.5 cursor-pointer rounded-full"
                 onPointerDown={(event) => {
+                    event.preventDefault();
                     onChange(valueFromClientX(event.clientX));
                     setDragging(true);
                 }}
