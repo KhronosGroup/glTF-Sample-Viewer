@@ -6,8 +6,7 @@ import { uiEvents } from "../../logic/ui_events.js";
 
 const RENDERING_TOGGLES = [
     { key: "skinning", label: "Skinning", event: "skinningChanged" },
-    { key: "morphing", label: "Morphing", event: "morphingChanged" },
-    { key: "wireframe", label: "Wireframe", event: "wireframeChanged" }
+    { key: "morphing", label: "Morphing", event: "morphingChanged" }
 ];
 
 const EXTENSION_TOGGLES = [
@@ -49,6 +48,7 @@ export function AdvancedTab({
     const supportsFloatingPointFramebuffer = useViewerStore(
         (state) => state.supportsFloatingPointFramebuffer
     );
+    const supportsWireframe = useViewerStore((state) => state.supportsWireframe);
 
     const toggle =
         ({ key, event }) =>
@@ -115,6 +115,14 @@ export function AdvancedTab({
 
             <Field label="Rendering" grouped>
                 {renderToggles(RENDERING_TOGGLES)}
+                <Switch
+                    data-testid="switch-wireframe"
+                    checked={extensions.wireframe}
+                    disabled={!supportsWireframe}
+                    onChange={toggle({ key: "wireframe", event: "wireframeChanged" })}
+                >
+                    {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
+                </Switch>
                 <Switch
                     checked={extensions.floatingPointFramebuffer}
                     disabled={!supportsFloatingPointFramebuffer}

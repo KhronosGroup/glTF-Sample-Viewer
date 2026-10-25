@@ -57,7 +57,8 @@ export const initViewer = async (canvas) => {
     setViewerState({
         supportsFloatingPointFramebuffer:
             !!context.getExtension("EXT_color_buffer_half_float") ||
-            !!context.getExtension("EXT_color_buffer_float")
+            !!context.getExtension("EXT_color_buffer_float"),
+        supportsWireframe: !!context.getExtension("WEBGL_polygon_mode")
     });
 
     const view = new GltfView(context);
