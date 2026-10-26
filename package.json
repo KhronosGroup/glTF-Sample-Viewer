@@ -5,11 +5,14 @@
   "main": "src/main.js",
   "module": "src/main.js",
   "type": "module",
+  "workspaces": [
+    "glTF-Sample-Renderer"
+  ],
   "scripts": {
-    "preinstall": "npm --prefix ./glTF-Sample-Renderer install && npm --prefix ./glTF-Sample-Renderer run build",
-    "predev": "npm --prefix ./glTF-Sample-Renderer run build",
+    "postinstall": "npm run build -w @khronosgroup/gltf-viewer",
+    "predev": "npm run build -w @khronosgroup/gltf-viewer",
     "dev": "vite --host",
-    "prebuild": "npm --prefix ./glTF-Sample-Renderer run build",
+    "prebuild": "npm run build -w @khronosgroup/gltf-viewer",
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test",
@@ -33,7 +36,7 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "@khronosgroup/gltf-viewer": "./glTF-Sample-Renderer",
+    "@khronosgroup/gltf-viewer": "*",
     "draco3d": "^1.5.8",
     "gltf-validator": "^2.0.0-dev.3.10",
     "lucide-react": "^1.61.0",
