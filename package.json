@@ -5,18 +5,24 @@
   "main": "src/main.js",
   "module": "src/main.js",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "workspaces": [
+    "glTF-Sample-Renderer"
+  ],
   "scripts": {
-    "preinstall": "npm --prefix ./glTF-Sample-Renderer install && npm --prefix ./glTF-Sample-Renderer run build",
-    "predev": "npm --prefix ./glTF-Sample-Renderer run build",
+    "postinstall": "npm run build -w @khronosgroup/gltf-viewer",
+    "predev": "npm run build -w @khronosgroup/gltf-viewer",
     "dev": "vite --host",
-    "prebuild": "npm --prefix ./glTF-Sample-Renderer run build",
+    "prebuild": "npm run build -w @khronosgroup/gltf-viewer",
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test",
     "test:update-snapshots": "playwright test --update-snapshots",
-    "lint": "eslint src tests vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
-    "lint:fix": "eslint --fix src tests vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
-    "prettier": "npx prettier \"src/**/*.{js,jsx}\" \"tests/**/*.js\" \"glTF-Sample-Renderer/source/**/*.js\" --check",
+    "lint": "eslint --no-warn-ignored src tests vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
+    "lint:fix": "eslint --no-warn-ignored --fix src tests vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
+    "prettier": "npx prettier \"src/**/*.{js,jsx}\" \"tests/**/*.js\" \"glTF-Sample-Renderer/source/**/*.js\" vite.config.js playwright.config.js eslint.config.js glTF-Sample-Renderer/rolldown.config.js glTF-Sample-Renderer/eslint.config.js --check",
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "postversion": "git push && git push --tags"
@@ -33,28 +39,28 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "@khronosgroup/gltf-viewer": "./glTF-Sample-Renderer",
+    "@khronosgroup/gltf-viewer": "*",
     "draco3d": "^1.5.8",
     "gltf-validator": "^2.0.0-dev.3.10",
-    "lucide-react": "^1.49.0",
+    "lucide-react": "^1.61.0",
     "normalize-wheel": "^1.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "simple-dropzone": "^0.8.0",
-    "zustand": "^5.0.15"
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
-    "eslint": "^9.5.0",
+    "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
     "prettier": "^3.6.2",
-    "rollup-plugin-license": "^3.5.1",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.3.0",
+    "vite": "^8.3.5",
     "vite-plugin-static-copy": "^4.1.1"
   },
   "bugs": {

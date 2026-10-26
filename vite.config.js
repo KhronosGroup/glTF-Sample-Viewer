@@ -1,14 +1,25 @@
-import { defineConfig } from "vite";
+import { createLogger, defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import license from "rollup-plugin-license";
 
 // Generating the full merged sourcemap for the whole bundle is one of the most expensive parts
 // of a rebuild, so it can be turned off for fast dev iteration via `SOURCEMAP=false npm run build`.
 const sourcemap = process.env.SOURCEMAP !== "false";
 
+// These wasm files are copied to libs/ below and loaded at runtime, so Vite's warning is expected
+const runtimeWasmWarning =
+    /new URL\("(physx-js-webidl|mikktspace_bg)\.wasm", import\.meta\.url\) doesn't exist at build time/;
+const logger = createLogger();
+const warnOnce = logger.warnOnce;
+logger.warnOnce = (msg, options) => {
+    if (!runtimeWasmWarning.test(msg)) {
+        warnOnce(msg, options);
+    }
+};
+
 export default defineConfig({
+    customLogger: logger,
     // The deployed site lives under a subpath (github.khronos.org/glTF-Sample-Viewer-Release/),
     // so emitted asset URLs must be relative. Vite's default of "/" would resolve them against
     // the domain root and 404 every bundle, stylesheet and public asset in production.
@@ -36,11 +47,6 @@ export default defineConfig({
             ]
         })
     ],
-    resolve: {
-        // Leftover from before gl-matrix/jpeg-js/fast-png were audited: root no longer imports
-        // gl-matrix directly, but jpeg-js/fast-png dedupe stays in case that ever changes.
-        dedupe: ["jpeg-js", "fast-png"]
-    },
     // lucide-react ships one module per icon. Without pre-bundling it, the dev
     // server discovers new icons panel by panel, re-runs dependency optimisation
     // and reloads the page each time.
@@ -51,25 +57,14 @@ export default defineConfig({
         outDir: "dist",
         emptyOutDir: true,
         sourcemap,
-        rollupOptions: {
+        // Not the default .vite/license.md: GitHub Pages may not serve dot folders
+        license: { fileName: "licenses.md" },
+        rolldownOptions: {
             output: {
-                // The minifier strips the rollup-plugin-license banner unless legal comments
-                // are explicitly kept; without this the whole third-party attribution block
-                // silently disappears from the production bundle.
-                comments: { legal: true }
-            },
-            plugins: [
-                license({
-                    banner: {
-                        content: {
-                            file: "LICENSE_BANNER.txt"
-                        }
-                    },
-                    thirdParty: {
-                        includeSelf: true
-                    }
-                })
-            ]
+                // Keeps the renderer's /*! license banner, which the minifier would otherwise strip
+                comments: { legal: true },
+                banner: "/*! glTF Sample Viewer | Apache-2.0 | Third-party licenses: licenses.md */"
+            }
         }
     }
 });
