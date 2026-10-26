@@ -58,6 +58,7 @@ export const initViewer = async (canvas) => {
         supportsFloatingPointFramebuffer:
             !!context.getExtension("EXT_color_buffer_half_float") ||
             !!context.getExtension("EXT_color_buffer_float"),
+        supportsWireframe: !!context.getExtension("WEBGL_polygon_mode"),
         supportsClipping: !!context.getExtension("WEBGL_clip_cull_distance")
     });
 
@@ -297,6 +298,7 @@ export const initViewer = async (canvas) => {
     onChange(uiEvents.debugchannelChanged, (v) => (state.renderingParameters.debugOutput = v));
     onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
     onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
+    onChange(uiEvents.wireframeChanged, (v) => (state.renderingParameters.wireframe = v));
     onChange(uiEvents.clippingChanged, (v) => {
         state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
     });
