@@ -47,7 +47,7 @@ export default defineConfig({
         sourcemap,
         // Not the default .vite/license.md: GitHub Pages may not serve dot folders
         license: { fileName: "licenses.md" },
-        rollupOptions: {
+        rolldownOptions: {
             output: {
                 // Keeps the renderer's /*! license banner, which the minifier would otherwise strip
                 comments: { legal: true },
