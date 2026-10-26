@@ -58,6 +58,11 @@
     "vite": "^8.3.0",
     "vite-plugin-static-copy": "^4.1.1"
   },
+  "overrides": {
+    "rollup-plugin-copy": {
+      "globby": "^11.1.0"
+    }
+  },
   "bugs": {
     "url": "https://github.com/KhronosGroup/glTF-Sample-Viewer/issues"
   },
