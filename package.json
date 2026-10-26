@@ -5,6 +5,9 @@
   "main": "src/main.js",
   "module": "src/main.js",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
   "workspaces": [
     "glTF-Sample-Renderer"
   ],
