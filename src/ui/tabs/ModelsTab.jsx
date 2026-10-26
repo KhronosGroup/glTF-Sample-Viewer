@@ -3,7 +3,15 @@ import { useState } from "react";
 
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Panel, Radio, Select, ThumbnailSelect, ToggleButton } from "../controls.jsx";
+import {
+    Field,
+    Panel,
+    Radio,
+    RadioGroup,
+    Select,
+    ThumbnailSelect,
+    ToggleButton
+} from "../controls.jsx";
 
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
@@ -200,9 +208,10 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                             ))}
                         </Select>
                     ) : (
-                        materialVariants.map((item) => (
-                            <Field key={item}>
+                        <RadioGroup>
+                            {materialVariants.map((item) => (
                                 <Radio
+                                    key={item}
                                     name="material-variant"
                                     value={item}
                                     checked={selectedVariant === item}
@@ -210,8 +219,8 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                                 >
                                     {item}
                                 </Radio>
-                            </Field>
-                        ))
+                            ))}
+                        </RadioGroup>
                     )}
                 </Field>
             )}
