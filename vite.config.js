@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import license from "rollup-plugin-license";
 
 // Generating the full merged sourcemap for the whole bundle is one of the most expensive parts
 // of a rebuild, so it can be turned off for fast dev iteration via `SOURCEMAP=false npm run build`.
@@ -46,25 +45,14 @@ export default defineConfig({
         outDir: "dist",
         emptyOutDir: true,
         sourcemap,
+        // Not the default .vite/license.md: GitHub Pages may not serve dot folders
+        license: { fileName: "licenses.md" },
         rollupOptions: {
             output: {
-                // The minifier strips the rollup-plugin-license banner unless legal comments
-                // are explicitly kept; without this the whole third-party attribution block
-                // silently disappears from the production bundle.
-                comments: { legal: true }
-            },
-            plugins: [
-                license({
-                    banner: {
-                        content: {
-                            file: "LICENSE_BANNER.txt"
-                        }
-                    },
-                    thirdParty: {
-                        includeSelf: true
-                    }
-                })
-            ]
+                // Keeps the renderer's /*! license banner, which the minifier would otherwise strip
+                comments: { legal: true },
+                banner: "/*! glTF Sample Viewer | Apache-2.0 | Third-party licenses: licenses.md */"
+            }
         }
     }
 });

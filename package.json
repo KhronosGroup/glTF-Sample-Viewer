@@ -56,7 +56,6 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "prettier": "^3.6.2",
-    "rollup-plugin-license": "^3.5.1",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.5",
     "vite-plugin-static-copy": "^4.1.1"
