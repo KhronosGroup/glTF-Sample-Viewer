@@ -18,6 +18,8 @@ jobs:
               with:
                   submodules: "recursive"
                   lfs: true
+                  # Otherwise the deploy step pushes with this repository's token instead of BUILD_GITHUB_PAGES
+                  persist-credentials: false
 
             - name: Install Node.js
               uses: actions/setup-node@v7
