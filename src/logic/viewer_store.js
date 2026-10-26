@@ -25,6 +25,7 @@ const initialState = {
 
     // Published once a glTF has finished loading.
     scenes: [{ title: "0" }, { title: "1" }],
+    showScenes: true,
     cameras: [{ title: "User Camera", index: -1 }],
     materialVariants: ["None"],
     animations: [{ title: "None" }],
@@ -34,6 +35,8 @@ const initialState = {
     hasPhysics: false,
     assetCopyright: "",
     assetGenerator: "",
+    assetVersion: "",
+    assetThumbnail: undefined,
     xmp: [{ title: "xmp" }],
     statistics: [],
     validationReport: {},
@@ -57,10 +60,23 @@ const initialState = {
     selectedAnimations: [],
     selectedGraph: null,
     selectedEnvironment: 0,
+    selectedDebugChannel: "None",
+    selectedVariant: "None",
     clearColor: "",
     animationState: true,
     graphState: true,
     physicsState: true,
+
+    // glTF 2.1 shape debug visualization, mirrored into renderingParameters.debugShapes.
+    debugShapes: {
+        boundingVolumes: false,
+        allShapes: false,
+        style: "Wireframe",
+        colorMode: "Uniform",
+        depthTest: true,
+        highlightNonEnclosing: true
+    },
+    cullByBoundingVolume: true,
 
     // Transient UI state that the render loop and drop handler need to read.
     isLoading: false,

@@ -1,0 +1,796 @@
+import {
+    writeGlb,
+    jsonChunk,
+    binChunk
+} from "../../glTF-Sample-Renderer/tests/helpers/glb_writer.js";
+import { buildMeshDocument } from "./document.js";
+import {
+    quad,
+    quadWithTexCoordSets,
+    withShiftedTexCoords,
+    withTexCoordMorphTarget
+} from "./primitives.js";
+
+// Declarative list of generated test assets. Each entry returns an ArrayBuffer.
+//
+// The GLB writer is imported from the renderer rather than duplicated here, so the code
+// that writes the container stays next to the code that reads it.
+
+const CUSTOM_CHUNK_TYPE = 0x4f464e49; // "INFO", an unknown type the loader must ignore
+
+// A 2x2 PNG, small enough to inline. One distinct colour per quadrant, so a wrong UV
+// mapping or a wrong thumbnail is visible rather than plausible, and so a shift along
+// either axis changes the image.
+const TINY_PNG_BASE64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR42mP4z8DA" +
+    "AMIM////ZwAAHu8E/HMcU8wAAAAASUVORK5CYII=";
+
+function pngBytes() {
+    return Uint8Array.from(Buffer.from(TINY_PNG_BASE64, "base64"));
+}
+
+// Powers of two so the morphed sum is exact in float32. The third set is left at full
+// scale because that is the one the morph assets displace and compare.
+//
+// Powers of two so the morphed sum is exact in float32. The third set and its shifted
+// range both stay inside 0..1, so the debug view that reads the coordinates back shows
+// the difference rather than clamping it away.
+const MORPH_UV_SCALES = [1 / 8, 1 / 4, 1 / 2, 1];
+const MORPH_UV_DELTA = [0, 0.25];
+
+function singleBinChunk(version, assetVersion) {
+    const { json, buffers } = buildMeshDocument(quad(), { version: assetVersion });
+    if (version === 3) {
+        json.buffers[0].chunk = 1;
+    }
+    return writeGlb({ version, chunks: [jsonChunk(json), binChunk(buffers[0])] });
+}
+
+function toGltfBuffer(json) {
+    return new TextEncoder().encode(JSON.stringify(json, null, 4)).buffer;
+}
+
+function base64(bytes) {
+    return Buffer.from(bytes).toString("base64");
+}
+
+// A child asset holding one quad, with its buffer named by URI so a parent can alias it.
+function childAsset({ color = [0.2, 0.6, 0.9, 1.0], bufferUri = "child.bin" } = {}) {
+    const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+    json.buffers[0].uri = bufferUri;
+    json.materials[0].pbrMetallicRoughness.baseColorFactor = color;
+    json.nodes[0].name = "ChildMesh";
+    return { json, binary: buffers[0] };
+}
+
+// A child that animates itself. Its animation has no entry in the viewer's animation UI,
+// so it exercises the path where an instance drives its own playback.
+function animatedChildAsset({ bufferUri = "external_animated_child.bin" } = {}) {
+    const child = childAsset({ color: [0.9, 0.4, 0.2, 1.0], bufferUri });
+    const json = child.json;
+
+    const times = new Float32Array([0, 0.5, 1]);
+    const offsets = new Float32Array([0, 0, 0, 0, 1.5, 0, 0, 0, 0]);
+    const samplerData = new Uint8Array(times.byteLength + offsets.byteLength);
+    samplerData.set(new Uint8Array(times.buffer), 0);
+    samplerData.set(new Uint8Array(offsets.buffer), times.byteLength);
+
+    const buffer =
+        json.buffers.push({
+            uri: `data:application/gltf-buffer;base64,${base64(samplerData)}`,
+            byteLength: samplerData.length
+        }) - 1;
+    const input =
+        json.bufferViews.push({ buffer, byteOffset: 0, byteLength: times.byteLength }) - 1;
+    const output =
+        json.bufferViews.push({
+            buffer,
+            byteOffset: times.byteLength,
+            byteLength: offsets.byteLength
+        }) - 1;
+
+    const inputAccessor =
+        json.accessors.push({
+            bufferView: input,
+            componentType: 5126,
+            count: times.length,
+            type: "SCALAR",
+            min: [0],
+            max: [1]
+        }) - 1;
+    const outputAccessor =
+        json.accessors.push({
+            bufferView: output,
+            componentType: 5126,
+            count: offsets.length / 3,
+            type: "VEC3"
+        }) - 1;
+
+    json.animations = [
+        {
+            name: "Bob",
+            samplers: [{ input: inputAccessor, output: outputAccessor, interpolation: "LINEAR" }],
+            channels: [{ sampler: 0, target: { node: 0, path: "translation" } }]
+        }
+    ];
+
+    return { json, binary: child.binary };
+}
+
+// A box resting above a floor, both as physics bodies. Simulated, the box falls and
+// lands. The two assets below place the same scene differently so their settled states
+// can be compared: if a collider in an external asset does not reach the simulation, the
+// box falls straight through the floor instead of landing on it.
+const PHYSICS_SHAPES = [
+    { name: "Floor", type: "box", box: { size: [6, 0.4, 6] } },
+    { name: "Box", type: "box", box: { size: [1, 1, 1] } }
+];
+
+function floorNode() {
+    return {
+        name: "Floor",
+        translation: [0, -1.5, 0],
+        mesh: 0,
+        extensions: {
+            KHR_physics_rigid_bodies: { collider: { geometry: { shape: 0 } } }
+        }
+    };
+}
+
+function fallingBoxNode() {
+    return {
+        name: "FallingBox",
+        translation: [0, 1.5, 0],
+        mesh: 0,
+        extensions: {
+            KHR_physics_rigid_bodies: {
+                motion: { mass: 1 },
+                collider: { geometry: { shape: 1 } }
+            }
+        }
+    };
+}
+
+function physicsDocument({ nodes, shapes = PHYSICS_SHAPES, extra = {} }) {
+    const { json } = buildMeshDocument(quad(), { version: "2.1" });
+    json.buffers[0].uri = "external_child.bin";
+    json.extensionsUsed = ["KHR_physics_rigid_bodies"];
+    json.shapes = shapes;
+    json.nodes = nodes;
+    json.scenes = [{ nodes: nodes.map((_, index) => index) }];
+    json.scene = 0;
+    return { ...json, ...extra };
+}
+
+// Wraps children into a package: each child's JSON and .bin become buffer views of one
+// buffer, and the package aliases the child's buffer URI to the packaged copy.
+function packageAsset(children, { nodes, extraFiles = [] } = {}) {
+    const parts = [];
+    let offset = 0;
+    const add = (bytes) => {
+        const aligned = Math.ceil(offset / 4) * 4;
+        parts.push({ bytes, byteOffset: aligned });
+        offset = aligned + bytes.length;
+        return parts.length - 1;
+    };
+
+    const bufferViews = [];
+    const files = [];
+    for (const child of children) {
+        const jsonBytes = new Uint8Array(toGltfBuffer(child.json));
+        const jsonPart = add(jsonBytes);
+        const binPart = add(child.binary);
+
+        const jsonView = bufferViews.push({ buffer: 0, part: jsonPart }) - 1;
+        const binView = bufferViews.push({ buffer: 0, part: binPart }) - 1;
+
+        const binFile =
+            files.push({ bufferView: binView, mimeType: "application/gltf-buffer" }) - 1;
+        files.push({
+            bufferView: jsonView,
+            mimeType: "model/gltf+json",
+            aliases: [{ alias: child.json.buffers[0].uri, file: binFile }]
+        });
+    }
+
+    const total = Math.ceil(offset / 4) * 4;
+    const merged = new Uint8Array(total);
+    for (const part of parts) {
+        merged.set(part.bytes, part.byteOffset);
+    }
+
+    const json = {
+        asset: { version: "2.1" },
+        scene: 0,
+        buffers: [{ byteLength: merged.length, chunk: 1 }],
+        bufferViews: bufferViews.map((view) => ({
+            buffer: 0,
+            byteOffset: parts[view.part].byteOffset,
+            byteLength: parts[view.part].bytes.length
+        })),
+        files: [...files, ...extraFiles],
+        externalAssets: files
+            .map((file, index) => (file.mimeType === "model/gltf+json" ? { file: index } : null))
+            .filter((entry) => entry !== null),
+        nodes,
+        scenes: [{ nodes: [0] }]
+    };
+
+    return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(merged)] });
+}
+
+const ASSETS = {
+    // Baseline: the v2 container, to prove the rewrite did not regress glTF 2.0.
+    "glb2_baseline.glb": () => singleBinChunk(2, "2.0"),
+
+    // v3 with one binary chunk, bound explicitly by buffer.chunk.
+    "glb3_single_bin.glb": () => singleBinChunk(3, "2.1"),
+
+    // v3 relying on the glTF 2.0 fallback where buffer 0 implicitly means chunk 1.
+    "glb3_implicit.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(buffers[0])] });
+    },
+
+    // The headline feature: one binary chunk per buffer.
+    "glb3_multi_bin.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), {
+            bufferLayout: "per-attribute",
+            version: "2.1"
+        });
+        json.buffers.forEach((buffer, index) => {
+            buffer.chunk = index + 1;
+        });
+        return writeGlb({
+            version: 3,
+            chunks: [jsonChunk(json), ...buffers.map((bytes) => binChunk(bytes))]
+        });
+    },
+
+    // v3 permits non-JSON chunks before the glTF JSON chunk.
+    "glb3_chunk_before_json.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].chunk = 2;
+        return writeGlb({
+            version: 3,
+            chunks: [
+                { type: CUSTOM_CHUNK_TYPE, data: new TextEncoder().encode("leading chunk") },
+                jsonChunk(json),
+                binChunk(buffers[0])
+            ]
+        });
+    },
+
+    // Unknown chunk types must be ignored, not rejected.
+    "glb3_unknown_chunk_type.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].chunk = 1;
+        return writeGlb({
+            version: 3,
+            chunks: [
+                jsonChunk(json),
+                binChunk(buffers[0]),
+                { type: CUSTOM_CHUNK_TYPE, data: new TextEncoder().encode("trailing chunk") }
+            ]
+        });
+    },
+
+    // A buffer chunk the loader cannot decode. Must fail cleanly, not render garbage.
+    "glb3_unknown_encoding.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].chunk = 1;
+        return writeGlb({
+            version: 3,
+            chunks: [jsonChunk(json), binChunk(buffers[0], { encoding: 1 })]
+        });
+    },
+
+    // An encoded JSON chunk makes the whole file unreadable.
+    "glb3_unknown_encoding_json.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].chunk = 1;
+        return writeGlb({
+            version: 3,
+            chunks: [jsonChunk(json, { encoding: 1 }), binChunk(buffers[0])]
+        });
+    },
+
+    // Alignment padding carried in the gap between chunks rather than counted in
+    // chunkLength. Both are legal in v3 and the parser has to handle each.
+    "glb3_gap_padding.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].chunk = 1;
+        return writeGlb({
+            version: 3,
+            chunks: [
+                jsonChunk(json, { padInside: false }),
+                binChunk(buffers[0], { padInside: false })
+            ]
+        });
+    },
+
+    // A thumbnail stored in a bufferView, the case where no filename extension is
+    // available to infer the media type from.
+    "thumbnail_bufferview.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        const png = pngBytes();
+        const merged = new Uint8Array(buffers[0].length + png.length);
+        merged.set(buffers[0], 0);
+        merged.set(png, buffers[0].length);
+
+        json.buffers[0] = { byteLength: merged.length, chunk: 1 };
+        json.bufferViews.push({
+            buffer: 0,
+            byteOffset: buffers[0].length,
+            byteLength: png.length
+        });
+        json.images = [{ bufferView: json.bufferViews.length - 1, mimeType: "image/png" }];
+        json.asset.thumbnail = 0;
+
+        return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(merged)] });
+    },
+
+    // The same image serves as the thumbnail and as a material texture, so the loader
+    // must not skip loading it.
+    "thumbnail_shared.glb": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        const png = pngBytes();
+        const merged = new Uint8Array(buffers[0].length + png.length);
+        merged.set(buffers[0], 0);
+        merged.set(png, buffers[0].length);
+
+        json.buffers[0] = { byteLength: merged.length, chunk: 1 };
+        json.bufferViews.push({
+            buffer: 0,
+            byteOffset: buffers[0].length,
+            byteLength: png.length
+        });
+        json.images = [{ bufferView: json.bufferViews.length - 1, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0 };
+        json.asset.thumbnail = 0;
+
+        return writeGlb({ version: 3, chunks: [jsonChunk(json), binChunk(merged)] });
+    },
+
+    // A thumbnail referenced by data URI, which needs no extra fetch at all.
+    "thumbnail_datauri.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.asset.thumbnail = 0;
+        return toGltfBuffer(json);
+    },
+
+    // glTF 2.1 texture coordinate sets need not start at 0 or be consecutive. Base
+    // colour uses TEXCOORD_1 and occlusion uses TEXCOORD_3, so a renderer that ignores
+    // the remapping will sample the wrong set.
+    "texcoord_1_3.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([1, 3]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 1 };
+        json.materials[0].occlusionTexture = { index: 0, texCoord: 3 };
+        return toGltfBuffer(json);
+    },
+
+    // A single set at a non-zero index, the simplest form of the relaxation. Pairs with
+    // texcoord_0_baseline: the two carry identical UVs, so they must render identically
+    // and no hand-recorded baseline is needed to tell whether the remap is correct.
+    "texcoord_5_only.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([5]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 5 };
+        return toGltfBuffer(json);
+    },
+
+    // The glTF 2.0 spelling of texcoord_5_only, as the equality partner.
+    "texcoord_0_baseline.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0]), {
+            version: "2.0"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 0 };
+        return toGltfBuffer(json);
+    },
+
+    // More than two sets on one primitive, which glTF 2.0 renderers cap out at. Base
+    // colour addresses the fourth, the one that only exists if the cap is lifted. Its
+    // UVs are a quarter scale, which texcoord_fourth_baseline carries as its only set so
+    // the two must render identically.
+    "texcoord_four_sets.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0, 2, 4, 6]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 6 };
+        return toGltfBuffer(json);
+    },
+
+    "texcoord_fourth_baseline.gltf": () => {
+        const { json, buffers } = buildMeshDocument(
+            quadWithTexCoordSets([0], { scales: [1 / 4] }),
+            { version: "2.0" }
+        );
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 0 };
+        return toGltfBuffer(json);
+    },
+
+    // One set more than the renderer carries. The extra must be dropped with a warning
+    // rather than silently shifting every other set along.
+    "texcoord_over_limit.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0, 1, 2, 3, 4]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 0 };
+        return toGltfBuffer(json);
+    },
+
+    // The material asks for a set the primitive does not provide. Must warn and fall
+    // back rather than sampling garbage.
+    "texcoord_missing_set.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quadWithTexCoordSets([0]), {
+            version: "2.1"
+        });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 2 };
+        return toGltfBuffer(json);
+    },
+
+    // A morph target displacing the third texture coordinate set. The shaders only ever
+    // displaced the first two, so the third is where that limit showed.
+    //
+    // morph_texcoord_baseline bakes the same shift into its geometry, so once the morph
+    // is applied the two must carry identical coordinates. Every number involved is a
+    // power of two, so the addition is exact in float32 and the two can be compared
+    // pixel for pixel rather than within a tolerance.
+    "morph_texcoord_third_set.gltf": () => {
+        const { json, buffers } = buildMeshDocument(
+            withTexCoordMorphTarget(
+                quadWithTexCoordSets([0, 2, 4, 6], { scales: MORPH_UV_SCALES }),
+                4,
+                MORPH_UV_DELTA
+            ),
+            { version: "2.1" }
+        );
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 4 };
+        return toGltfBuffer(json);
+    },
+
+    "morph_texcoord_baseline.gltf": () => {
+        const { json, buffers } = buildMeshDocument(
+            withShiftedTexCoords(
+                quadWithTexCoordSets([0, 2, 4, 6], { scales: MORPH_UV_SCALES }),
+                4,
+                MORPH_UV_DELTA
+            ),
+            { version: "2.1" }
+        );
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+        json.images = [{ uri: `data:image/png;base64,${TINY_PNG_BASE64}`, mimeType: "image/png" }];
+        json.samplers = [{}];
+        json.textures = [{ source: 0, sampler: 0 }];
+        json.materials[0].pbrMetallicRoughness.baseColorTexture = { index: 0, texCoord: 4 };
+        return toGltfBuffer(json);
+    },
+
+    // One of every shape type, with bounding volumes referencing them. Half use explicit
+    // parameters and half rely on the 2.1 defaults.
+    "shapes_all.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+
+        json.shapes = [
+            { type: "box", box: { size: [2, 1, 3] } },
+            { type: "box" },
+            { type: "sphere", sphere: { radius: 2 } },
+            { type: "sphere" },
+            { type: "cylinder", cylinder: { height: 3, radiusTop: 0.2, radiusBottom: 1 } },
+            { type: "cylinder" },
+            { type: "capsule", capsule: { height: 2, radiusTop: 0.3, radiusBottom: 0.6 } },
+            { type: "capsule" },
+            { type: "plane", plane: { sizeX: 4, sizeZ: 4 } },
+            { type: "plane" },
+            { type: "mesh", mesh: { mesh: 0 } },
+            { type: "convexMesh", convexMesh: { mesh: 0 } }
+        ];
+
+        json.nodes = json.shapes.map((_, index) => ({
+            name: `Shape${index}`,
+            translation: [index * 2, 0, 0],
+            boundingVolume: { shape: index }
+        }));
+        json.nodes.push({ name: "Mesh", mesh: 0 });
+        json.scenes = [{ nodes: json.nodes.map((_, index) => index) }];
+
+        return toGltfBuffer(json);
+    },
+
+    // A bounding volume with its own TRS on a node that is itself scaled and rotated.
+    // Pins the transform order from KhronosGroup/glTF#2666.
+    "bv_transform.gltf": () => {
+        const { json, buffers } = buildMeshDocument(quad(), { version: "2.1" });
+        json.buffers[0].uri =
+            "data:application/gltf-buffer;base64," + Buffer.from(buffers[0]).toString("base64");
+
+        json.shapes = [{ type: "box", box: { size: [1, 1, 1] } }];
+        json.nodes = [
+            {
+                name: "ScaledRotated",
+                mesh: 0,
+                scale: [2, 1, 0.5],
+                rotation: [0, 0.3826834, 0, 0.9238795],
+                boundingVolume: {
+                    shape: 0,
+                    translation: [1, 0, 0],
+                    rotation: [0.3826834, 0, 0, 0.9238795],
+                    scale: [1, 2, 1]
+                }
+            }
+        ];
+        json.scenes = [{ nodes: [0] }];
+
+        return toGltfBuffer(json);
+    },
+
+    // The child of the external-asset pair below, also loadable on its own so the two
+    // can be compared.
+    "external_child.gltf": () => {
+        const child = childAsset({ bufferUri: "external_child.bin" });
+        return toGltfBuffer(child.json);
+    },
+
+    "external_child.bin": () => childAsset().binary.buffer,
+
+    // The simplest external reference: a parent naming a child by URI.
+    "external_basic.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ name: "Child", file: 0 }],
+            nodes: [
+                { name: "Root", children: [1] },
+                { name: "ChildInstance", externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // The same child instantiated three times at different transforms.
+    "external_reuse.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [
+                { name: "Root", children: [1, 2, 3] },
+                { name: "A", translation: [-1.5, 0, 0], externalAsset: 0 },
+                { name: "B", translation: [0, 0, 0], externalAsset: 0 },
+                { name: "C", translation: [1.5, 0, 0], externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // Two instances of a child that animates itself. The parent declares no animation of
+    // its own, so nothing in the animation UI refers to what is moving on screen.
+    "external_animated_child.gltf": () => toGltfBuffer(animatedChildAsset().json),
+
+    "external_animated_child.bin": () => animatedChildAsset().binary.buffer,
+
+    "external_animated.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_animated_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [
+                { name: "Root", children: [1, 2] },
+                { name: "Left", translation: [-1.5, 0, 0], externalAsset: 0 },
+                { name: "Right", translation: [1.5, 0, 0], externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // A child carrying its own shapes and bounding volumes, instantiated twice. Shape
+    // indices belong to the child document, so the debug pass has to resolve them there.
+    "external_shapes_child.gltf": () => {
+        const child = childAsset({ bufferUri: "external_shapes_child.bin" });
+        child.json.shapes = [
+            { name: "Box", type: "box", box: { size: [1.5, 1.5, 0.5] } },
+            { name: "Sphere", type: "sphere", sphere: { radius: 0.9 } }
+        ];
+        child.json.nodes[0].boundingVolume = { shape: 0 };
+        child.json.nodes.push({
+            name: "ChildVolume",
+            translation: [0, 1.2, 0],
+            boundingVolume: { shape: 1 }
+        });
+        child.json.nodes[0].children = [1];
+        return toGltfBuffer(child.json);
+    },
+
+    "external_shapes_child.bin": () =>
+        childAsset({ bufferUri: "external_shapes_child.bin" }).binary.buffer,
+
+    "external_shapes.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_shapes_child.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            shapes: [{ name: "RootBox", type: "box", box: { size: [5, 3, 3] } }],
+            nodes: [
+                { name: "Root", children: [1, 2], boundingVolume: { shape: 0 } },
+                { name: "Left", translation: [-1.5, 0, 0], externalAsset: 0 },
+                { name: "Right", translation: [1.5, 0, 0], externalAsset: 0 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // Baseline: floor and falling box in one document, which already works.
+    "physics_same_document.gltf": () =>
+        toGltfBuffer(physicsDocument({ nodes: [floorNode(), fallingBoxNode()] })),
+
+    // The same geometry at the same authored transforms with no physics at all, so a test
+    // can tell "the box moved" from "the box was always there" without racing the
+    // simulation, which settles faster than the viewer finishes loading.
+    "physics_static_reference.gltf": () => {
+        const json = physicsDocument({ nodes: [floorNode(), fallingBoxNode()] });
+        delete json.extensionsUsed;
+        for (const node of json.nodes) {
+            delete node.extensions;
+        }
+        return toGltfBuffer(json);
+    },
+
+    // The same scene with the floor moved into an external asset. The box must still land
+    // on it, which only happens if colliders from every document reach one simulation.
+    "physics_floor_child.gltf": () =>
+        toGltfBuffer(physicsDocument({ nodes: [floorNode()], shapes: [PHYSICS_SHAPES[0]] })),
+
+    "physics_cross_document.gltf": () => {
+        const json = physicsDocument({ nodes: [fallingBoxNode()] });
+        // The box references shape 1 in the baseline, but is alone here.
+        json.nodes[0].extensions.KHR_physics_rigid_bodies.collider.geometry.shape = 0;
+        json.shapes = [PHYSICS_SHAPES[1]];
+        json.files = [{ uri: "physics_floor_child.gltf", mimeType: "model/gltf+json" }];
+        json.externalAssets = [{ file: 0 }];
+        json.nodes.push({ name: "FloorInstance", externalAsset: 0 });
+        json.scenes = [{ nodes: [0, 1] }];
+        return toGltfBuffer(json);
+    },
+
+    // Two siblings referencing one grandchild. A diamond is not a cycle and must load,
+    // with the shared child parsed once.
+    "external_diamond.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [
+                { uri: "external_basic.gltf", mimeType: "model/gltf+json" },
+                { uri: "external_reuse.gltf", mimeType: "model/gltf+json" }
+            ],
+            externalAssets: [{ file: 0 }, { file: 1 }],
+            nodes: [
+                { name: "Root", children: [1, 2] },
+                { name: "ViaBasic", translation: [-2, 0, 0], externalAsset: 0 },
+                { name: "ViaReuse", translation: [2, 0, 0], externalAsset: 1 }
+            ]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // References itself. Must be reported rather than recursing forever.
+    "external_cycle_direct.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_cycle_direct.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "Self", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    },
+
+    "external_cycle_a.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_cycle_b.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "A", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    },
+
+    "external_cycle_b.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_cycle_a.gltf", mimeType: "model/gltf+json" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "B", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    },
+
+    // A package: the child's JSON and its .bin both live in the parent's buffer, and the
+    // child's "child.bin" URI is aliased to the packaged copy.
+    "external_package.glb": () =>
+        packageAsset([childAsset()], {
+            nodes: [
+                { name: "Root", children: [1] },
+                { name: "Packaged", externalAsset: 0 }
+            ]
+        }),
+
+    // An external asset pointed at a file whose media type is not glTF. Must be refused.
+    "external_wrong_mimetype.gltf": () => {
+        const json = {
+            asset: { version: "2.1" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            files: [{ uri: "external_child.bin", mimeType: "application/gltf-buffer" }],
+            externalAssets: [{ file: 0 }],
+            nodes: [{ name: "Bad", externalAsset: 0 }]
+        };
+        return toGltfBuffer(json);
+    }
+};
+
+export { ASSETS };

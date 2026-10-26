@@ -226,6 +226,26 @@ export const initViewer = async (canvas) => {
         const loadId = ++latestLoadId;
         uiModel.goToLoadingState();
 
+        // The thumbnail is read separately from the scene, which is the whole point of
+        // the feature: it needs only the JSON and one image.
+        resourceLoader
+            .loadThumbnail(model.mainFile, model.additionalFiles)
+            .then((thumbnail) => {
+                if (loadId !== latestLoadId || disposed) {
+                    uiModel.releaseThumbnail(thumbnail);
+                    return;
+                }
+                uiModel.publishThumbnail(thumbnail);
+            })
+            .catch((error) => {
+                // Only reached when the asset declares a thumbnail that cannot be read;
+                // an asset without one resolves to undefined.
+                console.warn("Could not read the asset thumbnail: " + error);
+                if (loadId === latestLoadId && !disposed) {
+                    uiModel.publishThumbnail(undefined);
+                }
+            });
+
         const run = queuedLoads.then(async () => {
             if (loadId !== latestLoadId || disposed) {
                 return;
@@ -294,6 +314,13 @@ export const initViewer = async (canvas) => {
 
     onChange(uiEvents.tonemapChanged, (v) => (state.renderingParameters.toneMap = v));
     onChange(uiEvents.debugchannelChanged, (v) => (state.renderingParameters.debugOutput = v));
+    onChange(uiEvents.debugShapesChanged, (v) => {
+        Object.assign(state.renderingParameters.debugShapes, v);
+    });
+    onChange(
+        uiEvents.cullByBoundingVolumeChanged,
+        (v) => (state.renderingParameters.cullByBoundingVolume = v)
+    );
     onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
     onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
     onChange(uiEvents.iblChanged, (v) => (state.renderingParameters.useIBL = v));
@@ -577,7 +604,9 @@ export const initViewer = async (canvas) => {
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
-        redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |=
+            !state.animationTimer.paused &&
+            (state.animationIndices.length > 0 || state.gltf?.hasInstancedAnimations);
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.physicsController.enabled && state.physicsController.playing;

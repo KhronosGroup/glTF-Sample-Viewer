@@ -24,6 +24,32 @@ function parseEnvironmentLicense(text, hdr) {
     };
 }
 
+/**
+ * The debug channels on offer for a loaded asset.
+ *
+ * All but the texture coordinate ones are fixed. Those depend on the asset, because
+ * glTF 2.1 lets a primitive number its sets freely, so they are rebuilt on every load
+ * and sit where they used to, at the head of the list.
+ */
+function debugChannelsFor(gltf) {
+    const channels = Object.keys(GltfState.DebugOutput).map((key) => ({
+        title: GltfState.DebugOutput[key]
+    }));
+    const texCoords = GltfState.textureCoordinateDebugOutputs(gltf);
+    if (texCoords.length > 0) {
+        channels.splice(1, 0, { title: Object.fromEntries(texCoords.map((n) => [n, n])) });
+    }
+    return channels;
+}
+
+// Plain entries and grouped ones are rendered separately, so what is on offer is the two
+// kinds flattened together.
+function offeredDebugChannels(channels) {
+    return channels.flatMap((item) =>
+        typeof item.title === "string" ? [item.title] : Object.values(item.title)
+    );
+}
+
 function hexToLinearColor(hex) {
     const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (match === null) {
@@ -72,9 +98,7 @@ class UIModel {
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
-            debugchannels: Object.keys(GltfState.DebugOutput).map((key) => ({
-                title: GltfState.DebugOutput[key]
-            }))
+            debugchannels: debugChannelsFor(undefined)
         });
         this.publishModels();
 
@@ -106,7 +130,10 @@ class UIModel {
             onZoom: (delta) => this.zoomHandler?.(delta),
             onSelect: (position) => this.selectionHandler?.(position),
             onHover: (position) => this.hoverHandler?.(position),
-            onDrop: (entries) => this.handleDrop(entries),
+            onDrop: (entries) =>
+                this.handleDrop(entries).catch((error) =>
+                    console.error(`Reading the dropped files failed: ${error}`)
+                ),
             onDropError: () => setViewerState({ showDropDownOverlay: false })
         });
     }
@@ -252,9 +279,9 @@ class UIModel {
         this.emitHdr(hdr);
     }
 
-    handleDrop(entries) {
+    async handleDrop(entries) {
         setViewerState({ showDropDownOverlay: false });
-        const { mainFile, additionalFiles, hdrFile } = partitionDroppedFiles(entries);
+        const { mainFile, additionalFiles, hdrFile } = await partitionDroppedFiles(entries);
 
         if (hdrFile !== undefined && mainFile === undefined) {
             this.addEnvironment({ hdr_path: hdrFile[1] });
@@ -305,6 +332,25 @@ class UIModel {
         }
     }
 
+    /**
+     * Publishes a thumbnail produced by ResourceLoader.loadThumbnail, taking ownership
+     * of its object URL and revoking whatever it replaces.
+     */
+    publishThumbnail(thumbnail) {
+        const previous = getViewerState().assetThumbnail;
+        if (previous !== undefined && previous.startsWith("blob:")) {
+            URL.revokeObjectURL(previous);
+        }
+        setViewerState({ assetThumbnail: thumbnail?.url });
+    }
+
+    /** Discards a thumbnail that arrived too late to be shown. */
+    releaseThumbnail(thumbnail) {
+        if (thumbnail?.url?.startsWith("blob:")) {
+            URL.revokeObjectURL(thumbnail.url);
+        }
+    }
+
     publishGltfLoaded(state) {
         this.publishCameras(state);
 
@@ -314,11 +360,52 @@ class UIModel {
             gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
             state.renderingParameters.enabledExtensions.KHR_interactivity;
 
+        // The texture coordinate channels depend on the sets this asset declares, so a
+        // channel chosen for the previous one may no longer exist. Keeping it would leave
+        // the select showing a value it has no option for, and the renderer on a view the
+        // asset cannot produce.
+        const debugchannels = debugChannelsFor(gltf);
+        const selectedDebugChannel = offeredDebugChannels(debugchannels).includes(
+            getViewerState().selectedDebugChannel
+        )
+            ? getViewerState().selectedDebugChannel
+            : GltfState.DebugOutput.NONE;
+        if (selectedDebugChannel !== getViewerState().selectedDebugChannel) {
+            uiEvents.debugchannelChanged.emit(selectedDebugChannel);
+        }
+
+        // A variant names a material set in one asset and means nothing in another, so a
+        // selection the new asset does not define is dropped. Keeping it would leave the
+        // radio group with nothing checked, and would silently reapply the old variant on
+        // returning to an asset that happens to use the same name.
+        const materialVariants = hasVariants
+            ? [
+                  "None",
+                  ...gltf.extensions.KHR_materials_variants.variants.map(
+                      (variant) => variant?.name ?? "Unnamed"
+                  )
+              ]
+            : ["None"];
+        const selectedVariant = materialVariants.includes(getViewerState().selectedVariant)
+            ? getViewerState().selectedVariant
+            : "None";
+        if (selectedVariant !== getViewerState().selectedVariant) {
+            uiEvents.variantChanged.emit(selectedVariant);
+        }
+
         setViewerState({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
+            assetVersion: gltf.asset.version ?? "N/A",
+
+            debugchannels,
+            selectedDebugChannel,
 
             selectedScene: state.sceneIndex,
+            // glTF 2.1 deprecates multiple scenes, so there is nothing to pick between.
+            // A 2.1 asset that declares several anyway still has to be navigable, which
+            // is what the spec asks importers to keep supporting.
+            showScenes: !gltf.isAtLeast(2, 1) || gltf.scenes.length > 1,
             scenes: gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
                 index: index
@@ -329,14 +416,8 @@ class UIModel {
             graphState: true,
             physicsState: true,
 
-            materialVariants: hasVariants
-                ? [
-                      "None",
-                      ...gltf.extensions.KHR_materials_variants.variants.map(
-                          (variant) => variant?.name ?? "Unnamed"
-                      )
-                  ]
-                : ["None"],
+            materialVariants,
+            selectedVariant,
 
             animations: gltf.animations.map((animation, index) => ({
                 title: animation.name ?? `Animation ${index}`,

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
+    canvasPixels,
     collectConsoleErrors,
     expectCanvasToRender,
     expectNoConsoleErrors,
@@ -38,6 +39,75 @@ test("loads a model chosen from the dropdown", async ({ page }) => {
     await expectSelectedModel(page, "Avocado");
     await expectCanvasToRender(page, "avocado.png");
     expectNoConsoleErrors(errors);
+});
+
+test("a model switch does not leave the renderer on the dropped debug channel", async ({
+    context
+}) => {
+    // The select recovers on its own: a native one falls back to its first option when
+    // the chosen one stops being offered, and None is first. What goes stale is the
+    // renderer, which keeps drawing the debug view while the panel reads None.
+    const avocadoAfter = async (prepare) => {
+        const page = await context.newPage();
+        await prepare(page);
+        await openTab(page, "models");
+        await page.locator(ui.modelSelect).selectOption("Avocado");
+        await waitForLoadingToSettle(page);
+        const pixels = await canvasPixels(page);
+        await page.close();
+        return pixels;
+    };
+
+    // Avocado numbers its only set 0, so the channel chosen here stops being offered.
+    const afterDebugChannel = await avocadoAfter(async (page) => {
+        await page.goto("/?model=test-assets/texcoord_5_only.gltf");
+        await waitForLoadingToSettle(page);
+        await openTab(page, "advanced");
+        await page.getByTestId("select-debug-channel").selectOption("Texture Coordinates 5");
+    });
+
+    const neverDebugged = await avocadoAfter(async (page) => {
+        await page.goto("/");
+        await waitForLoadingToSettle(page);
+    });
+
+    expect(afterDebugChannel).toEqual(neverDebugged);
+});
+
+test("a model switch drops a variant the next model does not define", async ({ context }) => {
+    const variantRadios = (page) => page.locator("label:has(input[name='material-variant'])");
+
+    const chooseModel = async (page, name) => {
+        await openTab(page, "models");
+        await page.locator(ui.modelSelect).selectOption(name);
+        await waitForLoadingToSettle(page);
+    };
+
+    const shoeAfter = async (prepare) => {
+        const page = await context.newPage();
+        await page.goto("/");
+        await waitForLoadingToSettle(page);
+        await chooseModel(page, "MaterialsVariantsShoe");
+        await prepare(page);
+        const pixels = await canvasPixels(page);
+        await page.close();
+        return pixels;
+    };
+
+    // A variant is chosen, then a model defining none is loaded, then the first again.
+    // The name means nothing to the model in between, so it must not survive the trip.
+    const afterRoundTrip = await shoeAfter(async (page) => {
+        const labels = await variantRadios(page).allTextContents();
+        const chosen = labels.findLastIndex((label) => label.trim() !== "None");
+        await variantRadios(page).nth(chosen).locator("input").check();
+
+        await chooseModel(page, "Avocado");
+        await chooseModel(page, "MaterialsVariantsShoe");
+    });
+
+    const freshlyLoaded = await shoeAfter(async () => {});
+
+    expect(afterRoundTrip).toEqual(freshlyLoaded);
 });
 
 test("turning off image based lighting changes the render", async ({ page }) => {

@@ -105,11 +105,9 @@ function OpenPanel({ children }) {
  * was.
  */
 export function Menu({ visible }) {
-    const [selectedVariant, setSelectedVariant] = useState("None");
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
     const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
-    const [debugChannel, setDebugChannel] = useState("None");
     const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
     const volumePref = useRef(INITIAL_EXTENSIONS.volume);
 
@@ -166,12 +164,7 @@ export function Menu({ visible }) {
     const renderTab = (id) => {
         switch (id) {
             case "models":
-                return (
-                    <ModelsTab
-                        selectedVariant={selectedVariant}
-                        onSelectVariant={setSelectedVariant}
-                    />
-                );
+                return <ModelsTab />;
             case "display":
                 return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
@@ -191,12 +184,7 @@ export function Menu({ visible }) {
                 );
             case "advanced":
                 return (
-                    <AdvancedTab
-                        extensions={extensions}
-                        onExtensionsChange={updateExtensions}
-                        debugChannel={debugChannel}
-                        onDebugChannelChange={setDebugChannel}
-                    />
+                    <AdvancedTab extensions={extensions} onExtensionsChange={updateExtensions} />
                 );
             default:
                 return null;

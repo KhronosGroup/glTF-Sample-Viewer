@@ -1,5 +1,6 @@
 import { SimpleDropzone } from "simple-dropzone";
 import normalizeWheel from "normalize-wheel";
+import { ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
 
 /**
  * Canvas input, translated from the RxJS gesture streams it replaces.
@@ -147,16 +148,43 @@ export function attachCanvasInput(canvas, handlers) {
     };
 }
 
+const isGltf = ([path]) => path.endsWith(".glb") || path.endsWith(".gltf");
+
+/**
+ * The paths a .gltf instantiates through glTF 2.1 `externalAssets`, resolved against its
+ * own folder. A .glb keeps its JSON in a chunk and is not inspected, so a dropped tree
+ * rooted at a .glb that references siblings still relies on drop order.
+ */
+async function externalAssetPaths([path, file]) {
+    if (!path.endsWith(".gltf")) {
+        return [];
+    }
+    try {
+        const json = JSON.parse(await file.text());
+        const folder = ResourceLoaderUtils.getContainingFolder(path);
+        return (json.externalAssets ?? [])
+            .map((externalAsset) => json.files?.[externalAsset.file]?.uri)
+            .filter((uri) => uri !== undefined && !ResourceLoaderUtils.isAbsoluteUrl(uri))
+            .map((uri) => ResourceLoaderUtils.cleanRelativePath(folder + uri));
+    } catch {
+        return [];
+    }
+}
+
 /**
  * Splits dropped files into a main glTF plus its side files, or an HDR.
  */
-export function partitionDroppedFiles(entries) {
+export async function partitionDroppedFiles(entries) {
     const files = entries.map(([path, file]) => [path.replaceAll("\\", "/").substring(1), file]);
 
-    const mainFile = files.find(([path]) => path.endsWith(".glb") || path.endsWith(".gltf"));
-    const additionalFiles = files.filter(
-        ([path]) => !path.endsWith(".glb") && !path.endsWith(".gltf")
-    );
+    const gltfFiles = files.filter(isGltf);
+    const referenced = new Set((await Promise.all(gltfFiles.map(externalAssetPaths))).flat());
+
+    // A glTF that another dropped glTF instantiates is a part, not the thing to show.
+    const mainFile = gltfFiles.find(([path]) => !referenced.has(path)) ?? gltfFiles[0];
+    // Everything else rides along. External assets are themselves .gltf and .glb files,
+    // so side files can no longer be identified by not having a glTF extension.
+    const additionalFiles = files.filter((entry) => entry !== mainFile);
     const hdrFile = files.find(([path]) => path.endsWith(".hdr"));
 
     if (mainFile === undefined && hdrFile === undefined) {

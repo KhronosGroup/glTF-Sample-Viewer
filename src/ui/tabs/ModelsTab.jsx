@@ -37,7 +37,7 @@ function Chip({ label, selected, disabled, onToggle }) {
     );
 }
 
-export function ModelsTab({ selectedVariant, onSelectVariant }) {
+export function ModelsTab() {
     const models = useViewerStore((state) => state.models);
     const modelCount = useViewerStore((state) => state.modelCount);
     const modelTags = useViewerStore((state) => state.modelTags);
@@ -49,6 +49,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const selectedModelFlavours = useViewerStore((state) => state.selectedModelFlavours);
     const flavours = useViewerStore((state) => state.flavours);
     const scenes = useViewerStore((state) => state.scenes);
+    const showScenes = useViewerStore((state) => state.showScenes);
     const cameras = useViewerStore((state) => state.cameras);
     const materialVariants = useViewerStore((state) => state.materialVariants);
     const selectedModel = useViewerStore((state) => state.selectedModel);
@@ -56,10 +57,11 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
     const selectedScene = useViewerStore((state) => state.selectedScene);
     const selectedCamera = useViewerStore((state) => state.selectedCamera);
+    const selectedVariant = useViewerStore((state) => state.selectedVariant);
     const [showTags, setShowTags] = useState(false);
 
     const selectVariant = (value) => {
-        onSelectVariant(value);
+        setViewerState({ selectedVariant: value });
         uiEvents.variantChanged.emit(value);
     };
 
@@ -165,21 +167,23 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                 </Select>
             </Field>
 
-            <Field label="Scenes">
-                <Select
-                    value={selectedScene}
-                    onChange={(value) => {
-                        setViewerState({ selectedScene: value });
-                        uiEvents.sceneChanged.emit(value);
-                    }}
-                >
-                    {scenes.map((item, index) => (
-                        <option key={item.index ?? index} value={item.index}>
-                            {item.title}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {showScenes && (
+                <Field label="Scenes">
+                    <Select
+                        value={selectedScene}
+                        onChange={(value) => {
+                            setViewerState({ selectedScene: value });
+                            uiEvents.sceneChanged.emit(value);
+                        }}
+                    >
+                        {scenes.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
             <Field label="Cameras">
                 <Select

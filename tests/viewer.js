@@ -100,12 +100,31 @@ export async function expectCanvasToRender(page, name) {
 }
 
 /**
+ * Loads an asset from public/test-assets/ through the `model` URL parameter,
+ * which is the only way to point the viewer at an arbitrary file without
+ * driving a file picker.
+ */
+export async function loadTestAsset(page, name) {
+    await page.goto(`/?noUI=1&model=test-assets/${name}`);
+    await waitForLoadingToSettle(page);
+}
+
+/**
+ * Returns whatever is currently drawn on the canvas, for comparing two assets
+ * against each other rather than against a recorded baseline.
+ */
+export async function canvasPixels(page) {
+    return page.locator(ui.canvas).screenshot();
+}
+
+/**
  * Drops files onto the canvas, the only path that exercises side-file
  * resolution; the `model` parameter fetches everything over HTTP instead.
  *
  * simple-dropzone prefers `dataTransfer.items` and walks them as FileSystemEntry
  * objects, which cannot be produced synthetically, so this fakes the four
- * members it reads. Each file is given as a `[name, contents]` pair.
+ * members it reads. Each file is given as a `[name, contents]` pair, where
+ * contents is a string or an array of bytes.
  */
 export async function dropFiles(page, files, folder = "dropped") {
     await page.evaluate(
@@ -116,7 +135,13 @@ export async function dropFiles(page, files, folder = "dropped") {
                     isFile: true,
                     isDirectory: false,
                     fullPath: `/${folder}/${name}`,
-                    file: (callback) => callback(new File([contents], name))
+                    file: (callback) =>
+                        callback(
+                            new File(
+                                [typeof contents === "string" ? contents : new Uint8Array(contents)],
+                                name
+                            )
+                        )
                 })
             }));
 
@@ -126,4 +151,21 @@ export async function dropFiles(page, files, folder = "dropped") {
         },
         { files, folder, canvas: ui.canvas }
     );
+}
+
+/**
+ * Drops files from public/test-assets/ onto a fresh viewer and waits for the load.
+ */
+export async function dropTestAssets(page, names, folder = "dropped") {
+    await page.goto("/?noUI=1");
+    await page.waitForSelector(ui.canvas);
+
+    const files = [];
+    for (const name of names) {
+        const body = await (await page.request.get(`/test-assets/${name}`)).body();
+        files.push([name, Array.from(body)]);
+    }
+    await dropFiles(page, files, folder);
+
+    await waitForLoadingToSettle(page);
 }

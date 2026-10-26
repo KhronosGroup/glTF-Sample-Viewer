@@ -3,6 +3,14 @@ yarn.lock
 dist
 node_modules
 
+# Synthetic glTF 2.1 test assets, rebuilt by `npm run gen:test-assets`.
+# scripts/gen-test-assets/index.json records their sizes and hashes.
+public/test-assets/
+
+# Hand-staged assets for local checks. Unlike public/test-assets/ this is never
+# wiped by the generator, so authored files can be dropped here safely.
+public/local-assets/
+
 npm-debug.log
 debug.log
 

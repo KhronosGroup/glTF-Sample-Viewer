@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import { useViewerStore } from "../store.js";
+import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
 import { StatList } from "../StatList.jsx";
 import { uiEvents } from "../../logic/ui_events.js";
@@ -13,7 +13,7 @@ const EXTENSION_TOGGLES = [
     { key: "interactivity", label: "KHR_interactivity", event: "interactivityChanged" },
     { key: "hoverability", label: "KHR_node_hoverability", event: "hoverabilityChanged" },
     { key: "selectability", label: "KHR_node_selectability", event: "selectabilityChanged" },
-    { key: "nodeVisibility", label: "KHR_node_visibility", event: "nodeVisibilityChanged" }
+    { key: "nodeVisibility", label: "Node Visibility (2.1 core)", event: "nodeVisibilityChanged" }
 ];
 
 const MATERIAL_EXTENSIONS = [
@@ -29,7 +29,11 @@ const MATERIAL_EXTENSIONS = [
     { key: "volumeScattering", label: "Volume Scattering", event: "volumeScatteringChanged" },
     { key: "ior", label: "IOR", event: "iorChanged" },
     { key: "specular", label: "Specular", event: "specularChanged" },
-    { key: "emissiveStrength", label: "Emissive Strength", event: "emissiveStrengthChanged" },
+    {
+        key: "emissiveStrength",
+        label: "Emissive Strength (2.1 core)",
+        event: "emissiveStrengthChanged"
+    },
     { key: "iridescence", label: "Iridescence", event: "iridescenceChanged" },
     { key: "retroreflection", label: "Retroreflection", event: "retroreflectionChanged" },
     { key: "anisotropy", label: "Anisotropy", event: "anisotropyChanged" },
@@ -37,13 +41,9 @@ const MATERIAL_EXTENSIONS = [
     { key: "gaussianSplatting", label: "Gaussian Splatting", event: "gaussianSplattingChanged" }
 ];
 
-export function AdvancedTab({
-    extensions,
-    onExtensionsChange,
-    debugChannel,
-    onDebugChannelChange
-}) {
+export function AdvancedTab({ extensions, onExtensionsChange }) {
     const debugchannels = useViewerStore((state) => state.debugchannels);
+    const selectedDebugChannel = useViewerStore((state) => state.selectedDebugChannel);
     const statistics = useViewerStore((state) => state.statistics);
     const supportsFloatingPointFramebuffer = useViewerStore(
         (state) => state.supportsFloatingPointFramebuffer
@@ -89,9 +89,10 @@ export function AdvancedTab({
 
             <Field label="Debug Channels">
                 <Select
-                    value={debugChannel}
+                    data-testid="select-debug-channel"
+                    value={selectedDebugChannel}
                     onChange={(value) => {
-                        onDebugChannelChange(value);
+                        setViewerState({ selectedDebugChannel: value });
                         uiEvents.debugchannelChanged.emit(value);
                     }}
                 >
