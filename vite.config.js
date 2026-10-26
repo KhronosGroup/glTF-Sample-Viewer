@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { createLogger, defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
@@ -7,7 +7,19 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
 // of a rebuild, so it can be turned off for fast dev iteration via `SOURCEMAP=false npm run build`.
 const sourcemap = process.env.SOURCEMAP !== "false";
 
+// These wasm files are copied to libs/ below and loaded at runtime, so Vite's warning is expected
+const runtimeWasmWarning =
+    /new URL\("(physx-js-webidl|mikktspace_bg)\.wasm", import\.meta\.url\) doesn't exist at build time/;
+const logger = createLogger();
+const warnOnce = logger.warnOnce;
+logger.warnOnce = (msg, options) => {
+    if (!runtimeWasmWarning.test(msg)) {
+        warnOnce(msg, options);
+    }
+};
+
 export default defineConfig({
+    customLogger: logger,
     // The deployed site lives under a subpath (github.khronos.org/glTF-Sample-Viewer-Release/),
     // so emitted asset URLs must be relative. Vite's default of "/" would resolve them against
     // the domain root and 404 every bundle, stylesheet and public asset in production.
