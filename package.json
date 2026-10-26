@@ -36,7 +36,7 @@
     "@khronosgroup/gltf-viewer": "./glTF-Sample-Renderer",
     "draco3d": "^1.5.8",
     "gltf-validator": "^2.0.0-dev.3.10",
-    "lucide-react": "^1.49.0",
+    "lucide-react": "^1.61.0",
     "normalize-wheel": "^1.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -44,10 +44,10 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
-    "@eslint/js": "^10.0.1",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
