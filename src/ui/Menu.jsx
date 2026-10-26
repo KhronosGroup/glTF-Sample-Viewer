@@ -66,6 +66,14 @@ const INITIAL_PHYSICS_DEBUG = {
     joints: false
 };
 
+// Bounds are fractions of the scene extents; the renderer turns them into planes.
+const INITIAL_CLIPPING = {
+    enabled: false,
+    orientation: "Axis Aligned",
+    min: [0, 0, 0],
+    max: [1, 1, 1]
+};
+
 /**
  * The open panel, sliding in from the right when a tab is selected.
  *
@@ -111,6 +119,7 @@ export function Menu({ visible }) {
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
     const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
     const [debugChannel, setDebugChannel] = useState("None");
+    const [clipping, setClipping] = useState(INITIAL_CLIPPING);
     const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
     const volumePref = useRef(INITIAL_EXTENSIONS.volume);
 
@@ -197,6 +206,10 @@ export function Menu({ visible }) {
                         onExtensionsChange={updateExtensions}
                         debugChannel={debugChannel}
                         onDebugChannelChange={setDebugChannel}
+                        clipping={clipping}
+                        onClippingChange={(partial) =>
+                            setClipping((current) => ({ ...current, ...partial }))
+                        }
                     />
                 );
             default:

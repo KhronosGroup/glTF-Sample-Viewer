@@ -426,12 +426,22 @@ export function PlaybackControls({ active, onText, offText, onIcon, offIcon, onT
     );
 }
 
+/** Stacks `Radio` rows into one card, rounded only at its outer corners. */
+export function RadioGroup({ children }) {
+    return <div className="flex flex-col gap-0.5">{children}</div>;
+}
+
 export function Radio({ name, value, checked, onChange, children }) {
     return (
-        <label className="inline-flex cursor-pointer items-center gap-2">
+        <label
+            className={classNames(
+                "flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors first:rounded-t-md last:rounded-b-md",
+                checked ? "bg-card-inner" : "bg-card hover:brightness-110"
+            )}
+        >
             <input
                 type="radio"
-                className="accent-accent h-4 w-4"
+                className="accent-accent h-4 w-4 shrink-0 cursor-pointer"
                 name={name}
                 checked={checked}
                 onChange={() => onChange(value)}
