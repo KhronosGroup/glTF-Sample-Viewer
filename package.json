@@ -19,7 +19,7 @@
     "test:update-snapshots": "playwright test --update-snapshots",
     "lint": "eslint --no-warn-ignored src tests vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
     "lint:fix": "eslint --no-warn-ignored --fix src tests vite.config.js playwright.config.js glTF-Sample-Renderer/source/**/*.js",
-    "prettier": "npx prettier \"src/**/*.{js,jsx}\" \"tests/**/*.js\" \"glTF-Sample-Renderer/source/**/*.js\" vite.config.js playwright.config.js eslint.config.js glTF-Sample-Renderer/rollup.config.js glTF-Sample-Renderer/eslint.config.js --check",
+    "prettier": "npx prettier \"src/**/*.{js,jsx}\" \"tests/**/*.js\" \"glTF-Sample-Renderer/source/**/*.js\" vite.config.js playwright.config.js eslint.config.js glTF-Sample-Renderer/rolldown.config.js glTF-Sample-Renderer/eslint.config.js --check",
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "postversion": "git push && git push --tags"
