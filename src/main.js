@@ -52,7 +52,8 @@ const dracoDecoderLib = (moduleOptions) =>
 export const initViewer = async (canvas) => {
     const context = canvas.getContext("webgl2", {
         alpha: false,
-        antialias: true
+        // The scene is rendered offscreen; the canvas only receives a fullscreen tonemap pass.
+        antialias: false
     });
     setViewerState({
         supportsFloatingPointFramebuffer:

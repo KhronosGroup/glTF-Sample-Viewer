@@ -43,7 +43,7 @@ export function App() {
 
     useEffect(() => {
         const canvas = document.getElementById("canvas");
-        const context = canvas.getContext("webgl2", { alpha: false, antialias: true });
+        const context = canvas.getContext("webgl2", { alpha: false, antialias: false });
         if (context === undefined || context === null) {
             notify(
                 "The sample viewer requires WebGL 2.0, which is not supported by this browser or device. " +
