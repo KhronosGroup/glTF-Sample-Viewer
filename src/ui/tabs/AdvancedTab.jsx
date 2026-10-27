@@ -1,6 +1,8 @@
-import { Download } from "lucide-react";
+import { Fragment } from "react";
+import { Download, RotateCcw } from "lucide-react";
 import { useViewerStore } from "../store.js";
-import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
+import { Button, Field, IconButton, Panel, Select, Switch } from "../controls.jsx";
+import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
 import { uiEvents } from "../../logic/ui_events.js";
@@ -38,11 +40,107 @@ const MATERIAL_EXTENSIONS = [
     { key: "gaussianSplatting", label: "Gaussian Splatting", event: "gaussianSplattingChanged" }
 ];
 
+const CLIPPING_AXES = ["X", "Y", "Z"];
+
+const formatClippingBound = (value) => `${Math.round(value * 100)}%`;
+
+/**
+ * Six planes forming a cuboid around the model. The bounds are fractions of the
+ * scene extents, so they mean the same thing whatever is loaded.
+ */
+function ClippingControls({ clipping, onChange }) {
+    const orientations = useViewerStore((state) => state.clippingOrientations);
+    const supportsClipping = useViewerStore((state) => state.supportsClipping);
+
+    const update = (partial) => {
+        const next = { ...clipping, ...partial };
+        onChange(partial);
+        uiEvents.clippingChanged.emit(next);
+    };
+
+    // Pushing one bound past the other carries it along rather than inverting the cuboid.
+    const setBound = (bound, axis) => (value) => {
+        const bounds = { min: [...clipping.min], max: [...clipping.max] };
+        bounds[bound][axis] = value;
+        if (bounds.min[axis] > bounds.max[axis]) {
+            bounds[bound === "min" ? "max" : "min"][axis] = value;
+        }
+        update(bounds);
+    };
+
+    return (
+        <div className="mt-6">
+            <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="font-medium">Clipping Planes</span>
+                <Switch
+                    className="mt-0! w-auto!"
+                    data-testid="switch-clipping"
+                    checked={clipping.enabled}
+                    disabled={!supportsClipping}
+                    onChange={(checked) => update({ enabled: checked })}
+                >
+                    <span className="sr-only">Clipping Planes</span>
+                </Switch>
+            </div>
+            {!supportsClipping && <p className="text-ink/60 text-sm">Unsupported by this browser</p>}
+
+            {clipping.enabled && (
+                <>
+                    <div className="flex items-center gap-2">
+                        <Select
+                            className="grow"
+                            value={clipping.orientation}
+                            onChange={(value) => update({ orientation: value })}
+                        >
+                            {orientations.map((orientation) => (
+                                <option key={orientation} value={orientation}>
+                                    {orientation}
+                                </option>
+                            ))}
+                        </Select>
+                        <IconButton
+                            label="Reset clipping planes"
+                            onClick={() => update({ min: [0, 0, 0], max: [1, 1, 1] })}
+                        >
+                            <RotateCcw size={16} aria-hidden="true" />
+                        </IconButton>
+                    </div>
+
+                    <div className="mt-1 grid grid-cols-[1ch_1fr_1fr] items-center gap-x-3 text-sm font-light">
+                        <span />
+                        <span>Min</span>
+                        <span>Max</span>
+                        {CLIPPING_AXES.map((axis, index) => (
+                            <Fragment key={axis}>
+                                <span>{axis}</span>
+                                {["min", "max"].map((bound) => (
+                                    <Slider
+                                        key={bound}
+                                        label={`Clipping ${axis} ${bound}`}
+                                        value={clipping[bound][index]}
+                                        min={0}
+                                        max={1}
+                                        step={0.01}
+                                        formatter={formatClippingBound}
+                                        onChange={setBound(bound, index)}
+                                    />
+                                ))}
+                            </Fragment>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
 export function AdvancedTab({
     extensions,
     onExtensionsChange,
     debugChannel,
-    onDebugChannelChange
+    onDebugChannelChange,
+    clipping,
+    onClippingChange
 }) {
     const debugchannels = useViewerStore((state) => state.debugchannels);
     const statistics = useViewerStore((state) => state.statistics);
@@ -149,6 +247,8 @@ export function AdvancedTab({
                     {extensions.morphOverrides && <MorphWeights disabled={!extensions.morphing} />}
                 </div>
             )}
+
+            <ClippingControls clipping={clipping} onChange={onClippingChange} />
 
             <Field label="Extensions" grouped>
                 {renderToggles(EXTENSION_TOGGLES)}

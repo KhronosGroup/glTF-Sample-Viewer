@@ -83,7 +83,11 @@ export function Slider({
 
     return (
         <div
-            className={["mx-2 mt-4 mb-10 touch-none select-none", className]
+            className={[
+                "mx-2 mt-4 touch-none select-none",
+                ticks.length > 0 ? "mb-10" : "mb-4",
+                className
+            ]
                 .filter(Boolean)
                 .join(" ")}
             // A lingering text selection would otherwise turn the drag into a native drag-and-drop.

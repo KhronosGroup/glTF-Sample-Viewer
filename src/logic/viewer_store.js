@@ -43,9 +43,11 @@ const initialState = {
     // Published by the renderer and the environment loader.
     tonemaps: [{ title: "None" }],
     debugchannels: [{ title: "None" }],
+    clippingOrientations: ["Axis Aligned"],
     environments: [{ index: 0, name: "" }],
     environmentLicense: undefined,
     supportsFloatingPointFramebuffer: true,
+    supportsClipping: true,
 
     // Selections. Written by the UI, read back by the loading layer.
     selectedModel: "DamagedHelmet",
