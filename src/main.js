@@ -324,6 +324,35 @@ export const initViewer = async (canvas) => {
     });
     onChange(uiEvents.variantChanged, (v) => (state.variant = v));
 
+    onChange(uiEvents.morphWeightChanged, ({ nodeIndex, targetIndex, value }) => {
+        const node = state.gltf?.nodes[nodeIndex];
+        const targetCount = state.gltf?.meshes[node?.mesh]?.primitives[0]?.targets.length ?? 0;
+        if (
+            !node ||
+            !Number.isInteger(targetIndex) ||
+            targetIndex < 0 ||
+            targetIndex >= targetCount ||
+            (value !== null && !Number.isFinite(value))
+        ) {
+            console.error("Invalid morph weight change", { nodeIndex, targetIndex, value });
+            return;
+        }
+        // A null value clears the override, returning the target to its asset/animated weight.
+        node.morphWeightOverrides ??= [];
+        node.morphWeightOverrides[targetIndex] = value ?? undefined;
+        if (node.morphWeightOverrides.every((weight) => weight === undefined)) {
+            node.morphWeightOverrides = undefined;
+        }
+        uiModel.publishMorphWeights(state);
+    });
+
+    onChange(uiEvents.morphWeightsReset, () => {
+        for (const node of state.gltf.nodes) {
+            node.morphWeightOverrides = undefined;
+        }
+        uiModel.publishMorphWeights(state);
+    });
+
     uiModel.onClearColor((color) => {
         state.renderingParameters.clearColor = color;
         redraw = true;
@@ -367,6 +396,7 @@ export const initViewer = async (canvas) => {
         }
 
         uiModel.publishCameras(state);
+        uiModel.publishMorphWeights(state);
         uiModel.publishStatistics(view.gatherStatistics(state));
     });
 

@@ -48,6 +48,8 @@ const eventNames = [
 
     "skinningChanged",
     "morphingChanged",
+    "morphWeightChanged",
+    "morphWeightsReset",
     "clippingChanged",
     "inputSmoothingChanged",
     "interactivityChanged",

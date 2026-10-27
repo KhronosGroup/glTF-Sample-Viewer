@@ -4,6 +4,7 @@ import { useViewerStore } from "../store.js";
 import { Button, Field, IconButton, Panel, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
+import { MorphWeights } from "../MorphWeights.jsx";
 import { uiEvents } from "../../logic/ui_events.js";
 
 const RENDERING_TOGGLES = [
@@ -143,6 +144,7 @@ export function AdvancedTab({
 }) {
     const debugchannels = useViewerStore((state) => state.debugchannels);
     const statistics = useViewerStore((state) => state.statistics);
+    const hasMorphTargets = useViewerStore((state) => state.morphWeights.length > 0);
     const supportsFloatingPointFramebuffer = useViewerStore(
         (state) => state.supportsFloatingPointFramebuffer
     );
@@ -223,6 +225,28 @@ export function AdvancedTab({
                     32-bit Framebuffer
                 </Switch>
             </Field>
+
+            {hasMorphTargets && (
+                <div className="mt-6">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="font-medium">Morph Overrides</span>
+                        <Switch
+                            className="mt-0! w-auto!"
+                            checked={extensions.morphOverrides}
+                            disabled={!extensions.morphing}
+                            onChange={(checked) => {
+                                onExtensionsChange({ morphOverrides: checked });
+                                if (!checked) {
+                                    uiEvents.morphWeightsReset.emit();
+                                }
+                            }}
+                        >
+                            <span className="sr-only">Morph Overrides</span>
+                        </Switch>
+                    </div>
+                    {extensions.morphOverrides && <MorphWeights disabled={!extensions.morphing} />}
+                </div>
+            )}
 
             <ClippingControls clipping={clipping} onChange={onClippingChange} />
 
