@@ -138,7 +138,11 @@ export async function dropFiles(page, files, folder = "dropped") {
                     file: (callback) =>
                         callback(
                             new File(
-                                [typeof contents === "string" ? contents : new Uint8Array(contents)],
+                                [
+                                    typeof contents === "string"
+                                        ? contents
+                                        : new Uint8Array(contents)
+                                ],
                                 name
                             )
                         )
