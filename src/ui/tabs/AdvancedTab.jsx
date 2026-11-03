@@ -81,7 +81,9 @@ function ClippingControls({ clipping, onChange }) {
                     <span className="sr-only">Clipping Planes</span>
                 </Switch>
             </div>
-            {!supportsClipping && <p className="text-ink/60 text-sm">Unsupported by this browser</p>}
+            {!supportsClipping && (
+                <p className="text-ink/60 text-sm">Unsupported by this browser</p>
+            )}
 
             {clipping.enabled && (
                 <>
