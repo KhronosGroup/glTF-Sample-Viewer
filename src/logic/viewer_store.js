@@ -46,6 +46,7 @@ const initialState = {
     environments: [{ index: 0, name: "" }],
     environmentLicense: undefined,
     supportsFloatingPointFramebuffer: true,
+    supportsWireframe: true,
     supportsClipping: true,
 
     // Selections. Written by the UI, read back by the loading layer.
