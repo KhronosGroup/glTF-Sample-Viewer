@@ -38,6 +38,7 @@ const INITIAL_EXTENSIONS = {
     inputSmoothing: true,
     skinning: true,
     morphing: true,
+    morphOverrides: false,
     wireframe: false,
     interactivity: true,
     hoverability: true,
