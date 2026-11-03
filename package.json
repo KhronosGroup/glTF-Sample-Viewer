@@ -8,6 +8,9 @@
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
   },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
   "workspaces": [
     "glTF-Sample-Renderer"
   ],
