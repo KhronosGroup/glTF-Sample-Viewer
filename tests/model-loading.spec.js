@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import {
     collectConsoleErrors,
     dropFiles,
@@ -7,6 +7,7 @@ import {
     expectSelectedModel,
     openModelsTab,
     selectModel,
+    ui,
     waitForLoadingToSettle
 } from "./viewer.js";
 

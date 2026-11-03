@@ -14,14 +14,21 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v2.3.1
+              uses: actions/checkout@v7
               with:
                   submodules: "recursive"
                   lfs: true
+                  # Otherwise the deploy step pushes with this repository's token instead of BUILD_GITHUB_PAGES
+                  persist-credentials: false
+
+            - name: Install Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24
 
             - name: Install and Build
               run: |
-                  npm install
+                  npm ci
                   npm run build
 
             - name: Check build size
@@ -32,7 +39,7 @@ jobs:
 
             - name: Deploy to Khronos repo
               if: github.actor != 'dependabot[bot]' && !startsWith(github.ref_name, 'dependabot/')
-              uses: JamesIves/github-pages-deploy-action@v4.6.3
+              uses: JamesIves/github-pages-deploy-action@v4.9.0
               with:
                   branch: main
                   folder: dist/
@@ -53,7 +60,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout deployment repository
-              uses: actions/checkout@v2.3.1
+              uses: actions/checkout@v7
               with:
                   repository: KhronosGroup/glTF-Sample-Viewer-Release
                   ref: main
