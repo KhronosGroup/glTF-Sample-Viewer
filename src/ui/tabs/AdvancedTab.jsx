@@ -29,7 +29,7 @@ const MATERIAL_EXTENSIONS = [
         event: "diffuseTransmissionChanged"
     },
     { key: "volume", label: "Volume", event: "volumeChanged" },
-    { key: "volumeScattering", label: "Volume Scattering", event: "volumeScatteringChanged" },
+    { key: "scattering", label: "Scattering", event: "scatteringChanged" },
     { key: "ior", label: "IOR", event: "iorChanged" },
     { key: "specular", label: "Specular", event: "specularChanged" },
     { key: "emissiveStrength", label: "Emissive Strength", event: "emissiveStrengthChanged" },
@@ -163,8 +163,8 @@ export function AdvancedTab({
         if (key === "volume") {
             return !extensions.transmission && !extensions.diffuseTransmission;
         }
-        if (key === "volumeScattering") {
-            return !extensions.volume;
+        if (key === "scattering") {
+            return !extensions.transmission;
         }
         return false;
     };

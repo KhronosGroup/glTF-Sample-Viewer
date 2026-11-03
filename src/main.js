@@ -17,7 +17,7 @@ const EXTENSION_TOGGLES = {
     transmissionChanged: "KHR_materials_transmission",
     diffuseTransmissionChanged: "KHR_materials_diffuse_transmission",
     volumeChanged: "KHR_materials_volume",
-    volumeScatteringChanged: "KHR_materials_volume_scatter",
+    scatteringChanged: "KHR_materials_scatter",
     iorChanged: "KHR_materials_ior",
     iridescenceChanged: "KHR_materials_iridescence",
     retroreflectionChanged: "KHR_materials_retroreflection",

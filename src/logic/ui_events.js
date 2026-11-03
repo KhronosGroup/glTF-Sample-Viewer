@@ -60,7 +60,7 @@ const eventNames = [
     "transmissionChanged",
     "diffuseTransmissionChanged",
     "volumeChanged",
-    "volumeScatteringChanged",
+    "scatteringChanged",
     "iorChanged",
     "iridescenceChanged",
     "retroreflectionChanged",

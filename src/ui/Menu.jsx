@@ -49,7 +49,7 @@ const INITIAL_EXTENSIONS = {
     transmission: true,
     diffuseTransmission: true,
     volume: true,
-    volumeScattering: true,
+    scattering: true,
     ior: true,
     specular: true,
     emissiveStrength: true,
