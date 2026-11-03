@@ -75,3 +75,44 @@ test("a dropped glTF missing its buffer names the file it wants", async ({ page 
         /Loading failed:.*Missing file 'triangle\.bin' referenced by 'dropped\/triangle\.gltf'/
     );
 });
+
+test("dropping a glTF hides the flavour dropdown", async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+
+    // A self-contained triangle so the drop loads cleanly and produces no errors.
+    const gltf = JSON.stringify({
+        asset: { version: "2.0" },
+        scene: 0,
+        scenes: [{ nodes: [0] }],
+        nodes: [{ mesh: 0 }],
+        meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+        accessors: [
+            {
+                bufferView: 0,
+                componentType: 5126,
+                count: 3,
+                type: "VEC3",
+                min: [0, 0, 0],
+                max: [1, 1, 0]
+            }
+        ],
+        bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }],
+        buffers: [
+            {
+                uri: "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+                byteLength: 36
+            }
+        ]
+    });
+
+    await page.goto("/");
+    await waitForLoadingToSettle(page);
+    await openModelsTab(page);
+    await expect(page.locator(ui.flavourSelect)).toBeVisible();
+
+    await dropFiles(page, [["triangle.gltf", gltf]]);
+    await expect(page.locator(ui.flavourSelect)).toBeHidden();
+
+    await waitForLoadingToSettle(page);
+    expectNoConsoleErrors(errors);
+});

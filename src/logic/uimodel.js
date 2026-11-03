@@ -171,7 +171,7 @@ class UIModel {
     selectModel(name) {
         const flavours = this.modelPathProvider.getModelFlavours(name);
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
-        setViewerState({ flavours, selectedFlavour });
+        setViewerState({ flavours, selectedFlavour, selectedModelIsDropped: false });
         this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
         // After emitModel, which needs the list as it was to drop a dropped file.
         this.publishModels();
@@ -281,6 +281,7 @@ class UIModel {
             models: [...getViewerState().models, filename],
             selectedModel: filename,
             selectedModelExcluded: false,
+            selectedModelIsDropped: true,
             flavours: [fileExtension],
             selectedFlavour: fileExtension
         });

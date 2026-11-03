@@ -53,6 +53,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const materialVariants = useViewerStore((state) => state.materialVariants);
     const selectedModel = useViewerStore((state) => state.selectedModel);
     const selectedModelExcluded = useViewerStore((state) => state.selectedModelExcluded);
+    const selectedModelIsDropped = useViewerStore((state) => state.selectedModelIsDropped);
     const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
     const selectedScene = useViewerStore((state) => state.selectedScene);
     const selectedCamera = useViewerStore((state) => state.selectedCamera);
@@ -148,22 +149,24 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                 )}
             </Field>
 
-            <Field label="Flavor">
-                <Select
-                    data-testid="flavour-select"
-                    value={selectedFlavour}
-                    onChange={(value) => {
-                        setViewerState({ selectedFlavour: value });
-                        uiEvents.flavourChanged.emit(value);
-                    }}
-                >
-                    {flavours.map((item) => (
-                        <option key={item} value={item}>
-                            {item}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {!selectedModelIsDropped && (
+                <Field label="Flavor">
+                    <Select
+                        data-testid="flavour-select"
+                        value={selectedFlavour}
+                        onChange={(value) => {
+                            setViewerState({ selectedFlavour: value });
+                            uiEvents.flavourChanged.emit(value);
+                        }}
+                    >
+                        {flavours.map((item) => (
+                            <option key={item} value={item}>
+                                {item}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
             <Field label="Scenes">
                 <Select

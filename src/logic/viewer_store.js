@@ -53,6 +53,7 @@ const initialState = {
     // Selections. Written by the UI, read back by the loading layer.
     selectedModel: "DamagedHelmet",
     selectedModelExcluded: false,
+    selectedModelIsDropped: false,
     selectedModelTags: [],
     selectedModelFlavours: [],
     selectedFlavour: "glTF",
