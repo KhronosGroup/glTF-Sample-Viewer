@@ -514,7 +514,6 @@ export const initViewer = async (canvas) => {
     // easeInOutSine, so motion accelerates and decelerates smoothly instead of
     // snapping with raw mousemove/wheel timing.
     const dragSmoother = (() => {
-        let smoothMs = SMOOTHING_MS;
         const easeInOutSine = (t) => 0.5 * (1 - Math.cos(Math.PI * t));
         const orbitPulses = [];
         const panPulses = [];
@@ -531,7 +530,7 @@ export const initViewer = async (canvas) => {
             let netB = 0;
             for (let i = pulses.length - 1; i >= 0; i--) {
                 const p = pulses[i];
-                const t = smoothMs > 0 ? Math.min(1, (now - p.startTime) / smoothMs) : 1;
+                const t = Math.min(1, (now - p.startTime) / SMOOTHING_MS);
                 const eased = easeInOutSine(t);
                 const targetA = p.a * eased;
                 const targetB = p.b * eased;
@@ -549,9 +548,6 @@ export const initViewer = async (canvas) => {
             pushOrbit: (dPhi, dTheta) => push(orbitPulses, dPhi, dTheta),
             pushPan: (dX, dY) => push(panPulses, dX, dY),
             pushZoom: (dZoom) => push(zoomPulses, dZoom, 0),
-            setSmoothMs: (ms) => {
-                smoothMs = Math.max(0, ms);
-            },
             tick: () => {
                 const o = drain(orbitPulses, (a, b) => state.userCamera.orbit(a, b));
                 const p = drain(panPulses, (a, b) => state.userCamera.pan(a, b));
@@ -560,10 +556,6 @@ export const initViewer = async (canvas) => {
             }
         };
     })();
-
-    on(uiEvents.inputSmoothingChanged, (enabled) =>
-        dragSmoother.setSmoothMs(enabled ? SMOOTHING_MS : 0)
-    );
 
     uiModel.onOrbit((orbit) => {
         dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);

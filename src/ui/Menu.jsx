@@ -35,7 +35,6 @@ const INITIAL_LIGHTING = {
 
 // Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
 const INITIAL_EXTENSIONS = {
-    inputSmoothing: true,
     skinning: true,
     morphing: true,
     morphOverrides: false,

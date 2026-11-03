@@ -183,13 +183,6 @@ export function AdvancedTab({
 
     return (
         <Panel title="Advanced Controls">
-            <Switch
-                checked={extensions.inputSmoothing}
-                onChange={toggle({ key: "inputSmoothing", event: "inputSmoothingChanged" })}
-            >
-                Input Smoothing
-            </Switch>
-
             <Field label="Debug Channels">
                 <Select
                     value={debugChannel}
