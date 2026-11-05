@@ -32,13 +32,11 @@ export function Slider({
     ticks = []
 }) {
     const trackRef = useRef(null);
+    const dragOrigin = useRef(null);
     const [dragging, setDragging] = useState(false);
 
-    const valueFromClientX = useCallback(
-        (clientX) => {
-            const rect = trackRef.current.getBoundingClientRect();
-            const position = clamp((clientX - rect.left) / rect.width, 0, 1);
-            const raw = min + position * (max - min);
+    const clampValue = useCallback(
+        (raw) => {
             const stepped = Math.round(raw / step) * step;
             // Re-round to the step's precision, otherwise 0.1 steps drift.
             const decimals = (String(step).split(".")[1] ?? "").length;
@@ -47,12 +45,37 @@ export function Slider({
         [min, max, step]
     );
 
+    const valueFromClientX = useCallback(
+        (clientX) => {
+            const rect = trackRef.current.getBoundingClientRect();
+            const position = clamp((clientX - rect.left) / rect.width, 0, 1);
+            return clampValue(min + position * (max - min));
+        },
+        [min, max, clampValue]
+    );
+
+    // Holding Shift scales pointer travel so small adjustments are easier.
+    const valueFromDrag = useCallback(
+        (clientX, shiftKey) => {
+            if (!shiftKey || dragOrigin.current === null) {
+                return valueFromClientX(clientX);
+            }
+            const rect = trackRef.current.getBoundingClientRect();
+            const delta = (clientX - dragOrigin.current.clientX) / rect.width;
+            return clampValue(dragOrigin.current.value + delta * (max - min) * 0.1);
+        },
+        [valueFromClientX, max, min, clampValue]
+    );
+
     useEffect(() => {
         if (!dragging) {
             return;
         }
-        const move = (event) => onChange(valueFromClientX(event.clientX));
-        const stop = () => setDragging(false);
+        const move = (event) => onChange(valueFromDrag(event.clientX, event.shiftKey));
+        const stop = () => {
+            setDragging(false);
+            dragOrigin.current = null;
+        };
         window.addEventListener("pointermove", move);
         window.addEventListener("pointerup", stop);
         window.addEventListener("pointercancel", stop);
@@ -61,7 +84,7 @@ export function Slider({
             window.removeEventListener("pointerup", stop);
             window.removeEventListener("pointercancel", stop);
         };
-    }, [dragging, onChange, valueFromClientX]);
+    }, [dragging, onChange, valueFromDrag]);
 
     const indeterminate = value === null || value === undefined;
 
@@ -98,7 +121,11 @@ export function Slider({
                 className={`bg-track relative h-1.5 rounded-full ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
                 onPointerDown={(event) => {
                     event.preventDefault();
-                    onChange(valueFromClientX(event.clientX));
+                    dragOrigin.current = {
+                        clientX: event.clientX,
+                        value: valueFromClientX(event.clientX)
+                    };
+                    onChange(dragOrigin.current.value);
                     setDragging(true);
                 }}
             >

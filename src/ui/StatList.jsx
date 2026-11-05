@@ -8,11 +8,11 @@ export function StatList({ data }) {
     }
 
     return (
-        <dl className="space-y-1">
+        <dl className="flex flex-col gap-0.5">
             {Object.entries(data).map(([label, value]) => (
                 <div
                     key={label}
-                    className="bg-card flex items-center justify-between gap-4 rounded-md px-3 py-2"
+                    className="bg-card flex items-center justify-between gap-4 px-3 py-2 first:rounded-t-md last:rounded-b-md"
                 >
                     <dt className="font-light">{label}</dt>
                     <dd className="text-ink/60">{String(value)}</dd>
