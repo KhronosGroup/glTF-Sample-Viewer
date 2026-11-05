@@ -95,7 +95,7 @@ export function Slider({
         >
             <div
                 ref={trackRef}
-                className="bg-track relative h-1.5 cursor-pointer rounded-full"
+                className={`bg-track relative h-1.5 rounded-full ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
                 onPointerDown={(event) => {
                     event.preventDefault();
                     onChange(valueFromClientX(event.clientX));
