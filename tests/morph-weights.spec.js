@@ -127,11 +127,26 @@ const expectUnset = (page, name) =>
     expect(weight(page, name)).toHaveAttribute("aria-valuetext", "Not set");
 const smile = "Face (Node 0): Smile";
 
-// Clicks the slider track at the given 0-1 fraction of its width.
+// Clicks the slider track at the given 0-1 fraction of its width. The click is
+// inset by a pixel because the track's bounding box is half-open on the right,
+// so clicking exactly at `x + width` misses the element.
 async function setWeight(page, name, fraction) {
     const box = await weight(page, name).locator("xpath=../..").boundingBox();
-    await page.mouse.click(box.x + box.width * fraction, box.y + box.height / 2);
+    const usableWidth = Math.max(box.width - 2, 1);
+    await page.mouse.click(box.x + 1 + usableWidth * fraction, box.y + box.height / 2);
 }
+
+const numeric = (page, name) => page.getByRole("spinbutton", { name, exact: true });
+
+// Sets an exact weight through the always-visible numeric input.
+async function setWeightExact(page, name, value) {
+    await numeric(page, name).fill(String(value));
+    await numeric(page, name).blur();
+}
+
+// The slider left its indeterminate "Not set" state.
+const expectSet = (page, name) =>
+    expect(weight(page, name)).not.toHaveAttribute("aria-valuetext", "Not set");
 
 test("flat named sliders start unset and override rendering when set", async ({ page }) => {
     const errors = collectConsoleErrors(page);
@@ -147,11 +162,11 @@ test("flat named sliders start unset and override rendering when set", async ({ 
     const canvas = page.locator(ui.canvas);
     const before = await canvas.screenshot();
     await setWeight(page, smile, 1);
-    await expectWeight(page, smile, "1");
+    await expectSet(page, smile);
     await expectUnset(page, "Expressions (Node 1): Smile");
     await expect.poll(() => canvas.screenshot()).not.toEqual(before);
     await setWeight(page, "Node 2: Target 0", 1);
-    await expectWeight(page, "Node 2: Target 0", "1");
+    await expectSet(page, "Node 2: Target 0");
 
     const morphingSwitch = page
         .locator("label")
@@ -173,7 +188,7 @@ test("overrides survive animation, pause and deselection until explicit reset", 
 }) => {
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page, true);
-    await setWeight(page, smile, 1);
+    await setWeightExact(page, smile, 1);
     await expectWeight(page, smile, "1");
     await expectUnset(page, "Face (Node 0): Blink");
 
@@ -221,26 +236,31 @@ test("scene changes retain overrides, global reset clears them, model loads remo
     expectNoConsoleErrors(errors);
 });
 
-test("numeric mode shares overrides with sliders and clears them when emptied", async ({
+test("numeric input shares overrides with sliders and clears them when emptied", async ({
     page
 }) => {
     const errors = collectConsoleErrors(page);
     await loadMorphModel(page);
-    await setWeight(page, smile, 1);
-    await page.getByRole("combobox", { name: "Morph override input" }).selectOption("numeric");
-    const numeric = (name) => page.getByRole("spinbutton", { name, exact: true });
-    await expect(numeric(smile)).toHaveValue("1");
-    await expect(numeric("Face (Node 0): Blink")).toHaveValue("");
-    await expect(numeric("Face (Node 0): Blink")).toHaveAttribute("placeholder", "Not set");
 
-    await numeric("Face (Node 0): Blink").fill("-1.5");
-    await numeric("Face (Node 0): Blink").blur();
-    await numeric(smile).fill("");
-    await numeric(smile).blur();
-    await expect(numeric(smile)).toHaveValue("");
+    // The numeric input sits beside the slider and starts empty (unset).
+    await expect(numeric(page, smile)).toHaveValue("");
+    await expect(numeric(page, "Face (Node 0): Blink")).toHaveValue("");
+    await expect(numeric(page, "Face (Node 0): Blink")).toHaveAttribute("placeholder", "-");
 
-    await page.getByRole("combobox", { name: "Morph override input" }).selectOption("sliders");
-    await expectUnset(page, smile);
+    // Setting a numeric value updates the matching slider.
+    await setWeightExact(page, smile, 1);
+    await expect(numeric(page, smile)).toHaveValue("1");
+    await expectWeight(page, smile, "1");
+
+    // The numeric input accepts values outside the slider's 0..1 range.
+    await setWeightExact(page, "Face (Node 0): Blink", -1.5);
     await expectWeight(page, "Face (Node 0): Blink", "-1.5");
+
+    // Emptying the input clears the override, returning the slider to unset.
+    await numeric(page, smile).fill("");
+    await numeric(page, smile).blur();
+    await expect(numeric(page, smile)).toHaveValue("");
+    await expectUnset(page, smile);
+
     expectNoConsoleErrors(errors);
 });
