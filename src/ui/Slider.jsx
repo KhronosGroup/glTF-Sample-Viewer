@@ -8,6 +8,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * until the track is clicked or a key is pressed.
  */
 
+// How much pointer travel maps to a value change while Shift is held.
+const PRECISION_FACTOR = 0.1;
+
 function clamp(value, min, max) {
     return Math.min(Math.max(value, Math.min(min, max)), Math.max(min, max));
 }
@@ -33,6 +36,8 @@ export function Slider({
 }) {
     const trackRef = useRef(null);
     const dragOrigin = useRef(null);
+    const lastValue = useRef(null);
+    const lastShift = useRef(false);
     const [dragging, setDragging] = useState(false);
 
     const clampValue = useCallback(
@@ -54,27 +59,40 @@ export function Slider({
         [min, max, clampValue]
     );
 
-    // Holding Shift scales pointer travel so small adjustments are easier.
+    // Dragging moves relative to where the pointer went down; holding Shift
+    // scales that travel down for precision editing.
     const valueFromDrag = useCallback(
         (clientX, shiftKey) => {
-            if (!shiftKey || dragOrigin.current === null) {
-                return valueFromClientX(clientX);
-            }
             const rect = trackRef.current.getBoundingClientRect();
+            const scale = shiftKey ? PRECISION_FACTOR : 1;
             const delta = (clientX - dragOrigin.current.clientX) / rect.width;
-            return clampValue(dragOrigin.current.value + delta * (max - min) * 0.1);
+            return clampValue(dragOrigin.current.value + delta * (max - min) * scale);
         },
-        [valueFromClientX, max, min, clampValue]
+        [max, min, clampValue]
     );
 
     useEffect(() => {
         if (!dragging) {
             return;
         }
-        const move = (event) => onChange(valueFromDrag(event.clientX, event.shiftKey));
+        const move = (event) => {
+            // Re-anchor when the modifier toggles, so the value does not jump.
+            if (event.shiftKey !== lastShift.current) {
+                dragOrigin.current = {
+                    clientX: event.clientX,
+                    value: lastValue.current
+                };
+                lastShift.current = event.shiftKey;
+            }
+            const next = valueFromDrag(event.clientX, event.shiftKey);
+            lastValue.current = next;
+            onChange(next);
+        };
         const stop = () => {
             setDragging(false);
             dragOrigin.current = null;
+            lastValue.current = null;
+            lastShift.current = false;
         };
         window.addEventListener("pointermove", move);
         window.addEventListener("pointerup", stop);
@@ -125,6 +143,8 @@ export function Slider({
                         clientX: event.clientX,
                         value: valueFromClientX(event.clientX)
                     };
+                    lastValue.current = dragOrigin.current.value;
+                    lastShift.current = event.shiftKey;
                     onChange(dragOrigin.current.value);
                     setDragging(true);
                 }}
