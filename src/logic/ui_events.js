@@ -75,6 +75,7 @@ const eventNames = [
 
     "animationPlayChanged",
     "animationResetChanged",
+    "animationTimeChanged",
     "graphPlayChanged",
     "graphResetChanged",
     "customEventSendClicked",

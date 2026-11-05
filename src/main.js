@@ -422,6 +422,12 @@ export const initViewer = async (canvas) => {
 
     on(uiEvents.animationResetChanged, () => {
         state.animationTimer.reset();
+        setViewerState({ animationTime: 0 });
+        redraw = true;
+    });
+
+    on(uiEvents.animationTimeChanged, (time) => {
+        state.animationTimer.setTime(time);
         redraw = true;
     });
 
@@ -633,6 +639,11 @@ export const initViewer = async (canvas) => {
         if (redraw) {
             redraw = false;
             view.renderFrame(state, canvas.width, canvas.height);
+        }
+
+        // Keep the panel playhead in sync while animations are running.
+        if (!state.animationTimer.paused && state.animationIndices.length > 0) {
+            setViewerState({ animationTime: state.animationTimer.elapsedSec() });
         }
 
         animationFrame = window.requestAnimationFrame(update);

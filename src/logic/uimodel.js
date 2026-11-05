@@ -317,6 +317,12 @@ class UIModel {
             gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
             state.renderingParameters.enabledExtensions.KHR_interactivity;
 
+        let animationDuration = 0;
+        for (const animation of gltf.animations) {
+            animation.computeMinMaxTime(gltf);
+            animationDuration = Math.max(animationDuration, animation.maxTime ?? 0);
+        }
+
         setViewerState({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
@@ -329,6 +335,8 @@ class UIModel {
 
             selectedAnimations: state.animationIndices,
             animationState: true,
+            animationTime: 0,
+            animationDuration,
             graphState: true,
             physicsState: true,
 

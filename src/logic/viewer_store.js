@@ -64,6 +64,8 @@ const initialState = {
     selectedEnvironment: 0,
     clearColor: "",
     animationState: true,
+    animationTime: 0,
+    animationDuration: 0,
     graphState: true,
     physicsState: true,
 
