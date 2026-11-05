@@ -335,7 +335,7 @@ class UIModel {
 
             selectedAnimations: state.animationIndices,
             animationState: true,
-            animationTime: 0,
+            animationTimeOverride: null,
             animationDuration,
             graphState: true,
             physicsState: true,
