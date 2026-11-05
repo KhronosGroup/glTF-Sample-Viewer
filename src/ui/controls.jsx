@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { ChevronDown, RotateCcw, Search } from "lucide-react";
 
 function classNames(...values) {
     return values.filter(Boolean).join(" ");
@@ -56,6 +56,41 @@ export function Field({ label, className, grouped = false, children }) {
     );
 }
 
+/**
+ * A compact horizontal option picker: one pill per option, with the active
+ * option filled. Used where a native `select` would take too much room.
+ */
+export function SegmentedControl({ options, value, onChange, label, className }) {
+    return (
+        <div
+            role="group"
+            aria-label={label}
+            className={classNames(
+                "inline-flex items-center rounded-full border border-accent/60 p-0.5",
+                className
+            )}
+        >
+            {options.map((option) => {
+                const active = option.value === value;
+                return (
+                    <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => onChange(option.value)}
+                        className={classNames(
+                            "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                            active ? "bg-accent text-ink-dim" : "text-ink hover:bg-accent-dim"
+                        )}
+                    >
+                        {option.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
 export function Switch({ checked, onChange, className, disabled = false, children, ...rest }) {
     return (
         <label
@@ -104,6 +139,96 @@ export function Select({ value, onChange, className, children, ...rest }) {
     );
 }
 
+function levenshtein(a, b) {
+    if (a === b) {
+        return 0;
+    }
+    const m = a.length;
+    const n = b.length;
+    if (m === 0) {
+        return n;
+    }
+    if (n === 0) {
+        return m;
+    }
+    let previous = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+        const current = [i];
+        for (let j = 1; j <= n; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
+        }
+        previous = current;
+    }
+    return previous[n];
+}
+
+// Finds a window in `text` that matches `query` within `maxEdits` edits,
+// returning its [start, end) range, or null when nothing is close enough.
+function fuzzySubstringRange(text, query, maxEdits = 2) {
+    const q = query.toLowerCase();
+    const t = text.toLowerCase();
+    let best = null;
+    for (let length = Math.max(1, q.length - maxEdits); length <= q.length + maxEdits; length++) {
+        for (let start = 0; start + length <= t.length; start++) {
+            const distance = levenshtein(q, t.slice(start, start + length));
+            if (
+                distance <= maxEdits &&
+                (best === null ||
+                    distance < best.distance ||
+                    (distance === best.distance && length < best.end - best.start))
+            ) {
+                best = { start, end: start + length, distance };
+            }
+        }
+    }
+    return best === null ? null : [best.start, best.end];
+}
+
+// Highlight ranges for `query` in `label`. Exact substrings are preferred;
+// otherwise a fuzzy window within a couple of edits is accepted.
+function matchRanges(label, query) {
+    if (query === "") {
+        return [];
+    }
+    const q = query.toLowerCase();
+    const t = label.toLowerCase();
+    const ranges = [];
+    let index = t.indexOf(q);
+    while (index !== -1) {
+        ranges.push([index, index + q.length]);
+        index = t.indexOf(q, index + 1);
+    }
+    if (ranges.length > 0) {
+        return ranges;
+    }
+    const fuzzy = fuzzySubstringRange(t, q);
+    return fuzzy === null ? null : [fuzzy];
+}
+
+function Highlight({ text, ranges }) {
+    if (ranges.length === 0) {
+        return text;
+    }
+    const parts = [];
+    let cursor = 0;
+    for (const [start, end] of ranges) {
+        if (start > cursor) {
+            parts.push(text.slice(cursor, start));
+        }
+        parts.push(
+            <mark key={start} className="bg-accent/40 text-ink rounded-sm px-0.5">
+                {text.slice(start, end)}
+            </mark>
+        );
+        cursor = end;
+    }
+    if (cursor < text.length) {
+        parts.push(text.slice(cursor));
+    }
+    return parts;
+}
+
 /**
  * A `Select` whose options carry a preview image.
  *
@@ -114,16 +239,32 @@ export function Select({ value, onChange, className, children, ...rest }) {
 export function ThumbnailSelect({ value, onChange, options, label, className, ...rest }) {
     const listId = useId();
     const buttonRef = useRef(null);
+    const popupRef = useRef(null);
     const listRef = useRef(null);
     const typeahead = useRef({ text: "", time: 0 });
+    const scrollOnActive = useRef(false);
     const [open, setOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const [anchor, setAnchor] = useState(null);
+    const [query, setQuery] = useState("");
     const isDesktop = useIsDesktop();
 
     const selectedIndex = options.findIndex((option) => option.value === value);
 
-    const openList = (index = selectedIndex) => {
+    const filtered = (() => {
+        const needle = query.trim();
+        if (needle === "") {
+            return options.map((option) => ({ option, ranges: [] }));
+        }
+        return options
+            .map((option) => ({ option, ranges: matchRanges(option.label, needle) }))
+            .filter((entry) => entry.ranges !== null);
+    })();
+
+    const selectedFilteredIndex = filtered.findIndex((entry) => entry.option.value === value);
+
+    const openList = (index = selectedFilteredIndex) => {
+        scrollOnActive.current = true;
         setActiveIndex(Math.max(index, 0));
         setAnchor(buttonRef.current.getBoundingClientRect());
         setOpen(true);
@@ -131,14 +272,16 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
 
     const close = ({ restoreFocus = true } = {}) => {
         setOpen(false);
+        setQuery("");
         if (restoreFocus) {
             buttonRef.current?.focus();
         }
     };
 
     const choose = (index) => {
-        if (options[index] !== undefined) {
-            onChange(options[index].value);
+        const entry = filtered[index];
+        if (entry !== undefined) {
+            onChange(entry.option.value);
         }
         close();
     };
@@ -150,8 +293,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
             now - typeahead.current.time > 500 ? key : typeahead.current.text + key;
         typeahead.current.time = now;
         const prefix = typeahead.current.text.toLowerCase();
-        const match = options.findIndex((option) => option.label.toLowerCase().startsWith(prefix));
-        return match;
+        return filtered.findIndex((entry) => entry.option.label.toLowerCase().startsWith(prefix));
     };
 
     const handleKeyDown = (event) => {
@@ -164,12 +306,12 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
             } else if (printable) {
                 event.preventDefault();
                 const match = search(event.key);
-                openList(match === -1 ? selectedIndex : match);
+                openList(match === -1 ? selectedFilteredIndex : match);
             }
             return;
         }
 
-        const last = options.length - 1;
+        const last = filtered.length - 1;
         switch (event.key) {
             case "Escape":
                 event.preventDefault();
@@ -185,18 +327,22 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                 break;
             case "ArrowDown":
                 event.preventDefault();
+                scrollOnActive.current = true;
                 setActiveIndex(Math.min(activeIndex + 1, last));
                 break;
             case "ArrowUp":
                 event.preventDefault();
+                scrollOnActive.current = true;
                 setActiveIndex(Math.max(activeIndex - 1, 0));
                 break;
             case "Home":
                 event.preventDefault();
+                scrollOnActive.current = true;
                 setActiveIndex(0);
                 break;
             case "End":
                 event.preventDefault();
+                scrollOnActive.current = true;
                 setActiveIndex(last);
                 break;
             default:
@@ -204,9 +350,44 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                     event.preventDefault();
                     const match = search(event.key);
                     if (match !== -1) {
+                        scrollOnActive.current = true;
                         setActiveIndex(match);
                     }
                 }
+        }
+    };
+
+    const handleSearchKeyDown = (event) => {
+        const last = filtered.length - 1;
+        switch (event.key) {
+            case "Escape":
+                event.preventDefault();
+                close();
+                break;
+            case "ArrowDown":
+                event.preventDefault();
+                scrollOnActive.current = true;
+                setActiveIndex(Math.min(activeIndex + 1, last));
+                break;
+            case "ArrowUp":
+                event.preventDefault();
+                scrollOnActive.current = true;
+                setActiveIndex(Math.max(activeIndex - 1, 0));
+                break;
+            case "Home":
+                event.preventDefault();
+                scrollOnActive.current = true;
+                setActiveIndex(0);
+                break;
+            case "End":
+                event.preventDefault();
+                scrollOnActive.current = true;
+                setActiveIndex(last);
+                break;
+            case "Enter":
+                event.preventDefault();
+                choose(activeIndex);
+                break;
         }
     };
 
@@ -218,7 +399,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
         const dismiss = (event) => {
             if (
                 !buttonRef.current.contains(event.target) &&
-                listRef.current?.contains(event.target) !== true
+                popupRef.current?.contains(event.target) !== true
             ) {
                 setOpen(false);
             }
@@ -235,10 +416,16 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
     }, [open]);
 
     useEffect(() => {
-        if (open) {
+        if (open && scrollOnActive.current) {
             listRef.current?.children[activeIndex]?.scrollIntoView({ block: "nearest" });
+            scrollOnActive.current = false;
         }
     }, [open, activeIndex]);
+
+    // Filtering resets the view, so the top of the result list is shown.
+    useEffect(() => {
+        listRef.current?.scrollTo(0, 0);
+    }, [query]);
 
     return (
         <div className={classNames("relative", className)}>
@@ -275,55 +462,79 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                     {!isDesktop && (
                         <div className="fixed inset-0 z-30 bg-black/50" aria-hidden="true" />
                     )}
-                    <ul
-                        id={listId}
-                        ref={listRef}
-                        role="listbox"
-                        aria-label={label}
+                    <div
+                        ref={popupRef}
                         className={classNames(
-                            "border-ink/60 bg-surface fixed z-40 overflow-y-auto overscroll-contain rounded-md border py-1 shadow-[0_10px_20px_rgb(0_0_0/0.4)]",
+                            "border-ink/60 bg-surface fixed z-40 flex flex-col overflow-hidden rounded-md border shadow-[0_10px_20px_rgb(0_0_0/0.4)]",
                             !isDesktop && "inset-4"
                         )}
                         style={isDesktop ? popupPosition(anchor) : undefined}
                     >
-                        {options.map((option, index) => (
-                            <li
-                                key={option.value}
-                                id={`${listId}-${index}`}
-                                role="option"
-                                aria-selected={index === selectedIndex}
-                                // Dragging a thumb over the list is scrolling,
-                                // not pointing at a row.
-                                onPointerMove={(event) =>
-                                    event.pointerType === "mouse" && setActiveIndex(index)
-                                }
-                                onClick={() => choose(index)}
-                                className={classNames(
-                                    "flex cursor-pointer items-center gap-2 px-3 py-1.5",
-                                    index === activeIndex && "bg-card-inner",
-                                    index === selectedIndex && "text-accent"
-                                )}
-                            >
-                                {option.thumbnail !== undefined && (
-                                    <img
-                                        src={option.thumbnail}
-                                        alt=""
-                                        loading="lazy"
-                                        decoding="async"
-                                        className="bg-card-inner size-8 shrink-0 rounded object-cover"
-                                    />
-                                )}
-                                <span
-                                    className={classNames(
-                                        "min-w-0 truncate",
-                                        option.muted === true && "text-ink/50"
-                                    )}
-                                >
-                                    {option.label}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+                        <div className="border-ink/10 flex shrink-0 items-center gap-2 border-b px-3 py-2">
+                            <Search size={14} aria-hidden="true" className="text-ink/50 shrink-0" />
+                            <input
+                                value={query}
+                                onChange={(event) => {
+                                    setQuery(event.target.value);
+                                    setActiveIndex(0);
+                                }}
+                                onKeyDown={handleSearchKeyDown}
+                                placeholder="Filter models"
+                                aria-label="Filter models"
+                                autoFocus
+                                className="text-ink placeholder:text-ink/40 w-full bg-transparent focus:outline-none"
+                            />
+                        </div>
+                        <ul
+                            id={listId}
+                            ref={listRef}
+                            role="listbox"
+                            aria-label={label}
+                            className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1"
+                        >
+                            {filtered.map((entry, index) => {
+                                const option = entry.option;
+                                const selected = option.value === value;
+                                return (
+                                    <li
+                                        key={option.value}
+                                        id={`${listId}-${index}`}
+                                        role="option"
+                                        aria-selected={selected}
+                                        // Dragging a thumb over the list is scrolling,
+                                        // not pointing at a row.
+                                        onPointerMove={(event) =>
+                                            event.pointerType === "mouse" && setActiveIndex(index)
+                                        }
+                                        onClick={() => choose(index)}
+                                        className={classNames(
+                                            "flex cursor-pointer items-center gap-2 px-3 py-1.5",
+                                            index === activeIndex && "bg-card-inner",
+                                            selected && "text-accent"
+                                        )}
+                                    >
+                                        {option.thumbnail !== undefined && (
+                                            <img
+                                                src={option.thumbnail}
+                                                alt=""
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="bg-card-inner size-8 shrink-0 rounded object-cover"
+                                            />
+                                        )}
+                                        <span
+                                            className={classNames(
+                                                "min-w-0 truncate",
+                                                option.muted === true && "text-ink/50"
+                                            )}
+                                        >
+                                            <Highlight text={option.label} ranges={entry.ranges} />
+                                        </span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
                 </>
             )}
         </div>

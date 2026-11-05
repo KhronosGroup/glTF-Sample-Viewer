@@ -149,10 +149,14 @@ class UIModel {
         this.clearColorHandler?.(hexToLinearColor(INITIAL_CLEAR_COLOR));
 
         if (this.modelURL !== null) {
-            this.registerDroppedFilename(this.modelURL);
-            this.emitModel({ mainFile: this.modelURL });
+            if (this.modelPathProvider.hasModel(this.modelURL)) {
+                this.selectModel(this.modelURL, false);
+            } else {
+                this.registerDroppedFilename(this.modelURL);
+                this.emitModel({ mainFile: this.modelURL });
+            }
         } else {
-            this.selectModel("DamagedHelmet");
+            this.selectModel("DamagedHelmet", false);
         }
     }
 
@@ -168,13 +172,28 @@ class UIModel {
         );
     }
 
-    selectModel(name) {
+    selectModel(name, updateUrl = true) {
         const flavours = this.modelPathProvider.getModelFlavours(name);
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
-        setViewerState({ flavours, selectedFlavour, selectedModelIsDropped: false });
+        setViewerState({
+            selectedModel: name,
+            flavours,
+            selectedFlavour,
+            selectedModelIsDropped: false
+        });
+        if (updateUrl) {
+            this.updateModelUrl(name);
+        }
         this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
         // After emitModel, which needs the list as it was to drop a dropped file.
         this.publishModels();
+    }
+
+    /** Reflects the current sample asset in the URL so a reload keeps it. */
+    updateModelUrl(name) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("model", name);
+        window.history.replaceState(null, "", url);
     }
 
     /** Narrows the model list to the models matching the tag and flavour filters. */

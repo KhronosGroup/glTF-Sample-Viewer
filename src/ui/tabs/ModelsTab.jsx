@@ -168,37 +168,41 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                 </Field>
             )}
 
-            <Field label="Scenes">
-                <Select
-                    value={selectedScene}
-                    onChange={(value) => {
-                        setViewerState({ selectedScene: value });
-                        uiEvents.sceneChanged.emit(value);
-                    }}
-                >
-                    {scenes.map((item, index) => (
-                        <option key={item.index ?? index} value={item.index}>
-                            {item.title}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {scenes.length > 1 && (
+                <Field label="Scenes">
+                    <Select
+                        value={selectedScene}
+                        onChange={(value) => {
+                            setViewerState({ selectedScene: value });
+                            uiEvents.sceneChanged.emit(value);
+                        }}
+                    >
+                        {scenes.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
-            <Field label="Cameras">
-                <Select
-                    value={selectedCamera}
-                    onChange={(value) => {
-                        setViewerState({ selectedCamera: value });
-                        uiEvents.cameraChanged.emit(parseInt(value));
-                    }}
-                >
-                    {cameras.map((item, index) => (
-                        <option key={item.index ?? index} value={item.index}>
-                            {item.title}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {cameras.length > 1 && (
+                <Field label="Cameras">
+                    <Select
+                        value={selectedCamera}
+                        onChange={(value) => {
+                            setViewerState({ selectedCamera: value });
+                            uiEvents.cameraChanged.emit(parseInt(value));
+                        }}
+                    >
+                        {cameras.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
             {materialVariants.length > 1 && (
                 <Field label="Variants">
