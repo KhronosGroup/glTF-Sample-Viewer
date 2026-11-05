@@ -248,7 +248,15 @@ export function AdvancedTab({
                             <span className="sr-only">Morph Overrides</span>
                         </Switch>
                     </div>
-                    {extensions.morphOverrides && <MorphWeights disabled={!extensions.morphing} />}
+                    {extensions.morphOverrides && (
+                        <MorphWeights
+                            disabled={!extensions.morphing}
+                            signedRange={extensions.morphSignedRange}
+                            onSignedRangeChange={(value) =>
+                                onExtensionsChange({ morphSignedRange: value })
+                            }
+                        />
+                    )}
                 </div>
             )}
 

@@ -7,13 +7,48 @@ import { Slider } from "./Slider.jsx";
 const formatWeight = (value) => value.toFixed(2);
 const classNames = (...values) => values.filter(Boolean).join(" ");
 
-// The slider covers the conventional 0 to 1 range; the box beside it takes any
-// value. Both are empty while the target is unset, and clearing the box unsets it.
-function MorphWeightRow({ node, target, targetIndex, disabled }) {
+// Switches the slider range between the conventional [0, 1] and a signed
+// [-1, 1] interval for negative weights.
+function RangeToggle({ signed, onChange }) {
+    const options = [
+        { label: "[0, 1]", signed: false },
+        { label: "[-1, 1]", signed: true }
+    ];
+    return (
+        <div
+            role="group"
+            aria-label="Morph weight range"
+            className="inline-flex items-center rounded-full border border-accent/60 p-0.5"
+        >
+            {options.map((option) => {
+                const active = signed === option.signed;
+                return (
+                    <button
+                        key={option.label}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => onChange(option.signed)}
+                        className={classNames(
+                            "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                            active ? "bg-accent text-ink-dim" : "text-ink hover:bg-accent-dim"
+                        )}
+                    >
+                        {option.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+// The slider covers the selected range; the box beside it takes any value.
+// Both are empty while the target is unset, and clearing the box unsets it.
+function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
     const [draft, setDraft] = useState(null);
     const label = `${node.title}: ${target.name}`;
     const emit = (value) =>
         uiEvents.morphWeightChanged.emit({ nodeIndex: node.nodeIndex, targetIndex, value });
+    const min = signedRange ? -1 : 0;
     return (
         <div
             className={classNames(
@@ -30,7 +65,7 @@ function MorphWeightRow({ node, target, targetIndex, disabled }) {
                 className="my-0! mx-2! flex-1"
                 label={label}
                 value={target.value}
-                min={0}
+                min={min}
                 max={1}
                 step={0.01}
                 formatter={formatWeight}
@@ -58,11 +93,15 @@ function MorphWeightRow({ node, target, targetIndex, disabled }) {
     );
 }
 
-export function MorphWeights({ disabled }) {
+export function MorphWeights({ disabled, signedRange, onSignedRangeChange }) {
     const nodes = useViewerStore((state) => state.morphWeights);
     const isLoading = useViewerStore((state) => state.isLoading);
     return (
         <div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="text-sm font-light">Slider range</span>
+                <RangeToggle signed={signedRange} onChange={onSignedRangeChange} />
+            </div>
             {nodes.map((node) => (
                 <div key={node.nodeIndex} className="mt-3 first:mt-0">
                     <h3 className="mb-1 truncate text-sm font-medium" title={node.title}>
@@ -76,6 +115,7 @@ export function MorphWeights({ disabled }) {
                                 target={target}
                                 targetIndex={targetIndex}
                                 disabled={disabled || isLoading}
+                                signedRange={signedRange}
                             />
                         ))}
                     </div>

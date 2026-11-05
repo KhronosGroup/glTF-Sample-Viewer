@@ -264,3 +264,27 @@ test("numeric input shares overrides with sliders and clears them when emptied",
 
     expectNoConsoleErrors(errors);
 });
+
+test("slider range toggles between [0, 1] and [-1, 1]", async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await loadMorphModel(page);
+
+    const range01 = page.getByRole("button", { name: "[0, 1]", exact: true });
+    const range11 = page.getByRole("button", { name: "[-1, 1]", exact: true });
+
+    await expect(range01).toHaveAttribute("aria-pressed", "true");
+    await expect(range11).toHaveAttribute("aria-pressed", "false");
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemin", "0");
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemax", "1");
+
+    await range11.click();
+    await expect(range11).toHaveAttribute("aria-pressed", "true");
+    await expect(range01).toHaveAttribute("aria-pressed", "false");
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemin", "-1");
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemax", "1");
+
+    await range01.click();
+    await expect(weight(page, smile)).toHaveAttribute("aria-valuemin", "0");
+
+    expectNoConsoleErrors(errors);
+});
