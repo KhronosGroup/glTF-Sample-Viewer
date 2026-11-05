@@ -8,6 +8,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * until the track is clicked or a key is pressed.
  */
 
+// How much pointer travel maps to a value change while Shift is held.
+const PRECISION_FACTOR = 0.1;
+
 function clamp(value, min, max) {
     return Math.min(Math.max(value, Math.min(min, max)), Math.max(min, max));
 }
@@ -32,13 +35,13 @@ export function Slider({
     ticks = []
 }) {
     const trackRef = useRef(null);
+    const dragOrigin = useRef(null);
+    const lastValue = useRef(null);
+    const lastShift = useRef(false);
     const [dragging, setDragging] = useState(false);
 
-    const valueFromClientX = useCallback(
-        (clientX) => {
-            const rect = trackRef.current.getBoundingClientRect();
-            const position = clamp((clientX - rect.left) / rect.width, 0, 1);
-            const raw = min + position * (max - min);
+    const clampValue = useCallback(
+        (raw) => {
             const stepped = Math.round(raw / step) * step;
             // Re-round to the step's precision, otherwise 0.1 steps drift.
             const decimals = (String(step).split(".")[1] ?? "").length;
@@ -47,12 +50,50 @@ export function Slider({
         [min, max, step]
     );
 
+    const valueFromClientX = useCallback(
+        (clientX) => {
+            const rect = trackRef.current.getBoundingClientRect();
+            const position = clamp((clientX - rect.left) / rect.width, 0, 1);
+            return clampValue(min + position * (max - min));
+        },
+        [min, max, clampValue]
+    );
+
+    // Dragging moves relative to where the pointer went down; holding Shift
+    // scales that travel down for precision editing.
+    const valueFromDrag = useCallback(
+        (clientX, shiftKey) => {
+            const rect = trackRef.current.getBoundingClientRect();
+            const scale = shiftKey ? PRECISION_FACTOR : 1;
+            const delta = (clientX - dragOrigin.current.clientX) / rect.width;
+            return clampValue(dragOrigin.current.value + delta * (max - min) * scale);
+        },
+        [max, min, clampValue]
+    );
+
     useEffect(() => {
         if (!dragging) {
             return;
         }
-        const move = (event) => onChange(valueFromClientX(event.clientX));
-        const stop = () => setDragging(false);
+        const move = (event) => {
+            // Re-anchor when the modifier toggles, so the value does not jump.
+            if (event.shiftKey !== lastShift.current) {
+                dragOrigin.current = {
+                    clientX: event.clientX,
+                    value: lastValue.current
+                };
+                lastShift.current = event.shiftKey;
+            }
+            const next = valueFromDrag(event.clientX, event.shiftKey);
+            lastValue.current = next;
+            onChange(next);
+        };
+        const stop = () => {
+            setDragging(false);
+            dragOrigin.current = null;
+            lastValue.current = null;
+            lastShift.current = false;
+        };
         window.addEventListener("pointermove", move);
         window.addEventListener("pointerup", stop);
         window.addEventListener("pointercancel", stop);
@@ -61,7 +102,7 @@ export function Slider({
             window.removeEventListener("pointerup", stop);
             window.removeEventListener("pointercancel", stop);
         };
-    }, [dragging, onChange, valueFromClientX]);
+    }, [dragging, onChange, valueFromDrag]);
 
     const indeterminate = value === null || value === undefined;
 
@@ -98,7 +139,13 @@ export function Slider({
                 className={`bg-track relative h-1.5 rounded-full ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
                 onPointerDown={(event) => {
                     event.preventDefault();
-                    onChange(valueFromClientX(event.clientX));
+                    dragOrigin.current = {
+                        clientX: event.clientX,
+                        value: valueFromClientX(event.clientX)
+                    };
+                    lastValue.current = dragOrigin.current.value;
+                    lastShift.current = event.shiftKey;
+                    onChange(dragOrigin.current.value);
                     setDragging(true);
                 }}
             >

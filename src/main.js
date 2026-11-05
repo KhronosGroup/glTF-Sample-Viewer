@@ -241,7 +241,7 @@ export const initViewer = async (canvas) => {
                 const gltf = await resourceLoader.loadGltf(
                     model.mainFile,
                     model.additionalFiles,
-                    false
+                    true
                 );
                 if (loadId !== latestLoadId) {
                     return;

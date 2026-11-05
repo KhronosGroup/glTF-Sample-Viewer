@@ -1,7 +1,15 @@
 import { Fragment } from "react";
 import { Download, RotateCcw } from "lucide-react";
 import { useViewerStore } from "../store.js";
-import { Button, Field, IconButton, Panel, Select, Switch } from "../controls.jsx";
+import {
+    Button,
+    Field,
+    IconButton,
+    Panel,
+    SegmentedControl,
+    Select,
+    Switch
+} from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
@@ -13,31 +21,102 @@ const RENDERING_TOGGLES = [
 ];
 
 const EXTENSION_TOGGLES = [
-    { key: "interactivity", label: "KHR_interactivity", event: "interactivityChanged" },
-    { key: "hoverability", label: "KHR_node_hoverability", event: "hoverabilityChanged" },
-    { key: "selectability", label: "KHR_node_selectability", event: "selectabilityChanged" },
-    { key: "nodeVisibility", label: "KHR_node_visibility", event: "nodeVisibilityChanged" }
+    {
+        key: "interactivity",
+        label: "Interactivity",
+        extension: "KHR_interactivity",
+        event: "interactivityChanged"
+    },
+    {
+        key: "hoverability",
+        label: "Hoverability",
+        extension: "KHR_node_hoverability",
+        event: "hoverabilityChanged"
+    },
+    {
+        key: "selectability",
+        label: "Selectability",
+        extension: "KHR_node_selectability",
+        event: "selectabilityChanged"
+    },
+    {
+        key: "nodeVisibility",
+        label: "Node Visibility",
+        extension: "KHR_node_visibility",
+        event: "nodeVisibilityChanged"
+    }
 ];
 
 const MATERIAL_EXTENSIONS = [
-    { key: "clearcoat", label: "Clearcoat", event: "clearcoatChanged" },
-    { key: "sheen", label: "Sheen", event: "sheenChanged" },
-    { key: "transmission", label: "Transmission", event: "transmissionChanged" },
+    {
+        key: "clearcoat",
+        label: "Clearcoat",
+        extension: "KHR_materials_clearcoat",
+        event: "clearcoatChanged"
+    },
+    { key: "sheen", label: "Sheen", extension: "KHR_materials_sheen", event: "sheenChanged" },
+    {
+        key: "transmission",
+        label: "Transmission",
+        extension: "KHR_materials_transmission",
+        event: "transmissionChanged"
+    },
     {
         key: "diffuseTransmission",
         label: "Diffuse Transmission",
+        extension: "KHR_materials_diffuse_transmission",
         event: "diffuseTransmissionChanged"
     },
-    { key: "volume", label: "Volume", event: "volumeChanged" },
-    { key: "scattering", label: "Scattering", event: "scatteringChanged" },
-    { key: "ior", label: "IOR", event: "iorChanged" },
-    { key: "specular", label: "Specular", event: "specularChanged" },
-    { key: "emissiveStrength", label: "Emissive Strength", event: "emissiveStrengthChanged" },
-    { key: "iridescence", label: "Iridescence", event: "iridescenceChanged" },
-    { key: "retroreflection", label: "Retroreflection", event: "retroreflectionChanged" },
-    { key: "anisotropy", label: "Anisotropy", event: "anisotropyChanged" },
-    { key: "dispersion", label: "Dispersion", event: "dispersionChanged" },
-    { key: "gaussianSplatting", label: "Gaussian Splatting", event: "gaussianSplattingChanged" }
+    { key: "volume", label: "Volume", extension: "KHR_materials_volume", event: "volumeChanged" },
+    {
+        key: "scattering",
+        label: "Scattering",
+        extension: "KHR_materials_scatter",
+        event: "scatteringChanged"
+    },
+    { key: "ior", label: "IOR", extension: "KHR_materials_ior", event: "iorChanged" },
+    {
+        key: "specular",
+        label: "Specular",
+        extension: "KHR_materials_specular",
+        event: "specularChanged"
+    },
+    {
+        key: "emissiveStrength",
+        label: "Emissive Strength",
+        extension: "KHR_materials_emissive_strength",
+        event: "emissiveStrengthChanged"
+    },
+    {
+        key: "iridescence",
+        label: "Iridescence",
+        extension: "KHR_materials_iridescence",
+        event: "iridescenceChanged"
+    },
+    {
+        key: "retroreflection",
+        label: "Retroreflection",
+        extension: "KHR_materials_retroreflection",
+        event: "retroreflectionChanged"
+    },
+    {
+        key: "anisotropy",
+        label: "Anisotropy",
+        extension: "KHR_materials_anisotropy",
+        event: "anisotropyChanged"
+    },
+    {
+        key: "dispersion",
+        label: "Dispersion",
+        extension: "KHR_materials_dispersion",
+        event: "dispersionChanged"
+    },
+    {
+        key: "gaussianSplatting",
+        label: "Gaussian Splatting",
+        extension: "KHR_gaussian_splatting",
+        event: "gaussianSplattingChanged"
+    }
 ];
 
 const CLIPPING_AXES = ["X", "Y", "Z"];
@@ -89,17 +168,15 @@ function ClippingControls({ clipping, onChange }) {
             {clipping.enabled && (
                 <>
                     <div className="flex items-center gap-2">
-                        <Select
-                            className="grow"
+                        <SegmentedControl
+                            label="Clipping Orientation"
+                            options={orientations.map((orientation) => ({
+                                label: orientation.split(" ")[0],
+                                value: orientation
+                            }))}
                             value={clipping.orientation}
                             onChange={(value) => update({ orientation: value })}
-                        >
-                            {orientations.map((orientation) => (
-                                <option key={orientation} value={orientation}>
-                                    {orientation}
-                                </option>
-                            ))}
-                        </Select>
+                        />
                         <IconButton
                             label="Reset clipping planes"
                             onClick={() => update({ min: [0, 0, 0], max: [1, 1, 1] })}
@@ -176,6 +253,7 @@ export function AdvancedTab({
                 checked={extensions[entry.key]}
                 disabled={disabledFor(entry.key)}
                 onChange={toggle(entry)}
+                title={entry.extension}
             >
                 {entry.label}
             </Switch>

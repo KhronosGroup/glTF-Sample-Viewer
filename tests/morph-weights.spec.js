@@ -194,10 +194,9 @@ test("overrides survive animation, pause and deselection until explicit reset", 
 
     await openTab(page, "animations");
     await page.getByRole("button", { name: "Pause", exact: true }).click();
-    await page
-        .locator("label")
-        .filter({ has: page.getByRole("checkbox") })
-        .click();
+    // Deselect the animation; the Time Override switch also carries a checkbox,
+    // so target the animation switch by its label.
+    await page.locator("label").filter({ hasText: "Animation 0" }).click();
     await openTab(page, "advanced");
     await expectWeight(page, smile, "1");
     await resetOverrides(page);

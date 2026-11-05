@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
-import { Input } from "./controls.jsx";
+import { Input, SegmentedControl } from "./controls.jsx";
 import { Slider } from "./Slider.jsx";
 
 const formatWeight = (value) => value.toFixed(2);
@@ -11,33 +11,16 @@ const classNames = (...values) => values.filter(Boolean).join(" ");
 // [-1, 1] interval for negative weights.
 function RangeToggle({ signed, onChange }) {
     const options = [
-        { label: "[0, 1]", signed: false },
-        { label: "[-1, 1]", signed: true }
+        { label: "[0, 1]", value: false },
+        { label: "[-1, 1]", value: true }
     ];
     return (
-        <div
-            role="group"
-            aria-label="Morph weight range"
-            className="inline-flex items-center rounded-full border border-accent/60 p-0.5"
-        >
-            {options.map((option) => {
-                const active = signed === option.signed;
-                return (
-                    <button
-                        key={option.label}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => onChange(option.signed)}
-                        className={classNames(
-                            "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-                            active ? "bg-accent text-ink-dim" : "text-ink hover:bg-accent-dim"
-                        )}
-                    >
-                        {option.label}
-                    </button>
-                );
-            })}
-        </div>
+        <SegmentedControl
+            label="Morph weight range"
+            options={options}
+            value={signed}
+            onChange={onChange}
+        />
     );
 }
 
