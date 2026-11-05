@@ -10,7 +10,8 @@ export const ui = {
     menu: "[data-testid='menu']",
     tab: (name) => `[data-testid='tab-${name}']`,
     modelSelect: "[data-testid='model-select']",
-    flavourSelect: "select[data-testid='flavour-select']"
+    flavourSelect: "select[data-testid='flavour-select']",
+    cameraSelect: "select[data-testid='camera-select']"
 };
 
 /**

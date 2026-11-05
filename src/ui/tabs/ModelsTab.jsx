@@ -186,6 +186,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
 
             <Field label="Cameras">
                 <Select
+                    data-testid="camera-select"
                     value={selectedCamera}
                     onChange={(value) => {
                         setViewerState({ selectedCamera: value });
