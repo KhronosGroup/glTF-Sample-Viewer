@@ -29,13 +29,13 @@ const EXTENSION_TOGGLES = [
     },
     {
         key: "hoverability",
-        label: "Hoverability",
+        label: "Node Hoverability",
         extension: "KHR_node_hoverability",
         event: "hoverabilityChanged"
     },
     {
         key: "selectability",
-        label: "Selectability",
+        label: "Node Selectability",
         extension: "KHR_node_selectability",
         event: "selectabilityChanged"
     },
@@ -44,22 +44,27 @@ const EXTENSION_TOGGLES = [
         label: "Node Visibility",
         extension: "KHR_node_visibility",
         event: "nodeVisibilityChanged"
+    },
+    {
+        key: "gaussianSplatting",
+        label: "Gaussian Splatting",
+        extension: "KHR_gaussian_splatting",
+        event: "gaussianSplattingChanged"
     }
 ];
 
 const MATERIAL_EXTENSIONS = [
     {
+        key: "anisotropy",
+        label: "Anisotropy",
+        extension: "KHR_materials_anisotropy",
+        event: "anisotropyChanged"
+    },
+    {
         key: "clearcoat",
         label: "Clearcoat",
         extension: "KHR_materials_clearcoat",
         event: "clearcoatChanged"
-    },
-    { key: "sheen", label: "Sheen", extension: "KHR_materials_sheen", event: "sheenChanged" },
-    {
-        key: "transmission",
-        label: "Transmission",
-        extension: "KHR_materials_transmission",
-        event: "transmissionChanged"
     },
     {
         key: "diffuseTransmission",
@@ -67,25 +72,23 @@ const MATERIAL_EXTENSIONS = [
         extension: "KHR_materials_diffuse_transmission",
         event: "diffuseTransmissionChanged"
     },
-    { key: "volume", label: "Volume", extension: "KHR_materials_volume", event: "volumeChanged" },
     {
-        key: "scattering",
-        label: "Scattering",
-        extension: "KHR_materials_scatter",
-        event: "scatteringChanged"
-    },
-    { key: "ior", label: "IOR", extension: "KHR_materials_ior", event: "iorChanged" },
-    {
-        key: "specular",
-        label: "Specular",
-        extension: "KHR_materials_specular",
-        event: "specularChanged"
+        key: "dispersion",
+        label: "Dispersion",
+        extension: "KHR_materials_dispersion",
+        event: "dispersionChanged"
     },
     {
         key: "emissiveStrength",
         label: "Emissive Strength",
         extension: "KHR_materials_emissive_strength",
         event: "emissiveStrengthChanged"
+    },
+    {
+        key: "ior",
+        label: "Index of Refraction",
+        extension: "KHR_materials_ior",
+        event: "iorChanged"
     },
     {
         key: "iridescence",
@@ -100,22 +103,34 @@ const MATERIAL_EXTENSIONS = [
         event: "retroreflectionChanged"
     },
     {
-        key: "anisotropy",
-        label: "Anisotropy",
-        extension: "KHR_materials_anisotropy",
-        event: "anisotropyChanged"
+        key: "scattering",
+        label: "Scattering",
+        extension: "KHR_materials_scatter",
+        event: "scatteringChanged"
     },
     {
-        key: "dispersion",
-        label: "Dispersion",
-        extension: "KHR_materials_dispersion",
-        event: "dispersionChanged"
+        key: "sheen",
+        label: "Sheen",
+        extension: "KHR_materials_sheen",
+        event: "sheenChanged"
     },
     {
-        key: "gaussianSplatting",
-        label: "Gaussian Splatting",
-        extension: "KHR_gaussian_splatting",
-        event: "gaussianSplattingChanged"
+        key: "specular",
+        label: "Specular",
+        extension: "KHR_materials_specular",
+        event: "specularChanged"
+    },
+    {
+        key: "transmission",
+        label: "Transmission",
+        extension: "KHR_materials_transmission",
+        event: "transmissionChanged"
+    },
+    {
+        key: "volume",
+        label: "Volume",
+        extension: "KHR_materials_volume",
+        event: "volumeChanged"
     }
 ];
 
