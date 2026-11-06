@@ -31,8 +31,9 @@ const EXTENSION_TOGGLES = {
     gaussianSplattingChanged: "KHR_gaussian_splatting"
 };
 
-// How long a single drag or wheel delta keeps feeding motion into the camera.
-const SMOOTHING_MS = 50;
+// Roughly how long the camera takes to reach its target after an input delta,
+// in seconds. Smaller values feel snappier, larger values feel weightier.
+const SMOOTH_TIME_SECONDS = 0.06;
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
@@ -519,50 +520,96 @@ export const initViewer = async (canvas) => {
 
     // ---------------------------------------------------------- camera motion
 
-    // Smooths discrete drag/scroll input deltas into per-frame motion.
-    // Each input delta becomes a short pulse that fades in then out following
-    // easeInOutSine, so motion accelerates and decelerates smoothly instead of
-    // snapping with raw mousemove/wheel timing.
-    const dragSmoother = (() => {
-        const easeInOutSine = (t) => 0.5 * (1 - Math.cos(Math.PI * t));
-        const orbitPulses = [];
-        const panPulses = [];
-        const zoomPulses = [];
-        const isEnabled = () => state.cameraNodeIndex === undefined;
-        const push = (pulses, a, b) => {
-            if (!isEnabled()) return;
-            pulses.push({ a, b, startTime: performance.now(), appliedA: 0, appliedB: 0 });
-        };
-        const drain = (pulses, applyFn) => {
-            if (pulses.length === 0) return false;
-            const now = performance.now();
-            let netA = 0;
-            let netB = 0;
-            for (let i = pulses.length - 1; i >= 0; i--) {
-                const p = pulses[i];
-                const t = Math.min(1, (now - p.startTime) / SMOOTHING_MS);
-                const eased = easeInOutSine(t);
-                const targetA = p.a * eased;
-                const targetB = p.b * eased;
-                netA += targetA - p.appliedA;
-                netB += targetB - p.appliedB;
-                p.appliedA = targetA;
-                p.appliedB = targetB;
-                if (t >= 1) pulses.splice(i, 1);
-            }
-            const moved = netA !== 0 || netB !== 0;
-            if (moved) applyFn(netA, netB);
-            return moved || pulses.length > 0;
-        };
+    // Turns discrete drag/scroll deltas into smooth, frame-rate independent
+    // camera motion using a critically damped spring (the "SmoothDamp" method).
+    // Input deltas are accumulated into a target; each frame the applied value
+    // is sprung towards that target, so the camera responds immediately and
+    // settles without overshooting or depending on the frame rate.
+    const createSpringChannel = () => {
+        const omega = 2 / SMOOTH_TIME_SECONDS;
+        let target = 0;
+        let value = 0;
+        let velocity = 0;
+        let applied = 0;
+
         return {
-            pushOrbit: (dPhi, dTheta) => push(orbitPulses, dPhi, dTheta),
-            pushPan: (dX, dY) => push(panPulses, dX, dY),
-            pushZoom: (dZoom) => push(zoomPulses, dZoom, 0),
+            // Accumulate raw input into the channel's target.
+            add(delta) {
+                target += delta;
+            },
+            // Advance the spring by dt seconds and report the motion to apply
+            // to the camera this frame plus whether it is still settling.
+            step(dt) {
+                const x = omega * dt;
+                // Stable approximation of exp(-x), valid for any non-negative x.
+                const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+                const change = value - target;
+                const temp = (velocity + omega * change) * dt;
+                velocity = (velocity - omega * temp) * exp;
+                value = target + (change + temp) * exp;
+
+                const delta = value - applied;
+                applied = value;
+
+                const settled = Math.abs(value - target) < 1e-4 && Math.abs(velocity) < 1e-4;
+                if (settled) {
+                    // Snap the asymptotic tail so the render loop can stop once
+                    // the remaining motion is below a pixel and invisible.
+                    value = target;
+                    velocity = 0;
+                }
+
+                return { delta, settled };
+            }
+        };
+    };
+
+    const dragSmoother = (() => {
+        const orbitX = createSpringChannel();
+        const orbitY = createSpringChannel();
+        const panX = createSpringChannel();
+        const panY = createSpringChannel();
+        const zoom = createSpringChannel();
+        const isEnabled = () => state.cameraNodeIndex === undefined;
+        let lastTime = undefined;
+
+        const push = (channel, delta) => {
+            if (!isEnabled()) return;
+            channel.add(delta);
+        };
+
+        return {
+            pushOrbit: (dPhi, dTheta) => {
+                push(orbitX, dPhi);
+                push(orbitY, dTheta);
+            },
+            pushPan: (dX, dY) => {
+                push(panX, dX);
+                push(panY, dY);
+            },
+            pushZoom: (dZoom) => push(zoom, dZoom),
             tick: () => {
-                const o = drain(orbitPulses, (a, b) => state.userCamera.orbit(a, b));
-                const p = drain(panPulses, (a, b) => state.userCamera.pan(a, b));
-                const z = drain(zoomPulses, (a) => state.userCamera.zoomBy(a));
-                return o || p || z;
+                const now = performance.now();
+                const dt = lastTime === undefined ? 0 : (now - lastTime) / 1000;
+                lastTime = now;
+
+                const oX = orbitX.step(dt);
+                const oY = orbitY.step(dt);
+                const pX = panX.step(dt);
+                const pY = panY.step(dt);
+                const z = zoom.step(dt);
+
+                if (oX.delta !== 0 || oY.delta !== 0) {
+                    state.userCamera.orbit(oX.delta, oY.delta);
+                }
+                if (pX.delta !== 0 || pY.delta !== 0) {
+                    state.userCamera.pan(pX.delta, pY.delta);
+                }
+                if (z.delta !== 0) {
+                    state.userCamera.zoomBy(z.delta);
+                }
+
+                return [oX, oY, pX, pY, z].some((s) => s.delta !== 0 || !s.settled);
             }
         };
     })();

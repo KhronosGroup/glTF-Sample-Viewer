@@ -19,7 +19,8 @@ async function dragOnCanvas(page, { from, to, button = "left", modifiers = [] })
     for (const key of modifiers) {
         await page.keyboard.up(key);
     }
-    // Input is smoothed over ~330ms before it reaches the camera.
+    // The spring smooths input over a few hundred ms, so wait for the camera
+    // to finish settling before the screenshot is compared.
     await page.waitForTimeout(800);
 }
 
