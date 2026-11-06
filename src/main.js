@@ -521,6 +521,7 @@ export const initViewer = async (canvas) => {
     // state, while the input handlers below only push raw deltas into it.
     onChange(uiEvents.cameraModeChanged, (mode) => cameraController.setMode(mode));
     onChange(uiEvents.cameraProjectionChanged, (type) => cameraController.setProjection(type));
+    onChange(uiEvents.cameraLookAtChanged, (axis) => cameraController.lookAt(axis));
 
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);

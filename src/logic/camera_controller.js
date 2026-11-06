@@ -50,6 +50,15 @@ function createSpringChannel() {
 
 const CAMERA_MODES = ["orbit", "fly"];
 const PROJECTIONS = ["perspective", "orthographic"];
+// Yaw/pitch that place the camera on an axis looking at the scene centre.
+const AXIS_VIEWS = {
+    "+X": { yaw: Math.PI / 2, pitch: 0 },
+    "-X": { yaw: -Math.PI / 2, pitch: 0 },
+    "+Y": { yaw: 0, pitch: -Math.PI / 2 },
+    "-Y": { yaw: 0, pitch: Math.PI / 2 },
+    "+Z": { yaw: 0, pitch: 0 },
+    "-Z": { yaw: Math.PI, pitch: 0 }
+};
 const MaxPitch = Math.PI / 2 - 0.01;
 const DollyFactor = 0.05;
 const MaxNearFarRatio = 10000;
@@ -153,6 +162,25 @@ export function createCameraController(state) {
         camera.orthographic.xmag = camera.orthographic.ymag * getAspectRatio();
     };
 
+    const sceneCenter = () => {
+        const min = camera.sceneExtents.min;
+        const max = camera.sceneExtents.max;
+        return [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
+    };
+
+    // Reposition the camera to look at the scene centre from an axis direction,
+    // keeping the current zoom distance.
+    const lookAtAxis = (axis) => {
+        if (!isEnabled()) return;
+        const view = AXIS_VIEWS[axis];
+        if (!view) return;
+        const distance = camera.distance || 1;
+        camera.rotAroundY = view.yaw;
+        camera.rotAroundX = view.pitch;
+        camera.setRotation(view.yaw, view.pitch);
+        camera.setDistanceFromTarget(distance, sceneCenter());
+    };
+
     return {
         pushOrbit: (dPhi, dTheta) => {
             push(orbitX, dPhi);
@@ -168,6 +196,7 @@ export function createCameraController(state) {
                 mode = next;
             }
         },
+        lookAt: lookAtAxis,
         setProjection: (type) => {
             if (!PROJECTIONS.includes(type) || type === projection) return;
             if (type === "orthographic") {
