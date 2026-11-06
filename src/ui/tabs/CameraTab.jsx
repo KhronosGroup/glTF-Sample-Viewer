@@ -4,6 +4,7 @@ import { Field, Panel, SegmentedControl } from "../controls.jsx";
 
 export function CameraTab() {
     const cameraMode = useViewerStore((state) => state.cameraMode);
+    const cameraProjection = useViewerStore((state) => state.cameraProjection);
     const selectedCamera = useViewerStore((state) => state.selectedCamera);
 
     // Camera controls only affect the user camera, so they are disabled while a
@@ -24,6 +25,22 @@ export function CameraTab() {
                     onChange={(value) => {
                         setViewerState({ cameraMode: value });
                         uiEvents.cameraModeChanged.emit(value);
+                    }}
+                />
+            </Field>
+
+            <Field label="Projection">
+                <SegmentedControl
+                    label="Projection"
+                    disabled={!userCameraActive}
+                    options={[
+                        { label: "Perspective", value: "perspective" },
+                        { label: "Orthographic", value: "orthographic" }
+                    ]}
+                    value={cameraProjection}
+                    onChange={(value) => {
+                        setViewerState({ cameraProjection: value });
+                        uiEvents.cameraProjectionChanged.emit(value);
                     }}
                 />
             </Field>

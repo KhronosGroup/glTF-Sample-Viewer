@@ -60,6 +60,7 @@ const initialState = {
     selectedScene: {},
     selectedCamera: {},
     cameraMode: "orbit",
+    cameraProjection: "perspective",
     selectedAnimations: [],
     selectedGraph: null,
     selectedEnvironment: 0,

@@ -63,6 +63,7 @@ export const initViewer = async (canvas) => {
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader(dracoDecoderLib);
     const state = view.createState();
+    const cameraController = createCameraController(state);
 
     await state.physicsController.initializeEngine("NvidiaPhysX");
 
@@ -200,6 +201,7 @@ export const initViewer = async (canvas) => {
                 (pitch * (Math.PI / 180)) / state.userCamera.orbitSpeed
             );
             state.userCamera.zoomBy(distance);
+            cameraController.syncProjection();
 
             state.animationIndices = [];
             for (let i = 0; i < gltf.animations.length; i++) {
@@ -515,11 +517,10 @@ export const initViewer = async (canvas) => {
         downloadDataURL("capture.png", canvas.toDataURL());
     });
 
-    // Camera motion lives in the camera controller; the render loop only has to
-    // tick it and the input handlers only have to push deltas into it.
-    const cameraController = createCameraController(state);
-
+    // Camera controls arrive as UI events; the controller owns the camera
+    // state, while the input handlers below only push raw deltas into it.
     onChange(uiEvents.cameraModeChanged, (mode) => cameraController.setMode(mode));
+    onChange(uiEvents.cameraProjectionChanged, (type) => cameraController.setProjection(type));
 
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
@@ -589,6 +590,7 @@ export const initViewer = async (canvas) => {
         ) {
             state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+            cameraController.syncProjection();
         }
 
         past.width = canvas.width;

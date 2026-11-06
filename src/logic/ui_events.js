@@ -29,6 +29,7 @@ const eventNames = [
     "sceneChanged",
     "cameraChanged",
     "cameraModeChanged",
+    "cameraProjectionChanged",
     "variantChanged",
     "selectedGraphChanged",
     "selectedAnimationsChanged",
