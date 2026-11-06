@@ -1,3 +1,5 @@
+import { getViewerState } from "./viewer_store.js";
+
 // Roughly how long the camera takes to reach its target after an input delta,
 // in seconds. Smaller values feel snappier, larger values feel weightier.
 const SMOOTH_TIME_SECONDS = 0.06;
@@ -46,14 +48,21 @@ function createSpringChannel() {
     };
 }
 
+const CAMERA_MODES = ["orbit", "fly"];
+const MaxPitch = Math.PI / 2 - 0.01;
+const DollyFactor = 0.05;
+
 /**
- * Owns the user camera's motion: smooths discrete input deltas and applies them
- * to the camera each frame. Kept out of `main.js` so the render loop only has
- * to call `tick()` and nothing else needs to know how smoothing works.
+ * Owns the user camera's motion and mode: smooths discrete input deltas and
+ * applies them to the camera each frame, either orbiting around a target or
+ * flying freely through the scene. Kept out of `main.js` so the render loop
+ * only has to call `tick()` and forward raw input deltas.
  *
  * @param {import("@khronosgroup/gltf-viewer").GltfState} state
  */
 export function createCameraController(state) {
+    const camera = state.userCamera;
+
     const orbitX = createSpringChannel();
     const orbitY = createSpringChannel();
     const panX = createSpringChannel();
@@ -61,10 +70,31 @@ export function createCameraController(state) {
     const zoom = createSpringChannel();
     const isEnabled = () => state.cameraNodeIndex === undefined;
     let lastTime = undefined;
+    let mode = getViewerState().cameraMode ?? "orbit";
 
     const push = (channel, delta) => {
         if (!isEnabled()) return;
         channel.add(delta);
+    };
+
+    // Rotate the fly camera in place around its own position (yaw, then pitch).
+    const rotateView = (dPhi, dTheta) => {
+        camera.rotAroundY += -dPhi * camera.orbitSpeed;
+        camera.rotAroundX += -dTheta * camera.orbitSpeed;
+        camera.rotAroundX = Math.max(-MaxPitch, Math.min(MaxPitch, camera.rotAroundX));
+        camera.setRotation(camera.rotAroundY, camera.rotAroundX);
+    };
+
+    // Move the fly camera along its look direction. A positive delta moves
+    // backwards, matching the orbit camera's zoom-out direction.
+    const dolly = (delta) => {
+        const direction = camera.getLookDirection();
+        const step = delta * camera.distance * DollyFactor;
+        const position = camera.getPosition();
+        position[0] -= direction[0] * step;
+        position[1] -= direction[1] * step;
+        position[2] -= direction[2] * step;
+        camera.setPosition(position);
     };
 
     return {
@@ -77,6 +107,11 @@ export function createCameraController(state) {
             push(panY, dY);
         },
         pushZoom: (dZoom) => push(zoom, dZoom),
+        setMode: (next) => {
+            if (CAMERA_MODES.includes(next)) {
+                mode = next;
+            }
+        },
         tick: () => {
             const now = performance.now();
             const dt = lastTime === undefined ? 0 : (now - lastTime) / 1000;
@@ -88,14 +123,14 @@ export function createCameraController(state) {
             const pY = panY.step(dt);
             const z = zoom.step(dt);
 
-            if (oX.delta !== 0 || oY.delta !== 0) {
-                state.userCamera.orbit(oX.delta, oY.delta);
-            }
-            if (pX.delta !== 0 || pY.delta !== 0) {
-                state.userCamera.pan(pX.delta, pY.delta);
-            }
-            if (z.delta !== 0) {
-                state.userCamera.zoomBy(z.delta);
+            if (mode === "fly") {
+                if (oX.delta !== 0 || oY.delta !== 0) rotateView(oX.delta, oY.delta);
+                if (pX.delta !== 0 || pY.delta !== 0) camera.pan(pX.delta, pY.delta);
+                if (z.delta !== 0) dolly(z.delta);
+            } else {
+                if (oX.delta !== 0 || oY.delta !== 0) camera.orbit(oX.delta, oY.delta);
+                if (pX.delta !== 0 || pY.delta !== 0) camera.pan(pX.delta, pY.delta);
+                if (z.delta !== 0) camera.zoomBy(z.delta);
             }
 
             return [oX, oY, pX, pY, z].some((s) => s.delta !== 0 || !s.settled);

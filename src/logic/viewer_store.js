@@ -59,6 +59,7 @@ const initialState = {
     selectedFlavour: "glTF",
     selectedScene: {},
     selectedCamera: {},
+    cameraMode: "orbit",
     selectedAnimations: [],
     selectedGraph: null,
     selectedEnvironment: 0,

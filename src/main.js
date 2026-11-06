@@ -519,6 +519,8 @@ export const initViewer = async (canvas) => {
     // tick it and the input handlers only have to push deltas into it.
     const cameraController = createCameraController(state);
 
+    onChange(uiEvents.cameraModeChanged, (mode) => cameraController.setMode(mode));
+
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
         redraw = true;

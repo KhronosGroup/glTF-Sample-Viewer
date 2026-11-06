@@ -60,13 +60,14 @@ export function Field({ label, className, grouped = false, children }) {
  * A compact horizontal option picker: one pill per option, with the active
  * option filled. Used where a native `select` would take too much room.
  */
-export function SegmentedControl({ options, value, onChange, label, className }) {
+export function SegmentedControl({ options, value, onChange, label, className, disabled = false }) {
     return (
         <div
             role="group"
             aria-label={label}
             className={classNames(
                 "inline-flex items-center rounded-full border border-accent/60 p-0.5",
+                disabled && "opacity-50",
                 className
             )}
         >
@@ -77,9 +78,11 @@ export function SegmentedControl({ options, value, onChange, label, className })
                         key={option.value}
                         type="button"
                         aria-pressed={active}
+                        disabled={disabled}
                         onClick={() => onChange(option.value)}
                         className={classNames(
                             "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                            disabled && "cursor-not-allowed",
                             active ? "bg-accent text-ink-dim" : "text-ink hover:bg-accent-dim"
                         )}
                     >

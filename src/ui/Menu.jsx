@@ -1,9 +1,19 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { Atom, Box, Braces, CirclePlay, Image, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import {
+    Atom,
+    Box,
+    Braces,
+    Camera,
+    CirclePlay,
+    Image,
+    ShieldCheck,
+    SlidersHorizontal
+} from "lucide-react";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
+import { CameraTab } from "./tabs/CameraTab.jsx";
 import { DisplayTab } from "./tabs/DisplayTab.jsx";
 import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
 import { CreditsTab } from "./tabs/CreditsTab.jsx";
@@ -14,6 +24,7 @@ import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
 
 const TAB_META = [
     { id: "models", label: "Models", icon: Box },
+    { id: "camera", label: "Camera", icon: Camera },
     { id: "display", label: "Display", icon: Image },
     { id: "validator", label: "Validator", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
@@ -183,6 +194,8 @@ export function Menu({ visible }) {
                         onSelectVariant={setSelectedVariant}
                     />
                 );
+            case "camera":
+                return <CameraTab />;
             case "display":
                 return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
