@@ -1,7 +1,18 @@
-import { Download } from "lucide-react";
+import { Fragment } from "react";
+import { Download, RotateCcw } from "lucide-react";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
+import {
+    Button,
+    Field,
+    IconButton,
+    Panel,
+    SegmentedControl,
+    Select,
+    Switch
+} from "../controls.jsx";
+import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
+import { MorphWeights } from "../MorphWeights.jsx";
 import { uiEvents } from "../../logic/ui_events.js";
 
 const RENDERING_TOGGLES = [
@@ -10,44 +21,225 @@ const RENDERING_TOGGLES = [
 ];
 
 const EXTENSION_TOGGLES = [
-    { key: "interactivity", label: "KHR_interactivity", event: "interactivityChanged" },
-    { key: "hoverability", label: "KHR_node_hoverability", event: "hoverabilityChanged" },
-    { key: "selectability", label: "KHR_node_selectability", event: "selectabilityChanged" },
-    { key: "nodeVisibility", label: "Node Visibility (2.1 core)", event: "nodeVisibilityChanged" }
+    {
+        key: "interactivity",
+        label: "Interactivity",
+        extension: "KHR_interactivity",
+        event: "interactivityChanged"
+    },
+    {
+        key: "hoverability",
+        label: "Node Hoverability",
+        extension: "KHR_node_hoverability",
+        event: "hoverabilityChanged"
+    },
+    {
+        key: "selectability",
+        label: "Node Selectability",
+        extension: "KHR_node_selectability",
+        event: "selectabilityChanged"
+    },
+    {
+        key: "nodeVisibility",
+        label: "Node Visibility (2.1 core)",
+        event: "nodeVisibilityChanged"
+    },
+    {
+        key: "gaussianSplatting",
+        label: "Gaussian Splatting",
+        extension: "KHR_gaussian_splatting",
+        event: "gaussianSplattingChanged"
+    }
 ];
 
 const MATERIAL_EXTENSIONS = [
-    { key: "clearcoat", label: "Clearcoat", event: "clearcoatChanged" },
-    { key: "sheen", label: "Sheen", event: "sheenChanged" },
-    { key: "transmission", label: "Transmission", event: "transmissionChanged" },
+    {
+        key: "anisotropy",
+        label: "Anisotropy",
+        extension: "KHR_materials_anisotropy",
+        event: "anisotropyChanged"
+    },
+    {
+        key: "clearcoat",
+        label: "Clearcoat",
+        extension: "KHR_materials_clearcoat",
+        event: "clearcoatChanged"
+    },
     {
         key: "diffuseTransmission",
         label: "Diffuse Transmission",
+        extension: "KHR_materials_diffuse_transmission",
         event: "diffuseTransmissionChanged"
     },
-    { key: "volume", label: "Volume", event: "volumeChanged" },
-    { key: "volumeScattering", label: "Volume Scattering", event: "volumeScatteringChanged" },
-    { key: "ior", label: "IOR", event: "iorChanged" },
-    { key: "specular", label: "Specular", event: "specularChanged" },
+    {
+        key: "dispersion",
+        label: "Dispersion",
+        extension: "KHR_materials_dispersion",
+        event: "dispersionChanged"
+    },
     {
         key: "emissiveStrength",
         label: "Emissive Strength (2.1 core)",
         event: "emissiveStrengthChanged"
     },
-    { key: "iridescence", label: "Iridescence", event: "iridescenceChanged" },
-    { key: "retroreflection", label: "Retroreflection", event: "retroreflectionChanged" },
-    { key: "anisotropy", label: "Anisotropy", event: "anisotropyChanged" },
-    { key: "dispersion", label: "Dispersion", event: "dispersionChanged" },
-    { key: "gaussianSplatting", label: "Gaussian Splatting", event: "gaussianSplattingChanged" }
+    {
+        key: "ior",
+        label: "Index of Refraction",
+        extension: "KHR_materials_ior",
+        event: "iorChanged"
+    },
+    {
+        key: "iridescence",
+        label: "Iridescence",
+        extension: "KHR_materials_iridescence",
+        event: "iridescenceChanged"
+    },
+    {
+        key: "retroreflection",
+        label: "Retroreflection",
+        extension: "KHR_materials_retroreflection",
+        event: "retroreflectionChanged"
+    },
+    {
+        key: "scattering",
+        label: "Scattering",
+        extension: "KHR_materials_scatter",
+        event: "scatteringChanged"
+    },
+    {
+        key: "sheen",
+        label: "Sheen",
+        extension: "KHR_materials_sheen",
+        event: "sheenChanged"
+    },
+    {
+        key: "specular",
+        label: "Specular",
+        extension: "KHR_materials_specular",
+        event: "specularChanged"
+    },
+    {
+        key: "transmission",
+        label: "Transmission",
+        extension: "KHR_materials_transmission",
+        event: "transmissionChanged"
+    },
+    {
+        key: "volume",
+        label: "Volume",
+        extension: "KHR_materials_volume",
+        event: "volumeChanged"
+    }
 ];
 
-export function AdvancedTab({ extensions, onExtensionsChange }) {
+const CLIPPING_AXES = ["X", "Y", "Z"];
+
+const formatClippingBound = (value) => `${Math.round(value * 100)}%`;
+
+/**
+ * Six planes forming a cuboid around the model. The bounds are fractions of the
+ * scene extents, so they mean the same thing whatever is loaded.
+ */
+function ClippingControls({ clipping, onChange }) {
+    const orientations = useViewerStore((state) => state.clippingOrientations);
+    const supportsClipping = useViewerStore((state) => state.supportsClipping);
+
+    const update = (partial) => {
+        const next = { ...clipping, ...partial };
+        onChange(partial);
+        uiEvents.clippingChanged.emit(next);
+    };
+
+    // Pushing one bound past the other carries it along rather than inverting the cuboid.
+    const setBound = (bound, axis) => (value) => {
+        const bounds = { min: [...clipping.min], max: [...clipping.max] };
+        bounds[bound][axis] = value;
+        if (bounds.min[axis] > bounds.max[axis]) {
+            bounds[bound === "min" ? "max" : "min"][axis] = value;
+        }
+        update(bounds);
+    };
+
+    return (
+        <div className="mt-6">
+            <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="font-medium">Clipping Planes</span>
+                <Switch
+                    className="mt-0! w-auto!"
+                    data-testid="switch-clipping"
+                    checked={clipping.enabled}
+                    disabled={!supportsClipping}
+                    onChange={(checked) => update({ enabled: checked })}
+                >
+                    <span className="sr-only">Clipping Planes</span>
+                </Switch>
+            </div>
+            {!supportsClipping && (
+                <p className="text-ink/60 text-sm">Unsupported by this browser</p>
+            )}
+
+            {clipping.enabled && (
+                <>
+                    <div className="flex items-center gap-2">
+                        <SegmentedControl
+                            label="Clipping Orientation"
+                            options={orientations.map((orientation) => ({
+                                label: orientation.split(" ")[0],
+                                value: orientation
+                            }))}
+                            value={clipping.orientation}
+                            onChange={(value) => update({ orientation: value })}
+                        />
+                        <IconButton
+                            label="Reset clipping planes"
+                            onClick={() => update({ min: [0, 0, 0], max: [1, 1, 1] })}
+                        >
+                            <RotateCcw size={16} aria-hidden="true" />
+                        </IconButton>
+                    </div>
+
+                    <div className="mt-1 grid grid-cols-[1ch_1fr_1fr] items-center gap-x-3 text-sm font-light">
+                        <span />
+                        <span>Min</span>
+                        <span>Max</span>
+                        {CLIPPING_AXES.map((axis, index) => (
+                            <Fragment key={axis}>
+                                <span>{axis}</span>
+                                {["min", "max"].map((bound) => (
+                                    <Slider
+                                        key={bound}
+                                        label={`Clipping ${axis} ${bound}`}
+                                        value={clipping[bound][index]}
+                                        min={0}
+                                        max={1}
+                                        step={0.01}
+                                        formatter={formatClippingBound}
+                                        onChange={setBound(bound, index)}
+                                    />
+                                ))}
+                            </Fragment>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
+export function AdvancedTab({
+    extensions,
+    onExtensionsChange,
+    clipping,
+    onClippingChange
+}) {
     const debugchannels = useViewerStore((state) => state.debugchannels);
     const selectedDebugChannel = useViewerStore((state) => state.selectedDebugChannel);
     const statistics = useViewerStore((state) => state.statistics);
+    const hasMorphTargets = useViewerStore((state) => state.morphWeights.length > 0);
     const supportsFloatingPointFramebuffer = useViewerStore(
         (state) => state.supportsFloatingPointFramebuffer
     );
+    const supportsWireframe = useViewerStore((state) => state.supportsWireframe);
 
     const toggle =
         ({ key, event }) =>
@@ -60,8 +252,8 @@ export function AdvancedTab({ extensions, onExtensionsChange }) {
         if (key === "volume") {
             return !extensions.transmission && !extensions.diffuseTransmission;
         }
-        if (key === "volumeScattering") {
-            return !extensions.volume;
+        if (key === "scattering") {
+            return !extensions.transmission;
         }
         return false;
     };
@@ -73,6 +265,7 @@ export function AdvancedTab({ extensions, onExtensionsChange }) {
                 checked={extensions[entry.key]}
                 disabled={disabledFor(entry.key)}
                 onChange={toggle(entry)}
+                title={entry.extension}
             >
                 {entry.label}
             </Switch>
@@ -80,13 +273,6 @@ export function AdvancedTab({ extensions, onExtensionsChange }) {
 
     return (
         <Panel title="Advanced Controls">
-            <Switch
-                checked={extensions.inputSmoothing}
-                onChange={toggle({ key: "inputSmoothing", event: "inputSmoothingChanged" })}
-            >
-                Input Smoothing
-            </Switch>
-
             <Field label="Debug Channels">
                 <Select
                     data-testid="select-debug-channel"
@@ -116,6 +302,14 @@ export function AdvancedTab({ extensions, onExtensionsChange }) {
             <Field label="Rendering" grouped>
                 {renderToggles(RENDERING_TOGGLES)}
                 <Switch
+                    data-testid="switch-wireframe"
+                    checked={extensions.wireframe}
+                    disabled={!supportsWireframe}
+                    onChange={toggle({ key: "wireframe", event: "wireframeChanged" })}
+                >
+                    {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
+                </Switch>
+                <Switch
                     checked={extensions.floatingPointFramebuffer}
                     disabled={!supportsFloatingPointFramebuffer}
                     onChange={toggle({
@@ -126,6 +320,38 @@ export function AdvancedTab({ extensions, onExtensionsChange }) {
                     32-bit Framebuffer
                 </Switch>
             </Field>
+
+            {hasMorphTargets && (
+                <div className="mt-6">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="font-medium">Morph Overrides</span>
+                        <Switch
+                            className="mt-0! w-auto!"
+                            checked={extensions.morphOverrides}
+                            disabled={!extensions.morphing}
+                            onChange={(checked) => {
+                                onExtensionsChange({ morphOverrides: checked });
+                                if (!checked) {
+                                    uiEvents.morphWeightsReset.emit();
+                                }
+                            }}
+                        >
+                            <span className="sr-only">Morph Overrides</span>
+                        </Switch>
+                    </div>
+                    {extensions.morphOverrides && (
+                        <MorphWeights
+                            disabled={!extensions.morphing}
+                            signedRange={extensions.morphSignedRange}
+                            onSignedRangeChange={(value) =>
+                                onExtensionsChange({ morphSignedRange: value })
+                            }
+                        />
+                    )}
+                </div>
+            )}
+
+            <ClippingControls clipping={clipping} onChange={onClippingChange} />
 
             <Field label="Extensions" grouped>
                 {renderToggles(EXTENSION_TOGGLES)}

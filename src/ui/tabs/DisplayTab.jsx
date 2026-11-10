@@ -2,7 +2,7 @@ import { Download, Plus } from "lucide-react";
 import { GltfState } from "@khronosgroup/gltf-viewer";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Button, Field, Panel, Select, Switch } from "../controls.jsx";
+import { Button, Field, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
@@ -155,20 +155,16 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </label>
             </Field>
 
-            <Field label="Environment Rotation">
-                <Select
+            <Field label="Environment Orientation">
+                <SegmentedControl
+                    label="Environment Orientation"
+                    options={ENVIRONMENT_ROTATIONS.map((item) => ({ label: item, value: item }))}
                     value={rotation}
                     onChange={(value) => {
                         uiEvents.environmentRotationChanged.emit(value);
                         onLightingChange({ rotation: value });
                     }}
-                >
-                    {ENVIRONMENT_ROTATIONS.map((item) => (
-                        <option key={item} value={item}>
-                            {item}
-                        </option>
-                    ))}
-                </Select>
+                />
             </Field>
 
             <Field label="Image Based Lighting" grouped>
@@ -279,7 +275,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
             <Field label="Capture Canvas">
                 <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
                     <Download size={16} aria-hidden="true" />
-                    Download as .png
+                    Download as PNG
                 </Button>
             </Field>
         </Panel>

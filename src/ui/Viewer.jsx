@@ -58,7 +58,8 @@ function ViewerCanvas() {
         <canvas
             id="canvas"
             ref={canvasRef}
-            className="block h-full min-w-0 flex-1 bg-[#333] select-none"
+            tabIndex={0}
+            className="block h-full min-w-0 flex-1 bg-[#333] outline-none select-none"
         >
             No Canvas!
         </canvas>

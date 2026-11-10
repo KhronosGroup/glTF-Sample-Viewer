@@ -1,9 +1,19 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { Atom, Box, Braces, CirclePlay, Image, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import {
+    Atom,
+    Box,
+    Braces,
+    Camera,
+    CirclePlay,
+    Image,
+    ShieldCheck,
+    SlidersHorizontal
+} from "lucide-react";
 import { uiEvents } from "../logic/ui_events.js";
 import { useViewerStore } from "./store.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
+import { CameraTab } from "./tabs/CameraTab.jsx";
 import { DisplayTab } from "./tabs/DisplayTab.jsx";
 import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
 import { CreditsTab } from "./tabs/CreditsTab.jsx";
@@ -14,6 +24,7 @@ import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
 
 const TAB_META = [
     { id: "models", label: "Models", icon: Box },
+    { id: "camera", label: "Camera", icon: Camera },
     { id: "display", label: "Display", icon: Image },
     { id: "validator", label: "Validator", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
@@ -35,9 +46,11 @@ const INITIAL_LIGHTING = {
 
 // Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
 const INITIAL_EXTENSIONS = {
-    inputSmoothing: true,
     skinning: true,
     morphing: true,
+    morphOverrides: false,
+    morphSignedRange: false,
+    wireframe: false,
     interactivity: true,
     hoverability: true,
     selectability: true,
@@ -48,7 +61,7 @@ const INITIAL_EXTENSIONS = {
     transmission: true,
     diffuseTransmission: true,
     volume: true,
-    volumeScattering: true,
+    scattering: true,
     ior: true,
     specular: true,
     emissiveStrength: true,
@@ -63,6 +76,14 @@ const INITIAL_PHYSICS_DEBUG = {
     engine: "nvidia-physx",
     colliders: false,
     joints: false
+};
+
+// Bounds are fractions of the scene extents; the renderer turns them into planes.
+const INITIAL_CLIPPING = {
+    enabled: false,
+    orientation: "Axis Aligned",
+    min: [0, 0, 0],
+    max: [1, 1, 1]
 };
 
 /**
@@ -108,6 +129,7 @@ export function Menu({ visible }) {
     const [lighting, setLighting] = useState(INITIAL_LIGHTING);
     const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
     const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
+    const [clipping, setClipping] = useState(INITIAL_CLIPPING);
     const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
     const volumePref = useRef(INITIAL_EXTENSIONS.volume);
 
@@ -165,6 +187,8 @@ export function Menu({ visible }) {
         switch (id) {
             case "models":
                 return <ModelsTab />;
+            case "camera":
+                return <CameraTab />;
             case "display":
                 return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
@@ -184,7 +208,14 @@ export function Menu({ visible }) {
                 );
             case "advanced":
                 return (
-                    <AdvancedTab extensions={extensions} onExtensionsChange={updateExtensions} />
+                    <AdvancedTab
+                        extensions={extensions}
+                        onExtensionsChange={updateExtensions}
+                        clipping={clipping}
+                        onClippingChange={(partial) =>
+                            setClipping((current) => ({ ...current, ...partial }))
+                        }
+                    />
                 );
             default:
                 return null;

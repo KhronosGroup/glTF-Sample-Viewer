@@ -3,7 +3,15 @@ import { useState } from "react";
 
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Panel, Radio, Select, ThumbnailSelect, ToggleButton } from "../controls.jsx";
+import {
+    Field,
+    Panel,
+    Radio,
+    RadioGroup,
+    Select,
+    ThumbnailSelect,
+    ToggleButton
+} from "../controls.jsx";
 
 // Above this many variants the radio list is replaced by a dropdown.
 const VARIANT_LIST_LIMIT = 5;
@@ -46,6 +54,7 @@ export function ModelsTab() {
     const materialVariants = useViewerStore((state) => state.materialVariants);
     const selectedModel = useViewerStore((state) => state.selectedModel);
     const selectedModelExcluded = useViewerStore((state) => state.selectedModelExcluded);
+    const selectedModelIsDropped = useViewerStore((state) => state.selectedModelIsDropped);
     const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
     const selectedScene = useViewerStore((state) => state.selectedScene);
     const selectedCamera = useViewerStore((state) => state.selectedCamera);
@@ -142,22 +151,24 @@ export function ModelsTab() {
                 )}
             </Field>
 
-            <Field label="Flavor">
-                <Select
-                    data-testid="flavour-select"
-                    value={selectedFlavour}
-                    onChange={(value) => {
-                        setViewerState({ selectedFlavour: value });
-                        uiEvents.flavourChanged.emit(value);
-                    }}
-                >
-                    {flavours.map((item) => (
-                        <option key={item} value={item}>
-                            {item}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {!selectedModelIsDropped && (
+                <Field label="Flavor">
+                    <Select
+                        data-testid="flavour-select"
+                        value={selectedFlavour}
+                        onChange={(value) => {
+                            setViewerState({ selectedFlavour: value });
+                            uiEvents.flavourChanged.emit(value);
+                        }}
+                    >
+                        {flavours.map((item) => (
+                            <option key={item} value={item}>
+                                {item}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
             {showScenes && (
                 <Field label="Scenes">
@@ -177,21 +188,24 @@ export function ModelsTab() {
                 </Field>
             )}
 
-            <Field label="Cameras">
-                <Select
-                    value={selectedCamera}
-                    onChange={(value) => {
-                        setViewerState({ selectedCamera: value });
-                        uiEvents.cameraChanged.emit(parseInt(value));
-                    }}
-                >
-                    {cameras.map((item, index) => (
-                        <option key={item.index ?? index} value={item.index}>
-                            {item.title}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
+            {cameras.length > 1 && (
+                <Field label="Cameras">
+                    <Select
+                        data-testid="camera-select"
+                        value={selectedCamera}
+                        onChange={(value) => {
+                            setViewerState({ selectedCamera: value });
+                            uiEvents.cameraChanged.emit(parseInt(value));
+                        }}
+                    >
+                        {cameras.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
 
             {materialVariants.length > 1 && (
                 <Field label="Variants">
@@ -204,9 +218,10 @@ export function ModelsTab() {
                             ))}
                         </Select>
                     ) : (
-                        materialVariants.map((item) => (
-                            <Field key={item}>
+                        <RadioGroup>
+                            {materialVariants.map((item) => (
                                 <Radio
+                                    key={item}
                                     name="material-variant"
                                     value={item}
                                     checked={selectedVariant === item}
@@ -214,8 +229,8 @@ export function ModelsTab() {
                                 >
                                     {item}
                                 </Radio>
-                            </Field>
-                        ))
+                            ))}
+                        </RadioGroup>
                     )}
                 </Field>
             )}

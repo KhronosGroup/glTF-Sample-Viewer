@@ -16,6 +16,11 @@ export class GltfModelPathProvider {
         return this.modelsDictionary[modelKey][flavour];
     }
 
+    /** Whether a sample asset with this name exists. */
+    hasModel(modelName) {
+        return this.modelsDictionary[modelName] !== undefined;
+    }
+
     /**
      * Model names, narrowed to those carrying every given tag and offering
      * every given flavour. An empty list does not narrow anything.

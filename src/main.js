@@ -2,6 +2,7 @@ import { GltfState, GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-vie
 import createDracoDecoderModule from "draco3d/draco_decoder_nodejs.js";
 import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 
+import { createCameraController } from "./logic/camera_controller.js";
 import { UIModel } from "./logic/uimodel.js";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
 import { getViewerState, setViewerState } from "./logic/viewer_store.js";
@@ -17,7 +18,7 @@ const EXTENSION_TOGGLES = {
     transmissionChanged: "KHR_materials_transmission",
     diffuseTransmissionChanged: "KHR_materials_diffuse_transmission",
     volumeChanged: "KHR_materials_volume",
-    volumeScatteringChanged: "KHR_materials_volume_scatter",
+    scatteringChanged: "KHR_materials_scatter",
     iorChanged: "KHR_materials_ior",
     iridescenceChanged: "KHR_materials_iridescence",
     retroreflectionChanged: "KHR_materials_retroreflection",
@@ -31,15 +32,45 @@ const EXTENSION_TOGGLES = {
     gaussianSplattingChanged: "KHR_gaussian_splatting"
 };
 
-// How long a single drag or wheel delta keeps feeding motion into the camera.
-const SMOOTHING_MS = 50;
-
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
 // The decoder's Emscripten glue looks for its .wasm next to itself, which is not where
 // the bundler puts it.
 const dracoDecoderLib = (moduleOptions) =>
     createDracoDecoderModule({ ...moduleOptions, locateFile: () => dracoDecoderWasmUrl });
+
+// Transforms a local-space point by a column-major mat4.
+const transformPoint = (matrix, point) => {
+    const x = point[0];
+    const y = point[1];
+    const z = point[2];
+    const w = matrix[3] * x + matrix[7] * y + matrix[11] * z + matrix[15] || 1;
+    return [
+        (matrix[0] * x + matrix[4] * y + matrix[8] * z + matrix[12]) / w,
+        (matrix[1] * x + matrix[5] * y + matrix[9] * z + matrix[13]) / w,
+        (matrix[2] * x + matrix[6] * y + matrix[10] * z + matrix[14]) / w
+    ];
+};
+
+// Averages the world-space centroids of a node's mesh primitives.
+const nodeWorldCentroid = (gltf, node) => {
+    const mesh = node?.mesh !== undefined ? gltf?.meshes?.[node.mesh] : undefined;
+    if (!mesh) return undefined;
+    const worldTransform = node.getRenderedWorldTransform();
+    if (!worldTransform) return undefined;
+
+    const sum = [0, 0, 0];
+    let count = 0;
+    for (const primitive of mesh.primitives) {
+        if (!primitive.centroid) continue;
+        const point = transformPoint(worldTransform, primitive.centroid);
+        sum[0] += point[0];
+        sum[1] += point[1];
+        sum[2] += point[2];
+        count += 1;
+    }
+    return count > 0 ? [sum[0] / count, sum[1] / count, sum[2] / count] : undefined;
+};
 
 /**
  * Boots the viewer against a canvas and returns a teardown function.
@@ -57,12 +88,15 @@ export const initViewer = async (canvas) => {
     setViewerState({
         supportsFloatingPointFramebuffer:
             !!context.getExtension("EXT_color_buffer_half_float") ||
-            !!context.getExtension("EXT_color_buffer_float")
+            !!context.getExtension("EXT_color_buffer_float"),
+        supportsWireframe: !!context.getExtension("WEBGL_polygon_mode"),
+        supportsClipping: !!context.getExtension("WEBGL_clip_cull_distance")
     });
 
     const view = new GltfView(context);
     const resourceLoader = view.createResourceLoader(dracoDecoderLib);
     const state = view.createState();
+    const cameraController = createCameraController(state);
 
     await state.physicsController.initializeEngine("NvidiaPhysX");
 
@@ -117,6 +151,19 @@ export const initViewer = async (canvas) => {
 
     // Only redraw glTF view upon user inputs, or when an animation is playing.
     let redraw = false;
+
+    // A double-click asks the camera to focus on the picked node; the picking
+    // result arrives on the next frame via the renderer's selection callback.
+    let pendingFocus = false;
+    state.selectionCallback = (result) => {
+        if (!pendingFocus) return;
+        const focus = nodeWorldCentroid(state.gltf, result.node) ?? result.position;
+        if (focus) {
+            cameraController.focusOn(focus);
+            pendingFocus = false;
+            redraw = true;
+        }
+    };
 
     // ---------------------------------------------------------------- loading
 
@@ -200,6 +247,7 @@ export const initViewer = async (canvas) => {
                 (pitch * (Math.PI / 180)) / state.userCamera.orbitSpeed
             );
             state.userCamera.zoomBy(distance);
+            cameraController.syncProjection();
 
             state.animationIndices = [];
             for (let i = 0; i < gltf.animations.length; i++) {
@@ -207,6 +255,7 @@ export const initViewer = async (canvas) => {
                     state.animationIndices.push(i);
                 }
             }
+            state.animationTimer.clearTimeOverride();
             state.animationTimer.start();
             if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
                 state.graphController.initializeGraphs(state);
@@ -258,7 +307,7 @@ export const initViewer = async (canvas) => {
                 const gltf = await resourceLoader.loadGltf(
                     model.mainFile,
                     model.additionalFiles,
-                    false
+                    true
                 );
                 if (loadId !== latestLoadId) {
                     return;
@@ -323,6 +372,10 @@ export const initViewer = async (canvas) => {
     );
     onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
     onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
+    onChange(uiEvents.wireframeChanged, (v) => (state.renderingParameters.wireframe = v));
+    onChange(uiEvents.clippingChanged, (v) => {
+        state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
+    });
     onChange(uiEvents.iblChanged, (v) => (state.renderingParameters.useIBL = v));
     onChange(uiEvents.punctualLightsChanged, (v) => (state.renderingParameters.usePunctual = v));
     onChange(
@@ -346,6 +399,35 @@ export const initViewer = async (canvas) => {
         state.renderingParameters.environmentRotation = ENVIRONMENT_ROTATIONS[v];
     });
     onChange(uiEvents.variantChanged, (v) => (state.variant = v));
+
+    onChange(uiEvents.morphWeightChanged, ({ nodeIndex, targetIndex, value }) => {
+        const node = state.gltf?.nodes[nodeIndex];
+        const targetCount = state.gltf?.meshes[node?.mesh]?.primitives[0]?.targets.length ?? 0;
+        if (
+            !node ||
+            !Number.isInteger(targetIndex) ||
+            targetIndex < 0 ||
+            targetIndex >= targetCount ||
+            (value !== null && !Number.isFinite(value))
+        ) {
+            console.error("Invalid morph weight change", { nodeIndex, targetIndex, value });
+            return;
+        }
+        // A null value clears the override, returning the target to its asset/animated weight.
+        node.morphWeightOverrides ??= [];
+        node.morphWeightOverrides[targetIndex] = value ?? undefined;
+        if (node.morphWeightOverrides.every((weight) => weight === undefined)) {
+            node.morphWeightOverrides = undefined;
+        }
+        uiModel.publishMorphWeights(state);
+    });
+
+    onChange(uiEvents.morphWeightsReset, () => {
+        for (const node of state.gltf.nodes) {
+            node.morphWeightOverrides = undefined;
+        }
+        uiModel.publishMorphWeights(state);
+    });
 
     uiModel.onClearColor((color) => {
         state.renderingParameters.clearColor = color;
@@ -390,6 +472,7 @@ export const initViewer = async (canvas) => {
         }
 
         uiModel.publishCameras(state);
+        uiModel.publishMorphWeights(state);
         uiModel.publishStatistics(view.gatherStatistics(state));
     });
 
@@ -413,6 +496,15 @@ export const initViewer = async (canvas) => {
 
     on(uiEvents.animationResetChanged, () => {
         state.animationTimer.reset();
+        redraw = true;
+    });
+
+    on(uiEvents.animationTimeChanged, (time) => {
+        if (time === null || time === undefined) {
+            state.animationTimer.clearTimeOverride();
+        } else {
+            state.animationTimer.setTimeOverride(time);
+        }
         redraw = true;
     });
 
@@ -498,81 +590,40 @@ export const initViewer = async (canvas) => {
         downloadDataURL("capture.png", canvas.toDataURL());
     });
 
-    // ---------------------------------------------------------- camera motion
-
-    // Smooths discrete drag/scroll input deltas into per-frame motion.
-    // Each input delta becomes a short pulse that fades in then out following
-    // easeInOutSine, so motion accelerates and decelerates smoothly instead of
-    // snapping with raw mousemove/wheel timing.
-    const dragSmoother = (() => {
-        let smoothMs = SMOOTHING_MS;
-        const easeInOutSine = (t) => 0.5 * (1 - Math.cos(Math.PI * t));
-        const orbitPulses = [];
-        const panPulses = [];
-        const zoomPulses = [];
-        const isEnabled = () => state.cameraNodeIndex === undefined;
-        const push = (pulses, a, b) => {
-            if (!isEnabled()) return;
-            pulses.push({ a, b, startTime: performance.now(), appliedA: 0, appliedB: 0 });
-        };
-        const drain = (pulses, applyFn) => {
-            if (pulses.length === 0) return false;
-            const now = performance.now();
-            let netA = 0;
-            let netB = 0;
-            for (let i = pulses.length - 1; i >= 0; i--) {
-                const p = pulses[i];
-                const t = smoothMs > 0 ? Math.min(1, (now - p.startTime) / smoothMs) : 1;
-                const eased = easeInOutSine(t);
-                const targetA = p.a * eased;
-                const targetB = p.b * eased;
-                netA += targetA - p.appliedA;
-                netB += targetB - p.appliedB;
-                p.appliedA = targetA;
-                p.appliedB = targetB;
-                if (t >= 1) pulses.splice(i, 1);
-            }
-            const moved = netA !== 0 || netB !== 0;
-            if (moved) applyFn(netA, netB);
-            return moved || pulses.length > 0;
-        };
-        return {
-            pushOrbit: (dPhi, dTheta) => push(orbitPulses, dPhi, dTheta),
-            pushPan: (dX, dY) => push(panPulses, dX, dY),
-            pushZoom: (dZoom) => push(zoomPulses, dZoom, 0),
-            setSmoothMs: (ms) => {
-                smoothMs = Math.max(0, ms);
-            },
-            tick: () => {
-                const o = drain(orbitPulses, (a, b) => state.userCamera.orbit(a, b));
-                const p = drain(panPulses, (a, b) => state.userCamera.pan(a, b));
-                const z = drain(zoomPulses, (a) => state.userCamera.zoomBy(a));
-                return o || p || z;
-            }
-        };
-    })();
-
-    on(uiEvents.inputSmoothingChanged, (enabled) =>
-        dragSmoother.setSmoothMs(enabled ? SMOOTHING_MS : 0)
-    );
+    // Camera controls arrive as UI events; the controller owns the camera
+    // state, while the input handlers below only push raw deltas into it.
+    onChange(uiEvents.cameraModeChanged, (mode) => cameraController.setMode(mode));
+    onChange(uiEvents.cameraProjectionChanged, (type) => cameraController.setProjection(type));
+    onChange(uiEvents.cameraLookAtChanged, (axis) => cameraController.lookAt(axis));
+    onChange(uiEvents.cameraResetChanged, () => cameraController.reset());
 
     uiModel.onOrbit((orbit) => {
-        dragSmoother.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
+        cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
         redraw = true;
     });
     uiModel.onPan((pan) => {
-        dragSmoother.pushPan(pan.deltaX, -pan.deltaY);
+        cameraController.pushPan(pan.deltaX, -pan.deltaY);
         redraw = true;
     });
     uiModel.onZoom((zoom) => {
-        dragSmoother.pushZoom(zoom.deltaZoom);
+        cameraController.pushZoom(zoom.deltaZoom);
         redraw = true;
     });
 
     uiModel.onSelection((selection) => {
+        pendingFocus = false;
         const devicePixelRatio = window.devicePixelRatio || 1;
         state.selectionPositions[0].x = Math.floor(selection.x * devicePixelRatio);
         state.selectionPositions[0].y = Math.floor(selection.y * devicePixelRatio);
+        state.triggerSelection = true;
+        redraw = true;
+    });
+
+    uiModel.onFocus((position) => {
+        pendingFocus = true;
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        state.selectionPositions[0].x = Math.floor(position.x * devicePixelRatio);
+        state.selectionPositions[0].y = Math.floor(position.y * devicePixelRatio);
         state.triggerSelection = true;
         redraw = true;
     });
@@ -599,7 +650,7 @@ export const initViewer = async (canvas) => {
     const update = () => {
         const devicePixelRatio = window.devicePixelRatio || 1;
 
-        redraw |= dragSmoother.tick();
+        redraw |= cameraController.tick();
 
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
@@ -626,6 +677,7 @@ export const initViewer = async (canvas) => {
         ) {
             state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
+            cameraController.syncProjection();
         }
 
         past.width = canvas.width;

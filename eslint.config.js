@@ -1,6 +1,5 @@
 import js from "@eslint/js";
 import globals from "globals";
-import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 
@@ -25,12 +24,8 @@ export default [
         // The render loop, WebGL context and physics engine all outlive a single
         // render, so effect dependencies and cleanup have to be correct.
         files: ["src/**/*.jsx"],
-        plugins: { react, "react-hooks": reactHooks },
-        rules: {
-            ...reactHooks.configs.recommended.rules,
-            // Without this, no-unused-vars does not see components referenced in JSX.
-            "react/jsx-uses-vars": "error"
-        }
+        plugins: { "react-hooks": reactHooks },
+        rules: reactHooks.configs.recommended.rules
     },
     {
         rules: {

@@ -98,7 +98,8 @@ class UIModel {
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
-            debugchannels: debugChannelsFor(undefined)
+            debugchannels: debugChannelsFor(undefined),
+            clippingOrientations: Object.values(GltfState.ClippingOrientations)
         });
         this.publishModels();
 
@@ -129,6 +130,7 @@ class UIModel {
             onPan: (delta) => this.panHandler?.(delta),
             onZoom: (delta) => this.zoomHandler?.(delta),
             onSelect: (position) => this.selectionHandler?.(position),
+            onFocus: (position) => this.focusHandler?.(position),
             onHover: (position) => this.hoverHandler?.(position),
             onDrop: (entries) =>
                 this.handleDrop(entries).catch((error) =>
@@ -162,6 +164,10 @@ class UIModel {
         this.selectionHandler = handler;
     }
 
+    onFocus(handler) {
+        this.focusHandler = handler;
+    }
+
     onHover(handler) {
         this.hoverHandler = handler;
     }
@@ -175,10 +181,14 @@ class UIModel {
         this.clearColorHandler?.(hexToLinearColor(INITIAL_CLEAR_COLOR));
 
         if (this.modelURL !== null) {
-            this.registerDroppedFilename(this.modelURL);
-            this.emitModel({ mainFile: this.modelURL });
+            if (this.modelPathProvider.hasModel(this.modelURL)) {
+                this.selectModel(this.modelURL, false);
+            } else {
+                this.registerDroppedFilename(this.modelURL);
+                this.emitModel({ mainFile: this.modelURL });
+            }
         } else {
-            this.selectModel("DamagedHelmet");
+            this.selectModel("DamagedHelmet", false);
         }
     }
 
@@ -194,13 +204,28 @@ class UIModel {
         );
     }
 
-    selectModel(name) {
+    selectModel(name, updateUrl = true) {
         const flavours = this.modelPathProvider.getModelFlavours(name);
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
-        setViewerState({ flavours, selectedFlavour });
+        setViewerState({
+            selectedModel: name,
+            flavours,
+            selectedFlavour,
+            selectedModelIsDropped: false
+        });
+        if (updateUrl) {
+            this.updateModelUrl(name);
+        }
         this.emitModel({ mainFile: this.modelPathProvider.resolve(name, selectedFlavour) });
         // After emitModel, which needs the list as it was to drop a dropped file.
         this.publishModels();
+    }
+
+    /** Reflects the current sample asset in the URL so a reload keeps it. */
+    updateModelUrl(name) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("model", name);
+        window.history.replaceState(null, "", url);
     }
 
     /** Narrows the model list to the models matching the tag and flavour filters. */
@@ -307,6 +332,7 @@ class UIModel {
             models: [...getViewerState().models, filename],
             selectedModel: filename,
             selectedModelExcluded: false,
+            selectedModelIsDropped: true,
             flavours: [fileExtension],
             selectedFlavour: fileExtension
         });
@@ -353,6 +379,7 @@ class UIModel {
 
     publishGltfLoaded(state) {
         this.publishCameras(state);
+        this.publishMorphWeights(state);
 
         const gltf = state.gltf;
         const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
@@ -393,6 +420,12 @@ class UIModel {
             uiEvents.variantChanged.emit(selectedVariant);
         }
 
+        let animationDuration = 0;
+        for (const animation of gltf.animations) {
+            animation.computeMinMaxTime(gltf);
+            animationDuration = Math.max(animationDuration, animation.maxTime ?? 0);
+        }
+
         setViewerState({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
@@ -413,6 +446,8 @@ class UIModel {
 
             selectedAnimations: state.animationIndices,
             animationState: true,
+            animationTimeOverride: null,
+            animationDuration,
             graphState: true,
             physicsState: true,
 
@@ -470,6 +505,46 @@ class UIModel {
             cameras,
             selectedCamera: state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1
         });
+    }
+
+    publishMorphWeights(state) {
+        const gltf = state.gltf;
+        const scene = gltf.scenes[state.sceneIndex];
+        const morphWeights = [];
+        gltf.nodes.forEach((node, nodeIndex) => {
+            const mesh = gltf.meshes[node.mesh];
+            const targetCount = mesh?.primitives[0]?.targets.length ?? 0;
+            if (targetCount === 0 || !scene?.includesNode(gltf, nodeIndex)) {
+                return;
+            }
+            const name = node.name || mesh.name;
+            morphWeights.push({
+                nodeIndex,
+                title: name ? `${name} (Node ${nodeIndex})` : `Node ${nodeIndex}`,
+                targets: Array.from({ length: targetCount }, (_, index) => ({
+                    name: mesh.extras?.targetNames?.[index] || `Target ${index}`,
+                    value: node.morphWeightOverrides?.[index] ?? null
+                }))
+            });
+        });
+
+        const previous = getViewerState().morphWeights;
+        if (
+            morphWeights.length !== previous.length ||
+            morphWeights.some(
+                (node, index) =>
+                    node.nodeIndex !== previous[index].nodeIndex ||
+                    node.title !== previous[index].title ||
+                    node.targets.length !== previous[index].targets.length ||
+                    node.targets.some(
+                        (target, targetIndex) =>
+                            target.name !== previous[index].targets[targetIndex].name ||
+                            target.value !== previous[index].targets[targetIndex].value
+                    )
+            )
+        ) {
+            setViewerState({ morphWeights });
+        }
     }
 
     publishStatistics(data) {

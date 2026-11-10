@@ -1,6 +1,7 @@
 import { SimpleDropzone } from "simple-dropzone";
 import normalizeWheel from "normalize-wheel";
 import { ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
+import { attachKeyboard } from "./keyboard.js";
 
 /**
  * Canvas input, translated from the RxJS gesture streams it replaces.
@@ -13,7 +14,7 @@ import { ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
  * Returns a dispose function; every listener it adds is removed again.
  */
 export function attachCanvasInput(canvas, handlers) {
-    const { onOrbit, onPan, onZoom, onSelect, onHover, onDrop, onDropError } = handlers;
+    const { onOrbit, onPan, onZoom, onSelect, onHover, onDrop, onDropError, onFocus } = handlers;
     const cleanups = [];
 
     const listen = (target, type, handler, options) => {
@@ -34,12 +35,10 @@ export function attachCanvasInput(canvas, handlers) {
     let drag = null;
 
     listen(canvas, "mousedown", (event) => {
-        if (event.button === 0 && !event.shiftKey) {
+        if (event.button === 0) {
             drag = { kind: "orbit" };
-        } else if (event.button === 1 || event.shiftKey) {
+        } else if (event.button === 1 || event.button === 2) {
             drag = { kind: "pan" };
-        } else if (event.button === 2) {
-            drag = { kind: "zoom" };
         }
     });
 
@@ -53,10 +52,6 @@ export function attachCanvasInput(canvas, handlers) {
         onHover({ x: event.pageX, y: event.pageY });
 
         if (drag === null) {
-            return;
-        }
-        if (drag.kind === "zoom") {
-            onZoom({ deltaZoom: event.movementY });
             return;
         }
 
@@ -81,7 +76,17 @@ export function attachCanvasInput(canvas, handlers) {
         }
     });
 
+    listen(canvas, "dblclick", (event) => {
+        if (event.button === 0) {
+            onFocus?.({ x: event.pageX, y: event.pageY });
+        }
+    });
+
     listen(canvas, "wheel", (event) => onZoom({ deltaZoom: normalizeWheel(event).spinY }));
+
+    // Keyboard navigation is tracked as key state (see keyboard.js); the render
+    // loop polls it each frame for continuous, frame-rate independent motion.
+    cleanups.push(attachKeyboard());
 
     // Touch: one finger orbits, two pinch to zoom.
     let touch = null;

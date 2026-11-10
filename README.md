@@ -47,9 +47,9 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 - [x] [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_unlit)
 - [x] [KHR_materials_variants](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_variants)
 - [x] [KHR_materials_volume](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_volume)
-- [KHR_materials_volume_scatter](https://github.com/KhronosGroup/glTF/blob/e17468db6fd9ae3ce73504a9f317bd853af01a30/extensions/2.0/Khronos/KHR_materials_volume_scatter/README.md)
-    - [x] For dense volumes using KHR_materials_diffuse_transmission
-    - [ ] For sparse volumes using KHR_materials_transmission
+- [x] [KHR_materials_scatter](https://github.com/KhronosGroup/glTF/pull/2579)
+    - [x] Thin-walled mode
+    - [x] Volumetric mode
 - [x] [KHR_meshopt_compression](https://github.com/KhronosGroup/glTF/pull/2517)
 - [x] [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
 - [x] [KHR_node_hoverability](https://github.com/KhronosGroup/glTF/pull/2426)
@@ -74,6 +74,15 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 - Select different material variants
 - Enable/disable specific animations
 - Enable/disable glTF features/extensions and view debug channels
+- Override morph target weights in the Morph Overrides section of Advanced
+  Controls (shown for models with morph targets). Its switch reveals a flat list
+  of nodes in the selected scene, identified by node names (or mesh names/node
+  indices) and target names from `mesh.extras.targetNames`. Each target has a
+  0 to 1 slider and a numeric input for any value. Controls start unset; setting
+  one overrides only that node's target, including animated weights, while unset
+  targets keep their asset/animation values. Clearing the input unsets it, and
+  turning the switch off unsets all targets in all scenes. Overrides persist
+  across scene changes, but not model loads.
 - Download renderings and current camera properties
 - Show statistics about the currently loaded file
 - Specify URL parameters to modify behavior on load
@@ -83,13 +92,20 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 
 ### Controls
 
-`click + drag` : Rotate model
+`left click + drag` : Orbit / rotate the model (Orbit, Trackball) or look around (Fly)
 
-`shift + drag` \
-`middle mouse button + drag` : Pan camera
+`middle mouse button + drag` \
+`right mouse button + drag` : Pan / strafe the camera
 
-`scroll` \
-`right click + drag` : Zoom camera
+`scroll` : Zoom (Orbit, Trackball) or dolly (Fly)
+
+`double click` : Focus on the picked node
+
+`shift` (held) : 2.5× faster keyboard navigation
+
+`W A S D` (Orbit, Trackball) : Orbit / rotate · `arrow keys` : Pan · `+` / `-` : Zoom
+
+`W A S D Q E` (Fly) : Move forward / left / back / right / down / up · `arrow keys` (Fly) : Look · `+` / `-` (Fly) : Dolly
 
 `GUI` : Use to change models and settings
 
