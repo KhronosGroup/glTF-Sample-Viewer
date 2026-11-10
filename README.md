@@ -102,9 +102,9 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 
 `double click` : Focus on the picked node
 
-`arrow keys` : Orbit / look · `shift + arrow keys` : Pan / strafe · `+` / `-` : Zoom / dolly
+`W A S D` (Orbit, Trackball) : Orbit / rotate · `arrow keys` : Pan · `+` / `-` : Zoom
 
-`W A S D Q E` (Fly mode) : Move forward / left / back / right / down / up
+`W A S D Q E` (Fly) : Move forward / left / back / right / down / up · `arrow keys` (Fly) : Look · `+` / `-` (Fly) : Dolly
 
 `GUI` : Use to change models and settings
 

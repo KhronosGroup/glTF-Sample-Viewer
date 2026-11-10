@@ -1,24 +1,144 @@
-import { RotateCcw } from "lucide-react";
+import { Keyboard, Mouse, MousePointerClick, RotateCcw } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
 
-const SHORTCUTS = {
-    orbit: {
-        mouse: "Drag to orbit · Shift-drag, middle-drag or right-drag to pan · Wheel to zoom",
-        keys: "Arrow keys to orbit · Shift + Arrow keys to pan · +/− to zoom"
-    },
-    trackball: {
-        mouse: "Drag to rotate · Shift-drag, middle-drag or right-drag to pan · Wheel to zoom",
-        keys: "Arrow keys to rotate · Shift + Arrow keys to pan · +/− to zoom"
-    },
-    fly: {
-        mouse: "Drag to look · Shift-drag, middle-drag or right-drag to strafe · Wheel to dolly",
-        keys: "W/A/S/D to move · Q/E up/down · Arrow keys to look · Shift + Arrow keys to strafe · +/− to dolly"
+function Key({ children }) {
+    return (
+        <kbd className="border-ink/40 bg-card inline-flex h-6 min-w-6 items-center justify-center rounded-md border px-1.5 font-mono text-[11px] leading-none">
+            {children}
+        </kbd>
+    );
+}
+
+function MouseButton({ children }) {
+    return (
+        <span className="border-ink/40 bg-card inline-flex h-6 items-center gap-1 rounded-md border px-1.5 text-[11px] leading-none">
+            <Mouse size={11} aria-hidden="true" />
+            {children}
+        </span>
+    );
+}
+
+function ShortcutGroup({ icon: Icon, title, rows }) {
+    return (
+        <div>
+            <div className="text-ink-dim mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide">
+                <Icon size={14} aria-hidden="true" />
+                {title}
+            </div>
+            <div className="space-y-1.5">
+                {rows.map((row, index) => (
+                    <div key={index} className="flex flex-wrap items-center gap-1.5">
+                        {row.chips}
+                        <span className="text-ink-dim ml-1">{row.action}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function shortcutSections(mode) {
+    const rotate = mode === "trackball" ? "Rotate" : "Orbit";
+    const arrows = (
+        <>
+            <Key>←</Key>
+            <Key>↑</Key>
+            <Key>↓</Key>
+            <Key>→</Key>
+        </>
+    );
+    const panMouse = (
+        <>
+            <MouseButton>M</MouseButton>
+            <MouseButton>R</MouseButton>
+            <Key>Shift</Key>
+        </>
+    );
+
+    if (mode === "fly") {
+        return {
+            mouse: [
+                { chips: <MouseButton>L</MouseButton>, action: "Look" },
+                { chips: panMouse, action: "Strafe" },
+                { chips: <MouseButton>Wheel</MouseButton>, action: "Dolly" }
+            ],
+            keyboard: [
+                {
+                    chips: (
+                        <>
+                            <Key>W</Key>
+                            <Key>S</Key>
+                        </>
+                    ),
+                    action: "Forward / Back"
+                },
+                {
+                    chips: (
+                        <>
+                            <Key>A</Key>
+                            <Key>D</Key>
+                        </>
+                    ),
+                    action: "Strafe"
+                },
+                {
+                    chips: (
+                        <>
+                            <Key>Q</Key>
+                            <Key>E</Key>
+                        </>
+                    ),
+                    action: "Down / Up"
+                },
+                { chips: arrows, action: "Look" },
+                {
+                    chips: (
+                        <>
+                            <Key>+</Key>
+                            <Key>−</Key>
+                        </>
+                    ),
+                    action: "Dolly"
+                }
+            ]
+        };
     }
-};
+
+    return {
+        mouse: [
+            { chips: <MouseButton>L</MouseButton>, action: rotate },
+            { chips: panMouse, action: "Pan" },
+            { chips: <MouseButton>Wheel</MouseButton>, action: "Zoom" }
+        ],
+        keyboard: [
+            {
+                chips: (
+                    <>
+                        <Key>W</Key>
+                        <Key>A</Key>
+                        <Key>S</Key>
+                        <Key>D</Key>
+                    </>
+                ),
+                action: rotate
+            },
+            { chips: arrows, action: "Pan" },
+            {
+                chips: (
+                    <>
+                        <Key>+</Key>
+                        <Key>−</Key>
+                    </>
+                ),
+                action: "Zoom"
+            }
+        ]
+    };
+}
 
 export function CameraTab() {
     const cameraMode = useViewerStore((state) => state.cameraMode);
@@ -28,6 +148,7 @@ export function CameraTab() {
     // Camera controls only affect the user camera, so they are disabled while a
     // glTF camera node is selected.
     const userCameraActive = selectedCamera === -1;
+    const sections = shortcutSections(cameraMode);
 
     return (
         <Panel title="Camera">
@@ -92,10 +213,13 @@ export function CameraTab() {
             </Field>
 
             <Field label="Shortcuts">
-                <div className="text-ink-dim space-y-1 text-sm font-light">
-                    <p>{SHORTCUTS[cameraMode]?.mouse}</p>
-                    <p>{SHORTCUTS[cameraMode]?.keys}</p>
-                    <p>Double-click a node to focus on it</p>
+                <div className="space-y-4 text-sm">
+                    <ShortcutGroup icon={Mouse} title="Mouse" rows={sections.mouse} />
+                    <ShortcutGroup icon={Keyboard} title="Keyboard" rows={sections.keyboard} />
+                    <div className="text-ink-dim flex items-center gap-1.5">
+                        <MousePointerClick size={14} aria-hidden="true" />
+                        Double-click a node to focus on it
+                    </div>
                 </div>
             </Field>
         </Panel>
