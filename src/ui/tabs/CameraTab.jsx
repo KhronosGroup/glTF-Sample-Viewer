@@ -95,6 +95,16 @@ function shortcutSections(mode) {
             </Chip>
         </>
     );
+    const focus = (
+        <Chip label="Double click">
+            <MousePointerClick size={13} aria-hidden="true" />
+        </Chip>
+    );
+    const shift = (
+        <Chip label="Shift">
+            <ArrowBigUp size={13} aria-hidden="true" />
+        </Chip>
+    );
 
     if (mode === "fly") {
         return {
@@ -108,7 +118,8 @@ function shortcutSections(mode) {
                     action: "Look"
                 },
                 { chips: panMouse, action: "Strafe" },
-                { chips: scroll, action: "Dolly" }
+                { chips: scroll, action: "Dolly" },
+                { chips: focus, action: "Focus node" }
             ],
             keyboard: [
                 {
@@ -139,7 +150,8 @@ function shortcutSections(mode) {
                     action: "Down / Up"
                 },
                 { chips: arrows, action: "Look" },
-                { chips: zoom, action: "Dolly" }
+                { chips: zoom, action: "Dolly" },
+                { chips: shift, action: "Increase speed" }
             ]
         };
     }
@@ -155,7 +167,8 @@ function shortcutSections(mode) {
                 action: rotate
             },
             { chips: panMouse, action: "Pan" },
-            { chips: scroll, action: "Zoom" }
+            { chips: scroll, action: "Zoom" },
+            { chips: focus, action: "Focus node" }
         ],
         keyboard: [
             {
@@ -170,7 +183,8 @@ function shortcutSections(mode) {
                 action: rotate
             },
             { chips: arrows, action: "Pan" },
-            { chips: zoom, action: "Zoom" }
+            { chips: zoom, action: "Zoom" },
+            { chips: shift, action: "Increase speed" }
         ]
     };
 }
@@ -251,14 +265,6 @@ export function CameraTab() {
                 <div className="space-y-4 text-sm">
                     <ShortcutGroup icon={Mouse} title="Mouse" rows={sections.mouse} />
                     <ShortcutGroup icon={Keyboard} title="Keyboard" rows={sections.keyboard} />
-                    <div className="text-ink-dim flex items-center gap-1.5">
-                        <ArrowBigUp size={14} aria-hidden="true" />
-                        Hold Shift for 2.5× keyboard speed
-                    </div>
-                    <div className="text-ink-dim flex items-center gap-1.5">
-                        <MousePointerClick size={14} aria-hidden="true" />
-                        Double-click a node to focus on it
-                    </div>
                 </div>
             </Field>
         </Panel>
