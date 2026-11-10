@@ -643,6 +643,32 @@ export const initViewer = async (canvas) => {
     // Handlers are registered, so the initial model and environment can go out.
     uiModel.start();
 
+    // Pause the physics simulation while the tab is hidden or the window is unfocused, so
+    // the long idle gap cannot turn into one huge physics step when focus returns.
+    let pausedByInactivity = false;
+    const handleInactive = () => {
+        if (state.physicsController.playing) {
+            state.physicsController.pauseSimulation();
+            pausedByInactivity = true;
+        }
+    };
+    const handleActive = () => {
+        if (pausedByInactivity && !document.hidden) {
+            state.physicsController.resumeSimulation();
+            pausedByInactivity = false;
+        }
+    };
+    const handleVisibilityChange = () => {
+        if (document.hidden) {
+            handleInactive();
+        } else {
+            handleActive();
+        }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleInactive);
+    window.addEventListener("focus", handleActive);
+
     // ------------------------------------------------------------ render loop
 
     const past = {};
@@ -704,6 +730,9 @@ export const initViewer = async (canvas) => {
             unsubscribe();
         }
         subscriptions.length = 0;
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("blur", handleInactive);
+        window.removeEventListener("focus", handleActive);
         uiModel.dispose();
         state.graphController.stopGraphEngine();
         state.physicsController.pauseSimulation();
