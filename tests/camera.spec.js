@@ -39,13 +39,13 @@ test("dragging orbits the camera", async ({ page }) => {
     expectNoConsoleErrors(errors);
 });
 
-test("middle dragging pans the camera", async ({ page }) => {
+test("right dragging pans the camera", async ({ page }) => {
     const errors = collectConsoleErrors(page);
 
     await dragOnCanvas(page, {
         from: { x: 400, y: 360 },
         to: { x: 560, y: 300 },
-        button: "middle"
+        button: "right"
     });
 
     await expectCanvasToRender(page, "camera-panned.png");

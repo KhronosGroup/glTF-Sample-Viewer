@@ -36,7 +36,9 @@ export function attachCanvasInput(canvas, handlers) {
     listen(canvas, "mousedown", (event) => {
         if (event.button === 0) {
             drag = { kind: "orbit" };
-        } else if (event.button === 1 || event.button === 2) {
+        } else if (event.button === 1) {
+            drag = { kind: "zoom" };
+        } else if (event.button === 2) {
             drag = { kind: "pan" };
         }
     });
@@ -51,6 +53,10 @@ export function attachCanvasInput(canvas, handlers) {
         onHover({ x: event.pageX, y: event.pageY });
 
         if (drag === null) {
+            return;
+        }
+        if (drag.kind === "zoom") {
+            onZoom({ deltaZoom: event.movementY });
             return;
         }
 

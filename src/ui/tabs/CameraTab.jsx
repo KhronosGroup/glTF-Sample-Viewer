@@ -11,6 +11,7 @@ import {
     MouseLeft,
     MousePointerClick,
     MouseRight,
+    Move,
     Plus,
     RotateCcw
 } from "lucide-react";
@@ -69,15 +70,22 @@ function shortcutSections(mode) {
             </Chip>
         </>
     );
-    const panMouse = (
-        <>
-            <Chip label="Middle mouse button">
-                <Mouse size={14} aria-hidden="true" />
-            </Chip>
-            <Chip label="Right mouse button">
-                <MouseRight size={14} aria-hidden="true" />
-            </Chip>
-        </>
+    const leftDrag = (
+        <Chip label="Left mouse button drag">
+            <MouseLeft size={14} aria-hidden="true" />
+            <Move size={11} aria-hidden="true" />
+        </Chip>
+    );
+    const rightDrag = (
+        <Chip label="Right mouse button drag">
+            <MouseRight size={14} aria-hidden="true" />
+            <Move size={11} aria-hidden="true" />
+        </Chip>
+    );
+    const middleDrag = (
+        <Chip label="Middle mouse button drag">
+            <Mouse size={14} aria-hidden="true" />
+        </Chip>
     );
     const scroll = (
         <Chip label="Scroll">
@@ -109,15 +117,9 @@ function shortcutSections(mode) {
     if (mode === "fly") {
         return {
             mouse: [
-                {
-                    chips: (
-                        <Chip label="Left mouse button">
-                            <MouseLeft size={14} aria-hidden="true" />
-                        </Chip>
-                    ),
-                    action: "Look"
-                },
-                { chips: panMouse, action: "Strafe" },
+                { chips: leftDrag, action: "Look" },
+                { chips: rightDrag, action: "Strafe" },
+                { chips: middleDrag, action: "Dolly" },
                 { chips: scroll, action: "Dolly" },
                 { chips: focus, action: "Focus node" }
             ],
@@ -158,15 +160,9 @@ function shortcutSections(mode) {
 
     return {
         mouse: [
-            {
-                chips: (
-                    <Chip label="Left mouse button">
-                        <MouseLeft size={14} aria-hidden="true" />
-                    </Chip>
-                ),
-                action: rotate
-            },
-            { chips: panMouse, action: "Pan" },
+            { chips: leftDrag, action: rotate },
+            { chips: rightDrag, action: "Pan" },
+            { chips: middleDrag, action: "Zoom" },
             { chips: scroll, action: "Zoom" },
             { chips: focus, action: "Focus node" }
         ],
