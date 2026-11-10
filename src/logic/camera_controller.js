@@ -49,6 +49,16 @@ function createSpringChannel() {
     };
 }
 
+// One step of the same critically damped spring, returned as [value, velocity].
+function smoothDamp(current, target, velocity, dt) {
+    const omega = 2 / SMOOTH_TIME_SECONDS;
+    const x = omega * dt;
+    const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+    const change = current - target;
+    const temp = (velocity + omega * change) * dt;
+    return [target + (change + temp) * exp, (velocity - omega * temp) * exp];
+}
+
 const CAMERA_MODES = ["orbit", "trackball", "fly"];
 const PROJECTIONS = ["perspective", "orthographic"];
 // --- minimal quaternion helpers used by the trackball mode ------------------
@@ -137,6 +147,7 @@ export function createCameraController(state) {
     let mode = getViewerState().cameraMode ?? "orbit";
     let projection = getViewerState().cameraProjection ?? "perspective";
     let trackballQuat = [0, 0, 0, 1];
+    let animation = null;
 
     const getAspectRatio = () => camera.perspective.aspectRatio ?? 1;
     const tanHalfYfov = () => Math.tan(camera.perspective.yfov / 2);
@@ -315,23 +326,111 @@ export function createCameraController(state) {
         return [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
     };
 
+    // Start a one-shot animation that springs the camera's orbit pose (and,
+    // optionally, its yaw/pitch) toward a goal using the same critically damped
+    // spring as the input channels.
+    const startAnimation = (goal) => {
+        animation = {
+            yaw: goal.yaw,
+            pitch: goal.pitch,
+            target: [...goal.target],
+            orient: goal.orient,
+            yawVel: 0,
+            pitchVel: 0,
+            targetVel: [0, 0, 0]
+        };
+    };
+
+    const stepAnimation = (dt) => {
+        if (!animation) return false;
+
+        const distance = camera.distance || 1;
+
+        if (animation.orient) {
+            const [yaw, yawVel] = smoothDamp(
+                camera.rotAroundY,
+                animation.yaw,
+                animation.yawVel,
+                dt
+            );
+            const [pitch, pitchVel] = smoothDamp(
+                camera.rotAroundX,
+                animation.pitch,
+                animation.pitchVel,
+                dt
+            );
+            animation.yawVel = yawVel;
+            animation.pitchVel = pitchVel;
+            camera.rotAroundY = yaw;
+            camera.rotAroundX = pitch;
+            camera.setRotation(yaw, pitch);
+        }
+
+        const currentTarget = camera.getTarget();
+        const target = [0, 0, 0];
+        let targetSettled = true;
+        for (let i = 0; i < 3; i++) {
+            const [value, velocity] = smoothDamp(
+                currentTarget[i],
+                animation.target[i],
+                animation.targetVel[i],
+                dt
+            );
+            target[i] = value;
+            animation.targetVel[i] = velocity;
+            if (Math.abs(value - animation.target[i]) >= 1e-4 || Math.abs(velocity) >= 1e-4) {
+                targetSettled = false;
+            }
+        }
+
+        const forward = camera.getLookDirection();
+        camera.setPosition([
+            target[0] - forward[0] * distance,
+            target[1] - forward[1] * distance,
+            target[2] - forward[2] * distance
+        ]);
+
+        const orientSettled =
+            !animation.orient ||
+            (Math.abs(camera.rotAroundY - animation.yaw) < 1e-4 &&
+                Math.abs(camera.rotAroundX - animation.pitch) < 1e-4 &&
+                Math.abs(animation.yawVel) < 1e-4 &&
+                Math.abs(animation.pitchVel) < 1e-4);
+
+        if (orientSettled && targetSettled) {
+            if (animation.orient) {
+                camera.rotAroundY = animation.yaw;
+                camera.rotAroundX = animation.pitch;
+                camera.setRotation(animation.yaw, animation.pitch);
+            }
+            const finalForward = camera.getLookDirection();
+            camera.setPosition([
+                animation.target[0] - finalForward[0] * distance,
+                animation.target[1] - finalForward[1] * distance,
+                animation.target[2] - finalForward[2] * distance
+            ]);
+            if (mode === "trackball") syncTrackball();
+            animation = null;
+            return false;
+        }
+
+        return true;
+    };
+
     // Reposition the camera to look at the scene centre from an axis direction,
     // keeping the current zoom distance.
     const lookAtAxis = (axis) => {
         if (!isEnabled()) return;
         const view = AXIS_VIEWS[axis];
         if (!view) return;
-        const distance = camera.distance || 1;
-        camera.rotAroundY = view.yaw;
-        camera.rotAroundX = view.pitch;
-        camera.setRotation(view.yaw, view.pitch);
-        camera.setDistanceFromTarget(distance, sceneCenter());
-        if (mode === "trackball") syncTrackball();
+        syncYawPitchFromCamera();
+        startAnimation({ orient: true, yaw: view.yaw, pitch: view.pitch, target: sceneCenter() });
     };
 
     // Reapply the active projection (type and near/far planes) after the camera
     // has been reset or fitted, and resync the trackball orientation.
     const syncProjectionState = () => {
+        animation = null;
         syncOrthoFromDistance();
         camera.type = projection === "orthographic" ? "orthographic" : "perspective";
         syncFarPlane(projection);
@@ -407,13 +506,7 @@ export function createCameraController(state) {
         // target, keeping the current orientation and distance.
         focusOn: (position) => {
             if (!isEnabled() || !position) return;
-            const distance = camera.distance || 1;
-            const forward = camera.getLookDirection();
-            camera.setPosition([
-                position[0] - forward[0] * distance,
-                position[1] - forward[1] * distance,
-                position[2] - forward[2] * distance
-            ]);
+            startAnimation({ orient: false, target: position });
         },
         setProjection: (type) => {
             if (!PROJECTIONS.includes(type) || type === projection) return;
@@ -445,6 +538,12 @@ export function createCameraController(state) {
             lastTime = now;
 
             feedKeyboard(dt);
+
+            // A camera animation (focus / look-at) drives the camera and
+            // suspends incremental input until it settles.
+            if (stepAnimation(dt)) {
+                return true;
+            }
 
             const oX = orbitX.step(dt);
             const oY = orbitY.step(dt);
