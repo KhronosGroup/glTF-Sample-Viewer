@@ -48,8 +48,48 @@ function createSpringChannel() {
     };
 }
 
-const CAMERA_MODES = ["orbit", "fly"];
+const CAMERA_MODES = ["orbit", "trackball", "fly"];
 const PROJECTIONS = ["perspective", "orthographic"];
+// --- minimal quaternion helpers used by the trackball mode ------------------
+
+function quatMultiply(a, b) {
+    const [ax, ay, az, aw] = a;
+    const [bx, by, bz, bw] = b;
+    return [
+        aw * bx + ax * bw + ay * bz - az * by,
+        aw * by - ax * bz + ay * bw + az * bx,
+        aw * bz + ax * by - ay * bx + az * bw,
+        aw * bw - ax * bx - ay * by - az * bz
+    ];
+}
+
+function quatFromAxisAngle(axis, angle) {
+    const half = angle / 2;
+    const s = Math.sin(half);
+    return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(half)];
+}
+
+function quatNormalize(q) {
+    const length = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+    return [q[0] / length, q[1] / length, q[2] / length, q[3] / length];
+}
+
+// Row-major 3x3 rotation matrix from a unit quaternion.
+function quatToMatrix3(q) {
+    const [x, y, z, w] = q;
+    return [
+        1 - 2 * (y * y + z * z),
+        2 * (x * y - z * w),
+        2 * (x * z + y * w),
+        2 * (x * y + z * w),
+        1 - 2 * (x * x + z * z),
+        2 * (y * z - x * w),
+        2 * (x * z - y * w),
+        2 * (y * z + x * w),
+        1 - 2 * (x * x + y * y)
+    ];
+}
+
 // Yaw/pitch that place the camera on an axis looking at the scene centre.
 const AXIS_VIEWS = {
     "+X": { yaw: Math.PI / 2, pitch: 0 },
@@ -84,6 +124,7 @@ export function createCameraController(state) {
     let lastTime = undefined;
     let mode = getViewerState().cameraMode ?? "orbit";
     let projection = getViewerState().cameraProjection ?? "perspective";
+    let trackballQuat = [0, 0, 0, 1];
 
     const getAspectRatio = () => camera.perspective.aspectRatio ?? 1;
     const tanHalfYfov = () => Math.tan(camera.perspective.yfov / 2);
@@ -111,6 +152,65 @@ export function createCameraController(state) {
         position[1] -= direction[1] * step;
         position[2] -= direction[2] * step;
         camera.setPosition(position);
+    };
+
+    // --- trackball (free-roll) orientation ----------------------------------
+
+    const syncTrackball = () => {
+        const rotation = camera.getRotation();
+        trackballQuat = [rotation[0], rotation[1], rotation[2], rotation[3]];
+    };
+
+    const applyTrackball = () => {
+        const target = camera.getTarget();
+        const distance = camera.distance || 1;
+        const m = quatToMatrix3(trackballQuat);
+        const forward = [-m[2], -m[5], -m[8]];
+        const position = [
+            target[0] - forward[0] * distance,
+            target[1] - forward[1] * distance,
+            target[2] - forward[2] * distance
+        ];
+        camera.transform[0] = m[0];
+        camera.transform[1] = m[3];
+        camera.transform[2] = m[6];
+        camera.transform[4] = m[1];
+        camera.transform[5] = m[4];
+        camera.transform[6] = m[7];
+        camera.transform[8] = m[2];
+        camera.transform[9] = m[5];
+        camera.transform[10] = m[8];
+        camera.transform[3] = 0;
+        camera.transform[7] = 0;
+        camera.transform[11] = 0;
+        camera.transform[15] = 1;
+        camera.transform[12] = position[0];
+        camera.transform[13] = position[1];
+        camera.transform[14] = position[2];
+    };
+
+    const trackballRotate = (dPhi, dTheta) => {
+        const speed = camera.orbitSpeed;
+        const angleY = -dPhi * speed;
+        const angleX = -dTheta * speed;
+
+        const m = quatToMatrix3(trackballQuat);
+        const right = [m[0], m[3], m[6]];
+        const up = [m[1], m[4], m[7]];
+
+        const qY = quatFromAxisAngle(up, angleY);
+        const qX = quatFromAxisAngle(right, angleX);
+        trackballQuat = quatNormalize(quatMultiply(quatMultiply(trackballQuat, qY), qX));
+
+        applyTrackball();
+    };
+
+    const syncYawPitchFromCamera = () => {
+        const [fx, fy, fz] = camera.getLookDirection();
+        const pitch = Math.asin(Math.max(-1, Math.min(1, fy)));
+        const yaw = Math.atan2(-fx, -fz);
+        camera.rotAroundY = yaw;
+        camera.rotAroundX = pitch;
     };
 
     // Zoom the orthographic frustum by scaling xmag/ymag, mirroring `zoomBy`'s
@@ -179,6 +279,7 @@ export function createCameraController(state) {
         camera.rotAroundX = view.pitch;
         camera.setRotation(view.yaw, view.pitch);
         camera.setDistanceFromTarget(distance, sceneCenter());
+        if (mode === "trackball") syncTrackball();
     };
 
     return {
@@ -192,9 +293,17 @@ export function createCameraController(state) {
         },
         pushZoom: (dZoom) => push(zoom, dZoom),
         setMode: (next) => {
-            if (CAMERA_MODES.includes(next)) {
-                mode = next;
+            if (!CAMERA_MODES.includes(next) || next === mode) return;
+            if (mode === "trackball") {
+                // Leaving trackball: reconstruct yaw/pitch so orbit/fly continue
+                // from the current view direction (dropping any roll).
+                syncYawPitchFromCamera();
+                camera.setRotation(camera.rotAroundY, camera.rotAroundX);
             }
+            if (next === "trackball") {
+                syncTrackball();
+            }
+            mode = next;
         },
         lookAt: lookAtAxis,
         setProjection: (type) => {
@@ -222,6 +331,7 @@ export function createCameraController(state) {
             } else {
                 camera.type = "perspective";
             }
+            if (mode === "trackball") syncTrackball();
         },
         tick: () => {
             const now = performance.now();
@@ -235,10 +345,12 @@ export function createCameraController(state) {
             const z = zoom.step(dt);
 
             const fly = mode === "fly";
+            const trackball = mode === "trackball";
             const ortho = projection === "orthographic";
 
             if (oX.delta !== 0 || oY.delta !== 0) {
-                if (fly) rotateView(oX.delta, oY.delta);
+                if (trackball) trackballRotate(oX.delta, oY.delta);
+                else if (fly) rotateView(oX.delta, oY.delta);
                 else camera.orbit(oX.delta, oY.delta);
             }
             if (pX.delta !== 0 || pY.delta !== 0) {

@@ -21,6 +21,7 @@ export function CameraTab() {
                     disabled={!userCameraActive}
                     options={[
                         { label: "Orbit", value: "orbit" },
+                        { label: "Trackball", value: "trackball" },
                         { label: "Fly", value: "fly" }
                     ]}
                     value={cameraMode}
