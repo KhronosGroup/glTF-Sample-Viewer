@@ -74,7 +74,6 @@ const INITIAL_EXTENSIONS = {
 
 const INITIAL_PHYSICS_DEBUG = {
     engine: "nvidia-physx",
-    colliders: false,
     joints: false
 };
 

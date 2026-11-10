@@ -221,7 +221,10 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 <Switch
                     data-testid="switch-collider-shapes"
                     checked={debugShapes.allShapes}
-                    onChange={(checked) => updateDebugShapes({ allShapes: checked })}
+                    onChange={(checked) => {
+                        updateDebugShapes({ allShapes: checked });
+                        uiEvents.physicsColliderDebugChanged.emit(checked);
+                    }}
                 >
                     Collider Shapes
                 </Switch>

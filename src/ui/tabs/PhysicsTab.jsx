@@ -1,4 +1,5 @@
 import { CirclePause, CirclePlay, StepForward } from "lucide-react";
+import { GltfState } from "@khronosgroup/gltf-viewer";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import {
@@ -13,6 +14,7 @@ import {
 
 export function PhysicsTab({ debug, onDebugChange }) {
     const physicsState = useViewerStore((state) => state.physicsState);
+    const debugShapes = useViewerStore((state) => state.debugShapes);
 
     return (
         <Panel title="Physics">
@@ -50,9 +52,16 @@ export function PhysicsTab({ debug, onDebugChange }) {
                     Step
                 </OutlineButton>
                 <Switch
-                    checked={debug.colliders}
+                    checked={debugShapes.allShapes}
                     onChange={(checked) => {
-                        onDebugChange({ colliders: checked });
+                        const next = { ...debugShapes, allShapes: checked };
+                        setViewerState({ debugShapes: next });
+                        uiEvents.debugShapesChanged.emit({
+                            ...next,
+                            boundingVolumes: next.boundingVolumes
+                                ? GltfState.BoundingVolumeMode.ALL
+                                : GltfState.BoundingVolumeMode.NONE
+                        });
                         uiEvents.physicsColliderDebugChanged.emit(checked);
                     }}
                 >
