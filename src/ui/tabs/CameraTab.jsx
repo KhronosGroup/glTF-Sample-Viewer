@@ -3,7 +3,7 @@ import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
-const LOOK_AXES = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
+const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
 
 const SHORTCUTS = {
     orbit: {
