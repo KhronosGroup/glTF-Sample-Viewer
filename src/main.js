@@ -39,6 +39,39 @@ const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 
 const dracoDecoderLib = (moduleOptions) =>
     createDracoDecoderModule({ ...moduleOptions, locateFile: () => dracoDecoderWasmUrl });
 
+// Transforms a local-space point by a column-major mat4.
+const transformPoint = (matrix, point) => {
+    const x = point[0];
+    const y = point[1];
+    const z = point[2];
+    const w = matrix[3] * x + matrix[7] * y + matrix[11] * z + matrix[15] || 1;
+    return [
+        (matrix[0] * x + matrix[4] * y + matrix[8] * z + matrix[12]) / w,
+        (matrix[1] * x + matrix[5] * y + matrix[9] * z + matrix[13]) / w,
+        (matrix[2] * x + matrix[6] * y + matrix[10] * z + matrix[14]) / w
+    ];
+};
+
+// Averages the world-space centroids of a node's mesh primitives.
+const nodeWorldCentroid = (gltf, node) => {
+    const mesh = node?.mesh !== undefined ? gltf?.meshes?.[node.mesh] : undefined;
+    if (!mesh) return undefined;
+    const worldTransform = node.getRenderedWorldTransform();
+    if (!worldTransform) return undefined;
+
+    const sum = [0, 0, 0];
+    let count = 0;
+    for (const primitive of mesh.primitives) {
+        if (!primitive.centroid) continue;
+        const point = transformPoint(worldTransform, primitive.centroid);
+        sum[0] += point[0];
+        sum[1] += point[1];
+        sum[2] += point[2];
+        count += 1;
+    }
+    return count > 0 ? [sum[0] / count, sum[1] / count, sum[2] / count] : undefined;
+};
+
 /**
  * Boots the viewer against a canvas and returns a teardown function.
  *
@@ -123,8 +156,10 @@ export const initViewer = async (canvas) => {
     // result arrives on the next frame via the renderer's selection callback.
     let pendingFocus = false;
     state.selectionCallback = (result) => {
-        if (pendingFocus && result.position) {
-            cameraController.focusOn(result.position);
+        if (!pendingFocus) return;
+        const focus = nodeWorldCentroid(state.gltf, result.node) ?? result.position;
+        if (focus) {
+            cameraController.focusOn(focus);
             pendingFocus = false;
             redraw = true;
         }
