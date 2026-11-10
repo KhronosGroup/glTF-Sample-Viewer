@@ -85,7 +85,7 @@ export function attachCanvasInput(canvas, handlers) {
 
     // Keyboard navigation is tracked as key state (see keyboard.js); the render
     // loop polls it each frame for continuous, frame-rate independent motion.
-    cleanups.push(attachKeyboard(canvas));
+    cleanups.push(attachKeyboard());
 
     // Touch: one finger orbits, two pinch to zoom.
     let touch = null;

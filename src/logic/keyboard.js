@@ -28,13 +28,22 @@ export function isKeyDown(code) {
 /**
  * Tracks held navigation keys so the render loop can feed continuous per-frame
  * motion instead of relying on browser key auto-repeat. Keydown is bound to the
- * canvas so the viewer consumes those events while the canvas has focus; keyup
- * is bound to the document and blur to the window so releases are always
- * caught.
+ * window and consumes navigation keys regardless of which element has focus,
+ * except when typing in a form field. Keyup is bound to the document and blur
+ * to the window so releases are always caught.
  */
-export function attachKeyboard(canvas) {
+export function attachKeyboard() {
     const down = (event) => {
         if (event.ctrlKey || event.metaKey || event.altKey) return;
+        const target = event.target;
+        if (
+            target?.isContentEditable ||
+            target?.tagName === "INPUT" ||
+            target?.tagName === "TEXTAREA" ||
+            target?.tagName === "SELECT"
+        ) {
+            return;
+        }
         if (!NAV_KEYS.has(event.code)) return;
         if (getViewerState().selectedCamera !== -1) return;
         heldKeys.add(event.code);
@@ -45,12 +54,12 @@ export function attachKeyboard(canvas) {
     const up = (event) => heldKeys.delete(event.code);
     const clear = () => heldKeys.clear();
 
-    canvas.addEventListener("keydown", down);
+    window.addEventListener("keydown", down);
     document.addEventListener("keyup", up);
     window.addEventListener("blur", clear);
 
     return () => {
-        canvas.removeEventListener("keydown", down);
+        window.removeEventListener("keydown", down);
         document.removeEventListener("keyup", up);
         window.removeEventListener("blur", clear);
     };
