@@ -82,11 +82,6 @@ function shortcutSections(mode) {
             <Move size={11} aria-hidden="true" />
         </Chip>
     );
-    const middleDrag = (
-        <Chip label="Middle mouse button drag">
-            <Mouse size={14} aria-hidden="true" />
-        </Chip>
-    );
     const scroll = (
         <Chip label="Scroll">
             <Mouse size={12} aria-hidden="true" />
@@ -119,7 +114,6 @@ function shortcutSections(mode) {
             mouse: [
                 { chips: leftDrag, action: "Look" },
                 { chips: rightDrag, action: "Strafe" },
-                { chips: middleDrag, action: "Dolly" },
                 { chips: scroll, action: "Dolly" },
                 { chips: focus, action: "Focus node" }
             ],
@@ -162,7 +156,6 @@ function shortcutSections(mode) {
         mouse: [
             { chips: leftDrag, action: rotate },
             { chips: rightDrag, action: "Pan" },
-            { chips: middleDrag, action: "Zoom" },
             { chips: scroll, action: "Zoom" },
             { chips: focus, action: "Focus node" }
         ],
