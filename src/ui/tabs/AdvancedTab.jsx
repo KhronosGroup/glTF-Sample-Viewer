@@ -20,6 +20,13 @@ const RENDERING_TOGGLES = [
     { key: "morphing", label: "Morphing", event: "morphingChanged" }
 ];
 
+const INSPECTION_TOGGLES = [
+    { key: "lightGizmos", label: "Light Gizmos", event: "lightGizmosChanged" },
+    { key: "cameraGizmos", label: "Camera Gizmos", event: "cameraGizmosChanged" },
+    { key: "jointGizmos", label: "Joint Gizmos", event: "jointGizmosChanged" },
+    { key: "aabbGizmos", label: "AABB Gizmos", event: "aabbGizmosChanged" }
+];
+
 const EXTENSION_TOGGLES = [
     {
         key: "interactivity",
@@ -302,14 +309,6 @@ export function AdvancedTab({
             <Field label="Rendering" grouped>
                 {renderToggles(RENDERING_TOGGLES)}
                 <Switch
-                    data-testid="switch-wireframe"
-                    checked={extensions.wireframe}
-                    disabled={!supportsWireframe}
-                    onChange={toggle({ key: "wireframe", event: "wireframeChanged" })}
-                >
-                    {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
-                </Switch>
-                <Switch
                     checked={extensions.floatingPointFramebuffer}
                     disabled={!supportsFloatingPointFramebuffer}
                     onChange={toggle({
@@ -318,6 +317,18 @@ export function AdvancedTab({
                     })}
                 >
                     32-bit Framebuffer
+                </Switch>
+            </Field>
+
+            <Field label="Inspection" grouped>
+                {renderToggles(INSPECTION_TOGGLES)}
+                <Switch
+                    data-testid="switch-wireframe"
+                    checked={extensions.wireframe}
+                    disabled={!supportsWireframe}
+                    onChange={toggle({ key: "wireframe", event: "wireframeChanged" })}
+                >
+                    {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
                 </Switch>
             </Field>
 
