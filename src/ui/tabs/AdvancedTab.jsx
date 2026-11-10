@@ -41,7 +41,7 @@ const EXTENSION_TOGGLES = [
     },
     {
         key: "nodeVisibility",
-        label: "Node Visibility (2.1 core)",
+        label: "Node Visibility",
         event: "nodeVisibilityChanged"
     },
     {
@@ -79,7 +79,7 @@ const MATERIAL_EXTENSIONS = [
     },
     {
         key: "emissiveStrength",
-        label: "Emissive Strength (2.1 core)",
+        label: "Emissive Strength",
         event: "emissiveStrengthChanged"
     },
     {

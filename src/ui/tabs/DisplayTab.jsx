@@ -200,7 +200,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Field>
             </Field>
 
-            <Field label="Shapes (2.1 core)" grouped>
+            <Field label="Shapes" grouped>
                 <Switch
                     data-testid="switch-cull-bounding-volumes"
                     checked={cullByBoundingVolume}
