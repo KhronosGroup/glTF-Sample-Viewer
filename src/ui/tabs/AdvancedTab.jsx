@@ -17,7 +17,8 @@ import { uiEvents } from "../../logic/ui_events.js";
 
 const RENDERING_TOGGLES = [
     { key: "skinning", label: "Skinning", event: "skinningChanged" },
-    { key: "morphing", label: "Morphing", event: "morphingChanged" }
+    { key: "morphing", label: "Morphing", event: "morphingChanged" },
+    { key: "debugGizmos", label: "Debug Gizmos", event: "gizmosChanged" }
 ];
 
 const EXTENSION_TOGGLES = [

@@ -51,6 +51,7 @@ const INITIAL_EXTENSIONS = {
     morphOverrides: false,
     morphSignedRange: false,
     wireframe: false,
+    debugGizmos: false,
     interactivity: true,
     hoverability: true,
     selectability: true,
