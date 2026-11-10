@@ -34,9 +34,9 @@ export function attachCanvasInput(canvas, handlers) {
     let drag = null;
 
     listen(canvas, "mousedown", (event) => {
-        if (event.button === 0 && !event.shiftKey) {
+        if (event.button === 0) {
             drag = { kind: "orbit" };
-        } else if (event.button === 1 || event.button === 2 || event.shiftKey) {
+        } else if (event.button === 1 || event.button === 2) {
             drag = { kind: "pan" };
         }
     });

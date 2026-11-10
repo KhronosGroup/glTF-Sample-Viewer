@@ -94,13 +94,14 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 
 `left click + drag` : Orbit / rotate the model (Orbit, Trackball) or look around (Fly)
 
-`shift + drag` \
 `middle mouse button + drag` \
 `right mouse button + drag` : Pan / strafe the camera
 
 `scroll` : Zoom (Orbit, Trackball) or dolly (Fly)
 
 `double click` : Focus on the picked node
+
+`shift` (held) : 2.5× faster keyboard navigation
 
 `W A S D` (Orbit, Trackball) : Orbit / rotate · `arrow keys` : Pan · `+` / `-` : Zoom
 

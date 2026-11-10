@@ -77,9 +77,6 @@ function shortcutSections(mode) {
             <Chip label="Right mouse button">
                 <MouseRight size={14} aria-hidden="true" />
             </Chip>
-            <Chip label="Shift">
-                <ArrowBigUp size={13} aria-hidden="true" />
-            </Chip>
         </>
     );
     const scroll = (
@@ -254,6 +251,10 @@ export function CameraTab() {
                 <div className="space-y-4 text-sm">
                     <ShortcutGroup icon={Mouse} title="Mouse" rows={sections.mouse} />
                     <ShortcutGroup icon={Keyboard} title="Keyboard" rows={sections.keyboard} />
+                    <div className="text-ink-dim flex items-center gap-1.5">
+                        <ArrowBigUp size={14} aria-hidden="true" />
+                        Hold Shift for 2.5× keyboard speed
+                    </div>
                     <div className="text-ink-dim flex items-center gap-1.5">
                         <MousePointerClick size={14} aria-hidden="true" />
                         Double-click a node to focus on it

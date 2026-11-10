@@ -1,5 +1,5 @@
 import { getViewerState } from "./viewer_store.js";
-import { isKeyDown } from "./keyboard.js";
+import { isKeyDown, isShiftDown } from "./keyboard.js";
 
 // Roughly how long the camera takes to reach its target after an input delta,
 // in seconds. Smaller values feel snappier, larger values feel weightier.
@@ -108,6 +108,8 @@ const ROTATE_SPEED = 180;
 const ORBIT_PAN_SPEED = 400;
 const FLY_MOVE_SPEED = 8;
 const ZOOM_SPEED = 6.0;
+// Multiplier applied to WASD/QE/+/- keyboard motion while Shift is held.
+const SHIFT_SPEED_BOOST = 2.5;
 // Widen the far plane in fly mode so flying away from the scene does not clip.
 const FLY_FAR_PLANE_SCALE = 10;
 
@@ -339,9 +341,12 @@ export function createCameraController(state) {
     // Feed held keys into the spring channels each frame, scaled by dt so
     // keyboard motion is continuous and frame-rate independent.
     const feedKeyboard = (dt) => {
+        const boost = isShiftDown() ? SHIFT_SPEED_BOOST : 1;
         const rotateStep = ROTATE_SPEED * dt;
         const orbitPanStep = ORBIT_PAN_SPEED * dt;
-        const flyStep = FLY_MOVE_SPEED * dt;
+        const flyStep = FLY_MOVE_SPEED * dt * boost;
+        const zoomStep = ZOOM_SPEED * dt * boost;
+        const rotateBoosted = rotateStep * boost;
 
         if (mode === "fly") {
             // WASD/QE move, arrows look around.
@@ -357,19 +362,19 @@ export function createCameraController(state) {
             if (isKeyDown("ArrowRight")) push(orbitX, rotateStep);
         } else {
             // Orbit / trackball: WASD rotates, arrows pan.
-            if (isKeyDown("KeyW")) push(orbitY, rotateStep);
-            if (isKeyDown("KeyS")) push(orbitY, -rotateStep);
-            if (isKeyDown("KeyA")) push(orbitX, rotateStep);
-            if (isKeyDown("KeyD")) push(orbitX, -rotateStep);
+            if (isKeyDown("KeyW")) push(orbitY, rotateBoosted);
+            if (isKeyDown("KeyS")) push(orbitY, -rotateBoosted);
+            if (isKeyDown("KeyA")) push(orbitX, rotateBoosted);
+            if (isKeyDown("KeyD")) push(orbitX, -rotateBoosted);
             if (isKeyDown("ArrowUp")) push(panY, -orbitPanStep);
             if (isKeyDown("ArrowDown")) push(panY, orbitPanStep);
             if (isKeyDown("ArrowLeft")) push(panX, orbitPanStep);
             if (isKeyDown("ArrowRight")) push(panX, -orbitPanStep);
         }
 
-        const zoomStep = mode === "fly" ? flyStep : ZOOM_SPEED * dt;
-        if (isKeyDown("Equal") || isKeyDown("NumpadAdd")) push(zoom, -zoomStep);
-        if (isKeyDown("Minus") || isKeyDown("NumpadSubtract")) push(zoom, zoomStep);
+        const zoomAmount = mode === "fly" ? flyStep : zoomStep;
+        if (isKeyDown("Equal") || isKeyDown("NumpadAdd")) push(zoom, -zoomAmount);
+        if (isKeyDown("Minus") || isKeyDown("NumpadSubtract")) push(zoom, zoomAmount);
     };
 
     return {

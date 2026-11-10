@@ -19,10 +19,17 @@ const NAV_KEYS = new Set([
     "NumpadSubtract"
 ]);
 
+const SHIFT_CODES = new Set(["ShiftLeft", "ShiftRight"]);
+
 const heldKeys = new Set();
+let shiftDown = false;
 
 export function isKeyDown(code) {
     return heldKeys.has(code);
+}
+
+export function isShiftDown() {
+    return shiftDown;
 }
 
 /**
@@ -35,6 +42,10 @@ export function isKeyDown(code) {
 export function attachKeyboard() {
     const down = (event) => {
         if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (SHIFT_CODES.has(event.code)) {
+            shiftDown = true;
+            return;
+        }
         const target = event.target;
         if (
             target?.isContentEditable ||
@@ -51,8 +62,14 @@ export function attachKeyboard() {
         event.stopPropagation();
     };
 
-    const up = (event) => heldKeys.delete(event.code);
-    const clear = () => heldKeys.clear();
+    const up = (event) => {
+        if (SHIFT_CODES.has(event.code)) shiftDown = false;
+        heldKeys.delete(event.code);
+    };
+    const clear = () => {
+        heldKeys.clear();
+        shiftDown = false;
+    };
 
     window.addEventListener("keydown", down);
     document.addEventListener("keyup", up);
