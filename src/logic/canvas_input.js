@@ -1,11 +1,6 @@
 import { SimpleDropzone } from "simple-dropzone";
 import normalizeWheel from "normalize-wheel";
-import { getViewerState } from "./viewer_store.js";
-
-// Keyboard deltas are expressed in the same units as mouse deltas (pixels for
-// orbit/pan, wheel notches for zoom), so the spring smoothing treats both alike.
-const KEY_STEP = 10;
-const KEY_ZOOM_STEP = 1;
+import { attachKeyboard } from "./keyboard.js";
 
 /**
  * Canvas input, translated from the RxJS gesture streams it replaces.
@@ -88,91 +83,9 @@ export function attachCanvasInput(canvas, handlers) {
 
     listen(canvas, "wheel", (event) => onZoom({ deltaZoom: normalizeWheel(event).spinY }));
 
-    // Keyboard navigation. Arrow keys orbit/look, Shift+Arrow pans/strafes and
-    // +/- zooms; in fly mode WASD/QE move the camera through the scene.
-    listen(window, "keydown", (event) => {
-        if (event.ctrlKey || event.metaKey || event.altKey) {
-            return;
-        }
-        const target = event.target;
-        if (
-            target?.isContentEditable ||
-            target?.tagName === "INPUT" ||
-            target?.tagName === "TEXTAREA" ||
-            target?.tagName === "SELECT"
-        ) {
-            return;
-        }
-        // Keyboard navigation only moves the user camera.
-        if (getViewerState().selectedCamera !== -1) {
-            return;
-        }
-
-        const mode = getViewerState().cameraMode;
-        const shift = event.shiftKey;
-        const orbit = (x, y) => {
-            onOrbit({ deltaPhi: x, deltaTheta: y });
-            event.preventDefault();
-        };
-        const pan = (x, y) => {
-            onPan({ deltaX: x, deltaY: y });
-            event.preventDefault();
-        };
-        const zoom = (d) => {
-            onZoom({ deltaZoom: d });
-            event.preventDefault();
-        };
-
-        switch (event.key) {
-            case "ArrowLeft":
-                shift ? pan(KEY_STEP, 0) : orbit(-KEY_STEP, 0);
-                break;
-            case "ArrowRight":
-                shift ? pan(-KEY_STEP, 0) : orbit(KEY_STEP, 0);
-                break;
-            case "ArrowUp":
-                shift ? pan(0, KEY_STEP) : orbit(0, -KEY_STEP);
-                break;
-            case "ArrowDown":
-                shift ? pan(0, -KEY_STEP) : orbit(0, KEY_STEP);
-                break;
-            case "+":
-            case "=":
-                zoom(-KEY_ZOOM_STEP);
-                break;
-            case "-":
-            case "_":
-                zoom(KEY_ZOOM_STEP);
-                break;
-            default:
-                if (mode !== "fly") {
-                    return;
-                }
-                switch (event.key.toLowerCase()) {
-                    case "w":
-                        zoom(-KEY_STEP);
-                        break;
-                    case "s":
-                        zoom(KEY_STEP);
-                        break;
-                    case "a":
-                        pan(KEY_STEP, 0);
-                        break;
-                    case "d":
-                        pan(-KEY_STEP, 0);
-                        break;
-                    case "q":
-                        pan(0, -KEY_STEP);
-                        break;
-                    case "e":
-                        pan(0, KEY_STEP);
-                        break;
-                    default:
-                        return;
-                }
-                event.preventDefault();
-        }
-    });
+    // Keyboard navigation is tracked as key state (see keyboard.js); the render
+    // loop polls it each frame for continuous, frame-rate independent motion.
+    cleanups.push(attachKeyboard(canvas));
 
     // Touch: one finger orbits, two pinch to zoom.
     let touch = null;

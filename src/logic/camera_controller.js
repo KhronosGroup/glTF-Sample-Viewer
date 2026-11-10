@@ -1,4 +1,5 @@
 import { getViewerState } from "./viewer_store.js";
+import { isKeyDown } from "./keyboard.js";
 
 // Roughly how long the camera takes to reach its target after an input delta,
 // in seconds. Smaller values feel snappier, larger values feel weightier.
@@ -102,6 +103,11 @@ const AXIS_VIEWS = {
 const MaxPitch = Math.PI / 2 - 0.01;
 const DollyFactor = 0.05;
 const MaxNearFarRatio = 10000;
+// Keyboard speeds, in pixels (rotation/pan) or wheel notches (zoom) per second.
+const ROTATE_SPEED = 180;
+const ORBIT_PAN_SPEED = 400;
+const FLY_MOVE_SPEED = 8;
+const ZOOM_SPEED = 1.5;
 
 /**
  * Owns the user camera's motion, mode and projection: smooths discrete input
@@ -151,6 +157,22 @@ export function createCameraController(state) {
         position[0] -= direction[0] * step;
         position[1] -= direction[1] * step;
         position[2] -= direction[2] * step;
+        camera.setPosition(position);
+    };
+
+    // Strafe the fly camera along its right/up axes, scaled by distance like
+    // `dolly` so lateral movement matches forward/back speed. The signs match
+    // `camera.pan`: positive x moves left, positive y moves down.
+    const flyStrafe = (dX, dY) => {
+        const speed = camera.distance * DollyFactor;
+        const right = [camera.transform[0], camera.transform[1], camera.transform[2]];
+        const up = [camera.transform[4], camera.transform[5], camera.transform[6]];
+        const rightLength = Math.hypot(right[0], right[1], right[2]) || 1;
+        const upLength = Math.hypot(up[0], up[1], up[2]) || 1;
+        const position = camera.getPosition();
+        position[0] += (-dX * speed * right[0]) / rightLength + (-dY * speed * up[0]) / upLength;
+        position[1] += (-dX * speed * right[1]) / rightLength + (-dY * speed * up[1]) / upLength;
+        position[2] += (-dX * speed * right[2]) / rightLength + (-dY * speed * up[2]) / upLength;
         camera.setPosition(position);
     };
 
@@ -295,6 +317,42 @@ export function createCameraController(state) {
         if (mode === "trackball") syncTrackball();
     };
 
+    // Feed held keys into the spring channels each frame, scaled by dt so
+    // keyboard motion is continuous and frame-rate independent.
+    const feedKeyboard = (dt) => {
+        const rotateStep = ROTATE_SPEED * dt;
+        const orbitPanStep = ORBIT_PAN_SPEED * dt;
+        const flyStep = FLY_MOVE_SPEED * dt;
+
+        if (mode === "fly") {
+            // WASD/QE move, arrows look around.
+            if (isKeyDown("KeyW")) push(zoom, -flyStep);
+            if (isKeyDown("KeyS")) push(zoom, flyStep);
+            if (isKeyDown("KeyA")) push(panX, flyStep);
+            if (isKeyDown("KeyD")) push(panX, -flyStep);
+            if (isKeyDown("KeyQ")) push(panY, flyStep);
+            if (isKeyDown("KeyE")) push(panY, -flyStep);
+            if (isKeyDown("ArrowUp")) push(orbitY, -rotateStep);
+            if (isKeyDown("ArrowDown")) push(orbitY, rotateStep);
+            if (isKeyDown("ArrowLeft")) push(orbitX, -rotateStep);
+            if (isKeyDown("ArrowRight")) push(orbitX, rotateStep);
+        } else {
+            // Orbit / trackball: WASD rotates, arrows pan.
+            if (isKeyDown("KeyW")) push(orbitY, -rotateStep);
+            if (isKeyDown("KeyS")) push(orbitY, rotateStep);
+            if (isKeyDown("KeyA")) push(orbitX, -rotateStep);
+            if (isKeyDown("KeyD")) push(orbitX, rotateStep);
+            if (isKeyDown("ArrowUp")) push(panY, -orbitPanStep);
+            if (isKeyDown("ArrowDown")) push(panY, orbitPanStep);
+            if (isKeyDown("ArrowLeft")) push(panX, orbitPanStep);
+            if (isKeyDown("ArrowRight")) push(panX, -orbitPanStep);
+        }
+
+        const zoomStep = mode === "fly" ? flyStep : ZOOM_SPEED * dt;
+        if (isKeyDown("Equal") || isKeyDown("NumpadAdd")) push(zoom, -zoomStep);
+        if (isKeyDown("Minus") || isKeyDown("NumpadSubtract")) push(zoom, zoomStep);
+    };
+
     return {
         pushOrbit: (dPhi, dTheta) => {
             push(orbitX, dPhi);
@@ -360,6 +418,8 @@ export function createCameraController(state) {
             const dt = lastTime === undefined ? 0 : (now - lastTime) / 1000;
             lastTime = now;
 
+            feedKeyboard(dt);
+
             const oX = orbitX.step(dt);
             const oY = orbitY.step(dt);
             const pX = panX.step(dt);
@@ -376,7 +436,8 @@ export function createCameraController(state) {
                 else camera.orbit(oX.delta, oY.delta);
             }
             if (pX.delta !== 0 || pY.delta !== 0) {
-                if (ortho && !fly) orthoPan(pX.delta, pY.delta);
+                if (fly) flyStrafe(pX.delta, pY.delta);
+                else if (ortho) orthoPan(pX.delta, pY.delta);
                 else camera.pan(pX.delta, pY.delta);
             }
             if (z.delta !== 0) {
