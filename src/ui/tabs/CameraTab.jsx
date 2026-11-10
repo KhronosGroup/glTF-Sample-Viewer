@@ -1,22 +1,32 @@
-import { Keyboard, Mouse, MousePointerClick, RotateCcw } from "lucide-react";
+import {
+    ArrowBigUp,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    ArrowUpDown,
+    Keyboard,
+    Minus,
+    Mouse,
+    MouseLeft,
+    MousePointerClick,
+    MouseRight,
+    Plus,
+    RotateCcw
+} from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
 
-function Key({ children }) {
+function Chip({ children, label }) {
     return (
-        <kbd className="border-ink/40 bg-card inline-flex h-6 min-w-6 items-center justify-center rounded-md border px-1.5 font-mono text-[11px] leading-none">
-            {children}
-        </kbd>
-    );
-}
-
-function MouseButton({ children }) {
-    return (
-        <span className="border-ink/40 bg-card inline-flex h-6 items-center gap-1 rounded-md border px-1.5 text-[11px] leading-none">
-            <Mouse size={11} aria-hidden="true" />
+        <span
+            aria-label={label}
+            title={label}
+            className="border-ink/40 bg-card inline-flex h-6 min-w-6 items-center justify-center gap-1 rounded-md border px-1.5 font-mono text-[11px] leading-none"
+        >
             {children}
         </span>
     );
@@ -45,33 +55,70 @@ function shortcutSections(mode) {
     const rotate = mode === "trackball" ? "Rotate" : "Orbit";
     const arrows = (
         <>
-            <Key>←</Key>
-            <Key>↑</Key>
-            <Key>↓</Key>
-            <Key>→</Key>
+            <Chip label="Arrow Left">
+                <ArrowLeft size={13} aria-hidden="true" />
+            </Chip>
+            <Chip label="Arrow Up">
+                <ArrowUp size={13} aria-hidden="true" />
+            </Chip>
+            <Chip label="Arrow Down">
+                <ArrowDown size={13} aria-hidden="true" />
+            </Chip>
+            <Chip label="Arrow Right">
+                <ArrowRight size={13} aria-hidden="true" />
+            </Chip>
         </>
     );
     const panMouse = (
         <>
-            <MouseButton>M</MouseButton>
-            <MouseButton>R</MouseButton>
-            <Key>Shift</Key>
+            <Chip label="Middle mouse button">
+                <Mouse size={14} aria-hidden="true" />
+            </Chip>
+            <Chip label="Right mouse button">
+                <MouseRight size={14} aria-hidden="true" />
+            </Chip>
+            <Chip label="Shift">
+                <ArrowBigUp size={13} aria-hidden="true" />
+            </Chip>
+        </>
+    );
+    const scroll = (
+        <Chip label="Scroll">
+            <Mouse size={12} aria-hidden="true" />
+            <ArrowUpDown size={12} aria-hidden="true" />
+        </Chip>
+    );
+    const zoom = (
+        <>
+            <Chip label="Plus">
+                <Plus size={13} aria-hidden="true" />
+            </Chip>
+            <Chip label="Minus">
+                <Minus size={13} aria-hidden="true" />
+            </Chip>
         </>
     );
 
     if (mode === "fly") {
         return {
             mouse: [
-                { chips: <MouseButton>L</MouseButton>, action: "Look" },
+                {
+                    chips: (
+                        <Chip label="Left mouse button">
+                            <MouseLeft size={14} aria-hidden="true" />
+                        </Chip>
+                    ),
+                    action: "Look"
+                },
                 { chips: panMouse, action: "Strafe" },
-                { chips: <MouseButton>Wheel</MouseButton>, action: "Dolly" }
+                { chips: scroll, action: "Dolly" }
             ],
             keyboard: [
                 {
                     chips: (
                         <>
-                            <Key>W</Key>
-                            <Key>S</Key>
+                            <Chip>W</Chip>
+                            <Chip>S</Chip>
                         </>
                     ),
                     action: "Forward / Back"
@@ -79,8 +126,8 @@ function shortcutSections(mode) {
                 {
                     chips: (
                         <>
-                            <Key>A</Key>
-                            <Key>D</Key>
+                            <Chip>A</Chip>
+                            <Chip>D</Chip>
                         </>
                     ),
                     action: "Strafe"
@@ -88,54 +135,45 @@ function shortcutSections(mode) {
                 {
                     chips: (
                         <>
-                            <Key>Q</Key>
-                            <Key>E</Key>
+                            <Chip>Q</Chip>
+                            <Chip>E</Chip>
                         </>
                     ),
                     action: "Down / Up"
                 },
                 { chips: arrows, action: "Look" },
-                {
-                    chips: (
-                        <>
-                            <Key>+</Key>
-                            <Key>−</Key>
-                        </>
-                    ),
-                    action: "Dolly"
-                }
+                { chips: zoom, action: "Dolly" }
             ]
         };
     }
 
     return {
         mouse: [
-            { chips: <MouseButton>L</MouseButton>, action: rotate },
+            {
+                chips: (
+                    <Chip label="Left mouse button">
+                        <MouseLeft size={14} aria-hidden="true" />
+                    </Chip>
+                ),
+                action: rotate
+            },
             { chips: panMouse, action: "Pan" },
-            { chips: <MouseButton>Wheel</MouseButton>, action: "Zoom" }
+            { chips: scroll, action: "Zoom" }
         ],
         keyboard: [
             {
                 chips: (
                     <>
-                        <Key>W</Key>
-                        <Key>A</Key>
-                        <Key>S</Key>
-                        <Key>D</Key>
+                        <Chip>W</Chip>
+                        <Chip>A</Chip>
+                        <Chip>S</Chip>
+                        <Chip>D</Chip>
                     </>
                 ),
                 action: rotate
             },
             { chips: arrows, action: "Pan" },
-            {
-                chips: (
-                    <>
-                        <Key>+</Key>
-                        <Key>−</Key>
-                    </>
-                ),
-                action: "Zoom"
-            }
+            { chips: zoom, action: "Zoom" }
         ]
     };
 }
