@@ -108,6 +108,8 @@ const ROTATE_SPEED = 180;
 const ORBIT_PAN_SPEED = 400;
 const FLY_MOVE_SPEED = 8;
 const ZOOM_SPEED = 1.5;
+// Widen the far plane in fly mode so flying away from the scene does not clip.
+const FLY_FAR_PLANE_SCALE = 10;
 
 /**
  * Owns the user camera's motion, mode and projection: smooths discrete input
@@ -284,6 +286,25 @@ export function createCameraController(state) {
         camera.orthographic.xmag = camera.orthographic.ymag * getAspectRatio();
     };
 
+    // Recompute the near/far planes for a projection, widening the far plane in
+    // fly mode so flying away from the scene does not clip it.
+    const syncFarPlane = (type) => {
+        if (type === "orthographic") {
+            applyOrthoPlanes();
+            if (mode === "fly") camera.orthographic.zfar *= FLY_FAR_PLANE_SCALE;
+        } else {
+            camera.fitCameraPlanesToExtents(camera.sceneExtents.min, camera.sceneExtents.max);
+            if (mode === "fly") camera.perspective.zfar *= FLY_FAR_PLANE_SCALE;
+        }
+    };
+
+    // Scale or restore the far planes when entering/leaving fly mode.
+    const scaleFarPlanes = (enabled) => {
+        const factor = enabled ? FLY_FAR_PLANE_SCALE : 1 / FLY_FAR_PLANE_SCALE;
+        camera.perspective.zfar *= factor;
+        camera.orthographic.zfar *= factor;
+    };
+
     const sceneCenter = () => {
         const min = camera.sceneExtents.min;
         const max = camera.sceneExtents.max;
@@ -308,12 +329,8 @@ export function createCameraController(state) {
     // has been reset or fitted, and resync the trackball orientation.
     const syncProjectionState = () => {
         syncOrthoFromDistance();
-        if (projection === "orthographic") {
-            camera.type = "orthographic";
-            applyOrthoPlanes();
-        } else {
-            camera.type = "perspective";
-        }
+        camera.type = projection === "orthographic" ? "orthographic" : "perspective";
+        syncFarPlane(projection);
         if (mode === "trackball") syncTrackball();
     };
 
@@ -371,9 +388,11 @@ export function createCameraController(state) {
                 syncYawPitchFromCamera();
                 camera.setRotation(camera.rotAroundY, camera.rotAroundX);
             }
+            if (mode === "fly") scaleFarPlanes(false);
             if (next === "trackball") {
                 syncTrackball();
             }
+            if (next === "fly") scaleFarPlanes(true);
             mode = next;
         },
         lookAt: lookAtAxis,
@@ -394,13 +413,13 @@ export function createCameraController(state) {
             if (type === "orthographic") {
                 syncOrthoFromDistance();
                 camera.type = "orthographic";
-                applyOrthoPlanes();
+                syncFarPlane("orthographic");
             } else {
                 // Convert scale back to distance so the framed content is kept.
                 camera.distance = camera.orthographic.ymag / tanHalfYfov();
                 camera.setDistanceFromTarget(camera.distance, camera.getTarget());
                 camera.type = "perspective";
-                camera.fitCameraPlanesToExtents(camera.sceneExtents.min, camera.sceneExtents.max);
+                syncFarPlane("perspective");
             }
             projection = type;
         },
