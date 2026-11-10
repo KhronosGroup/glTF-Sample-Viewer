@@ -107,7 +107,7 @@ const MaxNearFarRatio = 10000;
 const ROTATE_SPEED = 180;
 const ORBIT_PAN_SPEED = 400;
 const FLY_MOVE_SPEED = 8;
-const ZOOM_SPEED = 1.5;
+const ZOOM_SPEED = 6.0;
 // Widen the far plane in fly mode so flying away from the scene does not clip.
 const FLY_FAR_PLANE_SCALE = 10;
 
@@ -127,6 +127,8 @@ export function createCameraController(state) {
     const orbitY = createSpringChannel();
     const panX = createSpringChannel();
     const panY = createSpringChannel();
+    const strafeX = createSpringChannel();
+    const strafeY = createSpringChannel();
     const zoom = createSpringChannel();
     const isEnabled = () => state.cameraNodeIndex === undefined;
     let lastTime = undefined;
@@ -345,20 +347,20 @@ export function createCameraController(state) {
             // WASD/QE move, arrows look around.
             if (isKeyDown("KeyW")) push(zoom, -flyStep);
             if (isKeyDown("KeyS")) push(zoom, flyStep);
-            if (isKeyDown("KeyA")) push(panX, flyStep);
-            if (isKeyDown("KeyD")) push(panX, -flyStep);
-            if (isKeyDown("KeyQ")) push(panY, flyStep);
-            if (isKeyDown("KeyE")) push(panY, -flyStep);
+            if (isKeyDown("KeyA")) push(strafeX, flyStep);
+            if (isKeyDown("KeyD")) push(strafeX, -flyStep);
+            if (isKeyDown("KeyQ")) push(strafeY, flyStep);
+            if (isKeyDown("KeyE")) push(strafeY, -flyStep);
             if (isKeyDown("ArrowUp")) push(orbitY, -rotateStep);
             if (isKeyDown("ArrowDown")) push(orbitY, rotateStep);
             if (isKeyDown("ArrowLeft")) push(orbitX, -rotateStep);
             if (isKeyDown("ArrowRight")) push(orbitX, rotateStep);
         } else {
             // Orbit / trackball: WASD rotates, arrows pan.
-            if (isKeyDown("KeyW")) push(orbitY, -rotateStep);
-            if (isKeyDown("KeyS")) push(orbitY, rotateStep);
-            if (isKeyDown("KeyA")) push(orbitX, -rotateStep);
-            if (isKeyDown("KeyD")) push(orbitX, rotateStep);
+            if (isKeyDown("KeyW")) push(orbitY, rotateStep);
+            if (isKeyDown("KeyS")) push(orbitY, -rotateStep);
+            if (isKeyDown("KeyA")) push(orbitX, rotateStep);
+            if (isKeyDown("KeyD")) push(orbitX, -rotateStep);
             if (isKeyDown("ArrowUp")) push(panY, -orbitPanStep);
             if (isKeyDown("ArrowDown")) push(panY, orbitPanStep);
             if (isKeyDown("ArrowLeft")) push(panX, orbitPanStep);
@@ -443,6 +445,8 @@ export function createCameraController(state) {
             const oY = orbitY.step(dt);
             const pX = panX.step(dt);
             const pY = panY.step(dt);
+            const sX = strafeX.step(dt);
+            const sY = strafeY.step(dt);
             const z = zoom.step(dt);
 
             const fly = mode === "fly";
@@ -454,9 +458,13 @@ export function createCameraController(state) {
                 else if (fly) rotateView(oX.delta, oY.delta);
                 else camera.orbit(oX.delta, oY.delta);
             }
+            if (fly && (sX.delta !== 0 || sY.delta !== 0)) {
+                // Keyboard fly strafe, scaled by distance to match dolly.
+                flyStrafe(sX.delta, sY.delta);
+            }
             if (pX.delta !== 0 || pY.delta !== 0) {
-                if (fly) flyStrafe(pX.delta, pY.delta);
-                else if (ortho) orthoPan(pX.delta, pY.delta);
+                // Mouse pan (all modes) and arrow-key pan in orbit/trackball.
+                if (!fly && ortho) orthoPan(pX.delta, pY.delta);
                 else camera.pan(pX.delta, pY.delta);
             }
             if (z.delta !== 0) {
@@ -465,7 +473,7 @@ export function createCameraController(state) {
                 else camera.zoomBy(z.delta);
             }
 
-            return [oX, oY, pX, pY, z].some((s) => s.delta !== 0 || !s.settled);
+            return [oX, oY, pX, pY, sX, sY, z].some((s) => s.delta !== 0 || !s.settled);
         }
     };
 }
