@@ -92,13 +92,17 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 
 ### Controls
 
-`click + drag` : Rotate model
+`left click + drag` : Orbit / rotate the model (Orbit, Trackball) or look around (Fly)
 
 `shift + drag` \
-`middle mouse button + drag` : Pan camera
+`middle mouse button + drag` \
+`right mouse button + drag` : Pan / strafe the camera
 
-`scroll` \
-`right click + drag` : Zoom camera
+`scroll` : Zoom (Orbit, Trackball) or dolly (Fly)
+
+`arrow keys` : Orbit / look · `shift + arrow keys` : Pan / strafe · `+` / `-` : Zoom / dolly
+
+`W A S D Q E` (Fly mode) : Move forward / left / back / right / down / up
 
 `GUI` : Use to change models and settings
 

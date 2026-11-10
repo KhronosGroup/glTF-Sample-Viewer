@@ -4,6 +4,21 @@ import { Field, Panel, SegmentedControl } from "../controls.jsx";
 
 const LOOK_AXES = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
 
+const SHORTCUTS = {
+    orbit: {
+        mouse: "Drag to orbit · Shift-drag, middle-drag or right-drag to pan · Wheel to zoom",
+        keys: "Arrow keys to orbit · Shift + Arrow keys to pan · +/− to zoom"
+    },
+    trackball: {
+        mouse: "Drag to rotate · Shift-drag, middle-drag or right-drag to pan · Wheel to zoom",
+        keys: "Arrow keys to rotate · Shift + Arrow keys to pan · +/− to zoom"
+    },
+    fly: {
+        mouse: "Drag to look · Shift-drag, middle-drag or right-drag to strafe · Wheel to dolly",
+        keys: "W/A/S/D to move · Q/E up/down · Arrow keys to look · Shift + Arrow keys to strafe · +/− to dolly"
+    }
+};
+
 export function CameraTab() {
     const cameraMode = useViewerStore((state) => state.cameraMode);
     const cameraProjection = useViewerStore((state) => state.cameraProjection);
@@ -61,6 +76,13 @@ export function CameraTab() {
                             {axis}
                         </button>
                     ))}
+                </div>
+            </Field>
+
+            <Field label="Shortcuts">
+                <div className="text-ink-dim space-y-1 text-sm font-light">
+                    <p>{SHORTCUTS[cameraMode]?.mouse}</p>
+                    <p>{SHORTCUTS[cameraMode]?.keys}</p>
                 </div>
             </Field>
         </Panel>
