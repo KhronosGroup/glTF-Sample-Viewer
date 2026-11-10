@@ -31,6 +31,7 @@ const eventNames = [
     "cameraModeChanged",
     "cameraProjectionChanged",
     "cameraLookAtChanged",
+    "cameraResetChanged",
     "variantChanged",
     "selectedGraphChanged",
     "selectedAnimationsChanged",

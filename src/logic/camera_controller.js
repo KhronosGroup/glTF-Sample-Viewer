@@ -282,6 +282,19 @@ export function createCameraController(state) {
         if (mode === "trackball") syncTrackball();
     };
 
+    // Reapply the active projection (type and near/far planes) after the camera
+    // has been reset or fitted, and resync the trackball orientation.
+    const syncProjectionState = () => {
+        syncOrthoFromDistance();
+        if (projection === "orthographic") {
+            camera.type = "orthographic";
+            applyOrthoPlanes();
+        } else {
+            camera.type = "perspective";
+        }
+        if (mode === "trackball") syncTrackball();
+    };
+
     return {
         pushOrbit: (dPhi, dTheta) => {
             push(orbitX, dPhi);
@@ -323,15 +336,12 @@ export function createCameraController(state) {
         },
         // Called after the camera has been fitted to a scene so the orthographic
         // frustum and active projection match the new distance.
-        syncProjection: () => {
-            syncOrthoFromDistance();
-            if (projection === "orthographic") {
-                camera.type = "orthographic";
-                applyOrthoPlanes();
-            } else {
-                camera.type = "perspective";
-            }
-            if (mode === "trackball") syncTrackball();
+        syncProjection: syncProjectionState,
+        // Refit the camera to the current scene and restore the default view.
+        reset: () => {
+            if (!isEnabled()) return;
+            camera.resetView(state.gltf, state.sceneIndex);
+            syncProjectionState();
         },
         tick: () => {
             const now = performance.now();

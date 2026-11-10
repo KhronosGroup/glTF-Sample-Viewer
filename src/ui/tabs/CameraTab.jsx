@@ -1,6 +1,7 @@
+import { RotateCcw } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
-import { Field, Panel, SegmentedControl } from "../controls.jsx";
+import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
 const LOOK_AXES = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
 
@@ -77,6 +78,17 @@ export function CameraTab() {
                         </button>
                     ))}
                 </div>
+            </Field>
+
+            <Field label="Reset View">
+                <Button
+                    disabled={!userCameraActive}
+                    className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
+                    onClick={() => uiEvents.cameraResetChanged.emit(true)}
+                >
+                    <RotateCcw size={16} aria-hidden="true" />
+                    Reset
+                </Button>
             </Field>
 
             <Field label="Shortcuts">

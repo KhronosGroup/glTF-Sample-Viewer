@@ -522,6 +522,7 @@ export const initViewer = async (canvas) => {
     onChange(uiEvents.cameraModeChanged, (mode) => cameraController.setMode(mode));
     onChange(uiEvents.cameraProjectionChanged, (type) => cameraController.setProjection(type));
     onChange(uiEvents.cameraLookAtChanged, (axis) => cameraController.lookAt(axis));
+    onChange(uiEvents.cameraResetChanged, () => cameraController.reset());
 
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
