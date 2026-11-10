@@ -56,7 +56,10 @@ const eventNames = [
     "morphWeightsReset",
     "wireframeChanged",
     "clippingChanged",
-    "gizmosChanged",
+    "lightGizmosChanged",
+    "cameraGizmosChanged",
+    "jointGizmosChanged",
+    "aabbGizmosChanged",
     "interactivityChanged",
     "floatingPointFramebufferChanged",
 

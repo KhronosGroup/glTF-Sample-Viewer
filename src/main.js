@@ -346,7 +346,10 @@ export const initViewer = async (canvas) => {
     onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
     onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
     onChange(uiEvents.wireframeChanged, (v) => (state.renderingParameters.wireframe = v));
-    onChange(uiEvents.gizmosChanged, (v) => (state.renderingParameters.debugGizmos = v));
+    onChange(uiEvents.lightGizmosChanged, (v) => (state.renderingParameters.lightGizmos = v));
+    onChange(uiEvents.cameraGizmosChanged, (v) => (state.renderingParameters.cameraGizmos = v));
+    onChange(uiEvents.jointGizmosChanged, (v) => (state.renderingParameters.jointGizmos = v));
+    onChange(uiEvents.aabbGizmosChanged, (v) => (state.renderingParameters.aabbGizmos = v));
     onChange(uiEvents.clippingChanged, (v) => {
         state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
     });
