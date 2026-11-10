@@ -319,6 +319,18 @@ export function createCameraController(state) {
             mode = next;
         },
         lookAt: lookAtAxis,
+        // Move the camera so the given world position becomes the orbit/look
+        // target, keeping the current orientation and distance.
+        focusOn: (position) => {
+            if (!isEnabled() || !position) return;
+            const distance = camera.distance || 1;
+            const forward = camera.getLookDirection();
+            camera.setPosition([
+                position[0] - forward[0] * distance,
+                position[1] - forward[1] * distance,
+                position[2] - forward[2] * distance
+            ]);
+        },
         setProjection: (type) => {
             if (!PROJECTIONS.includes(type) || type === projection) return;
             if (type === "orthographic") {

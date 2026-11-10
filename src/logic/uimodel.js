@@ -106,6 +106,7 @@ class UIModel {
             onPan: (delta) => this.panHandler?.(delta),
             onZoom: (delta) => this.zoomHandler?.(delta),
             onSelect: (position) => this.selectionHandler?.(position),
+            onFocus: (position) => this.focusHandler?.(position),
             onHover: (position) => this.hoverHandler?.(position),
             onDrop: (entries) => this.handleDrop(entries),
             onDropError: () => setViewerState({ showDropDownOverlay: false })
@@ -134,6 +135,10 @@ class UIModel {
 
     onSelection(handler) {
         this.selectionHandler = handler;
+    }
+
+    onFocus(handler) {
+        this.focusHandler = handler;
     }
 
     onHover(handler) {

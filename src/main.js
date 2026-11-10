@@ -119,6 +119,17 @@ export const initViewer = async (canvas) => {
     // Only redraw glTF view upon user inputs, or when an animation is playing.
     let redraw = false;
 
+    // A double-click asks the camera to focus on the picked node; the picking
+    // result arrives on the next frame via the renderer's selection callback.
+    let pendingFocus = false;
+    state.selectionCallback = (result) => {
+        if (pendingFocus && result.position) {
+            cameraController.focusOn(result.position);
+            pendingFocus = false;
+            redraw = true;
+        }
+    };
+
     // ---------------------------------------------------------------- loading
 
     // Validation and loading both consume model selections. A newer selection
@@ -538,9 +549,19 @@ export const initViewer = async (canvas) => {
     });
 
     uiModel.onSelection((selection) => {
+        pendingFocus = false;
         const devicePixelRatio = window.devicePixelRatio || 1;
         state.selectionPositions[0].x = Math.floor(selection.x * devicePixelRatio);
         state.selectionPositions[0].y = Math.floor(selection.y * devicePixelRatio);
+        state.triggerSelection = true;
+        redraw = true;
+    });
+
+    uiModel.onFocus((position) => {
+        pendingFocus = true;
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        state.selectionPositions[0].x = Math.floor(position.x * devicePixelRatio);
+        state.selectionPositions[0].y = Math.floor(position.y * devicePixelRatio);
         state.triggerSelection = true;
         redraw = true;
     });

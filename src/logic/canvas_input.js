@@ -18,7 +18,7 @@ const KEY_ZOOM_STEP = 1;
  * Returns a dispose function; every listener it adds is removed again.
  */
 export function attachCanvasInput(canvas, handlers) {
-    const { onOrbit, onPan, onZoom, onSelect, onHover, onDrop, onDropError } = handlers;
+    const { onOrbit, onPan, onZoom, onSelect, onHover, onDrop, onDropError, onFocus } = handlers;
     const cleanups = [];
 
     const listen = (target, type, handler, options) => {
@@ -77,6 +77,12 @@ export function attachCanvasInput(canvas, handlers) {
     listen(canvas, "click", (event) => {
         if (event.button === 0) {
             onSelect({ x: event.pageX, y: event.pageY });
+        }
+    });
+
+    listen(canvas, "dblclick", (event) => {
+        if (event.button === 0) {
+            onFocus?.({ x: event.pageX, y: event.pageY });
         }
     });
 

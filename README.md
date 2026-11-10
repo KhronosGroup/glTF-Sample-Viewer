@@ -100,6 +100,8 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 
 `scroll` : Zoom (Orbit, Trackball) or dolly (Fly)
 
+`double click` : Focus on the picked node
+
 `arrow keys` : Orbit / look · `shift + arrow keys` : Pan / strafe · `+` / `-` : Zoom / dolly
 
 `W A S D Q E` (Fly mode) : Move forward / left / back / right / down / up

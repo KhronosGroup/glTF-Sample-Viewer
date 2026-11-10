@@ -95,6 +95,7 @@ export function CameraTab() {
                 <div className="text-ink-dim space-y-1 text-sm font-light">
                     <p>{SHORTCUTS[cameraMode]?.mouse}</p>
                     <p>{SHORTCUTS[cameraMode]?.keys}</p>
+                    <p>Double-click a node to focus on it</p>
                 </div>
             </Field>
         </Panel>
