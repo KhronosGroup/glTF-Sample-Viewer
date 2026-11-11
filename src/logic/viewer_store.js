@@ -58,7 +58,7 @@ const initialState = {
     selectedModelFlavours: [],
     selectedFlavour: "glTF",
     selectedScene: {},
-    selectedCamera: {},
+    selectedCamera: -1,
     cameraMode: "orbit",
     cameraProjection: "perspective",
     selectedAnimations: [],

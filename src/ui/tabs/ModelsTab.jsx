@@ -192,8 +192,9 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         data-testid="camera-select"
                         value={selectedCamera}
                         onChange={(value) => {
-                            setViewerState({ selectedCamera: value });
-                            uiEvents.cameraChanged.emit(parseInt(value));
+                            const camera = parseInt(value);
+                            setViewerState({ selectedCamera: camera });
+                            uiEvents.cameraChanged.emit(camera);
                         }}
                     >
                         {cameras.map((item, index) => (
