@@ -1,4 +1,4 @@
-import { CirclePause, CirclePlay, StepForward } from "lucide-react";
+import { Pause, Play, StepForward } from "lucide-react";
 import { uiEvents } from "../../logic/ui_events.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import {
@@ -20,10 +20,10 @@ export function PhysicsTab({ debug, onDebugChange }) {
 
             <PlaybackControls
                 active={physicsState}
-                onText="Disable"
-                offText="Enable"
-                onIcon={<CirclePause size={16} aria-hidden="true" />}
-                offIcon={<CirclePlay size={16} aria-hidden="true" />}
+                onText="Pause"
+                offText="Play"
+                onIcon={<Pause size={16} aria-hidden="true" />}
+                offIcon={<Play size={16} aria-hidden="true" />}
                 onToggle={(on) => {
                     setViewerState({ physicsState: on });
                     uiEvents.physicsEnabledChanged.emit(on);
