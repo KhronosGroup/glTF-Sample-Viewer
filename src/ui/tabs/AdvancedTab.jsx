@@ -301,6 +301,7 @@ export function AdvancedTab({
                     data-testid="switch-wireframe"
                     checked={extensions.wireframe}
                     disabled={!supportsWireframe}
+                    onChange={toggle({ key: "wireframe" })}
                 >
                     {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
                 </Switch>

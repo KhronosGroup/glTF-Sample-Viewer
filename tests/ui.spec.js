@@ -108,6 +108,26 @@ test("the advanced panel shows statistics and extension toggles", async ({ page 
     expectNoConsoleErrors(errors);
 });
 
+test("the wireframe toggle flips the renderer flag", async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+
+    await page.goto("/");
+    await waitForLoadingToSettle(page);
+    await openTab(page, "advanced");
+
+    const toggle = page.getByTestId("switch-wireframe");
+    const input = toggle.locator("input[type='checkbox']");
+
+    await expect(toggle).toBeVisible();
+    await expect(input).toBeEnabled();
+    await expect(input).not.toBeChecked();
+
+    await toggle.click();
+    await expect(input).toBeChecked();
+
+    expectNoConsoleErrors(errors);
+});
+
 // The menu's switches mirror state the renderer already holds, so losing them
 // on hide leaves the UI claiming a default the render does not reflect.
 test("hiding the menu does not reset it", async ({ page }) => {
