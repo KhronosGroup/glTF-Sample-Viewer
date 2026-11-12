@@ -13,7 +13,7 @@ import {
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 
 const RENDERING_TOGGLES = [
     { key: "skinning", label: "Skinning" },
@@ -347,7 +347,7 @@ export function AdvancedTab({
             </Field>
 
             <Field label="Current Camera Values">
-                <Button onClick={() => uiEvents.cameraExport.emit(true)}>
+                <Button onClick={() => commands.cameraExport()}>
                     <Download size={16} aria-hidden="true" />
                     Download as glTF
                 </Button>

@@ -1,6 +1,6 @@
 import { GltfState } from "@khronosgroup/gltf-viewer";
 import { getViewerState, setViewerState } from "./viewer_store.js";
-import { uiEvents } from "./ui_events.js";
+import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
 
 /**
@@ -67,20 +67,22 @@ class UIModel {
         this.publishModels();
 
         this.subscriptions.push(
-            uiEvents.modelChanged.on((name) => this.selectModel(name)),
-            uiEvents.modelTagsChanged.on((tags) => this.filterModels({ selectedModelTags: tags })),
-            uiEvents.modelFlavoursChanged.on((flavours) =>
+            setCommand("modelChanged", (name) => this.selectModel(name)),
+            setCommand("modelTagsChanged", (tags) =>
+                this.filterModels({ selectedModelTags: tags })
+            ),
+            setCommand("modelFlavoursChanged", (flavours) =>
                 this.filterModels({ selectedModelFlavours: flavours })
             ),
-            uiEvents.flavourChanged.on((flavour) => {
+            setCommand("flavourChanged", (flavour) => {
                 this.emitModel({
                     mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
                 });
             }),
-            uiEvents.selectedEnvironmentChanged.on((name) => {
+            setCommand("selectedEnvironmentChanged", (name) => {
                 this.emitHdr(getViewerState().environments[name]);
             }),
-            uiEvents.addEnvironmentChanged.on((hdr) => this.addEnvironment(hdr))
+            setCommand("addEnvironmentChanged", (hdr) => this.addEnvironment(hdr))
         );
 
         this.showOverlay = () => setViewerState({ showDropDownOverlay: true });

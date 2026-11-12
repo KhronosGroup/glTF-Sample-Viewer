@@ -15,7 +15,7 @@ import {
     Plus,
     RotateCcw
 } from "lucide-react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
@@ -228,7 +228,7 @@ export function CameraTab() {
                             key={axis}
                             type="button"
                             disabled={!userCameraActive}
-                            onClick={() => uiEvents.cameraLookAtChanged.emit(axis)}
+                            onClick={() => commands.cameraLookAtChanged(axis)}
                             className="border-ink/60 hover:border-ink rounded-md border px-2 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {axis}
@@ -241,7 +241,7 @@ export function CameraTab() {
                 <Button
                     disabled={!userCameraActive}
                     className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
-                    onClick={() => uiEvents.cameraResetChanged.emit(true)}
+                    onClick={() => commands.cameraResetChanged()}
                 >
                     <RotateCcw size={16} aria-hidden="true" />
                     Reset

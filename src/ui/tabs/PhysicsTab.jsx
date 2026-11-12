@@ -1,5 +1,5 @@
 import { Pause, Play, StepForward } from "lucide-react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import {
     Field,
@@ -27,13 +27,13 @@ export function PhysicsTab({ debug, onDebugChange }) {
                 onToggle={(on) => {
                     setViewerState({ physicsState: on });
                 }}
-                onReset={() => uiEvents.physicsResetChanged.emit(true)}
+                onReset={() => commands.physicsResetChanged()}
             />
 
             <OutlineButton
                 disabled={physicsState}
                 className="disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => uiEvents.physicsStepChanged.emit(true)}
+                onClick={() => commands.physicsStepChanged()}
             >
                 <StepForward size={16} aria-hidden="true" />
                 Step

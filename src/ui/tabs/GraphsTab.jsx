@@ -1,6 +1,6 @@
 import { Pause, Play, Send } from "lucide-react";
 import { useState } from "react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { notify } from "../../logic/notifications.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import {
@@ -49,7 +49,7 @@ export function GraphsTab() {
     const hasGraphs = graphs.length !== 0;
 
     const sendCustomEvent = () => {
-        uiEvents.customEventSendClicked.emit({
+        commands.customEventSendClicked({
             eventId: currentEventId,
             values: editedValues.values
         });
@@ -68,7 +68,7 @@ export function GraphsTab() {
                     onToggle={(on) => {
                         setViewerState({ graphState: on });
                     }}
-                    onReset={() => uiEvents.graphResetChanged.emit(true)}
+                    onReset={() => commands.graphResetChanged()}
                 />
             )}
 

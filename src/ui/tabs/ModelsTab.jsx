@@ -1,7 +1,7 @@
 import { Funnel } from "lucide-react";
 import { useState } from "react";
 
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import {
     Field,
@@ -64,13 +64,13 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     };
 
     const toggleTag = (tag, enabled) => {
-        uiEvents.modelTagsChanged.emit(
+        commands.modelTagsChanged(
             enabled ? [...selectedModelTags, tag] : selectedModelTags.filter((item) => item !== tag)
         );
     };
 
     const toggleFlavour = (flavour, enabled) => {
-        uiEvents.modelFlavoursChanged.emit(
+        commands.modelFlavoursChanged(
             enabled
                 ? [...selectedModelFlavours, flavour]
                 : selectedModelFlavours.filter((item) => item !== flavour)
@@ -86,7 +86,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                     value={selectedModel}
                     onChange={(value) => {
                         setViewerState({ selectedModel: value });
-                        uiEvents.modelChanged.emit(value);
+                        commands.modelChanged(value);
                     }}
                     options={models.map((item) => ({
                         value: item,
@@ -155,7 +155,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         value={selectedFlavour}
                         onChange={(value) => {
                             setViewerState({ selectedFlavour: value });
-                            uiEvents.flavourChanged.emit(value);
+                            commands.flavourChanged(value);
                         }}
                     >
                         {flavours.map((item) => (

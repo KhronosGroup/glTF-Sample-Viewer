@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pause, Play } from "lucide-react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Field, Input, Panel, PlaybackControls, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
@@ -51,7 +51,7 @@ export function AnimationsTab() {
                     onToggle={(on) => {
                         setViewerState({ animationState: on });
                     }}
-                    onReset={() => uiEvents.animationResetChanged.emit(true)}
+                    onReset={() => commands.animationResetChanged()}
                 />
             )}
 

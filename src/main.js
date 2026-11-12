@@ -6,7 +6,7 @@ import { createCameraController } from "./logic/camera_controller.js";
 import { UIModel } from "./logic/uimodel.js";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
 import { getViewerState, setViewerState, viewerStore } from "./logic/viewer_store.js";
-import { uiEvents } from "./logic/ui_events.js";
+import { setCommand } from "./logic/commands.js";
 import { notify } from "./logic/notifications.js";
 
 import { validateBytes } from "gltf-validator";
@@ -153,9 +153,8 @@ export const initViewer = async (canvas) => {
 
     const uiModel = new UIModel(pathProvider, environmentPaths, canvas);
 
-    // Collected so every listener can be removed again on teardown.
+    // Collected so every store subscription and command can be removed again on teardown.
     const subscriptions = [];
-    const on = (event, handler) => subscriptions.push(event.on(handler));
 
     // True once torn down, so in-flight async work stops applying state.
     let disposed = false;
@@ -339,13 +338,6 @@ export const initViewer = async (canvas) => {
 
     // ------------------------------------------------------------ user inputs
 
-    // Most handlers only write a rendering parameter and ask for a repaint.
-    const onChange = (event, apply) =>
-        on(event, (value) => {
-            apply(value);
-            redraw = true;
-        });
-
     const applyInteractivity = (enabled) => {
         state.renderingParameters.enabledExtensions.KHR_interactivity = enabled;
         if (state.gltf?.extensions?.KHR_interactivity === undefined) {
@@ -498,10 +490,10 @@ export const initViewer = async (canvas) => {
         }
     }));
 
-    on(uiEvents.animationResetChanged, () => {
+    subscriptions.push(setCommand("animationResetChanged", () => {
         state.animationTimer.reset();
         redraw = true;
-    });
+    }));
 
     subscriptions.push(viewerStore.subscribe((s) => s.animationTimeOverride, (time) => {
         if (time === null || time === undefined) {
@@ -522,10 +514,10 @@ export const initViewer = async (canvas) => {
         }
     }));
 
-    on(uiEvents.graphResetChanged, () => {
+    subscriptions.push(setCommand("graphResetChanged", () => {
         state.graphController.resetGraph();
         redraw = true;
-    });
+    }));
 
     subscriptions.push(viewerStore.subscribe((s) => s.selectedGraph, (graphIndex) => {
         if (graphIndex === null || graphIndex === undefined) {
@@ -539,11 +531,11 @@ export const initViewer = async (canvas) => {
         state.graphController.loadGraph(graphIndex);
     }));
 
-    on(uiEvents.customEventSendClicked, (eventData) => {
+    subscriptions.push(setCommand("customEventSendClicked", (eventData) => {
         if (eventData && eventData.eventId) {
             state.graphController.dispatchEvent(eventData.eventId, { ...eventData.values });
         }
-    });
+    }));
 
     subscriptions.push(viewerStore.subscribe((s) => s.physicsState, (enabled) => {
         if (enabled) {
@@ -553,18 +545,18 @@ export const initViewer = async (canvas) => {
         }
     }));
 
-    on(uiEvents.physicsResetChanged, () => {
+    subscriptions.push(setCommand("physicsResetChanged", () => {
         state.physicsController.resetScene(state.gltf);
         state.gltf.resetAnimatedProperties(state.sceneIndex);
         state.physicsController.loadScene(state, state.sceneIndex);
         redraw = true;
-    });
+    }));
 
-    on(uiEvents.physicsStepChanged, () => {
+    subscriptions.push(setCommand("physicsStepChanged", () => {
         state.physicsController.simulateStep(state, 1 / 60);
         state.gltf.resetAllDirtyFlags();
         redraw = true;
-    });
+    }));
 
     // ------------------------------------------------------------- downloads
 
@@ -578,21 +570,21 @@ export const initViewer = async (canvas) => {
         document.body.removeChild(element);
     };
 
-    on(uiEvents.cameraExport, () => {
+    subscriptions.push(setCommand("cameraExport", () => {
         const camera =
             state.cameraNodeIndex === undefined
                 ? state.userCamera
                 : state.gltf.cameras[state.cameraNodeIndex];
         const gltf = JSON.stringify(camera.getDescription(state.gltf), undefined, 4);
         downloadDataURL("camera.gltf", "data:text/plain;charset=utf-8," + encodeURIComponent(gltf));
-    });
+    }));
 
-    on(uiEvents.captureCanvas, () => {
+    subscriptions.push(setCommand("captureCanvas", () => {
         view.renderFrame(state, canvas.width, canvas.height);
         downloadDataURL("capture.png", canvas.toDataURL());
-    });
+    }));
 
-    // Camera controls arrive as UI events; the controller owns the camera
+    // Camera controls arrive as commands; the controller owns the camera
     // state, while the input handlers below only push raw deltas into it.
     subscriptions.push(viewerStore.subscribe((s) => s.cameraMode, (mode) => {
         cameraController.setMode(mode);
@@ -602,8 +594,14 @@ export const initViewer = async (canvas) => {
         cameraController.setProjection(type);
         redraw = true;
     }));
-    onChange(uiEvents.cameraLookAtChanged, (axis) => cameraController.lookAt(axis));
-    onChange(uiEvents.cameraResetChanged, () => cameraController.reset());
+    subscriptions.push(setCommand("cameraLookAtChanged", (axis) => {
+        cameraController.lookAt(axis);
+        redraw = true;
+    }));
+    subscriptions.push(setCommand("cameraResetChanged", () => {
+        cameraController.reset();
+        redraw = true;
+    }));
 
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);

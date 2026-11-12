@@ -1,5 +1,5 @@
 import { Download, Plus, RotateCcw } from "lucide-react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { setViewerState, useViewerStore } from "../store.js";
 import { Button, Field, IconButton, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
@@ -174,7 +174,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         type="file"
                         accept=".hdr"
                         onChange={(event) =>
-                            uiEvents.addEnvironmentChanged.emit({
+                            commands.addEnvironmentChanged({
                                 hdr_path: event.target.files[0]
                             })
                         }
@@ -188,7 +188,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         value={selectedEnvironment}
                         onChange={(name) => {
                             setViewerState({ selectedEnvironment: name });
-                            uiEvents.selectedEnvironmentChanged.emit(name);
+                            commands.selectedEnvironmentChanged(name);
                         }}
                     >
                         {Object.entries(environments).map(([name, environment]) => (
@@ -201,7 +201,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
             </Field>
 
             <Field label="Capture Canvas">
-                <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
+                <Button onClick={() => commands.captureCanvas()}>
                     <Download size={16} aria-hidden="true" />
                     Download as PNG
                 </Button>
