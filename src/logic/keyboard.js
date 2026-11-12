@@ -56,7 +56,7 @@ export function attachKeyboard() {
             return;
         }
         if (!NAV_KEYS.has(event.code)) return;
-        if (getViewerState().selectedCamera !== -1) return;
+        if (getViewerState().selection.selectedCamera !== -1) return;
         heldKeys.add(event.code);
         event.preventDefault();
         event.stopPropagation();

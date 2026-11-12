@@ -5,7 +5,7 @@ import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 import { createCameraController } from "./logic/camera_controller.js";
 import { UIModel } from "./logic/uimodel.js";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
-import { getViewerState, setViewerState, viewerStore } from "./logic/viewer_store.js";
+import { getViewerState, updatePublished, updateUi, viewerStore } from "./logic/viewer_store.js";
 import { setCommand } from "./logic/commands.js";
 import { notify } from "./logic/notifications.js";
 
@@ -99,7 +99,7 @@ export const initViewer = async (canvas) => {
         alpha: false,
         antialias: true
     });
-    setViewerState({
+    updatePublished({
         supportsFloatingPointFramebuffer:
             !!context.getExtension("EXT_color_buffer_half_float") ||
             !!context.getExtension("EXT_color_buffer_float"),
@@ -113,7 +113,7 @@ export const initViewer = async (canvas) => {
     const cameraController = createCameraController(state);
 
     await state.physicsController.initializeEngine("NvidiaPhysX");
-    setViewerState({ physicsEngineVersion: state.physicsController.getEngineVersion() });
+    updatePublished({ physicsEngineVersion: state.physicsController.getEngineVersion() });
 
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
     state.renderingParameters.toneMap = GltfState.ToneMaps.KHR_PBR_NEUTRAL;
@@ -155,6 +155,13 @@ export const initViewer = async (canvas) => {
 
     // Collected so every store subscription and command can be removed again on teardown.
     const subscriptions = [];
+
+    // Applies a store change to the renderer and asks for a repaint.
+    const applyRenderChange = (selector, apply) =>
+        subscriptions.push(viewerStore.subscribe(selector, (next, previous) => {
+            apply(next, previous);
+            redraw = true;
+        }));
 
     // True once torn down, so in-flight async work stops applying state.
     let disposed = false;
@@ -346,7 +353,7 @@ export const initViewer = async (canvas) => {
         if (enabled) {
             state.graphController.initializeGraphs(state);
             state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
-            if (getViewerState().graphState) {
+            if (getViewerState().selection.graphState) {
                 state.graphController.resumeGraph();
                 state.animationTimer.unpause();
             } else {
@@ -355,7 +362,7 @@ export const initViewer = async (canvas) => {
             }
         } else {
             state.graphController.stopGraphEngine();
-            if (getViewerState().animationState) {
+            if (getViewerState().selection.animationState) {
                 state.animationTimer.unpause();
             } else {
                 state.animationTimer.pause();
@@ -372,7 +379,6 @@ export const initViewer = async (canvas) => {
         state.renderingParameters.exposure = 1.0 / Math.pow(2.0, lighting.exposure);
         state.renderingParameters.toneMap = lighting.toneMap;
         state.renderingParameters.environmentRotation = ENVIRONMENT_ROTATIONS[lighting.rotation];
-        redraw = true;
     };
 
     const applyExtensions = (extensions, previous) => {
@@ -390,28 +396,23 @@ export const initViewer = async (canvas) => {
         if (extensions.interactivity !== previous?.interactivity) {
             applyInteractivity(extensions.interactivity);
         }
-        redraw = true;
     };
 
-    subscriptions.push(viewerStore.subscribe((s) => s.lighting, applyLighting));
-    subscriptions.push(viewerStore.subscribe((s) => s.extensions, applyExtensions));
-    subscriptions.push(viewerStore.subscribe((s) => s.debugChannel, (v) => {
+    applyRenderChange((s) => s.config.lighting, applyLighting);
+    applyRenderChange((s) => s.config.extensions, applyExtensions);
+    applyRenderChange((s) => s.config.debugChannel, (v) => {
         state.renderingParameters.debugOutput = v;
-        redraw = true;
-    }));
-    subscriptions.push(viewerStore.subscribe((s) => s.clipping, (v) => {
+    });
+    applyRenderChange((s) => s.config.clipping, (v) => {
         state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
-        redraw = true;
-    }));
-    subscriptions.push(viewerStore.subscribe((s) => s.physicsDebug, (debug) => {
+    });
+    applyRenderChange((s) => s.config.physicsDebug, (debug) => {
         state.physicsController.enableDebugColliders(debug.colliders);
         state.physicsController.enableDebugJoints(debug.joints);
-        redraw = true;
-    }));
-    subscriptions.push(viewerStore.subscribe((s) => s.selectedVariant, (v) => {
+    });
+    applyRenderChange((s) => s.selection.selectedVariant, (v) => {
         state.variant = v;
-        redraw = true;
-    }));
+    });
 
     const applyMorphWeightOverrides = (overrides) => {
         state.gltf.nodes.forEach((node, nodeIndex) => {
@@ -432,22 +433,16 @@ export const initViewer = async (canvas) => {
         uiModel.publishMorphWeights(state);
     };
 
-    subscriptions.push(
-        viewerStore.subscribe((s) => s.morphWeightOverrides, (overrides) => {
-            applyMorphWeightOverrides(overrides);
-            redraw = true;
-        })
-    );
+    applyRenderChange((s) => s.selection.morphWeightOverrides, applyMorphWeightOverrides);
 
-    subscriptions.push(viewerStore.subscribe((s) => s.clearColor, (hex) => {
+    applyRenderChange((s) => s.selection.clearColor, (hex) => {
         const color = hexToLinearColor(hex);
         if (color !== undefined) {
             state.renderingParameters.clearColor = color;
-            redraw = true;
         }
-    }));
+    });
 
-    subscriptions.push(viewerStore.subscribe((s) => s.selectedScene, (value) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selection.selectedScene, (value) => {
         const sceneIndex = Number(value);
         // A model load republishes the scene the renderer is already showing,
         // so only apply a change the renderer has not applied yet.
@@ -470,19 +465,17 @@ export const initViewer = async (canvas) => {
         redraw = true;
     }));
 
-    subscriptions.push(viewerStore.subscribe((s) => s.selectedCamera, (camera) => {
+    applyRenderChange((s) => s.selection.selectedCamera, (camera) => {
         state.cameraNodeIndex = camera !== -1 ? camera : undefined;
-        redraw = true;
-    }));
+    });
 
-    subscriptions.push(viewerStore.subscribe((s) => s.selectedAnimations, (indices) => {
+    applyRenderChange((s) => s.selection.selectedAnimations, (indices) => {
         // Disable all animations which are not disjoint to the current selection.
         uiModel.publishDisabledAnimations(state.gltf.nonDisjointAnimations(indices));
         state.animationIndices = indices;
-        redraw = true;
-    }));
+    });
 
-    subscriptions.push(viewerStore.subscribe((s) => s.animationState, (playing) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selection.animationState, (playing) => {
         if (playing) {
             state.animationTimer.unpause();
         } else {
@@ -495,16 +488,15 @@ export const initViewer = async (canvas) => {
         redraw = true;
     }));
 
-    subscriptions.push(viewerStore.subscribe((s) => s.animationTimeOverride, (time) => {
+    applyRenderChange((s) => s.selection.animationTimeOverride, (time) => {
         if (time === null || time === undefined) {
             state.animationTimer.clearTimeOverride();
         } else {
             state.animationTimer.setTimeOverride(time);
         }
-        redraw = true;
-    }));
+    });
 
-    subscriptions.push(viewerStore.subscribe((s) => s.graphState, (playing) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selection.graphState, (playing) => {
         if (playing) {
             state.graphController.resumeGraph();
             state.animationTimer.unpause();
@@ -519,7 +511,7 @@ export const initViewer = async (canvas) => {
         redraw = true;
     }));
 
-    subscriptions.push(viewerStore.subscribe((s) => s.selectedGraph, (graphIndex) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selection.selectedGraph, (graphIndex) => {
         if (graphIndex === null || graphIndex === undefined) {
             return;
         }
@@ -537,7 +529,7 @@ export const initViewer = async (canvas) => {
         }
     }));
 
-    subscriptions.push(viewerStore.subscribe((s) => s.physicsState, (enabled) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selection.physicsState, (enabled) => {
         if (enabled) {
             state.physicsController.resumeSimulation();
         } else {
@@ -586,14 +578,12 @@ export const initViewer = async (canvas) => {
 
     // Camera controls arrive as commands; the controller owns the camera
     // state, while the input handlers below only push raw deltas into it.
-    subscriptions.push(viewerStore.subscribe((s) => s.cameraMode, (mode) => {
+    applyRenderChange((s) => s.selection.cameraMode, (mode) => {
         cameraController.setMode(mode);
-        redraw = true;
-    }));
-    subscriptions.push(viewerStore.subscribe((s) => s.cameraProjection, (type) => {
+    });
+    applyRenderChange((s) => s.selection.cameraProjection, (type) => {
         cameraController.setProjection(type);
-        redraw = true;
-    }));
+    });
     subscriptions.push(setCommand("cameraLookAtChanged", (axis) => {
         cameraController.lookAt(axis);
         redraw = true;
@@ -668,7 +658,7 @@ export const initViewer = async (canvas) => {
         redraw |= state.needsRedraw;
 
         // Do not redraw when loading is in progress
-        if (getViewerState().isLoading) {
+        if (getViewerState().ui.isLoading) {
             redraw = false;
         }
 
@@ -711,6 +701,6 @@ export const initViewer = async (canvas) => {
         uiModel.dispose();
         state.graphController.stopGraphEngine();
         state.physicsController.pauseSimulation();
-        setViewerState({ isLoading: false });
+        updateUi({ isLoading: false });
     };
 };

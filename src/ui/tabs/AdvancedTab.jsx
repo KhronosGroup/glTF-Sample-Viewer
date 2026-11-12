@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Download, RotateCcw } from "lucide-react";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Button,
     Field,
@@ -132,8 +132,8 @@ const formatClippingBound = (value) => `${Math.round(value * 100)}%`;
  * scene extents, so they mean the same thing whatever is loaded.
  */
 function ClippingControls({ clipping, onChange }) {
-    const orientations = useViewerStore((state) => state.clippingOrientations);
-    const supportsClipping = useViewerStore((state) => state.supportsClipping);
+    const orientations = useViewerStore((state) => state.published.clippingOrientations);
+    const supportsClipping = useViewerStore((state) => state.published.supportsClipping);
 
     const update = (partial) => {
         onChange(partial);
@@ -223,13 +223,13 @@ export function AdvancedTab({
     clipping,
     onClippingChange
 }) {
-    const debugchannels = useViewerStore((state) => state.debugchannels);
-    const statistics = useViewerStore((state) => state.statistics);
-    const hasMorphTargets = useViewerStore((state) => state.morphWeights.length > 0);
+    const debugchannels = useViewerStore((state) => state.published.debugchannels);
+    const statistics = useViewerStore((state) => state.published.statistics);
+    const hasMorphTargets = useViewerStore((state) => state.published.morphWeights.length > 0);
     const supportsFloatingPointFramebuffer = useViewerStore(
-        (state) => state.supportsFloatingPointFramebuffer
+        (state) => state.published.supportsFloatingPointFramebuffer
     );
-    const supportsWireframe = useViewerStore((state) => state.supportsWireframe);
+    const supportsWireframe = useViewerStore((state) => state.published.supportsWireframe);
 
     const toggle = ({ key }) => (checked) => onExtensionsChange({ [key]: checked });
 
@@ -317,7 +317,7 @@ export function AdvancedTab({
                             onChange={(checked) => {
                                 onExtensionsChange({ morphOverrides: checked });
                                 if (!checked) {
-                                    setViewerState({ morphWeightOverrides: {} });
+                                    updateSelection({ morphWeightOverrides: {} });
                                 }
                             }}
                         >

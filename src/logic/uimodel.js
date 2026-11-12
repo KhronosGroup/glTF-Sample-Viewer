@@ -1,5 +1,5 @@
 import { GltfState } from "@khronosgroup/gltf-viewer";
-import { getViewerState, setViewerState } from "./viewer_store.js";
+import { getViewerState, updatePublished, updateSelection, updateUi } from "./viewer_store.js";
 import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
 
@@ -47,15 +47,13 @@ class UIModel {
         this.modelURL = new URLSearchParams(window.location.search).get("model");
 
         const models = modelPathProvider.getAllKeys();
-        setViewerState({
+        updatePublished({
             models,
             modelCount: models.length,
             modelTags: modelPathProvider.getAllTags(),
             modelFlavours: modelPathProvider.getAllFlavours(),
             modelThumbnails: modelPathProvider.getAllScreenshots(),
             environments,
-            selectedEnvironment: INITIAL_ENVIRONMENT,
-            clearColor: INITIAL_CLEAR_COLOR,
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
@@ -63,6 +61,10 @@ class UIModel {
                 title: GltfState.DebugOutput[key]
             })),
             clippingOrientations: Object.values(GltfState.ClippingOrientations)
+        });
+        updateSelection({
+            selectedEnvironment: INITIAL_ENVIRONMENT,
+            clearColor: INITIAL_CLEAR_COLOR
         });
         this.publishModels();
 
@@ -76,17 +78,17 @@ class UIModel {
             ),
             setCommand("flavourChanged", (flavour) => {
                 this.emitModel({
-                    mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
+                    mainFile: modelPathProvider.resolve(getViewerState().selection.selectedModel, flavour)
                 });
             }),
             setCommand("selectedEnvironmentChanged", (name) => {
-                this.emitHdr(getViewerState().environments[name]);
+                this.emitHdr(getViewerState().published.environments[name]);
             }),
             setCommand("addEnvironmentChanged", (hdr) => this.addEnvironment(hdr))
         );
 
-        this.showOverlay = () => setViewerState({ showDropDownOverlay: true });
-        this.hideOverlay = () => setViewerState({ showDropDownOverlay: false });
+        this.showOverlay = () => updateUi({ showDropDownOverlay: true });
+        this.hideOverlay = () => updateUi({ showDropDownOverlay: false });
         canvas.addEventListener("dragenter", this.showOverlay);
         canvas.addEventListener("dragleave", this.hideOverlay);
 
@@ -98,7 +100,7 @@ class UIModel {
             onFocus: (position) => this.focusHandler?.(position),
             onHover: (position) => this.hoverHandler?.(position),
             onDrop: (entries) => this.handleDrop(entries),
-            onDropError: () => setViewerState({ showDropDownOverlay: false })
+            onDropError: () => updateUi({ showDropDownOverlay: false })
         });
     }
 
@@ -137,7 +139,7 @@ class UIModel {
     /** Emits the initial model and environment, replacing RxJS `startWith`. */
     start() {
         this.emitHdr(this.environments[INITIAL_ENVIRONMENT]);
-        setViewerState({
+        updateSelection({
             clearColor: INITIAL_CLEAR_COLOR
         });
 
@@ -156,12 +158,12 @@ class UIModel {
     selectModel(name, updateUrl = true) {
         const flavours = this.modelPathProvider.getModelFlavours(name);
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
-        setViewerState({
+        updateSelection({
             selectedModel: name,
-            flavours,
             selectedFlavour,
             selectedModelIsDropped: false
         });
+        updatePublished({ flavours });
         if (updateUrl) {
             this.updateModelUrl(name);
         }
@@ -179,18 +181,14 @@ class UIModel {
 
     /** Narrows the model list to the models matching the tag and flavour filters. */
     filterModels(selection) {
-        setViewerState(selection);
+        updateSelection(selection);
         this.publishModels();
     }
 
     publishModels() {
-        const {
-            modelTags,
-            modelFlavours,
-            selectedModelTags,
-            selectedModelFlavours,
-            selectedModel
-        } = getViewerState();
+        const { modelTags, modelFlavours } = getViewerState().published;
+        const { selectedModelTags, selectedModelFlavours, selectedModel } =
+            getViewerState().selection;
         const models = this.modelPathProvider.getAllKeys(selectedModelTags, selectedModelFlavours);
         // The loaded model stays listed even when filtered out, so that filtering
         // never changes what is shown. It is not part of the count.
@@ -199,10 +197,9 @@ class UIModel {
         if (selectedModelExcluded) {
             models.push(selectedModel);
         }
-        setViewerState({
+        updatePublished({
             models,
             modelCount,
-            selectedModelExcluded,
             disabledModelTags: modelTags.filter(
                 (tag) =>
                     !selectedModelTags.includes(tag) &&
@@ -220,13 +217,14 @@ class UIModel {
                     ]).length === 0
             )
         });
+        updateSelection({ selectedModelExcluded });
     }
 
     emitModel(model) {
         // A dropped file adds a temporary entry to the model list; picking
         // anything else removes it again.
-        if (getViewerState().models.at(-1) === this.lastDroppedFilename) {
-            setViewerState({ models: getViewerState().models.slice(0, -1) });
+        if (getViewerState().published.models.at(-1) === this.lastDroppedFilename) {
+            updatePublished({ models: getViewerState().published.models.slice(0, -1) });
             this.lastDroppedFilename = undefined;
         }
         for (const handler of this.modelHandlers) {
@@ -243,18 +241,18 @@ class UIModel {
 
     addEnvironment(hdr) {
         const hdrPath = hdr.hdr_path;
-        setViewerState({
+        updatePublished({
             environments: {
-                ...getViewerState().environments,
+                ...getViewerState().published.environments,
                 [hdrPath.name]: { title: hdrPath.name, hdr_path: hdrPath }
-            },
-            selectedEnvironment: hdrPath.name
+            }
         });
+        updateSelection({ selectedEnvironment: hdrPath.name });
         this.emitHdr(hdr);
     }
 
     handleDrop(entries) {
-        setViewerState({ showDropDownOverlay: false });
+        updateUi({ showDropDownOverlay: false });
         const { mainFile, additionalFiles, hdrFile } = partitionDroppedFiles(entries);
 
         if (hdrFile !== undefined && mainFile === undefined) {
@@ -277,12 +275,14 @@ class UIModel {
         const fileExtension = filename.split(".").pop();
         filename = filename.substr(0, filename.lastIndexOf("."));
 
-        setViewerState({
-            models: [...getViewerState().models, filename],
+        updatePublished({
+            models: [...getViewerState().published.models, filename],
+            flavours: [fileExtension]
+        });
+        updateSelection({
             selectedModel: filename,
             selectedModelExcluded: false,
             selectedModelIsDropped: true,
-            flavours: [fileExtension],
             selectedFlavour: fileExtension
         });
         this.lastDroppedFilename = filename;
@@ -290,7 +290,7 @@ class UIModel {
 
     async publishEnvironmentLicense(hdr) {
         if (hdr?.license_path === undefined) {
-            setViewerState({ environmentLicense: null });
+            updatePublished({ environmentLicense: null });
             return;
         }
         try {
@@ -298,12 +298,12 @@ class UIModel {
             if (!response.ok) {
                 throw new Error("License file not found");
             }
-            setViewerState({
+            updatePublished({
                 environmentLicense: parseEnvironmentLicense(await response.text(), hdr)
             });
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            setViewerState({ environmentLicense: null });
+            updatePublished({ environmentLicense: null });
         }
     }
 
@@ -323,24 +323,14 @@ class UIModel {
             animationDuration = Math.max(animationDuration, animation.maxTime ?? 0);
         }
 
-        setViewerState({
+        updatePublished({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
 
-            selectedScene: state.sceneIndex,
-            selectedVariant: "None",
             scenes: gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
                 index: index
             })),
-
-            selectedAnimations: state.animationIndices,
-            morphWeightOverrides: {},
-            animationState: true,
-            animationTimeOverride: null,
-            animationDuration,
-            graphState: true,
-            physicsState: true,
 
             materialVariants: hasVariants
                 ? [
@@ -372,9 +362,20 @@ class UIModel {
                     gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
                 ] ?? null
         });
+        updateSelection({
+            selectedScene: state.sceneIndex,
+            selectedVariant: "None",
+            selectedAnimations: state.animationIndices,
+            morphWeightOverrides: {},
+            animationState: true,
+            animationTimeOverride: null,
+            animationDuration,
+            graphState: true,
+            physicsState: true
+        });
 
         if (hasInteractivity) {
-            setViewerState({ selectedGraph: state.graphController.graphIndex });
+            updateSelection({ selectedGraph: state.graphController.graphIndex });
         }
     }
 
@@ -399,8 +400,8 @@ class UIModel {
             });
         }
 
-        setViewerState({
-            cameras,
+        updatePublished({ cameras });
+        updateSelection({
             selectedCamera: state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1
         });
     }
@@ -426,7 +427,7 @@ class UIModel {
             });
         });
 
-        const previous = getViewerState().morphWeights;
+        const previous = getViewerState().published.morphWeights;
         if (
             morphWeights.length !== previous.length ||
             morphWeights.some(
@@ -441,12 +442,12 @@ class UIModel {
                     )
             )
         ) {
-            setViewerState({ morphWeights });
+            updatePublished({ morphWeights });
         }
     }
 
     publishStatistics(data) {
-        setViewerState({
+        updatePublished({
             statistics: {
                 Meshes: data.meshCount,
                 Triangles: data.faceCount,
@@ -457,7 +458,7 @@ class UIModel {
     }
 
     publishDisabledAnimations(indices) {
-        setViewerState({ disabledAnimations: indices });
+        updatePublished({ disabledAnimations: indices });
     }
 
     /**
@@ -503,18 +504,18 @@ class UIModel {
     }
 
     publishValidationReport(data) {
-        setViewerState({
+        updatePublished({
             validationReport: data,
             validationReportDescription: this.createValidationReportDescription(data)
         });
     }
 
     goToLoadingState() {
-        setViewerState({ isLoading: true });
+        updateUi({ isLoading: true });
     }
 
     exitLoadingState() {
-        setViewerState({ isLoading: false });
+        updateUi({ isLoading: false });
     }
 
     dispose() {

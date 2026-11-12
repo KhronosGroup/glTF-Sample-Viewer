@@ -26,15 +26,15 @@ export function App() {
     const [layout] = useState(readInitialLayout);
     const [menuVisible, setMenuVisible] = useState(layout.menuVisible);
 
-    const isLoading = useViewerStore((state) => state.isLoading);
-    const showDropDownOverlay = useViewerStore((state) => state.showDropDownOverlay);
+    const isLoading = useViewerStore((state) => state.ui.isLoading);
+    const showDropDownOverlay = useViewerStore((state) => state.ui.showDropDownOverlay);
 
     // Picking or dropping an asset is a request to see it, and on mobile the
     // menu is covering it. Both paths land on `selectedModel`.
     useEffect(
         () =>
             subscribeToViewerState((state, previous) => {
-                if (state.selectedModel !== previous.selectedModel && isMobile()) {
+                if (state.selection.selectedModel !== previous.selection.selectedModel && isMobile()) {
                     setMenuVisible(false);
                 }
             }),

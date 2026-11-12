@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { commands } from "../../logic/commands.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import { Field, Input, Panel, PlaybackControls, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const formatTime = (value) => `${value.toFixed(2)} s`;
 
 export function AnimationsTab() {
-    const animations = useViewerStore((state) => state.animations);
-    const selectedAnimations = useViewerStore((state) => state.selectedAnimations);
-    const disabledAnimations = useViewerStore((state) => state.disabledAnimations);
-    const animationState = useViewerStore((state) => state.animationState);
-    const animationTimeOverride = useViewerStore((state) => state.animationTimeOverride);
-    const timeOverrideEnabled = useViewerStore((state) => state.timeOverrideEnabled);
-    const animationDuration = useViewerStore((state) => state.animationDuration);
+    const animations = useViewerStore((state) => state.published.animations);
+    const selectedAnimations = useViewerStore((state) => state.selection.selectedAnimations);
+    const disabledAnimations = useViewerStore((state) => state.published.disabledAnimations);
+    const animationState = useViewerStore((state) => state.selection.animationState);
+    const animationTimeOverride = useViewerStore((state) => state.selection.animationTimeOverride);
+    const timeOverrideEnabled = useViewerStore((state) => state.selection.timeOverrideEnabled);
+    const animationDuration = useViewerStore((state) => state.selection.animationDuration);
 
     // The numeric input keeps its own draft while focused, so editing it is not
     // rewritten as the underlying value changes.
@@ -27,16 +27,16 @@ export function AnimationsTab() {
         const next = checked
             ? [...selectedAnimations, index]
             : selectedAnimations.filter((item) => item !== index);
-        setViewerState({ selectedAnimations: next });
+        updateSelection({ selectedAnimations: next });
     };
 
     const setTimeOverride = (value) => {
         if (value === null || value === undefined) {
-            setViewerState({ animationTimeOverride: null });
+            updateSelection({ animationTimeOverride: null });
             return;
         }
         const clamped = Math.min(Math.max(value, 0), animationDuration);
-        setViewerState({ animationTimeOverride: clamped });
+        updateSelection({ animationTimeOverride: clamped });
     };
 
     return (
@@ -49,7 +49,7 @@ export function AnimationsTab() {
                     onIcon={<Pause size={16} aria-hidden="true" />}
                     offIcon={<Play size={16} aria-hidden="true" />}
                     onToggle={(on) => {
-                        setViewerState({ animationState: on });
+                        updateSelection({ animationState: on });
                     }}
                     onReset={() => commands.animationResetChanged()}
                 />
@@ -78,7 +78,7 @@ export function AnimationsTab() {
                             className="mt-0! w-auto!"
                             checked={timeOverrideEnabled}
                             onChange={(checked) => {
-                                setViewerState({ timeOverrideEnabled: checked });
+                                updateSelection({ timeOverrideEnabled: checked });
                                 if (!checked) {
                                     setTimeOverride(null);
                                 }

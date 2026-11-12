@@ -2,7 +2,7 @@ import { Funnel } from "lucide-react";
 import { useState } from "react";
 
 import { commands } from "../../logic/commands.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
     Panel,
@@ -38,25 +38,25 @@ function Chip({ label, selected, disabled, onToggle }) {
 }
 
 export function ModelsTab({ selectedVariant, onSelectVariant }) {
-    const models = useViewerStore((state) => state.models);
-    const modelCount = useViewerStore((state) => state.modelCount);
-    const modelTags = useViewerStore((state) => state.modelTags);
-    const modelFlavours = useViewerStore((state) => state.modelFlavours);
-    const disabledModelTags = useViewerStore((state) => state.disabledModelTags);
-    const disabledModelFlavours = useViewerStore((state) => state.disabledModelFlavours);
-    const modelThumbnails = useViewerStore((state) => state.modelThumbnails);
-    const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
-    const selectedModelFlavours = useViewerStore((state) => state.selectedModelFlavours);
-    const flavours = useViewerStore((state) => state.flavours);
-    const scenes = useViewerStore((state) => state.scenes);
-    const cameras = useViewerStore((state) => state.cameras);
-    const materialVariants = useViewerStore((state) => state.materialVariants);
-    const selectedModel = useViewerStore((state) => state.selectedModel);
-    const selectedModelExcluded = useViewerStore((state) => state.selectedModelExcluded);
-    const selectedModelIsDropped = useViewerStore((state) => state.selectedModelIsDropped);
-    const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
-    const selectedScene = useViewerStore((state) => state.selectedScene);
-    const selectedCamera = useViewerStore((state) => state.selectedCamera);
+    const models = useViewerStore((state) => state.published.models);
+    const modelCount = useViewerStore((state) => state.published.modelCount);
+    const modelTags = useViewerStore((state) => state.published.modelTags);
+    const modelFlavours = useViewerStore((state) => state.published.modelFlavours);
+    const disabledModelTags = useViewerStore((state) => state.published.disabledModelTags);
+    const disabledModelFlavours = useViewerStore((state) => state.published.disabledModelFlavours);
+    const modelThumbnails = useViewerStore((state) => state.published.modelThumbnails);
+    const selectedModelTags = useViewerStore((state) => state.selection.selectedModelTags);
+    const selectedModelFlavours = useViewerStore((state) => state.selection.selectedModelFlavours);
+    const flavours = useViewerStore((state) => state.published.flavours);
+    const scenes = useViewerStore((state) => state.published.scenes);
+    const cameras = useViewerStore((state) => state.published.cameras);
+    const materialVariants = useViewerStore((state) => state.published.materialVariants);
+    const selectedModel = useViewerStore((state) => state.selection.selectedModel);
+    const selectedModelExcluded = useViewerStore((state) => state.selection.selectedModelExcluded);
+    const selectedModelIsDropped = useViewerStore((state) => state.selection.selectedModelIsDropped);
+    const selectedFlavour = useViewerStore((state) => state.selection.selectedFlavour);
+    const selectedScene = useViewerStore((state) => state.selection.selectedScene);
+    const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
     const [showTags, setShowTags] = useState(false);
 
     const selectVariant = (value) => {
@@ -85,7 +85,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                     label="Models"
                     value={selectedModel}
                     onChange={(value) => {
-                        setViewerState({ selectedModel: value });
+                        updateSelection({ selectedModel: value });
                         commands.modelChanged(value);
                     }}
                     options={models.map((item) => ({
@@ -154,7 +154,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         data-testid="flavour-select"
                         value={selectedFlavour}
                         onChange={(value) => {
-                            setViewerState({ selectedFlavour: value });
+                            updateSelection({ selectedFlavour: value });
                             commands.flavourChanged(value);
                         }}
                     >
@@ -172,7 +172,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                     <Select
                         value={selectedScene}
                         onChange={(value) => {
-                            setViewerState({ selectedScene: value });
+                            updateSelection({ selectedScene: value });
                         }}
                     >
                         {scenes.map((item, index) => (
@@ -191,7 +191,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         value={selectedCamera}
                         onChange={(value) => {
                             const camera = parseInt(value);
-                            setViewerState({ selectedCamera: camera });
+                            updateSelection({ selectedCamera: camera });
                         }}
                     >
                         {cameras.map((item, index) => (

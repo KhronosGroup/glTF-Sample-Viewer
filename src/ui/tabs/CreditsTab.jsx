@@ -12,10 +12,10 @@ function Credit({ label, children, ...rest }) {
 }
 
 export function CreditsTab() {
-    const assetCopyright = useViewerStore((state) => state.assetCopyright);
-    const assetGenerator = useViewerStore((state) => state.assetGenerator);
-    const environmentLicense = useViewerStore((state) => state.environmentLicense);
-    const xmp = useViewerStore((state) => state.xmp);
+    const assetCopyright = useViewerStore((state) => state.published.assetCopyright);
+    const assetGenerator = useViewerStore((state) => state.published.assetGenerator);
+    const environmentLicense = useViewerStore((state) => state.published.environmentLicense);
+    const xmp = useViewerStore((state) => state.published.xmp);
 
     return (
         <Panel title="Model Credits">

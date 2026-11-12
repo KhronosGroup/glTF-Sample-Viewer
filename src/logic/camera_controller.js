@@ -144,8 +144,8 @@ export function createCameraController(state) {
     const zoom = createSpringChannel();
     const isEnabled = () => state.cameraNodeIndex === undefined;
     let lastTime = undefined;
-    let mode = getViewerState().cameraMode ?? "orbit";
-    let projection = getViewerState().cameraProjection ?? "perspective";
+    let mode = getViewerState().selection.cameraMode ?? "orbit";
+    let projection = getViewerState().selection.cameraProjection ?? "perspective";
     let trackballQuat = [0, 0, 0, 1];
     let animation = null;
 

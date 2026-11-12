@@ -30,20 +30,20 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
     const label = `${node.title}: ${target.name}`;
     const emit = (value) =>
         setViewerState((state) => {
-            const nodeOverrides = state.morphWeightOverrides[node.nodeIndex] ?? {};
+            const nodeOverrides = state.selection.morphWeightOverrides[node.nodeIndex] ?? {};
             const nextNodeOverrides = { ...nodeOverrides };
             if (value === null || value === undefined) {
                 delete nextNodeOverrides[targetIndex];
             } else {
                 nextNodeOverrides[targetIndex] = value;
             }
-            const next = { ...state.morphWeightOverrides };
+            const next = { ...state.selection.morphWeightOverrides };
             if (Object.keys(nextNodeOverrides).length === 0) {
                 delete next[node.nodeIndex];
             } else {
                 next[node.nodeIndex] = nextNodeOverrides;
             }
-            return { morphWeightOverrides: next };
+            return { selection: { ...state.selection, morphWeightOverrides: next } };
         });
     const min = signedRange ? -1 : 0;
     return (
@@ -91,8 +91,8 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
 }
 
 export function MorphWeights({ disabled, signedRange, onSignedRangeChange }) {
-    const nodes = useViewerStore((state) => state.morphWeights);
-    const isLoading = useViewerStore((state) => state.isLoading);
+    const nodes = useViewerStore((state) => state.published.morphWeights);
+    const isLoading = useViewerStore((state) => state.ui.isLoading);
     return (
         <div>
             <div className="mb-3 flex items-center justify-between gap-3">

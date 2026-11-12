@@ -1,6 +1,6 @@
 import { Pause, Play, StepForward } from "lucide-react";
 import { commands } from "../../logic/commands.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
     OutlineButton,
@@ -12,8 +12,8 @@ import {
 } from "../controls.jsx";
 
 export function PhysicsTab({ debug, onDebugChange }) {
-    const physicsState = useViewerStore((state) => state.physicsState);
-    const physicsEngineVersion = useViewerStore((state) => state.physicsEngineVersion);
+    const physicsState = useViewerStore((state) => state.selection.physicsState);
+    const physicsEngineVersion = useViewerStore((state) => state.published.physicsEngineVersion);
     const physxLabel = `Nvidia PhysX${physicsEngineVersion !== undefined ? ` ${physicsEngineVersion}` : ""}`;
 
     return (
@@ -25,7 +25,7 @@ export function PhysicsTab({ debug, onDebugChange }) {
                 onIcon={<Pause size={16} aria-hidden="true" />}
                 offIcon={<Play size={16} aria-hidden="true" />}
                 onToggle={(on) => {
-                    setViewerState({ physicsState: on });
+                    updateSelection({ physicsState: on });
                 }}
                 onReset={() => commands.physicsResetChanged()}
             />

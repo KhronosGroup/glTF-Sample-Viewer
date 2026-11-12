@@ -2,7 +2,7 @@ import { Pause, Play, Send } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../logic/commands.js";
 import { notify } from "../../logic/notifications.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Button,
     Field,
@@ -28,10 +28,10 @@ function initialValues(event) {
 }
 
 export function GraphsTab() {
-    const graphs = useViewerStore((state) => state.graphs);
-    const selectedGraph = useViewerStore((state) => state.selectedGraph);
-    const graphState = useViewerStore((state) => state.graphState);
-    const customEvents = useViewerStore((state) => state.customEvents);
+    const graphs = useViewerStore((state) => state.published.graphs);
+    const selectedGraph = useViewerStore((state) => state.selection.selectedGraph);
+    const graphState = useViewerStore((state) => state.selection.graphState);
+    const customEvents = useViewerStore((state) => state.published.customEvents);
 
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [editedValues, setEditedValues] = useState({ eventId: null, values: {} });
@@ -66,7 +66,7 @@ export function GraphsTab() {
                     onIcon={<Pause size={16} aria-hidden="true" />}
                     offIcon={<Play size={16} aria-hidden="true" />}
                     onToggle={(on) => {
-                        setViewerState({ graphState: on });
+                        updateSelection({ graphState: on });
                     }}
                     onReset={() => commands.graphResetChanged()}
                 />
@@ -82,7 +82,7 @@ export function GraphsTab() {
                                 value={graph.index}
                                 checked={selectedGraph === graph.index}
                                 onChange={(value) => {
-                                    setViewerState({ selectedGraph: value });
+                                    updateSelection({ selectedGraph: value });
                                 }}
                             >
                                 {graph.title}

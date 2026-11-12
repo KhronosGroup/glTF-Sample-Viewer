@@ -16,7 +16,7 @@ import {
     RotateCcw
 } from "lucide-react";
 import { commands } from "../../logic/commands.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
@@ -179,9 +179,9 @@ function shortcutSections(mode) {
 }
 
 export function CameraTab() {
-    const cameraMode = useViewerStore((state) => state.cameraMode);
-    const cameraProjection = useViewerStore((state) => state.cameraProjection);
-    const selectedCamera = useViewerStore((state) => state.selectedCamera);
+    const cameraMode = useViewerStore((state) => state.selection.cameraMode);
+    const cameraProjection = useViewerStore((state) => state.selection.cameraProjection);
+    const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
 
     // Camera controls only affect the user camera, so they are disabled while a
     // glTF camera node is selected.
@@ -201,7 +201,7 @@ export function CameraTab() {
                     ]}
                     value={cameraMode}
                     onChange={(value) => {
-                        setViewerState({ cameraMode: value });
+                        updateSelection({ cameraMode: value });
                     }}
                 />
             </Field>
@@ -216,7 +216,7 @@ export function CameraTab() {
                     ]}
                     value={cameraProjection}
                     onChange={(value) => {
-                        setViewerState({ cameraProjection: value });
+                        updateSelection({ cameraProjection: value });
                     }}
                 />
             </Field>

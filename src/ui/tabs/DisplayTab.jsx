@@ -1,6 +1,6 @@
 import { Download, Plus, RotateCcw } from "lucide-react";
 import { commands } from "../../logic/commands.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import { Button, Field, IconButton, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
@@ -25,10 +25,10 @@ const formatExposure = (value) =>
     String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
 
 export function DisplayTab({ lighting, onLightingChange }) {
-    const tonemaps = useViewerStore((state) => state.tonemaps);
-    const environments = useViewerStore((state) => state.environments);
-    const selectedEnvironment = useViewerStore((state) => state.selectedEnvironment);
-    const clearColor = useViewerStore((state) => state.clearColor);
+    const tonemaps = useViewerStore((state) => state.published.tonemaps);
+    const environments = useViewerStore((state) => state.published.environments);
+    const selectedEnvironment = useViewerStore((state) => state.selection.selectedEnvironment);
+    const clearColor = useViewerStore((state) => state.selection.clearColor);
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
@@ -149,7 +149,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         type="color"
                         value={clearColor}
                         onChange={(event) => {
-                            setViewerState({ clearColor: event.target.value });
+                            updateSelection({ clearColor: event.target.value });
                         }}
                     />
                     <span className="text-base font-light">Background Color</span>
@@ -187,7 +187,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     <Select
                         value={selectedEnvironment}
                         onChange={(name) => {
-                            setViewerState({ selectedEnvironment: name });
+                            updateSelection({ selectedEnvironment: name });
                             commands.selectedEnvironmentChanged(name);
                         }}
                     >

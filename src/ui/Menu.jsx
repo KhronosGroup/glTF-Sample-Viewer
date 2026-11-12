@@ -9,7 +9,7 @@ import {
     ShieldCheck,
     SlidersHorizontal
 } from "lucide-react";
-import { setViewerState, useViewerStore } from "./store.js";
+import { updateConfig, updateSelection, useViewerStore } from "./store.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { CameraTab } from "./tabs/CameraTab.jsx";
@@ -75,16 +75,16 @@ export function Menu({ visible }) {
     const environmentVisiblePref = useRef(true);
     const volumePref = useRef(true);
 
-    const selectedVariant = useViewerStore((state) => state.selectedVariant);
-    const lighting = useViewerStore((state) => state.lighting);
-    const extensions = useViewerStore((state) => state.extensions);
-    const physicsDebug = useViewerStore((state) => state.physicsDebug);
-    const clipping = useViewerStore((state) => state.clipping);
-    const debugChannel = useViewerStore((state) => state.debugChannel);
+    const selectedVariant = useViewerStore((state) => state.selection.selectedVariant);
+    const lighting = useViewerStore((state) => state.config.lighting);
+    const extensions = useViewerStore((state) => state.config.extensions);
+    const physicsDebug = useViewerStore((state) => state.config.physicsDebug);
+    const clipping = useViewerStore((state) => state.config.clipping);
+    const debugChannel = useViewerStore((state) => state.config.debugChannel);
 
-    const graphs = useViewerStore((state) => state.graphs);
-    const hasPhysics = useViewerStore((state) => state.hasPhysics);
-    const hasAnimations = useViewerStore((state) => state.hasAnimations);
+    const graphs = useViewerStore((state) => state.published.graphs);
+    const hasPhysics = useViewerStore((state) => state.published.hasPhysics);
+    const hasAnimations = useViewerStore((state) => state.published.hasAnimations);
 
     // The Animations tab becomes the Graphs tab when the asset carries
     // KHR_interactivity and the extension is enabled.
@@ -110,7 +110,7 @@ export function Menu({ visible }) {
         } else if (partial.ibl === true) {
             next = { ...partial, renderEnv: environmentVisiblePref.current };
         }
-        setViewerState({ lighting: { ...lighting, ...next } });
+        updateConfig({ lighting: { ...lighting, ...next } });
     };
 
     // Volume is meaningless without either transmission, so it follows them and
@@ -133,7 +133,7 @@ export function Menu({ visible }) {
             }
         }
 
-        setViewerState({ extensions: { ...extensions, ...next } });
+        updateConfig({ extensions: { ...extensions, ...next } });
     };
 
     const renderTab = (id) => {
@@ -142,7 +142,7 @@ export function Menu({ visible }) {
                 return (
                     <ModelsTab
                         selectedVariant={selectedVariant}
-                        onSelectVariant={(value) => setViewerState({ selectedVariant: value })}
+                        onSelectVariant={(value) => updateSelection({ selectedVariant: value })}
                     />
                 );
             case "camera":
@@ -160,7 +160,7 @@ export function Menu({ visible }) {
                     <PhysicsTab
                         debug={physicsDebug}
                         onDebugChange={(partial) =>
-                            setViewerState({ physicsDebug: { ...physicsDebug, ...partial } })
+                            updateConfig({ physicsDebug: { ...physicsDebug, ...partial } })
                         }
                     />
                 );
@@ -170,10 +170,10 @@ export function Menu({ visible }) {
                         extensions={extensions}
                         onExtensionsChange={updateExtensions}
                         debugChannel={debugChannel}
-                        onDebugChannelChange={(value) => setViewerState({ debugChannel: value })}
+                        onDebugChannelChange={(value) => updateConfig({ debugChannel: value })}
                         clipping={clipping}
                         onClippingChange={(partial) =>
-                            setViewerState({ clipping: { ...clipping, ...partial } })
+                            updateConfig({ clipping: { ...clipping, ...partial } })
                         }
                     />
                 );
