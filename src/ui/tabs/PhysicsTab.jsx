@@ -14,6 +14,7 @@ import {
 export function PhysicsTab({ debug, onDebugChange }) {
     const physicsState = useViewerStore((state) => state.physicsState);
     const physicsEngineVersion = useViewerStore((state) => state.physicsEngineVersion);
+    const physxLabel = `Nvidia PhysX${physicsEngineVersion !== undefined ? ` ${physicsEngineVersion}` : ""}`;
 
     return (
         <Panel title="Physics">
@@ -32,6 +33,15 @@ export function PhysicsTab({ debug, onDebugChange }) {
                 onReset={() => uiEvents.physicsResetChanged.emit(true)}
             />
 
+            <OutlineButton
+                disabled={physicsState}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => uiEvents.physicsStepChanged.emit(true)}
+            >
+                <StepForward size={16} aria-hidden="true" />
+                Step
+            </OutlineButton>
+
             <Field label="Physics Engine">
                 <Select
                     value={debug.engine}
@@ -40,19 +50,12 @@ export function PhysicsTab({ debug, onDebugChange }) {
                         uiEvents.physicsEngineChanged.emit(value);
                     }}
                 >
-                    <option value="nvidia-physx">Nvidia PhysX</option>
+                    <option value="nvidia-physx">{physxLabel}</option>
                 </Select>
-                {physicsEngineVersion !== undefined && (
-                    <p className="mt-1 text-sm text-ink-dim">PhysX {physicsEngineVersion}</p>
-                )}
             </Field>
 
             <SectionLabel>Debug</SectionLabel>
             <div className="mb-4 flex flex-col items-start gap-2">
-                <OutlineButton onClick={() => uiEvents.physicsStepChanged.emit(true)}>
-                    <StepForward size={16} aria-hidden="true" />
-                    Step
-                </OutlineButton>
                 <Switch
                     checked={debug.colliders}
                     onChange={(checked) => {
