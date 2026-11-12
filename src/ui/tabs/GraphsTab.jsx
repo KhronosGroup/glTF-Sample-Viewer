@@ -58,8 +58,6 @@ export function GraphsTab() {
 
     return (
         <Panel title="Interactivity Graphs">
-            <SectionLabel>Graph Controls</SectionLabel>
-
             {hasGraphs && (
                 <PlaybackControls
                     active={graphState}

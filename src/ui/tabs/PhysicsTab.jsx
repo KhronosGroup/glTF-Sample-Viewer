@@ -18,8 +18,6 @@ export function PhysicsTab({ debug, onDebugChange }) {
 
     return (
         <Panel title="Physics">
-            <SectionLabel>Physics Controls</SectionLabel>
-
             <PlaybackControls
                 active={physicsState}
                 onText="Pause"
