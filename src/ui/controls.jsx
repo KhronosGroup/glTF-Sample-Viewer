@@ -189,7 +189,7 @@ function fuzzySubstringRange(text, query, maxEdits = 2) {
 }
 
 // Highlight ranges for `query` in `label`. Exact substrings are preferred;
-// otherwise a fuzzy window within a couple of edits is accepted.
+// otherwise a fuzzy window within a single edit is accepted.
 function matchRanges(label, query) {
     if (query === "") {
         return [];
@@ -205,7 +205,7 @@ function matchRanges(label, query) {
     if (ranges.length > 0) {
         return ranges;
     }
-    const fuzzy = fuzzySubstringRange(t, q);
+    const fuzzy = fuzzySubstringRange(t, q, 1);
     return fuzzy === null ? null : [fuzzy];
 }
 
