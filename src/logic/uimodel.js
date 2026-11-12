@@ -328,6 +328,7 @@ class UIModel {
             assetGenerator: gltf.asset.generator ?? "N/A",
 
             selectedScene: state.sceneIndex,
+            selectedVariant: "None",
             scenes: gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
                 index: index
