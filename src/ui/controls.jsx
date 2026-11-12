@@ -98,7 +98,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
     return (
         <label
             className={classNames(
-                "group w-full mt-2 inline-flex items-center gap-3 whitespace-nowrap",
+                "group w-full mt-2 inline-flex items-center gap-3 whitespace-nowrap select-none",
                 disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                 className
             )}
@@ -649,7 +649,7 @@ export function Radio({ name, value, checked, onChange, children }) {
     return (
         <label
             className={classNames(
-                "flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors first:rounded-t-md last:rounded-b-md",
+                "flex cursor-pointer select-none items-center gap-3 px-3 py-2 transition-colors first:rounded-t-md last:rounded-b-md",
                 checked ? "bg-card-inner" : "bg-card hover:brightness-110"
             )}
         >
