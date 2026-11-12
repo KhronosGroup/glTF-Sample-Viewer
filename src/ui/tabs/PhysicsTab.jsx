@@ -13,6 +13,7 @@ import {
 
 export function PhysicsTab({ debug, onDebugChange }) {
     const physicsState = useViewerStore((state) => state.physicsState);
+    const physicsEngineVersion = useViewerStore((state) => state.physicsEngineVersion);
 
     return (
         <Panel title="Physics">
@@ -41,6 +42,9 @@ export function PhysicsTab({ debug, onDebugChange }) {
                 >
                     <option value="nvidia-physx">Nvidia PhysX</option>
                 </Select>
+                {physicsEngineVersion !== undefined && (
+                    <p className="mt-1 text-sm text-ink-dim">PhysX {physicsEngineVersion}</p>
+                )}
             </Field>
 
             <SectionLabel>Debug</SectionLabel>

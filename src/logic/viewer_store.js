@@ -33,6 +33,7 @@ const initialState = {
     graphs: [],
     customEvents: [],
     hasPhysics: false,
+    physicsEngineVersion: undefined,
     assetCopyright: "",
     assetGenerator: "",
     xmp: [{ title: "xmp" }],

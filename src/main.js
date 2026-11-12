@@ -99,17 +99,14 @@ export const initViewer = async (canvas) => {
     const cameraController = createCameraController(state);
 
     await state.physicsController.initializeEngine("NvidiaPhysX");
+    setViewerState({ physicsEngineVersion: state.physicsController.getEngineVersion() });
 
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
     state.renderingParameters.toneMap = GltfState.ToneMaps.KHR_PBR_NEUTRAL;
     state.renderingParameters.debugOutput = GltfState.DebugOutput.NONE;
 
-    state.graphController.addCustomEventListener("test/onStart", (event) => {
-        console.log("Test duration: ", event);
-    });
     state.graphController.addCustomEventListener("test/onSuccess", () => {
         const message = "Interactivity test succeeded";
-        console.log(message);
         notify(message, "success");
     });
     state.graphController.addCustomEventListener("test/onFailed", () => {
