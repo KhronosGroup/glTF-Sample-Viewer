@@ -35,6 +35,32 @@ const EXTENSION_KEYS = {
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
+// Declarative mirror of the store's config slices onto the renderer's mutable
+// `renderingParameters`. Each entry is [store key, renderingParameters key,
+// optional transform].
+const LIGHTING_FIELDS = [
+    ["ibl", "useIBL"],
+    ["punctualLights", "usePunctual"],
+    ["renderEnv", "renderEnvironmentMap"],
+    ["blurEnv", "blurEnvironmentMap"],
+    ["iblIntensity", "iblIntensity", (value) => Math.pow(10, value)],
+    ["exposure", "exposure", (value) => 1.0 / Math.pow(2.0, value)],
+    ["toneMap", "toneMap"],
+    ["rotation", "environmentRotation", (value) => ENVIRONMENT_ROTATIONS[value]]
+];
+
+// Direct one-to-one mirrors of config.extensions onto renderingParameters.
+const EXTENSION_FIELDS = [
+    ["skinning", "skinning"],
+    ["morphing", "morphing"],
+    ["wireframe", "wireframe"],
+    ["lightGizmos", "lightGizmos"],
+    ["cameraGizmos", "cameraGizmos"],
+    ["jointGizmos", "jointGizmos"],
+    ["aabbGizmos", "aabbGizmos"],
+    ["floatingPointFramebuffer", "floatingPointFramebuffer"]
+];
+
 function hexToLinearColor(hex) {
     const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (match === null) {
@@ -371,25 +397,15 @@ export const initViewer = async (canvas) => {
     };
 
     const applyLighting = (lighting) => {
-        state.renderingParameters.useIBL = lighting.ibl;
-        state.renderingParameters.usePunctual = lighting.punctualLights;
-        state.renderingParameters.renderEnvironmentMap = lighting.renderEnv;
-        state.renderingParameters.blurEnvironmentMap = lighting.blurEnv;
-        state.renderingParameters.iblIntensity = Math.pow(10, lighting.iblIntensity);
-        state.renderingParameters.exposure = 1.0 / Math.pow(2.0, lighting.exposure);
-        state.renderingParameters.toneMap = lighting.toneMap;
-        state.renderingParameters.environmentRotation = ENVIRONMENT_ROTATIONS[lighting.rotation];
+        for (const [from, to, transform] of LIGHTING_FIELDS) {
+            state.renderingParameters[to] = transform ? transform(lighting[from]) : lighting[from];
+        }
     };
 
     const applyExtensions = (extensions, previous) => {
-        state.renderingParameters.skinning = extensions.skinning;
-        state.renderingParameters.morphing = extensions.morphing;
-        state.renderingParameters.wireframe = extensions.wireframe;
-        state.renderingParameters.lightGizmos = extensions.lightGizmos;
-        state.renderingParameters.cameraGizmos = extensions.cameraGizmos;
-        state.renderingParameters.jointGizmos = extensions.jointGizmos;
-        state.renderingParameters.aabbGizmos = extensions.aabbGizmos;
-        state.renderingParameters.floatingPointFramebuffer = extensions.floatingPointFramebuffer;
+        for (const [from, to] of EXTENSION_FIELDS) {
+            state.renderingParameters[to] = extensions[from];
+        }
         for (const [key, extension] of Object.entries(EXTENSION_KEYS)) {
             state.renderingParameters.enabledExtensions[extension] = extensions[key];
         }
