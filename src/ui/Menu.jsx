@@ -10,6 +10,7 @@ import {
     SlidersHorizontal
 } from "lucide-react";
 import { updateConfig, updateSelection, useViewerStore } from "./store.js";
+import { deriveExtensions, deriveLighting } from "../logic/config_derivations.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { CameraTab } from "./tabs/CameraTab.jsx";
@@ -103,13 +104,12 @@ export function Menu({ visible }) {
     // Turning IBL off hides the background and remembers the previous choice, so
     // turning it back on restores it rather than forcing it visible.
     const updateLighting = (partial) => {
-        let next = partial;
-        if (partial.ibl === false) {
-            environmentVisiblePref.current = lighting.renderEnv;
-            next = { ...partial, renderEnv: false };
-        } else if (partial.ibl === true) {
-            next = { ...partial, renderEnv: environmentVisiblePref.current };
-        }
+        const { next, preference } = deriveLighting(
+            lighting,
+            partial,
+            environmentVisiblePref.current
+        );
+        environmentVisiblePref.current = preference;
         updateConfig({ lighting: { ...lighting, ...next } });
     };
 
@@ -117,22 +117,8 @@ export function Menu({ visible }) {
     // remembers the user's choice. This only moves the switch; the renderer is
     // not notified until volume is toggled directly.
     const updateExtensions = (partial) => {
-        let next = partial;
-        const otherTransmission = (key) =>
-            key === "transmission" ? extensions.diffuseTransmission : extensions.transmission;
-
-        for (const key of ["transmission", "diffuseTransmission"]) {
-            if (partial[key] === undefined || otherTransmission(key)) {
-                continue;
-            }
-            if (partial[key] === false) {
-                volumePref.current = extensions.volume;
-                next = { ...next, volume: false };
-            } else {
-                next = { ...next, volume: volumePref.current };
-            }
-        }
-
+        const { next, preference } = deriveExtensions(extensions, partial, volumePref.current);
+        volumePref.current = preference;
         updateConfig({ extensions: { ...extensions, ...next } });
     };
 
