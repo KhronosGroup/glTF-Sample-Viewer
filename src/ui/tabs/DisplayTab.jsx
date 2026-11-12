@@ -40,7 +40,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     data-testid="switch-ibl"
                     checked={ibl}
                     onChange={(checked) => {
-                        uiEvents.iblChanged.emit(checked);
                         onLightingChange({ ibl: checked });
                     }}
                 >
@@ -49,7 +48,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 <Switch
                     checked={punctualLights}
                     onChange={(checked) => {
-                        uiEvents.punctualLightsChanged.emit(checked);
                         onLightingChange({ punctualLights: checked });
                     }}
                 >
@@ -69,7 +67,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         ticks={IBL_INTENSITY_TICKS}
                         formatter={formatIblIntensity}
                         onChange={(value) => {
-                            uiEvents.iblIntensityChanged.emit(value);
                             onLightingChange({ iblIntensity: value });
                         }}
                     />
@@ -77,7 +74,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         label="Reset IBL intensity"
                         className="mt-1 shrink-0"
                         onClick={() => {
-                            uiEvents.iblIntensityChanged.emit(0);
                             onLightingChange({ iblIntensity: 0 });
                         }}
                     >
@@ -98,7 +94,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         ticks={EXPOSURE_TICKS}
                         formatter={formatExposure}
                         onChange={(value) => {
-                            uiEvents.exposureChanged.emit(value);
                             onLightingChange({ exposure: value });
                         }}
                     />
@@ -106,7 +101,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         label="Reset exposure"
                         className="mt-1 shrink-0"
                         onClick={() => {
-                            uiEvents.exposureChanged.emit(0);
                             onLightingChange({ exposure: 0 });
                         }}
                     >
@@ -119,7 +113,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 <Select
                     value={toneMap}
                     onChange={(value) => {
-                        uiEvents.tonemapChanged.emit(value);
                         onLightingChange({ toneMap: value });
                     }}
                 >
@@ -136,7 +129,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     checked={renderEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
-                        uiEvents.renderEnvChanged.emit(checked);
                         onLightingChange({ renderEnv: checked });
                     }}
                 >
@@ -146,7 +138,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     checked={blurEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
-                        uiEvents.blurEnvChanged.emit(checked);
                         onLightingChange({ blurEnv: checked });
                     }}
                 >
@@ -159,7 +150,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         value={clearColor}
                         onChange={(event) => {
                             setViewerState({ clearColor: event.target.value });
-                            uiEvents.colorChanged.emit(event.target.value);
                         }}
                     />
                     <span className="text-base font-light">Background Color</span>
@@ -172,7 +162,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     options={ENVIRONMENT_ROTATIONS.map((item) => ({ label: item, value: item }))}
                     value={rotation}
                     onChange={(value) => {
-                        uiEvents.environmentRotationChanged.emit(value);
                         onLightingChange({ rotation: value });
                     }}
                 />

@@ -202,7 +202,6 @@ export function CameraTab() {
                     value={cameraMode}
                     onChange={(value) => {
                         setViewerState({ cameraMode: value });
-                        uiEvents.cameraModeChanged.emit(value);
                     }}
                 />
             </Field>
@@ -218,7 +217,6 @@ export function CameraTab() {
                     value={cameraProjection}
                     onChange={(value) => {
                         setViewerState({ cameraProjection: value });
-                        uiEvents.cameraProjectionChanged.emit(value);
                     }}
                 />
             </Field>

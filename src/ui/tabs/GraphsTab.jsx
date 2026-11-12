@@ -67,7 +67,6 @@ export function GraphsTab() {
                     offIcon={<Play size={16} aria-hidden="true" />}
                     onToggle={(on) => {
                         setViewerState({ graphState: on });
-                        uiEvents.graphPlayChanged.emit(on);
                     }}
                     onReset={() => uiEvents.graphResetChanged.emit(true)}
                 />
@@ -84,7 +83,6 @@ export function GraphsTab() {
                                 checked={selectedGraph === graph.index}
                                 onChange={(value) => {
                                     setViewerState({ selectedGraph: value });
-                                    uiEvents.selectedGraphChanged.emit(value);
                                 }}
                             >
                                 {graph.title}

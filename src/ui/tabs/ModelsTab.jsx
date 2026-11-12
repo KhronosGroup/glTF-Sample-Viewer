@@ -61,7 +61,6 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
 
     const selectVariant = (value) => {
         onSelectVariant(value);
-        uiEvents.variantChanged.emit(value);
     };
 
     const toggleTag = (tag, enabled) => {
@@ -174,7 +173,6 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         value={selectedScene}
                         onChange={(value) => {
                             setViewerState({ selectedScene: value });
-                            uiEvents.sceneChanged.emit(value);
                         }}
                     >
                         {scenes.map((item, index) => (
@@ -194,7 +192,6 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                         onChange={(value) => {
                             const camera = parseInt(value);
                             setViewerState({ selectedCamera: camera });
-                            uiEvents.cameraChanged.emit(camera);
                         }}
                     >
                         {cameras.map((item, index) => (

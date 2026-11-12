@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { uiEvents } from "../logic/ui_events.js";
-import { useViewerStore } from "./store.js";
+import { setViewerState, useViewerStore } from "./store.js";
 import { Input, SegmentedControl } from "./controls.jsx";
 import { Slider } from "./Slider.jsx";
 
@@ -30,7 +29,22 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
     const [draft, setDraft] = useState(null);
     const label = `${node.title}: ${target.name}`;
     const emit = (value) =>
-        uiEvents.morphWeightChanged.emit({ nodeIndex: node.nodeIndex, targetIndex, value });
+        setViewerState((state) => {
+            const nodeOverrides = state.morphWeightOverrides[node.nodeIndex] ?? {};
+            const nextNodeOverrides = { ...nodeOverrides };
+            if (value === null || value === undefined) {
+                delete nextNodeOverrides[targetIndex];
+            } else {
+                nextNodeOverrides[targetIndex] = value;
+            }
+            const next = { ...state.morphWeightOverrides };
+            if (Object.keys(nextNodeOverrides).length === 0) {
+                delete next[node.nodeIndex];
+            } else {
+                next[node.nodeIndex] = nextNodeOverrides;
+            }
+            return { morphWeightOverrides: next };
+        });
     const min = signedRange ? -1 : 0;
     return (
         <div

@@ -5,34 +5,48 @@ import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 import { createCameraController } from "./logic/camera_controller.js";
 import { UIModel } from "./logic/uimodel.js";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
-import { getViewerState, setViewerState } from "./logic/viewer_store.js";
+import { getViewerState, setViewerState, viewerStore } from "./logic/viewer_store.js";
 import { uiEvents } from "./logic/ui_events.js";
 import { notify } from "./logic/notifications.js";
 
 import { validateBytes } from "gltf-validator";
 
 // Toggles that only flip a flag in renderingParameters.enabledExtensions.
-const EXTENSION_TOGGLES = {
-    clearcoatChanged: "KHR_materials_clearcoat",
-    sheenChanged: "KHR_materials_sheen",
-    transmissionChanged: "KHR_materials_transmission",
-    diffuseTransmissionChanged: "KHR_materials_diffuse_transmission",
-    volumeChanged: "KHR_materials_volume",
-    scatteringChanged: "KHR_materials_scatter",
-    iorChanged: "KHR_materials_ior",
-    iridescenceChanged: "KHR_materials_iridescence",
-    retroreflectionChanged: "KHR_materials_retroreflection",
-    anisotropyChanged: "KHR_materials_anisotropy",
-    dispersionChanged: "KHR_materials_dispersion",
-    specularChanged: "KHR_materials_specular",
-    emissiveStrengthChanged: "KHR_materials_emissive_strength",
-    hoverabilityChanged: "KHR_node_hoverability",
-    selectabilityChanged: "KHR_node_selectability",
-    nodeVisibilityChanged: "KHR_node_visibility",
-    gaussianSplattingChanged: "KHR_gaussian_splatting"
+// Maps the Advanced panel extension keys to their renderingParameters.enabledExtensions keys.
+const EXTENSION_KEYS = {
+    clearcoat: "KHR_materials_clearcoat",
+    sheen: "KHR_materials_sheen",
+    transmission: "KHR_materials_transmission",
+    diffuseTransmission: "KHR_materials_diffuse_transmission",
+    volume: "KHR_materials_volume",
+    scattering: "KHR_materials_scatter",
+    ior: "KHR_materials_ior",
+    iridescence: "KHR_materials_iridescence",
+    retroreflection: "KHR_materials_retroreflection",
+    anisotropy: "KHR_materials_anisotropy",
+    dispersion: "KHR_materials_dispersion",
+    specular: "KHR_materials_specular",
+    emissiveStrength: "KHR_materials_emissive_strength",
+    hoverability: "KHR_node_hoverability",
+    selectability: "KHR_node_selectability",
+    nodeVisibility: "KHR_node_visibility",
+    gaussianSplatting: "KHR_gaussian_splatting"
 };
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
+
+function hexToLinearColor(hex) {
+    const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (match === null) {
+        return undefined;
+    }
+    return [
+        parseInt(match[1], 16) / 255.0,
+        parseInt(match[2], 16) / 255.0,
+        parseInt(match[3], 16) / 255.0,
+        1.0
+    ];
+}
 
 // The decoder's Emscripten glue looks for its .wasm next to itself, which is not where
 // the bundler puts it.
@@ -332,83 +346,7 @@ export const initViewer = async (canvas) => {
             redraw = true;
         });
 
-    for (const [eventName, extension] of Object.entries(EXTENSION_TOGGLES)) {
-        onChange(uiEvents[eventName], (enabled) => {
-            state.renderingParameters.enabledExtensions[extension] = enabled;
-        });
-    }
-
-    onChange(uiEvents.tonemapChanged, (v) => (state.renderingParameters.toneMap = v));
-    onChange(uiEvents.debugchannelChanged, (v) => (state.renderingParameters.debugOutput = v));
-    onChange(uiEvents.skinningChanged, (v) => (state.renderingParameters.skinning = v));
-    onChange(uiEvents.morphingChanged, (v) => (state.renderingParameters.morphing = v));
-    onChange(uiEvents.wireframeChanged, (v) => (state.renderingParameters.wireframe = v));
-    onChange(uiEvents.lightGizmosChanged, (v) => (state.renderingParameters.lightGizmos = v));
-    onChange(uiEvents.cameraGizmosChanged, (v) => (state.renderingParameters.cameraGizmos = v));
-    onChange(uiEvents.jointGizmosChanged, (v) => (state.renderingParameters.jointGizmos = v));
-    onChange(uiEvents.aabbGizmosChanged, (v) => (state.renderingParameters.aabbGizmos = v));
-    onChange(uiEvents.clippingChanged, (v) => {
-        state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
-    });
-    onChange(uiEvents.iblChanged, (v) => (state.renderingParameters.useIBL = v));
-    onChange(uiEvents.punctualLightsChanged, (v) => (state.renderingParameters.usePunctual = v));
-    onChange(
-        uiEvents.renderEnvChanged,
-        (v) => (state.renderingParameters.renderEnvironmentMap = v)
-    );
-    onChange(uiEvents.blurEnvChanged, (v) => (state.renderingParameters.blurEnvironmentMap = v));
-    onChange(
-        uiEvents.floatingPointFramebufferChanged,
-        (v) => (state.renderingParameters.floatingPointFramebuffer = v)
-    );
-    onChange(
-        uiEvents.exposureChanged,
-        (v) => (state.renderingParameters.exposure = 1.0 / Math.pow(2.0, v))
-    );
-    onChange(
-        uiEvents.iblIntensityChanged,
-        (v) => (state.renderingParameters.iblIntensity = Math.pow(10, v))
-    );
-    onChange(uiEvents.environmentRotationChanged, (v) => {
-        state.renderingParameters.environmentRotation = ENVIRONMENT_ROTATIONS[v];
-    });
-    onChange(uiEvents.variantChanged, (v) => (state.variant = v));
-
-    onChange(uiEvents.morphWeightChanged, ({ nodeIndex, targetIndex, value }) => {
-        const node = state.gltf?.nodes[nodeIndex];
-        const targetCount = state.gltf?.meshes[node?.mesh]?.primitives[0]?.targets.length ?? 0;
-        if (
-            !node ||
-            !Number.isInteger(targetIndex) ||
-            targetIndex < 0 ||
-            targetIndex >= targetCount ||
-            (value !== null && !Number.isFinite(value))
-        ) {
-            console.error("Invalid morph weight change", { nodeIndex, targetIndex, value });
-            return;
-        }
-        // A null value clears the override, returning the target to its asset/animated weight.
-        node.morphWeightOverrides ??= [];
-        node.morphWeightOverrides[targetIndex] = value ?? undefined;
-        if (node.morphWeightOverrides.every((weight) => weight === undefined)) {
-            node.morphWeightOverrides = undefined;
-        }
-        uiModel.publishMorphWeights(state);
-    });
-
-    onChange(uiEvents.morphWeightsReset, () => {
-        for (const node of state.gltf.nodes) {
-            node.morphWeightOverrides = undefined;
-        }
-        uiModel.publishMorphWeights(state);
-    });
-
-    uiModel.onClearColor((color) => {
-        state.renderingParameters.clearColor = color;
-        redraw = true;
-    });
-
-    onChange(uiEvents.interactivityChanged, (enabled) => {
+    const applyInteractivity = (enabled) => {
         state.renderingParameters.enabledExtensions.KHR_interactivity = enabled;
         if (state.gltf?.extensions?.KHR_interactivity === undefined) {
             return;
@@ -431,10 +369,99 @@ export const initViewer = async (canvas) => {
                 state.animationTimer.pause();
             }
         }
-    });
+    };
 
-    onChange(uiEvents.sceneChanged, (value) => {
+    const applyLighting = (lighting) => {
+        state.renderingParameters.useIBL = lighting.ibl;
+        state.renderingParameters.usePunctual = lighting.punctualLights;
+        state.renderingParameters.renderEnvironmentMap = lighting.renderEnv;
+        state.renderingParameters.blurEnvironmentMap = lighting.blurEnv;
+        state.renderingParameters.iblIntensity = Math.pow(10, lighting.iblIntensity);
+        state.renderingParameters.exposure = 1.0 / Math.pow(2.0, lighting.exposure);
+        state.renderingParameters.toneMap = lighting.toneMap;
+        state.renderingParameters.environmentRotation = ENVIRONMENT_ROTATIONS[lighting.rotation];
+        redraw = true;
+    };
+
+    const applyExtensions = (extensions, previous) => {
+        state.renderingParameters.skinning = extensions.skinning;
+        state.renderingParameters.morphing = extensions.morphing;
+        state.renderingParameters.wireframe = extensions.wireframe;
+        state.renderingParameters.lightGizmos = extensions.lightGizmos;
+        state.renderingParameters.cameraGizmos = extensions.cameraGizmos;
+        state.renderingParameters.jointGizmos = extensions.jointGizmos;
+        state.renderingParameters.aabbGizmos = extensions.aabbGizmos;
+        state.renderingParameters.floatingPointFramebuffer = extensions.floatingPointFramebuffer;
+        for (const [key, extension] of Object.entries(EXTENSION_KEYS)) {
+            state.renderingParameters.enabledExtensions[extension] = extensions[key];
+        }
+        if (extensions.interactivity !== previous?.interactivity) {
+            applyInteractivity(extensions.interactivity);
+        }
+        redraw = true;
+    };
+
+    subscriptions.push(viewerStore.subscribe((s) => s.lighting, applyLighting));
+    subscriptions.push(viewerStore.subscribe((s) => s.extensions, applyExtensions));
+    subscriptions.push(viewerStore.subscribe((s) => s.debugChannel, (v) => {
+        state.renderingParameters.debugOutput = v;
+        redraw = true;
+    }));
+    subscriptions.push(viewerStore.subscribe((s) => s.clipping, (v) => {
+        state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
+        redraw = true;
+    }));
+    subscriptions.push(viewerStore.subscribe((s) => s.physicsDebug, (debug) => {
+        state.physicsController.enableDebugColliders(debug.colliders);
+        state.physicsController.enableDebugJoints(debug.joints);
+        redraw = true;
+    }));
+    subscriptions.push(viewerStore.subscribe((s) => s.selectedVariant, (v) => {
+        state.variant = v;
+        redraw = true;
+    }));
+
+    const applyMorphWeightOverrides = (overrides) => {
+        state.gltf.nodes.forEach((node, nodeIndex) => {
+            const nodeOverrides = overrides[nodeIndex];
+            const targetCount = state.gltf.meshes[node.mesh]?.primitives[0]?.targets.length ?? 0;
+            if (nodeOverrides === undefined || targetCount === 0) {
+                node.morphWeightOverrides = undefined;
+                return;
+            }
+            const weights = Array.from(
+                { length: targetCount },
+                (_, targetIndex) => nodeOverrides[targetIndex] ?? undefined
+            );
+            node.morphWeightOverrides = weights.every((weight) => weight === undefined)
+                ? undefined
+                : weights;
+        });
+        uiModel.publishMorphWeights(state);
+    };
+
+    subscriptions.push(
+        viewerStore.subscribe((s) => s.morphWeightOverrides, (overrides) => {
+            applyMorphWeightOverrides(overrides);
+            redraw = true;
+        })
+    );
+
+    subscriptions.push(viewerStore.subscribe((s) => s.clearColor, (hex) => {
+        const color = hexToLinearColor(hex);
+        if (color !== undefined) {
+            state.renderingParameters.clearColor = color;
+            redraw = true;
+        }
+    }));
+
+    subscriptions.push(viewerStore.subscribe((s) => s.selectedScene, (value) => {
         const sceneIndex = Number(value);
+        // A model load republishes the scene the renderer is already showing,
+        // so only apply a change the renderer has not applied yet.
+        if (sceneIndex === state.sceneIndex) {
+            return;
+        }
         state.sceneIndex = sceneIndex !== -1 ? sceneIndex : undefined;
         state.cameraNodeIndex = undefined;
 
@@ -448,41 +475,44 @@ export const initViewer = async (canvas) => {
         uiModel.publishCameras(state);
         uiModel.publishMorphWeights(state);
         uiModel.publishStatistics(view.gatherStatistics(state));
-    });
+        redraw = true;
+    }));
 
-    onChange(uiEvents.cameraChanged, (camera) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selectedCamera, (camera) => {
         state.cameraNodeIndex = camera !== -1 ? camera : undefined;
-    });
+        redraw = true;
+    }));
 
-    onChange(uiEvents.selectedAnimationsChanged, (indices) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.selectedAnimations, (indices) => {
         // Disable all animations which are not disjoint to the current selection.
         uiModel.publishDisabledAnimations(state.gltf.nonDisjointAnimations(indices));
         state.animationIndices = indices;
-    });
+        redraw = true;
+    }));
 
-    on(uiEvents.animationPlayChanged, (playing) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.animationState, (playing) => {
         if (playing) {
             state.animationTimer.unpause();
         } else {
             state.animationTimer.pause();
         }
-    });
+    }));
 
     on(uiEvents.animationResetChanged, () => {
         state.animationTimer.reset();
         redraw = true;
     });
 
-    on(uiEvents.animationTimeChanged, (time) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.animationTimeOverride, (time) => {
         if (time === null || time === undefined) {
             state.animationTimer.clearTimeOverride();
         } else {
             state.animationTimer.setTimeOverride(time);
         }
         redraw = true;
-    });
+    }));
 
-    on(uiEvents.graphPlayChanged, (playing) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.graphState, (playing) => {
         if (playing) {
             state.graphController.resumeGraph();
             state.animationTimer.unpause();
@@ -490,18 +520,24 @@ export const initViewer = async (canvas) => {
             state.graphController.pauseGraph();
             state.animationTimer.pause();
         }
-    });
+    }));
 
     on(uiEvents.graphResetChanged, () => {
         state.graphController.resetGraph();
         redraw = true;
     });
 
-    on(uiEvents.selectedGraphChanged, (graphIndex) => {
-        if (graphIndex !== null && graphIndex !== undefined) {
-            state.graphController.loadGraph(graphIndex);
+    subscriptions.push(viewerStore.subscribe((s) => s.selectedGraph, (graphIndex) => {
+        if (graphIndex === null || graphIndex === undefined) {
+            return;
         }
-    });
+        // A model load republishes the graph the renderer is already running,
+        // so only apply a change the renderer has not applied yet.
+        if (graphIndex === state.graphController.graphIndex) {
+            return;
+        }
+        state.graphController.loadGraph(graphIndex);
+    }));
 
     on(uiEvents.customEventSendClicked, (eventData) => {
         if (eventData && eventData.eventId) {
@@ -509,14 +545,13 @@ export const initViewer = async (canvas) => {
         }
     });
 
-    // physicsEngineChanged is deliberately unhandled: PhysX is the only engine.
-    on(uiEvents.physicsEnabledChanged, (enabled) => {
+    subscriptions.push(viewerStore.subscribe((s) => s.physicsState, (enabled) => {
         if (enabled) {
             state.physicsController.resumeSimulation();
         } else {
             state.physicsController.pauseSimulation();
         }
-    });
+    }));
 
     on(uiEvents.physicsResetChanged, () => {
         state.physicsController.resetScene(state.gltf);
@@ -530,13 +565,6 @@ export const initViewer = async (canvas) => {
         state.gltf.resetAllDirtyFlags();
         redraw = true;
     });
-
-    onChange(uiEvents.physicsColliderDebugChanged, (enabled) =>
-        state.physicsController.enableDebugColliders(enabled)
-    );
-    onChange(uiEvents.physicsJointDebugChanged, (enabled) =>
-        state.physicsController.enableDebugJoints(enabled)
-    );
 
     // ------------------------------------------------------------- downloads
 
@@ -566,8 +594,14 @@ export const initViewer = async (canvas) => {
 
     // Camera controls arrive as UI events; the controller owns the camera
     // state, while the input handlers below only push raw deltas into it.
-    onChange(uiEvents.cameraModeChanged, (mode) => cameraController.setMode(mode));
-    onChange(uiEvents.cameraProjectionChanged, (type) => cameraController.setProjection(type));
+    subscriptions.push(viewerStore.subscribe((s) => s.cameraMode, (mode) => {
+        cameraController.setMode(mode);
+        redraw = true;
+    }));
+    subscriptions.push(viewerStore.subscribe((s) => s.cameraProjection, (type) => {
+        cameraController.setProjection(type);
+        redraw = true;
+    }));
     onChange(uiEvents.cameraLookAtChanged, (axis) => cameraController.lookAt(axis));
     onChange(uiEvents.cameraResetChanged, () => cameraController.reset());
 

@@ -24,19 +24,6 @@ function parseEnvironmentLicense(text, hdr) {
     };
 }
 
-function hexToLinearColor(hex) {
-    const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (match === null) {
-        return undefined;
-    }
-    return [
-        parseInt(match[1], 16) / 255.0,
-        parseInt(match[2], 16) / 255.0,
-        parseInt(match[3], 16) / 255.0,
-        1.0
-    ];
-}
-
 const INITIAL_ENVIRONMENT = "Cannon_Exterior";
 const INITIAL_CLEAR_COLOR = "#303542";
 
@@ -151,7 +138,6 @@ class UIModel {
         setViewerState({
             clearColor: INITIAL_CLEAR_COLOR
         });
-        this.clearColorHandler?.(hexToLinearColor(INITIAL_CLEAR_COLOR));
 
         if (this.modelURL !== null) {
             if (this.modelPathProvider.hasModel(this.modelURL)) {
@@ -163,18 +149,6 @@ class UIModel {
         } else {
             this.selectModel("DamagedHelmet", false);
         }
-    }
-
-    onClearColor(handler) {
-        this.clearColorHandler = handler;
-        this.subscriptions.push(
-            uiEvents.colorChanged.on((hex) => {
-                const color = hexToLinearColor(hex);
-                if (color !== undefined) {
-                    handler(color);
-                }
-            })
-        );
     }
 
     selectModel(name, updateUrl = true) {
@@ -358,6 +332,7 @@ class UIModel {
             })),
 
             selectedAnimations: state.animationIndices,
+            morphWeightOverrides: {},
             animationState: true,
             animationTimeOverride: null,
             animationDuration,

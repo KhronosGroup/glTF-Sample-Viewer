@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import {
     Atom,
     Box,
@@ -9,8 +9,7 @@ import {
     ShieldCheck,
     SlidersHorizontal
 } from "lucide-react";
-import { uiEvents } from "../logic/ui_events.js";
-import { useViewerStore } from "./store.js";
+import { setViewerState, useViewerStore } from "./store.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { CameraTab } from "./tabs/CameraTab.jsx";
@@ -32,63 +31,6 @@ const TAB_META = [
     { id: "credits", label: "Credits", icon: Braces },
     { id: "advanced", label: "Advanced Controls", icon: SlidersHorizontal }
 ];
-
-const INITIAL_LIGHTING = {
-    ibl: true,
-    punctualLights: true,
-    renderEnv: true,
-    blurEnv: true,
-    iblIntensity: 0.0,
-    exposure: 0,
-    toneMap: "Khronos PBR Neutral",
-    rotation: "+Z"
-};
-
-// Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
-const INITIAL_EXTENSIONS = {
-    skinning: true,
-    morphing: true,
-    morphOverrides: false,
-    morphSignedRange: false,
-    wireframe: false,
-    lightGizmos: false,
-    cameraGizmos: false,
-    jointGizmos: false,
-    aabbGizmos: false,
-    interactivity: true,
-    hoverability: true,
-    selectability: true,
-    nodeVisibility: true,
-    floatingPointFramebuffer: true,
-    clearcoat: true,
-    sheen: true,
-    transmission: true,
-    diffuseTransmission: true,
-    volume: true,
-    scattering: true,
-    ior: true,
-    specular: true,
-    emissiveStrength: true,
-    iridescence: true,
-    retroreflection: true,
-    anisotropy: true,
-    dispersion: true,
-    gaussianSplatting: true
-};
-
-const INITIAL_PHYSICS_DEBUG = {
-    engine: "nvidia-physx",
-    colliders: false,
-    joints: false
-};
-
-// Bounds are fractions of the scene extents; the renderer turns them into planes.
-const INITIAL_CLIPPING = {
-    enabled: false,
-    orientation: "Axis Aligned",
-    min: [0, 0, 0],
-    max: [1, 1, 1]
-};
 
 /**
  * The open panel, sliding in from the right when a tab is selected.
@@ -130,14 +72,15 @@ function OpenPanel({ children }) {
  * was.
  */
 export function Menu({ visible }) {
-    const [selectedVariant, setSelectedVariant] = useState("None");
-    const [lighting, setLighting] = useState(INITIAL_LIGHTING);
-    const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
-    const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
-    const [debugChannel, setDebugChannel] = useState("None");
-    const [clipping, setClipping] = useState(INITIAL_CLIPPING);
-    const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
-    const volumePref = useRef(INITIAL_EXTENSIONS.volume);
+    const environmentVisiblePref = useRef(true);
+    const volumePref = useRef(true);
+
+    const selectedVariant = useViewerStore((state) => state.selectedVariant);
+    const lighting = useViewerStore((state) => state.lighting);
+    const extensions = useViewerStore((state) => state.extensions);
+    const physicsDebug = useViewerStore((state) => state.physicsDebug);
+    const clipping = useViewerStore((state) => state.clipping);
+    const debugChannel = useViewerStore((state) => state.debugChannel);
 
     const graphs = useViewerStore((state) => state.graphs);
     const hasPhysics = useViewerStore((state) => state.hasPhysics);
@@ -164,12 +107,10 @@ export function Menu({ visible }) {
         if (partial.ibl === false) {
             environmentVisiblePref.current = lighting.renderEnv;
             next = { ...partial, renderEnv: false };
-            uiEvents.renderEnvChanged.emit(false);
         } else if (partial.ibl === true) {
             next = { ...partial, renderEnv: environmentVisiblePref.current };
-            uiEvents.renderEnvChanged.emit(environmentVisiblePref.current);
         }
-        setLighting((current) => ({ ...current, ...next }));
+        setViewerState({ lighting: { ...lighting, ...next } });
     };
 
     // Volume is meaningless without either transmission, so it follows them and
@@ -192,7 +133,7 @@ export function Menu({ visible }) {
             }
         }
 
-        setExtensions((current) => ({ ...current, ...next }));
+        setViewerState({ extensions: { ...extensions, ...next } });
     };
 
     const renderTab = (id) => {
@@ -201,7 +142,7 @@ export function Menu({ visible }) {
                 return (
                     <ModelsTab
                         selectedVariant={selectedVariant}
-                        onSelectVariant={setSelectedVariant}
+                        onSelectVariant={(value) => setViewerState({ selectedVariant: value })}
                     />
                 );
             case "camera":
@@ -219,7 +160,7 @@ export function Menu({ visible }) {
                     <PhysicsTab
                         debug={physicsDebug}
                         onDebugChange={(partial) =>
-                            setPhysicsDebug((current) => ({ ...current, ...partial }))
+                            setViewerState({ physicsDebug: { ...physicsDebug, ...partial } })
                         }
                     />
                 );
@@ -229,10 +170,10 @@ export function Menu({ visible }) {
                         extensions={extensions}
                         onExtensionsChange={updateExtensions}
                         debugChannel={debugChannel}
-                        onDebugChannelChange={setDebugChannel}
+                        onDebugChannelChange={(value) => setViewerState({ debugChannel: value })}
                         clipping={clipping}
                         onClippingChange={(partial) =>
-                            setClipping((current) => ({ ...current, ...partial }))
+                            setViewerState({ clipping: { ...clipping, ...partial } })
                         }
                     />
                 );

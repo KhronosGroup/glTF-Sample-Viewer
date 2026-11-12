@@ -26,7 +26,6 @@ export function PhysicsTab({ debug, onDebugChange }) {
                 offIcon={<Play size={16} aria-hidden="true" />}
                 onToggle={(on) => {
                     setViewerState({ physicsState: on });
-                    uiEvents.physicsEnabledChanged.emit(on);
                 }}
                 onReset={() => uiEvents.physicsResetChanged.emit(true)}
             />
@@ -45,7 +44,6 @@ export function PhysicsTab({ debug, onDebugChange }) {
                     value={debug.engine}
                     onChange={(value) => {
                         onDebugChange({ engine: value });
-                        uiEvents.physicsEngineChanged.emit(value);
                     }}
                 >
                     <option value="nvidia-physx">{physxLabel}</option>
@@ -58,7 +56,6 @@ export function PhysicsTab({ debug, onDebugChange }) {
                     checked={debug.colliders}
                     onChange={(checked) => {
                         onDebugChange({ colliders: checked });
-                        uiEvents.physicsColliderDebugChanged.emit(checked);
                     }}
                 >
                     Show Colliders
@@ -67,7 +64,6 @@ export function PhysicsTab({ debug, onDebugChange }) {
                     checked={debug.joints}
                     onChange={(checked) => {
                         onDebugChange({ joints: checked });
-                        uiEvents.physicsJointDebugChanged.emit(checked);
                     }}
                 >
                     Show Joints

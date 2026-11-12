@@ -1,3 +1,4 @@
+import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
 /**
@@ -29,6 +30,7 @@ const initialState = {
     materialVariants: ["None"],
     animations: [{ title: "None" }],
     morphWeights: [],
+    morphWeightOverrides: {},
     disabledAnimations: [],
     graphs: [],
     customEvents: [],
@@ -74,12 +76,59 @@ const initialState = {
     graphState: true,
     physicsState: true,
 
+    // Renderer configuration owned by the UI. main.js mirrors these into the
+    // renderer's mutable state.
+    lighting: {
+        ibl: true,
+        punctualLights: true,
+        renderEnv: true,
+        blurEnv: true,
+        iblIntensity: 0.0,
+        exposure: 0,
+        toneMap: "Khronos PBR Neutral",
+        rotation: "+Z"
+    },
+    extensions: {
+        skinning: true,
+        morphing: true,
+        morphOverrides: false,
+        morphSignedRange: false,
+        wireframe: false,
+        lightGizmos: false,
+        cameraGizmos: false,
+        jointGizmos: false,
+        aabbGizmos: false,
+        interactivity: true,
+        hoverability: true,
+        selectability: true,
+        nodeVisibility: true,
+        floatingPointFramebuffer: true,
+        clearcoat: true,
+        sheen: true,
+        transmission: true,
+        diffuseTransmission: true,
+        volume: true,
+        scattering: true,
+        ior: true,
+        specular: true,
+        emissiveStrength: true,
+        iridescence: true,
+        retroreflection: true,
+        anisotropy: true,
+        dispersion: true,
+        gaussianSplatting: true
+    },
+    physicsDebug: { engine: "nvidia-physx", colliders: false, joints: false },
+    clipping: { enabled: false, orientation: "Axis Aligned", min: [0, 0, 0], max: [1, 1, 1] },
+    debugChannel: "None",
+    selectedVariant: "None",
+
     // Transient UI state that the render loop and drop handler need to read.
     isLoading: false,
     showDropDownOverlay: false
 };
 
-export const viewerStore = createStore(() => ({ ...initialState }));
+export const viewerStore = createStore(subscribeWithSelector(() => ({ ...initialState })));
 
 export const getViewerState = () => viewerStore.getState();
 

@@ -28,18 +28,15 @@ export function AnimationsTab() {
             ? [...selectedAnimations, index]
             : selectedAnimations.filter((item) => item !== index);
         setViewerState({ selectedAnimations: next });
-        uiEvents.selectedAnimationsChanged.emit(next);
     };
 
     const setTimeOverride = (value) => {
         if (value === null || value === undefined) {
             setViewerState({ animationTimeOverride: null });
-            uiEvents.animationTimeChanged.emit(null);
             return;
         }
         const clamped = Math.min(Math.max(value, 0), animationDuration);
         setViewerState({ animationTimeOverride: clamped });
-        uiEvents.animationTimeChanged.emit(clamped);
     };
 
     return (
@@ -53,7 +50,6 @@ export function AnimationsTab() {
                     offIcon={<Play size={16} aria-hidden="true" />}
                     onToggle={(on) => {
                         setViewerState({ animationState: on });
-                        uiEvents.animationPlayChanged.emit(on);
                     }}
                     onReset={() => uiEvents.animationResetChanged.emit(true)}
                 />
