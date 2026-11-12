@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import {
     Atom,
     Box,
@@ -9,8 +9,8 @@ import {
     ShieldCheck,
     SlidersHorizontal
 } from "lucide-react";
-import { uiEvents } from "../logic/ui_events.js";
-import { useViewerStore } from "./store.js";
+import { updateConfig, updateSelection, useViewerStore } from "./store.js";
+import { deriveExtensions, deriveLighting } from "../logic/config_derivations.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { CameraTab } from "./tabs/CameraTab.jsx";
@@ -32,62 +32,6 @@ const TAB_META = [
     { id: "credits", label: "Credits", icon: Braces },
     { id: "advanced", label: "Advanced Controls", icon: SlidersHorizontal }
 ];
-
-const INITIAL_LIGHTING = {
-    ibl: true,
-    punctualLights: true,
-    renderEnv: true,
-    blurEnv: true,
-    iblIntensity: 0.0,
-    exposure: 0,
-    toneMap: "Khronos PBR Neutral",
-    rotation: "+Z"
-};
-
-// Owned by the Advanced panel; the Graphs tab depends on `interactivity`.
-const INITIAL_EXTENSIONS = {
-    skinning: true,
-    morphing: true,
-    morphOverrides: false,
-    morphSignedRange: false,
-    wireframe: false,
-    lightGizmos: false,
-    cameraGizmos: false,
-    jointGizmos: false,
-    aabbGizmos: false,
-    interactivity: true,
-    hoverability: true,
-    selectability: true,
-    nodeVisibility: true,
-    floatingPointFramebuffer: true,
-    clearcoat: true,
-    sheen: true,
-    transmission: true,
-    diffuseTransmission: true,
-    volume: true,
-    scattering: true,
-    ior: true,
-    specular: true,
-    emissiveStrength: true,
-    iridescence: true,
-    retroreflection: true,
-    anisotropy: true,
-    dispersion: true,
-    gaussianSplatting: true
-};
-
-const INITIAL_PHYSICS_DEBUG = {
-    engine: "nvidia-physx",
-    joints: false
-};
-
-// Bounds are fractions of the scene extents; the renderer turns them into planes.
-const INITIAL_CLIPPING = {
-    enabled: false,
-    orientation: "Axis Aligned",
-    min: [0, 0, 0],
-    max: [1, 1, 1]
-};
 
 /**
  * The open panel, sliding in from the right when a tab is selected.
@@ -129,71 +73,92 @@ function OpenPanel({ children }) {
  * was.
  */
 export function Menu({ visible }) {
-    const [lighting, setLighting] = useState(INITIAL_LIGHTING);
-    const [extensions, setExtensions] = useState(INITIAL_EXTENSIONS);
-    const [physicsDebug, setPhysicsDebug] = useState(INITIAL_PHYSICS_DEBUG);
-    const [clipping, setClipping] = useState(INITIAL_CLIPPING);
-    const environmentVisiblePref = useRef(INITIAL_LIGHTING.renderEnv);
-    const volumePref = useRef(INITIAL_EXTENSIONS.volume);
+    const environmentVisiblePref = useRef(true);
+    const volumePref = useRef(true);
 
-    const graphs = useViewerStore((state) => state.graphs);
-    const hasPhysics = useViewerStore((state) => state.hasPhysics);
+    const selectedVariant = useViewerStore((state) => state.selection.selectedVariant);
+    const lighting = useViewerStore((state) => state.config.lighting);
+    const extensions = useViewerStore((state) => state.config.extensions);
+    const physicsDebug = useViewerStore((state) => state.config.physicsDebug);
+    const clipping = useViewerStore((state) => state.config.clipping);
+    const debugChannel = useViewerStore((state) => state.config.debugChannel);
+    const debugShapes = useViewerStore((state) => state.config.debugShapes);
+    const cullByBoundingVolume = useViewerStore((state) => state.config.cullByBoundingVolume);
+
+    const graphs = useViewerStore((state) => state.published.graphs);
+    const hasPhysics = useViewerStore((state) => state.published.hasPhysics);
+    const hasAnimations = useViewerStore((state) => state.published.hasAnimations);
 
     // The Animations tab becomes the Graphs tab when the asset carries
     // KHR_interactivity and the extension is enabled.
     const showGraphs = graphs.length > 0 && extensions.interactivity;
 
-    const tabMeta = TAB_META.filter((tab) => !tab.needsPhysics || hasPhysics).map((tab) =>
-        tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
-    );
+    const tabMeta = TAB_META.filter((tab) => {
+        if (tab.id === "animations") {
+            return showGraphs || hasAnimations;
+        }
+        return !tab.needsPhysics || hasPhysics;
+    }).map((tab) => (tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab));
     const { activeTab, select } = useTabState(tabMeta.map((tab) => tab.id));
 
     // Turning IBL off hides the background and remembers the previous choice, so
     // turning it back on restores it rather than forcing it visible.
     const updateLighting = (partial) => {
-        let next = partial;
-        if (partial.ibl === false) {
-            environmentVisiblePref.current = lighting.renderEnv;
-            next = { ...partial, renderEnv: false };
-            uiEvents.renderEnvChanged.emit(false);
-        } else if (partial.ibl === true) {
-            next = { ...partial, renderEnv: environmentVisiblePref.current };
-            uiEvents.renderEnvChanged.emit(environmentVisiblePref.current);
-        }
-        setLighting((current) => ({ ...current, ...next }));
+        const { next, preference } = deriveLighting(
+            lighting,
+            partial,
+            environmentVisiblePref.current
+        );
+        environmentVisiblePref.current = preference;
+        updateConfig({ lighting: { ...lighting, ...next } });
     };
 
     // Volume is meaningless without either transmission, so it follows them and
     // remembers the user's choice. This only moves the switch; the renderer is
     // not notified until volume is toggled directly.
     const updateExtensions = (partial) => {
-        let next = partial;
-        const otherTransmission = (key) =>
-            key === "transmission" ? extensions.diffuseTransmission : extensions.transmission;
+        const { next, preference } = deriveExtensions(extensions, partial, volumePref.current);
+        volumePref.current = preference;
+        updateConfig({ extensions: { ...extensions, ...next } });
+    };
 
-        for (const key of ["transmission", "diffuseTransmission"]) {
-            if (partial[key] === undefined || otherTransmission(key)) {
-                continue;
-            }
-            if (partial[key] === false) {
-                volumePref.current = extensions.volume;
-                next = { ...next, volume: false };
-            } else {
-                next = { ...next, volume: volumePref.current };
-            }
-        }
-
-        setExtensions((current) => ({ ...current, ...next }));
+    // The Display tab's "Collider Shapes" and the Physics tab's "Show Colliders"
+    // are the same control: both move `debugShapes.allShapes` and the physics
+    // collider debug visualisation together.
+    const updateColliderShapes = (checked) => {
+        updateConfig({
+            debugShapes: { ...debugShapes, allShapes: checked },
+            physicsDebug: { ...physicsDebug, colliders: checked }
+        });
     };
 
     const renderTab = (id) => {
         switch (id) {
             case "models":
-                return <ModelsTab />;
+                return (
+                    <ModelsTab
+                        selectedVariant={selectedVariant}
+                        onSelectVariant={(value) => updateSelection({ selectedVariant: value })}
+                    />
+                );
             case "camera":
                 return <CameraTab />;
             case "display":
-                return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
+                return (
+                    <DisplayTab
+                        lighting={lighting}
+                        onLightingChange={updateLighting}
+                        debugShapes={debugShapes}
+                        onDebugShapesChange={(partial) =>
+                            updateConfig({ debugShapes: { ...debugShapes, ...partial } })
+                        }
+                        cullByBoundingVolume={cullByBoundingVolume}
+                        onCullByBoundingVolumeChange={(value) =>
+                            updateConfig({ cullByBoundingVolume: value })
+                        }
+                        onColliderShapesChange={updateColliderShapes}
+                    />
+                );
             case "validator":
                 return <ValidatorTab />;
             case "animations":
@@ -205,8 +170,10 @@ export function Menu({ visible }) {
                     <PhysicsTab
                         debug={physicsDebug}
                         onDebugChange={(partial) =>
-                            setPhysicsDebug((current) => ({ ...current, ...partial }))
+                            updateConfig({ physicsDebug: { ...physicsDebug, ...partial } })
                         }
+                        colliderShapes={debugShapes.allShapes}
+                        onColliderShapesChange={updateColliderShapes}
                     />
                 );
             case "advanced":
@@ -214,9 +181,11 @@ export function Menu({ visible }) {
                     <AdvancedTab
                         extensions={extensions}
                         onExtensionsChange={updateExtensions}
+                        debugChannel={debugChannel}
+                        onDebugChannelChange={(value) => updateConfig({ debugChannel: value })}
                         clipping={clipping}
                         onClippingChange={(partial) =>
-                            setClipping((current) => ({ ...current, ...partial }))
+                            updateConfig({ clipping: { ...clipping, ...partial } })
                         }
                     />
                 );

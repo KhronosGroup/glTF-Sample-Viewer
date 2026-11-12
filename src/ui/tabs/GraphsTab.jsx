@@ -1,8 +1,8 @@
 import { Pause, Play, Send } from "lucide-react";
 import { useState } from "react";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 import { notify } from "../../logic/notifications.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Button,
     Field,
@@ -28,10 +28,10 @@ function initialValues(event) {
 }
 
 export function GraphsTab() {
-    const graphs = useViewerStore((state) => state.graphs);
-    const selectedGraph = useViewerStore((state) => state.selectedGraph);
-    const graphState = useViewerStore((state) => state.graphState);
-    const customEvents = useViewerStore((state) => state.customEvents);
+    const graphs = useViewerStore((state) => state.published.graphs);
+    const selectedGraph = useViewerStore((state) => state.selection.selectedGraph);
+    const graphState = useViewerStore((state) => state.selection.graphState);
+    const customEvents = useViewerStore((state) => state.published.customEvents);
 
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [editedValues, setEditedValues] = useState({ eventId: null, values: {} });
@@ -49,7 +49,7 @@ export function GraphsTab() {
     const hasGraphs = graphs.length !== 0;
 
     const sendCustomEvent = () => {
-        uiEvents.customEventSendClicked.emit({
+        commands.customEventSendClicked({
             eventId: currentEventId,
             values: editedValues.values
         });
@@ -58,8 +58,6 @@ export function GraphsTab() {
 
     return (
         <Panel title="Interactivity Graphs">
-            <SectionLabel>Graph Controls</SectionLabel>
-
             {hasGraphs && (
                 <PlaybackControls
                     active={graphState}
@@ -68,14 +66,11 @@ export function GraphsTab() {
                     onIcon={<Pause size={16} aria-hidden="true" />}
                     offIcon={<Play size={16} aria-hidden="true" />}
                     onToggle={(on) => {
-                        setViewerState({ graphState: on });
-                        uiEvents.graphPlayChanged.emit(on);
+                        updateSelection({ graphState: on });
                     }}
-                    onReset={() => uiEvents.graphResetChanged.emit(true)}
+                    onReset={() => commands.graphResetChanged()}
                 />
             )}
-
-            {!hasGraphs && <SectionLabel>No graphs available</SectionLabel>}
 
             {hasGraphs && (
                 <Field label="Graphs">
@@ -87,8 +82,7 @@ export function GraphsTab() {
                                 value={graph.index}
                                 checked={selectedGraph === graph.index}
                                 onChange={(value) => {
-                                    setViewerState({ selectedGraph: value });
-                                    uiEvents.selectedGraphChanged.emit(value);
+                                    updateSelection({ selectedGraph: value });
                                 }}
                             >
                                 {graph.title}

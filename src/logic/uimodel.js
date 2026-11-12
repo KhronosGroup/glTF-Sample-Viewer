@@ -1,6 +1,12 @@
 import { GltfState } from "@khronosgroup/gltf-viewer";
-import { getViewerState, setViewerState } from "./viewer_store.js";
-import { uiEvents } from "./ui_events.js";
+import {
+    getViewerState,
+    updateConfig,
+    updatePublished,
+    updateSelection,
+    updateUi
+} from "./viewer_store.js";
+import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
 
 /**
@@ -50,19 +56,6 @@ function offeredDebugChannels(channels) {
     );
 }
 
-function hexToLinearColor(hex) {
-    const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (match === null) {
-        return undefined;
-    }
-    return [
-        parseInt(match[1], 16) / 255.0,
-        parseInt(match[2], 16) / 255.0,
-        parseInt(match[3], 16) / 255.0,
-        1.0
-    ];
-}
-
 const INITIAL_ENVIRONMENT = "Cannon_Exterior";
 const INITIAL_CLEAR_COLOR = "#303542";
 
@@ -86,42 +79,49 @@ class UIModel {
         this.modelURL = new URLSearchParams(window.location.search).get("model");
 
         const models = modelPathProvider.getAllKeys();
-        setViewerState({
+        updatePublished({
             models,
             modelCount: models.length,
             modelTags: modelPathProvider.getAllTags(),
             modelFlavours: modelPathProvider.getAllFlavours(),
             modelThumbnails: modelPathProvider.getAllScreenshots(),
             environments,
-            selectedEnvironment: INITIAL_ENVIRONMENT,
-            clearColor: INITIAL_CLEAR_COLOR,
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
             debugchannels: debugChannelsFor(undefined),
             clippingOrientations: Object.values(GltfState.ClippingOrientations)
         });
+        updateSelection({
+            selectedEnvironment: INITIAL_ENVIRONMENT,
+            clearColor: INITIAL_CLEAR_COLOR
+        });
         this.publishModels();
 
         this.subscriptions.push(
-            uiEvents.modelChanged.on((name) => this.selectModel(name)),
-            uiEvents.modelTagsChanged.on((tags) => this.filterModels({ selectedModelTags: tags })),
-            uiEvents.modelFlavoursChanged.on((flavours) =>
+            setCommand("modelChanged", (name) => this.selectModel(name)),
+            setCommand("modelTagsChanged", (tags) =>
+                this.filterModels({ selectedModelTags: tags })
+            ),
+            setCommand("modelFlavoursChanged", (flavours) =>
                 this.filterModels({ selectedModelFlavours: flavours })
             ),
-            uiEvents.flavourChanged.on((flavour) => {
+            setCommand("flavourChanged", (flavour) => {
                 this.emitModel({
-                    mainFile: modelPathProvider.resolve(getViewerState().selectedModel, flavour)
+                    mainFile: modelPathProvider.resolve(
+                        getViewerState().selection.selectedModel,
+                        flavour
+                    )
                 });
             }),
-            uiEvents.selectedEnvironmentChanged.on((name) => {
-                this.emitHdr(getViewerState().environments[name]);
+            setCommand("selectedEnvironmentChanged", (name) => {
+                this.emitHdr(getViewerState().published.environments[name]);
             }),
-            uiEvents.addEnvironmentChanged.on((hdr) => this.addEnvironment(hdr))
+            setCommand("addEnvironmentChanged", (hdr) => this.addEnvironment(hdr))
         );
 
-        this.showOverlay = () => setViewerState({ showDropDownOverlay: true });
-        this.hideOverlay = () => setViewerState({ showDropDownOverlay: false });
+        this.showOverlay = () => updateUi({ showDropDownOverlay: true });
+        this.hideOverlay = () => updateUi({ showDropDownOverlay: false });
         canvas.addEventListener("dragenter", this.showOverlay);
         canvas.addEventListener("dragleave", this.hideOverlay);
 
@@ -132,11 +132,8 @@ class UIModel {
             onSelect: (position) => this.selectionHandler?.(position),
             onFocus: (position) => this.focusHandler?.(position),
             onHover: (position) => this.hoverHandler?.(position),
-            onDrop: (entries) =>
-                this.handleDrop(entries).catch((error) =>
-                    console.error(`Reading the dropped files failed: ${error}`)
-                ),
-            onDropError: () => setViewerState({ showDropDownOverlay: false })
+            onDrop: (entries) => this.handleDrop(entries),
+            onDropError: () => updateUi({ showDropDownOverlay: false })
         });
     }
 
@@ -175,10 +172,9 @@ class UIModel {
     /** Emits the initial model and environment, replacing RxJS `startWith`. */
     start() {
         this.emitHdr(this.environments[INITIAL_ENVIRONMENT]);
-        setViewerState({
+        updateSelection({
             clearColor: INITIAL_CLEAR_COLOR
         });
-        this.clearColorHandler?.(hexToLinearColor(INITIAL_CLEAR_COLOR));
 
         if (this.modelURL !== null) {
             if (this.modelPathProvider.hasModel(this.modelURL)) {
@@ -192,27 +188,15 @@ class UIModel {
         }
     }
 
-    onClearColor(handler) {
-        this.clearColorHandler = handler;
-        this.subscriptions.push(
-            uiEvents.colorChanged.on((hex) => {
-                const color = hexToLinearColor(hex);
-                if (color !== undefined) {
-                    handler(color);
-                }
-            })
-        );
-    }
-
     selectModel(name, updateUrl = true) {
         const flavours = this.modelPathProvider.getModelFlavours(name);
         const selectedFlavour = flavours.includes("glTF") ? "glTF" : flavours[0];
-        setViewerState({
+        updateSelection({
             selectedModel: name,
-            flavours,
             selectedFlavour,
             selectedModelIsDropped: false
         });
+        updatePublished({ flavours });
         if (updateUrl) {
             this.updateModelUrl(name);
         }
@@ -230,18 +214,14 @@ class UIModel {
 
     /** Narrows the model list to the models matching the tag and flavour filters. */
     filterModels(selection) {
-        setViewerState(selection);
+        updateSelection(selection);
         this.publishModels();
     }
 
     publishModels() {
-        const {
-            modelTags,
-            modelFlavours,
-            selectedModelTags,
-            selectedModelFlavours,
-            selectedModel
-        } = getViewerState();
+        const { modelTags, modelFlavours } = getViewerState().published;
+        const { selectedModelTags, selectedModelFlavours, selectedModel } =
+            getViewerState().selection;
         const models = this.modelPathProvider.getAllKeys(selectedModelTags, selectedModelFlavours);
         // The loaded model stays listed even when filtered out, so that filtering
         // never changes what is shown. It is not part of the count.
@@ -250,10 +230,9 @@ class UIModel {
         if (selectedModelExcluded) {
             models.push(selectedModel);
         }
-        setViewerState({
+        updatePublished({
             models,
             modelCount,
-            selectedModelExcluded,
             disabledModelTags: modelTags.filter(
                 (tag) =>
                     !selectedModelTags.includes(tag) &&
@@ -271,13 +250,14 @@ class UIModel {
                     ]).length === 0
             )
         });
+        updateSelection({ selectedModelExcluded });
     }
 
     emitModel(model) {
         // A dropped file adds a temporary entry to the model list; picking
         // anything else removes it again.
-        if (getViewerState().models.at(-1) === this.lastDroppedFilename) {
-            setViewerState({ models: getViewerState().models.slice(0, -1) });
+        if (getViewerState().published.models.at(-1) === this.lastDroppedFilename) {
+            updatePublished({ models: getViewerState().published.models.slice(0, -1) });
             this.lastDroppedFilename = undefined;
         }
         for (const handler of this.modelHandlers) {
@@ -294,19 +274,19 @@ class UIModel {
 
     addEnvironment(hdr) {
         const hdrPath = hdr.hdr_path;
-        setViewerState({
+        updatePublished({
             environments: {
-                ...getViewerState().environments,
+                ...getViewerState().published.environments,
                 [hdrPath.name]: { title: hdrPath.name, hdr_path: hdrPath }
-            },
-            selectedEnvironment: hdrPath.name
+            }
         });
+        updateSelection({ selectedEnvironment: hdrPath.name });
         this.emitHdr(hdr);
     }
 
-    async handleDrop(entries) {
-        setViewerState({ showDropDownOverlay: false });
-        const { mainFile, additionalFiles, hdrFile } = await partitionDroppedFiles(entries);
+    handleDrop(entries) {
+        updateUi({ showDropDownOverlay: false });
+        const { mainFile, additionalFiles, hdrFile } = partitionDroppedFiles(entries);
 
         if (hdrFile !== undefined && mainFile === undefined) {
             this.addEnvironment({ hdr_path: hdrFile[1] });
@@ -328,12 +308,14 @@ class UIModel {
         const fileExtension = filename.split(".").pop();
         filename = filename.substr(0, filename.lastIndexOf("."));
 
-        setViewerState({
-            models: [...getViewerState().models, filename],
+        updatePublished({
+            models: [...getViewerState().published.models, filename],
+            flavours: [fileExtension]
+        });
+        updateSelection({
             selectedModel: filename,
             selectedModelExcluded: false,
             selectedModelIsDropped: true,
-            flavours: [fileExtension],
             selectedFlavour: fileExtension
         });
         this.lastDroppedFilename = filename;
@@ -341,7 +323,7 @@ class UIModel {
 
     async publishEnvironmentLicense(hdr) {
         if (hdr?.license_path === undefined) {
-            setViewerState({ environmentLicense: null });
+            updatePublished({ environmentLicense: null });
             return;
         }
         try {
@@ -349,12 +331,12 @@ class UIModel {
             if (!response.ok) {
                 throw new Error("License file not found");
             }
-            setViewerState({
+            updatePublished({
                 environmentLicense: parseEnvironmentLicense(await response.text(), hdr)
             });
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            setViewerState({ environmentLicense: null });
+            updatePublished({ environmentLicense: null });
         }
     }
 
@@ -363,11 +345,11 @@ class UIModel {
      * of its object URL and revoking whatever it replaces.
      */
     publishThumbnail(thumbnail) {
-        const previous = getViewerState().assetThumbnail;
+        const previous = getViewerState().published.assetThumbnail;
         if (previous !== undefined && previous.startsWith("blob:")) {
             URL.revokeObjectURL(previous);
         }
-        setViewerState({ assetThumbnail: thumbnail?.url });
+        updatePublished({ assetThumbnail: thumbnail?.url });
     }
 
     /** Discards a thumbnail that arrived too late to be shown. */
@@ -392,33 +374,10 @@ class UIModel {
         // the select showing a value it has no option for, and the renderer on a view the
         // asset cannot produce.
         const debugchannels = debugChannelsFor(gltf);
-        const selectedDebugChannel = offeredDebugChannels(debugchannels).includes(
-            getViewerState().selectedDebugChannel
-        )
-            ? getViewerState().selectedDebugChannel
+        const offeredDebug = offeredDebugChannels(debugchannels);
+        const selectedDebugChannel = offeredDebug.includes(getViewerState().config.debugChannel)
+            ? getViewerState().config.debugChannel
             : GltfState.DebugOutput.NONE;
-        if (selectedDebugChannel !== getViewerState().selectedDebugChannel) {
-            uiEvents.debugchannelChanged.emit(selectedDebugChannel);
-        }
-
-        // A variant names a material set in one asset and means nothing in another, so a
-        // selection the new asset does not define is dropped. Keeping it would leave the
-        // radio group with nothing checked, and would silently reapply the old variant on
-        // returning to an asset that happens to use the same name.
-        const materialVariants = hasVariants
-            ? [
-                  "None",
-                  ...gltf.extensions.KHR_materials_variants.variants.map(
-                      (variant) => variant?.name ?? "Unnamed"
-                  )
-              ]
-            : ["None"];
-        const selectedVariant = materialVariants.includes(getViewerState().selectedVariant)
-            ? getViewerState().selectedVariant
-            : "None";
-        if (selectedVariant !== getViewerState().selectedVariant) {
-            uiEvents.variantChanged.emit(selectedVariant);
-        }
 
         let animationDuration = 0;
         for (const animation of gltf.animations) {
@@ -426,33 +385,28 @@ class UIModel {
             animationDuration = Math.max(animationDuration, animation.maxTime ?? 0);
         }
 
-        setViewerState({
+        updatePublished({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
             assetVersion: gltf.asset.version ?? "N/A",
 
-            debugchannels,
-            selectedDebugChannel,
-
-            selectedScene: state.sceneIndex,
-            // glTF 2.1 deprecates multiple scenes, so there is nothing to pick between.
-            // A 2.1 asset that declares several anyway still has to be navigable, which
-            // is what the spec asks importers to keep supporting.
-            showScenes: !gltf.isAtLeast(2, 1) || gltf.scenes.length > 1,
             scenes: gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
                 index: index
             })),
+            // glTF 2.1 deprecates multiple scenes, so there is nothing to pick between.
+            // A 2.1 asset that declares several anyway still has to be navigable.
+            showScenes: !gltf.isAtLeast(2, 1) || gltf.scenes.length > 1,
+            debugchannels,
 
-            selectedAnimations: state.animationIndices,
-            animationState: true,
-            animationTimeOverride: null,
-            animationDuration,
-            graphState: true,
-            physicsState: true,
-
-            materialVariants,
-            selectedVariant,
+            materialVariants: hasVariants
+                ? [
+                      "None",
+                      ...gltf.extensions.KHR_materials_variants.variants.map(
+                          (variant) => variant?.name ?? "Unnamed"
+                      )
+                  ]
+                : ["None"],
 
             animations: gltf.animations.map((animation, index) => ({
                 title: animation.name ?? `Animation ${index}`,
@@ -468,15 +422,31 @@ class UIModel {
             customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
 
             hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
+            hasAnimations: gltf.animations.length > 0,
 
             xmp:
                 gltf?.extensions?.KHR_xmp_json_ld?.packets[
                     gltf?.asset?.extensions?.KHR_xmp_json_ld.packet
                 ] ?? null
         });
+        updateSelection({
+            selectedScene: state.sceneIndex,
+            selectedVariant: "None",
+            selectedAnimations: state.animationIndices,
+            morphWeightOverrides: {},
+            animationState: true,
+            animationTimeOverride: null,
+            animationDuration,
+            graphState: true,
+            physicsState: true
+        });
+
+        if (selectedDebugChannel !== getViewerState().config.debugChannel) {
+            updateConfig({ debugChannel: selectedDebugChannel });
+        }
 
         if (hasInteractivity) {
-            setViewerState({ selectedGraph: state.graphController.graphIndex });
+            updateSelection({ selectedGraph: state.graphController.graphIndex });
         }
     }
 
@@ -501,8 +471,8 @@ class UIModel {
             });
         }
 
-        setViewerState({
-            cameras,
+        updatePublished({ cameras });
+        updateSelection({
             selectedCamera: state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1
         });
     }
@@ -528,7 +498,7 @@ class UIModel {
             });
         });
 
-        const previous = getViewerState().morphWeights;
+        const previous = getViewerState().published.morphWeights;
         if (
             morphWeights.length !== previous.length ||
             morphWeights.some(
@@ -543,12 +513,12 @@ class UIModel {
                     )
             )
         ) {
-            setViewerState({ morphWeights });
+            updatePublished({ morphWeights });
         }
     }
 
     publishStatistics(data) {
-        setViewerState({
+        updatePublished({
             statistics: {
                 Meshes: data.meshCount,
                 Triangles: data.faceCount,
@@ -559,7 +529,7 @@ class UIModel {
     }
 
     publishDisabledAnimations(indices) {
-        setViewerState({ disabledAnimations: indices });
+        updatePublished({ disabledAnimations: indices });
     }
 
     /**
@@ -605,18 +575,18 @@ class UIModel {
     }
 
     publishValidationReport(data) {
-        setViewerState({
+        updatePublished({
             validationReport: data,
             validationReportDescription: this.createValidationReportDescription(data)
         });
     }
 
     goToLoadingState() {
-        setViewerState({ isLoading: true });
+        updateUi({ isLoading: true });
     }
 
     exitLoadingState() {
-        setViewerState({ isLoading: false });
+        updateUi({ isLoading: false });
     }
 
     dispose() {

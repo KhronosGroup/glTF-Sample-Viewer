@@ -1,7 +1,6 @@
-import { CirclePause, CirclePlay, StepForward } from "lucide-react";
-import { GltfState } from "@khronosgroup/gltf-viewer";
-import { uiEvents } from "../../logic/ui_events.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { Pause, Play, StepForward } from "lucide-react";
+import { commands } from "../../logic/commands.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
     OutlineButton,
@@ -12,57 +11,51 @@ import {
     Switch
 } from "../controls.jsx";
 
-export function PhysicsTab({ debug, onDebugChange }) {
-    const physicsState = useViewerStore((state) => state.physicsState);
-    const debugShapes = useViewerStore((state) => state.debugShapes);
+export function PhysicsTab({ debug, onDebugChange, colliderShapes, onColliderShapesChange }) {
+    const physicsState = useViewerStore((state) => state.selection.physicsState);
+    const physicsEngineVersion = useViewerStore((state) => state.published.physicsEngineVersion);
+    const physxLabel = `Nvidia PhysX${physicsEngineVersion !== undefined ? ` ${physicsEngineVersion}` : ""}`;
 
     return (
         <Panel title="Physics">
-            <SectionLabel>Physics Controls</SectionLabel>
-
             <PlaybackControls
                 active={physicsState}
-                onText="Disable"
-                offText="Enable"
-                onIcon={<CirclePause size={16} aria-hidden="true" />}
-                offIcon={<CirclePlay size={16} aria-hidden="true" />}
+                onText="Pause"
+                offText="Play"
+                onIcon={<Pause size={16} aria-hidden="true" />}
+                offIcon={<Play size={16} aria-hidden="true" />}
                 onToggle={(on) => {
-                    setViewerState({ physicsState: on });
-                    uiEvents.physicsEnabledChanged.emit(on);
+                    updateSelection({ physicsState: on });
                 }}
-                onReset={() => uiEvents.physicsResetChanged.emit(true)}
+                onReset={() => commands.physicsResetChanged()}
             />
+
+            <OutlineButton
+                disabled={physicsState}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => commands.physicsStepChanged()}
+            >
+                <StepForward size={16} aria-hidden="true" />
+                Step
+            </OutlineButton>
 
             <Field label="Physics Engine">
                 <Select
                     value={debug.engine}
                     onChange={(value) => {
                         onDebugChange({ engine: value });
-                        uiEvents.physicsEngineChanged.emit(value);
                     }}
                 >
-                    <option value="nvidia-physx">Nvidia PhysX</option>
+                    <option value="nvidia-physx">{physxLabel}</option>
                 </Select>
             </Field>
 
             <SectionLabel>Debug</SectionLabel>
             <div className="mb-4 flex flex-col items-start gap-2">
-                <OutlineButton onClick={() => uiEvents.physicsStepChanged.emit(true)}>
-                    <StepForward size={16} aria-hidden="true" />
-                    Step
-                </OutlineButton>
                 <Switch
-                    checked={debugShapes.allShapes}
+                    checked={colliderShapes}
                     onChange={(checked) => {
-                        const next = { ...debugShapes, allShapes: checked };
-                        setViewerState({ debugShapes: next });
-                        uiEvents.debugShapesChanged.emit({
-                            ...next,
-                            boundingVolumes: next.boundingVolumes
-                                ? GltfState.BoundingVolumeMode.ALL
-                                : GltfState.BoundingVolumeMode.NONE
-                        });
-                        uiEvents.physicsColliderDebugChanged.emit(checked);
+                        onColliderShapesChange(checked);
                     }}
                 >
                     Show Colliders
@@ -71,7 +64,6 @@ export function PhysicsTab({ debug, onDebugChange }) {
                     checked={debug.joints}
                     onChange={(checked) => {
                         onDebugChange({ joints: checked });
-                        uiEvents.physicsJointDebugChanged.emit(checked);
                     }}
                 >
                     Show Joints

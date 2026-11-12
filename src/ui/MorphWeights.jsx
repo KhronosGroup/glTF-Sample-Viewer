@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { uiEvents } from "../logic/ui_events.js";
-import { useViewerStore } from "./store.js";
+import { setViewerState, useViewerStore } from "./store.js";
 import { Input, SegmentedControl } from "./controls.jsx";
 import { Slider } from "./Slider.jsx";
 
@@ -30,7 +29,22 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
     const [draft, setDraft] = useState(null);
     const label = `${node.title}: ${target.name}`;
     const emit = (value) =>
-        uiEvents.morphWeightChanged.emit({ nodeIndex: node.nodeIndex, targetIndex, value });
+        setViewerState((state) => {
+            const nodeOverrides = state.selection.morphWeightOverrides[node.nodeIndex] ?? {};
+            const nextNodeOverrides = { ...nodeOverrides };
+            if (value === null || value === undefined) {
+                delete nextNodeOverrides[targetIndex];
+            } else {
+                nextNodeOverrides[targetIndex] = value;
+            }
+            const next = { ...state.selection.morphWeightOverrides };
+            if (Object.keys(nextNodeOverrides).length === 0) {
+                delete next[node.nodeIndex];
+            } else {
+                next[node.nodeIndex] = nextNodeOverrides;
+            }
+            return { selection: { ...state.selection, morphWeightOverrides: next } };
+        });
     const min = signedRange ? -1 : 0;
     return (
         <div
@@ -77,8 +91,8 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
 }
 
 export function MorphWeights({ disabled, signedRange, onSignedRangeChange }) {
-    const nodes = useViewerStore((state) => state.morphWeights);
-    const isLoading = useViewerStore((state) => state.isLoading);
+    const nodes = useViewerStore((state) => state.published.morphWeights);
+    const isLoading = useViewerStore((state) => state.ui.isLoading);
     return (
         <div>
             <div className="mb-3 flex items-center justify-between gap-3">

@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Download, RotateCcw } from "lucide-react";
-import { setViewerState, useViewerStore } from "../store.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Button,
     Field,
@@ -13,49 +13,45 @@ import {
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
-import { uiEvents } from "../../logic/ui_events.js";
+import { commands } from "../../logic/commands.js";
 
 const RENDERING_TOGGLES = [
-    { key: "skinning", label: "Skinning", event: "skinningChanged" },
-    { key: "morphing", label: "Morphing", event: "morphingChanged" }
+    { key: "skinning", label: "Skinning" },
+    { key: "morphing", label: "Morphing" }
 ];
 
 const INSPECTION_TOGGLES = [
-    { key: "lightGizmos", label: "Light Gizmos", event: "lightGizmosChanged" },
-    { key: "cameraGizmos", label: "Camera Gizmos", event: "cameraGizmosChanged" },
-    { key: "jointGizmos", label: "Joint Gizmos", event: "jointGizmosChanged" },
-    { key: "aabbGizmos", label: "AABB Gizmos", event: "aabbGizmosChanged" }
+    { key: "lightGizmos", label: "Light Gizmos" },
+    { key: "cameraGizmos", label: "Camera Gizmos" },
+    { key: "jointGizmos", label: "Joint Gizmos" },
+    { key: "aabbGizmos", label: "AABB Gizmos" }
 ];
 
 const EXTENSION_TOGGLES = [
     {
         key: "interactivity",
         label: "Interactivity",
-        extension: "KHR_interactivity",
-        event: "interactivityChanged"
+        extension: "KHR_interactivity"
     },
     {
         key: "hoverability",
         label: "Node Hoverability",
-        extension: "KHR_node_hoverability",
-        event: "hoverabilityChanged"
+        extension: "KHR_node_hoverability"
     },
     {
         key: "selectability",
         label: "Node Selectability",
-        extension: "KHR_node_selectability",
-        event: "selectabilityChanged"
+        extension: "KHR_node_selectability"
     },
     {
         key: "nodeVisibility",
         label: "Node Visibility",
-        event: "nodeVisibilityChanged"
+        extension: "KHR_node_visibility"
     },
     {
         key: "gaussianSplatting",
         label: "Gaussian Splatting",
-        extension: "KHR_gaussian_splatting",
-        event: "gaussianSplattingChanged"
+        extension: "KHR_gaussian_splatting"
     }
 ];
 
@@ -63,79 +59,67 @@ const MATERIAL_EXTENSIONS = [
     {
         key: "anisotropy",
         label: "Anisotropy",
-        extension: "KHR_materials_anisotropy",
-        event: "anisotropyChanged"
+        extension: "KHR_materials_anisotropy"
     },
     {
         key: "clearcoat",
         label: "Clearcoat",
-        extension: "KHR_materials_clearcoat",
-        event: "clearcoatChanged"
+        extension: "KHR_materials_clearcoat"
     },
     {
         key: "diffuseTransmission",
         label: "Diffuse Transmission",
-        extension: "KHR_materials_diffuse_transmission",
-        event: "diffuseTransmissionChanged"
+        extension: "KHR_materials_diffuse_transmission"
     },
     {
         key: "dispersion",
         label: "Dispersion",
-        extension: "KHR_materials_dispersion",
-        event: "dispersionChanged"
+        extension: "KHR_materials_dispersion"
     },
     {
         key: "emissiveStrength",
         label: "Emissive Strength",
-        event: "emissiveStrengthChanged"
+        extension: "KHR_materials_emissive_strength"
     },
     {
         key: "ior",
         label: "Index of Refraction",
-        extension: "KHR_materials_ior",
-        event: "iorChanged"
+        extension: "KHR_materials_ior"
     },
     {
         key: "iridescence",
         label: "Iridescence",
-        extension: "KHR_materials_iridescence",
-        event: "iridescenceChanged"
+        extension: "KHR_materials_iridescence"
     },
     {
         key: "retroreflection",
         label: "Retroreflection",
-        extension: "KHR_materials_retroreflection",
-        event: "retroreflectionChanged"
+        extension: "KHR_materials_retroreflection"
     },
     {
         key: "scattering",
         label: "Scattering",
-        extension: "KHR_materials_scatter",
-        event: "scatteringChanged"
+        extension: "KHR_materials_scatter"
     },
     {
         key: "sheen",
         label: "Sheen",
-        extension: "KHR_materials_sheen",
-        event: "sheenChanged"
+        extension: "KHR_materials_sheen"
     },
     {
         key: "specular",
         label: "Specular",
-        extension: "KHR_materials_specular",
-        event: "specularChanged"
+        extension: "KHR_materials_specular"
     },
     {
         key: "transmission",
         label: "Transmission",
-        extension: "KHR_materials_transmission",
-        event: "transmissionChanged"
+        extension: "KHR_materials_transmission"
     },
     {
         key: "volume",
         label: "Volume",
-        extension: "KHR_materials_volume",
-        event: "volumeChanged"
+        extension: "KHR_materials_volume"
     }
 ];
 
@@ -148,13 +132,11 @@ const formatClippingBound = (value) => `${Math.round(value * 100)}%`;
  * scene extents, so they mean the same thing whatever is loaded.
  */
 function ClippingControls({ clipping, onChange }) {
-    const orientations = useViewerStore((state) => state.clippingOrientations);
-    const supportsClipping = useViewerStore((state) => state.supportsClipping);
+    const orientations = useViewerStore((state) => state.published.clippingOrientations);
+    const supportsClipping = useViewerStore((state) => state.published.supportsClipping);
 
     const update = (partial) => {
-        const next = { ...clipping, ...partial };
         onChange(partial);
-        uiEvents.clippingChanged.emit(next);
     };
 
     // Pushing one bound past the other carries it along rather than inverting the cuboid.
@@ -236,24 +218,23 @@ function ClippingControls({ clipping, onChange }) {
 export function AdvancedTab({
     extensions,
     onExtensionsChange,
+    debugChannel,
+    onDebugChannelChange,
     clipping,
     onClippingChange
 }) {
-    const debugchannels = useViewerStore((state) => state.debugchannels);
-    const selectedDebugChannel = useViewerStore((state) => state.selectedDebugChannel);
-    const statistics = useViewerStore((state) => state.statistics);
-    const hasMorphTargets = useViewerStore((state) => state.morphWeights.length > 0);
+    const debugchannels = useViewerStore((state) => state.published.debugchannels);
+    const statistics = useViewerStore((state) => state.published.statistics);
+    const hasMorphTargets = useViewerStore((state) => state.published.morphWeights.length > 0);
     const supportsFloatingPointFramebuffer = useViewerStore(
-        (state) => state.supportsFloatingPointFramebuffer
+        (state) => state.published.supportsFloatingPointFramebuffer
     );
-    const supportsWireframe = useViewerStore((state) => state.supportsWireframe);
+    const supportsWireframe = useViewerStore((state) => state.published.supportsWireframe);
 
     const toggle =
-        ({ key, event }) =>
-        (checked) => {
+        ({ key }) =>
+        (checked) =>
             onExtensionsChange({ [key]: checked });
-            uiEvents[event].emit(checked);
-        };
 
     const disabledFor = (key) => {
         if (key === "volume") {
@@ -282,11 +263,9 @@ export function AdvancedTab({
         <Panel title="Advanced Controls">
             <Field label="Debug Channels">
                 <Select
-                    data-testid="select-debug-channel"
-                    value={selectedDebugChannel}
+                    value={debugChannel}
                     onChange={(value) => {
-                        setViewerState({ selectedDebugChannel: value });
-                        uiEvents.debugchannelChanged.emit(value);
+                        onDebugChannelChange(value);
                     }}
                 >
                     {debugchannels
@@ -312,8 +291,7 @@ export function AdvancedTab({
                     checked={extensions.floatingPointFramebuffer}
                     disabled={!supportsFloatingPointFramebuffer}
                     onChange={toggle({
-                        key: "floatingPointFramebuffer",
-                        event: "floatingPointFramebufferChanged"
+                        key: "floatingPointFramebuffer"
                     })}
                 >
                     32-bit Framebuffer
@@ -326,7 +304,7 @@ export function AdvancedTab({
                     data-testid="switch-wireframe"
                     checked={extensions.wireframe}
                     disabled={!supportsWireframe}
-                    onChange={toggle({ key: "wireframe", event: "wireframeChanged" })}
+                    onChange={toggle({ key: "wireframe" })}
                 >
                     {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
                 </Switch>
@@ -343,7 +321,7 @@ export function AdvancedTab({
                             onChange={(checked) => {
                                 onExtensionsChange({ morphOverrides: checked });
                                 if (!checked) {
-                                    uiEvents.morphWeightsReset.emit();
+                                    updateSelection({ morphWeightOverrides: {} });
                                 }
                             }}
                         >
@@ -373,7 +351,7 @@ export function AdvancedTab({
             </Field>
 
             <Field label="Current Camera Values">
-                <Button onClick={() => uiEvents.cameraExport.emit(true)}>
+                <Button onClick={() => commands.cameraExport()}>
                     <Download size={16} aria-hidden="true" />
                     Download as glTF
                 </Button>

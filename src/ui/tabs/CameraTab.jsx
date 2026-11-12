@@ -15,8 +15,8 @@ import {
     Plus,
     RotateCcw
 } from "lucide-react";
-import { uiEvents } from "../../logic/ui_events.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { commands } from "../../logic/commands.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
@@ -179,9 +179,9 @@ function shortcutSections(mode) {
 }
 
 export function CameraTab() {
-    const cameraMode = useViewerStore((state) => state.cameraMode);
-    const cameraProjection = useViewerStore((state) => state.cameraProjection);
-    const selectedCamera = useViewerStore((state) => state.selectedCamera);
+    const cameraMode = useViewerStore((state) => state.selection.cameraMode);
+    const cameraProjection = useViewerStore((state) => state.selection.cameraProjection);
+    const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
 
     // Camera controls only affect the user camera, so they are disabled while a
     // glTF camera node is selected.
@@ -201,8 +201,7 @@ export function CameraTab() {
                     ]}
                     value={cameraMode}
                     onChange={(value) => {
-                        setViewerState({ cameraMode: value });
-                        uiEvents.cameraModeChanged.emit(value);
+                        updateSelection({ cameraMode: value });
                     }}
                 />
             </Field>
@@ -217,8 +216,7 @@ export function CameraTab() {
                     ]}
                     value={cameraProjection}
                     onChange={(value) => {
-                        setViewerState({ cameraProjection: value });
-                        uiEvents.cameraProjectionChanged.emit(value);
+                        updateSelection({ cameraProjection: value });
                     }}
                 />
             </Field>
@@ -230,7 +228,7 @@ export function CameraTab() {
                             key={axis}
                             type="button"
                             disabled={!userCameraActive}
-                            onClick={() => uiEvents.cameraLookAtChanged.emit(axis)}
+                            onClick={() => commands.cameraLookAtChanged(axis)}
                             className="border-ink/60 hover:border-ink rounded-md border px-2 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {axis}
@@ -243,7 +241,7 @@ export function CameraTab() {
                 <Button
                     disabled={!userCameraActive}
                     className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
-                    onClick={() => uiEvents.cameraResetChanged.emit(true)}
+                    onClick={() => commands.cameraResetChanged()}
                 >
                     <RotateCcw size={16} aria-hidden="true" />
                     Reset

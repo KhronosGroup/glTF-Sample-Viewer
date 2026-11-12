@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { openTab, ui, waitForLoadingToSettle } from "./viewer.js";
+import { openTab, selectModel, ui, waitForLoadingToSettle } from "./viewer.js";
 import { expect } from "@playwright/test";
 
 // The canvas baselines say nothing about the panel, so a styling change can pass
@@ -17,6 +17,14 @@ test.describe("appearance", () => {
 
     for (const panel of PANELS) {
         test(`${panel} panel`, async ({ page }) => {
+            // The animations tab only shows when the asset has animations, so
+            // load an animated model before opening it.
+            if (panel === "animations") {
+                await openTab(page, "models");
+                await selectModel(page, "BoxAnimated");
+                await waitForLoadingToSettle(page);
+            }
+
             await openTab(page, panel);
             // The panel pulls webfonts, so let it settle.
             await page.waitForTimeout(600);

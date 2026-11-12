@@ -26,8 +26,8 @@ async function copyToClipboard(text) {
 }
 
 export function ValidatorTab() {
-    const report = useViewerStore((state) => state.validationReport);
-    const description = useViewerStore((state) => state.validationReportDescription);
+    const report = useViewerStore((state) => state.published.validationReport);
+    const description = useViewerStore((state) => state.published.validationReportDescription);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
@@ -81,8 +81,8 @@ export function ValidatorTab() {
  * Badge shown on the Validator tab header.
  */
 export function ValidationCounter() {
-    const report = useViewerStore((state) => state.validationReport);
-    const description = useViewerStore((state) => state.validationReportDescription);
+    const report = useViewerStore((state) => state.published.validationReport);
+    const description = useViewerStore((state) => state.published.validationReportDescription);
     const issues = report?.issues;
 
     let info = "";

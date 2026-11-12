@@ -1,8 +1,8 @@
 import { Funnel } from "lucide-react";
 import { useState } from "react";
 
-import { uiEvents } from "../../logic/ui_events.js";
-import { setViewerState, useViewerStore } from "../store.js";
+import { commands } from "../../logic/commands.js";
+import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
     Panel,
@@ -37,43 +37,43 @@ function Chip({ label, selected, disabled, onToggle }) {
     );
 }
 
-export function ModelsTab() {
-    const models = useViewerStore((state) => state.models);
-    const modelCount = useViewerStore((state) => state.modelCount);
-    const modelTags = useViewerStore((state) => state.modelTags);
-    const modelFlavours = useViewerStore((state) => state.modelFlavours);
-    const disabledModelTags = useViewerStore((state) => state.disabledModelTags);
-    const disabledModelFlavours = useViewerStore((state) => state.disabledModelFlavours);
-    const modelThumbnails = useViewerStore((state) => state.modelThumbnails);
-    const selectedModelTags = useViewerStore((state) => state.selectedModelTags);
-    const selectedModelFlavours = useViewerStore((state) => state.selectedModelFlavours);
-    const flavours = useViewerStore((state) => state.flavours);
-    const scenes = useViewerStore((state) => state.scenes);
-    const showScenes = useViewerStore((state) => state.showScenes);
-    const cameras = useViewerStore((state) => state.cameras);
-    const materialVariants = useViewerStore((state) => state.materialVariants);
-    const selectedModel = useViewerStore((state) => state.selectedModel);
-    const selectedModelExcluded = useViewerStore((state) => state.selectedModelExcluded);
-    const selectedModelIsDropped = useViewerStore((state) => state.selectedModelIsDropped);
-    const selectedFlavour = useViewerStore((state) => state.selectedFlavour);
-    const selectedScene = useViewerStore((state) => state.selectedScene);
-    const selectedCamera = useViewerStore((state) => state.selectedCamera);
-    const selectedVariant = useViewerStore((state) => state.selectedVariant);
+export function ModelsTab({ selectedVariant, onSelectVariant }) {
+    const models = useViewerStore((state) => state.published.models);
+    const modelCount = useViewerStore((state) => state.published.modelCount);
+    const modelTags = useViewerStore((state) => state.published.modelTags);
+    const modelFlavours = useViewerStore((state) => state.published.modelFlavours);
+    const disabledModelTags = useViewerStore((state) => state.published.disabledModelTags);
+    const disabledModelFlavours = useViewerStore((state) => state.published.disabledModelFlavours);
+    const modelThumbnails = useViewerStore((state) => state.published.modelThumbnails);
+    const selectedModelTags = useViewerStore((state) => state.selection.selectedModelTags);
+    const selectedModelFlavours = useViewerStore((state) => state.selection.selectedModelFlavours);
+    const flavours = useViewerStore((state) => state.published.flavours);
+    const scenes = useViewerStore((state) => state.published.scenes);
+    const showScenes = useViewerStore((state) => state.published.showScenes);
+    const cameras = useViewerStore((state) => state.published.cameras);
+    const materialVariants = useViewerStore((state) => state.published.materialVariants);
+    const selectedModel = useViewerStore((state) => state.selection.selectedModel);
+    const selectedModelExcluded = useViewerStore((state) => state.selection.selectedModelExcluded);
+    const selectedModelIsDropped = useViewerStore(
+        (state) => state.selection.selectedModelIsDropped
+    );
+    const selectedFlavour = useViewerStore((state) => state.selection.selectedFlavour);
+    const selectedScene = useViewerStore((state) => state.selection.selectedScene);
+    const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
     const [showTags, setShowTags] = useState(false);
 
     const selectVariant = (value) => {
-        setViewerState({ selectedVariant: value });
-        uiEvents.variantChanged.emit(value);
+        onSelectVariant(value);
     };
 
     const toggleTag = (tag, enabled) => {
-        uiEvents.modelTagsChanged.emit(
+        commands.modelTagsChanged(
             enabled ? [...selectedModelTags, tag] : selectedModelTags.filter((item) => item !== tag)
         );
     };
 
     const toggleFlavour = (flavour, enabled) => {
-        uiEvents.modelFlavoursChanged.emit(
+        commands.modelFlavoursChanged(
             enabled
                 ? [...selectedModelFlavours, flavour]
                 : selectedModelFlavours.filter((item) => item !== flavour)
@@ -88,8 +88,8 @@ export function ModelsTab() {
                     label="Models"
                     value={selectedModel}
                     onChange={(value) => {
-                        setViewerState({ selectedModel: value });
-                        uiEvents.modelChanged.emit(value);
+                        updateSelection({ selectedModel: value });
+                        commands.modelChanged(value);
                     }}
                     options={models.map((item) => ({
                         value: item,
@@ -157,8 +157,8 @@ export function ModelsTab() {
                         data-testid="flavour-select"
                         value={selectedFlavour}
                         onChange={(value) => {
-                            setViewerState({ selectedFlavour: value });
-                            uiEvents.flavourChanged.emit(value);
+                            updateSelection({ selectedFlavour: value });
+                            commands.flavourChanged(value);
                         }}
                     >
                         {flavours.map((item) => (
@@ -175,8 +175,7 @@ export function ModelsTab() {
                     <Select
                         value={selectedScene}
                         onChange={(value) => {
-                            setViewerState({ selectedScene: value });
-                            uiEvents.sceneChanged.emit(value);
+                            updateSelection({ selectedScene: value });
                         }}
                     >
                         {scenes.map((item, index) => (
@@ -194,8 +193,8 @@ export function ModelsTab() {
                         data-testid="camera-select"
                         value={selectedCamera}
                         onChange={(value) => {
-                            setViewerState({ selectedCamera: value });
-                            uiEvents.cameraChanged.emit(parseInt(value));
+                            const camera = parseInt(value);
+                            updateSelection({ selectedCamera: camera });
                         }}
                     >
                         {cameras.map((item, index) => (

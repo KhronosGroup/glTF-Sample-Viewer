@@ -1,8 +1,16 @@
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, RotateCcw } from "lucide-react";
 import { GltfState } from "@khronosgroup/gltf-viewer";
-import { uiEvents } from "../../logic/ui_events.js";
-import { setViewerState, useViewerStore } from "../store.js";
-import { Button, Field, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
+import { commands } from "../../logic/commands.js";
+import { updateSelection, useViewerStore } from "../store.js";
+import {
+    Button,
+    Field,
+    IconButton,
+    Panel,
+    SegmentedControl,
+    Select,
+    Switch
+} from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
@@ -25,28 +33,24 @@ const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 10
 const formatExposure = (value) =>
     String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
 
-export function DisplayTab({ lighting, onLightingChange }) {
-    const tonemaps = useViewerStore((state) => state.tonemaps);
-    const environments = useViewerStore((state) => state.environments);
-    const selectedEnvironment = useViewerStore((state) => state.selectedEnvironment);
-    const clearColor = useViewerStore((state) => state.clearColor);
-    const debugShapes = useViewerStore((state) => state.debugShapes);
-    const cullByBoundingVolume = useViewerStore((state) => state.cullByBoundingVolume);
+export function DisplayTab({
+    lighting,
+    onLightingChange,
+    debugShapes,
+    onDebugShapesChange,
+    cullByBoundingVolume,
+    onCullByBoundingVolumeChange,
+    onColliderShapesChange
+}) {
+    const tonemaps = useViewerStore((state) => state.published.tonemaps);
+    const environments = useViewerStore((state) => state.published.environments);
+    const selectedEnvironment = useViewerStore((state) => state.selection.selectedEnvironment);
+    const clearColor = useViewerStore((state) => state.selection.clearColor);
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
 
     const shapesVisible = debugShapes.boundingVolumes || debugShapes.allShapes;
-    const updateDebugShapes = (patch) => {
-        const next = { ...debugShapes, ...patch };
-        setViewerState({ debugShapes: next });
-        uiEvents.debugShapesChanged.emit({
-            ...next,
-            boundingVolumes: next.boundingVolumes
-                ? GltfState.BoundingVolumeMode.ALL
-                : GltfState.BoundingVolumeMode.NONE
-        });
-    };
 
     return (
         <Panel title="Display">
@@ -55,7 +59,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     data-testid="switch-ibl"
                     checked={ibl}
                     onChange={(checked) => {
-                        uiEvents.iblChanged.emit(checked);
                         onLightingChange({ ibl: checked });
                     }}
                 >
@@ -64,7 +67,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 <Switch
                     checked={punctualLights}
                     onChange={(checked) => {
-                        uiEvents.punctualLightsChanged.emit(checked);
                         onLightingChange({ punctualLights: checked });
                     }}
                 >
@@ -73,42 +75,63 @@ export function DisplayTab({ lighting, onLightingChange }) {
             </Field>
 
             <Field label="IBL Intensity">
-                <Slider
-                    label="IBL Intensity"
-                    value={iblIntensity}
-                    min={-2}
-                    max={5}
-                    step={0.01}
-                    ticks={IBL_INTENSITY_TICKS}
-                    formatter={formatIblIntensity}
-                    onChange={(value) => {
-                        uiEvents.iblIntensityChanged.emit(value);
-                        onLightingChange({ iblIntensity: value });
-                    }}
-                />
+                <div className="flex items-start">
+                    <Slider
+                        className="min-w-0 flex-1"
+                        label="IBL Intensity"
+                        value={iblIntensity}
+                        min={-2}
+                        max={5}
+                        step={0.01}
+                        ticks={IBL_INTENSITY_TICKS}
+                        formatter={formatIblIntensity}
+                        onChange={(value) => {
+                            onLightingChange({ iblIntensity: value });
+                        }}
+                    />
+                    <IconButton
+                        label="Reset IBL intensity"
+                        className="mt-1 shrink-0"
+                        onClick={() => {
+                            onLightingChange({ iblIntensity: 0 });
+                        }}
+                    >
+                        <RotateCcw size={16} aria-hidden="true" />
+                    </IconButton>
+                </div>
             </Field>
 
             <Field label="Exposure">
-                <Slider
-                    label="Exposure"
-                    value={exposure}
-                    min={21}
-                    max={-6}
-                    step={0.1}
-                    ticks={EXPOSURE_TICKS}
-                    formatter={formatExposure}
-                    onChange={(value) => {
-                        uiEvents.exposureChanged.emit(value);
-                        onLightingChange({ exposure: value });
-                    }}
-                />
+                <div className="flex items-start">
+                    <Slider
+                        className="min-w-0 flex-1"
+                        label="Exposure"
+                        value={exposure}
+                        min={21}
+                        max={-6}
+                        step={0.1}
+                        ticks={EXPOSURE_TICKS}
+                        formatter={formatExposure}
+                        onChange={(value) => {
+                            onLightingChange({ exposure: value });
+                        }}
+                    />
+                    <IconButton
+                        label="Reset exposure"
+                        className="mt-1 shrink-0"
+                        onClick={() => {
+                            onLightingChange({ exposure: 0 });
+                        }}
+                    >
+                        <RotateCcw size={16} aria-hidden="true" />
+                    </IconButton>
+                </div>
             </Field>
 
             <Field label="Tone Map">
                 <Select
                     value={toneMap}
                     onChange={(value) => {
-                        uiEvents.tonemapChanged.emit(value);
                         onLightingChange({ toneMap: value });
                     }}
                 >
@@ -125,7 +148,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     checked={renderEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
-                        uiEvents.renderEnvChanged.emit(checked);
                         onLightingChange({ renderEnv: checked });
                     }}
                 >
@@ -135,7 +157,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     checked={blurEnv}
                     disabled={!ibl}
                     onChange={(checked) => {
-                        uiEvents.blurEnvChanged.emit(checked);
                         onLightingChange({ blurEnv: checked });
                     }}
                 >
@@ -147,8 +168,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         type="color"
                         value={clearColor}
                         onChange={(event) => {
-                            setViewerState({ clearColor: event.target.value });
-                            uiEvents.colorChanged.emit(event.target.value);
+                            updateSelection({ clearColor: event.target.value });
                         }}
                     />
                     <span className="text-base font-light">Background Color</span>
@@ -161,7 +181,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     options={ENVIRONMENT_ROTATIONS.map((item) => ({ label: item, value: item }))}
                     value={rotation}
                     onChange={(value) => {
-                        uiEvents.environmentRotationChanged.emit(value);
                         onLightingChange({ rotation: value });
                     }}
                 />
@@ -174,7 +193,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         type="file"
                         accept=".hdr"
                         onChange={(event) =>
-                            uiEvents.addEnvironmentChanged.emit({
+                            commands.addEnvironmentChanged({
                                 hdr_path: event.target.files[0]
                             })
                         }
@@ -187,8 +206,8 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     <Select
                         value={selectedEnvironment}
                         onChange={(name) => {
-                            setViewerState({ selectedEnvironment: name });
-                            uiEvents.selectedEnvironmentChanged.emit(name);
+                            updateSelection({ selectedEnvironment: name });
+                            commands.selectedEnvironmentChanged(name);
                         }}
                     >
                         {Object.entries(environments).map(([name, environment]) => (
@@ -204,27 +223,21 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 <Switch
                     data-testid="switch-cull-bounding-volumes"
                     checked={cullByBoundingVolume}
-                    onChange={(checked) => {
-                        setViewerState({ cullByBoundingVolume: checked });
-                        uiEvents.cullByBoundingVolumeChanged.emit(checked);
-                    }}
+                    onChange={(checked) => onCullByBoundingVolumeChange(checked)}
                 >
                     Cull by Bounding Volume
                 </Switch>
                 <Switch
                     data-testid="switch-bounding-volumes"
                     checked={debugShapes.boundingVolumes}
-                    onChange={(checked) => updateDebugShapes({ boundingVolumes: checked })}
+                    onChange={(checked) => onDebugShapesChange({ boundingVolumes: checked })}
                 >
                     Bounding Volumes
                 </Switch>
                 <Switch
                     data-testid="switch-collider-shapes"
                     checked={debugShapes.allShapes}
-                    onChange={(checked) => {
-                        updateDebugShapes({ allShapes: checked });
-                        uiEvents.physicsColliderDebugChanged.emit(checked);
-                    }}
+                    onChange={(checked) => onColliderShapesChange(checked)}
                 >
                     Collider Shapes
                 </Switch>
@@ -232,14 +245,14 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     data-testid="switch-shapes-xray"
                     checked={!debugShapes.depthTest}
                     disabled={!shapesVisible}
-                    onChange={(checked) => updateDebugShapes({ depthTest: !checked })}
+                    onChange={(checked) => onDebugShapesChange({ depthTest: !checked })}
                 >
                     See Through Geometry
                 </Switch>
                 <Switch
                     checked={debugShapes.highlightNonEnclosing}
                     disabled={!debugShapes.boundingVolumes}
-                    onChange={(checked) => updateDebugShapes({ highlightNonEnclosing: checked })}
+                    onChange={(checked) => onDebugShapesChange({ highlightNonEnclosing: checked })}
                 >
                     Flag Non-Enclosing
                 </Switch>
@@ -250,7 +263,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     data-testid="select-shape-style"
                     value={debugShapes.style}
                     disabled={!shapesVisible}
-                    onChange={(value) => updateDebugShapes({ style: value })}
+                    onChange={(value) => onDebugShapesChange({ style: value })}
                 >
                     {Object.values(GltfState.DebugShapeStyle).map((item) => (
                         <option key={item} value={item}>
@@ -265,7 +278,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     data-testid="select-shape-color"
                     value={debugShapes.colorMode}
                     disabled={!shapesVisible}
-                    onChange={(value) => updateDebugShapes({ colorMode: value })}
+                    onChange={(value) => onDebugShapesChange({ colorMode: value })}
                 >
                     {Object.values(GltfState.DebugShapeColor).map((item) => (
                         <option key={item} value={item}>
@@ -276,7 +289,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
             </Field>
 
             <Field label="Capture Canvas">
-                <Button onClick={() => uiEvents.captureCanvas.emit(true)}>
+                <Button onClick={() => commands.captureCanvas()}>
                     <Download size={16} aria-hidden="true" />
                     Download as PNG
                 </Button>
