@@ -35,9 +35,17 @@ const EXTENSION_KEYS = {
 
 const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
 
-// Declarative mirror of the store's config slices onto the renderer's mutable
-// `renderingParameters`. Each entry is [store key, renderingParameters key,
-// optional transform].
+/**
+ * One mirror entry: the store field, the `renderingParameters` field, and an
+ * optional transform applied to the store value before assignment.
+ * @typedef {[string, string, ((value: any) => any)?]} MirrorEntry
+ */
+
+/**
+ * Declarative mirror of `config.lighting` onto the renderer's mutable
+ * `renderingParameters`.
+ * @type {MirrorEntry[]}
+ */
 const LIGHTING_FIELDS = [
     ["ibl", "useIBL"],
     ["punctualLights", "usePunctual"],
@@ -49,7 +57,10 @@ const LIGHTING_FIELDS = [
     ["rotation", "environmentRotation", (value) => ENVIRONMENT_ROTATIONS[value]]
 ];
 
-// Direct one-to-one mirrors of config.extensions onto renderingParameters.
+/**
+ * Direct one-to-one mirrors of `config.extensions` onto `renderingParameters`.
+ * @type {MirrorEntry[]}
+ */
 const EXTENSION_FIELDS = [
     ["skinning", "skinning"],
     ["morphing", "morphing"],
@@ -396,12 +407,19 @@ export const initViewer = async (canvas) => {
         }
     };
 
+    /**
+     * @param {import("./logic/viewer_store.js").LightingConfig} lighting
+     */
     const applyLighting = (lighting) => {
         for (const [from, to, transform] of LIGHTING_FIELDS) {
             state.renderingParameters[to] = transform ? transform(lighting[from]) : lighting[from];
         }
     };
 
+    /**
+     * @param {import("./logic/viewer_store.js").ExtensionsConfig} extensions
+     * @param {import("./logic/viewer_store.js").ExtensionsConfig} [previous]
+     */
     const applyExtensions = (extensions, previous) => {
         for (const [from, to] of EXTENSION_FIELDS) {
             state.renderingParameters[to] = extensions[from];
