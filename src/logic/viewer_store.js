@@ -33,6 +33,7 @@ const initialState = {
     graphs: [],
     customEvents: [],
     hasPhysics: false,
+    hasAnimations: false,
     physicsEngineVersion: undefined,
     assetCopyright: "",
     assetGenerator: "",

@@ -387,6 +387,7 @@ class UIModel {
             customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
 
             hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
+            hasAnimations: gltf.animations.length > 0,
 
             xmp:
                 gltf?.extensions?.KHR_xmp_json_ld?.packets[

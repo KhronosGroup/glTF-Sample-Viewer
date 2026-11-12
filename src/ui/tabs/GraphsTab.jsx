@@ -73,8 +73,6 @@ export function GraphsTab() {
                 />
             )}
 
-            {!hasGraphs && <SectionLabel>No graphs available</SectionLabel>}
-
             {hasGraphs && (
                 <Field label="Graphs">
                     <RadioGroup>

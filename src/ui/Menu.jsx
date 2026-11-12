@@ -141,12 +141,18 @@ export function Menu({ visible }) {
 
     const graphs = useViewerStore((state) => state.graphs);
     const hasPhysics = useViewerStore((state) => state.hasPhysics);
+    const hasAnimations = useViewerStore((state) => state.hasAnimations);
 
     // The Animations tab becomes the Graphs tab when the asset carries
     // KHR_interactivity and the extension is enabled.
     const showGraphs = graphs.length > 0 && extensions.interactivity;
 
-    const tabMeta = TAB_META.filter((tab) => !tab.needsPhysics || hasPhysics).map((tab) =>
+    const tabMeta = TAB_META.filter((tab) => {
+        if (tab.id === "animations") {
+            return showGraphs || hasAnimations;
+        }
+        return !tab.needsPhysics || hasPhysics;
+    }).map((tab) =>
         tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
     );
     const { activeTab, select } = useTabState(tabMeta.map((tab) => tab.id));

@@ -59,8 +59,6 @@ export function AnimationsTab() {
                 />
             )}
 
-            {!hasAnimations && <p className="text-ink/60">No animations available</p>}
-
             {hasAnimations && (
                 <Field label="Animations" grouped>
                     {animations.map((animation) => (
