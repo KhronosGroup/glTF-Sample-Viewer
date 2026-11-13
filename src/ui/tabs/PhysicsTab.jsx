@@ -50,7 +50,7 @@ export function PhysicsTab({ debug, onDebugChange, colliderShapes, onColliderSha
                 </Select>
             </Field>
 
-            <SectionLabel>Debug</SectionLabel>
+            <SectionLabel>Inspection</SectionLabel>
             <div className="mb-4 flex flex-col items-start gap-2">
                 <Switch
                     checked={colliderShapes}
