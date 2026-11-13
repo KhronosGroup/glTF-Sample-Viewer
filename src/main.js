@@ -225,10 +225,17 @@ export const initViewer = async (canvas) => {
     let pendingFocus = false;
     state.selectionCallback = (result) => {
         if (!pendingFocus) return;
-        // Focusing a picked node snaps to its mesh centroid; double-clicking empty
-        // space falls back to the world origin rather than doing nothing.
-        const focus = nodeWorldCentroid(state.gltf, result.node) ?? result.position ?? [0, 0, 0];
-        cameraController.focusOn(focus);
+        if (result.node !== undefined) {
+            // Focusing a picked node snaps to its mesh centroid.
+            const focus = nodeWorldCentroid(state.gltf, result.node) ?? result.position;
+            if (focus) {
+                cameraController.focusOn(focus);
+            }
+        } else {
+            // Double-clicking empty space returns the camera to its initial view,
+            // whose focus is the scene centre rather than the world origin.
+            cameraController.reset();
+        }
         pendingFocus = false;
         redraw = true;
     };
