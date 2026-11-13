@@ -2,11 +2,11 @@
 
 [![](../assets/images/BoomBox.jpg)](https://github.khronos.org/glTF-Sample-Viewer-Release/)
 
-This is the official [Khronos glTF 2.0](https://www.khronos.org/gltf/) Sample Viewer using [WebGL 2.0](https://www.khronos.org/webgl/):
+This is the official [Khronos glTF](https://www.khronos.org/gltf/) Sample Viewer, supporting glTF 2.0 and 2.1, using [WebGL 2.0](https://www.khronos.org/webgl/):
 
 # Viewer
 
-Link to the live [glTF 2.0 Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/).
+Link to the live [glTF Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/).
 
 Pushes to `main` deploy to the live viewer. Pushes to other branches deploy to
 `https://github.khronos.org/glTF-Sample-Viewer-Release/preview/<branch>/`,
@@ -20,7 +20,7 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 
 ### glTF
 
-- [x] glTF 2.0
+- [x] glTF 2.1 (and 2.0)
 - [KHR_accessor_float64](https://github.com/KhronosGroup/glTF/pull/2397)
     - [x] Animations
     - [x] KHR_animation_pointer
