@@ -349,7 +349,7 @@ const initialState = {
         debugShapes: {
             boundingVolumes: false,
             allShapes: false,
-            style: "Wireframe",
+            style: "Both",
             colorMode: "Uniform",
             depthTest: true,
             highlightNonEnclosing: true

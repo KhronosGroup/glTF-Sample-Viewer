@@ -149,9 +149,6 @@ export function Menu({ visible }) {
                         lighting={lighting}
                         onLightingChange={updateLighting}
                         debugShapes={debugShapes}
-                        onDebugShapesChange={(partial) =>
-                            updateConfig({ debugShapes: { ...debugShapes, ...partial } })
-                        }
                         cullByBoundingVolume={cullByBoundingVolume}
                         onCullByBoundingVolumeChange={(value) =>
                             updateConfig({ cullByBoundingVolume: value })
@@ -186,6 +183,10 @@ export function Menu({ visible }) {
                         clipping={clipping}
                         onClippingChange={(partial) =>
                             updateConfig({ clipping: { ...clipping, ...partial } })
+                        }
+                        debugShapes={debugShapes}
+                        onDebugShapesChange={(partial) =>
+                            updateConfig({ debugShapes: { ...debugShapes, ...partial } })
                         }
                     />
                 );

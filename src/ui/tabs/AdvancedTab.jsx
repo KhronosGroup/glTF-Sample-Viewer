@@ -221,7 +221,9 @@ export function AdvancedTab({
     debugChannel,
     onDebugChannelChange,
     clipping,
-    onClippingChange
+    onClippingChange,
+    debugShapes,
+    onDebugShapesChange
 }) {
     const debugchannels = useViewerStore((state) => state.published.debugchannels);
     const statistics = useViewerStore((state) => state.published.statistics);
@@ -308,6 +310,13 @@ export function AdvancedTab({
                     onChange={toggle({ key: "wireframe" })}
                 >
                     {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
+                </Switch>
+                <Switch
+                    data-testid="switch-bounding-shapes"
+                    checked={debugShapes.boundingVolumes}
+                    onChange={(checked) => onDebugShapesChange({ boundingVolumes: checked })}
+                >
+                    Bounding Shapes
                 </Switch>
             </Field>
 
