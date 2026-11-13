@@ -1,11 +1,5 @@
 import { expect, test } from "@playwright/test";
-import {
-    canvasPixels,
-    collectConsoleErrors,
-    expectNoConsoleErrors,
-    loadTestAsset,
-    waitForLoadingToSettle
-} from "./viewer.js";
+import { canvasPixels, collectConsoleErrors, expectNoConsoleErrors, loadTestAsset } from "./viewer.js";
 
 // Physics runs as soon as an asset using KHR_physics_rigid_bodies loads, so these drive
 // the simulation by waiting rather than by stepping it.
