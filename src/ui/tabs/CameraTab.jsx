@@ -255,14 +255,14 @@ export function CameraTab() {
             </Field>
 
             <div className="mt-6">
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between gap-3">
                     <span className="font-medium">Aspect Ratio</span>
                     <Switch
+                        className="mt-0! w-auto!"
                         checked={enforceAspectRatio}
                         onChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
-                        className="mt-0 w-auto"
                     >
-                        Enforce
+                        <span className="sr-only">Aspect Ratio</span>
                     </Switch>
                 </div>
                 {enforceAspectRatio && (
