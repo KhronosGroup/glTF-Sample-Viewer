@@ -326,6 +326,20 @@ export function createCameraController(state) {
         return [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
     };
 
+    // The distance that frames the scene extents, matching resetView's framing
+    // without mutating the camera.
+    const fittedDistance = () => {
+        const min = camera.sceneExtents.min;
+        const max = camera.sceneExtents.max;
+        const maxAxisLength = Math.max(max[0] - min[0], max[1] - min[1]);
+        const yfov = camera.perspective.yfov;
+        const xfov = camera.perspective.yfov * (camera.perspective.aspectRatio ?? 1);
+        const yZoom = maxAxisLength / 2 / Math.tan(yfov / 2);
+        const xZoom = maxAxisLength / 2 / Math.tan(xfov / 2);
+        const distance = Math.max(xZoom, yZoom);
+        return Number.isFinite(distance) && distance > 0 ? distance : 1;
+    };
+
     // Start a one-shot animation that springs the camera's orbit pose (and,
     // optionally, its yaw/pitch) toward a goal using the same critically damped
     // spring as the input channels.
@@ -343,17 +357,32 @@ export function createCameraController(state) {
             yaw,
             pitch: goal.pitch,
             target: [...goal.target],
+            distance: goal.distance,
             orient: goal.orient,
             yawVel: 0,
             pitchVel: 0,
-            targetVel: [0, 0, 0]
+            targetVel: [0, 0, 0],
+            distanceVel: 0
         };
     };
 
     const stepAnimation = (dt) => {
         if (!animation) return false;
 
-        const distance = camera.distance || 1;
+        let distance = camera.distance || 1;
+        let distanceSettled = true;
+        if (animation.distance !== undefined) {
+            const [next, velocity] = smoothDamp(
+                camera.distance,
+                animation.distance,
+                animation.distanceVel,
+                dt
+            );
+            animation.distanceVel = velocity;
+            camera.distance = next;
+            distance = next;
+            distanceSettled = Math.abs(next - animation.distance) < 1e-4 && Math.abs(velocity) < 1e-4;
+        }
 
         if (animation.orient) {
             // Orbit: spring the yaw/pitch around a fixed target, keeping the distance
@@ -384,13 +413,19 @@ export function createCameraController(state) {
                 Math.abs(animation.yawVel) < 1e-4 &&
                 Math.abs(animation.pitchVel) < 1e-4;
 
-            if (orientSettled) {
+            if (orientSettled && distanceSettled) {
                 camera.rotAroundY = animation.yaw;
                 camera.rotAroundX = animation.pitch;
+                if (animation.distance !== undefined) {
+                    camera.distance = animation.distance;
+                    camera.baseDistance = camera.distance;
+                }
                 camera.setRotation(animation.yaw, animation.pitch);
-                camera.setDistanceFromTarget(distance, animation.target);
+                camera.setDistanceFromTarget(camera.distance || 1, animation.target);
                 if (mode === "trackball") syncTrackball();
                 animation = null;
+                syncOrthoFromDistance();
+                syncFarPlane(projection);
                 return false;
             }
 
@@ -422,7 +457,7 @@ export function createCameraController(state) {
             target[2] - forward[2] * distance
         ]);
 
-        if (targetSettled) {
+        if (targetSettled && distanceSettled) {
             const finalForward = camera.getLookDirection();
             camera.setPosition([
                 animation.target[0] - finalForward[0] * distance,
@@ -545,11 +580,32 @@ export function createCameraController(state) {
         // Called after the camera has been fitted to a scene so the orthographic
         // frustum and active projection match the new distance.
         syncProjection: syncProjectionState,
+        // Adjust the user camera's vertical field of view (given in degrees).
+        setFov: (degrees) => {
+            camera.setVerticalFoV((degrees * Math.PI) / 180);
+            if (projection === "orthographic") {
+                syncOrthoFromDistance();
+            }
+        },
+        // Reapply the enforced-aspect-ratio selection to the user camera.
+        syncAspectRatio: () => {
+            const { enforceAspectRatio, cameraAspectRatio } = getViewerState().selection;
+            camera.enforceAspectRatio = enforceAspectRatio;
+            if (enforceAspectRatio) {
+                camera.perspective.aspectRatio = cameraAspectRatio;
+            }
+        },
         // Refit the camera to the current scene and restore the default view.
         reset: () => {
             if (!isEnabled()) return;
-            camera.resetView(state.gltf, state.sceneIndex);
-            syncProjectionState();
+            syncYawPitchFromCamera();
+            startAnimation({
+                orient: true,
+                yaw: 0,
+                pitch: 0,
+                target: sceneCenter(),
+                distance: fittedDistance()
+            });
         },
         tick: () => {
             const now = performance.now();

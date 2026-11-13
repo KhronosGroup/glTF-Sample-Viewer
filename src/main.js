@@ -310,7 +310,9 @@ export const initViewer = async (canvas) => {
             }
             const scene = state.gltf.scenes[state.sceneIndex];
             scene.applyTransformHierarchy(state.gltf);
-            state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+            if (!state.userCamera.enforceAspectRatio) {
+                state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+            }
             state.userCamera.resetView(state.gltf, state.sceneIndex);
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -748,6 +750,24 @@ export const initViewer = async (canvas) => {
             cameraController.setProjection(type);
         }
     );
+    applyRenderChange(
+        (s) => s.selection.cameraFov,
+        (fov) => {
+            cameraController.setFov(fov);
+        }
+    );
+    applyRenderChange(
+        (s) => s.selection.enforceAspectRatio,
+        () => {
+            cameraController.syncAspectRatio();
+        }
+    );
+    applyRenderChange(
+        (s) => s.selection.cameraAspectRatio,
+        () => {
+            cameraController.syncAspectRatio();
+        }
+    );
     subscriptions.push(
         setCommand("cameraLookAtChanged", (axis) => {
             cameraController.lookAt(axis);
@@ -877,7 +897,9 @@ export const initViewer = async (canvas) => {
             canvas.height / past.height < 0.5 ||
             canvas.height / past.height > 2.0
         ) {
-            state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+            if (!state.userCamera.enforceAspectRatio) {
+                state.userCamera.perspective.aspectRatio = canvas.width / canvas.height;
+            }
             state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
             cameraController.syncProjection();
         }

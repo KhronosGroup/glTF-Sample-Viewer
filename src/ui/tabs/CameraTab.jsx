@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
+import { Button, Field, Panel, SegmentedControl, Switch } from "../controls.jsx";
+import { Slider } from "../Slider.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
 
@@ -182,6 +183,9 @@ export function CameraTab() {
     const cameraMode = useViewerStore((state) => state.selection.cameraMode);
     const cameraProjection = useViewerStore((state) => state.selection.cameraProjection);
     const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
+    const cameraFov = useViewerStore((state) => state.selection.cameraFov);
+    const enforceAspectRatio = useViewerStore((state) => state.selection.enforceAspectRatio);
+    const cameraAspectRatio = useViewerStore((state) => state.selection.cameraAspectRatio);
 
     // Camera controls only affect the user camera, so they are disabled while a
     // glTF camera node is selected.
@@ -219,6 +223,38 @@ export function CameraTab() {
                         updateSelection({ cameraProjection: value });
                     }}
                 />
+            </Field>
+
+            <Field label="Vertical FOV">
+                <Slider
+                    label="Vertical FOV"
+                    value={cameraFov}
+                    min={1}
+                    max={120}
+                    step={1}
+                    formatter={(value) => `${value}°`}
+                    onChange={(value) => updateSelection({ cameraFov: value })}
+                />
+            </Field>
+
+            <Field label="Aspect Ratio">
+                <Switch
+                    checked={enforceAspectRatio}
+                    onChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
+                >
+                    Enforce
+                </Switch>
+                {enforceAspectRatio && (
+                    <Slider
+                        label="Aspect Ratio"
+                        value={cameraAspectRatio}
+                        min={0.5}
+                        max={3}
+                        step={0.01}
+                        formatter={(value) => value.toFixed(2)}
+                        onChange={(value) => updateSelection({ cameraAspectRatio: value })}
+                    />
+                )}
             </Field>
 
             <Field label="Look At">
