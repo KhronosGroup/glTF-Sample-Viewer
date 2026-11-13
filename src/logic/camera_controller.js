@@ -356,6 +356,9 @@ export function createCameraController(state) {
         const distance = camera.distance || 1;
 
         if (animation.orient) {
+            // Orbit: spring the yaw/pitch around a fixed target, keeping the distance
+            // constant so the target stays motionless on screen instead of translating
+            // and rotating at different rates.
             const [yaw, yawVel] = smoothDamp(
                 camera.rotAroundY,
                 animation.yaw,
@@ -373,8 +376,28 @@ export function createCameraController(state) {
             camera.rotAroundY = yaw;
             camera.rotAroundX = pitch;
             camera.setRotation(yaw, pitch);
+            camera.setDistanceFromTarget(distance, animation.target);
+
+            const orientSettled =
+                Math.abs(camera.rotAroundY - animation.yaw) < 1e-4 &&
+                Math.abs(camera.rotAroundX - animation.pitch) < 1e-4 &&
+                Math.abs(animation.yawVel) < 1e-4 &&
+                Math.abs(animation.pitchVel) < 1e-4;
+
+            if (orientSettled) {
+                camera.rotAroundY = animation.yaw;
+                camera.rotAroundX = animation.pitch;
+                camera.setRotation(animation.yaw, animation.pitch);
+                camera.setDistanceFromTarget(distance, animation.target);
+                if (mode === "trackball") syncTrackball();
+                animation = null;
+                return false;
+            }
+
+            return true;
         }
 
+        // Pan/focus: spring the target while keeping the orientation fixed.
         const currentTarget = camera.getTarget();
         const target = [0, 0, 0];
         let targetSettled = true;
@@ -399,26 +422,13 @@ export function createCameraController(state) {
             target[2] - forward[2] * distance
         ]);
 
-        const orientSettled =
-            !animation.orient ||
-            (Math.abs(camera.rotAroundY - animation.yaw) < 1e-4 &&
-                Math.abs(camera.rotAroundX - animation.pitch) < 1e-4 &&
-                Math.abs(animation.yawVel) < 1e-4 &&
-                Math.abs(animation.pitchVel) < 1e-4);
-
-        if (orientSettled && targetSettled) {
-            if (animation.orient) {
-                camera.rotAroundY = animation.yaw;
-                camera.rotAroundX = animation.pitch;
-                camera.setRotation(animation.yaw, animation.pitch);
-            }
+        if (targetSettled) {
             const finalForward = camera.getLookDirection();
             camera.setPosition([
                 animation.target[0] - finalForward[0] * distance,
                 animation.target[1] - finalForward[1] * distance,
                 animation.target[2] - finalForward[2] * distance
             ]);
-            if (mode === "trackball") syncTrackball();
             animation = null;
             return false;
         }
