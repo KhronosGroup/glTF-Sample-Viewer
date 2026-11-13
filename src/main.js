@@ -1,4 +1,4 @@
-import { GltfState, GltfView, ResourceLoaderUtils } from "@khronosgroup/gltf-viewer";
+import { GltfState, GltfView, ResourceLoaderUtils, instantiatedDocuments } from "@khronosgroup/gltf-viewer";
 import createDracoDecoderModule from "draco3d/draco_decoder_nodejs.js";
 import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 
@@ -334,10 +334,19 @@ export const initViewer = async (canvas) => {
             }
             state.animationTimer.clearTimeOverride();
             state.animationTimer.start();
-            if (state.gltf?.extensions?.KHR_interactivity?.graphs !== undefined) {
+            // Interactivity may live in the root document or in an instantiated
+            // external asset (e.g. a wrapper that only embeds an interactive asset).
+            const rootGraphs = state.gltf?.extensions?.KHR_interactivity?.graphs;
+            const hasInteractivity =
+                rootGraphs !== undefined ||
+                [...instantiatedDocuments(state.gltf)].some(
+                    (document) => document.extensions?.KHR_interactivity?.graphs !== undefined
+                );
+            if (hasInteractivity) {
                 state.graphController.initializeGraphs(state);
-                const graphIndex = state.gltf.extensions.KHR_interactivity.graph ?? 0;
-                state.graphController.loadGraph(graphIndex);
+                if (rootGraphs !== undefined) {
+                    state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
+                }
                 state.graphController.resumeGraph();
             } else {
                 state.graphController.stopGraphEngine();
@@ -427,12 +436,20 @@ export const initViewer = async (canvas) => {
 
     const applyInteractivity = (enabled) => {
         state.renderingParameters.enabledExtensions.KHR_interactivity = enabled;
-        if (state.gltf?.extensions?.KHR_interactivity === undefined) {
+        const rootGraphs = state.gltf?.extensions?.KHR_interactivity?.graphs;
+        const hasInteractivity =
+            rootGraphs !== undefined ||
+            [...instantiatedDocuments(state.gltf)].some(
+                (document) => document.extensions?.KHR_interactivity?.graphs !== undefined
+            );
+        if (!hasInteractivity) {
             return;
         }
         if (enabled) {
             state.graphController.initializeGraphs(state);
-            state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
+            if (rootGraphs !== undefined) {
+                state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
+            }
             if (getViewerState().selection.graphState) {
                 state.graphController.resumeGraph();
                 state.animationTimer.unpause();

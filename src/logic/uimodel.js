@@ -363,8 +363,19 @@ class UIModel {
 
         const gltf = state.gltf;
         const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
+        // Interactivity may live in the root document or in an instantiated external
+        // asset (a wrapper that only embeds an interactive asset), so gather the
+        // graphs across the whole document tree.
+        const interactivityGraphs = [gltf, ...instantiatedDocuments(gltf)]
+            .filter((document) => document.extensions?.KHR_interactivity?.graphs !== undefined)
+            .flatMap((document) =>
+                document.extensions.KHR_interactivity.graphs.map((graph, index) => ({
+                    title: graph.name ?? `Graph ${index}`,
+                    index: index
+                }))
+            );
         const hasInteractivity =
-            gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
+            interactivityGraphs.length > 0 &&
             state.renderingParameters.enabledExtensions.KHR_interactivity;
 
         // The texture coordinate channels depend on the sets this asset declares, so a
@@ -411,12 +422,7 @@ class UIModel {
                 index: index
             })),
 
-            graphs: hasInteractivity
-                ? gltf.extensions.KHR_interactivity.graphs.map((graph, index) => ({
-                      title: graph.name ?? `Graph ${index}`,
-                      index: index
-                  }))
-                : [],
+            graphs: hasInteractivity ? interactivityGraphs : [],
             customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
 
             // Physics may live in the root document or in any instantiated external asset.
@@ -446,7 +452,7 @@ class UIModel {
             updateConfig({ debugChannel: selectedDebugChannel });
         }
 
-        if (hasInteractivity) {
+        if (hasInteractivity && state.graphController.graphIndex !== undefined) {
             updateSelection({ selectedGraph: state.graphController.graphIndex });
         }
     }
