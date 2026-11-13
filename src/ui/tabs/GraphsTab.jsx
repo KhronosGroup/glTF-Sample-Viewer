@@ -72,7 +72,7 @@ export function GraphsTab() {
                 />
             )}
 
-            {hasGraphs && (
+            {graphs.length > 1 && (
                 <Field label="Graphs">
                     <RadioGroup>
                         {graphs.map((graph) => (
