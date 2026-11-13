@@ -392,9 +392,9 @@ class UIModel {
                 title: scene.name ?? `Scene ${index}`,
                 index: index
             })),
-            // glTF 2.1 deprecates multiple scenes, so there is nothing to pick between.
-            // A 2.1 asset that declares several anyway still has to be navigable.
-            showScenes: !gltf.isAtLeast(2, 1) || gltf.scenes.length > 1,
+            // The scene picker is only meaningful when there is more than one scene to
+            // choose between, regardless of the glTF version.
+            showScenes: gltf.scenes.length > 1,
             debugchannels,
 
             materialVariants: hasVariants
