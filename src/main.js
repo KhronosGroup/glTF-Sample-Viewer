@@ -827,6 +827,10 @@ export const initViewer = async (canvas) => {
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        // Animations declared by instantiated external assets have no entry in the
+        // animation UI, so `animationIndices` cannot see them. The loader flags the
+        // asset instead; redraw for it or the canvas goes still while it plays.
+        redraw |= !state.animationTimer.paused && state.gltf?.hasInstancedAnimations === true;
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.physicsController.enabled && state.physicsController.playing;
