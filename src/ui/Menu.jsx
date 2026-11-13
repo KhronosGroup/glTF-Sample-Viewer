@@ -26,7 +26,7 @@ const TAB_META = [
     { id: "models", label: "Models", icon: Box },
     { id: "camera", label: "Camera", icon: Camera },
     { id: "display", label: "Display", icon: Image },
-    { id: "validator", label: "Validator", icon: ShieldCheck },
+    { id: "validator", label: "Validation", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
     { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
     { id: "credits", label: "Credits", icon: Braces },
@@ -145,16 +145,7 @@ export function Menu({ visible }) {
                 return <CameraTab />;
             case "display":
                 return (
-                    <DisplayTab
-                        lighting={lighting}
-                        onLightingChange={updateLighting}
-                        debugShapes={debugShapes}
-                        cullByBoundingVolume={cullByBoundingVolume}
-                        onCullByBoundingVolumeChange={(value) =>
-                            updateConfig({ cullByBoundingVolume: value })
-                        }
-                        onColliderShapesChange={updateColliderShapes}
-                    />
+                    <DisplayTab lighting={lighting} onLightingChange={updateLighting} />
                 );
             case "validator":
                 return <ValidatorTab />;
@@ -187,6 +178,10 @@ export function Menu({ visible }) {
                         debugShapes={debugShapes}
                         onDebugShapesChange={(partial) =>
                             updateConfig({ debugShapes: { ...debugShapes, ...partial } })
+                        }
+                        cullByBoundingVolume={cullByBoundingVolume}
+                        onCullByBoundingVolumeChange={(value) =>
+                            updateConfig({ cullByBoundingVolume: value })
                         }
                     />
                 );

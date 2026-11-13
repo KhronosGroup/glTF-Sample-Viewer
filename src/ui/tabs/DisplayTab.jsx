@@ -32,14 +32,7 @@ const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 10
 const formatExposure = (value) =>
     String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
 
-export function DisplayTab({
-    lighting,
-    onLightingChange,
-    debugShapes,
-    cullByBoundingVolume,
-    onCullByBoundingVolumeChange,
-    onColliderShapesChange
-}) {
+export function DisplayTab({ lighting, onLightingChange }) {
     const tonemaps = useViewerStore((state) => state.published.tonemaps);
     const environments = useViewerStore((state) => state.published.environments);
     const selectedEnvironment = useViewerStore((state) => state.selection.selectedEnvironment);
@@ -213,23 +206,6 @@ export function DisplayTab({
                         ))}
                     </Select>
                 </Field>
-            </Field>
-
-            <Field label="Shapes" grouped>
-                <Switch
-                    data-testid="switch-cull-bounding-volumes"
-                    checked={cullByBoundingVolume}
-                    onChange={(checked) => onCullByBoundingVolumeChange(checked)}
-                >
-                    Cull by Bounding Volume
-                </Switch>
-                <Switch
-                    data-testid="switch-collider-shapes"
-                    checked={debugShapes.allShapes}
-                    onChange={(checked) => onColliderShapesChange(checked)}
-                >
-                    Collider Shapes
-                </Switch>
             </Field>
 
             <Field label="Capture Canvas">

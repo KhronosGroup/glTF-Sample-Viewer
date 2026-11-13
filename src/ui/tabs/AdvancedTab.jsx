@@ -169,7 +169,7 @@ function ClippingControls({ clipping, onChange }) {
 
             {clipping.enabled && (
                 <>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2">
                         <SegmentedControl
                             label="Clipping Orientation"
                             options={orientations.map((orientation) => ({
@@ -223,7 +223,9 @@ export function AdvancedTab({
     clipping,
     onClippingChange,
     debugShapes,
-    onDebugShapesChange
+    onDebugShapesChange,
+    cullByBoundingVolume,
+    onCullByBoundingVolumeChange
 }) {
     const debugchannels = useViewerStore((state) => state.published.debugchannels);
     const statistics = useViewerStore((state) => state.published.statistics);
@@ -298,6 +300,13 @@ export function AdvancedTab({
                     })}
                 >
                     32-bit Framebuffer
+                </Switch>
+                <Switch
+                    data-testid="switch-cull-bounding-volumes"
+                    checked={cullByBoundingVolume}
+                    onChange={(checked) => onCullByBoundingVolumeChange(checked)}
+                >
+                    Cull by Shapes
                 </Switch>
             </Field>
 
