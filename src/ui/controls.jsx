@@ -2,7 +2,7 @@
  * Form primitives, styled with Tailwind utilities.
  */
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown, RotateCcw, Search } from "lucide-react";
 
 function classNames(...values) {
@@ -247,6 +247,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
     const typeahead = useRef({ text: "", time: 0 });
     const scrollOnActive = useRef(false);
     const [open, setOpen] = useState(false);
+    const [closing, setClosing] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const [anchor, setAnchor] = useState(null);
     const [query, setQuery] = useState("");
@@ -270,16 +271,41 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
         scrollOnActive.current = true;
         setActiveIndex(Math.max(index, 0));
         setAnchor(buttonRef.current.getBoundingClientRect());
+        setClosing(false);
         setOpen(true);
     };
 
     const close = ({ restoreFocus = true } = {}) => {
-        setOpen(false);
         setQuery("");
         if (restoreFocus) {
             buttonRef.current?.focus();
         }
+        const popup = popupRef.current;
+        if (popup === null) {
+            setOpen(false);
+            return;
+        }
+        // Slide the popup back up and fade it out, then unmount it.
+        setClosing(true);
+        const animation = popup.animate(
+            [
+                { opacity: 1, transform: "none" },
+                { opacity: 0, transform: "translateY(-8px)" }
+            ],
+            { duration: 120, easing: "ease-in" }
+        );
+        animation.onfinish = () => {
+            setOpen(false);
+            setClosing(false);
+        };
     };
+
+    // `close` is recreated each render; keep the latest in a ref so the outside-click
+    // handler (bound once per open) always runs the current implementation.
+    const closeRef = useRef(close);
+    useEffect(() => {
+        closeRef.current = close;
+    });
 
     const choose = (index) => {
         const entry = filtered[index];
@@ -404,7 +430,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                 !buttonRef.current.contains(event.target) &&
                 popupRef.current?.contains(event.target) !== true
             ) {
-                setOpen(false);
+                closeRef.current();
             }
         };
         window.addEventListener("resize", reposition);
@@ -429,6 +455,19 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
     useEffect(() => {
         listRef.current?.scrollTo(0, 0);
     }, [query]);
+
+    // Slide the popup down and fade it in on open.
+    useLayoutEffect(() => {
+        if (open) {
+            popupRef.current?.animate(
+                [
+                    { opacity: 0, transform: "translateY(-8px)" },
+                    { opacity: 1, transform: "none" }
+                ],
+                { duration: 180, easing: "ease-out" }
+            );
+        }
+    }, [open]);
 
     return (
         <div className={classNames("relative", className)}>
@@ -460,7 +499,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                 <ChevronDown size={16} aria-hidden="true" className="shrink-0" />
             </button>
 
-            {open && (
+            {(open || closing) && (
                 <>
                     {!isDesktop && (
                         <div className="fixed inset-0 z-30 bg-black/50" aria-hidden="true" />
