@@ -160,10 +160,15 @@ export async function dropFiles(page, files, folder = "dropped") {
 
 /**
  * Drops files from public/test-assets/ onto a fresh viewer and waits for the load.
+ *
+ * The drop handlers are attached near the end of viewer startup, after the physics
+ * engine and model index have loaded, so dropping against a bare canvas can race
+ * them and be silently ignored. Waiting for the default model first guarantees the
+ * handlers exist before the drop lands.
  */
 export async function dropTestAssets(page, names, folder = "dropped") {
     await page.goto("/?noUI=1");
-    await page.waitForSelector(ui.canvas);
+    await waitForLoadingToSettle(page);
 
     const files = [];
     for (const name of names) {
