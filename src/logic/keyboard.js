@@ -49,10 +49,12 @@ export function attachKeyboard() {
         const target = event.target;
         if (
             target?.isContentEditable ||
-            target?.tagName === "INPUT" ||
             target?.tagName === "TEXTAREA" ||
             target?.tagName === "SELECT"
         ) {
+            return;
+        }
+        if (target?.tagName === "INPUT" && target.type !== "checkbox" && target.type !== "radio") {
             return;
         }
         if (!NAV_KEYS.has(event.code)) return;
