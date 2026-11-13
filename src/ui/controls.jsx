@@ -75,7 +75,10 @@ export function Field({
                     )}
                 </div>
             )}
-            {grouped ? <div className="flex flex-col gap-1">{children}</div> : children}
+            {/* A field with a toggle hides its body while the toggle is off, so the
+                caller does not have to repeat `{enabled && ...}` around its children. */}
+            {(toggle === undefined || toggle) &&
+                (grouped ? <div className="flex flex-col gap-1">{children}</div> : children)}
         </div>
     );
 }

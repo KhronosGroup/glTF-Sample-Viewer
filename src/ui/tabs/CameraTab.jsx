@@ -259,38 +259,34 @@ export function CameraTab() {
                 toggle={enforceAspectRatio}
                 onToggleChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
             >
-                {enforceAspectRatio && (
-                    <>
-                        <div className="mb-2 grid grid-cols-4 gap-2">
-                            {COMMON_ASPECT_RATIOS.map(({ label, value }) => {
-                                const active = Math.abs(cameraAspectRatio - value) < 0.01;
-                                return (
-                                    <button
-                                        key={label}
-                                        type="button"
-                                        onClick={() => updateSelection({ cameraAspectRatio: value })}
-                                        className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
-                                            active
-                                                ? "border-accent bg-accent text-ink-dim"
-                                                : "border-ink/60 hover:border-ink"
-                                        }`}
-                                    >
-                                        {label}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <Slider
-                            label="Aspect Ratio"
-                            value={cameraAspectRatio}
-                            min={0.5}
-                            max={3}
-                            step={0.01}
-                            formatter={(value) => value.toFixed(2)}
-                            onChange={(value) => updateSelection({ cameraAspectRatio: value })}
-                        />
-                    </>
-                )}
+                <div className="mb-2 grid grid-cols-4 gap-2">
+                    {COMMON_ASPECT_RATIOS.map(({ label, value }) => {
+                        const active = Math.abs(cameraAspectRatio - value) < 0.01;
+                        return (
+                            <button
+                                key={label}
+                                type="button"
+                                onClick={() => updateSelection({ cameraAspectRatio: value })}
+                                className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                                    active
+                                        ? "border-accent bg-accent text-ink-dim"
+                                        : "border-ink/60 hover:border-ink"
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        );
+                    })}
+                </div>
+                <Slider
+                    label="Aspect Ratio"
+                    value={cameraAspectRatio}
+                    min={0.5}
+                    max={3}
+                    step={0.01}
+                    formatter={(value) => value.toFixed(2)}
+                    onChange={(value) => updateSelection({ cameraAspectRatio: value })}
+                />
             </Field>
 
             <Field label="Look At">

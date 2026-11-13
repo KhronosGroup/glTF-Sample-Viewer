@@ -150,62 +150,59 @@ function ClippingControls({ clipping, onChange }) {
     };
 
     return (
-        <Field
-            label="Clipping Planes"
-            toggle={clipping.enabled}
-            onToggleChange={(checked) => update({ enabled: checked })}
-            toggleDisabled={!supportsClipping}
-            toggleTestId="switch-clipping"
-        >
+        <>
+            <Field
+                label="Clipping Planes"
+                toggle={clipping.enabled}
+                onToggleChange={(checked) => update({ enabled: checked })}
+                toggleDisabled={!supportsClipping}
+                toggleTestId="switch-clipping"
+            >
+                <div className="flex items-center justify-center gap-2">
+                    <SegmentedControl
+                        label="Clipping Orientation"
+                        options={orientations.map((orientation) => ({
+                            label: orientation.split(" ")[0],
+                            value: orientation
+                        }))}
+                        value={clipping.orientation}
+                        onChange={(value) => update({ orientation: value })}
+                    />
+                    <IconButton
+                        label="Reset clipping planes"
+                        onClick={() => update({ min: [0, 0, 0], max: [1, 1, 1] })}
+                    >
+                        <RotateCcw size={16} aria-hidden="true" />
+                    </IconButton>
+                </div>
+
+                <div className="mt-1 grid grid-cols-[1ch_1fr_1fr] items-center gap-x-3 text-sm font-light">
+                    <span />
+                    <span>Min</span>
+                    <span>Max</span>
+                    {CLIPPING_AXES.map((axis, index) => (
+                        <Fragment key={axis}>
+                            <span>{axis}</span>
+                            {["min", "max"].map((bound) => (
+                                <Slider
+                                    key={bound}
+                                    label={`Clipping ${axis} ${bound}`}
+                                    value={clipping[bound][index]}
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                    formatter={formatClippingBound}
+                                    onChange={setBound(bound, index)}
+                                />
+                            ))}
+                        </Fragment>
+                    ))}
+                </div>
+            </Field>
             {!supportsClipping && (
                 <p className="text-ink/60 text-sm">Unsupported by this browser</p>
             )}
-
-            {clipping.enabled && (
-                <>
-                    <div className="flex items-center justify-center gap-2">
-                        <SegmentedControl
-                            label="Clipping Orientation"
-                            options={orientations.map((orientation) => ({
-                                label: orientation.split(" ")[0],
-                                value: orientation
-                            }))}
-                            value={clipping.orientation}
-                            onChange={(value) => update({ orientation: value })}
-                        />
-                        <IconButton
-                            label="Reset clipping planes"
-                            onClick={() => update({ min: [0, 0, 0], max: [1, 1, 1] })}
-                        >
-                            <RotateCcw size={16} aria-hidden="true" />
-                        </IconButton>
-                    </div>
-
-                    <div className="mt-1 grid grid-cols-[1ch_1fr_1fr] items-center gap-x-3 text-sm font-light">
-                        <span />
-                        <span>Min</span>
-                        <span>Max</span>
-                        {CLIPPING_AXES.map((axis, index) => (
-                            <Fragment key={axis}>
-                                <span>{axis}</span>
-                                {["min", "max"].map((bound) => (
-                                    <Slider
-                                        key={bound}
-                                        label={`Clipping ${axis} ${bound}`}
-                                        value={clipping[bound][index]}
-                                        min={0}
-                                        max={1}
-                                        step={0.01}
-                                        formatter={formatClippingBound}
-                                        onChange={setBound(bound, index)}
-                                    />
-                                ))}
-                            </Fragment>
-                        ))}
-                    </div>
-                </>
-            )}
-        </Field>
+        </>
     );
 }
 
