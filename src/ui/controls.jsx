@@ -293,7 +293,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                 { opacity: 1, transform: "none" },
                 { opacity: 0, transform: "translateY(8px)" }
             ],
-            { duration: 120, easing: "ease-in", fill: "forwards" }
+            { duration: 80, easing: "ease-in", fill: "forwards" }
         );
         animation.onfinish = () => {
             setOpen(false);
@@ -465,7 +465,7 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
                     { opacity: 0, transform: "translateY(-8px)" },
                     { opacity: 1, transform: "none" }
                 ],
-                { duration: 180, easing: "ease-out" }
+                { duration: 100, easing: "ease-out" }
             );
         }
     }, [open]);
