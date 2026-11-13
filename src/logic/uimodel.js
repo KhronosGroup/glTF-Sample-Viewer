@@ -98,9 +98,7 @@ class UIModel {
             onZoom: (delta) => this.zoomHandler?.(delta),
             onSelect: (position) => this.selectionHandler?.(position),
             onFocus: (position) => this.focusHandler?.(position),
-            onHover: (position) => this.hoverHandler?.(position),
-            onDrop: (entries) => this.handleDrop(entries),
-            onDropError: () => updateUi({ showDropDownOverlay: false })
+            onHover: (position) => this.hoverHandler?.(position)
         });
     }
 

@@ -13,7 +13,7 @@ import { attachKeyboard } from "./keyboard.js";
  * Returns a dispose function; every listener it adds is removed again.
  */
 export function attachCanvasInput(canvas, handlers) {
-    const { onOrbit, onPan, onZoom, onSelect, onHover, onDrop, onDropError, onFocus } = handlers;
+    const { onOrbit, onPan, onZoom, onSelect, onHover, onFocus } = handlers;
     const cleanups = [];
 
     const listen = (target, type, handler, options) => {
@@ -140,10 +140,6 @@ export function attachCanvasInput(canvas, handlers) {
     listen(canvas, "touchend", endTouch);
     listen(canvas, "touchcancel", endTouch);
 
-    const dropZone = new SimpleDropzone(canvas, canvas);
-    dropZone.on("drop", ({ files }) => onDrop(Array.from(files.entries())));
-    dropZone.on("droperror", () => onDropError());
-
     const blockContextMenu = () => false;
     const previousContextMenu = canvas.oncontextmenu;
     canvas.oncontextmenu = blockContextMenu;
@@ -156,6 +152,19 @@ export function attachCanvasInput(canvas, handlers) {
             cleanup();
         }
     };
+}
+
+/**
+ * Attaches only the drop zone, so it can be wired up before the viewer's slow,
+ * asynchronous startup (physics engine, model index, ...) finishes. A drop that
+ * arrives during startup is captured here instead of being lost, and the caller
+ * buffers it until the model layer exists.
+ */
+export function attachDropZone(canvas, onDrop, onDropError) {
+    const dropZone = new SimpleDropzone(canvas, canvas);
+    dropZone.on("drop", ({ files }) => onDrop(Array.from(files.entries())));
+    dropZone.on("droperror", () => onDropError());
+    return () => dropZone.destroy();
 }
 
 /**
