@@ -131,12 +131,7 @@ class UIModel {
             onZoom: (delta) => this.zoomHandler?.(delta),
             onSelect: (position) => this.selectionHandler?.(position),
             onFocus: (position) => this.focusHandler?.(position),
-            onHover: (position) => this.hoverHandler?.(position),
-            onDrop: (entries) =>
-                this.handleDrop(entries).catch((error) =>
-                    console.error(`Reading the dropped files failed: ${error}`)
-                ),
-            onDropError: () => updateUi({ showDropDownOverlay: false })
+            onHover: (position) => this.hoverHandler?.(position)
         });
     }
 

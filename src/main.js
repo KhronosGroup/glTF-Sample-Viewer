@@ -8,6 +8,7 @@ import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_pr
 import { getViewerState, updatePublished, updateUi, viewerStore } from "./logic/viewer_store.js";
 import { setCommand } from "./logic/commands.js";
 import { notify } from "./logic/notifications.js";
+import { attachDropZone } from "./logic/canvas_input.js";
 
 import { validateBytes } from "gltf-validator";
 
@@ -132,6 +133,17 @@ const nodeWorldCentroid = (gltf, node) => {
  * StrictMode does exactly that in development.
  */
 export const initViewer = async (canvas) => {
+    // The drop zone is attached before the slow startup awaits below, so a file
+    // dropped while the viewer is still initialising is captured and buffered
+    // rather than landing on a canvas with no handler yet.
+    const pendingDrops = [];
+    let dropHandler = (entries) => pendingDrops.push(entries);
+    const detachDropZone = attachDropZone(
+        canvas,
+        (entries) => dropHandler(entries),
+        () => updateUi({ showDropDownOverlay: false })
+    );
+
     const context = canvas.getContext("webgl2", {
         alpha: false,
         antialias: true
@@ -788,6 +800,17 @@ export const initViewer = async (canvas) => {
     // Handlers are registered, so the initial model and environment can go out.
     uiModel.start();
 
+    // Route drops to the now-ready model layer, then replay any that arrived
+    // during startup. Reassigning first means a drop between the two statements
+    // is handled directly rather than buffered and never drained.
+    dropHandler = (entries) =>
+        Promise.resolve(uiModel.handleDrop(entries)).catch((error) =>
+            console.error(`Reading the dropped files failed: ${error}`)
+        );
+    for (const entries of pendingDrops.splice(0)) {
+        dropHandler(entries);
+    }
+
     // Pause physics while the tab is inactive so a long absence does not turn into
     // one huge physics step when focus returns.
     let pausedByInactivity = false;
@@ -880,6 +903,7 @@ export const initViewer = async (canvas) => {
         document.removeEventListener("visibilitychange", handleVisibilityChange);
         window.removeEventListener("blur", handleInactive);
         window.removeEventListener("focus", handleActive);
+        detachDropZone();
         uiModel.dispose();
         state.graphController.stopGraphEngine();
         state.physicsController.pauseSimulation();
