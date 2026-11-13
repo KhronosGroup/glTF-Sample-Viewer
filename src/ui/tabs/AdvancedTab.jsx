@@ -263,6 +263,7 @@ export function AdvancedTab({
         <Panel title="Advanced Controls">
             <Field label="Debug Channels">
                 <Select
+                    data-testid="select-debug-channel"
                     value={debugChannel}
                     onChange={(value) => {
                         onDebugChannelChange(value);
