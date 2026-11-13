@@ -285,14 +285,15 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
             setOpen(false);
             return;
         }
-        // Slide the popup back up and fade it out, then unmount it.
+        // Slide the popup back down and fade it out, then unmount it. `fill: "forwards"`
+        // keeps the final state so it does not flash back to full opacity first.
         setClosing(true);
         const animation = popup.animate(
             [
                 { opacity: 1, transform: "none" },
-                { opacity: 0, transform: "translateY(-8px)" }
+                { opacity: 0, transform: "translateY(8px)" }
             ],
-            { duration: 120, easing: "ease-in" }
+            { duration: 120, easing: "ease-in", fill: "forwards" }
         );
         animation.onfinish = () => {
             setOpen(false);
