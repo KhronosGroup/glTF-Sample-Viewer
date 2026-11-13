@@ -11,7 +11,7 @@ import {
     Switch
 } from "../controls.jsx";
 
-export function PhysicsTab({ debug, onDebugChange }) {
+export function PhysicsTab({ debug, onDebugChange, colliderShapes, onColliderShapesChange }) {
     const physicsState = useViewerStore((state) => state.selection.physicsState);
     const physicsEngineVersion = useViewerStore((state) => state.published.physicsEngineVersion);
     const physxLabel = `Nvidia PhysX${physicsEngineVersion !== undefined ? ` ${physicsEngineVersion}` : ""}`;
@@ -53,9 +53,9 @@ export function PhysicsTab({ debug, onDebugChange }) {
             <SectionLabel>Debug</SectionLabel>
             <div className="mb-4 flex flex-col items-start gap-2">
                 <Switch
-                    checked={debug.colliders}
+                    checked={colliderShapes}
                     onChange={(checked) => {
-                        onDebugChange({ colliders: checked });
+                        onColliderShapesChange(checked);
                     }}
                 >
                     Show Colliders

@@ -49,11 +49,14 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const selectedModelFlavours = useViewerStore((state) => state.selection.selectedModelFlavours);
     const flavours = useViewerStore((state) => state.published.flavours);
     const scenes = useViewerStore((state) => state.published.scenes);
+    const showScenes = useViewerStore((state) => state.published.showScenes);
     const cameras = useViewerStore((state) => state.published.cameras);
     const materialVariants = useViewerStore((state) => state.published.materialVariants);
     const selectedModel = useViewerStore((state) => state.selection.selectedModel);
     const selectedModelExcluded = useViewerStore((state) => state.selection.selectedModelExcluded);
-    const selectedModelIsDropped = useViewerStore((state) => state.selection.selectedModelIsDropped);
+    const selectedModelIsDropped = useViewerStore(
+        (state) => state.selection.selectedModelIsDropped
+    );
     const selectedFlavour = useViewerStore((state) => state.selection.selectedFlavour);
     const selectedScene = useViewerStore((state) => state.selection.selectedScene);
     const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
@@ -167,7 +170,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                 </Field>
             )}
 
-            {scenes.length > 1 && (
+            {showScenes && (
                 <Field label="Scenes">
                     <Select
                         value={selectedScene}

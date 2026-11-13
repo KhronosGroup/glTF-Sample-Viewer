@@ -1,7 +1,16 @@
 import { Download, Plus, RotateCcw } from "lucide-react";
+import { GltfState } from "@khronosgroup/gltf-viewer";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Button, Field, IconButton, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
+import {
+    Button,
+    Field,
+    IconButton,
+    Panel,
+    SegmentedControl,
+    Select,
+    Switch
+} from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
@@ -24,7 +33,15 @@ const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 10
 const formatExposure = (value) =>
     String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
 
-export function DisplayTab({ lighting, onLightingChange }) {
+export function DisplayTab({
+    lighting,
+    onLightingChange,
+    debugShapes,
+    onDebugShapesChange,
+    cullByBoundingVolume,
+    onCullByBoundingVolumeChange,
+    onColliderShapesChange
+}) {
     const tonemaps = useViewerStore((state) => state.published.tonemaps);
     const environments = useViewerStore((state) => state.published.environments);
     const selectedEnvironment = useViewerStore((state) => state.selection.selectedEnvironment);
@@ -32,6 +49,8 @@ export function DisplayTab({ lighting, onLightingChange }) {
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
+
+    const shapesVisible = debugShapes.boundingVolumes || debugShapes.allShapes;
 
     return (
         <Panel title="Display">
@@ -198,6 +217,75 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         ))}
                     </Select>
                 </Field>
+            </Field>
+
+            <Field label="Shapes" grouped>
+                <Switch
+                    data-testid="switch-cull-bounding-volumes"
+                    checked={cullByBoundingVolume}
+                    onChange={(checked) => onCullByBoundingVolumeChange(checked)}
+                >
+                    Cull by Bounding Volume
+                </Switch>
+                <Switch
+                    data-testid="switch-bounding-volumes"
+                    checked={debugShapes.boundingVolumes}
+                    onChange={(checked) => onDebugShapesChange({ boundingVolumes: checked })}
+                >
+                    Bounding Volumes
+                </Switch>
+                <Switch
+                    data-testid="switch-collider-shapes"
+                    checked={debugShapes.allShapes}
+                    onChange={(checked) => onColliderShapesChange(checked)}
+                >
+                    Collider Shapes
+                </Switch>
+                <Switch
+                    data-testid="switch-shapes-xray"
+                    checked={!debugShapes.depthTest}
+                    disabled={!shapesVisible}
+                    onChange={(checked) => onDebugShapesChange({ depthTest: !checked })}
+                >
+                    See Through Geometry
+                </Switch>
+                <Switch
+                    checked={debugShapes.highlightNonEnclosing}
+                    disabled={!debugShapes.boundingVolumes}
+                    onChange={(checked) => onDebugShapesChange({ highlightNonEnclosing: checked })}
+                >
+                    Flag Non-Enclosing
+                </Switch>
+            </Field>
+
+            <Field label="Shape Style">
+                <Select
+                    data-testid="select-shape-style"
+                    value={debugShapes.style}
+                    disabled={!shapesVisible}
+                    onChange={(value) => onDebugShapesChange({ style: value })}
+                >
+                    {Object.values(GltfState.DebugShapeStyle).map((item) => (
+                        <option key={item} value={item}>
+                            {item}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+
+            <Field label="Shape Color">
+                <Select
+                    data-testid="select-shape-color"
+                    value={debugShapes.colorMode}
+                    disabled={!shapesVisible}
+                    onChange={(value) => onDebugShapesChange({ colorMode: value })}
+                >
+                    {Object.values(GltfState.DebugShapeColor).map((item) => (
+                        <option key={item} value={item}>
+                            {item}
+                        </option>
+                    ))}
+                </Select>
             </Field>
 
             <Field label="Capture Canvas">

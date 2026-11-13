@@ -145,6 +145,9 @@ import { createStore } from "zustand/vanilla";
  * @property {boolean} supportsFloatingPointFramebuffer
  * @property {boolean} supportsWireframe
  * @property {boolean} supportsClipping
+ * @property {boolean} showScenes
+ * @property {string} assetVersion
+ * @property {string|undefined} assetThumbnail
  */
 
 /**
@@ -175,11 +178,25 @@ import { createStore } from "zustand/vanilla";
  */
 
 /**
+ * glTF 2.1 shape debug visualisation, mirrored into
+ * `state.renderingParameters.debugShapes` by `main.js`.
+ * @typedef {Object} DebugShapesConfig
+ * @property {boolean} boundingVolumes
+ * @property {boolean} allShapes
+ * @property {string} style
+ * @property {string} colorMode
+ * @property {boolean} depthTest
+ * @property {boolean} highlightNonEnclosing
+ */
+
+/**
  * Renderer configuration owned by the UI.
  * @typedef {Object} ConfigState
  * @property {LightingConfig} lighting
  * @property {ExtensionsConfig} extensions
  * @property {PhysicsDebugConfig} physicsDebug
+ * @property {DebugShapesConfig} debugShapes
+ * @property {boolean} cullByBoundingVolume
  * @property {ClippingConfig} clipping
  * @property {string} debugChannel
  */
@@ -230,6 +247,7 @@ const initialState = {
 
         // Published once a glTF has finished loading.
         scenes: [{ title: "0" }, { title: "1" }],
+        showScenes: true,
         cameras: [{ title: "User Camera", index: -1 }],
         materialVariants: ["None"],
         animations: [{ title: "None" }],
@@ -242,6 +260,8 @@ const initialState = {
         physicsEngineVersion: undefined,
         assetCopyright: "",
         assetGenerator: "",
+        assetVersion: "",
+        assetThumbnail: undefined,
         xmp: [{ title: "xmp" }],
         statistics: [],
         validationReport: {},
@@ -326,6 +346,15 @@ const initialState = {
             gaussianSplatting: true
         },
         physicsDebug: { engine: "nvidia-physx", colliders: false, joints: false },
+        debugShapes: {
+            boundingVolumes: false,
+            allShapes: false,
+            style: "Wireframe",
+            colorMode: "Uniform",
+            depthTest: true,
+            highlightNonEnclosing: true
+        },
+        cullByBoundingVolume: true,
         clipping: { enabled: false, orientation: "Axis Aligned", min: [0, 0, 0], max: [1, 1, 1] },
         debugChannel: "None"
     },

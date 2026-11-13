@@ -31,27 +31,27 @@ const EXTENSION_TOGGLES = [
     {
         key: "interactivity",
         label: "Interactivity",
-        extension: "KHR_interactivity",
+        extension: "KHR_interactivity"
     },
     {
         key: "hoverability",
         label: "Node Hoverability",
-        extension: "KHR_node_hoverability",
+        extension: "KHR_node_hoverability"
     },
     {
         key: "selectability",
         label: "Node Selectability",
-        extension: "KHR_node_selectability",
+        extension: "KHR_node_selectability"
     },
     {
         key: "nodeVisibility",
         label: "Node Visibility",
-        extension: "KHR_node_visibility",
+        extension: "KHR_node_visibility"
     },
     {
         key: "gaussianSplatting",
         label: "Gaussian Splatting",
-        extension: "KHR_gaussian_splatting",
+        extension: "KHR_gaussian_splatting"
     }
 ];
 
@@ -59,67 +59,67 @@ const MATERIAL_EXTENSIONS = [
     {
         key: "anisotropy",
         label: "Anisotropy",
-        extension: "KHR_materials_anisotropy",
+        extension: "KHR_materials_anisotropy"
     },
     {
         key: "clearcoat",
         label: "Clearcoat",
-        extension: "KHR_materials_clearcoat",
+        extension: "KHR_materials_clearcoat"
     },
     {
         key: "diffuseTransmission",
         label: "Diffuse Transmission",
-        extension: "KHR_materials_diffuse_transmission",
+        extension: "KHR_materials_diffuse_transmission"
     },
     {
         key: "dispersion",
         label: "Dispersion",
-        extension: "KHR_materials_dispersion",
+        extension: "KHR_materials_dispersion"
     },
     {
         key: "emissiveStrength",
         label: "Emissive Strength",
-        extension: "KHR_materials_emissive_strength",
+        extension: "KHR_materials_emissive_strength"
     },
     {
         key: "ior",
         label: "Index of Refraction",
-        extension: "KHR_materials_ior",
+        extension: "KHR_materials_ior"
     },
     {
         key: "iridescence",
         label: "Iridescence",
-        extension: "KHR_materials_iridescence",
+        extension: "KHR_materials_iridescence"
     },
     {
         key: "retroreflection",
         label: "Retroreflection",
-        extension: "KHR_materials_retroreflection",
+        extension: "KHR_materials_retroreflection"
     },
     {
         key: "scattering",
         label: "Scattering",
-        extension: "KHR_materials_scatter",
+        extension: "KHR_materials_scatter"
     },
     {
         key: "sheen",
         label: "Sheen",
-        extension: "KHR_materials_sheen",
+        extension: "KHR_materials_sheen"
     },
     {
         key: "specular",
         label: "Specular",
-        extension: "KHR_materials_specular",
+        extension: "KHR_materials_specular"
     },
     {
         key: "transmission",
         label: "Transmission",
-        extension: "KHR_materials_transmission",
+        extension: "KHR_materials_transmission"
     },
     {
         key: "volume",
         label: "Volume",
-        extension: "KHR_materials_volume",
+        extension: "KHR_materials_volume"
     }
 ];
 
@@ -231,7 +231,10 @@ export function AdvancedTab({
     );
     const supportsWireframe = useViewerStore((state) => state.published.supportsWireframe);
 
-    const toggle = ({ key }) => (checked) => onExtensionsChange({ [key]: checked });
+    const toggle =
+        ({ key }) =>
+        (checked) =>
+            onExtensionsChange({ [key]: checked });
 
     const disabledFor = (key) => {
         if (key === "volume") {
@@ -260,6 +263,7 @@ export function AdvancedTab({
         <Panel title="Advanced Controls">
             <Field label="Debug Channels">
                 <Select
+                    data-testid="select-debug-channel"
                     value={debugChannel}
                     onChange={(value) => {
                         onDebugChannelChange(value);
@@ -288,7 +292,7 @@ export function AdvancedTab({
                     checked={extensions.floatingPointFramebuffer}
                     disabled={!supportsFloatingPointFramebuffer}
                     onChange={toggle({
-                        key: "floatingPointFramebuffer",
+                        key: "floatingPointFramebuffer"
                     })}
                 >
                     32-bit Framebuffer

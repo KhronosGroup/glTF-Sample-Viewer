@@ -207,10 +207,12 @@ export const initViewer = async (canvas) => {
 
     // Applies a store change to the renderer and asks for a repaint.
     const applyRenderChange = (selector, apply) =>
-        subscriptions.push(viewerStore.subscribe(selector, (next, previous) => {
-            apply(next, previous);
-            redraw = true;
-        }));
+        subscriptions.push(
+            viewerStore.subscribe(selector, (next, previous) => {
+                apply(next, previous);
+                redraw = true;
+            })
+        );
 
     // True once torn down, so in-flight async work stops applying state.
     let disposed = false;
@@ -341,6 +343,26 @@ export const initViewer = async (canvas) => {
         const loadId = ++latestLoadId;
         uiModel.goToLoadingState();
 
+        // The thumbnail is read separately from the scene, which is the whole point of
+        // the feature: it needs only the JSON and one image.
+        resourceLoader
+            .loadThumbnail(model.mainFile, model.additionalFiles)
+            .then((thumbnail) => {
+                if (loadId !== latestLoadId || disposed) {
+                    uiModel.releaseThumbnail(thumbnail);
+                    return;
+                }
+                uiModel.publishThumbnail(thumbnail);
+            })
+            .catch((error) => {
+                // Only reached when the asset declares a thumbnail that cannot be read;
+                // an asset without one resolves to undefined.
+                console.warn("Could not read the asset thumbnail: " + error);
+                if (loadId === latestLoadId && !disposed) {
+                    uiModel.publishThumbnail(undefined);
+                }
+            });
+
         const run = queuedLoads.then(async () => {
             if (loadId !== latestLoadId || disposed) {
                 return;
@@ -446,19 +468,48 @@ export const initViewer = async (canvas) => {
 
     applyRenderChange((s) => s.config.lighting, applyLighting);
     applyRenderChange((s) => s.config.extensions, applyExtensions);
-    applyRenderChange((s) => s.config.debugChannel, (v) => {
-        state.renderingParameters.debugOutput = v;
-    });
-    applyRenderChange((s) => s.config.clipping, (v) => {
-        state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
-    });
-    applyRenderChange((s) => s.config.physicsDebug, (debug) => {
-        state.physicsController.enableDebugColliders(debug.colliders);
-        state.physicsController.enableDebugJoints(debug.joints);
-    });
-    applyRenderChange((s) => s.selection.selectedVariant, (v) => {
-        state.variant = v;
-    });
+    applyRenderChange(
+        (s) => s.config.debugChannel,
+        (v) => {
+            state.renderingParameters.debugOutput = v;
+        }
+    );
+    applyRenderChange(
+        (s) => s.config.clipping,
+        (v) => {
+            state.renderingParameters.clipping = { ...state.renderingParameters.clipping, ...v };
+        }
+    );
+    applyRenderChange(
+        (s) => s.config.physicsDebug,
+        (debug) => {
+            state.physicsController.enableDebugColliders(debug.colliders);
+            state.physicsController.enableDebugJoints(debug.joints);
+        }
+    );
+    applyRenderChange(
+        (s) => s.config.debugShapes,
+        (debugShapes) => {
+            state.renderingParameters.debugShapes = {
+                ...debugShapes,
+                boundingVolumes: debugShapes.boundingVolumes
+                    ? GltfState.BoundingVolumeMode.ALL
+                    : GltfState.BoundingVolumeMode.NONE
+            };
+        }
+    );
+    applyRenderChange(
+        (s) => s.config.cullByBoundingVolume,
+        (enabled) => {
+            state.renderingParameters.cullByBoundingVolume = enabled;
+        }
+    );
+    applyRenderChange(
+        (s) => s.selection.selectedVariant,
+        (v) => {
+            state.variant = v;
+        }
+    );
 
     const applyMorphWeightOverrides = (overrides) => {
         state.gltf.nodes.forEach((node, nodeIndex) => {
@@ -481,120 +532,167 @@ export const initViewer = async (canvas) => {
 
     applyRenderChange((s) => s.selection.morphWeightOverrides, applyMorphWeightOverrides);
 
-    applyRenderChange((s) => s.selection.clearColor, (hex) => {
-        const color = hexToLinearColor(hex);
-        if (color !== undefined) {
-            state.renderingParameters.clearColor = color;
+    applyRenderChange(
+        (s) => s.selection.clearColor,
+        (hex) => {
+            const color = hexToLinearColor(hex);
+            if (color !== undefined) {
+                state.renderingParameters.clearColor = color;
+            }
         }
-    });
+    );
 
-    subscriptions.push(viewerStore.subscribe((s) => s.selection.selectedScene, (value) => {
-        const sceneIndex = Number(value);
-        // A model load republishes the scene the renderer is already showing,
-        // so only apply a change the renderer has not applied yet.
-        if (sceneIndex === state.sceneIndex) {
-            return;
+    subscriptions.push(
+        viewerStore.subscribe(
+            (s) => s.selection.selectedScene,
+            (value) => {
+                const sceneIndex = Number(value);
+                // A model load republishes the scene the renderer is already showing,
+                // so only apply a change the renderer has not applied yet.
+                if (sceneIndex === state.sceneIndex) {
+                    return;
+                }
+                state.sceneIndex = sceneIndex !== -1 ? sceneIndex : undefined;
+                state.cameraNodeIndex = undefined;
+
+                const scene = state.gltf.scenes[state.sceneIndex];
+                if (scene !== undefined) {
+                    scene.applyTransformHierarchy(state.gltf);
+                    state.userCamera.resetView(state.gltf, state.sceneIndex);
+                    state.physicsController.loadScene(state, state.sceneIndex);
+                }
+
+                uiModel.publishCameras(state);
+                uiModel.publishMorphWeights(state);
+                uiModel.publishStatistics(view.gatherStatistics(state));
+                redraw = true;
+            }
+        )
+    );
+
+    applyRenderChange(
+        (s) => s.selection.selectedCamera,
+        (camera) => {
+            state.cameraNodeIndex = camera !== -1 ? camera : undefined;
         }
-        state.sceneIndex = sceneIndex !== -1 ? sceneIndex : undefined;
-        state.cameraNodeIndex = undefined;
+    );
 
-        const scene = state.gltf.scenes[state.sceneIndex];
-        if (scene !== undefined) {
-            scene.applyTransformHierarchy(state.gltf);
-            state.userCamera.resetView(state.gltf, state.sceneIndex);
+    applyRenderChange(
+        (s) => s.selection.selectedAnimations,
+        (indices) => {
+            // Disable all animations which are not disjoint to the current selection.
+            uiModel.publishDisabledAnimations(state.gltf.nonDisjointAnimations(indices));
+            state.animationIndices = indices;
+        }
+    );
+
+    subscriptions.push(
+        viewerStore.subscribe(
+            (s) => s.selection.animationState,
+            (playing) => {
+                if (playing) {
+                    state.animationTimer.unpause();
+                } else {
+                    state.animationTimer.pause();
+                }
+            }
+        )
+    );
+
+    subscriptions.push(
+        setCommand("animationResetChanged", () => {
+            state.animationTimer.reset();
+            redraw = true;
+        })
+    );
+
+    applyRenderChange(
+        (s) => s.selection.animationTimeOverride,
+        (time) => {
+            if (time === null || time === undefined) {
+                state.animationTimer.clearTimeOverride();
+            } else {
+                state.animationTimer.setTimeOverride(time);
+            }
+        }
+    );
+
+    subscriptions.push(
+        viewerStore.subscribe(
+            (s) => s.selection.graphState,
+            (playing) => {
+                if (playing) {
+                    state.graphController.resumeGraph();
+                    state.animationTimer.unpause();
+                } else {
+                    state.graphController.pauseGraph();
+                    state.animationTimer.pause();
+                }
+            }
+        )
+    );
+
+    subscriptions.push(
+        setCommand("graphResetChanged", () => {
+            state.graphController.resetGraph();
+            redraw = true;
+        })
+    );
+
+    subscriptions.push(
+        viewerStore.subscribe(
+            (s) => s.selection.selectedGraph,
+            (graphIndex) => {
+                if (graphIndex === null || graphIndex === undefined) {
+                    return;
+                }
+                // A model load republishes the graph the renderer is already running,
+                // so only apply a change the renderer has not applied yet.
+                if (graphIndex === state.graphController.graphIndex) {
+                    return;
+                }
+                state.graphController.loadGraph(graphIndex);
+            }
+        )
+    );
+
+    subscriptions.push(
+        setCommand("customEventSendClicked", (eventData) => {
+            if (eventData && eventData.eventId) {
+                state.graphController.dispatchEvent(eventData.eventId, { ...eventData.values });
+            }
+        })
+    );
+
+    subscriptions.push(
+        viewerStore.subscribe(
+            (s) => s.selection.physicsState,
+            (enabled) => {
+                if (enabled) {
+                    state.physicsController.resumeSimulation();
+                } else {
+                    state.physicsController.pauseSimulation();
+                }
+            }
+        )
+    );
+
+    subscriptions.push(
+        setCommand("physicsResetChanged", () => {
+            state.physicsController.resetScene(state.gltf);
+            state.gltf.resetAnimatedProperties(state.sceneIndex);
             state.physicsController.loadScene(state, state.sceneIndex);
-        }
+            redraw = true;
+        })
+    );
 
-        uiModel.publishCameras(state);
-        uiModel.publishMorphWeights(state);
-        uiModel.publishStatistics(view.gatherStatistics(state));
-        redraw = true;
-    }));
-
-    applyRenderChange((s) => s.selection.selectedCamera, (camera) => {
-        state.cameraNodeIndex = camera !== -1 ? camera : undefined;
-    });
-
-    applyRenderChange((s) => s.selection.selectedAnimations, (indices) => {
-        // Disable all animations which are not disjoint to the current selection.
-        uiModel.publishDisabledAnimations(state.gltf.nonDisjointAnimations(indices));
-        state.animationIndices = indices;
-    });
-
-    subscriptions.push(viewerStore.subscribe((s) => s.selection.animationState, (playing) => {
-        if (playing) {
-            state.animationTimer.unpause();
-        } else {
-            state.animationTimer.pause();
-        }
-    }));
-
-    subscriptions.push(setCommand("animationResetChanged", () => {
-        state.animationTimer.reset();
-        redraw = true;
-    }));
-
-    applyRenderChange((s) => s.selection.animationTimeOverride, (time) => {
-        if (time === null || time === undefined) {
-            state.animationTimer.clearTimeOverride();
-        } else {
-            state.animationTimer.setTimeOverride(time);
-        }
-    });
-
-    subscriptions.push(viewerStore.subscribe((s) => s.selection.graphState, (playing) => {
-        if (playing) {
-            state.graphController.resumeGraph();
-            state.animationTimer.unpause();
-        } else {
-            state.graphController.pauseGraph();
-            state.animationTimer.pause();
-        }
-    }));
-
-    subscriptions.push(setCommand("graphResetChanged", () => {
-        state.graphController.resetGraph();
-        redraw = true;
-    }));
-
-    subscriptions.push(viewerStore.subscribe((s) => s.selection.selectedGraph, (graphIndex) => {
-        if (graphIndex === null || graphIndex === undefined) {
-            return;
-        }
-        // A model load republishes the graph the renderer is already running,
-        // so only apply a change the renderer has not applied yet.
-        if (graphIndex === state.graphController.graphIndex) {
-            return;
-        }
-        state.graphController.loadGraph(graphIndex);
-    }));
-
-    subscriptions.push(setCommand("customEventSendClicked", (eventData) => {
-        if (eventData && eventData.eventId) {
-            state.graphController.dispatchEvent(eventData.eventId, { ...eventData.values });
-        }
-    }));
-
-    subscriptions.push(viewerStore.subscribe((s) => s.selection.physicsState, (enabled) => {
-        if (enabled) {
-            state.physicsController.resumeSimulation();
-        } else {
-            state.physicsController.pauseSimulation();
-        }
-    }));
-
-    subscriptions.push(setCommand("physicsResetChanged", () => {
-        state.physicsController.resetScene(state.gltf);
-        state.gltf.resetAnimatedProperties(state.sceneIndex);
-        state.physicsController.loadScene(state, state.sceneIndex);
-        redraw = true;
-    }));
-
-    subscriptions.push(setCommand("physicsStepChanged", () => {
-        state.physicsController.simulateStep(state, 1 / 60);
-        state.gltf.resetAllDirtyFlags();
-        redraw = true;
-    }));
+    subscriptions.push(
+        setCommand("physicsStepChanged", () => {
+            state.physicsController.simulateStep(state, 1 / 60);
+            state.gltf.resetAllDirtyFlags();
+            redraw = true;
+        })
+    );
 
     // ------------------------------------------------------------- downloads
 
@@ -608,36 +706,53 @@ export const initViewer = async (canvas) => {
         document.body.removeChild(element);
     };
 
-    subscriptions.push(setCommand("cameraExport", () => {
-        const camera =
-            state.cameraNodeIndex === undefined
-                ? state.userCamera
-                : state.gltf.cameras[state.cameraNodeIndex];
-        const gltf = JSON.stringify(camera.getDescription(state.gltf), undefined, 4);
-        downloadDataURL("camera.gltf", "data:text/plain;charset=utf-8," + encodeURIComponent(gltf));
-    }));
+    subscriptions.push(
+        setCommand("cameraExport", () => {
+            const camera =
+                state.cameraNodeIndex === undefined
+                    ? state.userCamera
+                    : state.gltf.cameras[state.cameraNodeIndex];
+            const gltf = JSON.stringify(camera.getDescription(state.gltf), undefined, 4);
+            downloadDataURL(
+                "camera.gltf",
+                "data:text/plain;charset=utf-8," + encodeURIComponent(gltf)
+            );
+        })
+    );
 
-    subscriptions.push(setCommand("captureCanvas", () => {
-        view.renderFrame(state, canvas.width, canvas.height);
-        downloadDataURL("capture.png", canvas.toDataURL());
-    }));
+    subscriptions.push(
+        setCommand("captureCanvas", () => {
+            view.renderFrame(state, canvas.width, canvas.height);
+            downloadDataURL("capture.png", canvas.toDataURL());
+        })
+    );
 
     // Camera controls arrive as commands; the controller owns the camera
     // state, while the input handlers below only push raw deltas into it.
-    applyRenderChange((s) => s.selection.cameraMode, (mode) => {
-        cameraController.setMode(mode);
-    });
-    applyRenderChange((s) => s.selection.cameraProjection, (type) => {
-        cameraController.setProjection(type);
-    });
-    subscriptions.push(setCommand("cameraLookAtChanged", (axis) => {
-        cameraController.lookAt(axis);
-        redraw = true;
-    }));
-    subscriptions.push(setCommand("cameraResetChanged", () => {
-        cameraController.reset();
-        redraw = true;
-    }));
+    applyRenderChange(
+        (s) => s.selection.cameraMode,
+        (mode) => {
+            cameraController.setMode(mode);
+        }
+    );
+    applyRenderChange(
+        (s) => s.selection.cameraProjection,
+        (type) => {
+            cameraController.setProjection(type);
+        }
+    );
+    subscriptions.push(
+        setCommand("cameraLookAtChanged", (axis) => {
+            cameraController.lookAt(axis);
+            redraw = true;
+        })
+    );
+    subscriptions.push(
+        setCommand("cameraResetChanged", () => {
+            cameraController.reset();
+            redraw = true;
+        })
+    );
 
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);
@@ -696,6 +811,31 @@ export const initViewer = async (canvas) => {
         dropHandler(entries);
     }
 
+    // Pause physics while the tab is inactive so a long absence does not turn into
+    // one huge physics step when focus returns.
+    let pausedByInactivity = false;
+    const handleInactive = () => {
+        if (state.physicsController.playing) {
+            state.physicsController.pauseSimulation();
+            pausedByInactivity = true;
+        }
+    };
+    const handleActive = () => {
+        if (pausedByInactivity && !document.hidden) {
+            state.physicsController.resumeSimulation();
+            pausedByInactivity = false;
+        }
+    };
+    const handleVisibilityChange = () => {
+        if (document.hidden) {
+            handleInactive();
+        } else {
+            handleActive();
+        }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleInactive);
+    window.addEventListener("focus", handleActive);
     // ------------------------------------------------------------ render loop
 
     const past = {};
@@ -709,6 +849,10 @@ export const initViewer = async (canvas) => {
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
         redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        // Animations declared by instantiated external assets have no entry in the
+        // animation UI, so `animationIndices` cannot see them. The loader flags the
+        // asset instead; redraw for it or the canvas goes still while it plays.
+        redraw |= !state.animationTimer.paused && state.gltf?.hasInstancedAnimations === true;
         redraw |= state.graphController.playing;
         redraw |= past.width != canvas.width || past.height != canvas.height;
         redraw |= state.physicsController.enabled && state.physicsController.playing;
@@ -755,6 +899,9 @@ export const initViewer = async (canvas) => {
             unsubscribe();
         }
         subscriptions.length = 0;
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("blur", handleInactive);
+        window.removeEventListener("focus", handleActive);
         detachDropZone();
         uiModel.dispose();
         state.graphController.stopGraphEngine();

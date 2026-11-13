@@ -1,0 +1,174 @@
+{
+    "glb2_baseline.glb": {
+        "bytes": 1024,
+        "sha256": "c25cad38db7fdfc8"
+    },
+    "glb3_single_bin.glb": {
+        "bytes": 1064,
+        "sha256": "b0b875faefed9fb0"
+    },
+    "glb3_implicit.glb": {
+        "bytes": 1048,
+        "sha256": "f2a9697972fc5c61"
+    },
+    "glb3_multi_bin.glb": {
+        "bytes": 1184,
+        "sha256": "a11c9dcec4b0937f"
+    },
+    "glb3_chunk_before_json.glb": {
+        "bytes": 1096,
+        "sha256": "6ee44e04997c04d3"
+    },
+    "glb3_unknown_chunk_type.glb": {
+        "bytes": 1096,
+        "sha256": "4c5f32b338521197"
+    },
+    "glb3_unknown_encoding.glb": {
+        "bytes": 1064,
+        "sha256": "006a6078142fd7a7"
+    },
+    "glb3_unknown_encoding_json.glb": {
+        "bytes": 1064,
+        "sha256": "7585cd6303c02796"
+    },
+    "glb3_gap_padding.glb": {
+        "bytes": 1064,
+        "sha256": "b0b875faefed9fb0"
+    },
+    "thumbnail_bufferview.glb": {
+        "bytes": 1248,
+        "sha256": "9c056af254ab44e4"
+    },
+    "thumbnail_shared.glb": {
+        "bytes": 1336,
+        "sha256": "bc097aca22b4fb09"
+    },
+    "thumbnail_datauri.gltf": {
+        "bytes": 2735,
+        "sha256": "a3e7066f548d720b"
+    },
+    "texcoord_1_3.gltf": {
+        "bytes": 3399,
+        "sha256": "0bed82be16a86aa0"
+    },
+    "texcoord_5_only.gltf": {
+        "bytes": 2965,
+        "sha256": "b91d436dcfa3b52e"
+    },
+    "texcoord_0_baseline.gltf": {
+        "bytes": 2965,
+        "sha256": "b5feef94160868f5"
+    },
+    "texcoord_four_sets.gltf": {
+        "bytes": 3942,
+        "sha256": "0197808712bc9484"
+    },
+    "texcoord_fourth_baseline.gltf": {
+        "bytes": 2965,
+        "sha256": "1e4bb35c0a5f789e"
+    },
+    "texcoord_over_limit.gltf": {
+        "bytes": 4269,
+        "sha256": "059006750394489a"
+    },
+    "texcoord_missing_set.gltf": {
+        "bytes": 2965,
+        "sha256": "c26d0716f7dba4ba"
+    },
+    "morph_texcoord_third_set.gltf": {
+        "bytes": 4438,
+        "sha256": "9cd491be99123dfb"
+    },
+    "morph_texcoord_baseline.gltf": {
+        "bytes": 3942,
+        "sha256": "39688e18f9bb88be"
+    },
+    "shapes_all.gltf": {
+        "bytes": 6748,
+        "sha256": "d4afe8e4dc25fd93"
+    },
+    "bv_transform.gltf": {
+        "bytes": 3397,
+        "sha256": "919f3288c71b9f73"
+    },
+    "external_child.gltf": {
+        "bytes": 2278,
+        "sha256": "6a2084591e4feb25"
+    },
+    "external_child.bin": {
+        "bytes": 140,
+        "sha256": "b2ee6666610f5436"
+    },
+    "external_basic.gltf": {
+        "bytes": 608,
+        "sha256": "11a8e2fd0d428060"
+    },
+    "external_reuse.gltf": {
+        "bytes": 1064,
+        "sha256": "90acd47d00058a40"
+    },
+    "external_animated_child.gltf": {
+        "bytes": 3558,
+        "sha256": "79f93bec00891028"
+    },
+    "external_animated_child.bin": {
+        "bytes": 140,
+        "sha256": "b2ee6666610f5436"
+    },
+    "external_animated.gltf": {
+        "bytes": 884,
+        "sha256": "133dbf634dedabcc"
+    },
+    "external_shapes_child.gltf": {
+        "bytes": 3048,
+        "sha256": "39dd2d6ee1c95322"
+    },
+    "external_shapes_child.bin": {
+        "bytes": 140,
+        "sha256": "b2ee6666610f5436"
+    },
+    "external_shapes.gltf": {
+        "bytes": 1204,
+        "sha256": "8dae77251c6d2a52"
+    },
+    "physics_same_document.gltf": {
+        "bytes": 3732,
+        "sha256": "eb910caf6092ef31"
+    },
+    "physics_static_reference.gltf": {
+        "bytes": 3045,
+        "sha256": "c2d645f9a26d0361"
+    },
+    "physics_floor_child.gltf": {
+        "bytes": 2957,
+        "sha256": "3338244555ff7aa8"
+    },
+    "physics_cross_document.gltf": {
+        "bytes": 3358,
+        "sha256": "6b702e2a166dde6b"
+    },
+    "external_diamond.gltf": {
+        "bytes": 1026,
+        "sha256": "8fcf64fe84a30785"
+    },
+    "external_cycle_direct.gltf": {
+        "bytes": 470,
+        "sha256": "3f9eaaf64228d72b"
+    },
+    "external_cycle_a.gltf": {
+        "bytes": 462,
+        "sha256": "5582873d38189e34"
+    },
+    "external_cycle_b.gltf": {
+        "bytes": 462,
+        "sha256": "01024a871b869197"
+    },
+    "external_package.glb": {
+        "bytes": 2944,
+        "sha256": "f683a4329b0b6212"
+    },
+    "external_wrong_mimetype.gltf": {
+        "bytes": 469,
+        "sha256": "7a56ed9a4bac545a"
+    }
+}

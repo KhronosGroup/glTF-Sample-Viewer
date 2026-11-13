@@ -82,6 +82,8 @@ export function Menu({ visible }) {
     const physicsDebug = useViewerStore((state) => state.config.physicsDebug);
     const clipping = useViewerStore((state) => state.config.clipping);
     const debugChannel = useViewerStore((state) => state.config.debugChannel);
+    const debugShapes = useViewerStore((state) => state.config.debugShapes);
+    const cullByBoundingVolume = useViewerStore((state) => state.config.cullByBoundingVolume);
 
     const graphs = useViewerStore((state) => state.published.graphs);
     const hasPhysics = useViewerStore((state) => state.published.hasPhysics);
@@ -96,9 +98,7 @@ export function Menu({ visible }) {
             return showGraphs || hasAnimations;
         }
         return !tab.needsPhysics || hasPhysics;
-    }).map((tab) =>
-        tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab
-    );
+    }).map((tab) => (tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab));
     const { activeTab, select } = useTabState(tabMeta.map((tab) => tab.id));
 
     // Turning IBL off hides the background and remembers the previous choice, so
@@ -122,6 +122,16 @@ export function Menu({ visible }) {
         updateConfig({ extensions: { ...extensions, ...next } });
     };
 
+    // The Display tab's "Collider Shapes" and the Physics tab's "Show Colliders"
+    // are the same control: both move `debugShapes.allShapes` and the physics
+    // collider debug visualisation together.
+    const updateColliderShapes = (checked) => {
+        updateConfig({
+            debugShapes: { ...debugShapes, allShapes: checked },
+            physicsDebug: { ...physicsDebug, colliders: checked }
+        });
+    };
+
     const renderTab = (id) => {
         switch (id) {
             case "models":
@@ -134,7 +144,21 @@ export function Menu({ visible }) {
             case "camera":
                 return <CameraTab />;
             case "display":
-                return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
+                return (
+                    <DisplayTab
+                        lighting={lighting}
+                        onLightingChange={updateLighting}
+                        debugShapes={debugShapes}
+                        onDebugShapesChange={(partial) =>
+                            updateConfig({ debugShapes: { ...debugShapes, ...partial } })
+                        }
+                        cullByBoundingVolume={cullByBoundingVolume}
+                        onCullByBoundingVolumeChange={(value) =>
+                            updateConfig({ cullByBoundingVolume: value })
+                        }
+                        onColliderShapesChange={updateColliderShapes}
+                    />
+                );
             case "validator":
                 return <ValidatorTab />;
             case "animations":
@@ -148,6 +172,8 @@ export function Menu({ visible }) {
                         onDebugChange={(partial) =>
                             updateConfig({ physicsDebug: { ...physicsDebug, ...partial } })
                         }
+                        colliderShapes={debugShapes.allShapes}
+                        onColliderShapesChange={updateColliderShapes}
                     />
                 );
             case "advanced":

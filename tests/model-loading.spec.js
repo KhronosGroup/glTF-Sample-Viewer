@@ -61,7 +61,7 @@ test("a dropped glTF missing its buffer names the file it wants", async ({ page 
     });
 
     await page.goto("/?noUI=1");
-    await page.waitForSelector(ui.canvas);
+    await waitForLoadingToSettle(page);
 
     await dropFiles(page, [["triangle.gltf", gltf]]);
 

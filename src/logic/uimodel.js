@@ -1,5 +1,11 @@
 import { GltfState } from "@khronosgroup/gltf-viewer";
-import { getViewerState, updatePublished, updateSelection, updateUi } from "./viewer_store.js";
+import {
+    getViewerState,
+    updateConfig,
+    updatePublished,
+    updateSelection,
+    updateUi
+} from "./viewer_store.js";
 import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
 
@@ -22,6 +28,32 @@ function parseEnvironmentLicense(text, hdr) {
         licenseName,
         licenseUrl: `${hdr.base_path}/LICENSES/${licenseName}.txt`
     };
+}
+
+/**
+ * The debug channels on offer for a loaded asset.
+ *
+ * All but the texture coordinate ones are fixed. Those depend on the asset, because
+ * glTF 2.1 lets a primitive number its sets freely, so they are rebuilt on every load
+ * and sit where they used to, at the head of the list.
+ */
+function debugChannelsFor(gltf) {
+    const channels = Object.keys(GltfState.DebugOutput).map((key) => ({
+        title: GltfState.DebugOutput[key]
+    }));
+    const texCoords = GltfState.textureCoordinateDebugOutputs(gltf);
+    if (texCoords.length > 0) {
+        channels.splice(1, 0, { title: Object.fromEntries(texCoords.map((n) => [n, n])) });
+    }
+    return channels;
+}
+
+// Plain entries and grouped ones are rendered separately, so what is on offer is the two
+// kinds flattened together.
+function offeredDebugChannels(channels) {
+    return channels.flatMap((item) =>
+        typeof item.title === "string" ? [item.title] : Object.values(item.title)
+    );
 }
 
 const INITIAL_ENVIRONMENT = "Cannon_Exterior";
@@ -57,9 +89,7 @@ class UIModel {
             tonemaps: Object.keys(GltfState.ToneMaps).map((key) => ({
                 title: GltfState.ToneMaps[key]
             })),
-            debugchannels: Object.keys(GltfState.DebugOutput).map((key) => ({
-                title: GltfState.DebugOutput[key]
-            })),
+            debugchannels: debugChannelsFor(undefined),
             clippingOrientations: Object.values(GltfState.ClippingOrientations)
         });
         updateSelection({
@@ -78,7 +108,10 @@ class UIModel {
             ),
             setCommand("flavourChanged", (flavour) => {
                 this.emitModel({
-                    mainFile: modelPathProvider.resolve(getViewerState().selection.selectedModel, flavour)
+                    mainFile: modelPathProvider.resolve(
+                        getViewerState().selection.selectedModel,
+                        flavour
+                    )
                 });
             }),
             setCommand("selectedEnvironmentChanged", (name) => {
@@ -249,9 +282,9 @@ class UIModel {
         this.emitHdr(hdr);
     }
 
-    handleDrop(entries) {
+    async handleDrop(entries) {
         updateUi({ showDropDownOverlay: false });
-        const { mainFile, additionalFiles, hdrFile } = partitionDroppedFiles(entries);
+        const { mainFile, additionalFiles, hdrFile } = await partitionDroppedFiles(entries);
 
         if (hdrFile !== undefined && mainFile === undefined) {
             this.addEnvironment({ hdr_path: hdrFile[1] });
@@ -305,6 +338,25 @@ class UIModel {
         }
     }
 
+    /**
+     * Publishes a thumbnail produced by ResourceLoader.loadThumbnail, taking ownership
+     * of its object URL and revoking whatever it replaces.
+     */
+    publishThumbnail(thumbnail) {
+        const previous = getViewerState().published.assetThumbnail;
+        if (previous !== undefined && previous.startsWith("blob:")) {
+            URL.revokeObjectURL(previous);
+        }
+        updatePublished({ assetThumbnail: thumbnail?.url });
+    }
+
+    /** Discards a thumbnail that arrived too late to be shown. */
+    releaseThumbnail(thumbnail) {
+        if (thumbnail?.url?.startsWith("blob:")) {
+            URL.revokeObjectURL(thumbnail.url);
+        }
+    }
+
     publishGltfLoaded(state) {
         this.publishCameras(state);
         this.publishMorphWeights(state);
@@ -315,6 +367,16 @@ class UIModel {
             gltf?.extensions?.KHR_interactivity?.graphs !== undefined &&
             state.renderingParameters.enabledExtensions.KHR_interactivity;
 
+        // The texture coordinate channels depend on the sets this asset declares, so a
+        // channel chosen for the previous one may no longer exist. Keeping it would leave
+        // the select showing a value it has no option for, and the renderer on a view the
+        // asset cannot produce.
+        const debugchannels = debugChannelsFor(gltf);
+        const offeredDebug = offeredDebugChannels(debugchannels);
+        const selectedDebugChannel = offeredDebug.includes(getViewerState().config.debugChannel)
+            ? getViewerState().config.debugChannel
+            : GltfState.DebugOutput.NONE;
+
         let animationDuration = 0;
         for (const animation of gltf.animations) {
             animation.computeMinMaxTime(gltf);
@@ -324,11 +386,16 @@ class UIModel {
         updatePublished({
             assetCopyright: gltf.asset.copyright ?? "N/A",
             assetGenerator: gltf.asset.generator ?? "N/A",
+            assetVersion: gltf.asset.version ?? "N/A",
 
             scenes: gltf.scenes.map((scene, index) => ({
                 title: scene.name ?? `Scene ${index}`,
                 index: index
             })),
+            // glTF 2.1 deprecates multiple scenes, so there is nothing to pick between.
+            // A 2.1 asset that declares several anyway still has to be navigable.
+            showScenes: !gltf.isAtLeast(2, 1) || gltf.scenes.length > 1,
+            debugchannels,
 
             materialVariants: hasVariants
                 ? [
@@ -371,6 +438,10 @@ class UIModel {
             graphState: true,
             physicsState: true
         });
+
+        if (selectedDebugChannel !== getViewerState().config.debugChannel) {
+            updateConfig({ debugChannel: selectedDebugChannel });
+        }
 
         if (hasInteractivity) {
             updateSelection({ selectedGraph: state.graphController.graphIndex });
