@@ -50,6 +50,9 @@ export function ValidatorTab() {
     const messages = (report?.issues?.messages ?? []).filter(
         (message) => !IGNORED_VALIDATION_CODES.has(message.code)
     );
+    // Derive the summary counts from the same filtered list the messages are
+    // rendered from, so the counts never claim issues the tab does not show.
+    const countOf = (severity) => messages.filter((message) => message.severity === severity).length;
 
     return (
         <Panel title="Validation">
@@ -57,9 +60,9 @@ export function ValidatorTab() {
                 <div className="my-6">
                     <StatList
                         data={{
-                            Errors: report?.issues?.numErrors ?? 0,
-                            Warnings: report?.issues?.numWarnings ?? 0,
-                            Infos: report?.issues?.numInfos ?? 0
+                            Errors: countOf(0),
+                            Warnings: countOf(1),
+                            Infos: countOf(2)
                         }}
                     />
                 </div>
