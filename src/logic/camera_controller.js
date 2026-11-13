@@ -330,8 +330,17 @@ export function createCameraController(state) {
     // optionally, its yaw/pitch) toward a goal using the same critically damped
     // spring as the input channels.
     const startAnimation = (goal) => {
+        let yaw = goal.yaw;
+        if (goal.orient) {
+            // Interpolate yaw along the shortest path so the camera does not spin the
+            // long way around when the target crosses the ±π seam of atan2.
+            let delta = goal.yaw - camera.rotAroundY;
+            while (delta > Math.PI) delta -= 2 * Math.PI;
+            while (delta < -Math.PI) delta += 2 * Math.PI;
+            yaw = camera.rotAroundY + delta;
+        }
         animation = {
-            yaw: goal.yaw,
+            yaw,
             pitch: goal.pitch,
             target: [...goal.target],
             orient: goal.orient,
