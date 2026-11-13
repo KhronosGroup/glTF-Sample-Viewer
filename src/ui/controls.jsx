@@ -47,10 +47,34 @@ function popupPosition(anchor) {
 const FOCUS_RING =
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent focus-visible:outline";
 
-export function Field({ label, className, grouped = false, children }) {
+export function Field({
+    label,
+    className,
+    grouped = false,
+    toggle,
+    onToggleChange,
+    toggleDisabled = false,
+    toggleTestId,
+    children
+}) {
     return (
         <div className={classNames("mt-6", className)}>
-            {label !== undefined && <label className="mb-2 block font-medium">{label}</label>}
+            {label !== undefined && (
+                <div className="mb-2 flex items-center justify-between gap-3">
+                    <label className="font-medium">{label}</label>
+                    {toggle !== undefined && (
+                        <Switch
+                            className="mt-0! w-auto!"
+                            data-testid={toggleTestId}
+                            checked={toggle}
+                            disabled={toggleDisabled}
+                            onChange={onToggleChange}
+                        >
+                            <span className="sr-only">{label}</span>
+                        </Switch>
+                    )}
+                </div>
+            )}
             {grouped ? <div className="flex flex-col gap-1">{children}</div> : children}
         </div>
     );

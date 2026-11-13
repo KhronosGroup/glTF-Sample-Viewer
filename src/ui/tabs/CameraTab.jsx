@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Button, Field, IconButton, Panel, SegmentedControl, Switch } from "../controls.jsx";
+import { Button, Field, IconButton, Panel, SegmentedControl } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
@@ -254,17 +254,11 @@ export function CameraTab() {
                 </div>
             </Field>
 
-            <div className="mt-6">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="font-medium">Aspect Ratio</span>
-                    <Switch
-                        className="mt-0! w-auto!"
-                        checked={enforceAspectRatio}
-                        onChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
-                    >
-                        <span className="sr-only">Aspect Ratio</span>
-                    </Switch>
-                </div>
+            <Field
+                label="Aspect Ratio"
+                toggle={enforceAspectRatio}
+                onToggleChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
+            >
                 {enforceAspectRatio && (
                     <>
                         <div className="mb-2 grid grid-cols-4 gap-2">
@@ -297,7 +291,7 @@ export function CameraTab() {
                         />
                     </>
                 )}
-            </div>
+            </Field>
 
             <Field label="Look At">
                 <div className="grid grid-cols-3 gap-2">
