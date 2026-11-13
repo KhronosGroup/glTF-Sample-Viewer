@@ -136,7 +136,6 @@ import { createStore } from "zustand/vanilla";
  * @property {unknown} xmp
  * @property {Record<string, number>} statistics
  * @property {ValidationReport} validationReport
- * @property {Object} validationReportDescription
  * @property {SelectableEntry[]} tonemaps
  * @property {SelectableEntry[]} debugchannels
  * @property {string[]} clippingOrientations
@@ -265,7 +264,6 @@ const initialState = {
         xmp: [{ title: "xmp" }],
         statistics: [],
         validationReport: {},
-        validationReportDescription: {},
 
         // Published by the renderer and the environment loader.
         tonemaps: [{ title: "None" }],

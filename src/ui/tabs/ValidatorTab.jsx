@@ -38,13 +38,18 @@ function severityMeta(severity) {
     }
 }
 
+// Warnings the renderer resolves on its own (it generates MikkTSpace tangents when the
+// asset omits them), so they carry no actionable information for the user.
+const IGNORED_VALIDATION_CODES = new Set(["MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"]);
+
 export function ValidatorTab() {
     const report = useViewerStore((state) => state.published.validationReport);
-    const description = useViewerStore((state) => state.published.validationReportDescription);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
-    const messages = report?.issues?.messages ?? [];
+    const messages = (report?.issues?.messages ?? []).filter(
+        (message) => !IGNORED_VALIDATION_CODES.has(message.code)
+    );
 
     return (
         <Panel title="Validation">
@@ -60,8 +65,6 @@ export function ValidatorTab() {
                 </div>
             )}
 
-            {description?.message && <p className="my-2.5 text-sm">{description.message}</p>}
-
             {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
 
             {messages.length > 0 && (
@@ -69,17 +72,19 @@ export function ValidatorTab() {
                     {messages.map((message, index) => {
                         const severity = severityMeta(message.severity);
                         return (
-                            <li key={index} className="border-ink/10 rounded-md border px-3 py-2">
-                                <div className="flex items-center gap-2 text-xs">
+                            <li key={index} className="border-ink/10 min-w-0 rounded-md border px-3 py-2">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                                     <span className={`flex items-center gap-1 font-medium ${severity.tone}`}>
                                         <span className={`size-1.5 rounded-full ${severity.dot}`} />
                                         {severity.label}
                                     </span>
                                     {message.code !== undefined && (
-                                        <span className="text-ink/50 font-mono">{message.code}</span>
+                                        <span className="text-ink/50 font-mono break-all">
+                                            {message.code}
+                                        </span>
                                     )}
                                 </div>
-                                <p className="mt-1 text-sm">{message.message}</p>
+                                <p className="mt-1 text-sm break-words">{message.message}</p>
                             </li>
                         );
                     })}
@@ -118,7 +123,6 @@ export function ValidatorTab() {
  */
 export function ValidationCounter() {
     const report = useViewerStore((state) => state.published.validationReport);
-    const description = useViewerStore((state) => state.published.validationReportDescription);
     const issues = report?.issues;
 
     let info = "";
@@ -131,13 +135,8 @@ export function ValidationCounter() {
         info = `${issues.numErrors}`;
         tone = "bg-red-500";
     } else if (issues?.numWarnings > 0) {
-        if (issues.numWarnings === description?.numIgnoredWarnings) {
-            info = "i";
-            tone = "bg-sky-300";
-        } else {
-            info = `${issues.numWarnings}`;
-            tone = "bg-amber-400";
-        }
+        info = `${issues.numWarnings}`;
+        tone = "bg-amber-400";
     } else if (issues?.numInfos > 0) {
         info = `${issues.numInfos}`;
     }
