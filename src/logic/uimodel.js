@@ -1,4 +1,4 @@
-import { GltfState } from "@khronosgroup/gltf-viewer";
+import { GltfState, instantiatedDocuments } from "@khronosgroup/gltf-viewer";
 import {
     getViewerState,
     updateConfig,
@@ -419,7 +419,10 @@ class UIModel {
                 : [],
             customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
 
-            hasPhysics: gltf?.extensionsUsed?.includes("KHR_physics_rigid_bodies"),
+            // Physics may live in the root document or in any instantiated external asset.
+            hasPhysics: [gltf, ...instantiatedDocuments(gltf)].some(
+                (document) => document.extensionsUsed?.includes("KHR_physics_rigid_bodies") ?? false
+            ),
             hasAnimations: gltf.animations.length > 0,
 
             xmp:
