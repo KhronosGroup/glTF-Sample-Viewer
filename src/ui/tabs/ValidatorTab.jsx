@@ -28,13 +28,13 @@ async function copyToClipboard(text) {
 function severityMeta(severity) {
     switch (severity) {
         case 0:
-            return { label: "Error", tone: "text-red-400", dot: "bg-red-400" };
+            return { label: "Error", tone: "text-red-400", dot: "bg-red-400", badge: "bg-red-400" };
         case 1:
-            return { label: "Warning", tone: "text-amber-400", dot: "bg-amber-400" };
+            return { label: "Warning", tone: "text-amber-400", dot: "bg-amber-400", badge: "bg-amber-400" };
         case 2:
-            return { label: "Info", tone: "text-sky-300", dot: "bg-sky-300" };
+            return { label: "Info", tone: "text-sky-300", dot: "bg-sky-300", badge: "bg-sky-300" };
         default:
-            return { label: "Hint", tone: "text-ink/60", dot: "bg-ink/40" };
+            return { label: "Hint", tone: "text-ink/60", dot: "bg-ink/40", badge: "bg-ink/40" };
     }
 }
 
@@ -110,6 +110,7 @@ export function ValidatorTab() {
                     href="https://github.com/KhronosGroup/glTF-Validator"
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="underline"
                 >
                     glTF-Validator
                 </a>
@@ -126,24 +127,27 @@ export function ValidationCounter() {
     const issues = report?.issues;
 
     let info = "";
-    let tone = "bg-white";
+    let severity;
 
     if (report?.error) {
         info = "X";
-        tone = "bg-red-500";
+        severity = 0;
     } else if (issues?.numErrors > 0) {
         info = `${issues.numErrors}`;
-        tone = "bg-red-500";
+        severity = 0;
     } else if (issues?.numWarnings > 0) {
         info = `${issues.numWarnings}`;
-        tone = "bg-amber-400";
+        severity = 1;
     } else if (issues?.numInfos > 0) {
         info = `${issues.numInfos}`;
+        severity = 2;
     }
 
     if (info.length > 3) {
         info = "999+";
     }
+
+    const tone = severity !== undefined ? severityMeta(severity).badge : "";
 
     return (
         <span className="relative inline-flex">
