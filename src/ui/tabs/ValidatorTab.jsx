@@ -25,15 +25,29 @@ async function copyToClipboard(text) {
     }
 }
 
+function severityMeta(severity) {
+    switch (severity) {
+        case 0:
+            return { label: "Error", tone: "text-red-400", dot: "bg-red-400" };
+        case 1:
+            return { label: "Warning", tone: "text-amber-400", dot: "bg-amber-400" };
+        case 2:
+            return { label: "Info", tone: "text-sky-300", dot: "bg-sky-300" };
+        default:
+            return { label: "Hint", tone: "text-ink/60", dot: "bg-ink/40" };
+    }
+}
+
 export function ValidatorTab() {
     const report = useViewerStore((state) => state.published.validationReport);
     const description = useViewerStore((state) => state.published.validationReportDescription);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
+    const messages = report?.issues?.messages ?? [];
 
     return (
-        <Panel title="glTF Validator">
+        <Panel title="Validation">
             {!failed && (
                 <div className="my-6">
                     <StatList
@@ -49,6 +63,28 @@ export function ValidatorTab() {
             {description?.message && <p className="my-2.5 text-sm">{description.message}</p>}
 
             {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
+
+            {messages.length > 0 && (
+                <ul className="my-4 space-y-2">
+                    {messages.map((message, index) => {
+                        const severity = severityMeta(message.severity);
+                        return (
+                            <li key={index} className="border-ink/10 rounded-md border px-3 py-2">
+                                <div className="flex items-center gap-2 text-xs">
+                                    <span className={`flex items-center gap-1 font-medium ${severity.tone}`}>
+                                        <span className={`size-1.5 rounded-full ${severity.dot}`} />
+                                        {severity.label}
+                                    </span>
+                                    {message.code !== undefined && (
+                                        <span className="text-ink/50 font-mono">{message.code}</span>
+                                    )}
+                                </div>
+                                <p className="mt-1 text-sm">{message.message}</p>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
 
             {!failed && (
                 <div className="flex shrink-0 flex-col items-start gap-3 my-6">
