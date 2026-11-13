@@ -17,10 +17,17 @@ import {
 } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Button, Field, Panel, SegmentedControl, Switch } from "../controls.jsx";
+import { Button, Field, IconButton, Panel, SegmentedControl, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
+
+const COMMON_ASPECT_RATIOS = [
+    { label: "1:1", value: 1 },
+    { label: "4:3", value: 4 / 3 },
+    { label: "16:9", value: 16 / 9 },
+    { label: "21:9", value: 21 / 9 }
+];
 
 function Chip({ children, label }) {
     return (
@@ -226,36 +233,71 @@ export function CameraTab() {
             </Field>
 
             <Field label="Vertical FOV">
-                <Slider
-                    label="Vertical FOV"
-                    value={cameraFov}
-                    min={1}
-                    max={120}
-                    step={1}
-                    formatter={(value) => `${value}°`}
-                    onChange={(value) => updateSelection({ cameraFov: value })}
-                />
+                <div className="flex items-start">
+                    <Slider
+                        className="min-w-0 flex-1"
+                        label="Vertical FOV"
+                        value={cameraFov}
+                        min={1}
+                        max={120}
+                        step={1}
+                        formatter={(value) => `${value}°`}
+                        onChange={(value) => updateSelection({ cameraFov: value })}
+                    />
+                    <IconButton
+                        label="Reset FOV"
+                        className="mt-1 shrink-0"
+                        onClick={() => updateSelection({ cameraFov: 45 })}
+                    >
+                        <RotateCcw size={16} aria-hidden="true" />
+                    </IconButton>
+                </div>
             </Field>
 
-            <Field label="Aspect Ratio">
-                <Switch
-                    checked={enforceAspectRatio}
-                    onChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
-                >
-                    Enforce
-                </Switch>
+            <div className="mt-6">
+                <div className="mb-2 flex items-center justify-between">
+                    <span className="font-medium">Aspect Ratio</span>
+                    <Switch
+                        checked={enforceAspectRatio}
+                        onChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
+                        className="mt-0 w-auto"
+                    >
+                        Enforce
+                    </Switch>
+                </div>
                 {enforceAspectRatio && (
-                    <Slider
-                        label="Aspect Ratio"
-                        value={cameraAspectRatio}
-                        min={0.5}
-                        max={3}
-                        step={0.01}
-                        formatter={(value) => value.toFixed(2)}
-                        onChange={(value) => updateSelection({ cameraAspectRatio: value })}
-                    />
+                    <>
+                        <div className="mb-2 grid grid-cols-4 gap-2">
+                            {COMMON_ASPECT_RATIOS.map(({ label, value }) => {
+                                const active = Math.abs(cameraAspectRatio - value) < 0.01;
+                                return (
+                                    <button
+                                        key={label}
+                                        type="button"
+                                        onClick={() => updateSelection({ cameraAspectRatio: value })}
+                                        className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                                            active
+                                                ? "border-accent bg-accent text-ink-dim"
+                                                : "border-ink/60 hover:border-ink"
+                                        }`}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <Slider
+                            label="Aspect Ratio"
+                            value={cameraAspectRatio}
+                            min={0.5}
+                            max={3}
+                            step={0.01}
+                            formatter={(value) => value.toFixed(2)}
+                            onChange={(value) => updateSelection({ cameraAspectRatio: value })}
+                        />
+                    </>
                 )}
-            </Field>
+            </div>
 
             <Field label="Look At">
                 <div className="grid grid-cols-3 gap-2">
