@@ -35,6 +35,13 @@ export function DisplayTab({ lighting, onLightingChange }) {
 
     return (
         <Panel title="Display">
+            <Field label="Capture Canvas">
+                <Button onClick={() => commands.captureCanvas()}>
+                    <Download size={16} aria-hidden="true" />
+                    Download as PNG
+                </Button>
+            </Field>
+
             <Field label="Lighting" grouped>
                 <Switch
                     checked={punctualLights}
@@ -120,6 +127,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 />
                 {renderEnv ? (
                     <Switch
+                        className="mt-4"
                         checked={blurEnv}
                         disabled={!ibl}
                         onChange={(checked) => {
@@ -143,56 +151,56 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 )}
             </Field>
 
-            <Field label="Environment Orientation">
-                <SegmentedControl
-                    label="Environment Orientation"
-                    options={ENVIRONMENT_ROTATIONS.map((item) => ({ label: item, value: item }))}
-                    value={rotation}
-                    onChange={(value) => {
-                        onLightingChange({ rotation: value });
-                    }}
-                />
-            </Field>
+            {renderEnv && (
+                <>
+                    <Field label="Environment Orientation">
+                        <SegmentedControl
+                            label="Environment Orientation"
+                            options={ENVIRONMENT_ROTATIONS.map((item) => ({
+                                label: item,
+                                value: item
+                            }))}
+                            value={rotation}
+                            onChange={(value) => {
+                                onLightingChange({ rotation: value });
+                            }}
+                        />
+                    </Field>
 
-            <Field label="Image Based Lighting" grouped>
-                <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
-                    <input
-                        className="sr-only"
-                        type="file"
-                        accept=".hdr"
-                        onChange={(event) =>
-                            commands.addEnvironmentChanged({
-                                hdr_path: event.target.files[0]
-                            })
-                        }
-                    />
-                    <Plus size={16} aria-hidden="true" />
-                    Add New HDR
-                </label>
+                    <Field label="Image Based Lighting" grouped>
+                        <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
+                            <input
+                                className="sr-only"
+                                type="file"
+                                accept=".hdr"
+                                onChange={(event) =>
+                                    commands.addEnvironmentChanged({
+                                        hdr_path: event.target.files[0]
+                                    })
+                                }
+                            />
+                            <Plus size={16} aria-hidden="true" />
+                            Add New HDR
+                        </label>
 
-                <Field label="Active Environment">
-                    <Select
-                        value={selectedEnvironment}
-                        onChange={(name) => {
-                            updateSelection({ selectedEnvironment: name });
-                            commands.selectedEnvironmentChanged(name);
-                        }}
-                    >
-                        {Object.entries(environments).map(([name, environment]) => (
-                            <option key={name} value={name}>
-                                {environment.title}
-                            </option>
-                        ))}
-                    </Select>
-                </Field>
-            </Field>
-
-            <Field label="Capture Canvas">
-                <Button onClick={() => commands.captureCanvas()}>
-                    <Download size={16} aria-hidden="true" />
-                    Download as PNG
-                </Button>
-            </Field>
+                        <Field label="Active Environment">
+                            <Select
+                                value={selectedEnvironment}
+                                onChange={(name) => {
+                                    updateSelection({ selectedEnvironment: name });
+                                    commands.selectedEnvironmentChanged(name);
+                                }}
+                            >
+                                {Object.entries(environments).map(([name, environment]) => (
+                                    <option key={name} value={name}>
+                                        {environment.title}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    </Field>
+                </>
+            )}
         </Panel>
     );
 }

@@ -57,7 +57,7 @@ function offeredDebugChannels(channels) {
 }
 
 const INITIAL_ENVIRONMENT = "Cannon_Exterior";
-const INITIAL_CLEAR_COLOR = "#303542";
+const INITIAL_CLEAR_COLOR = "#8f9dc1";
 
 /**
  * Bridges the UI and the viewer: resolves selections into things to load, and
