@@ -252,7 +252,6 @@ export function CameraTab() {
                     formatter={(value) => `${value}°`}
                     onChange={setFov}
                     showInput
-                    inputSuffix="°"
                     onReset={() => updateSelection({ cameraFov: 45 })}
                     resetLabel="Reset FOV"
                 />

@@ -29,6 +29,14 @@ function percent(ratio) {
     return `${(ratio * 100).toFixed(4)}%`;
 }
 
+// Extracts the unit a formatter appends after the number (the "°" in
+// `${value}°` or the " s" in `${value.toFixed(2)} s`) so the numeric input can
+// show the same unit without the call site having to repeat it. Formatters
+// that produce a bare number yield an empty string.
+function formatterSuffix(formatter) {
+    return formatter(0).replace(/^-?\d*\.?\d+/, "");
+}
+
 export function Slider({
     value,
     min,
@@ -46,7 +54,7 @@ export function Slider({
     inputPlaceholder,
     inputFormat,
     inputSuffix,
-    inputClassName = "w-16 shrink-0 py-0.5 text-sm"
+    inputClassName = "w-18 shrink-0 py-0.5 text-sm"
 }) {
     const trackRef = useRef(null);
     const dragOrigin = useRef(null);
@@ -142,6 +150,7 @@ export function Slider({
 
     const formatInput = inputFormat ?? String;
     const inputValue = inputDraft ?? (indeterminate ? "" : formatInput(value));
+    const suffix = inputSuffix ?? formatterSuffix(formatter);
 
     return (
         <div
@@ -221,11 +230,7 @@ export function Slider({
                     <div className="relative shrink-0">
                         <Input
                             aria-label={inputLabel ?? label}
-                            className={
-                                inputSuffix !== undefined
-                                    ? `${inputClassName} pr-6`
-                                    : inputClassName
-                            }
+                            className={suffix ? `${inputClassName} pr-6` : inputClassName}
                             type="number"
                             step="any"
                             placeholder={inputPlaceholder}
@@ -241,9 +246,9 @@ export function Slider({
                                 }
                             }}
                         />
-                        {inputSuffix !== undefined && (
+                        {suffix && (
                             <span className="text-ink/60 pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-sm">
-                                {inputSuffix}
+                                {suffix}
                             </span>
                         )}
                     </div>
