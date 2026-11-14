@@ -1,7 +1,15 @@
-import { Download, Plus } from "lucide-react";
+import { Download, RotateCcw, Upload } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Button, Field, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
+import {
+    Button,
+    Field,
+    IconButton,
+    Panel,
+    SegmentedControl,
+    Select,
+    Switch
+} from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
@@ -53,25 +61,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Switch>
             </Field>
 
-            <Field label="IBL Intensity">
-                <Slider
-                    label="IBL Intensity"
-                    value={iblIntensity}
-                    min={-2}
-                    max={5}
-                    step={0.01}
-                    ticks={IBL_INTENSITY_TICKS}
-                    formatter={formatIblIntensity}
-                    onChange={(value) => {
-                        onLightingChange({ iblIntensity: value });
-                    }}
-                    onReset={() => {
-                        onLightingChange({ iblIntensity: 0 });
-                    }}
-                    resetLabel="Reset IBL intensity"
-                />
-            </Field>
-
             <Field label="Exposure">
                 <Slider
                     label="Exposure"
@@ -107,7 +96,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
             </Field>
 
             <Field
-                label="IBL"
+                label="Environment Lighting"
                 toggle={ibl}
                 onToggleChange={(checked) => {
                     onLightingChange({ ibl: checked });
@@ -117,7 +106,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 <SegmentedControl
                     label="Environment"
                     options={[
-                        { label: "Environment", value: "environment" },
+                        { label: "IBL", value: "environment" },
                         { label: "Color", value: "color" }
                     ]}
                     value={renderEnv ? "environment" : "color"}
@@ -137,25 +126,49 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         Blur
                     </Switch>
                 ) : (
-                    <label className="mt-4 flex items-center gap-3">
-                        <input
-                            className="border-ink-dim [&::-webkit-color-swatch]:border-ink-dim h-8 w-12 appearance-none rounded-md border p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border"
-                            type="color"
-                            value={clearColor}
-                            onChange={(event) => {
-                                updateSelection({ clearColor: event.target.value });
-                            }}
-                        />
-                        <span className="text-base font-light">Background Color</span>
-                    </label>
+                    <div className="mt-4 flex items-center gap-3">
+                        <label className="flex items-center gap-3">
+                            <input
+                                className="border-ink-dim [&::-webkit-color-swatch]:border-ink-dim h-8 w-12 appearance-none rounded-md border p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border"
+                                type="color"
+                                value={clearColor}
+                                onChange={(event) => {
+                                    updateSelection({ clearColor: event.target.value });
+                                }}
+                            />
+                            <span className="text-base font-light">Background Color</span>
+                        </label>
+                        <IconButton
+                            label="Reset color"
+                            onClick={() => updateSelection({ clearColor: "#8f9dc1" })}
+                        >
+                            <RotateCcw size={16} aria-hidden="true" />
+                        </IconButton>
+                    </div>
                 )}
+                <Slider
+                    label="Intensity"
+                    value={iblIntensity}
+                    min={-2}
+                    max={5}
+                    step={0.01}
+                    ticks={IBL_INTENSITY_TICKS}
+                    formatter={formatIblIntensity}
+                    onChange={(value) => {
+                        onLightingChange({ iblIntensity: value });
+                    }}
+                    onReset={() => {
+                        onLightingChange({ iblIntensity: 0 });
+                    }}
+                    resetLabel="Reset intensity"
+                />
             </Field>
 
             {renderEnv && (
                 <>
-                    <Field label="Environment Orientation">
+                    <Field label="Orientation">
                         <SegmentedControl
-                            label="Environment Orientation"
+                            label="Orientation"
                             options={ENVIRONMENT_ROTATIONS.map((item) => ({
                                 label: item,
                                 value: item
@@ -167,7 +180,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         />
                     </Field>
 
-                    <Field label="Image Based Lighting" grouped>
+                    <Field label="HDR" grouped>
                         <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
                             <input
                                 className="sr-only"
@@ -179,25 +192,24 @@ export function DisplayTab({ lighting, onLightingChange }) {
                                     })
                                 }
                             />
-                            <Plus size={16} aria-hidden="true" />
-                            Add New HDR
+                            <Upload size={16} aria-hidden="true" />
+                            Browse HDRs ...
                         </label>
 
-                        <Field label="Active Environment">
-                            <Select
-                                value={selectedEnvironment}
-                                onChange={(name) => {
-                                    updateSelection({ selectedEnvironment: name });
-                                    commands.selectedEnvironmentChanged(name);
-                                }}
-                            >
-                                {Object.entries(environments).map(([name, environment]) => (
-                                    <option key={name} value={name}>
-                                        {environment.title}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
+                        <Select
+                            aria-label="Active Environment"
+                            value={selectedEnvironment}
+                            onChange={(name) => {
+                                updateSelection({ selectedEnvironment: name });
+                                commands.selectedEnvironmentChanged(name);
+                            }}
+                        >
+                            {Object.entries(environments).map(([name, environment]) => (
+                                <option key={name} value={name}>
+                                    {environment.title}
+                                </option>
+                            ))}
+                        </Select>
                     </Field>
                 </>
             )}
