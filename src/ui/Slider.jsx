@@ -52,7 +52,7 @@ export function Slider({
     onChange,
     className,
     label,
-    formatter = String,
+    formatter = formatNumber,
     ticks = [],
     onReset,
     resetLabel,
@@ -140,6 +140,12 @@ export function Slider({
     const indeterminate = value === null || value === undefined;
 
     const onKeyDown = (event) => {
+        // Consume Shift so the browser does not extend the text selection to the
+        // next element while the slider is being interacted with.
+        if (event.key === "Shift") {
+            event.preventDefault();
+            return;
+        }
         const direction =
             { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[event.key] ?? 0;
         if (direction === 0) {

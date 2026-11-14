@@ -29,8 +29,7 @@ const EXPOSURE_TICKS = [
 ];
 
 const formatIblIntensity = (value) => String(Math.round(Math.pow(10, value) * 100.0) / 100.0);
-const formatExposure = (value) =>
-    String(Math.round((1.0 / Math.pow(2.0, value)) * 100000) / 100000);
+const formatExposure = (value) => String(Math.round((1.0 / Math.pow(2.0, value)) * 100) / 100);
 
 export function DisplayTab({ lighting, onLightingChange }) {
     const tonemaps = useViewerStore((state) => state.published.tonemaps);

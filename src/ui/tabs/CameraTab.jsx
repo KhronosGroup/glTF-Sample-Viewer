@@ -323,7 +323,7 @@ export function CameraTab() {
                     </Button>
                     <Button onClick={() => commands.cameraExport()}>
                         <Download size={16} aria-hidden="true" />
-                        Download as glTF
+                        Download
                     </Button>
                 </div>
             </Field>
