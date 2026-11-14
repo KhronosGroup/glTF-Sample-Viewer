@@ -204,6 +204,11 @@ export function CameraTab() {
         updateSelection({ cameraAspectRatio: Math.min(Math.max(value, 0.5), 3) });
     };
 
+    const setFov = (value) => {
+        if (value === null || value === undefined) return;
+        updateSelection({ cameraFov: Math.min(Math.max(value, 1), 120) });
+    };
+
     return (
         <Panel title="Camera">
             <Field label="Camera Mode">
@@ -245,7 +250,8 @@ export function CameraTab() {
                     max={120}
                     step={1}
                     formatter={(value) => `${value}°`}
-                    onChange={(value) => updateSelection({ cameraFov: value })}
+                    onChange={setFov}
+                    showInput
                     onReset={() => updateSelection({ cameraFov: 45 })}
                     resetLabel="Reset FOV"
                 />
