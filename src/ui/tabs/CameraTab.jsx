@@ -5,6 +5,7 @@ import {
     ArrowRight,
     ArrowUp,
     ArrowUpDown,
+    Download,
     Keyboard,
     Minus,
     Mouse,
@@ -310,15 +311,21 @@ export function CameraTab() {
                 </div>
             </Field>
 
-            <Field label="Reset View">
-                <Button
-                    disabled={!userCameraActive}
-                    className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
-                    onClick={() => commands.cameraResetChanged()}
-                >
-                    <RotateCcw size={16} aria-hidden="true" />
-                    Reset
-                </Button>
+            <Field label="View">
+                <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        disabled={!userCameraActive}
+                        className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
+                        onClick={() => commands.cameraResetChanged()}
+                    >
+                        <RotateCcw size={16} aria-hidden="true" />
+                        Reset
+                    </Button>
+                    <Button onClick={() => commands.cameraExport()}>
+                        <Download size={16} aria-hidden="true" />
+                        Download as glTF
+                    </Button>
+                </div>
             </Field>
 
             <Field label="Shortcuts">

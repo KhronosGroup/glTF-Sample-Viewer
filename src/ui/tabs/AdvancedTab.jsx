@@ -1,19 +1,10 @@
 import { Fragment } from "react";
-import { Download, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { updateSelection, useViewerStore } from "../store.js";
-import {
-    Button,
-    Field,
-    IconButton,
-    Panel,
-    SegmentedControl,
-    Select,
-    Switch
-} from "../controls.jsx";
+import { Field, IconButton, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
-import { commands } from "../../logic/commands.js";
 
 const RENDERING_TOGGLES = [
     { key: "skinning", label: "Skinning" },
@@ -358,13 +349,6 @@ export function AdvancedTab({
 
             <Field label="Material Extensions" grouped>
                 {renderToggles(MATERIAL_EXTENSIONS)}
-            </Field>
-
-            <Field label="Current Camera Values">
-                <Button onClick={() => commands.cameraExport()}>
-                    <Download size={16} aria-hidden="true" />
-                    Download as glTF
-                </Button>
             </Field>
 
             <Field label="Statistics">
