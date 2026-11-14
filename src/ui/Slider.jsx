@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RotateCcw } from "lucide-react";
+import { IconButton, Input } from "./controls.jsx";
 
 /**
  * `min` may be greater than `max` (the exposure slider is inverted), so the
@@ -6,6 +8,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *
  * A `null` or `undefined` value is indeterminate: no fill and no visible thumb
  * until the track is clicked or a key is pressed.
+ *
+ * Optionally renders a numeric input (`showInput`) and/or a reset button
+ * (`onReset`) to the right of the track, so callers do not have to repeat the
+ * draft-state and reset wiring themselves.
  */
 
 // How much pointer travel maps to a value change while Shift is held.
@@ -32,13 +38,24 @@ export function Slider({
     className,
     label,
     formatter = String,
-    ticks = []
+    ticks = [],
+    onReset,
+    resetLabel,
+    showInput = false,
+    inputLabel,
+    inputPlaceholder,
+    inputFormat,
+    inputClassName = "w-16 shrink-0 py-0.5 text-sm"
 }) {
     const trackRef = useRef(null);
     const dragOrigin = useRef(null);
     const lastValue = useRef(null);
     const lastShift = useRef(false);
     const [dragging, setDragging] = useState(false);
+
+    // The numeric input keeps its own draft while focused, so editing it is not
+    // rewritten as the underlying value changes.
+    const [inputDraft, setInputDraft] = useState(null);
 
     const clampValue = useCallback(
         (raw) => {
@@ -122,10 +139,13 @@ export function Slider({
 
     const ratio = indeterminate ? 0 : ratioOf(value, min, max);
 
+    const formatInput = inputFormat ?? String;
+    const inputValue = inputDraft ?? (indeterminate ? "" : formatInput(value));
+
     return (
         <div
             className={[
-                "mx-2 mt-4 touch-none select-none",
+                "mt-4 touch-none select-none",
                 ticks.length > 0 ? "mb-10" : "mb-4",
                 className
             ]
@@ -134,65 +154,94 @@ export function Slider({
             // A lingering text selection would otherwise turn the drag into a native drag-and-drop.
             onDragStart={(event) => event.preventDefault()}
         >
-            <div
-                ref={trackRef}
-                className={`bg-track relative h-1.5 rounded-full ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
-                onPointerDown={(event) => {
-                    event.preventDefault();
-                    dragOrigin.current = {
-                        clientX: event.clientX,
-                        value: valueFromClientX(event.clientX)
-                    };
-                    lastValue.current = dragOrigin.current.value;
-                    lastShift.current = event.shiftKey;
-                    onChange(dragOrigin.current.value);
-                    setDragging(true);
-                }}
-            >
-                {!indeterminate && (
+            <div className="flex items-center gap-3">
+                <div
+                    ref={trackRef}
+                    className={`bg-track relative mx-2 h-1.5 min-w-0 flex-1 rounded-full ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+                    onPointerDown={(event) => {
+                        event.preventDefault();
+                        dragOrigin.current = {
+                            clientX: event.clientX,
+                            value: valueFromClientX(event.clientX)
+                        };
+                        lastValue.current = dragOrigin.current.value;
+                        lastShift.current = event.shiftKey;
+                        onChange(dragOrigin.current.value);
+                        setDragging(true);
+                    }}
+                >
+                    {!indeterminate && (
+                        <div
+                            className="bg-accent absolute h-full rounded-full"
+                            style={{ width: percent(ratio) }}
+                        />
+                    )}
+
+                    {ticks.map((tick) => (
+                        <span
+                            key={tick.value}
+                            className="absolute top-3 -translate-x-1/2 text-xs whitespace-nowrap"
+                            style={{ left: percent(ratioOf(tick.value, min, max)) }}
+                        >
+                            {tick.label}
+                        </span>
+                    ))}
+
                     <div
-                        className="bg-accent absolute h-full rounded-full"
-                        style={{ width: percent(ratio) }}
+                        className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
+                        style={{ left: percent(ratio) }}
+                    >
+                        {dragging && !indeterminate && (
+                            <div className="bg-accent text-ink-dim absolute bottom-6 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs whitespace-nowrap select-none">
+                                {formatter(value)}
+                            </div>
+                        )}
+                        <div
+                            className={[
+                                "border-surface h-4 w-4 rounded-full border-2 bg-white",
+                                indeterminate && "opacity-0"
+                            ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            tabIndex={0}
+                            role="slider"
+                            aria-valuemin={min}
+                            aria-valuemax={max}
+                            aria-valuenow={indeterminate ? undefined : value}
+                            aria-orientation="horizontal"
+                            aria-label={label}
+                            aria-valuetext={indeterminate ? "Not set" : formatter(value)}
+                            onKeyDown={onKeyDown}
+                        />
+                    </div>
+                </div>
+
+                {showInput && (
+                    <Input
+                        aria-label={inputLabel ?? label}
+                        className={inputClassName}
+                        type="number"
+                        step="any"
+                        placeholder={inputPlaceholder}
+                        value={inputValue}
+                        onFocus={() => setInputDraft(indeterminate ? "" : formatInput(value))}
+                        onBlur={() => setInputDraft(null)}
+                        onChange={(event) => {
+                            setInputDraft(event.target.value);
+                            if (event.target.value === "") {
+                                onChange(null);
+                            } else if (event.target.validity.valid) {
+                                onChange(event.target.valueAsNumber);
+                            }
+                        }}
                     />
                 )}
 
-                {ticks.map((tick) => (
-                    <span
-                        key={tick.value}
-                        className="absolute top-3 -translate-x-1/2 text-xs whitespace-nowrap"
-                        style={{ left: percent(ratioOf(tick.value, min, max)) }}
-                    >
-                        {tick.label}
-                    </span>
-                ))}
-
-                <div
-                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
-                    style={{ left: percent(ratio) }}
-                >
-                    {dragging && !indeterminate && (
-                        <div className="bg-accent text-ink-dim absolute bottom-6 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs whitespace-nowrap select-none">
-                            {formatter(value)}
-                        </div>
-                    )}
-                    <div
-                        className={[
-                            "border-surface h-4 w-4 rounded-full border-2 bg-white",
-                            indeterminate && "opacity-0"
-                        ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        tabIndex={0}
-                        role="slider"
-                        aria-valuemin={min}
-                        aria-valuemax={max}
-                        aria-valuenow={indeterminate ? undefined : value}
-                        aria-orientation="horizontal"
-                        aria-label={label}
-                        aria-valuetext={indeterminate ? "Not set" : formatter(value)}
-                        onKeyDown={onKeyDown}
-                    />
-                </div>
+                {onReset && (
+                    <IconButton label={resetLabel ?? `Reset ${label}`} onClick={onReset}>
+                        <RotateCcw size={16} aria-hidden="true" />
+                    </IconButton>
+                )}
             </div>
         </div>
     );

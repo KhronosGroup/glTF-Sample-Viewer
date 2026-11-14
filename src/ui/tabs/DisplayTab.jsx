@@ -1,15 +1,7 @@
-import { Download, Plus, RotateCcw } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import {
-    Button,
-    Field,
-    IconButton,
-    Panel,
-    SegmentedControl,
-    Select,
-    Switch
-} from "../controls.jsx";
+import { Button, Field, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
@@ -64,57 +56,41 @@ export function DisplayTab({ lighting, onLightingChange }) {
             </Field>
 
             <Field label="IBL Intensity">
-                <div className="flex items-start">
-                    <Slider
-                        className="min-w-0 flex-1"
-                        label="IBL Intensity"
-                        value={iblIntensity}
-                        min={-2}
-                        max={5}
-                        step={0.01}
-                        ticks={IBL_INTENSITY_TICKS}
-                        formatter={formatIblIntensity}
-                        onChange={(value) => {
-                            onLightingChange({ iblIntensity: value });
-                        }}
-                    />
-                    <IconButton
-                        label="Reset IBL intensity"
-                        className="mt-1 shrink-0"
-                        onClick={() => {
-                            onLightingChange({ iblIntensity: 0 });
-                        }}
-                    >
-                        <RotateCcw size={16} aria-hidden="true" />
-                    </IconButton>
-                </div>
+                <Slider
+                    label="IBL Intensity"
+                    value={iblIntensity}
+                    min={-2}
+                    max={5}
+                    step={0.01}
+                    ticks={IBL_INTENSITY_TICKS}
+                    formatter={formatIblIntensity}
+                    onChange={(value) => {
+                        onLightingChange({ iblIntensity: value });
+                    }}
+                    onReset={() => {
+                        onLightingChange({ iblIntensity: 0 });
+                    }}
+                    resetLabel="Reset IBL intensity"
+                />
             </Field>
 
             <Field label="Exposure">
-                <div className="flex items-start">
-                    <Slider
-                        className="min-w-0 flex-1"
-                        label="Exposure"
-                        value={exposure}
-                        min={21}
-                        max={-6}
-                        step={0.1}
-                        ticks={EXPOSURE_TICKS}
-                        formatter={formatExposure}
-                        onChange={(value) => {
-                            onLightingChange({ exposure: value });
-                        }}
-                    />
-                    <IconButton
-                        label="Reset exposure"
-                        className="mt-1 shrink-0"
-                        onClick={() => {
-                            onLightingChange({ exposure: 0 });
-                        }}
-                    >
-                        <RotateCcw size={16} aria-hidden="true" />
-                    </IconButton>
-                </div>
+                <Slider
+                    label="Exposure"
+                    value={exposure}
+                    min={21}
+                    max={-6}
+                    step={0.1}
+                    ticks={EXPOSURE_TICKS}
+                    formatter={formatExposure}
+                    onChange={(value) => {
+                        onLightingChange({ exposure: value });
+                    }}
+                    onReset={() => {
+                        onLightingChange({ exposure: 0 });
+                    }}
+                    resetLabel="Reset exposure"
+                />
             </Field>
 
             <Field label="Tone Map">

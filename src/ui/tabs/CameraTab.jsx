@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
     ArrowBigUp,
     ArrowDown,
@@ -18,7 +17,7 @@ import {
 } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Button, Field, IconButton, Input, Panel, SegmentedControl } from "../controls.jsx";
+import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const LOOK_AXES = ["+X", "+Y", "+Z", "-X", "-Y", "-Z"];
@@ -200,11 +199,8 @@ export function CameraTab() {
     const userCameraActive = selectedCamera === -1;
     const sections = shortcutSections(cameraMode);
 
-    // The numeric input keeps its own draft while focused, so editing it is not
-    // rewritten as the underlying value changes.
-    const [aspectDraft, setAspectDraft] = useState(null);
-
     const setAspectRatio = (value) => {
+        if (value === null || value === undefined) return;
         updateSelection({ cameraAspectRatio: Math.min(Math.max(value, 0.5), 3) });
     };
 
@@ -242,25 +238,17 @@ export function CameraTab() {
             </Field>
 
             <Field label="Vertical FOV">
-                <div className="flex items-start">
-                    <Slider
-                        className="min-w-0 flex-1"
-                        label="Vertical FOV"
-                        value={cameraFov}
-                        min={1}
-                        max={120}
-                        step={1}
-                        formatter={(value) => `${value}°`}
-                        onChange={(value) => updateSelection({ cameraFov: value })}
-                    />
-                    <IconButton
-                        label="Reset FOV"
-                        className="mt-1 shrink-0"
-                        onClick={() => updateSelection({ cameraFov: 45 })}
-                    >
-                        <RotateCcw size={16} aria-hidden="true" />
-                    </IconButton>
-                </div>
+                <Slider
+                    label="Vertical FOV"
+                    value={cameraFov}
+                    min={1}
+                    max={120}
+                    step={1}
+                    formatter={(value) => `${value}°`}
+                    onChange={(value) => updateSelection({ cameraFov: value })}
+                    onReset={() => updateSelection({ cameraFov: 45 })}
+                    resetLabel="Reset FOV"
+                />
             </Field>
 
             <Field
@@ -268,39 +256,19 @@ export function CameraTab() {
                 toggle={enforceAspectRatio}
                 onToggleChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
             >
-                <div className="flex items-center gap-3">
-                    <Slider
-                        className="my-0! mx-2! flex-1"
-                        label="Aspect Ratio"
-                        value={cameraAspectRatio}
-                        min={0.5}
-                        max={3}
-                        step={0.01}
-                        formatter={(value) => value.toFixed(2)}
-                        onChange={setAspectRatio}
-                    />
-                    <Input
-                        aria-label="Aspect Ratio"
-                        className="w-20 shrink-0 py-0.5 text-sm"
-                        type="number"
-                        min={0.5}
-                        max={3}
-                        step="any"
-                        value={aspectDraft ?? cameraAspectRatio.toFixed(2)}
-                        onFocus={() => setAspectDraft(cameraAspectRatio.toFixed(2))}
-                        onBlur={() => setAspectDraft(null)}
-                        onChange={(event) => {
-                            setAspectDraft(event.target.value);
-                            if (event.target.value === "") {
-                                return;
-                            }
-                            const value = event.target.valueAsNumber;
-                            if (!Number.isNaN(value)) {
-                                setAspectRatio(value);
-                            }
-                        }}
-                    />
-                </div>
+                <Slider
+                    className="my-0!"
+                    label="Aspect Ratio"
+                    value={cameraAspectRatio}
+                    min={0.5}
+                    max={3}
+                    step={0.01}
+                    formatter={(value) => value.toFixed(2)}
+                    onChange={setAspectRatio}
+                    showInput
+                    inputFormat={(value) => value.toFixed(2)}
+                    inputClassName="w-20 shrink-0 py-0.5 text-sm"
+                />
                 <div className="mt-4 grid grid-cols-4 gap-2">
                     {COMMON_ASPECT_RATIOS.map(({ label, value }) => {
                         const active = Math.abs(cameraAspectRatio - value) < 0.01;

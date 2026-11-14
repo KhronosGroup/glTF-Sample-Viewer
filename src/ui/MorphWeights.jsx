@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { setViewerState, useViewerStore } from "./store.js";
-import { Input, SegmentedControl } from "./controls.jsx";
+import { SegmentedControl } from "./controls.jsx";
 import { Slider } from "./Slider.jsx";
 
 const formatWeight = (value) => value.toFixed(2);
@@ -26,7 +25,6 @@ function RangeToggle({ signed, onChange }) {
 // The slider covers the selected range; the box beside it takes any value.
 // Both are empty while the target is unset, and clearing the box unsets it.
 function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
-    const [draft, setDraft] = useState(null);
     const label = `${node.title}: ${target.name}`;
     const emit = (value) =>
         setViewerState((state) => {
@@ -59,7 +57,7 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
                 {target.name}
             </span>
             <Slider
-                className="my-0! mx-2! flex-1"
+                className="my-0! flex-1"
                 label={label}
                 value={target.value}
                 min={min}
@@ -67,24 +65,9 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
                 step={0.01}
                 formatter={formatWeight}
                 onChange={emit}
-            />
-            <Input
-                aria-label={label}
-                className="w-12 shrink-0 py-0.5 text-sm"
-                type="number"
-                step="any"
-                placeholder="-"
-                value={draft ?? target.value ?? ""}
-                onFocus={() => setDraft(target.value === null ? "" : String(target.value))}
-                onBlur={() => setDraft(null)}
-                onChange={(event) => {
-                    setDraft(event.target.value);
-                    if (event.target.value === "") {
-                        emit(null);
-                    } else if (event.target.validity.valid) {
-                        emit(event.target.valueAsNumber);
-                    }
-                }}
+                showInput
+                inputPlaceholder="-"
+                inputClassName="w-12 shrink-0 py-0.5 text-sm"
             />
         </div>
     );

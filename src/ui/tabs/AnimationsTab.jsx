@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Field, Input, Panel, PlaybackControls, Switch } from "../controls.jsx";
+import { Field, Panel, PlaybackControls, Switch } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
 const formatTime = (value) => `${value.toFixed(2)} s`;
@@ -15,10 +14,6 @@ export function AnimationsTab() {
     const animationTimeOverride = useViewerStore((state) => state.selection.animationTimeOverride);
     const timeOverrideEnabled = useViewerStore((state) => state.selection.timeOverrideEnabled);
     const animationDuration = useViewerStore((state) => state.selection.animationDuration);
-
-    // The numeric input keeps its own draft while focused, so editing it is not
-    // rewritten as the underlying value changes.
-    const [timeDraft, setTimeDraft] = useState(null);
 
     const hasAnimations = animations.length !== 0;
     const canOverride = hasAnimations && animationDuration > 0;
@@ -88,44 +83,19 @@ export function AnimationsTab() {
                         </Switch>
                     </div>
                     {timeOverrideEnabled && (
-                        <div className="flex items-center gap-3">
-                            <Slider
-                                className="my-0! mx-2! flex-1"
-                                label="Time Override"
-                                value={animationTimeOverride}
-                                min={0}
-                                max={animationDuration}
-                                step={0.01}
-                                formatter={formatTime}
-                                onChange={setTimeOverride}
-                            />
-                            <Input
-                                aria-label="Time Override"
-                                className="w-24 shrink-0 py-0.5 text-sm"
-                                type="number"
-                                min={0}
-                                max={animationDuration}
-                                step="any"
-                                placeholder="-"
-                                value={timeDraft ?? animationTimeOverride ?? ""}
-                                onFocus={() =>
-                                    setTimeDraft(
-                                        animationTimeOverride === null
-                                            ? ""
-                                            : String(animationTimeOverride)
-                                    )
-                                }
-                                onBlur={() => setTimeDraft(null)}
-                                onChange={(event) => {
-                                    setTimeDraft(event.target.value);
-                                    if (event.target.value === "") {
-                                        setTimeOverride(null);
-                                    } else if (event.target.validity.valid) {
-                                        setTimeOverride(event.target.valueAsNumber);
-                                    }
-                                }}
-                            />
-                        </div>
+                        <Slider
+                            className="my-0!"
+                            label="Time Override"
+                            value={animationTimeOverride}
+                            min={0}
+                            max={animationDuration}
+                            step={0.01}
+                            formatter={formatTime}
+                            onChange={setTimeOverride}
+                            showInput
+                            inputPlaceholder="-"
+                            inputClassName="w-24 shrink-0 py-0.5 text-sm"
+                        />
                     )}
                 </div>
             )}
