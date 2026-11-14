@@ -12,7 +12,7 @@ import {
 } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
-const ENVIRONMENT_ROTATIONS = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
+const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
 
 const IBL_INTENSITY_TICKS = [
     { value: -2, label: "0.01" },
@@ -184,7 +184,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                             ))}
                         </Select>
 
-                        <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
+                        <label className="bg-accent text-ink-dim hover:bg-accent-hover mt-2 inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
                             <input
                                 className="sr-only"
                                 type="file"
