@@ -34,7 +34,14 @@ const EXTENSION_KEYS = {
     gaussianSplatting: "KHR_gaussian_splatting"
 };
 
-const ENVIRONMENT_ROTATIONS = { "+Z": 90.0, "-X": 180.0, "-Z": 270.0, "+X": 0.0 };
+const ENVIRONMENT_ROTATIONS = {
+    "+X": { yaw: 0, pitch: 0 },
+    "-X": { yaw: 180, pitch: 0 },
+    "+Y": { yaw: 0, pitch: 90 },
+    "-Y": { yaw: 0, pitch: -90 },
+    "+Z": { yaw: 90, pitch: 0 },
+    "-Z": { yaw: 270, pitch: 0 }
+};
 
 /**
  * One mirror entry: the store field, the `renderingParameters` field, and an
@@ -56,7 +63,8 @@ const LIGHTING_FIELDS = [
     ["iblIntensity", "iblIntensity", (value) => Math.pow(10, value)],
     ["exposure", "exposure", (value) => 1.0 / Math.pow(2.0, value)],
     ["toneMap", "toneMap"],
-    ["rotation", "environmentRotation", (value) => ENVIRONMENT_ROTATIONS[value]]
+    ["rotation", "environmentRotation", (value) => ENVIRONMENT_ROTATIONS[value].yaw],
+    ["rotation", "environmentRotationX", (value) => ENVIRONMENT_ROTATIONS[value].pitch]
 ];
 
 /**

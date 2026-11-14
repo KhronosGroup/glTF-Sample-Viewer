@@ -12,7 +12,7 @@ import {
 } from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 
-const ENVIRONMENT_ROTATIONS = ["+Z", "-X", "-Z", "+X"];
+const ENVIRONMENT_ROTATIONS = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
 
 const IBL_INTENSITY_TICKS = [
     { value: -2, label: "0.01" },
@@ -57,7 +57,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         onLightingChange({ punctualLights: checked });
                     }}
                 >
-                    Punctual Lighting
+                    Punctual Lights
                 </Switch>
             </Field>
 
@@ -168,20 +168,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
 
             {renderEnv && (
                 <>
-                    <Field label="Orientation">
-                        <SegmentedControl
-                            label="Orientation"
-                            options={ENVIRONMENT_ROTATIONS.map((item) => ({
-                                label: item,
-                                value: item
-                            }))}
-                            value={rotation}
-                            onChange={(value) => {
-                                onLightingChange({ rotation: value });
-                            }}
-                        />
-                    </Field>
-
                     <Field label="HDR" grouped>
                         <Select
                             aria-label="Active Environment"
@@ -212,6 +198,20 @@ export function DisplayTab({ lighting, onLightingChange }) {
                             <Upload size={16} aria-hidden="true" />
                             Browse HDRs ...
                         </label>
+                    </Field>
+
+                    <Field label="Orientation">
+                        <SegmentedControl
+                            label="Orientation"
+                            options={ENVIRONMENT_ROTATIONS.map((item) => ({
+                                label: item,
+                                value: item
+                            }))}
+                            value={rotation}
+                            onChange={(value) => {
+                                onLightingChange({ rotation: value });
+                            }}
+                        />
                     </Field>
                 </>
             )}
