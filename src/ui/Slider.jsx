@@ -45,6 +45,7 @@ export function Slider({
     inputLabel,
     inputPlaceholder,
     inputFormat,
+    inputSuffix,
     inputClassName = "w-16 shrink-0 py-0.5 text-sm"
 }) {
     const trackRef = useRef(null);
@@ -217,24 +218,31 @@ export function Slider({
                 </div>
 
                 {showInput && (
-                    <Input
-                        aria-label={inputLabel ?? label}
-                        className={inputClassName}
-                        type="number"
-                        step="any"
-                        placeholder={inputPlaceholder}
-                        value={inputValue}
-                        onFocus={() => setInputDraft(indeterminate ? "" : formatInput(value))}
-                        onBlur={() => setInputDraft(null)}
-                        onChange={(event) => {
-                            setInputDraft(event.target.value);
-                            if (event.target.value === "") {
-                                onChange(null);
-                            } else if (event.target.validity.valid) {
-                                onChange(event.target.valueAsNumber);
-                            }
-                        }}
-                    />
+                    <div className="flex shrink-0 items-center gap-1">
+                        <Input
+                            aria-label={inputLabel ?? label}
+                            className={inputClassName}
+                            type="number"
+                            step="any"
+                            placeholder={inputPlaceholder}
+                            value={inputValue}
+                            onFocus={() => setInputDraft(indeterminate ? "" : formatInput(value))}
+                            onBlur={() => setInputDraft(null)}
+                            onChange={(event) => {
+                                setInputDraft(event.target.value);
+                                if (event.target.value === "") {
+                                    onChange(null);
+                                } else if (event.target.validity.valid) {
+                                    onChange(event.target.valueAsNumber);
+                                }
+                            }}
+                        />
+                        {inputSuffix !== undefined && (
+                            <span className="text-ink/60 text-sm whitespace-nowrap">
+                                {inputSuffix}
+                            </span>
+                        )}
+                    </div>
                 )}
 
                 {onReset && (
