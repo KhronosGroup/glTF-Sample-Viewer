@@ -67,6 +67,20 @@ export function ValidatorTab() {
 
     return (
         <Panel title="Validation">
+            {!failed && (
+                <div className="my-6">
+                    <StatList
+                        data={{
+                            Errors: countOf(0),
+                            Warnings: countOf(1),
+                            Infos: countOf(2)
+                        }}
+                    />
+                </div>
+            )}
+
+            {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
+
             <Field label="Ignore">
                 <Switch
                     checked={ignoreMissingTangents}
@@ -81,20 +95,6 @@ export function ValidatorTab() {
                     Unknown attributes
                 </Switch>
             </Field>
-
-            {!failed && (
-                <div className="my-6">
-                    <StatList
-                        data={{
-                            Errors: countOf(0),
-                            Warnings: countOf(1),
-                            Infos: countOf(2)
-                        }}
-                    />
-                </div>
-            )}
-
-            {failed && <p className="my-2.5 text-red-400">{report.error}</p>}
 
             {messages.length > 0 && (
                 <ul className="my-4 space-y-2">
