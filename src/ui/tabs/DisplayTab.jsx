@@ -108,36 +108,41 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="Background" grouped>
-                <Switch
-                    checked={renderEnv}
-                    disabled={!ibl}
-                    onChange={(checked) => {
-                        onLightingChange({ renderEnv: checked });
+            <Field label="Background">
+                <SegmentedControl
+                    label="Background"
+                    options={[
+                        { label: "Environment", value: "environment" },
+                        { label: "Color", value: "color" }
+                    ]}
+                    value={renderEnv ? "environment" : "color"}
+                    onChange={(mode) => {
+                        onLightingChange({ renderEnv: mode === "environment" });
                     }}
-                >
-                    Environment Map
-                </Switch>
-                <Switch
-                    checked={blurEnv}
-                    disabled={!ibl}
-                    onChange={(checked) => {
-                        onLightingChange({ blurEnv: checked });
-                    }}
-                >
-                    Blur
-                </Switch>
-                <label className="mt-4 flex items-center gap-3">
-                    <input
-                        className="border-ink-dim [&::-webkit-color-swatch]:border-ink-dim h-8 w-12 appearance-none rounded-md border p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border"
-                        type="color"
-                        value={clearColor}
-                        onChange={(event) => {
-                            updateSelection({ clearColor: event.target.value });
+                />
+                {renderEnv ? (
+                    <Switch
+                        checked={blurEnv}
+                        disabled={!ibl}
+                        onChange={(checked) => {
+                            onLightingChange({ blurEnv: checked });
                         }}
-                    />
-                    <span className="text-base font-light">Background Color</span>
-                </label>
+                    >
+                        Blur
+                    </Switch>
+                ) : (
+                    <label className="mt-4 flex items-center gap-3">
+                        <input
+                            className="border-ink-dim [&::-webkit-color-swatch]:border-ink-dim h-8 w-12 appearance-none rounded-md border p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border"
+                            type="color"
+                            value={clearColor}
+                            onChange={(event) => {
+                                updateSelection({ clearColor: event.target.value });
+                            }}
+                        />
+                        <span className="text-base font-light">Background Color</span>
+                    </label>
+                )}
             </Field>
 
             <Field label="Environment Orientation">
