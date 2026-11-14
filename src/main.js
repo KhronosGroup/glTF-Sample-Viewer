@@ -249,8 +249,7 @@ export const initViewer = async (canvas) => {
 
     const validateModel = async (model) => {
         const validationId = ++latestValidationId;
-        // TODO: Remove ignoredIssues once validator is updated to support KHR_gaussian_splatting extension
-        const validateOptions = { ignoredIssues: ["MESH_PRIMITIVE_INVALID_ATTRIBUTE"] };
+        const validateOptions = {};
         let report;
 
         try {

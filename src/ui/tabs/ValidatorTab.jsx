@@ -1,7 +1,7 @@
 import { Copy, Download, ShieldCheck } from "lucide-react";
 import { notify } from "../../logic/notifications.js";
-import { useViewerStore } from "../store.js";
-import { Button, Panel } from "../controls.jsx";
+import { updateConfig, useViewerStore } from "../store.js";
+import { Button, Field, Panel, Switch } from "../controls.jsx";
 import { StatList } from "../StatList.jsx";
 
 function downloadJson(filename, json) {
@@ -38,17 +38,50 @@ function severityMeta(severity) {
     }
 }
 
+// Warning codes the tab can optionally suppress, keyed by the toggle that hides them.
+const IGNORABLE_CODES = {
+    ignoreMissingTangents: "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+    ignoreUnknownAttributes: "MESH_PRIMITIVE_INVALID_ATTRIBUTE"
+};
+
+// The messages the tab shows, given the current "ignore" toggles. The badge uses the
+// same function so the header count and the list never disagree.
+function visibleMessages(report, ignore) {
+    return (report?.issues?.messages ?? []).filter(
+        (message) => !Object.entries(IGNORABLE_CODES).some(
+            ([toggle, code]) => ignore[toggle] && message.code === code
+        )
+    );
+}
+
 export function ValidatorTab() {
     const report = useViewerStore((state) => state.published.validationReport);
+    const ignoreMissingTangents = useViewerStore((state) => state.config.ignoreMissingTangents);
+    const ignoreUnknownAttributes = useViewerStore((state) => state.config.ignoreUnknownAttributes);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
-    const messages = report?.issues?.messages ?? [];
+    const messages = visibleMessages(report, { ignoreMissingTangents, ignoreUnknownAttributes });
     // Derive the summary counts from the same list the messages are rendered from.
     const countOf = (severity) => messages.filter((message) => message.severity === severity).length;
 
     return (
         <Panel title="Validation">
+            <Field label="Ignore">
+                <Switch
+                    checked={ignoreMissingTangents}
+                    onChange={(checked) => updateConfig({ ignoreMissingTangents: checked })}
+                >
+                    Missing tangents
+                </Switch>
+                <Switch
+                    checked={ignoreUnknownAttributes}
+                    onChange={(checked) => updateConfig({ ignoreUnknownAttributes: checked })}
+                >
+                    Unknown attributes
+                </Switch>
+            </Field>
+
             {!failed && (
                 <div className="my-6">
                     <StatList
@@ -120,7 +153,9 @@ export function ValidatorTab() {
  */
 export function ValidationCounter() {
     const report = useViewerStore((state) => state.published.validationReport);
-    const messages = report?.issues?.messages ?? [];
+    const ignoreMissingTangents = useViewerStore((state) => state.config.ignoreMissingTangents);
+    const ignoreUnknownAttributes = useViewerStore((state) => state.config.ignoreUnknownAttributes);
+    const messages = visibleMessages(report, { ignoreMissingTangents, ignoreUnknownAttributes });
 
     let info = "";
     let severity;
