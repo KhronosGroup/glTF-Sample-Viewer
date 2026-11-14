@@ -218,10 +218,14 @@ export function Slider({
                 </div>
 
                 {showInput && (
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="relative shrink-0">
                         <Input
                             aria-label={inputLabel ?? label}
-                            className={inputClassName}
+                            className={
+                                inputSuffix !== undefined
+                                    ? `${inputClassName} pr-6`
+                                    : inputClassName
+                            }
                             type="number"
                             step="any"
                             placeholder={inputPlaceholder}
@@ -238,7 +242,7 @@ export function Slider({
                             }}
                         />
                         {inputSuffix !== undefined && (
-                            <span className="text-ink/60 text-sm whitespace-nowrap">
+                            <span className="text-ink/60 pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-sm">
                                 {inputSuffix}
                             </span>
                         )}
