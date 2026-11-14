@@ -471,14 +471,14 @@ export function createCameraController(state) {
         return true;
     };
 
-    // Reposition the camera to look at the scene centre from an axis direction,
-    // keeping the current zoom distance.
+    // Rotate the camera to look along an axis direction, keeping the current
+    // orbit target and zoom distance fixed so the focus never translates.
     const lookAtAxis = (axis) => {
         if (!isEnabled()) return;
         const view = AXIS_VIEWS[axis];
         if (!view) return;
         syncYawPitchFromCamera();
-        startAnimation({ orient: true, yaw: view.yaw, pitch: view.pitch, target: sceneCenter() });
+        startAnimation({ orient: true, yaw: view.yaw, pitch: view.pitch, target: camera.getTarget() });
     };
 
     // Reapply the active projection (type and near/far planes) after the camera
