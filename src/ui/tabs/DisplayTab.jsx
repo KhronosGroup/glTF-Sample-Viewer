@@ -146,22 +146,24 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         </IconButton>
                     </div>
                 )}
-                <Slider
-                    label="Intensity"
-                    value={iblIntensity}
-                    min={-2}
-                    max={5}
-                    step={0.01}
-                    ticks={IBL_INTENSITY_TICKS}
-                    formatter={formatIblIntensity}
-                    onChange={(value) => {
-                        onLightingChange({ iblIntensity: value });
-                    }}
-                    onReset={() => {
-                        onLightingChange({ iblIntensity: 0 });
-                    }}
-                    resetLabel="Reset intensity"
-                />
+                <Field label="Intensity">
+                    <Slider
+                        label="Intensity"
+                        value={iblIntensity}
+                        min={-2}
+                        max={5}
+                        step={0.01}
+                        ticks={IBL_INTENSITY_TICKS}
+                        formatter={formatIblIntensity}
+                        onChange={(value) => {
+                            onLightingChange({ iblIntensity: value });
+                        }}
+                        onReset={() => {
+                            onLightingChange({ iblIntensity: 0 });
+                        }}
+                        resetLabel="Reset intensity"
+                    />
+                </Field>
             </Field>
 
             {renderEnv && (
@@ -181,21 +183,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
                     </Field>
 
                     <Field label="HDR" grouped>
-                        <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
-                            <input
-                                className="sr-only"
-                                type="file"
-                                accept=".hdr"
-                                onChange={(event) =>
-                                    commands.addEnvironmentChanged({
-                                        hdr_path: event.target.files[0]
-                                    })
-                                }
-                            />
-                            <Upload size={16} aria-hidden="true" />
-                            Browse HDRs ...
-                        </label>
-
                         <Select
                             aria-label="Active Environment"
                             value={selectedEnvironment}
@@ -210,6 +197,21 @@ export function DisplayTab({ lighting, onLightingChange }) {
                                 </option>
                             ))}
                         </Select>
+
+                        <label className="bg-accent text-ink-dim hover:bg-accent-hover inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-full px-4 py-1.5 transition-colors">
+                            <input
+                                className="sr-only"
+                                type="file"
+                                accept=".hdr"
+                                onChange={(event) =>
+                                    commands.addEnvironmentChanged({
+                                        hdr_path: event.target.files[0]
+                                    })
+                                }
+                            />
+                            <Upload size={16} aria-hidden="true" />
+                            Browse HDRs ...
+                        </label>
                     </Field>
                 </>
             )}

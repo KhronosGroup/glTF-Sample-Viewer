@@ -468,12 +468,28 @@ export const initViewer = async (canvas) => {
     };
 
     /**
+     * The clear color doubles as the uniform environment color, so it follows the
+     * environment lighting: black when IBL is off, otherwise the selected color.
+     */
+    const syncClearColor = () => {
+        const color = hexToLinearColor(getViewerState().selection.clearColor);
+        if (!getViewerState().config.lighting.ibl || color === undefined) {
+            state.renderingParameters.clearColor = [0, 0, 0, 1];
+            state.renderingParameters.uniformEnvironmentColor = [0, 0, 0];
+            return;
+        }
+        state.renderingParameters.clearColor = color;
+        state.renderingParameters.uniformEnvironmentColor = [color[0], color[1], color[2]];
+    };
+
+    /**
      * @param {import("./logic/viewer_store.js").LightingConfig} lighting
      */
     const applyLighting = (lighting) => {
         for (const [from, to, transform] of LIGHTING_FIELDS) {
             state.renderingParameters[to] = transform ? transform(lighting[from]) : lighting[from];
         }
+        syncClearColor();
     };
 
     /**
@@ -558,16 +574,7 @@ export const initViewer = async (canvas) => {
 
     applyRenderChange((s) => s.selection.morphWeightOverrides, applyMorphWeightOverrides);
 
-    applyRenderChange(
-        (s) => s.selection.clearColor,
-        (hex) => {
-            const color = hexToLinearColor(hex);
-            if (color !== undefined) {
-                state.renderingParameters.clearColor = color;
-                state.renderingParameters.uniformEnvironmentColor = [color[0], color[1], color[2]];
-            }
-        }
-    );
+    applyRenderChange((s) => s.selection.clearColor, syncClearColor);
 
     subscriptions.push(
         viewerStore.subscribe(
