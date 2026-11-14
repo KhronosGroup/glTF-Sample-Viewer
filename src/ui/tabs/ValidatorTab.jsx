@@ -42,14 +42,19 @@ function severityMeta(severity) {
 // asset omits them), so they carry no actionable information for the user.
 const IGNORED_VALIDATION_CODES = new Set(["MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"]);
 
+// The messages the tab actually shows, so the badge and the list never disagree.
+function visibleMessages(report) {
+    return (report?.issues?.messages ?? []).filter(
+        (message) => !IGNORED_VALIDATION_CODES.has(message.code)
+    );
+}
+
 export function ValidatorTab() {
     const report = useViewerStore((state) => state.published.validationReport);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
-    const messages = (report?.issues?.messages ?? []).filter(
-        (message) => !IGNORED_VALIDATION_CODES.has(message.code)
-    );
+    const messages = visibleMessages(report);
     // Derive the summary counts from the same filtered list the messages are
     // rendered from, so the counts never claim issues the tab does not show.
     const countOf = (severity) => messages.filter((message) => message.severity === severity).length;
@@ -127,7 +132,7 @@ export function ValidatorTab() {
  */
 export function ValidationCounter() {
     const report = useViewerStore((state) => state.published.validationReport);
-    const issues = report?.issues;
+    const messages = visibleMessages(report);
 
     let info = "";
     let severity;
@@ -135,15 +140,23 @@ export function ValidationCounter() {
     if (report?.error) {
         info = "X";
         severity = 0;
-    } else if (issues?.numErrors > 0) {
-        info = `${issues.numErrors}`;
-        severity = 0;
-    } else if (issues?.numWarnings > 0) {
-        info = `${issues.numWarnings}`;
-        severity = 1;
-    } else if (issues?.numInfos > 0) {
-        info = `${issues.numInfos}`;
-        severity = 2;
+    } else {
+        const counts = { 0: 0, 1: 0, 2: 0 };
+        for (const message of messages) {
+            if (message.severity <= 2) {
+                counts[message.severity]++;
+            }
+        }
+        if (counts[0] > 0) {
+            info = `${counts[0]}`;
+            severity = 0;
+        } else if (counts[1] > 0) {
+            info = `${counts[1]}`;
+            severity = 1;
+        } else if (counts[2] > 0) {
+            info = `${counts[2]}`;
+            severity = 2;
+        }
     }
 
     if (info.length > 3) {
