@@ -38,25 +38,13 @@ function severityMeta(severity) {
     }
 }
 
-// Warnings the renderer resolves on its own (it generates MikkTSpace tangents when the
-// asset omits them), so they carry no actionable information for the user.
-const IGNORED_VALIDATION_CODES = new Set(["MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"]);
-
-// The messages the tab actually shows, so the badge and the list never disagree.
-function visibleMessages(report) {
-    return (report?.issues?.messages ?? []).filter(
-        (message) => !IGNORED_VALIDATION_CODES.has(message.code)
-    );
-}
-
 export function ValidatorTab() {
     const report = useViewerStore((state) => state.published.validationReport);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
-    const messages = visibleMessages(report);
-    // Derive the summary counts from the same filtered list the messages are
-    // rendered from, so the counts never claim issues the tab does not show.
+    const messages = report?.issues?.messages ?? [];
+    // Derive the summary counts from the same list the messages are rendered from.
     const countOf = (severity) => messages.filter((message) => message.severity === severity).length;
 
     return (
@@ -132,7 +120,7 @@ export function ValidatorTab() {
  */
 export function ValidationCounter() {
     const report = useViewerStore((state) => state.published.validationReport);
-    const messages = visibleMessages(report);
+    const messages = report?.issues?.messages ?? [];
 
     let info = "";
     let severity;
