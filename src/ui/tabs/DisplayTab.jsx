@@ -99,29 +99,25 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="IBL">
-                <Switch
-                    data-testid="switch-ibl"
-                    checked={ibl}
-                    onChange={(checked) => {
-                        onLightingChange({ ibl: checked });
+            <Field
+                label="IBL"
+                toggle={ibl}
+                onToggleChange={(checked) => {
+                    onLightingChange({ ibl: checked });
+                }}
+                toggleTestId="switch-ibl"
+            >
+                <SegmentedControl
+                    label="Environment"
+                    options={[
+                        { label: "Environment", value: "environment" },
+                        { label: "Color", value: "color" }
+                    ]}
+                    value={renderEnv ? "environment" : "color"}
+                    onChange={(mode) => {
+                        onLightingChange({ renderEnv: mode === "environment" });
                     }}
-                >
-                    Image Based
-                </Switch>
-                <div className="mt-4">
-                    <SegmentedControl
-                        label="Environment"
-                        options={[
-                            { label: "Environment", value: "environment" },
-                            { label: "Color", value: "color" }
-                        ]}
-                        value={renderEnv ? "environment" : "color"}
-                        onChange={(mode) => {
-                            onLightingChange({ renderEnv: mode === "environment" });
-                        }}
-                    />
-                </div>
+                />
                 {renderEnv ? (
                     <Switch
                         checked={blurEnv}
