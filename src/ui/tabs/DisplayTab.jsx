@@ -37,15 +37,6 @@ export function DisplayTab({ lighting, onLightingChange }) {
         <Panel title="Display">
             <Field label="Lighting" grouped>
                 <Switch
-                    data-testid="switch-ibl"
-                    checked={ibl}
-                    onChange={(checked) => {
-                        onLightingChange({ ibl: checked });
-                    }}
-                >
-                    Image Based
-                </Switch>
-                <Switch
                     checked={punctualLights}
                     onChange={(checked) => {
                         onLightingChange({ punctualLights: checked });
@@ -108,18 +99,29 @@ export function DisplayTab({ lighting, onLightingChange }) {
                 </Select>
             </Field>
 
-            <Field label="Background">
-                <SegmentedControl
-                    label="Background"
-                    options={[
-                        { label: "Environment", value: "environment" },
-                        { label: "Color", value: "color" }
-                    ]}
-                    value={renderEnv ? "environment" : "color"}
-                    onChange={(mode) => {
-                        onLightingChange({ renderEnv: mode === "environment" });
+            <Field label="IBL">
+                <Switch
+                    data-testid="switch-ibl"
+                    checked={ibl}
+                    onChange={(checked) => {
+                        onLightingChange({ ibl: checked });
                     }}
-                />
+                >
+                    Image Based
+                </Switch>
+                <div className="mt-4">
+                    <SegmentedControl
+                        label="Environment"
+                        options={[
+                            { label: "Environment", value: "environment" },
+                            { label: "Color", value: "color" }
+                        ]}
+                        value={renderEnv ? "environment" : "color"}
+                        onChange={(mode) => {
+                            onLightingChange({ renderEnv: mode === "environment" });
+                        }}
+                    />
+                </div>
                 {renderEnv ? (
                     <Switch
                         checked={blurEnv}

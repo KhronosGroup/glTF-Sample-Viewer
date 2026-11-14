@@ -51,6 +51,7 @@ const LIGHTING_FIELDS = [
     ["ibl", "useIBL"],
     ["punctualLights", "usePunctual"],
     ["renderEnv", "renderEnvironmentMap"],
+    ["renderEnv", "useUniformEnvironment", (value) => !value],
     ["blurEnv", "blurEnvironmentMap"],
     ["iblIntensity", "iblIntensity", (value) => Math.pow(10, value)],
     ["exposure", "exposure", (value) => 1.0 / Math.pow(2.0, value)],
@@ -563,6 +564,7 @@ export const initViewer = async (canvas) => {
             const color = hexToLinearColor(hex);
             if (color !== undefined) {
                 state.renderingParameters.clearColor = color;
+                state.renderingParameters.uniformEnvironmentColor = [color[0], color[1], color[2]];
             }
         }
     );
