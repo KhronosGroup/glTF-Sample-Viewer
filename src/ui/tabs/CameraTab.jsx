@@ -272,7 +272,6 @@ export function CameraTab() {
                     formatter={(value) => value.toFixed(2)}
                     onChange={setAspectRatio}
                     showInput
-                    inputFormat={(value) => value.toFixed(2)}
                 />
                 <div className="mt-4 grid grid-cols-4 gap-2">
                     {COMMON_ASPECT_RATIOS.map(({ label, value }) => {

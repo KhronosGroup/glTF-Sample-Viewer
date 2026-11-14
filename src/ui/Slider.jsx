@@ -37,6 +37,13 @@ function formatterSuffix(formatter) {
     return formatter(0).replace(/^-?\d*\.?\d+/, "");
 }
 
+// Prints a value with at most two decimal places, dropping trailing zeros
+// ("1.50" -> "1.5", "45.00" -> "45") so numeric inputs do not echo a long
+// float for values like 16/9.
+function formatNumber(value) {
+    return value.toFixed(2).replace(/\.?0+$/, "");
+}
+
 export function Slider({
     value,
     min,
@@ -148,7 +155,7 @@ export function Slider({
 
     const ratio = indeterminate ? 0 : ratioOf(value, min, max);
 
-    const formatInput = inputFormat ?? String;
+    const formatInput = inputFormat ?? formatNumber;
     const inputValue = inputDraft ?? (indeterminate ? "" : formatInput(value));
     const suffix = inputSuffix ?? formatterSuffix(formatter);
 
