@@ -67,7 +67,6 @@ function MorphWeightRow({ node, target, targetIndex, disabled, signedRange }) {
                 onChange={emit}
                 showInput
                 inputPlaceholder="-"
-                inputClassName="w-12 shrink-0 py-0.5 text-sm"
             />
         </div>
     );

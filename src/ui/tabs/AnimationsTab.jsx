@@ -94,7 +94,6 @@ export function AnimationsTab() {
                             onChange={setTimeOverride}
                             showInput
                             inputPlaceholder="-"
-                            inputClassName="w-24 shrink-0 py-0.5 text-sm"
                         />
                     )}
                 </div>
