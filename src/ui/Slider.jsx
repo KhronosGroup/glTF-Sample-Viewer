@@ -54,7 +54,7 @@ export function Slider({
     inputPlaceholder,
     inputFormat,
     inputSuffix,
-    inputClassName = "w-18 shrink-0 py-0.5 text-sm"
+    inputClassName = "w-16 shrink-0 py-0.5 text-sm"
 }) {
     const trackRef = useRef(null);
     const dragOrigin = useRef(null);
