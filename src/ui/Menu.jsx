@@ -122,9 +122,9 @@ export function Menu({ visible }) {
         updateConfig({ extensions: { ...extensions, ...next } });
     };
 
-    // The Display tab's "Collider Shapes" and the Physics tab's "Show Colliders"
-    // are the same control: both move `debugShapes.allShapes` and the physics
-    // collider debug visualisation together.
+    // The Physics tab's "Collider Shapes" switch drives both the shape-debug pass
+    // (`debugShapes.allShapes`) and the physics collider visualisation
+    // (`physicsDebug.colliders`), so a single change updates the two together.
     const updateColliderShapes = (checked) => {
         updateConfig({
             debugShapes: { ...debugShapes, allShapes: checked },

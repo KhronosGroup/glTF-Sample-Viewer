@@ -58,7 +58,7 @@ export function PhysicsTab({ debug, onDebugChange, colliderShapes, onColliderSha
                         onColliderShapesChange(checked);
                     }}
                 >
-                    Show Colliders
+                    Collider Shapes
                 </Switch>
                 <Switch
                     checked={debug.joints}
@@ -66,7 +66,7 @@ export function PhysicsTab({ debug, onDebugChange, colliderShapes, onColliderSha
                         onDebugChange({ joints: checked });
                     }}
                 >
-                    Show Joints
+                    Joint Gizmos
                 </Switch>
             </div>
         </Panel>
