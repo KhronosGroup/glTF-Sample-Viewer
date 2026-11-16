@@ -747,6 +747,43 @@ export const initViewer = async (canvas) => {
         document.body.removeChild(element);
     };
 
+    // Compose a column-major mat4 from a glTF node's transform (TRS or matrix).
+    const nodeTransform = (node) => {
+        if (Array.isArray(node.matrix) && node.matrix.length === 16) {
+            return node.matrix;
+        }
+        const [tx, ty, tz] = node.translation ?? [0, 0, 0];
+        const [x, y, z, w] = node.rotation ?? [0, 0, 0, 1];
+        const [sx, sy, sz] = node.scale ?? [1, 1, 1];
+        const xx = x * x;
+        const yy = y * y;
+        const zz = z * z;
+        const xy = x * y;
+        const xz = x * z;
+        const yz = y * z;
+        const wx = w * x;
+        const wy = w * y;
+        const wz = w * z;
+        return [
+            (1 - 2 * (yy + zz)) * sx,
+            2 * (xy + wz) * sx,
+            2 * (xz - wy) * sx,
+            0,
+            2 * (xy - wz) * sy,
+            (1 - 2 * (xx + zz)) * sy,
+            2 * (yz + wx) * sy,
+            0,
+            2 * (xz + wy) * sz,
+            2 * (yz - wx) * sz,
+            (1 - 2 * (xx + yy)) * sz,
+            0,
+            tx,
+            ty,
+            tz,
+            1
+        ];
+    };
+
     subscriptions.push(
         setCommand("cameraExport", () => {
             const camera =
@@ -767,8 +804,9 @@ export const initViewer = async (canvas) => {
                 const json = JSON.parse(text);
                 const camera = json?.cameras?.[0];
                 const node = json?.nodes?.find((n) => n.camera === 0) ?? json?.nodes?.[0];
-                if (!camera || !node?.matrix) return;
-                cameraController.importCamera({ camera, matrix: node.matrix });
+                if (!camera || !node) return;
+                const matrix = nodeTransform(node);
+                cameraController.importCamera({ camera, matrix });
                 redraw = true;
             } catch (error) {
                 console.error("Failed to import camera", error);
@@ -795,12 +833,6 @@ export const initViewer = async (canvas) => {
         (s) => s.selection.cameraProjection,
         (type) => {
             cameraController.setProjection(type);
-        }
-    );
-    applyRenderChange(
-        (s) => s.selection.cameraRoll,
-        (roll) => {
-            cameraController.setRoll(roll);
         }
     );
     applyRenderChange(

@@ -64,7 +64,7 @@ function ShortcutGroup({ icon: Icon, title, rows }) {
 }
 
 function shortcutSections(mode) {
-    const rotate = mode === "trackball" ? "Rotate" : "Orbit";
+    const rotate = "Orbit";
     const arrows = (
         <>
             <Chip label="Arrow Left">
@@ -192,7 +192,6 @@ function shortcutSections(mode) {
 export function CameraTab() {
     const cameraMode = useViewerStore((state) => state.selection.cameraMode);
     const cameraProjection = useViewerStore((state) => state.selection.cameraProjection);
-    const cameraRoll = useViewerStore((state) => state.selection.cameraRoll);
     const selectedCamera = useViewerStore((state) => state.selection.selectedCamera);
     const cameraFov = useViewerStore((state) => state.selection.cameraFov);
     const enforceAspectRatio = useViewerStore((state) => state.selection.enforceAspectRatio);
@@ -221,11 +220,6 @@ export function CameraTab() {
         updateSelection({ cameraFov: Math.min(Math.max(value, 1), 120) });
     };
 
-    const setRoll = (value) => {
-        if (value === null || value === undefined) return;
-        updateSelection({ cameraRoll: Math.min(Math.max(value, -180), 180) });
-    };
-
     return (
         <Panel title="Camera">
             <Field label="Camera Mode">
@@ -234,7 +228,6 @@ export function CameraTab() {
                     disabled={!userCameraActive}
                     options={[
                         { label: "Orbit", value: "orbit" },
-                        { label: "Trackball", value: "trackball" },
                         { label: "Fly", value: "fly" }
                     ]}
                     value={cameraMode}
@@ -271,21 +264,6 @@ export function CameraTab() {
                     showInput
                     onReset={() => updateSelection({ cameraFov: 45 })}
                     resetLabel="Reset FOV"
-                />
-            </Field>
-
-            <Field label="Roll">
-                <Slider
-                    label="Roll"
-                    value={cameraRoll}
-                    min={-180}
-                    max={180}
-                    step={1}
-                    formatter={(value) => `${value}°`}
-                    onChange={setRoll}
-                    showInput
-                    onReset={() => updateSelection({ cameraRoll: 0 })}
-                    resetLabel="Reset Roll"
                 />
             </Field>
 
