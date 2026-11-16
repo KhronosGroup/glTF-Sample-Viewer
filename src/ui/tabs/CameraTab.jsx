@@ -14,8 +14,10 @@ import {
     MouseRight,
     Move,
     Plus,
-    RotateCcw
+    RotateCcw,
+    Upload
 } from "lucide-react";
+import { useRef } from "react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import { Button, Field, Panel, SegmentedControl } from "../controls.jsx";
@@ -200,6 +202,14 @@ export function CameraTab() {
     const userCameraActive = selectedCamera === -1;
     const sections = shortcutSections(cameraMode);
 
+    const fileInputRef = useRef(null);
+    const handleImportFile = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        file.text().then((text) => commands.cameraImport(text));
+        event.target.value = "";
+    };
+
     const setAspectRatio = (value) => {
         if (value === null || value === undefined) return;
         updateSelection({ cameraAspectRatio: Math.min(Math.max(value, 0.5), 3) });
@@ -313,6 +323,21 @@ export function CameraTab() {
 
             <Field label="View">
                 <div className="flex flex-wrap items-center gap-2">
+                    <Button onClick={() => commands.cameraExport()}>
+                        <Download size={16} aria-hidden="true" />
+                        Export
+                    </Button>
+                    <Button onClick={() => fileInputRef.current?.click()}>
+                        <Upload size={16} aria-hidden="true" />
+                        Import
+                    </Button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".gltf,.json,application/json"
+                        className="hidden"
+                        onChange={handleImportFile}
+                    />
                     <Button
                         disabled={!userCameraActive}
                         className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
@@ -320,10 +345,6 @@ export function CameraTab() {
                     >
                         <RotateCcw size={16} aria-hidden="true" />
                         Reset
-                    </Button>
-                    <Button onClick={() => commands.cameraExport()}>
-                        <Download size={16} aria-hidden="true" />
-                        Download
                     </Button>
                 </div>
             </Field>

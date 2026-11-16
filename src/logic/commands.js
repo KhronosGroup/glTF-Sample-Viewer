@@ -3,7 +3,7 @@
  * @typedef {"modelChanged"|"modelTagsChanged"|"modelFlavoursChanged"|"flavourChanged"|
  *     "selectedEnvironmentChanged"|"addEnvironmentChanged"|"cameraLookAtChanged"|
  *     "cameraResetChanged"|"animationResetChanged"|"graphResetChanged"|"customEventSendClicked"|
- *     "physicsResetChanged"|"physicsStepChanged"|"captureCanvas"|"cameraExport"} CommandName
+ *     "physicsResetChanged"|"physicsStepChanged"|"captureCanvas"|"cameraExport"|"cameraImport"} CommandName
  */
 
 /**
@@ -34,7 +34,8 @@ const commandNames = [
     "physicsResetChanged",
     "physicsStepChanged",
     "captureCanvas",
-    "cameraExport"
+    "cameraExport",
+    "cameraImport"
 ];
 
 const noop = () => {};

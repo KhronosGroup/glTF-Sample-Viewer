@@ -1,4 +1,9 @@
-import { GltfState, GltfView, ResourceLoaderUtils, instantiatedDocuments } from "@khronosgroup/gltf-viewer";
+import {
+    GltfState,
+    GltfView,
+    ResourceLoaderUtils,
+    instantiatedDocuments
+} from "@khronosgroup/gltf-viewer";
 import createDracoDecoderModule from "draco3d/draco_decoder_nodejs.js";
 import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 
@@ -345,7 +350,9 @@ export const initViewer = async (canvas) => {
             if (hasInteractivity) {
                 state.graphController.initializeGraphs(state);
                 if (rootGraphs !== undefined) {
-                    state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
+                    state.graphController.loadGraph(
+                        state.gltf.extensions.KHR_interactivity.graph ?? 0
+                    );
                 }
                 state.graphController.resumeGraph();
             } else {
@@ -751,6 +758,21 @@ export const initViewer = async (canvas) => {
                 "camera.gltf",
                 "data:text/plain;charset=utf-8," + encodeURIComponent(gltf)
             );
+        })
+    );
+
+    subscriptions.push(
+        setCommand("cameraImport", (text) => {
+            try {
+                const json = JSON.parse(text);
+                const camera = json?.cameras?.[0];
+                const node = json?.nodes?.find((n) => n.camera === 0) ?? json?.nodes?.[0];
+                if (!camera || !node?.matrix) return;
+                cameraController.importCamera({ camera, matrix: node.matrix });
+                redraw = true;
+            } catch (error) {
+                console.error("Failed to import camera", error);
+            }
         })
     );
 

@@ -1,4 +1,4 @@
-import { getViewerState } from "./viewer_store.js";
+import { getViewerState, updateSelection } from "./viewer_store.js";
 import { isKeyDown, isShiftDown } from "./keyboard.js";
 
 // Roughly how long the camera takes to reach its target after an input delta,
@@ -381,7 +381,8 @@ export function createCameraController(state) {
             animation.distanceVel = velocity;
             camera.distance = next;
             distance = next;
-            distanceSettled = Math.abs(next - animation.distance) < 1e-4 && Math.abs(velocity) < 1e-4;
+            distanceSettled =
+                Math.abs(next - animation.distance) < 1e-4 && Math.abs(velocity) < 1e-4;
         }
 
         if (animation.orient) {
@@ -478,7 +479,12 @@ export function createCameraController(state) {
         const view = AXIS_VIEWS[axis];
         if (!view) return;
         syncYawPitchFromCamera();
-        startAnimation({ orient: true, yaw: view.yaw, pitch: view.pitch, target: camera.getTarget() });
+        startAnimation({
+            orient: true,
+            yaw: view.yaw,
+            pitch: view.pitch,
+            target: camera.getTarget()
+        });
     };
 
     // Reapply the active projection (type and near/far planes) after the camera
@@ -593,6 +599,52 @@ export function createCameraController(state) {
             camera.enforceAspectRatio = enforceAspectRatio;
             if (enforceAspectRatio) {
                 camera.perspective.aspectRatio = cameraAspectRatio;
+            }
+        },
+        // Apply an exported camera description (the output of cameraExport) to the
+        // user camera: its world transform and projection parameters. The orbit
+        // target is left implicit, so the current zoom distance is preserved.
+        importCamera: ({ camera: cam, matrix }) => {
+            if (!isEnabled() || !cam || !Array.isArray(matrix) || matrix.length !== 16) return;
+
+            // Apply the world transform (position + orientation) directly, then
+            // re-derive the orbit yaw/pitch so continued orbiting stays coherent.
+            camera.transform = new Float32Array(matrix);
+            syncYawPitchFromCamera();
+
+            if (cam.type === "orthographic" && cam.orthographic) {
+                camera.type = "orthographic";
+                camera.orthographic.xmag = cam.orthographic.xmag ?? camera.orthographic.xmag;
+                camera.orthographic.ymag = cam.orthographic.ymag ?? camera.orthographic.ymag;
+                camera.orthographic.znear = cam.orthographic.znear ?? camera.orthographic.znear;
+                camera.orthographic.zfar = cam.orthographic.zfar ?? camera.orthographic.zfar;
+                projection = "orthographic";
+                updateSelection({ cameraProjection: "orthographic" });
+            } else if (cam.perspective) {
+                const hasAspect = cam.perspective.aspectRatio !== undefined;
+                camera.type = "perspective";
+                camera.perspective.yfov = cam.perspective.yfov ?? camera.perspective.yfov;
+                if (cam.perspective.znear !== undefined)
+                    camera.perspective.znear = cam.perspective.znear;
+                if (cam.perspective.zfar !== undefined)
+                    camera.perspective.zfar = cam.perspective.zfar;
+                if (hasAspect) {
+                    camera.perspective.aspectRatio = cam.perspective.aspectRatio;
+                    camera.enforceAspectRatio = true;
+                } else {
+                    camera.enforceAspectRatio = false;
+                }
+                projection = "perspective";
+                updateSelection({
+                    cameraProjection: "perspective",
+                    cameraFov: (cam.perspective.yfov * 180) / Math.PI,
+                    ...(hasAspect
+                        ? {
+                              cameraAspectRatio: cam.perspective.aspectRatio,
+                              enforceAspectRatio: true
+                          }
+                        : { enforceAspectRatio: false })
+                });
             }
         },
         // Refit the camera to the current scene and restore the default view.
