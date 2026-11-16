@@ -296,6 +296,13 @@ export function AdvancedTab({
                 >
                     Cull by Shapes
                 </Switch>
+                <Switch
+                    checked={extensions.scatterBackfacePass}
+                    onChange={toggle({ key: "scatterBackfacePass" })}
+                    title="Measure scattering thickness from the back-face depth pass instead of the thickness map"
+                >
+                    Scatter Backface Pass
+                </Switch>
             </Field>
 
             <Field label="Inspection" grouped>

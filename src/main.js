@@ -71,7 +71,8 @@ const EXTENSION_FIELDS = [
     ["cameraGizmos", "cameraGizmos"],
     ["jointGizmos", "jointGizmos"],
     ["aabbGizmos", "aabbGizmos"],
-    ["floatingPointFramebuffer", "floatingPointFramebuffer"]
+    ["floatingPointFramebuffer", "floatingPointFramebuffer"],
+    ["scatterBackfacePass", "scatterBackfacePass"]
 ];
 
 function hexToLinearColor(hex) {
