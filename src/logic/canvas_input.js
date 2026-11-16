@@ -79,15 +79,25 @@ export function attachCanvasInput(canvas, handlers) {
 
     listen(canvas, "mouseout", () => onHover({ x: undefined, y: undefined }));
 
-    listen(canvas, "click", (event) => {
-        if (event.button === 0) {
-            onSelect({ x: event.pageX, y: event.pageY });
-        }
-    });
+    // A double-click focuses the picked node. The native `dblclick` event fires at
+    // the OS double-click interval, which is slower than most people click, so the
+    // second click is recognised here with a shorter window instead.
+    const DOUBLE_CLICK_MS = 300;
+    const DOUBLE_CLICK_PX = 5;
+    let lastClick = { time: -Infinity, x: 0, y: 0 };
 
-    listen(canvas, "dblclick", (event) => {
-        if (event.button === 0) {
+    listen(canvas, "click", (event) => {
+        if (event.button !== 0) {
+            return;
+        }
+        const time = performance.now();
+        const distance = Math.hypot(event.pageX - lastClick.x, event.pageY - lastClick.y);
+        if (time - lastClick.time < DOUBLE_CLICK_MS && distance <= DOUBLE_CLICK_PX) {
             onFocus?.({ x: event.pageX, y: event.pageY });
+            lastClick.time = -Infinity; // the next click starts a fresh single click
+        } else {
+            onSelect({ x: event.pageX, y: event.pageY });
+            lastClick = { time, x: event.pageX, y: event.pageY };
         }
     });
 
