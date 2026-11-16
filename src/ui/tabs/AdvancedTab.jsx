@@ -1,7 +1,15 @@
 import { Fragment } from "react";
 import { RotateCcw } from "lucide-react";
 import { updateSelection, useViewerStore } from "../store.js";
-import { Field, IconButton, Panel, SegmentedControl, Select, Switch } from "../controls.jsx";
+import {
+    Field,
+    IconButton,
+    Panel,
+    SegmentedControl,
+    Select,
+    Switch,
+    UnsupportedBadge
+} from "../controls.jsx";
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
@@ -190,9 +198,7 @@ function ClippingControls({ clipping, onChange }) {
                     ))}
                 </div>
             </Field>
-            {!supportsClipping && (
-                <p className="text-ink/60 text-sm">Unsupported by this browser</p>
-            )}
+            {!supportsClipping && <UnsupportedBadge className="block text-sm" />}
         </>
     );
 }
@@ -300,7 +306,8 @@ export function AdvancedTab({
                     disabled={!supportsWireframe}
                     onChange={toggle({ key: "wireframe" })}
                 >
-                    {supportsWireframe ? "Wireframe" : "Wireframe (unsupported by this browser)"}
+                    Wireframe
+                    {!supportsWireframe && <UnsupportedBadge className="ml-1.5 text-xs" />}
                 </Switch>
                 <Switch
                     data-testid="switch-bounding-shapes"

@@ -146,6 +146,21 @@ export function Switch({ checked, onChange, className, disabled = false, childre
     );
 }
 
+/**
+ * A dimmed "Unsupported" note shown when a feature depends on a WebGL extension
+ * this browser does not expose. The full explanation is the native title tooltip.
+ */
+export function UnsupportedBadge({ className }) {
+    return (
+        <span
+            title="This feature is unsupported by this browser"
+            className={classNames("text-ink/60 font-light", className)}
+        >
+            Unsupported
+        </span>
+    );
+}
+
 export function Select({ value, onChange, className, children, ...rest }) {
     return (
         <div className={classNames("relative", className)}>
