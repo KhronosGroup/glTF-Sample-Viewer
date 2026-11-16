@@ -9,7 +9,7 @@ import { attachKeyboard } from "./keyboard.js";
  * The drag gestures were `mousedown -> mousemove.pairwise().takeUntil(mouseup)`,
  * which is just "remember the previous position while a button is held". The
  * mouse and touch paths stay separate because they are not equivalent: touch
- * orbit is doubled, and pinch zoom has no mouse counterpart.
+ * orbit is doubled, and a two-finger drag pans and pinches together.
  *
  * Returns a dispose function; every listener it adds is removed again.
  */
@@ -94,7 +94,9 @@ export function attachCanvasInput(canvas, handlers) {
     // loop polls it each frame for continuous, frame-rate independent motion.
     cleanups.push(attachKeyboard());
 
-    // Touch: one finger orbits, two pinch to zoom.
+    // Touch: one finger orbits, two fingers pan (centroid) and pinch to zoom
+    // (distance). The two-finger drag stands in for the right-button drag, which
+    // mobile has no equivalent for.
     let touch = null;
 
     const pinchDistance = (event) =>
@@ -102,6 +104,11 @@ export function attachCanvasInput(canvas, handlers) {
             event.touches[1].clientX - event.touches[0].clientX,
             event.touches[1].clientY - event.touches[0].clientY
         );
+
+    const pinchCenter = (event) => ({
+        x: (event.touches[0].clientX + event.touches[1].clientX) / 2,
+        y: (event.touches[0].clientY + event.touches[1].clientY) / 2
+    });
 
     listen(canvas, "touchstart", (event) => {
         if (event.touches.length === 1) {
@@ -128,10 +135,14 @@ export function attachCanvasInput(canvas, handlers) {
             touch.y = clientY;
         } else if (touch.kind === "pinch" && event.touches.length === 2) {
             const distance = pinchDistance(event);
+            const center = pinchCenter(event);
             if (touch.distance !== undefined) {
                 onZoom({ deltaZoom: 0.1 * (touch.distance - distance) });
+                onPan({ deltaX: center.x - touch.x, deltaY: center.y - touch.y });
             }
             touch.distance = distance;
+            touch.x = center.x;
+            touch.y = center.y;
         }
     });
 
