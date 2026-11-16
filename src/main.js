@@ -513,6 +513,14 @@ export const initViewer = async (canvas) => {
         if (extensions.interactivity !== previous?.interactivity) {
             applyInteractivity(extensions.interactivity);
         }
+        if (extensions.physics !== previous?.physics) {
+            state.physicsController.setPhysicsEnabled(state, extensions.physics);
+            // Rebuilding the simulation on re-enable leaves it paused; carry on from
+            // the play/pause state the Physics tab holds.
+            if (extensions.physics && getViewerState().selection.physicsState) {
+                state.physicsController.resumeSimulation();
+            }
+        }
     };
 
     applyRenderChange((s) => s.config.lighting, applyLighting);

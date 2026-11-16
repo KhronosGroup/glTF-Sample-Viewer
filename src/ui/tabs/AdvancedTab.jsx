@@ -51,6 +51,11 @@ const EXTENSION_TOGGLES = [
         key: "gaussianSplatting",
         label: "Gaussian Splatting",
         extension: "KHR_gaussian_splatting"
+    },
+    {
+        key: "physics",
+        label: "Physics",
+        extension: "KHR_physics_rigid_bodies"
     }
 ];
 

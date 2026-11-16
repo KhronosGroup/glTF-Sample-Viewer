@@ -90,6 +90,7 @@ import { createStore } from "zustand/vanilla";
  * @property {boolean} anisotropy
  * @property {boolean} dispersion
  * @property {boolean} gaussianSplatting
+ * @property {boolean} physics
  */
 
 /**
@@ -346,7 +347,8 @@ const initialState = {
             retroreflection: true,
             anisotropy: true,
             dispersion: true,
-            gaussianSplatting: true
+            gaussianSplatting: true,
+            physics: true
         },
         physicsDebug: { engine: "nvidia-physx", colliders: false, joints: false },
         debugShapes: {
