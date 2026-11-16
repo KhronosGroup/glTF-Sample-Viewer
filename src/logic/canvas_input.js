@@ -82,7 +82,7 @@ export function attachCanvasInput(canvas, handlers) {
     // A double-click focuses the picked node. The native `dblclick` event fires at
     // the OS double-click interval, which is slower than most people click, so the
     // second click is recognised here with a shorter window instead.
-    const DOUBLE_CLICK_MS = 100;
+    const DOUBLE_CLICK_MS = 300;
     const DOUBLE_CLICK_PX = 5;
     let lastClick = { time: -Infinity, x: 0, y: 0 };
 
