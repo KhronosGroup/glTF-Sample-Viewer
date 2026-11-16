@@ -216,6 +216,7 @@ export function AdvancedTab({
     onCullByBoundingVolumeChange
 }) {
     const debugchannels = useViewerStore((state) => state.published.debugchannels);
+    const usedExtensions = useViewerStore((state) => state.published.usedExtensions);
     const statistics = useViewerStore((state) => state.published.statistics);
     const hasMorphTargets = useViewerStore((state) => state.published.morphWeights.length > 0);
     const supportsFloatingPointFramebuffer = useViewerStore(
@@ -243,7 +244,10 @@ export function AdvancedTab({
             <Switch
                 key={entry.key}
                 checked={extensions[entry.key]}
-                disabled={disabledFor(entry.key)}
+                disabled={
+                    disabledFor(entry.key) ||
+                    (entry.extension !== undefined && !usedExtensions.includes(entry.extension))
+                }
                 onChange={toggle(entry)}
                 title={entry.extension}
             >

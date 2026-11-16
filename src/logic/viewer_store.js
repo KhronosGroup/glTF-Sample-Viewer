@@ -138,6 +138,7 @@ import { createStore } from "zustand/vanilla";
  * @property {ValidationReport} validationReport
  * @property {SelectableEntry[]} tonemaps
  * @property {SelectableEntry[]} debugchannels
+ * @property {string[]} usedExtensions
  * @property {string[]} clippingOrientations
  * @property {Record<string, EnvironmentEntry>} environments
  * @property {Object|null} environmentLicense
@@ -268,6 +269,7 @@ const initialState = {
         // Published by the renderer and the environment loader.
         tonemaps: [{ title: "None" }],
         debugchannels: [{ title: "None" }],
+        usedExtensions: [],
         clippingOrientations: ["Axis Aligned"],
         environments: [{ index: 0, name: "" }],
         environmentLicense: undefined,

@@ -54,6 +54,40 @@ const DEBUG_CHANNEL_HEADINGS = {
     misc: "Miscellaneous"
 };
 
+// The glTF extension each extension-specific debug block belongs to. Blocks not
+// listed here (generic, shading, mr, misc) are always relevant regardless of the
+// loaded asset.
+const DEBUG_BLOCK_EXTENSION = {
+    clearcoat: "KHR_materials_clearcoat",
+    sheen: "KHR_materials_sheen",
+    specular: "KHR_materials_specular",
+    transmission: "KHR_materials_transmission",
+    volume: "KHR_materials_volume",
+    ior: "KHR_materials_ior",
+    dispersion: "KHR_materials_dispersion",
+    diffuseTransmission: "KHR_materials_diffuse_transmission",
+    iridescence: "KHR_materials_iridescence",
+    retroreflection: "KHR_materials_retroreflection",
+    anisotropy: "KHR_materials_anisotropy",
+    scatter: "KHR_materials_scatter",
+    emissiveStrength: "KHR_materials_emissive_strength",
+    gaussianSplatting: "KHR_gaussian_splatting"
+};
+
+// The extension names declared in the document tree's `extensionsUsed`, so the
+// UI can hide debug views and grey out toggles for extensions the asset does
+// not use.
+function usedExtensionNames(gltf) {
+    const used = new Set();
+    if (gltf === undefined) return used;
+    for (const document of [gltf, ...instantiatedDocuments(gltf)]) {
+        for (const extension of document.extensionsUsed ?? []) {
+            used.add(extension);
+        }
+    }
+    return used;
+}
+
 /**
  * The debug channels on offer for a loaded asset.
  *
@@ -65,10 +99,16 @@ const DEBUG_CHANNEL_HEADINGS = {
  * ({ title: object, label: string }); the label is the optgroup heading.
  */
 function debugChannelsFor(gltf) {
-    const channels = Object.keys(GltfState.DebugOutput).map((key) => ({
-        title: GltfState.DebugOutput[key],
-        label: DEBUG_CHANNEL_HEADINGS[key]
-    }));
+    const used = usedExtensionNames(gltf);
+    const channels = Object.keys(GltfState.DebugOutput)
+        .filter(
+            (key) =>
+                DEBUG_BLOCK_EXTENSION[key] === undefined || used.has(DEBUG_BLOCK_EXTENSION[key])
+        )
+        .map((key) => ({
+            title: GltfState.DebugOutput[key],
+            label: DEBUG_CHANNEL_HEADINGS[key]
+        }));
     const texCoords = GltfState.textureCoordinateDebugOutputs(gltf);
     if (texCoords.length > 0) {
         channels.splice(1, 0, {
@@ -419,6 +459,8 @@ class UIModel {
             ? getViewerState().config.debugChannel
             : GltfState.DebugOutput.NONE;
 
+        const usedExtensions = [...usedExtensionNames(gltf)];
+
         let animationDuration = 0;
         for (const animation of gltf.animations) {
             animation.computeMinMaxTime(gltf);
@@ -438,6 +480,7 @@ class UIModel {
             // choose between, regardless of the glTF version.
             showScenes: gltf.scenes.length > 1,
             debugchannels,
+            usedExtensions,
 
             materialVariants: hasVariants
                 ? [
