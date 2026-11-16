@@ -798,6 +798,12 @@ export const initViewer = async (canvas) => {
         }
     );
     applyRenderChange(
+        (s) => s.selection.cameraRoll,
+        (roll) => {
+            cameraController.setRoll(roll);
+        }
+    );
+    applyRenderChange(
         (s) => s.selection.cameraFov,
         (fov) => {
             cameraController.setFov(fov);

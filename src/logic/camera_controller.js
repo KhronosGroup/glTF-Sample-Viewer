@@ -122,6 +122,10 @@ const ZOOM_SPEED = 6.0;
 const SHIFT_SPEED_BOOST = 2.5;
 // Widen the far plane in fly mode so flying away from the scene does not clip.
 const FLY_FAR_PLANE_SCALE = 10;
+// Fly-mode tuning: mouse-drag look is halved while keyboard look/move is
+// doubled, so the two input methods feel comparable.
+const FLY_MOUSE_LOOK_SENSITIVITY = 0.5;
+const FLY_KEY_SPEED = 2.0;
 
 /**
  * Owns the user camera's motion, mode and projection: smooths discrete input
@@ -508,17 +512,20 @@ export function createCameraController(state) {
         const rotateBoosted = rotateStep * boost;
 
         if (mode === "fly") {
-            // WASD/QE move, arrows look around.
-            if (isKeyDown("KeyW")) push(zoom, -flyStep);
-            if (isKeyDown("KeyS")) push(zoom, flyStep);
-            if (isKeyDown("KeyA")) push(strafeX, flyStep);
-            if (isKeyDown("KeyD")) push(strafeX, -flyStep);
-            if (isKeyDown("KeyQ")) push(strafeY, flyStep);
-            if (isKeyDown("KeyE")) push(strafeY, -flyStep);
-            if (isKeyDown("ArrowUp")) push(orbitY, -rotateStep);
-            if (isKeyDown("ArrowDown")) push(orbitY, rotateStep);
-            if (isKeyDown("ArrowLeft")) push(orbitX, -rotateStep);
-            if (isKeyDown("ArrowRight")) push(orbitX, rotateStep);
+            // WASD/QE move, arrows look around. Keyboard input is doubled so it
+            // keeps pace with the (halved) mouse-drag look sensitivity.
+            const flyLookStep = rotateStep * FLY_KEY_SPEED;
+            const flyMoveStep = flyStep * FLY_KEY_SPEED;
+            if (isKeyDown("KeyW")) push(zoom, -flyMoveStep);
+            if (isKeyDown("KeyS")) push(zoom, flyMoveStep);
+            if (isKeyDown("KeyA")) push(strafeX, flyMoveStep);
+            if (isKeyDown("KeyD")) push(strafeX, -flyMoveStep);
+            if (isKeyDown("KeyQ")) push(strafeY, flyMoveStep);
+            if (isKeyDown("KeyE")) push(strafeY, -flyMoveStep);
+            if (isKeyDown("ArrowUp")) push(orbitY, -flyLookStep);
+            if (isKeyDown("ArrowDown")) push(orbitY, flyLookStep);
+            if (isKeyDown("ArrowLeft")) push(orbitX, -flyLookStep);
+            if (isKeyDown("ArrowRight")) push(orbitX, flyLookStep);
         } else {
             // Orbit / trackball: WASD rotates, arrows pan.
             if (isKeyDown("KeyW")) push(orbitY, rotateBoosted);
@@ -531,15 +538,16 @@ export function createCameraController(state) {
             if (isKeyDown("ArrowRight")) push(panX, -orbitPanStep);
         }
 
-        const zoomAmount = mode === "fly" ? flyStep : zoomStep;
+        const zoomAmount = mode === "fly" ? flyStep * FLY_KEY_SPEED : zoomStep;
         if (isKeyDown("Equal") || isKeyDown("NumpadAdd")) push(zoom, -zoomAmount);
         if (isKeyDown("Minus") || isKeyDown("NumpadSubtract")) push(zoom, zoomAmount);
     };
 
     return {
         pushOrbit: (dPhi, dTheta) => {
-            push(orbitX, dPhi);
-            push(orbitY, dTheta);
+            const sensitivity = mode === "fly" ? FLY_MOUSE_LOOK_SENSITIVITY : 1;
+            push(orbitX, dPhi * sensitivity);
+            push(orbitY, dTheta * sensitivity);
         },
         pushPan: (dX, dY) => {
             push(panX, dX);
@@ -591,6 +599,17 @@ export function createCameraController(state) {
             camera.setVerticalFoV((degrees * Math.PI) / 180);
             if (projection === "orthographic") {
                 syncOrthoFromDistance();
+            }
+        },
+        // Roll the camera around its look direction (given in degrees). In
+        // trackball mode the drag already controls roll, so just store the value
+        // and let it apply when leaving that mode.
+        setRoll: (degrees) => {
+            const roll = (degrees * Math.PI) / 180;
+            if (mode === "trackball") {
+                camera.roll = roll;
+            } else {
+                camera.setRoll(roll);
             }
         },
         // Reapply the enforced-aspect-ratio selection to the user camera.
@@ -651,6 +670,8 @@ export function createCameraController(state) {
         reset: () => {
             if (!isEnabled()) return;
             syncYawPitchFromCamera();
+            camera.roll = 0;
+            updateSelection({ cameraRoll: 0 });
             startAnimation({
                 orient: true,
                 yaw: 0,

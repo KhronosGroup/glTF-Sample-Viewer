@@ -162,6 +162,7 @@ import { createStore } from "zustand/vanilla";
  * @property {number} selectedCamera
  * @property {string} cameraMode
  * @property {string} cameraProjection
+ * @property {number} cameraRoll
  * @property {number[]} selectedAnimations
  * @property {number|null} selectedGraph
  * @property {string} selectedEnvironment
@@ -288,6 +289,7 @@ const initialState = {
         selectedCamera: -1,
         cameraMode: "orbit",
         cameraProjection: "perspective",
+        cameraRoll: 0,
         cameraFov: 45,
         enforceAspectRatio: false,
         cameraAspectRatio: 16 / 9,
