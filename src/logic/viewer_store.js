@@ -326,7 +326,6 @@ const initialState = {
             cameraGizmos: false,
             jointGizmos: false,
             aabbGizmos: false,
-            scatterBackfacePass: false,
             interactivity: true,
             hoverability: true,
             selectability: true,
