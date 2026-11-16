@@ -35,6 +35,9 @@ export function attachCanvasInput(canvas, handlers) {
     let drag = null;
 
     listen(canvas, "mousedown", (event) => {
+        // Focus the canvas so keyboard input (including Tab) stays on it while
+        // orbiting, instead of leaking to the previously-focused control.
+        canvas.focus();
         if (event.button === 0) {
             drag = { kind: "orbit" };
         } else if (event.button === 1) {

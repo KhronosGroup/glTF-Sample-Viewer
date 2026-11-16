@@ -57,6 +57,11 @@ export function attachKeyboard() {
         if (target?.tagName === "INPUT" && target.type !== "checkbox" && target.type !== "radio") {
             return;
         }
+        // Keep Tab from moving focus out of the canvas while orbiting.
+        if (event.code === "Tab" && target?.tagName === "CANVAS") {
+            event.preventDefault();
+            return;
+        }
         if (!NAV_KEYS.has(event.code)) return;
         if (getViewerState().selection.selectedCamera !== -1) return;
         heldKeys.add(event.code);
