@@ -30,20 +30,49 @@ function parseEnvironmentLicense(text, hdr) {
     };
 }
 
+// The heading shown for each debug channel block in the dropdown. The key mirrors the
+// block keys of GltfState.DebugOutput; the texture coordinate block is added by
+// debugChannelsFor below.
+const DEBUG_CHANNEL_HEADINGS = {
+    generic: "Generic",
+    mr: "Metallic-Roughness",
+    clearcoat: "Clearcoat",
+    sheen: "Sheen",
+    specular: "Specular",
+    transmission: "Transmission",
+    volume: "Volume",
+    ior: "IOR",
+    dispersion: "Dispersion",
+    diffuseTransmission: "Diffuse Transmission",
+    iridescence: "Iridescence",
+    retroreflection: "Retroreflection",
+    anisotropy: "Anisotropy",
+    scatter: "Scatter",
+    emissiveStrength: "Emissive Strength",
+    gaussianSplatting: "Gaussian Splatting"
+};
+
 /**
  * The debug channels on offer for a loaded asset.
  *
  * All but the texture coordinate ones are fixed. Those depend on the asset, because
  * glTF 2.1 lets a primitive number its sets freely, so they are rebuilt on every load
  * and sit where they used to, at the head of the list.
+ *
+ * Each entry is either a plain channel ({ title: string }) or a block
+ * ({ title: object, label: string }); the label is the optgroup heading.
  */
 function debugChannelsFor(gltf) {
     const channels = Object.keys(GltfState.DebugOutput).map((key) => ({
-        title: GltfState.DebugOutput[key]
+        title: GltfState.DebugOutput[key],
+        label: DEBUG_CHANNEL_HEADINGS[key]
     }));
     const texCoords = GltfState.textureCoordinateDebugOutputs(gltf);
     if (texCoords.length > 0) {
-        channels.splice(1, 0, { title: Object.fromEntries(texCoords.map((n) => [n, n])) });
+        channels.splice(1, 0, {
+            title: Object.fromEntries(texCoords.map((n) => [n, n])),
+            label: "Texture Coordinates"
+        });
     }
     return channels;
 }

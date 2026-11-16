@@ -268,8 +268,8 @@ export function AdvancedTab({
                         ))}
                     {debugchannels
                         .filter((item) => typeof item.title === "object")
-                        .map((item, index) => (
-                            <optgroup key={index}>
+                        .map((item) => (
+                            <optgroup key={item.label} label={item.label}>
                                 {Object.values(item.title).map((subitem) => (
                                     <option key={subitem} value={subitem} label={subitem} />
                                 ))}
