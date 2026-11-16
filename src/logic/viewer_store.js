@@ -362,6 +362,7 @@ const initialState = {
         // validator warnings so the tab only shows actionable issues.
         ignoreMissingTangents: true,
         ignoreUnknownAttributes: true,
+        ignoreGlbVersion: true,
         clipping: { enabled: false, orientation: "Axis Aligned", min: [0, 0, 0], max: [1, 1, 1] },
         debugChannel: "None"
     },

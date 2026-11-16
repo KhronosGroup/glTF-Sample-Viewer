@@ -30,7 +30,12 @@ function severityMeta(severity) {
         case 0:
             return { label: "Error", tone: "text-red-400", dot: "bg-red-400", badge: "bg-red-400" };
         case 1:
-            return { label: "Warning", tone: "text-amber-400", dot: "bg-amber-400", badge: "bg-amber-400" };
+            return {
+                label: "Warning",
+                tone: "text-amber-400",
+                dot: "bg-amber-400",
+                badge: "bg-amber-400"
+            };
         case 2:
             return { label: "Info", tone: "text-sky-300", dot: "bg-sky-300", badge: "bg-sky-300" };
         default:
@@ -41,16 +46,18 @@ function severityMeta(severity) {
 // Warning codes the tab can optionally suppress, keyed by the toggle that hides them.
 const IGNORABLE_CODES = {
     ignoreMissingTangents: "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
-    ignoreUnknownAttributes: "MESH_PRIMITIVE_INVALID_ATTRIBUTE"
+    ignoreUnknownAttributes: "MESH_PRIMITIVE_INVALID_ATTRIBUTE",
+    ignoreGlbVersion: "GLB_INVALID_VERSION"
 };
 
 // The messages the tab shows, given the current "ignore" toggles. The badge uses the
 // same function so the header count and the list never disagree.
 function visibleMessages(report, ignore) {
     return (report?.issues?.messages ?? []).filter(
-        (message) => !Object.entries(IGNORABLE_CODES).some(
-            ([toggle, code]) => ignore[toggle] && message.code === code
-        )
+        (message) =>
+            !Object.entries(IGNORABLE_CODES).some(
+                ([toggle, code]) => ignore[toggle] && message.code === code
+            )
     );
 }
 
@@ -58,12 +65,18 @@ export function ValidatorTab() {
     const report = useViewerStore((state) => state.published.validationReport);
     const ignoreMissingTangents = useViewerStore((state) => state.config.ignoreMissingTangents);
     const ignoreUnknownAttributes = useViewerStore((state) => state.config.ignoreUnknownAttributes);
+    const ignoreGlbVersion = useViewerStore((state) => state.config.ignoreGlbVersion);
 
     const failed = report?.error !== undefined;
     const reportName = report?.uri?.substring(report.uri.lastIndexOf("/") + 1);
-    const messages = visibleMessages(report, { ignoreMissingTangents, ignoreUnknownAttributes });
+    const messages = visibleMessages(report, {
+        ignoreMissingTangents,
+        ignoreUnknownAttributes,
+        ignoreGlbVersion
+    });
     // Derive the summary counts from the same list the messages are rendered from.
-    const countOf = (severity) => messages.filter((message) => message.severity === severity).length;
+    const countOf = (severity) =>
+        messages.filter((message) => message.severity === severity).length;
 
     return (
         <Panel title="Validation">
@@ -94,6 +107,12 @@ export function ValidatorTab() {
                 >
                     Unknown attributes
                 </Switch>
+                <Switch
+                    checked={ignoreGlbVersion}
+                    onChange={(checked) => updateConfig({ ignoreGlbVersion: checked })}
+                >
+                    GLB version 3
+                </Switch>
             </Field>
 
             {messages.length > 0 && (
@@ -101,9 +120,14 @@ export function ValidatorTab() {
                     {messages.map((message, index) => {
                         const severity = severityMeta(message.severity);
                         return (
-                            <li key={index} className="border-ink/10 min-w-0 rounded-md border px-3 py-2">
+                            <li
+                                key={index}
+                                className="border-ink/10 min-w-0 rounded-md border px-3 py-2"
+                            >
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-                                    <span className={`flex items-center gap-1 font-medium ${severity.tone}`}>
+                                    <span
+                                        className={`flex items-center gap-1 font-medium ${severity.tone}`}
+                                    >
                                         <span className={`size-1.5 rounded-full ${severity.dot}`} />
                                         {severity.label}
                                     </span>
@@ -155,7 +179,12 @@ export function ValidationCounter() {
     const report = useViewerStore((state) => state.published.validationReport);
     const ignoreMissingTangents = useViewerStore((state) => state.config.ignoreMissingTangents);
     const ignoreUnknownAttributes = useViewerStore((state) => state.config.ignoreUnknownAttributes);
-    const messages = visibleMessages(report, { ignoreMissingTangents, ignoreUnknownAttributes });
+    const ignoreGlbVersion = useViewerStore((state) => state.config.ignoreGlbVersion);
+    const messages = visibleMessages(report, {
+        ignoreMissingTangents,
+        ignoreUnknownAttributes,
+        ignoreGlbVersion
+    });
 
     let info = "";
     let severity;
