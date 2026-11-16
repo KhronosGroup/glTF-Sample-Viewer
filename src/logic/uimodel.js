@@ -35,6 +35,7 @@ function parseEnvironmentLicense(text, hdr) {
 // debugChannelsFor below.
 const DEBUG_CHANNEL_HEADINGS = {
     generic: "Generic",
+    shading: "Shading",
     mr: "Metallic-Roughness",
     clearcoat: "Clearcoat",
     sheen: "Sheen",
@@ -49,7 +50,8 @@ const DEBUG_CHANNEL_HEADINGS = {
     anisotropy: "Anisotropy",
     scatter: "Scatter",
     emissiveStrength: "Emissive Strength",
-    gaussianSplatting: "Gaussian Splatting"
+    gaussianSplatting: "Gaussian Splatting",
+    misc: "Miscellaneous"
 };
 
 /**
