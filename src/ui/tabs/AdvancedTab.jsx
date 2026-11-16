@@ -258,28 +258,37 @@ export function AdvancedTab({
     return (
         <Panel title="Advanced Controls">
             <Field label="Debug Channels">
-                <Select
-                    data-testid="select-debug-channel"
-                    value={debugChannel}
-                    onChange={(value) => {
-                        onDebugChannelChange(value);
-                    }}
-                >
-                    {debugchannels
-                        .filter((item) => typeof item.title === "string")
-                        .map((item) => (
-                            <option key={item.title} value={item.title} label={item.title} />
-                        ))}
-                    {debugchannels
-                        .filter((item) => typeof item.title === "object")
-                        .map((item) => (
-                            <optgroup key={item.label} label={item.label}>
-                                {Object.values(item.title).map((subitem) => (
-                                    <option key={subitem} value={subitem} label={subitem} />
-                                ))}
-                            </optgroup>
-                        ))}
-                </Select>
+                <div className="flex items-center gap-2">
+                    <Select
+                        data-testid="select-debug-channel"
+                        className="min-w-0 flex-1"
+                        value={debugChannel}
+                        onChange={(value) => {
+                            onDebugChannelChange(value);
+                        }}
+                    >
+                        {debugchannels
+                            .filter((item) => typeof item.title === "string")
+                            .map((item) => (
+                                <option key={item.title} value={item.title} label={item.title} />
+                            ))}
+                        {debugchannels
+                            .filter((item) => typeof item.title === "object")
+                            .map((item) => (
+                                <optgroup key={item.label} label={item.label}>
+                                    {Object.values(item.title).map((subitem) => (
+                                        <option key={subitem} value={subitem} label={subitem} />
+                                    ))}
+                                </optgroup>
+                            ))}
+                    </Select>
+                    <IconButton
+                        label="Reset debug channel"
+                        onClick={() => onDebugChannelChange("None")}
+                    >
+                        <RotateCcw size={16} aria-hidden="true" />
+                    </IconButton>
+                </div>
             </Field>
 
             <Field label="Rendering" grouped>
