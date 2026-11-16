@@ -23,6 +23,9 @@ const SHIFT_CODES = new Set(["ShiftLeft", "ShiftRight"]);
 
 const heldKeys = new Set();
 let shiftDown = false;
+// True while a slider is being dragged, so Tab can be suppressed to keep focus
+// from jumping to the next control mid-drag.
+let sliderDragging = false;
 
 export function isKeyDown(code) {
     return heldKeys.has(code);
@@ -30,6 +33,10 @@ export function isKeyDown(code) {
 
 export function isShiftDown() {
     return shiftDown;
+}
+
+export function setSliderDragging(dragging) {
+    sliderDragging = dragging;
 }
 
 /**
@@ -47,6 +54,12 @@ export function attachKeyboard() {
             return;
         }
         const target = event.target;
+        // Keep Tab from moving focus while the canvas is focused or a slider is
+        // being dragged, even if a form field currently has focus.
+        if (event.code === "Tab" && (sliderDragging || target?.tagName === "CANVAS")) {
+            event.preventDefault();
+            return;
+        }
         if (
             target?.isContentEditable ||
             target?.tagName === "TEXTAREA" ||
@@ -55,11 +68,6 @@ export function attachKeyboard() {
             return;
         }
         if (target?.tagName === "INPUT" && target.type !== "checkbox" && target.type !== "radio") {
-            return;
-        }
-        // Keep Tab from moving focus out of the canvas while orbiting.
-        if (event.code === "Tab" && target?.tagName === "CANVAS") {
-            event.preventDefault();
             return;
         }
         if (!NAV_KEYS.has(event.code)) return;

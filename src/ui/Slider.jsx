@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RotateCcw } from "lucide-react";
+import { setSliderDragging } from "../logic/keyboard.js";
 import { IconButton, Input } from "./controls.jsx";
 
 /**
@@ -122,6 +123,7 @@ export function Slider({
             onChange(next);
         };
         const stop = () => {
+            setSliderDragging(false);
             setDragging(false);
             dragOrigin.current = null;
             lastValue.current = null;
@@ -136,6 +138,10 @@ export function Slider({
             window.removeEventListener("pointercancel", stop);
         };
     }, [dragging, onChange, valueFromDrag]);
+
+    // Clear the global slider-drag flag if the slider unmounts mid-drag, so Tab
+    // navigation is not left suppressed.
+    useEffect(() => () => setSliderDragging(false), []);
 
     const indeterminate = value === null || value === undefined;
 
@@ -190,6 +196,7 @@ export function Slider({
                         lastValue.current = dragOrigin.current.value;
                         lastShift.current = event.shiftKey;
                         onChange(dragOrigin.current.value);
+                        setSliderDragging(true);
                         setDragging(true);
                     }}
                 >
