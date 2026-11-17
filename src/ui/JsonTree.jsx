@@ -18,12 +18,6 @@ function isEmptyContainer(value) {
     return isPlainObject(value) ? Object.keys(value).length === 0 : value.length === 0;
 }
 
-// Strings are shown without quotes, dimmed instead so they stand apart from
-// numbers and booleans.
-function valueClass(value) {
-    return typeof value === "string" ? "text-ink/70" : "";
-}
-
 /**
  * Recursive collapsible view of an arbitrary JSON value. Objects and arrays
  * collapse; primitives and empty containers render inline as `name: value`.
@@ -54,7 +48,7 @@ function JsonNode({ name, value, inner }) {
             >
                 <span className="font-light">{name}</span>
                 <span className="text-ink/60">: </span>
-                <span className={`font-extralight ${valueClass(value)}`}>{text}</span>
+                <span className="text-ink/70 font-extralight">{text}</span>
             </div>
         );
     }
@@ -65,8 +59,6 @@ function JsonNode({ name, value, inner }) {
 function CollapsibleNode({ name, value, inner }) {
     const [open, setOpen] = useState(true);
     const isObject = isPlainObject(value);
-    const count = isObject ? Object.keys(value).length : value.length;
-    const hint = isObject ? `{${count}}` : `[${count}]`;
 
     return (
         <div
@@ -78,10 +70,7 @@ function CollapsibleNode({ name, value, inner }) {
                 onClick={() => setOpen(!open)}
                 className="flex w-full items-center justify-between gap-2 text-left"
             >
-                <span className="font-light">
-                    {name}
-                    <span className="text-ink/60"> {hint}</span>
-                </span>
+                <span className="font-light">{name}</span>
                 <ChevronDown
                     size={16}
                     aria-hidden="true"
@@ -95,7 +84,7 @@ function CollapsibleNode({ name, value, inner }) {
                         <JsonTree data={value} inner={!inner} />
                     ) : (
                         value.map((item, index) => (
-                            <JsonNode key={index} name={`[${index}]`} value={item} inner={!inner} />
+                            <JsonNode key={index} name={index} value={item} inner={!inner} />
                         ))
                     )}
                 </div>
