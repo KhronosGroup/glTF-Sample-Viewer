@@ -129,6 +129,26 @@ function offeredDebugChannels(channels) {
 
 // ---- scene tree ------------------------------------------------------------
 
+// A short description of what a node represents, for the scene-tree detail panel.
+function nodeMeta(document, node) {
+    if (node.externalAsset !== undefined) {
+        const asset = document.externalAssets?.[node.externalAsset];
+        return { type: "External asset", reference: asset?.name };
+    }
+    if (node.mesh !== undefined) {
+        return { type: "Mesh", reference: document.meshes?.[node.mesh]?.name };
+    }
+    if (node.camera !== undefined) {
+        return { type: "Camera", reference: document.cameras?.[node.camera]?.name };
+    }
+    const lightIndex = node.extensions?.KHR_lights_punctual?.light;
+    if (lightIndex !== undefined) {
+        const light = document.extensions?.KHR_lights_punctual?.lights?.[lightIndex];
+        return { type: "Light", reference: light?.name ?? light?.type };
+    }
+    return { type: "Group", reference: undefined };
+}
+
 // A node entry for the scene tree. `focus` is the live node itself, whose world
 // transform is resolved again when the entry is double-clicked so the camera can
 // follow a moving (e.g. simulated) node.
@@ -139,6 +159,7 @@ function nodeTreeEntry(document, nodeIndex, key) {
         name: node.name ?? `Node ${nodeIndex}`,
         uid: node.uid,
         focus: node,
+        meta: nodeMeta(document, node),
         children: []
     };
     for (const child of node.children) {
@@ -183,11 +204,13 @@ function collectAssetFocus(document, path, map) {
 function buildAssetTree(document, path = []) {
     return (document?.externalAssets ?? []).map((asset, index) => {
         const assetPath = [...path, index];
+        const file = document.files?.[asset.file];
         return {
             key: `a:${assetPath.join(":")}`,
             name: asset.name ?? `Asset ${index}`,
             uid: asset.uid,
             focus: undefined,
+            meta: { type: "External asset", reference: file?.name ?? file?.uri },
             children: buildAssetTree(asset.document, assetPath)
         };
     });

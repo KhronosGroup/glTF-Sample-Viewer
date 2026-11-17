@@ -6,19 +6,23 @@ import { Field, Panel, SegmentedControl } from "../controls.jsx";
 
 /**
  * One row of the tree. Holds its own expand/collapse state so toggling a branch
- * does not reset the rest of the tree. Double-clicking centres the viewer on the
- * entry's node.
+ * does not reset the rest of the tree. A single click selects the entry (shown
+ * below the tree); double-clicking centres the viewer on it.
  */
-function TreeRow({ entry, depth }) {
+function TreeRow({ entry, depth, selectedKey, onSelect }) {
     const [expanded, setExpanded] = useState(depth < 1);
     const hasChildren = entry.children.length > 0;
+    const selected = entry.key === selectedKey;
 
     return (
         <div>
             <div
-                className="hover:bg-card flex cursor-default items-center gap-1 rounded-md px-1 py-0.5 select-none"
+                className={`flex cursor-default items-center gap-1 rounded-md px-1 py-0.5 select-none ${
+                    selected ? "bg-accent-dim" : "hover:bg-card"
+                }`}
                 style={{ paddingLeft: `${depth * 14 + 4}px` }}
                 title={entry.name}
+                onClick={() => onSelect(entry)}
                 onDoubleClick={() => {
                     if (entry.focus) {
                         commands.focusObjectChanged(entry.focus);
@@ -56,7 +60,13 @@ function TreeRow({ entry, depth }) {
             {expanded && hasChildren && (
                 <div>
                     {entry.children.map((child) => (
-                        <TreeRow key={child.key} entry={child} depth={depth + 1} />
+                        <TreeRow
+                            key={child.key}
+                            entry={child}
+                            depth={depth + 1}
+                            selectedKey={selectedKey}
+                            onSelect={onSelect}
+                        />
                     ))}
                 </div>
             )}
@@ -66,13 +76,22 @@ function TreeRow({ entry, depth }) {
 
 /**
  * A collapsible tree of the scene's nodes, or of its external assets, switchable
- * with a segmented control.
+ * with a segmented control. The selected entry's details are shown below the tree.
  */
 export function SceneTreeTab() {
     const [mode, setMode] = useState("nodes");
+    const [selectedEntry, setSelectedEntry] = useState(undefined);
     const nodeTree = useViewerStore((state) => state.published.nodeTree);
     const assetTree = useViewerStore((state) => state.published.assetTree);
     const tree = mode === "nodes" ? nodeTree : assetTree;
+
+    // When the tree is rebuilt (a new asset, or switching view), drop the selection
+    // rather than showing details for an entry that no longer exists.
+    const [previousTree, setPreviousTree] = useState(tree);
+    if (tree !== previousTree) {
+        setPreviousTree(tree);
+        setSelectedEntry(undefined);
+    }
 
     return (
         <Panel title="Scene">
@@ -96,9 +115,35 @@ export function SceneTreeTab() {
                             : "No external assets in this scene."}
                     </p>
                 ) : (
-                    tree.map((entry) => <TreeRow key={entry.key} entry={entry} depth={0} />)
+                    tree.map((entry) => (
+                        <TreeRow
+                            key={entry.key}
+                            entry={entry}
+                            depth={0}
+                            selectedKey={selectedEntry?.key}
+                            onSelect={setSelectedEntry}
+                        />
+                    ))
                 )}
             </div>
+
+            {selectedEntry !== undefined && (
+                <div className="mt-6 border-t border-ink/20 pt-4">
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                        <h3 className="truncate font-medium">{selectedEntry.name}</h3>
+                        {selectedEntry.uid !== undefined && (
+                            <span className="text-ink-dim font-mono text-xs">
+                                {selectedEntry.uid}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-ink-dim mt-1 text-sm">
+                        {selectedEntry.meta.type}
+                        {selectedEntry.meta.reference !== undefined &&
+                            ` — ${selectedEntry.meta.reference}`}
+                    </p>
+                </div>
+            )}
         </Panel>
     );
 }

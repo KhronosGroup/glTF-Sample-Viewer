@@ -15,6 +15,7 @@ import { createStore } from "zustand/vanilla";
  * @property {string} name
  * @property {string|undefined} uid
  * @property {unknown} focus
+ * @property {{type: string, reference: (string|undefined)}} meta
  * @property {SceneTreeNode[]} children
  */
 
