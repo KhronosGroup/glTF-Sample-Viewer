@@ -58,7 +58,6 @@ function JsonNode({ name, value, inner }) {
 
 function CollapsibleNode({ name, value, inner }) {
     const [open, setOpen] = useState(true);
-    const isObject = isPlainObject(value);
 
     return (
         <div
@@ -80,13 +79,7 @@ function CollapsibleNode({ name, value, inner }) {
 
             {open && (
                 <div className="mt-1 text-base font-extralight">
-                    {isObject ? (
-                        <JsonTree data={value} inner={!inner} />
-                    ) : (
-                        value.map((item, index) => (
-                            <JsonNode key={index} name={index} value={item} inner={!inner} />
-                        ))
-                    )}
+                    <JsonTree data={value} inner={!inner} />
                 </div>
             )}
         </div>
