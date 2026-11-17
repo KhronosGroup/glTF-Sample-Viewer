@@ -127,6 +127,84 @@ function offeredDebugChannels(channels) {
     );
 }
 
+// ---- scene tree ------------------------------------------------------------
+
+// A node entry for the scene tree. `focus` is the live node itself, whose world
+// transform is resolved again when the entry is double-clicked so the camera can
+// follow a moving (e.g. simulated) node.
+function nodeTreeEntry(document, nodeIndex, key) {
+    const node = document.nodes[nodeIndex];
+    const entry = {
+        key,
+        name: node.name ?? `Node ${nodeIndex}`,
+        uid: node.uid,
+        focus: node,
+        children: []
+    };
+    for (const child of node.children) {
+        entry.children.push(nodeTreeEntry(document, child, `${key}/${child}`));
+    }
+    // An instantiated external asset hangs below the node that holds it, so its
+    // default-scene roots continue the hierarchy from there.
+    const instance = node.externalAssetInstance;
+    if (instance !== undefined) {
+        const scene = instance.scenes[instance.scene ?? 0];
+        for (const root of scene?.nodes ?? []) {
+            entry.children.push(nodeTreeEntry(instance, root, `${key}@${root}`));
+        }
+    }
+    return entry;
+}
+
+function buildNodeTree(gltf) {
+    const scene = gltf?.scenes?.[gltf.scene ?? 0];
+    return (scene?.nodes ?? []).map((index) => nodeTreeEntry(gltf, index, `n${index}`));
+}
+
+// Records the first live node that instantiates each external asset, keyed by the
+// asset's index path through the document tree. Cloned instance documents are walked
+// so nested assets resolve to a node with a real world transform.
+function collectAssetFocus(document, path, map) {
+    for (const node of document.nodes) {
+        if (node.externalAsset === undefined) {
+            continue;
+        }
+        const assetPath = [...path, node.externalAsset];
+        const key = `a:${assetPath.join(":")}`;
+        if (!map.has(key)) {
+            map.set(key, node);
+        }
+        if (node.externalAssetInstance !== undefined) {
+            collectAssetFocus(node.externalAssetInstance, assetPath, map);
+        }
+    }
+}
+
+function buildAssetTree(document, path = []) {
+    return (document?.externalAssets ?? []).map((asset, index) => {
+        const assetPath = [...path, index];
+        return {
+            key: `a:${assetPath.join(":")}`,
+            name: asset.name ?? `Asset ${index}`,
+            uid: asset.uid,
+            focus: undefined,
+            children: buildAssetTree(asset.document, assetPath)
+        };
+    });
+}
+
+function buildAssetTreeWithFocus(gltf) {
+    const focus = new Map();
+    collectAssetFocus(gltf, [], focus);
+    const fill = (entries) =>
+        entries.map((entry) => ({
+            ...entry,
+            focus: focus.get(entry.key),
+            children: fill(entry.children)
+        }));
+    return fill(buildAssetTree(gltf));
+}
+
 const INITIAL_ENVIRONMENT = "Cannon_Exterior";
 const INITIAL_CLEAR_COLOR = "#8f9dc1";
 
@@ -481,6 +559,8 @@ class UIModel {
             showScenes: gltf.scenes.length > 1,
             debugchannels,
             usedExtensions,
+            nodeTree: buildNodeTree(gltf),
+            assetTree: buildAssetTreeWithFocus(gltf),
 
             materialVariants: hasVariants
                 ? [

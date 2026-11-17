@@ -7,6 +7,18 @@ import { createStore } from "zustand/vanilla";
  */
 
 /**
+ * A collapsible entry in the scene tree tab. `focus` is an opaque reference
+ * (a renderer node object) the viewer centres the camera on when the entry is
+ * double-clicked.
+ * @typedef {Object} SceneTreeNode
+ * @property {string} key
+ * @property {string} name
+ * @property {string|undefined} uid
+ * @property {unknown} focus
+ * @property {SceneTreeNode[]} children
+ */
+
+/**
  * An environment the environment loader can display, keyed by name in
  * `PublishedState.environments`.
  * @typedef {Object} EnvironmentEntry
@@ -140,6 +152,8 @@ import { createStore } from "zustand/vanilla";
  * @property {SelectableEntry[]} tonemaps
  * @property {SelectableEntry[]} debugchannels
  * @property {string[]} usedExtensions
+ * @property {SceneTreeNode[]} nodeTree
+ * @property {SceneTreeNode[]} assetTree
  * @property {string[]} clippingOrientations
  * @property {Record<string, EnvironmentEntry>} environments
  * @property {Object|null} environmentLicense
@@ -271,6 +285,8 @@ const initialState = {
         tonemaps: [{ title: "None" }],
         debugchannels: [{ title: "None" }],
         usedExtensions: [],
+        nodeTree: [],
+        assetTree: [],
         clippingOrientations: ["Axis Aligned"],
         environments: [{ index: 0, name: "" }],
         environmentLicense: undefined,

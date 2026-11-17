@@ -6,6 +6,7 @@ import {
     Camera,
     CirclePlay,
     Image,
+    ListTree,
     ShieldCheck,
     SlidersHorizontal
 } from "lucide-react";
@@ -21,10 +22,12 @@ import { AnimationsTab } from "./tabs/AnimationsTab.jsx";
 import { GraphsTab } from "./tabs/GraphsTab.jsx";
 import { PhysicsTab } from "./tabs/PhysicsTab.jsx";
 import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
+import { SceneTreeTab } from "./tabs/SceneTreeTab.jsx";
 
 const TAB_META = [
     { id: "models", label: "Models", icon: Box },
     { id: "camera", label: "Camera", icon: Camera },
+    { id: "scene", label: "Scene", icon: ListTree },
     { id: "display", label: "Display", icon: Image },
     { id: "validator", label: "Validation", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
@@ -143,10 +146,10 @@ export function Menu({ visible }) {
                 );
             case "camera":
                 return <CameraTab />;
+            case "scene":
+                return <SceneTreeTab />;
             case "display":
-                return (
-                    <DisplayTab lighting={lighting} onLightingChange={updateLighting} />
-                );
+                return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
                 return <ValidatorTab />;
             case "animations":

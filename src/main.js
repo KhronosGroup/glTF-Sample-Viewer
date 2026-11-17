@@ -110,9 +110,12 @@ const transformPoint = (matrix, point) => {
     ];
 };
 
-// Averages the world-space centroids of a node's mesh primitives.
-const nodeWorldCentroid = (gltf, node) => {
-    const mesh = node?.mesh !== undefined ? gltf?.meshes?.[node.mesh] : undefined;
+// Averages the world-space centroids of a node's mesh primitives. Mesh indices
+// resolve against the document that owns the node, not the root document, because
+// the node may come from an instantiated external asset.
+const nodeWorldCentroid = (node) => {
+    const owner = node?.ownerDocument;
+    const mesh = node?.mesh !== undefined ? owner?.meshes?.[node.mesh] : undefined;
     if (!mesh) return undefined;
     const worldTransform = node.getRenderedWorldTransform();
     if (!worldTransform) return undefined;
@@ -128,6 +131,12 @@ const nodeWorldCentroid = (gltf, node) => {
         count += 1;
     }
     return count > 0 ? [sum[0] / count, sum[1] / count, sum[2] / count] : undefined;
+};
+
+// The world-space translation of a node, used to focus nodes that have no mesh.
+const nodeWorldPosition = (node) => {
+    const transform = node?.getRenderedWorldTransform();
+    return transform ? [transform[12], transform[13], transform[14]] : undefined;
 };
 
 /**
@@ -233,7 +242,7 @@ export const initViewer = async (canvas) => {
         if (!pendingFocus) return;
         if (result.node !== undefined) {
             // Focusing a picked node snaps to its mesh centroid.
-            const focus = nodeWorldCentroid(state.gltf, result.node) ?? result.position;
+            const focus = nodeWorldCentroid(result.node) ?? result.position;
             if (focus) {
                 cameraController.focusOn(focus);
             }
@@ -871,6 +880,15 @@ export const initViewer = async (canvas) => {
         setCommand("cameraResetChanged", () => {
             cameraController.reset();
             redraw = true;
+        })
+    );
+    subscriptions.push(
+        setCommand("focusObjectChanged", (node) => {
+            const position = nodeWorldCentroid(node) ?? nodeWorldPosition(node);
+            if (position !== undefined) {
+                cameraController.focusOn(position);
+                redraw = true;
+            }
         })
     );
 
