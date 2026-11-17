@@ -42,17 +42,6 @@ async function get(key) {
     return value;
 }
 
-async function remove(key) {
-    const db = await openDb();
-    await new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readwrite");
-        transaction.objectStore(STORE_NAME).delete(key);
-        transaction.oncomplete = resolve;
-        transaction.onerror = () => reject(transaction.error);
-    });
-    db.close();
-}
-
 /**
  * Stores a dropped asset so a reload can restore it. `mainFile` and each entry of
  * `additionalFiles` are `[path, File]` pairs.
@@ -106,9 +95,4 @@ export async function loadDroppedEnvironment() {
         return undefined;
     }
     return new File([entry.bytes], entry.name);
-}
-
-/** Removes both the remembered asset and environment. */
-export async function clearDropped() {
-    await Promise.all([remove(ASSET_KEY), remove(ENVIRONMENT_KEY)]);
 }

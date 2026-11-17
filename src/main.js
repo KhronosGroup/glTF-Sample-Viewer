@@ -20,7 +20,6 @@ import {
 import { setCommand } from "./logic/commands.js";
 import { notify } from "./logic/notifications.js";
 import { attachDropZone } from "./logic/canvas_input.js";
-import { clearDropped } from "./logic/dropped_asset_store.js";
 
 import { validateBytes } from "gltf-validator";
 
@@ -907,14 +906,6 @@ export const initViewer = async (canvas) => {
             }
             node.visible = visible;
             redraw = true;
-        })
-    );
-    subscriptions.push(
-        setCommand("clearDroppedChanged", async () => {
-            await clearDropped().catch((error) =>
-                console.warn("Could not clear the remembered asset", error)
-            );
-            notify("Cleared the remembered asset and environment", "success");
         })
     );
 
