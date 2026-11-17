@@ -12,6 +12,7 @@ import {
 import { commands } from "../../logic/commands.js";
 import { useViewerStore } from "../store.js";
 import { Field, Panel, SegmentedControl, Switch } from "../controls.jsx";
+import { JsonTree } from "../JsonTree.jsx";
 
 // Icon per entry kind, keyed by the `meta.type` built for each tree entry.
 const TYPE_ICONS = {
@@ -257,6 +258,13 @@ export function SceneTreeTab() {
                             Extensions: {selectedEntry.meta.extensions.join(", ")}
                         </p>
                     )}
+                    {selectedEntry.meta.extras != null &&
+                        Object.keys(selectedEntry.meta.extras).length > 0 && (
+                            <>
+                                <p className="mt-3 text-sm font-medium">Extras</p>
+                                <JsonTree data={selectedEntry.meta.extras} />
+                            </>
+                        )}
                 </div>
             )}
         </Panel>

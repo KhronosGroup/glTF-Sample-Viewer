@@ -174,7 +174,8 @@ function nodeMeta(document, node) {
         type,
         reference,
         materials: [...materials],
-        extensions: [...extensions]
+        extensions: [...extensions],
+        extras: node.extras
     };
 }
 
@@ -243,7 +244,8 @@ function buildAssetTree(document, path = []) {
                 type: "External asset",
                 reference: file?.name ?? file?.uri,
                 materials: [],
-                extensions: []
+                extensions: [],
+                extras: asset.extras
             },
             children: buildAssetTree(asset.document, assetPath)
         };
