@@ -19,7 +19,7 @@ const TYPE_ICONS = {
     Camera: Camera,
     Light: Lightbulb,
     "External asset": Boxes,
-    Group: Folder
+    Node: Folder
 };
 
 // Finds the entry whose `focus` is the given node, returning it plus the keys of
@@ -227,7 +227,9 @@ export function SceneTreeTab() {
                                 aria-hidden="true"
                             />
                         )}
-                        <h3 className="truncate font-medium">{selectedEntry.name}</h3>
+                        <h3 className="min-w-0 truncate font-medium" title={selectedEntry.name}>
+                            {selectedEntry.name}
+                        </h3>
                     </div>
                     {selectedEntry.uid !== undefined && (
                         <p className="mt-1 flex items-center gap-1.5">

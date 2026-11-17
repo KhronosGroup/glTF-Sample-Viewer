@@ -131,7 +131,7 @@ function offeredDebugChannels(channels) {
 
 // A short description of what a node represents, for the scene-tree detail panel.
 function nodeMeta(document, node) {
-    let type = "Group";
+    let type = "Node";
     let reference;
     if (node.externalAsset !== undefined) {
         type = "External asset";
