@@ -891,6 +891,15 @@ export const initViewer = async (canvas) => {
             }
         })
     );
+    subscriptions.push(
+        setCommand("setNodeVisibility", (node, visible) => {
+            if (node === undefined) {
+                return;
+            }
+            node.visible = visible;
+            redraw = true;
+        })
+    );
 
     uiModel.onOrbit((orbit) => {
         cameraController.pushOrbit(orbit.deltaPhi, orbit.deltaTheta);

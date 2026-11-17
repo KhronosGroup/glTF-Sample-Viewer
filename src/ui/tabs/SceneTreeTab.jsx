@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { useViewerStore } from "../store.js";
-import { Field, Panel, SegmentedControl } from "../controls.jsx";
+import { Field, Panel, SegmentedControl, Switch } from "../controls.jsx";
 
 // Icon per entry kind, keyed by the `meta.type` built for each tree entry.
 const TYPE_ICONS = {
@@ -68,14 +68,6 @@ function TreeRow({ entry, depth, selectedKey, onSelect }) {
                 </button>
                 <TypeIcon size={14} className="text-ink-dim shrink-0" aria-hidden="true" />
                 <span className="truncate text-sm">{entry.name}</span>
-                {entry.uid !== undefined && (
-                    <span
-                        className="text-ink-dim ml-1 shrink-0 font-mono text-[11px]"
-                        title={entry.uid}
-                    >
-                        {entry.uid}
-                    </span>
-                )}
             </div>
             {expanded && hasChildren && (
                 <div>
@@ -91,6 +83,27 @@ function TreeRow({ entry, depth, selectedKey, onSelect }) {
                 </div>
             )}
         </div>
+    );
+}
+
+/**
+ * Toggles the visibility of the selected entry's node. Holds its own state so
+ * the switch reflects the node's current visibility and remounts (via `key`)
+ * when the selection changes.
+ */
+function VisibilityToggle({ node }) {
+    const [visible, setVisible] = useState(node.visible ?? true);
+
+    return (
+        <Switch
+            checked={visible}
+            onChange={(checked) => {
+                setVisible(checked);
+                commands.setNodeVisibility(node, checked);
+            }}
+        >
+            Visible
+        </Switch>
     );
 }
 
@@ -175,6 +188,9 @@ export function SceneTreeTab() {
                         {selectedEntry.meta.reference !== undefined &&
                             ` — ${selectedEntry.meta.reference}`}
                     </p>
+                    {selectedEntry.focus !== undefined && (
+                        <VisibilityToggle key={selectedEntry.key} node={selectedEntry.focus} />
+                    )}
                     {selectedEntry.meta.materials.length > 0 && (
                         <p className="text-ink-dim mt-1 text-sm">
                             Materials: {selectedEntry.meta.materials.join(", ")}
