@@ -26,7 +26,10 @@ export function deriveLighting(lighting, partial, renderEnvPreference) {
         return { next: { ...partial, renderEnv: false }, preference: lighting.renderEnv };
     }
     if (partial.ibl === true) {
-        return { next: { ...partial, renderEnv: renderEnvPreference }, preference: renderEnvPreference };
+        return {
+            next: { ...partial, renderEnv: renderEnvPreference },
+            preference: renderEnvPreference
+        };
     }
     return { next: partial, preference: renderEnvPreference };
 }

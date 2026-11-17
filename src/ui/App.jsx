@@ -34,7 +34,10 @@ export function App() {
     useEffect(
         () =>
             subscribeToViewerState((state, previous) => {
-                if (state.selection.selectedModel !== previous.selection.selectedModel && isMobile()) {
+                if (
+                    state.selection.selectedModel !== previous.selection.selectedModel &&
+                    isMobile()
+                ) {
                     setMenuVisible(false);
                 }
             }),
