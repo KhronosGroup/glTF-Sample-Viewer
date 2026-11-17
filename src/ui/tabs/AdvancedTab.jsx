@@ -250,8 +250,8 @@ export function AdvancedTab({
                 key={entry.key}
                 checked={extensions[entry.key]}
                 disabled={
-                    disabledFor(entry.key) ||
-                    (entry.extension !== undefined && !usedExtensions.includes(entry.extension))
+                    (disabledFor(entry.key) ||
+                    (entry.extension !== undefined && !usedExtensions.includes(entry.extension))) && false
                 }
                 onChange={toggle(entry)}
                 title={entry.extension}
