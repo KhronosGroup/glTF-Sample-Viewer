@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Box, Boxes, Camera, ChevronDown, ChevronRight, Folder, Lightbulb } from "lucide-react";
+import {
+    Box,
+    Boxes,
+    Camera,
+    ChevronDown,
+    ChevronRight,
+    Folder,
+    Lightbulb,
+    Link
+} from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { useViewerStore } from "../store.js";
 import { Field, Panel, SegmentedControl } from "../controls.jsx";
@@ -104,6 +113,9 @@ export function SceneTreeTab() {
         setSelectedEntry(undefined);
     }
 
+    const SelectedTypeIcon =
+        selectedEntry === undefined ? null : (TYPE_ICONS[selectedEntry.meta.type] ?? Folder);
+
     return (
         <Panel title="Scene">
             <Field label="Tree">
@@ -140,19 +152,39 @@ export function SceneTreeTab() {
 
             {selectedEntry !== undefined && (
                 <div className="mt-6 border-t border-ink/20 pt-4">
-                    <div className="flex flex-wrap items-baseline gap-x-2">
+                    <div className="flex items-center gap-2">
+                        {SelectedTypeIcon && (
+                            <SelectedTypeIcon
+                                size={16}
+                                className="text-ink-dim shrink-0"
+                                aria-hidden="true"
+                            />
+                        )}
                         <h3 className="truncate font-medium">{selectedEntry.name}</h3>
-                        {selectedEntry.uid !== undefined && (
-                            <span className="text-ink-dim font-mono text-xs">
+                    </div>
+                    {selectedEntry.uid !== undefined && (
+                        <p className="mt-1 flex items-center gap-1.5">
+                            <Link size={12} className="text-ink-dim shrink-0" aria-hidden="true" />
+                            <span className="text-ink-dim truncate font-mono text-xs">
                                 {selectedEntry.uid}
                             </span>
-                        )}
-                    </div>
+                        </p>
+                    )}
                     <p className="text-ink-dim mt-1 text-sm">
                         {selectedEntry.meta.type}
                         {selectedEntry.meta.reference !== undefined &&
                             ` — ${selectedEntry.meta.reference}`}
                     </p>
+                    {selectedEntry.meta.materials.length > 0 && (
+                        <p className="text-ink-dim mt-1 text-sm">
+                            Materials: {selectedEntry.meta.materials.join(", ")}
+                        </p>
+                    )}
+                    {selectedEntry.meta.extensions.length > 0 && (
+                        <p className="text-ink-dim mt-1 text-sm">
+                            Extensions: {selectedEntry.meta.extensions.join(", ")}
+                        </p>
+                    )}
                 </div>
             )}
         </Panel>

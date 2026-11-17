@@ -131,22 +131,51 @@ function offeredDebugChannels(channels) {
 
 // A short description of what a node represents, for the scene-tree detail panel.
 function nodeMeta(document, node) {
+    let type = "Group";
+    let reference;
     if (node.externalAsset !== undefined) {
-        const asset = document.externalAssets?.[node.externalAsset];
-        return { type: "External asset", reference: asset?.name };
+        type = "External asset";
+        reference = document.externalAssets?.[node.externalAsset]?.name;
+    } else if (node.mesh !== undefined) {
+        type = "Mesh";
+        reference = document.meshes?.[node.mesh]?.name;
+    } else if (node.camera !== undefined) {
+        type = "Camera";
+        reference = document.cameras?.[node.camera]?.name;
+    } else if (node.extensions?.KHR_lights_punctual?.light !== undefined) {
+        const light =
+            document.extensions?.KHR_lights_punctual?.lights?.[
+                node.extensions.KHR_lights_punctual.light
+            ];
+        type = "Light";
+        reference = light?.name ?? light?.type;
     }
-    if (node.mesh !== undefined) {
-        return { type: "Mesh", reference: document.meshes?.[node.mesh]?.name };
+
+    // Materials and extensions come from the node itself, its mesh, and the
+    // materials that mesh uses.
+    const mesh = node.mesh !== undefined ? document.meshes?.[node.mesh] : undefined;
+    const materials = new Set();
+    const extensions = new Set(Object.keys(node.extensions ?? {}));
+    if (mesh !== undefined) {
+        if (mesh.extensions !== undefined) {
+            for (const name of Object.keys(mesh.extensions)) extensions.add(name);
+        }
+        for (const primitive of mesh.primitives) {
+            if (primitive.material === undefined) continue;
+            const material = document.materials?.[primitive.material];
+            if (material?.name !== undefined) materials.add(material.name);
+            if (material?.extensions !== undefined) {
+                for (const name of Object.keys(material.extensions)) extensions.add(name);
+            }
+        }
     }
-    if (node.camera !== undefined) {
-        return { type: "Camera", reference: document.cameras?.[node.camera]?.name };
-    }
-    const lightIndex = node.extensions?.KHR_lights_punctual?.light;
-    if (lightIndex !== undefined) {
-        const light = document.extensions?.KHR_lights_punctual?.lights?.[lightIndex];
-        return { type: "Light", reference: light?.name ?? light?.type };
-    }
-    return { type: "Group", reference: undefined };
+
+    return {
+        type,
+        reference,
+        materials: [...materials],
+        extensions: [...extensions]
+    };
 }
 
 // A node entry for the scene tree. `focus` is the live node itself, whose world
@@ -210,7 +239,12 @@ function buildAssetTree(document, path = []) {
             name: asset.name ?? `Asset ${index}`,
             uid: asset.uid,
             focus: undefined,
-            meta: { type: "External asset", reference: file?.name ?? file?.uri },
+            meta: {
+                type: "External asset",
+                reference: file?.name ?? file?.uri,
+                materials: [],
+                extensions: []
+            },
             children: buildAssetTree(asset.document, assetPath)
         };
     });
