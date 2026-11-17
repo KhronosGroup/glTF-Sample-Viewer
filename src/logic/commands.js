@@ -4,7 +4,7 @@
  *     "selectedEnvironmentChanged"|"addEnvironmentChanged"|"cameraLookAtChanged"|
  *     "cameraResetChanged"|"animationResetChanged"|"graphResetChanged"|"customEventSendClicked"|
  *     "physicsResetChanged"|"physicsStepChanged"|"captureCanvas"|"cameraExport"|"cameraImport"|
- *     "focusObjectChanged"|"setNodeVisibility"} CommandName
+ *     "focusObjectChanged"|"setNodeVisibility"|"clearDroppedChanged"} CommandName
  */
 
 /**
@@ -38,7 +38,8 @@ const commandNames = [
     "cameraExport",
     "cameraImport",
     "focusObjectChanged",
-    "setNodeVisibility"
+    "setNodeVisibility",
+    "clearDroppedChanged"
 ];
 
 const noop = () => {};

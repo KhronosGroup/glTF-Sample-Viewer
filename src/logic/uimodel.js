@@ -8,7 +8,12 @@ import {
 } from "./viewer_store.js";
 import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
-import { loadDroppedAsset, saveDroppedAsset } from "./dropped_asset_store.js";
+import {
+    loadDroppedAsset,
+    loadDroppedEnvironment,
+    saveDroppedAsset,
+    saveDroppedEnvironment
+} from "./dropped_asset_store.js";
 
 /**
  * Splits an SPDX licence file into parts the UI can render as elements, so the
@@ -378,7 +383,13 @@ class UIModel {
 
     /** Emits the initial model and environment, replacing RxJS `startWith`. */
     async start() {
-        this.emitHdr(this.environments[INITIAL_ENVIRONMENT]);
+        // Restore a dropped environment, else the initial sample environment.
+        const persistedEnvironment = await loadDroppedEnvironment().catch(() => undefined);
+        if (persistedEnvironment !== undefined) {
+            this.addEnvironment({ hdr_path: persistedEnvironment });
+        } else {
+            this.emitHdr(this.environments[INITIAL_ENVIRONMENT]);
+        }
         updateSelection({
             clearColor: INITIAL_CLEAR_COLOR
         });
@@ -513,6 +524,9 @@ class UIModel {
 
         if (hdrFile !== undefined && mainFile === undefined) {
             this.addEnvironment({ hdr_path: hdrFile[1] });
+            saveDroppedEnvironment(hdrFile[1]).catch((error) =>
+                console.warn("Could not persist the dropped environment", error)
+            );
             return;
         }
         if (mainFile === undefined) {

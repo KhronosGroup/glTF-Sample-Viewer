@@ -1,10 +1,11 @@
-import { Funnel } from "lucide-react";
+import { Funnel, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
+    OutlineButton,
     Panel,
     Radio,
     RadioGroup,
@@ -233,6 +234,11 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                     )}
                 </Field>
             )}
+
+            <OutlineButton className="mt-6" onClick={() => commands.clearDroppedChanged()}>
+                <Trash2 size={16} aria-hidden="true" />
+                Clear remembered asset
+            </OutlineButton>
         </Panel>
     );
 }
