@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Box, Boxes, Camera, ChevronDown, ChevronRight, Folder, Lightbulb } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { useViewerStore } from "../store.js";
 import { Field, Panel, SegmentedControl } from "../controls.jsx";
+
+// Icon per entry kind, keyed by the `meta.type` built for each tree entry.
+const TYPE_ICONS = {
+    Mesh: Box,
+    Camera: Camera,
+    Light: Lightbulb,
+    "External asset": Boxes,
+    Group: Folder
+};
 
 /**
  * One row of the tree. Holds its own expand/collapse state so toggling a branch
@@ -13,6 +22,7 @@ function TreeRow({ entry, depth, selectedKey, onSelect }) {
     const [expanded, setExpanded] = useState(depth < 1);
     const hasChildren = entry.children.length > 0;
     const selected = entry.key === selectedKey;
+    const TypeIcon = TYPE_ICONS[entry.meta.type] ?? Folder;
 
     return (
         <div>
@@ -47,6 +57,7 @@ function TreeRow({ entry, depth, selectedKey, onSelect }) {
                             <ChevronRight size={14} aria-hidden="true" />
                         ))}
                 </button>
+                <TypeIcon size={14} className="text-ink-dim shrink-0" aria-hidden="true" />
                 <span className="truncate text-sm">{entry.name}</span>
                 {entry.uid !== undefined && (
                     <span
