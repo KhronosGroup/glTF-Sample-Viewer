@@ -8,6 +8,7 @@ import {
 } from "./viewer_store.js";
 import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
+import { loadDroppedAsset, saveDroppedAsset } from "./dropped_asset_store.js";
 
 /**
  * Splits an SPDX licence file into parts the UI can render as elements, so the
@@ -376,7 +377,7 @@ class UIModel {
     }
 
     /** Emits the initial model and environment, replacing RxJS `startWith`. */
-    start() {
+    async start() {
         this.emitHdr(this.environments[INITIAL_ENVIRONMENT]);
         updateSelection({
             clearColor: INITIAL_CLEAR_COLOR
@@ -389,6 +390,15 @@ class UIModel {
                 this.registerDroppedFilename(this.modelURL);
                 this.emitModel({ mainFile: this.modelURL });
             }
+            return;
+        }
+
+        // Restore the last dropped asset so a reload does not require dropping it
+        // again. Only applied when the URL does not already name a sample model.
+        const persisted = await loadDroppedAsset().catch(() => undefined);
+        if (persisted !== undefined) {
+            this.registerDroppedFilename(persisted.mainFile[1].name);
+            this.emitModel(persisted);
         } else {
             this.selectModel("DamagedHelmet", false);
         }
@@ -415,6 +425,13 @@ class UIModel {
     updateModelUrl(name) {
         const url = new URL(window.location.href);
         url.searchParams.set("model", name);
+        window.history.replaceState(null, "", url);
+    }
+
+    /** Removes the sample model from the URL so a reload restores the dropped asset. */
+    clearModelUrl() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("model");
         window.history.replaceState(null, "", url);
     }
 
@@ -507,6 +524,12 @@ class UIModel {
             this.registerDroppedFilename(mainFile[1].name);
         }
         this.emitModel({ mainFile, additionalFiles });
+
+        // Persist the drop so a reload restores it instead of the default sample.
+        this.clearModelUrl();
+        saveDroppedAsset(mainFile, additionalFiles).catch((error) =>
+            console.warn("Could not persist the dropped asset", error)
+        );
     }
 
     registerDroppedFilename(path) {
