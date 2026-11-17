@@ -14,38 +14,26 @@ function isContainer(value) {
     return isPlainObject(value) || Array.isArray(value);
 }
 
-function formatPrimitive(value) {
-    if (typeof value === "string") {
-        return JSON.stringify(value);
-    }
-    return String(value);
+function isEmptyContainer(value) {
+    return isPlainObject(value) ? Object.keys(value).length === 0 : value.length === 0;
 }
 
-function formatArray(value) {
-    return `[${value.map(formatPrimitive).join(", ")}]`;
-}
-
-function formatInline(value) {
-    if (isPlainObject(value)) {
-        return "{}";
-    }
-    if (Array.isArray(value)) {
-        return formatArray(value);
-    }
-    return formatPrimitive(value);
+// Strings are shown without quotes, dimmed instead so they stand apart from
+// numbers and booleans.
+function valueClass(value) {
+    return typeof value === "string" ? "text-ink/70" : "";
 }
 
 /**
- * Recursive collapsible view of an arbitrary JSON value. Only objects and arrays
- * that contain further objects/arrays collapse; primitives and flat arrays render
- * inline as `name: value`.
+ * Recursive collapsible view of an arbitrary JSON value. Objects and arrays
+ * collapse; primitives and empty containers render inline as `name: value`.
  */
 export function JsonTree({ data, inner = false }) {
     if (data === null || data === undefined) {
         return null;
     }
     return (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
             {Object.entries(data).map(([name, value]) => (
                 <JsonNode key={name} name={name} value={value} inner={inner} />
             ))}
@@ -54,20 +42,19 @@ export function JsonTree({ data, inner = false }) {
 }
 
 function JsonNode({ name, value, inner }) {
-    const collapsible =
-        (isPlainObject(value) && Object.keys(value).length > 0) ||
-        (Array.isArray(value) && value.some(isContainer));
+    const collapsible = isContainer(value) && !isEmptyContainer(value);
 
     if (!collapsible) {
+        const text = isContainer(value) ? (isPlainObject(value) ? "{}" : "[]") : String(value);
         return (
             <div
-                className={`break-words rounded-md px-3 py-2 ${
+                className={`break-words rounded-md px-2 py-1.5 ${
                     inner ? "bg-card-inner" : "bg-card"
                 }`}
             >
                 <span className="font-light">{name}</span>
                 <span className="text-ink/60">: </span>
-                <span className="font-extralight">{formatInline(value)}</span>
+                <span className={`font-extralight ${valueClass(value)}`}>{text}</span>
             </div>
         );
     }
@@ -82,7 +69,9 @@ function CollapsibleNode({ name, value, inner }) {
     const hint = isObject ? `{${count}}` : `[${count}]`;
 
     return (
-        <div className={`break-words rounded-md px-3 py-2 ${inner ? "bg-card-inner" : "bg-card"}`}>
+        <div
+            className={`break-words rounded-md px-2 py-1.5 ${inner ? "bg-card-inner" : "bg-card"}`}
+        >
             <button
                 type="button"
                 aria-expanded={open}
@@ -101,7 +90,7 @@ function CollapsibleNode({ name, value, inner }) {
             </button>
 
             {open && (
-                <div className="mt-1.5 text-base font-extralight">
+                <div className="mt-1 text-base font-extralight">
                     {isObject ? (
                         <JsonTree data={value} inner={!inner} />
                     ) : (
