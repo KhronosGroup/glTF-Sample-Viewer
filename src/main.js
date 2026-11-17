@@ -10,7 +10,13 @@ import dracoDecoderWasmUrl from "draco3d/draco_decoder.wasm?url";
 import { createCameraController } from "./logic/camera_controller.js";
 import { UIModel } from "./logic/uimodel.js";
 import { GltfModelPathProvider, fillEnvironmentWithPaths } from "./model_path_provider.js";
-import { getViewerState, updatePublished, updateUi, viewerStore } from "./logic/viewer_store.js";
+import {
+    getViewerState,
+    updatePublished,
+    updateSelection,
+    updateUi,
+    viewerStore
+} from "./logic/viewer_store.js";
 import { setCommand } from "./logic/commands.js";
 import { notify } from "./logic/notifications.js";
 import { attachDropZone } from "./logic/canvas_input.js";
@@ -246,6 +252,8 @@ export const initViewer = async (canvas) => {
             if (focus) {
                 cameraController.focusOn(focus);
             }
+            // Mirror the focus into the scene-tree tab so the node is selected there.
+            updateSelection({ focusedNode: result.node });
         } else {
             // Double-clicking empty space returns the camera to its initial view,
             // whose focus is the scene centre rather than the world origin.

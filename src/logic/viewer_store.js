@@ -191,6 +191,7 @@ import { createStore } from "zustand/vanilla";
  * @property {boolean} graphState
  * @property {boolean} physicsState
  * @property {Record<string, Record<string, number>>} morphWeightOverrides
+ * @property {unknown} focusedNode
  */
 
 /**
@@ -322,7 +323,8 @@ const initialState = {
         animationDuration: 0,
         graphState: true,
         physicsState: true,
-        morphWeightOverrides: {}
+        morphWeightOverrides: {},
+        focusedNode: undefined
     },
 
     config: {

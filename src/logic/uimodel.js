@@ -656,7 +656,8 @@ class UIModel {
             animationTimeOverride: null,
             animationDuration,
             graphState: true,
-            physicsState: true
+            physicsState: true,
+            focusedNode: undefined
         });
 
         if (selectedDebugChannel !== getViewerState().config.debugChannel) {
