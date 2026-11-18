@@ -13,6 +13,7 @@ import {
 import { Slider } from "../Slider.jsx";
 import { StatList } from "../StatList.jsx";
 import { MorphWeights } from "../MorphWeights.jsx";
+import { canonicalExtensionName } from "../../logic/material_naming.js";
 
 const RENDERING_TOGGLES = [
     { key: "skinning", label: "Skinning" },
@@ -60,72 +61,20 @@ const EXTENSION_TOGGLES = [
 ];
 
 const MATERIAL_EXTENSIONS = [
-    {
-        key: "anisotropy",
-        label: "Anisotropy",
-        extension: "KHR_materials_anisotropy"
-    },
-    {
-        key: "clearcoat",
-        label: "Clearcoat",
-        extension: "KHR_materials_clearcoat"
-    },
-    {
-        key: "diffuseTransmission",
-        label: "Diffuse Transmission",
-        extension: "KHR_materials_diffuse_transmission"
-    },
-    {
-        key: "dispersion",
-        label: "Dispersion",
-        extension: "KHR_materials_dispersion"
-    },
-    {
-        key: "emissiveStrength",
-        label: "Emissive Strength",
-        extension: "KHR_materials_emissive_strength"
-    },
-    {
-        key: "ior",
-        label: "Index of Refraction",
-        extension: "KHR_materials_ior"
-    },
-    {
-        key: "iridescence",
-        label: "Iridescence",
-        extension: "KHR_materials_iridescence"
-    },
-    {
-        key: "retroreflection",
-        label: "Retroreflection",
-        extension: "KHR_materials_retroreflection"
-    },
-    {
-        key: "scattering",
-        label: "Scattering",
-        extension: "KHR_materials_scatter"
-    },
-    {
-        key: "sheen",
-        label: "Sheen",
-        extension: "KHR_materials_sheen"
-    },
-    {
-        key: "specular",
-        label: "Specular",
-        extension: "KHR_materials_specular"
-    },
-    {
-        key: "transmission",
-        label: "Transmission",
-        extension: "KHR_materials_transmission"
-    },
-    {
-        key: "volume",
-        label: "Volume",
-        extension: "KHR_materials_volume"
-    }
-];
+    { key: "anisotropy", extension: "KHR_materials_anisotropy" },
+    { key: "clearcoat", extension: "KHR_materials_clearcoat" },
+    { key: "diffuseTransmission", extension: "KHR_materials_diffuse_transmission" },
+    { key: "dispersion", extension: "KHR_materials_dispersion" },
+    { key: "emissiveStrength", extension: "KHR_materials_emissive_strength" },
+    { key: "ior", extension: "KHR_materials_ior" },
+    { key: "iridescence", extension: "KHR_materials_iridescence" },
+    { key: "retroreflection", extension: "KHR_materials_retroreflection" },
+    { key: "scattering", extension: "KHR_materials_scatter" },
+    { key: "sheen", extension: "KHR_materials_sheen" },
+    { key: "specular", extension: "KHR_materials_specular" },
+    { key: "transmission", extension: "KHR_materials_transmission" },
+    { key: "volume", extension: "KHR_materials_volume" }
+].map((entry) => ({ ...entry, label: canonicalExtensionName(entry.extension) }));
 
 const CLIPPING_AXES = ["X", "Y", "Z"];
 

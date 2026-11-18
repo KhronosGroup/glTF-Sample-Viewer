@@ -6,7 +6,8 @@ export {
     updatePublished,
     updateSelection,
     updateConfig,
-    updateUi
+    updateUi,
+    updateSceneTree
 } from "../logic/viewer_store.js";
 
 export function useViewerStore(selector) {

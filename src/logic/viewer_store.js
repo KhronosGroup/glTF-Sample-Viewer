@@ -7,6 +7,17 @@ import { createStore } from "zustand/vanilla";
  */
 
 /**
+ * A collapsible details box in the scene tree details panel (mesh, material,
+ * shape, collider, camera, light, ...).
+ * @typedef {Object} DetailBox
+ * @property {string} key
+ * @property {string} type
+ * @property {string|undefined} name
+ * @property {Object} values
+ * @property {Array<{label: string, src: string}>} [previews]
+ */
+
+/**
  * A collapsible entry in the scene tree tab. `focus` is an opaque reference
  * (a renderer node object) the viewer centres the camera on when the entry is
  * double-clicked.
@@ -15,7 +26,7 @@ import { createStore } from "zustand/vanilla";
  * @property {string} name
  * @property {string|undefined} uid
  * @property {unknown} focus
- * @property {{type: string, reference: (string|undefined), materials: string[], extensions: string[], extras: unknown}} meta
+ * @property {{type: string, boxes: DetailBox[], extras: unknown}} meta
  * @property {SceneTreeNode[]} children
  */
 
@@ -195,6 +206,16 @@ import { createStore } from "zustand/vanilla";
  */
 
 /**
+ * The scene tree tab's view and selection, kept in the store so it survives the
+ * tab being unmounted when another tab is opened.
+ * @typedef {Object} SceneTreeState
+ * @property {"nodes"|"assets"} mode
+ * @property {unknown} selectedEntry
+ * @property {string[]} expandedKeys
+ * @property {string[]} collapsedBoxes
+ */
+
+/**
  * glTF 2.1 shape debug visualisation, mirrored into
  * `state.renderingParameters.debugShapes` by `main.js`.
  * @typedef {Object} DebugShapesConfig
@@ -232,6 +253,7 @@ import { createStore } from "zustand/vanilla";
  * @property {SelectionState} selection
  * @property {ConfigState} config
  * @property {UiState} ui
+ * @property {SceneTreeState} sceneTree
  */
 
 /**
@@ -391,6 +413,13 @@ const initialState = {
     ui: {
         isLoading: false,
         showDropDownOverlay: false
+    },
+
+    sceneTree: {
+        mode: "nodes",
+        selectedEntry: undefined,
+        expandedKeys: [],
+        collapsedBoxes: []
     }
 };
 
@@ -424,3 +453,5 @@ export const updateSelection = updateSlice("selection");
 export const updateConfig = updateSlice("config");
 /** Merges a partial into the `ui` slice. @type {(partial: Partial<UiState>) => void} */
 export const updateUi = updateSlice("ui");
+/** Merges a partial into the `sceneTree` slice. @type {(partial: Partial<SceneTreeState>) => void} */
+export const updateSceneTree = updateSlice("sceneTree");

@@ -3,11 +3,13 @@ import {
     getViewerState,
     updateConfig,
     updatePublished,
+    updateSceneTree,
     updateSelection,
     updateUi
 } from "./viewer_store.js";
 import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
+import { canonicalPropName } from "./material_naming.js";
 import {
     loadDroppedAsset,
     loadDroppedEnvironment,
@@ -135,54 +137,519 @@ function offeredDebugChannels(channels) {
 
 // ---- scene tree ------------------------------------------------------------
 
+// Converts a gl-matrix/typed-array value to a plain array.
+function toArray(value) {
+    return value === undefined ? undefined : Array.from(value);
+}
+
+// The image source URL backing a texture info, if it can be previewed.
+function previewFor(document, textureInfo) {
+    if (textureInfo === undefined) {
+        return undefined;
+    }
+    const texture = document.textures?.[textureInfo.index];
+    const image = document.images?.[texture?.source];
+    const src = image?.image?.src;
+    if (typeof src !== "string") {
+        return undefined;
+    }
+    const label = canonicalPropName(
+        (textureInfo.samplerName ?? "Texture").replace(/^u_/, "").replace(/Sampler$/, "")
+    );
+    return { label, src };
+}
+
+// Serializes a GltfObject to plain JSON, skipping texture infos (shown as a
+// preview instead) and internal bookkeeping.
+function toPlain(value) {
+    if (value === null || value === undefined) {
+        return undefined;
+    }
+    if (typeof value !== "object") {
+        return value;
+    }
+    if (ArrayBuffer.isView(value)) {
+        return Array.from(value);
+    }
+    if (Array.isArray(value)) {
+        const result = value.map(toPlain).filter((item) => item !== undefined);
+        return result.length > 0 ? result : undefined;
+    }
+    if (typeof value.index === "number") {
+        return undefined;
+    }
+    const result = {};
+    for (const key of Object.keys(value)) {
+        if (key === "animatedPropertyObjects" || key === "gltfObjectIndex") {
+            continue;
+        }
+        const item = toPlain(value[key]);
+        if (item !== undefined) {
+            result[key] = item;
+        }
+    }
+    // Animated properties are non-enumerable getters, so they are read by name.
+    for (const key of value.constructor?.animatedProperties ?? []) {
+        const item = toPlain(value[key]);
+        if (item !== undefined) {
+            result[key] = item;
+        }
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
+}
+
+// A summary of one material: its texture previews plus its values grouped into
+// generic / metallic-roughness and one group per extension.
+function materialInfo(document, material) {
+    const generic = { alphaMode: material.alphaMode };
+    if (material.alphaMode === "MASK") {
+        generic.alphaCutoff = material.alphaCutoff;
+    }
+    generic.doubleSided = material.doubleSided;
+    const emissive = toArray(material.emissiveFactor);
+    if (emissive !== undefined && emissive.some((value) => value !== 0)) {
+        generic.emissiveFactor = emissive;
+    }
+    if (material.hasEmissiveStrength && material.emissiveStrength !== 1) {
+        generic.emissiveStrength = material.emissiveStrength;
+    }
+
+    const values = {};
+    if (Object.keys(generic).length > 0) {
+        values.generic = generic;
+    }
+    const metallicRoughness = toPlain(material.pbrMetallicRoughness);
+    if (metallicRoughness !== undefined && Object.keys(metallicRoughness).length > 0) {
+        values.metallicRoughness = metallicRoughness;
+    }
+    // Extensions become top-level groups keyed by their glTF extension name, so
+    // the details panel can title each with its canonical name.
+    const extensions = toPlain(material.extensions);
+    if (extensions !== undefined) {
+        Object.assign(values, extensions);
+    }
+
+    const previews = (material.textures ?? [])
+        .map((texture) => previewFor(document, texture))
+        .filter((preview) => preview !== undefined);
+
+    return {
+        name: material.name ?? "Unnamed material",
+        previews,
+        values
+    };
+}
+
+// Camera details: its projection parameters.
+function cameraBox(camera) {
+    if (camera === undefined) {
+        return undefined;
+    }
+    const projection = camera.type === "perspective" ? "perspective" : "orthographic";
+    const values = {};
+    const props = toPlain(camera[projection]);
+    if (props !== undefined && Object.keys(props).length > 0) {
+        values[projection] = props;
+    }
+    return { key: "camera", type: "Camera", name: camera.name, values };
+}
+
+// Light details: type, color, intensity, range, and spot angles for spot lights.
+function lightBox(light) {
+    if (light === undefined) {
+        return undefined;
+    }
+    const values = {};
+    const generic = { type: canonicalPropName(light.type) };
+    const color = toArray(light.color);
+    if (color !== undefined) {
+        generic.color = color;
+    }
+    if (light.intensity !== undefined) {
+        generic.intensity = light.intensity;
+    }
+    if (typeof light.range === "number" && light.range >= 0) {
+        generic.range = light.range;
+    }
+    values.generic = generic;
+    if (light.type === "spot") {
+        const spot = toPlain(light.spot);
+        if (spot !== undefined && Object.keys(spot).length > 0) {
+            values.spot = spot;
+        }
+    }
+    return { key: "light", type: "Light", name: light.name ?? light.type, values };
+}
+
+// A shape's name and parameters, with mesh references resolved to names.
+function shapeBox(document, shapeIndex) {
+    if (shapeIndex === undefined) {
+        return undefined;
+    }
+    const shape = document.shapes?.[shapeIndex];
+    if (shape === undefined) {
+        return undefined;
+    }
+    const parameters = toPlain(shape.parameters()) ?? {};
+    if (typeof parameters.mesh === "number") {
+        parameters.mesh = document.meshes?.[parameters.mesh]?.name ?? parameters.mesh;
+    }
+    return { name: canonicalPropName(shape.type), values: { generic: parameters } };
+}
+
+// The node's bounding volume: a shape box.
+function boundingVolumeBox(document, boundingVolume) {
+    if (boundingVolume === undefined) {
+        return undefined;
+    }
+    const shape = shapeBox(document, boundingVolume.shape);
+    if (shape === undefined) {
+        return undefined;
+    }
+    return { key: "boundingVolume", type: "Shape", name: shape.name, values: shape.values };
+}
+
+// The node's physics: separate boxes for motion, collider, trigger, and joint.
+function physicsBoxes(document, physics) {
+    if (physics === undefined) {
+        return [];
+    }
+    const boxes = [];
+
+    if (physics.collider !== undefined) {
+        const shape = shapeBox(document, physics.collider.geometry?.shape);
+        if (shape !== undefined) {
+            boxes.push({
+                key: "collider",
+                type: "Collider",
+                name: shape.name,
+                values: shape.values
+            });
+        }
+    }
+    if (physics.trigger !== undefined) {
+        const shape = shapeBox(document, physics.trigger.geometry?.shape);
+        if (shape !== undefined) {
+            boxes.push({
+                key: "trigger",
+                type: "Trigger",
+                name: shape.name,
+                values: shape.values
+            });
+        }
+    }
+    const motion = toPlain(physics.motion);
+    if (motion !== undefined && Object.keys(motion).length > 0) {
+        boxes.push({ key: "motion", type: "Motion", values: { generic: motion } });
+    }
+    if (physics.joint !== undefined) {
+        const joint = {};
+        if (physics.joint.connectedNode !== undefined) {
+            joint.connectedNode = nodeReference(document, physics.joint.connectedNode);
+        }
+        if (physics.joint.joint !== undefined) {
+            const jointDef =
+                document.extensions?.KHR_physics_rigid_bodies?.physicsJoints?.[physics.joint.joint];
+            joint.joint = jointDef?.name ?? physics.joint.joint;
+        }
+        if (physics.joint.enableCollision !== undefined) {
+            joint.enableCollision = physics.joint.enableCollision;
+        }
+        if (Object.keys(joint).length > 0) {
+            boxes.push({ key: "joint", type: "Joint", values: { generic: joint } });
+        }
+    }
+
+    return boxes;
+}
+
+// A clickable reference to a node by index, for props like `connectedNode`.
+function nodeReference(document, nodeIndex) {
+    const node = document.nodes?.[nodeIndex];
+    return {
+        kind: "node",
+        node,
+        label: node?.name ?? `#${nodeIndex}`
+    };
+}
+
+function primitiveModeName(mode) {
+    switch (mode) {
+        case 0:
+            return "Points";
+        case 1:
+            return "Lines";
+        case 2:
+            return "Line Loop";
+        case 3:
+            return "Line Strip";
+        case 4:
+            return "Triangles";
+        case 5:
+            return "Triangle Strip";
+        case 6:
+            return "Triangle Fan";
+        default:
+            return `Mode ${mode}`;
+    }
+}
+
+// The mesh a node renders: per-primitive mode, vertex/indices counts, material.
+function meshBox(document, mesh) {
+    if (mesh === undefined) {
+        return undefined;
+    }
+    const primitives = mesh.primitives.map((primitive) => {
+        const info = { mode: primitiveModeName(primitive.mode) };
+        if (primitive.attributes?.POSITION !== undefined) {
+            const count = document.accessors?.[primitive.attributes.POSITION]?.count;
+            if (count !== undefined) {
+                info.vertices = count;
+            }
+        }
+        if (primitive.indices !== undefined) {
+            const count = document.accessors?.[primitive.indices]?.count;
+            if (count !== undefined) {
+                info.indices = count;
+            }
+        }
+        const material = document.materials?.[primitive.material];
+        if (material?.name !== undefined) {
+            info.material = material.name;
+        }
+        return info;
+    });
+
+    const values =
+        primitives.length === 1
+            ? { generic: primitives[0] }
+            : Object.fromEntries(
+                  primitives.map((primitive, index) => [`Primitive ${index + 1}`, primitive])
+              );
+
+    return { key: "mesh", type: "Mesh", name: mesh.name, values };
+}
+
+// The node's local transform, shown only when it differs from the identity.
+function transformBox(node) {
+    const translation = toArray(node.translation);
+    const rotation = toArray(node.rotation);
+    const scale = toArray(node.scale);
+    const isIdentity =
+        (translation === undefined || translation.every((value) => value === 0)) &&
+        (rotation === undefined ||
+            (rotation[0] === 0 && rotation[1] === 0 && rotation[2] === 0 && rotation[3] === 1)) &&
+        (scale === undefined || scale.every((value) => value === 1));
+    if (isIdentity) {
+        return undefined;
+    }
+    const values = { generic: {} };
+    if (translation !== undefined) {
+        values.generic.translation = translation;
+    }
+    if (rotation !== undefined) {
+        values.generic.rotation = rotation;
+    }
+    if (scale !== undefined) {
+        values.generic.scale = scale;
+    }
+    return { key: "transform", type: "Transform", values };
+}
+
+// The skin a skinned node uses: joint count and the skeleton root node.
+function skinBox(document, node) {
+    if (node.skin === undefined) {
+        return undefined;
+    }
+    const skin = document.skins?.[node.skin];
+    if (skin === undefined) {
+        return undefined;
+    }
+    const values = { generic: { joints: skin.joints?.length ?? 0 } };
+    if (skin.skeleton !== undefined) {
+        values.generic.skeleton = nodeReference(document, skin.skeleton);
+    }
+    return { key: "skin", type: "Skin", name: skin.name || undefined, values };
+}
+
+// The morph target weights: the node's overrides, falling back to the mesh's
+// defaults, for a mesh that has morph targets.
+function weightsBox(document, node) {
+    const mesh = node.mesh !== undefined ? document.meshes?.[node.mesh] : undefined;
+    const targetCount = mesh?.primitives?.[0]?.targets?.length ?? 0;
+    if (targetCount === 0) {
+        return undefined;
+    }
+    const weights = node.weights ?? mesh?.weights;
+    if (weights === undefined) {
+        return undefined;
+    }
+    return {
+        key: "weights",
+        type: "Weights",
+        values: { generic: { weights: toArray(weights) } }
+    };
+}
+
+// The external asset an instance node instantiates: its name and the file it
+// references.
+function externalAssetBox(document, node) {
+    if (node.externalAsset === undefined) {
+        return undefined;
+    }
+    const asset = document.externalAssets?.[node.externalAsset];
+    if (asset === undefined) {
+        return undefined;
+    }
+    const file = document.files?.[asset.file];
+    const values = { generic: {} };
+    if (file?.name !== undefined) {
+        values.generic.file = file.name;
+    } else if (file?.uri !== undefined) {
+        values.generic.file = file.uri;
+    }
+    return {
+        key: "externalAsset",
+        type: "External Asset",
+        name: asset.name,
+        values
+    };
+}
+
+// The animations whose channels target this node, and the paths they animate.
+function animationsBox(document, node) {
+    const nodeIndex = node.gltfObjectIndex;
+    if (nodeIndex === undefined) {
+        return undefined;
+    }
+    const generic = {};
+    for (const animation of document.animations ?? []) {
+        const paths = [];
+        for (const channel of animation.channels ?? []) {
+            if (channel.target?.node === nodeIndex) {
+                paths.push(channel.target.path);
+            }
+        }
+        if (paths.length === 0) {
+            continue;
+        }
+        const name = animation.name || `Animation ${animation.gltfObjectIndex + 1}`;
+        generic[name] = paths.map((path) => canonicalPropName(path)).join(", ");
+    }
+    if (Object.keys(generic).length === 0) {
+        return undefined;
+    }
+    return { key: "animations", type: "Animations", values: { generic } };
+}
+
+// The EXT_mesh_gpu_instancing extension on a node: instance count and which
+// attributes are instanced.
+function instancingBox(document, node) {
+    const attributes = node.extensions?.EXT_mesh_gpu_instancing?.attributes;
+    if (attributes === undefined) {
+        return undefined;
+    }
+    const firstAccessor = Object.values(attributes)[0];
+    const count = document.accessors?.[firstAccessor]?.count;
+    const generic = {};
+    if (count !== undefined) {
+        generic.count = count;
+    }
+    const instanced = Object.keys(attributes).filter((key) => attributes[key] !== undefined);
+    if (instanced.length > 0) {
+        generic.attributes = instanced
+            .map((key) => canonicalPropName(key.toLowerCase()))
+            .join(", ");
+    }
+    if (Object.keys(generic).length === 0) {
+        return undefined;
+    }
+    return { key: "instancing", type: "Instancing", values: { generic } };
+}
+
 // A short description of what a node represents, for the scene-tree detail panel.
 function nodeMeta(document, node) {
     let type = "Node";
-    let reference;
+    const boxes = [];
+
+    const transform = transformBox(node);
+    if (transform !== undefined) {
+        boxes.push(transform);
+    }
+
     if (node.externalAsset !== undefined) {
         type = "External asset";
-        reference = document.externalAssets?.[node.externalAsset]?.name;
+        const box = externalAssetBox(document, node);
+        if (box !== undefined) {
+            boxes.push(box);
+        }
     } else if (node.mesh !== undefined) {
         type = "Mesh";
-        reference = document.meshes?.[node.mesh]?.name;
+        const mesh = document.meshes?.[node.mesh];
+        const box = meshBox(document, mesh);
+        if (box !== undefined) {
+            boxes.push(box);
+        }
+        const materialSeen = new Set();
+        for (const primitive of mesh?.primitives ?? []) {
+            if (primitive.material === undefined || materialSeen.has(primitive.material)) {
+                continue;
+            }
+            materialSeen.add(primitive.material);
+            const material = document.materials?.[primitive.material];
+            if (material !== undefined) {
+                const info = materialInfo(document, material);
+                boxes.push({
+                    key: `material:${info.name}`,
+                    type: "Material",
+                    name: info.name,
+                    values: info.values,
+                    previews: info.previews
+                });
+            }
+        }
     } else if (node.camera !== undefined) {
         type = "Camera";
-        reference = document.cameras?.[node.camera]?.name;
+        const box = cameraBox(document.cameras?.[node.camera]);
+        if (box !== undefined) {
+            boxes.push(box);
+        }
     } else if (node.extensions?.KHR_lights_punctual?.light !== undefined) {
+        type = "Light";
         const light =
             document.extensions?.KHR_lights_punctual?.lights?.[
                 node.extensions.KHR_lights_punctual.light
             ];
-        type = "Light";
-        reference = light?.name ?? light?.type;
-    }
-
-    // Materials and extensions come from the node itself, its mesh, and the
-    // materials that mesh uses.
-    const mesh = node.mesh !== undefined ? document.meshes?.[node.mesh] : undefined;
-    const materials = new Set();
-    const extensions = new Set(Object.keys(node.extensions ?? {}));
-    if (mesh !== undefined) {
-        if (mesh.extensions !== undefined) {
-            for (const name of Object.keys(mesh.extensions)) extensions.add(name);
-        }
-        for (const primitive of mesh.primitives) {
-            if (primitive.material === undefined) continue;
-            const material = document.materials?.[primitive.material];
-            if (material?.name !== undefined) materials.add(material.name);
-            if (material?.extensions !== undefined) {
-                for (const name of Object.keys(material.extensions)) extensions.add(name);
-            }
+        const box = lightBox(light);
+        if (box !== undefined) {
+            boxes.push(box);
         }
     }
 
-    return {
-        type,
-        reference,
-        materials: [...materials],
-        extensions: [...extensions],
-        extras: node.extras
-    };
+    const skin = skinBox(document, node);
+    if (skin !== undefined) {
+        boxes.push(skin);
+    }
+    const weights = weightsBox(document, node);
+    if (weights !== undefined) {
+        boxes.push(weights);
+    }
+    const animations = animationsBox(document, node);
+    if (animations !== undefined) {
+        boxes.push(animations);
+    }
+    const instancing = instancingBox(document, node);
+    if (instancing !== undefined) {
+        boxes.push(instancing);
+    }
+
+    const boundingVolume = boundingVolumeBox(document, node.boundingVolume);
+    if (boundingVolume !== undefined) {
+        boxes.push(boundingVolume);
+    }
+    boxes.push(...physicsBoxes(document, node.extensions?.KHR_physics_rigid_bodies));
+
+    return { type, boxes, extras: node.extras };
 }
 
 // A node entry for the scene tree. `focus` is the live node itself, whose world
@@ -635,6 +1102,9 @@ class UIModel {
 
         const usedExtensions = [...usedExtensionNames(gltf)];
 
+        const nodeTree = buildNodeTree(gltf);
+        const assetTree = buildAssetTreeWithFocus(gltf);
+
         let animationDuration = 0;
         for (const animation of gltf.animations) {
             animation.computeMinMaxTime(gltf);
@@ -655,8 +1125,8 @@ class UIModel {
             showScenes: gltf.scenes.length > 1,
             debugchannels,
             usedExtensions,
-            nodeTree: buildNodeTree(gltf),
-            assetTree: buildAssetTreeWithFocus(gltf),
+            nodeTree,
+            assetTree,
 
             materialVariants: hasVariants
                 ? [
@@ -697,6 +1167,14 @@ class UIModel {
             graphState: true,
             physicsState: true,
             focusedNode: undefined
+        });
+        // A new asset rebuilds the tree, so any previous scene-tree selection and
+        // expansion no longer apply; expand the top level of the node tree.
+        updateSceneTree({
+            mode: "nodes",
+            selectedEntry: undefined,
+            expandedKeys: nodeTree.map((entry) => entry.key),
+            collapsedBoxes: ["transform"]
         });
 
         if (selectedDebugChannel !== getViewerState().config.debugChannel) {
