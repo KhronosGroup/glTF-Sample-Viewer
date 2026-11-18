@@ -663,7 +663,7 @@ function nodeTreeEntry(document, nodeIndex, key) {
     const entry = {
         key,
         name: node.name ?? `Node ${nodeIndex}`,
-        uid: node.uid,
+        uid: document.uidAt(`/nodes/${nodeIndex}`),
         focus: node,
         meta: nodeMeta(document, node),
         children: []
@@ -722,7 +722,7 @@ function buildAssetTree(document, path = []) {
         return {
             key: `a:${assetPath.join(":")}`,
             name: asset.name ?? `Asset ${index}`,
-            uid: asset.uid,
+            uid: document.uidAt(`/externalAssets/${index}`),
             focus: undefined,
             meta: {
                 type: "External asset",
