@@ -82,7 +82,7 @@ function TreeRow({ entry, depth, selectedKey, expandedKeys, onToggleExpand, onSe
     return (
         <div>
             <div
-                className={`flex cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 select-none ${
+                className={`flex min-w-max cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 select-none ${
                     selected ? "bg-accent-dim" : "hover:bg-card"
                 }`}
                 style={{ paddingLeft: `${depth * 14 + 4}px` }}
@@ -447,7 +447,7 @@ export function SceneTreeTab() {
                 </Field>
             )}
 
-            <div className={hasExternalAssets ? "mt-4" : undefined}>
+            <div className={hasExternalAssets ? "mt-4 overflow-x-auto" : "overflow-x-auto"}>
                 {tree.length === 0 ? (
                     <p className="text-ink-dim text-sm">
                         {mode === "nodes"
