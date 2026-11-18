@@ -491,16 +491,9 @@ function weightsBox(document, node) {
     };
 }
 
-// The external asset an instance node instantiates: its name and the file it
-// references.
-function externalAssetBox(document, node) {
-    if (node.externalAsset === undefined) {
-        return undefined;
-    }
-    const asset = document.externalAssets?.[node.externalAsset];
-    if (asset === undefined) {
-        return undefined;
-    }
+// A details box for an external asset: its name and the file it references.
+// Used both for instance nodes and for the assets view.
+function externalAssetBox(document, asset) {
     const file = document.files?.[asset.file];
     const values = { generic: {} };
     if (file?.name !== undefined) {
@@ -567,7 +560,14 @@ function instancingBox(document, node) {
     return { key: "instancing", type: "Instancing", values: { generic } };
 }
 
-// A short description of what a node represents, for the scene-tree detail panel.
+/**
+ * Describes a node for the scene-tree details panel: its kind and the collapsible
+ * detail boxes to show. `boxes` is always an array, so the panel renders every
+ * entry uniformly (see `SceneTreeNode.meta` in viewer_store.js).
+ * @param {Object} document
+ * @param {Object} node
+ * @returns {{type: string, boxes: DetailBox[], extras: unknown}}
+ */
 function nodeMeta(document, node) {
     let type = "Node";
     const boxes = [];
@@ -579,9 +579,9 @@ function nodeMeta(document, node) {
 
     if (node.externalAsset !== undefined) {
         type = "External asset";
-        const box = externalAssetBox(document, node);
-        if (box !== undefined) {
-            boxes.push(box);
+        const asset = document.externalAssets?.[node.externalAsset];
+        if (asset !== undefined) {
+            boxes.push(externalAssetBox(document, asset));
         }
     } else if (node.mesh !== undefined) {
         type = "Mesh";
@@ -652,9 +652,12 @@ function nodeMeta(document, node) {
     return { type, boxes, extras: node.extras };
 }
 
-// A node entry for the scene tree. `focus` is the live node itself, whose world
-// transform is resolved again when the entry is double-clicked so the camera can
-// follow a moving (e.g. simulated) node.
+/**
+ * A node entry for the scene tree. `focus` is the live node itself, whose world
+ * transform is resolved again when the entry is double-clicked so the camera can
+ * follow a moving (e.g. simulated) node.
+ * @returns {SceneTreeNode}
+ */
 function nodeTreeEntry(document, nodeIndex, key) {
     const node = document.nodes[nodeIndex];
     const entry = {
@@ -680,6 +683,10 @@ function nodeTreeEntry(document, nodeIndex, key) {
     return entry;
 }
 
+/**
+ * The default scene's root nodes, each as a scene-tree entry.
+ * @returns {SceneTreeNode[]}
+ */
 function buildNodeTree(gltf) {
     const scene = gltf?.scenes?.[gltf.scene ?? 0];
     return (scene?.nodes ?? []).map((index) => nodeTreeEntry(gltf, index, `n${index}`));
@@ -704,10 +711,14 @@ function collectAssetFocus(document, path, map) {
     }
 }
 
+/**
+ * One entry per external asset, recursively including nested assets. Each entry
+ * uses the same `meta` shape as node entries (a `boxes` array).
+ * @returns {SceneTreeNode[]}
+ */
 function buildAssetTree(document, path = []) {
     return (document?.externalAssets ?? []).map((asset, index) => {
         const assetPath = [...path, index];
-        const file = document.files?.[asset.file];
         return {
             key: `a:${assetPath.join(":")}`,
             name: asset.name ?? `Asset ${index}`,
@@ -715,9 +726,7 @@ function buildAssetTree(document, path = []) {
             focus: undefined,
             meta: {
                 type: "External asset",
-                reference: file?.name ?? file?.uri,
-                materials: [],
-                extensions: [],
+                boxes: [externalAssetBox(document, asset)],
                 extras: asset.extras
             },
             children: buildAssetTree(asset.document, assetPath)

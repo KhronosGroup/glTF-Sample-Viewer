@@ -13,6 +13,7 @@ import {
 import { updateConfig, updateSelection, useViewerStore } from "./store.js";
 import { deriveExtensions, deriveLighting } from "../logic/config_derivations.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
+import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { CameraTab } from "./tabs/CameraTab.jsx";
 import { DisplayTab } from "./tabs/DisplayTab.jsx";
@@ -211,7 +212,11 @@ export function Menu({ visible }) {
 
     return (
         <div data-testid="menu" className={shape()}>
-            {!collapsed && <OpenPanel key={activeTab}>{renderTab(activeTab)}</OpenPanel>}
+            {!collapsed && (
+                <OpenPanel key={activeTab}>
+                    <ErrorBoundary>{renderTab(activeTab)}</ErrorBoundary>
+                </OpenPanel>
+            )}
 
             <Tabs tabs={tabs} activeTab={activeTab} onSelect={select} />
         </div>
