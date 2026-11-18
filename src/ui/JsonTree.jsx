@@ -27,7 +27,7 @@ export function JsonTree({ data, inner = false }) {
         return null;
     }
     return (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
             {Object.entries(data).map(([name, value]) => (
                 <JsonNode key={name} name={name} value={value} inner={inner} />
             ))}
@@ -42,13 +42,13 @@ function JsonNode({ name, value, inner }) {
         const text = isContainer(value) ? (isPlainObject(value) ? "{}" : "[]") : String(value);
         return (
             <div
-                className={`break-words rounded-md px-2 py-1.5 ${
+                className={`break-words rounded-md px-2 py-0.5 ${
                     inner ? "bg-card-inner" : "bg-card"
                 }`}
             >
-                <span className="font-light">{name}</span>
+                <span className="text-sm font-light">{name}</span>
                 <span className="text-ink/60">: </span>
-                <span className="text-ink/70 font-extralight">{text}</span>
+                <span className="text-ink/70 text-xs font-mono">{text}</span>
             </div>
         );
     }
@@ -61,7 +61,7 @@ function CollapsibleNode({ name, value, inner }) {
 
     return (
         <div
-            className={`break-words rounded-md px-2 py-1.5 ${inner ? "bg-card-inner" : "bg-card"}`}
+            className={`break-words rounded-md px-2 py-0.5 ${inner ? "bg-card-inner" : "bg-card"}`}
         >
             <button
                 type="button"
@@ -69,16 +69,16 @@ function CollapsibleNode({ name, value, inner }) {
                 onClick={() => setOpen(!open)}
                 className="flex w-full items-center justify-between gap-2 text-left"
             >
-                <span className="font-light">{name}</span>
+                <span className="text-sm font-light">{name}</span>
                 <ChevronDown
                     size={16}
                     aria-hidden="true"
-                    className={`shrink-0 transition-transform ${open ? "" : "-rotate-90"}`}
+                    className={`shrink-0 transition-transform ${open ? "" : "rotate-90"}`}
                 />
             </button>
 
             {open && (
-                <div className="mt-1 text-base font-extralight">
+                <div className="mt-0.5">
                     <JsonTree data={value} inner={!inner} />
                 </div>
             )}
