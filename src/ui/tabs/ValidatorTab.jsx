@@ -98,20 +98,23 @@ export function ValidatorTab() {
                 <Switch
                     checked={ignoreMissingTangents}
                     onChange={(checked) => updateConfig({ ignoreMissingTangents: checked })}
+                    title="Missing tangents are generated at runtime with MikkTSpace, which may produce inconsistent tangents across renderers."
                 >
                     Missing tangents
                 </Switch>
                 <Switch
                     checked={ignoreUnknownAttributes}
                     onChange={(checked) => updateConfig({ ignoreUnknownAttributes: checked })}
+                    title="Unknown vertex attributes, such as those added by extensions like gaussian splats, are ignored."
                 >
                     Unknown attributes
                 </Switch>
                 <Switch
                     checked={ignoreGlbVersion}
                     onChange={(checked) => updateConfig({ ignoreGlbVersion: checked })}
+                    title="glTF 2.1's GLB version 3 container is flagged as invalid by the glTF 2.0 validator."
                 >
-                    GLB version 3
+                    Unknown GLB container format
                 </Switch>
             </Field>
 

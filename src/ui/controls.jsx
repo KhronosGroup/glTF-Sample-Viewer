@@ -125,7 +125,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
     return (
         <label
             className={classNames(
-                "group w-full mt-2 inline-flex items-center gap-3 whitespace-nowrap select-none",
+                "group w-full mt-2 inline-flex items-center gap-3 select-none",
                 disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                 className
             )}
@@ -140,7 +140,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
             />
             <span className="bg-track peer-checked:bg-accent peer-disabled:opacity-50 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ease-out after:block after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform after:ease-out peer-checked:after:translate-x-5" />
             {children !== undefined && (
-                <span className="text-base font-light truncate">{children}</span>
+                <span className="min-w-0 text-base font-light break-words">{children}</span>
             )}
         </label>
     );
