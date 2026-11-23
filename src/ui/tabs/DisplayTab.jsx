@@ -36,6 +36,9 @@ export function DisplayTab({ lighting, onLightingChange }) {
     const environments = useViewerStore((state) => state.published.environments);
     const selectedEnvironment = useViewerStore((state) => state.selection.selectedEnvironment);
     const clearColor = useViewerStore((state) => state.selection.clearColor);
+    const environmentPrecisionLimited = useViewerStore(
+        (state) => state.published.environmentPrecisionLimited
+    );
 
     const { ibl, punctualLights, renderEnv, blurEnv, iblIntensity, exposure, toneMap, rotation } =
         lighting;
@@ -163,6 +166,12 @@ export function DisplayTab({ lighting, onLightingChange }) {
                         resetLabel="Reset intensity"
                     />
                 </Field>
+                {environmentPrecisionLimited && (
+                    <p className="text-amber-400 mt-2 text-sm">
+                        This HDR&apos;s range exceeds the device&apos;s texture precision;
+                        highlights are approximate.
+                    </p>
+                )}
             </Field>
 
             {renderEnv && (

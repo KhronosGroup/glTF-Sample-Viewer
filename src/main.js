@@ -451,6 +451,9 @@ export const initViewer = async (canvas) => {
     uiModel.onHdr((hdr) => {
         resourceLoader.loadEnvironment(hdr.hdr_path).then((environment) => {
             state.environment = environment;
+            updatePublished({
+                environmentPrecisionLimited: environment.iblIntensityScale !== 1.0
+            });
             // We need to wait until the environment is loaded to redraw
             redraw = true;
         });

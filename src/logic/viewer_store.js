@@ -169,6 +169,7 @@ import { createStore } from "zustand/vanilla";
  * @property {string[]} clippingOrientations
  * @property {Record<string, EnvironmentEntry>} environments
  * @property {Object|null} environmentLicense
+ * @property {boolean} environmentPrecisionLimited
  * @property {boolean} supportsFloatingPointFramebuffer
  * @property {boolean} supportsWireframe
  * @property {boolean} supportsClipping
@@ -314,6 +315,7 @@ const initialState = {
         clippingOrientations: ["Axis Aligned"],
         environments: [{ index: 0, name: "" }],
         environmentLicense: undefined,
+        environmentPrecisionLimited: false,
         supportsFloatingPointFramebuffer: true,
         supportsWireframe: true,
         supportsClipping: true
