@@ -17,7 +17,7 @@
   "scripts": {
     "postinstall": "npm run build -w @khronosgroup/gltf-viewer",
     "predev": "npm run build -w @khronosgroup/gltf-viewer",
-    "dev": "vite --host",
+    "dev": "vite --host --open",
     "prebuild": "npm run build -w @khronosgroup/gltf-viewer",
     "build": "vite build",
     "preview": "vite preview",
