@@ -57,7 +57,7 @@ or other branch previews. Preview cleanup runs from the workflow on the default 
 - [x] [KHR_node_visibility](https://github.com/KhronosGroup/glTF/pull/2410)
 - [x] [KHR_physics_rigid_bodies](https://github.com/eoineoineoin/glTF_Physics/blob/master/extensions/2.0/Khronos/KHR_physics_rigid_bodies/README.md)\
     Supported Engines:
-  - NVIDIA PhysX ([limitations](./glTF-Sample-Renderer/PhysicsEngines.md))
+  - NVIDIA PhysX ([limitations](https://github.com/KhronosGroup/glTF-Sample-Renderer/blob/main/PhysicsEngines.md))
 - [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform)
 - [x] [KHR_xmp_json_ld](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_xmp_json_ld)
