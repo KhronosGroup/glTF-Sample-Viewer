@@ -179,6 +179,8 @@ function ColorSwatch({ color }) {
     )}, ${Math.round(toSrgb(b) * 255)}, ${a})`;
     return (
         <span
+            role="img"
+            aria-label={`Color ${formatVectorFull(color)}`}
             className="border-ink/40 size-3.5 shrink-0 rounded-sm border"
             style={{ backgroundColor }}
             title={formatVectorFull(color)}

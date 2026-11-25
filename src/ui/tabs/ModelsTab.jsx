@@ -220,7 +220,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
                             ))}
                         </Select>
                     ) : (
-                        <RadioGroup>
+                        <RadioGroup label="Variants">
                             {materialVariants.map((item) => (
                                 <Radio
                                     key={item}

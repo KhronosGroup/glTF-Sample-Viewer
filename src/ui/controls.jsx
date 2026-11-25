@@ -138,6 +138,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
         >
             <input
                 type="checkbox"
+                role="switch"
                 className="peer sr-only"
                 checked={checked}
                 disabled={disabled}
@@ -158,6 +159,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
 export function UnsupportedBadge({ className }) {
     return (
         <span
+            aria-label="This feature is unsupported by this browser"
             title="This feature is unsupported by this browser"
             className={classNames("text-ink/60 font-light", className)}
         >
@@ -775,8 +777,12 @@ export function PlaybackControls({ active, onText, offText, onIcon, offIcon, onT
 }
 
 /** Stacks `Radio` rows into one card, rounded only at its outer corners. */
-export function RadioGroup({ children }) {
-    return <div className="flex flex-col gap-0.5">{children}</div>;
+export function RadioGroup({ label, children }) {
+    return (
+        <div role="radiogroup" aria-label={label} className="flex flex-col gap-0.5">
+            {children}
+        </div>
+    );
 }
 
 export function Radio({ name, value, checked, onChange, children }) {

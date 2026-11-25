@@ -55,14 +55,23 @@ function ViewerCanvas() {
     useEffect(() => startViewer(canvasRef.current), []);
 
     return (
-        <canvas
-            id="canvas"
-            ref={canvasRef}
-            tabIndex={0}
-            className="block h-full min-w-0 flex-1 bg-[#333] outline-none select-none"
-        >
-            No Canvas!
-        </canvas>
+        <>
+            <canvas
+                id="canvas"
+                ref={canvasRef}
+                tabIndex={0}
+                role="img"
+                aria-label="Interactive 3D model preview"
+                aria-describedby="canvas-description"
+                className="block h-full min-w-0 flex-1 bg-[#333] outline-none select-none"
+            >
+                No Canvas!
+            </canvas>
+            <span id="canvas-description" className="sr-only">
+                Rotate, pan and zoom the loaded model with the mouse or touch. Use the side menu to
+                inspect the scene, cameras and settings.
+            </span>
+        </>
     );
 }
 

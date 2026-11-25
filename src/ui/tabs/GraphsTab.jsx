@@ -74,7 +74,7 @@ export function GraphsTab() {
 
             {graphs.length > 1 && (
                 <Field label="Graphs">
-                    <RadioGroup>
+                    <RadioGroup label="Graphs">
                         {graphs.map((graph) => (
                             <Radio
                                 key={graph.index}

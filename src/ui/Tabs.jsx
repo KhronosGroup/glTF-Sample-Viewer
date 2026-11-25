@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 /**
  * Vertical tab rail down the right-hand edge of the menu.
@@ -6,25 +6,70 @@ import { useState } from "react";
  * Clicking the active tab collapses the panel; clicking another expands it.
  */
 export function Tabs({ tabs, activeTab, onSelect }) {
+    const tablistRef = useRef(null);
+
+    // Moves keyboard focus to a tab, following an arrow-key selection.
+    const focusTab = (id) => {
+        tablistRef.current?.querySelector(`[data-testid="tab-${CSS.escape(id)}"]`)?.focus();
+    };
+
+    // The ARIA tabs pattern: arrow keys move between tabs (the rail is vertical,
+    // so up/down lead), Home/End jump to the ends. Selecting on focus keeps the
+    // keyboard behaviour identical to clicking.
+    const onKeyDown = (event, tab) => {
+        const index = tabs.findIndex((candidate) => candidate.id === tab.id);
+        let next;
+        switch (event.key) {
+            case "ArrowDown":
+            case "ArrowRight":
+                next = tabs[(index + 1) % tabs.length];
+                break;
+            case "ArrowUp":
+            case "ArrowLeft":
+                next = tabs[(index - 1 + tabs.length) % tabs.length];
+                break;
+            case "Home":
+                next = tabs[0];
+                break;
+            case "End":
+                next = tabs[tabs.length - 1];
+                break;
+            default:
+                return;
+        }
+        event.preventDefault();
+        // The camera's keyboard tracker listens on `window`, so swallow the key
+        // here to keep tab navigation from also steering the camera.
+        event.stopPropagation();
+        onSelect(next.id);
+        focusTab(next.id);
+    };
+
     return (
         <nav
+            ref={tablistRef}
             className="bg-rail flex w-28 shrink-0 flex-col overflow-x-hidden overflow-y-auto"
             aria-orientation="vertical"
             role="tablist"
         >
             {/* Leaves room for the menu toggle in the top-right corner. */}
             <div className="pt-[8dvh]">
-                {tabs.map((tab) => {
+                {tabs.map((tab, index) => {
                     const expanded = tab.id === activeTab;
                     const Icon = tab.icon;
+                    // Exactly one tab sits in the Tab order. With the panel
+                    // collapsed no tab is selected, so the first stays reachable.
+                    const tabbable = expanded || (activeTab === null && index === 0);
                     return (
                         <button
                             type="button"
                             key={tab.id}
                             role="tab"
                             aria-selected={expanded}
+                            tabIndex={tabbable ? 0 : -1}
                             data-testid={`tab-${tab.id}`}
                             onClick={() => onSelect(tab.id)}
+                            onKeyDown={(event) => onKeyDown(event, tab)}
                             className={`focus-visible:outline-accent flex w-full flex-col items-center justify-center gap-2 border-r-8 px-3 py-5 text-center transition-colors focus-visible:-outline-offset-2 focus-visible:outline ${
                                 expanded
                                     ? "border-accent bg-rail-active"
