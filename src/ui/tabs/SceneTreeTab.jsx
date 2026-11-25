@@ -351,7 +351,7 @@ function DetailBox({ box, open, onToggle }) {
                                         className="h-14 w-14 rounded-md object-cover"
                                     />
                                     <p
-                                        className="text-ink/70 mt-0.5 truncate text-center text-[10px]"
+                                        className="text-ink/70 mt-0.5 text-center text-[10px]"
                                         title={preview.label}
                                     >
                                         {preview.label}
