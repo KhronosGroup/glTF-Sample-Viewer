@@ -449,7 +449,9 @@ export function SceneTreeTab() {
                 </Field>
             )}
 
-            <div className={hasExternalAssets ? "mt-4 overflow-x-auto" : "overflow-x-auto"}>
+            <div
+                className={`max-h-[50vh] overflow-x-auto overflow-y-auto ${hasExternalAssets ? "mt-4" : ""}`}
+            >
                 {tree.length === 0 ? (
                     <p className="text-ink-dim text-sm">
                         {mode === "nodes"
