@@ -73,7 +73,7 @@ function CollapsibleNode({ name, value, inner }) {
                 <ChevronDown
                     size={16}
                     aria-hidden="true"
-                    className={`shrink-0 transition-transform ${open ? "" : "rotate-90"}`}
+                    className={`shrink-0 motion-safe:transition-transform ${open ? "" : "rotate-90"}`}
                 />
             </button>
 

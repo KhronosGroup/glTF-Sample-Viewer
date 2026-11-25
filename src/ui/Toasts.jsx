@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { setNotificationSink } from "../logic/notifications.js";
+import { prefersReducedMotion } from "./controls.jsx";
 
 let nextId = 0;
 
@@ -17,18 +18,25 @@ const TONES = {
 
 /** Drains left to right over the toast's lifetime, so its exit is not a surprise. */
 function Progress({ duration }) {
-    const [drained, setDrained] = useState(false);
+    const reduceMotion = prefersReducedMotion();
+    const [drained, setDrained] = useState(reduceMotion);
 
     // The transition needs a painted full width to animate away from.
     useEffect(() => {
+        if (reduceMotion) {
+            return;
+        }
         const frame = requestAnimationFrame(() => setDrained(true));
         return () => cancelAnimationFrame(frame);
-    }, []);
+    }, [reduceMotion]);
 
     return (
         <div
             className="h-1 bg-black/25"
-            style={{ width: drained ? "100%" : "0%", transition: `width ${duration}ms linear` }}
+            style={{
+                width: drained ? "100%" : "0%",
+                transition: reduceMotion ? "none" : `width ${duration}ms linear`
+            }}
         />
     );
 }

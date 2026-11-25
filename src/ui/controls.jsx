@@ -13,6 +13,11 @@ function classNames(...values) {
 // popup is only given the whole screen while the panel already owns it.
 const DESKTOP_QUERY = "(min-width: 40rem)";
 
+/** True when the OS asks for reduced motion; used to skip decorative animation. */
+export function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 function useIsDesktop() {
     const [isDesktop, setIsDesktop] = useState(() => window.matchMedia(DESKTOP_QUERY).matches);
     useEffect(() => {
@@ -138,7 +143,7 @@ export function Switch({ checked, onChange, className, disabled = false, childre
                 disabled={disabled}
                 onChange={(event) => onChange(event.target.checked)}
             />
-            <span className="bg-track peer-checked:bg-accent peer-disabled:opacity-50 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ease-out after:block after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform after:ease-out peer-checked:after:translate-x-5" />
+            <span className="bg-track peer-checked:bg-accent peer-disabled:opacity-50 h-6 w-11 shrink-0 rounded-full p-0.5 transition-colors ease-out after:block after:h-5 after:w-5 after:rounded-full after:bg-white motion-safe:after:transition-transform after:ease-out peer-checked:after:translate-x-5" />
             {children !== undefined && (
                 <span className="min-w-0 text-base font-light break-words">{children}</span>
             )}
@@ -356,6 +361,11 @@ export function ThumbnailSelect({ value, onChange, options, label, className, ..
         // Slide the popup back down and fade it out, then unmount it. `fill: "forwards"`
         // keeps the final state so it does not flash back to full opacity first.
         setClosing(true);
+        if (prefersReducedMotion()) {
+            setOpen(false);
+            setClosing(false);
+            return;
+        }
         const animation = popup.animate(
             [
                 { opacity: 1, transform: "none" },
@@ -739,7 +749,7 @@ export function RevertButton({ onClick, label, className }) {
             <RotateCcw
                 size={16}
                 aria-hidden="true"
-                className="transition-transform duration-200 group-hover:-rotate-45"
+                className="motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:-rotate-45"
             />
         </IconButton>
     );

@@ -15,7 +15,7 @@ function Spinner() {
     return (
         <div
             data-testid="spinner"
-            className="border-ink/35 border-t-accent size-16 animate-spin rounded-full border-[5px]"
+            className="border-ink/35 border-t-accent size-16 motion-safe:animate-spin rounded-full border-[5px]"
         />
     );
 }

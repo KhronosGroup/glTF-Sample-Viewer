@@ -14,6 +14,7 @@ import { updateConfig, updateSelection, useViewerStore } from "./store.js";
 import { deriveExtensions, deriveLighting } from "../logic/config_derivations.js";
 import { Tabs, useTabState } from "./Tabs.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
+import { prefersReducedMotion } from "./controls.jsx";
 import { ModelsTab } from "./tabs/ModelsTab.jsx";
 import { CameraTab } from "./tabs/CameraTab.jsx";
 import { DisplayTab } from "./tabs/DisplayTab.jsx";
@@ -49,6 +50,9 @@ function OpenPanel({ children }) {
     const ref = useRef(null);
 
     useLayoutEffect(() => {
+        if (prefersReducedMotion()) {
+            return;
+        }
         const animation = ref.current.animate(
             [
                 { opacity: 0, transform: "translateX(8px)" },

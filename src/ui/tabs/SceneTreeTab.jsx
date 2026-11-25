@@ -109,7 +109,7 @@ function TreeRow({ entry, depth, selectedKey, expandedKeys, onToggleExpand, onSe
                         <ChevronRight
                             size={14}
                             aria-hidden="true"
-                            className={`transition-transform ${expanded ? "rotate-90" : ""}`}
+                            className={`motion-safe:transition-transform ${expanded ? "rotate-90" : ""}`}
                         />
                     </button>
                 ) : (
@@ -335,7 +335,7 @@ function DetailBox({ box, open, onToggle }) {
                 <ChevronDown
                     size={16}
                     aria-hidden="true"
-                    className={`shrink-0 transition-transform ${open ? "" : "rotate-90"}`}
+                    className={`shrink-0 motion-safe:transition-transform ${open ? "" : "rotate-90"}`}
                 />
             </button>
 
