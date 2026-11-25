@@ -5,7 +5,8 @@ import {
     updatePublished,
     updateSceneTree,
     updateSelection,
-    updateUi
+    updateUi,
+    viewerStore
 } from "./viewer_store.js";
 import { setCommand } from "./commands.js";
 import { attachCanvasInput, partitionDroppedFiles } from "./canvas_input.js";
@@ -767,6 +768,14 @@ class UIModel {
         this.canvas = canvas;
 
         this.modelURL = new URLSearchParams(window.location.search).get("model");
+        // Shared selection read once so a reload restores the shared scene,
+        // camera and variant. Consumed by the first loaded asset.
+        const urlParams = new URLSearchParams(window.location.search);
+        this.pendingSelection = {
+            scene: urlParams.get("scene"),
+            camera: urlParams.get("camera"),
+            variant: urlParams.get("variant")
+        };
 
         const models = modelPathProvider.getAllKeys();
         updatePublished({
@@ -807,7 +816,19 @@ class UIModel {
             setCommand("selectedEnvironmentChanged", (name) => {
                 this.emitHdr(getViewerState().published.environments[name]);
             }),
-            setCommand("addEnvironmentChanged", (hdr) => this.addEnvironment(hdr))
+            setCommand("addEnvironmentChanged", (hdr) => this.addEnvironment(hdr)),
+            viewerStore.subscribe(
+                (state) => state.selection.selectedScene,
+                () => this.syncSelectionUrl()
+            ),
+            viewerStore.subscribe(
+                (state) => state.selection.selectedCamera,
+                () => this.syncSelectionUrl()
+            ),
+            viewerStore.subscribe(
+                (state) => state.selection.selectedVariant,
+                () => this.syncSelectionUrl()
+            )
         );
 
         this.showOverlay = () => updateUi({ showDropDownOverlay: true });
@@ -919,6 +940,53 @@ class UIModel {
     clearModelUrl() {
         const url = new URL(window.location.href);
         url.searchParams.delete("model");
+        window.history.replaceState(null, "", url);
+    }
+
+    /** Returns the shared scene/camera/variant overrides and forgets them. */
+    consumeSelectionUrl() {
+        const pending = this.pendingSelection;
+        this.pendingSelection = undefined;
+        return pending;
+    }
+
+    /**
+     * Reflects the shared scene, camera and material variant in the URL, but only
+     * for non-default values so a default view keeps a clean link.
+     */
+    syncSelectionUrl() {
+        // Skip intermediate writes while the shared selection is being applied,
+        // so the URL does not momentarily drop the other params.
+        if (this.applyingUrlSelection) {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        const { selectedScene, selectedCamera, selectedVariant } = getViewerState().selection;
+
+        // The scene and camera pickers report strings while the loader reports
+        // numbers; coerce both before comparing against their defaults. The `{}`
+        // placeholder `selectedScene` starts as coerces to NaN and is ignored.
+        const scene = Number(selectedScene);
+        if (Number.isInteger(scene) && scene !== (this.defaultSceneIndex ?? 0)) {
+            url.searchParams.set("scene", String(scene));
+        } else {
+            url.searchParams.delete("scene");
+        }
+
+        const camera = Number(selectedCamera);
+        if (Number.isInteger(camera) && camera !== -1) {
+            url.searchParams.set("camera", String(camera));
+        } else {
+            url.searchParams.delete("camera");
+        }
+
+        if (typeof selectedVariant === "string" && selectedVariant !== "None") {
+            url.searchParams.set("variant", selectedVariant);
+        } else {
+            url.searchParams.delete("variant");
+        }
+
         window.history.replaceState(null, "", url);
     }
 
@@ -1079,11 +1147,43 @@ class UIModel {
     }
 
     publishGltfLoaded(state) {
-        this.publishCameras(state);
-        this.publishMorphWeights(state);
+        // A shared link may select a scene, camera or variant; apply them to the
+        // first loaded asset, then let later loads fall back to the defaults.
+        const pending = this.consumeSelectionUrl();
+        this.applyingUrlSelection = true;
 
         const gltf = state.gltf;
+        // The scene the asset declares as its default; the scene param is only
+        // encoded when the selection differs from it.
+        this.defaultSceneIndex = gltf.scene ?? 0;
         const hasVariants = gltf?.extensions?.KHR_materials_variants?.variants !== undefined;
+        const variants = hasVariants
+            ? [
+                  "None",
+                  ...gltf.extensions.KHR_materials_variants.variants.map(
+                      (variant) => variant?.name ?? "Unnamed"
+                  )
+              ]
+            : ["None"];
+
+        const sceneIndex = Number(pending?.scene);
+        const sceneOverride =
+            pending?.scene != null &&
+            Number.isInteger(sceneIndex) &&
+            sceneIndex >= 0 &&
+            sceneIndex < gltf.scenes.length
+                ? sceneIndex
+                : state.sceneIndex;
+        const variantOverride =
+            pending?.variant != null && variants.includes(pending.variant)
+                ? pending.variant
+                : "None";
+        const cameraIndex = Number(pending?.camera);
+        const cameraOverride =
+            pending?.camera != null && Number.isInteger(cameraIndex) ? cameraIndex : undefined;
+
+        this.publishCameras(state, cameraOverride);
+        this.publishMorphWeights(state);
         // Interactivity may live in the root document or in an instantiated external
         // asset (a wrapper that only embeds an interactive asset), so gather the
         // graphs across the whole document tree.
@@ -1137,14 +1237,7 @@ class UIModel {
             nodeTree,
             assetTree,
 
-            materialVariants: hasVariants
-                ? [
-                      "None",
-                      ...gltf.extensions.KHR_materials_variants.variants.map(
-                          (variant) => variant?.name ?? "Unnamed"
-                      )
-                  ]
-                : ["None"],
+            materialVariants: variants,
 
             animations: gltf.animations.map((animation, index) => ({
                 title: animation.name ?? `Animation ${index}`,
@@ -1166,8 +1259,8 @@ class UIModel {
                 ] ?? null
         });
         updateSelection({
-            selectedScene: state.sceneIndex,
-            selectedVariant: "None",
+            selectedScene: sceneOverride,
+            selectedVariant: variantOverride,
             selectedAnimations: state.animationIndices,
             morphWeightOverrides: {},
             animationState: true,
@@ -1193,9 +1286,12 @@ class UIModel {
         if (hasInteractivity && state.graphController.graphIndex !== undefined) {
             updateSelection({ selectedGraph: state.graphController.graphIndex });
         }
+
+        this.applyingUrlSelection = false;
+        this.syncSelectionUrl();
     }
 
-    publishCameras(state) {
+    publishCameras(state, cameraOverride) {
         const gltf = state.gltf;
         const cameras = [{ title: "User Camera", index: -1 }];
 
@@ -1216,10 +1312,15 @@ class UIModel {
             });
         }
 
+        // A shared link may select a camera; only honour it when the asset offers it.
+        const defaultCamera = state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1;
+        const camera =
+            cameraOverride !== undefined && cameras.some((item) => item.index === cameraOverride)
+                ? cameraOverride
+                : defaultCamera;
+
         updatePublished({ cameras });
-        updateSelection({
-            selectedCamera: state.cameraNodeIndex !== undefined ? state.cameraNodeIndex : -1
-        });
+        updateSelection({ selectedCamera: camera });
     }
 
     publishMorphWeights(state) {
