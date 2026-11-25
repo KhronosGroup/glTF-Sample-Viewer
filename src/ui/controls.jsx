@@ -184,6 +184,36 @@ export function Select({ value, onChange, className, children, ...rest }) {
     );
 }
 
+/**
+ * A `Select` with a revert button that resets it to `defaultValue`. The button
+ * is hidden while the value already equals the default. `value` and `defaultValue`
+ * may differ in type (e.g. the picker reports a string, the loader a number), so
+ * they are compared as strings.
+ */
+export function SelectWithReset({
+    label,
+    value,
+    defaultValue,
+    onChange,
+    onReset,
+    children,
+    ...rest
+}) {
+    const isDefault = String(value) === String(defaultValue);
+    return (
+        <div className="flex items-center gap-2">
+            <Select className="min-w-0 flex-1" value={value} onChange={onChange} {...rest}>
+                {children}
+            </Select>
+            {!isDefault && (
+                <IconButton label={label} onClick={onReset}>
+                    <RotateCcw size={16} aria-hidden="true" />
+                </IconButton>
+            )}
+        </div>
+    );
+}
+
 function levenshtein(a, b) {
     if (a === b) {
         return 0;

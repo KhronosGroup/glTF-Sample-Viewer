@@ -1,15 +1,15 @@
-import { Funnel, RotateCcw } from "lucide-react";
+import { Funnel } from "lucide-react";
 import { useState } from "react";
 
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
-    IconButton,
     Panel,
     Radio,
     RadioGroup,
     Select,
+    SelectWithReset,
     ThumbnailSelect,
     ToggleButton
 } from "../controls.jsx";
@@ -174,55 +174,38 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
 
             {showScenes && (
                 <Field label="Scenes">
-                    <div className="flex items-center gap-2">
-                        <Select
-                            className="min-w-0 flex-1"
-                            value={selectedScene}
-                            onChange={(value) => {
-                                updateSelection({ selectedScene: value });
-                            }}
-                        >
-                            {scenes.map((item, index) => (
-                                <option key={item.index ?? index} value={item.index}>
-                                    {item.title}
-                                </option>
-                            ))}
-                        </Select>
-                        <IconButton
-                            label="Reset scene"
-                            onClick={() => updateSelection({ selectedScene: defaultScene })}
-                        >
-                            <RotateCcw size={16} aria-hidden="true" />
-                        </IconButton>
-                    </div>
+                    <SelectWithReset
+                        label="Reset scene"
+                        value={selectedScene}
+                        defaultValue={defaultScene}
+                        onChange={(value) => updateSelection({ selectedScene: value })}
+                        onReset={() => updateSelection({ selectedScene: defaultScene })}
+                    >
+                        {scenes.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </SelectWithReset>
                 </Field>
             )}
 
             {cameras.length > 1 && (
                 <Field label="Cameras">
-                    <div className="flex items-center gap-2">
-                        <Select
-                            data-testid="camera-select"
-                            className="min-w-0 flex-1"
-                            value={selectedCamera}
-                            onChange={(value) => {
-                                const camera = parseInt(value);
-                                updateSelection({ selectedCamera: camera });
-                            }}
-                        >
-                            {cameras.map((item, index) => (
-                                <option key={item.index ?? index} value={item.index}>
-                                    {item.title}
-                                </option>
-                            ))}
-                        </Select>
-                        <IconButton
-                            label="Reset camera"
-                            onClick={() => updateSelection({ selectedCamera: -1 })}
-                        >
-                            <RotateCcw size={16} aria-hidden="true" />
-                        </IconButton>
-                    </div>
+                    <SelectWithReset
+                        data-testid="camera-select"
+                        label="Reset camera"
+                        value={selectedCamera}
+                        defaultValue={-1}
+                        onChange={(value) => updateSelection({ selectedCamera: parseInt(value) })}
+                        onReset={() => updateSelection({ selectedCamera: -1 })}
+                    >
+                        {cameras.map((item, index) => (
+                            <option key={item.index ?? index} value={item.index}>
+                                {item.title}
+                            </option>
+                        ))}
+                    </SelectWithReset>
                 </Field>
             )}
 
