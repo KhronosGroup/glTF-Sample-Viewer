@@ -205,11 +205,7 @@ export function SelectWithReset({
             <Select className="min-w-0 flex-1" value={value} onChange={onChange} {...rest}>
                 {children}
             </Select>
-            {!isDefault && (
-                <IconButton label={label} onClick={onReset}>
-                    <RotateCcw size={16} aria-hidden="true" />
-                </IconButton>
-            )}
+            {!isDefault && <RevertButton label={label} onClick={onReset} />}
         </div>
     );
 }
@@ -723,13 +719,29 @@ export function IconButton({ onClick, label, className, children }) {
             title={label}
             onClick={onClick}
             className={classNames(
-                "hover:bg-card inline-flex items-center justify-center rounded-md p-1.5 transition-colors",
+                "group hover:bg-card inline-flex items-center justify-center rounded-md p-1.5 transition-colors",
                 FOCUS_RING,
                 className
             )}
         >
             {children}
         </button>
+    );
+}
+
+/**
+ * A square revert button: the counter-clockwise arrow that resets a value to its
+ * default. The arrow tilts a little further counter-clockwise on hover.
+ */
+export function RevertButton({ onClick, label, className }) {
+    return (
+        <IconButton label={label} onClick={onClick} className={className}>
+            <RotateCcw
+                size={16}
+                aria-hidden="true"
+                className="transition-transform duration-200 group-hover:-rotate-45"
+            />
+        </IconButton>
     );
 }
 

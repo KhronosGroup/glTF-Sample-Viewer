@@ -1,11 +1,11 @@
-import { Download, RotateCcw, Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
     Button,
     Field,
-    IconButton,
     Panel,
+    RevertButton,
     SegmentedControl,
     Select,
     Switch
@@ -140,12 +140,10 @@ export function DisplayTab({ lighting, onLightingChange }) {
                             />
                             <span className="text-base font-light">Background Color</span>
                         </label>
-                        <IconButton
+                        <RevertButton
                             label="Reset color"
                             onClick={() => updateSelection({ clearColor: "#8f9dc1" })}
-                        >
-                            <RotateCcw size={16} aria-hidden="true" />
-                        </IconButton>
+                        />
                     </div>
                 )}
                 <Field label="Intensity">

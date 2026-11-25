@@ -1,10 +1,9 @@
 import { Fragment } from "react";
-import { RotateCcw } from "lucide-react";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
-    IconButton,
     Panel,
+    RevertButton,
     SegmentedControl,
     SelectWithReset,
     Switch,
@@ -121,12 +120,10 @@ function ClippingControls({ clipping, onChange }) {
                         value={clipping.orientation}
                         onChange={(value) => update({ orientation: value })}
                     />
-                    <IconButton
+                    <RevertButton
                         label="Reset clipping planes"
                         onClick={() => update({ min: [0, 0, 0], max: [1, 1, 1] })}
-                    >
-                        <RotateCcw size={16} aria-hidden="true" />
-                    </IconButton>
+                    />
                 </div>
 
                 <div className="mt-1 grid grid-cols-[1ch_1fr_1fr] items-center gap-x-3 text-sm font-light">

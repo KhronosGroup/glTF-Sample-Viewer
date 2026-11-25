@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { RotateCcw } from "lucide-react";
 import { setSliderDragging } from "../logic/keyboard.js";
-import { IconButton, Input } from "./controls.jsx";
+import { Input, RevertButton } from "./controls.jsx";
 
 /**
  * `min` may be greater than `max` (the exposure slider is inverted), so the
@@ -275,9 +274,7 @@ export function Slider({
                 )}
 
                 {onReset && (
-                    <IconButton label={resetLabel ?? `Reset ${label}`} onClick={onReset}>
-                        <RotateCcw size={16} aria-hidden="true" />
-                    </IconButton>
+                    <RevertButton label={resetLabel ?? `Reset ${label}`} onClick={onReset} />
                 )}
             </div>
         </div>
