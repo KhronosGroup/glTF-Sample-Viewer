@@ -1229,6 +1229,7 @@ class UIModel {
                 title: scene.name ?? `Scene ${index}`,
                 index: index
             })),
+            defaultScene: gltf.scene ?? 0,
             // The scene picker is only meaningful when there is more than one scene to
             // choose between, regardless of the glTF version.
             showScenes: gltf.scenes.length > 1,

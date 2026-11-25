@@ -146,6 +146,7 @@ import { createStore } from "zustand/vanilla";
  * @property {ModelThumbnails} modelThumbnails
  * @property {string[]} flavours
  * @property {SelectableEntry[]} scenes
+ * @property {number} defaultScene
  * @property {SelectableEntry[]} cameras
  * @property {string[]} materialVariants
  * @property {SelectableEntry[]} animations
@@ -287,6 +288,7 @@ const initialState = {
 
         // Published once a glTF has finished loading.
         scenes: [{ title: "0" }, { title: "1" }],
+        defaultScene: 0,
         showScenes: true,
         cameras: [{ title: "User Camera", index: -1 }],
         materialVariants: ["None"],

@@ -1,10 +1,11 @@
-import { Funnel } from "lucide-react";
+import { Funnel, RotateCcw } from "lucide-react";
 import { useState } from "react";
 
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
     Field,
+    IconButton,
     Panel,
     Radio,
     RadioGroup,
@@ -50,6 +51,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     const flavours = useViewerStore((state) => state.published.flavours);
     const scenes = useViewerStore((state) => state.published.scenes);
     const showScenes = useViewerStore((state) => state.published.showScenes);
+    const defaultScene = useViewerStore((state) => state.published.defaultScene);
     const cameras = useViewerStore((state) => state.published.cameras);
     const materialVariants = useViewerStore((state) => state.published.materialVariants);
     const selectedModel = useViewerStore((state) => state.selection.selectedModel);
@@ -172,37 +174,55 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
 
             {showScenes && (
                 <Field label="Scenes">
-                    <Select
-                        value={selectedScene}
-                        onChange={(value) => {
-                            updateSelection({ selectedScene: value });
-                        }}
-                    >
-                        {scenes.map((item, index) => (
-                            <option key={item.index ?? index} value={item.index}>
-                                {item.title}
-                            </option>
-                        ))}
-                    </Select>
+                    <div className="flex items-center gap-2">
+                        <Select
+                            className="min-w-0 flex-1"
+                            value={selectedScene}
+                            onChange={(value) => {
+                                updateSelection({ selectedScene: value });
+                            }}
+                        >
+                            {scenes.map((item, index) => (
+                                <option key={item.index ?? index} value={item.index}>
+                                    {item.title}
+                                </option>
+                            ))}
+                        </Select>
+                        <IconButton
+                            label="Reset scene"
+                            onClick={() => updateSelection({ selectedScene: defaultScene })}
+                        >
+                            <RotateCcw size={16} aria-hidden="true" />
+                        </IconButton>
+                    </div>
                 </Field>
             )}
 
             {cameras.length > 1 && (
                 <Field label="Cameras">
-                    <Select
-                        data-testid="camera-select"
-                        value={selectedCamera}
-                        onChange={(value) => {
-                            const camera = parseInt(value);
-                            updateSelection({ selectedCamera: camera });
-                        }}
-                    >
-                        {cameras.map((item, index) => (
-                            <option key={item.index ?? index} value={item.index}>
-                                {item.title}
-                            </option>
-                        ))}
-                    </Select>
+                    <div className="flex items-center gap-2">
+                        <Select
+                            data-testid="camera-select"
+                            className="min-w-0 flex-1"
+                            value={selectedCamera}
+                            onChange={(value) => {
+                                const camera = parseInt(value);
+                                updateSelection({ selectedCamera: camera });
+                            }}
+                        >
+                            {cameras.map((item, index) => (
+                                <option key={item.index ?? index} value={item.index}>
+                                    {item.title}
+                                </option>
+                            ))}
+                        </Select>
+                        <IconButton
+                            label="Reset camera"
+                            onClick={() => updateSelection({ selectedCamera: -1 })}
+                        >
+                            <RotateCcw size={16} aria-hidden="true" />
+                        </IconButton>
+                    </div>
                 </Field>
             )}
 
