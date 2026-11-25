@@ -37,7 +37,7 @@ function Chip({ children, label }) {
         <span
             aria-label={label}
             title={label}
-            className="border-ink/40 bg-card inline-flex h-6 min-w-6 items-center justify-center gap-1 rounded-md border px-1.5 font-mono text-[11px] leading-none"
+            className="border-ink/40 bg-card inline-flex h-6 min-w-6 items-center justify-center gap-1 rounded-md border border-b-3 px-1.5 font-mono text-[11px] leading-none"
         >
             {children}
         </span>
