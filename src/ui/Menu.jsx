@@ -93,13 +93,13 @@ export function Menu({ visible }) {
     const debugShapes = useViewerStore((state) => state.config.debugShapes);
     const cullByBoundingVolume = useViewerStore((state) => state.config.cullByBoundingVolume);
 
-    const graphs = useViewerStore((state) => state.published.graphs);
+    const hasInteractivity = useViewerStore((state) => state.published.hasInteractivity);
     const hasPhysics = useViewerStore((state) => state.published.hasPhysics);
     const hasAnimations = useViewerStore((state) => state.published.hasAnimations);
 
     // The Animations tab becomes the Graphs tab when the asset carries
     // KHR_interactivity and the extension is enabled.
-    const showGraphs = graphs.length > 0 && extensions.interactivity;
+    const showGraphs = hasInteractivity && extensions.interactivity;
 
     const tabMeta = TAB_META.filter((tab) => {
         if (tab.id === "animations") {

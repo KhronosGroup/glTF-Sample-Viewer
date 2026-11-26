@@ -254,13 +254,17 @@ export const initViewer = async (canvas) => {
     state.selectionCallback = (result) => {
         if (!pendingFocus) return;
         if (result.node !== undefined) {
-            // Focusing a picked node snaps to its mesh centroid.
-            const focus = nodeWorldCentroid(result.node) ?? result.position;
-            if (focus) {
-                cameraController.focusOn(focus);
+            // A node that drives an interactivity select listener keeps its double
+            // click for selection rather than camera focus.
+            if (!state.graphController.hasSelectListener(result.node)) {
+                // Focusing a picked node snaps to its mesh centroid.
+                const focus = nodeWorldCentroid(result.node) ?? result.position;
+                if (focus) {
+                    cameraController.focusOn(focus);
+                }
+                // Mirror the focus into the scene-tree tab so the node is selected there.
+                updateSelection({ focusedNode: result.node });
             }
-            // Mirror the focus into the scene-tree tab so the node is selected there.
-            updateSelection({ focusedNode: result.node });
         } else {
             // Double-clicking empty space returns the camera to its initial view,
             // whose focus is the scene centre rather than the world origin.
@@ -268,6 +272,12 @@ export const initViewer = async (canvas) => {
         }
         pendingFocus = false;
         redraw = true;
+    };
+
+    // Hover picking is enabled so a select-listener node shows a pointer cursor.
+    state.enableHover = true;
+    state.hoverCallback = (result) => {
+        canvas.style.cursor = state.graphController.hasSelectListener(result.node) ? "pointer" : "";
     };
 
     // ---------------------------------------------------------------- loading
@@ -954,6 +964,7 @@ export const initViewer = async (canvas) => {
         if (selection.x === undefined || selection.y === undefined) {
             state.hoverPositions[0].x = undefined;
             state.hoverPositions[0].y = undefined;
+            canvas.style.cursor = "";
         } else {
             const devicePixelRatio = window.devicePixelRatio || 1;
             state.hoverPositions[0].x = Math.floor(selection.x * devicePixelRatio);

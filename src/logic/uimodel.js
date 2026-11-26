@@ -656,10 +656,11 @@ function nodeMeta(document, node) {
 /**
  * A node entry for the scene tree. `focus` is the live node itself, whose world
  * transform is resolved again when the entry is double-clicked so the camera can
- * follow a moving (e.g. simulated) node.
+ * follow a moving (e.g. simulated) node. `hasSelectListener` marks nodes that
+ * drive an interactivity `event/onSelect`, which skip the double-click-to-focus.
  * @returns {SceneTreeNode}
  */
-function nodeTreeEntry(document, nodeIndex, key) {
+function nodeTreeEntry(document, nodeIndex, key, hasSelectListener) {
     const node = document.nodes[nodeIndex];
     const entry = {
         key,
@@ -667,10 +668,11 @@ function nodeTreeEntry(document, nodeIndex, key) {
         uid: document.uidAt(`/nodes/${nodeIndex}`),
         focus: node,
         meta: nodeMeta(document, node),
+        hasSelectListener: hasSelectListener(node),
         children: []
     };
     for (const child of node.children) {
-        entry.children.push(nodeTreeEntry(document, child, `${key}/${child}`));
+        entry.children.push(nodeTreeEntry(document, child, `${key}/${child}`, hasSelectListener));
     }
     // An instantiated external asset hangs below the node that holds it, so its
     // default-scene roots continue the hierarchy from there.
@@ -678,7 +680,7 @@ function nodeTreeEntry(document, nodeIndex, key) {
     if (instance !== undefined) {
         const scene = instance.scenes[instance.scene ?? 0];
         for (const root of scene?.nodes ?? []) {
-            entry.children.push(nodeTreeEntry(instance, root, `${key}@${root}`));
+            entry.children.push(nodeTreeEntry(instance, root, `${key}@${root}`, hasSelectListener));
         }
     }
     return entry;
@@ -688,9 +690,11 @@ function nodeTreeEntry(document, nodeIndex, key) {
  * The default scene's root nodes, each as a scene-tree entry.
  * @returns {SceneTreeNode[]}
  */
-function buildNodeTree(gltf) {
+function buildNodeTree(gltf, hasSelectListener) {
     const scene = gltf?.scenes?.[gltf.scene ?? 0];
-    return (scene?.nodes ?? []).map((index) => nodeTreeEntry(gltf, index, `n${index}`));
+    return (scene?.nodes ?? []).map((index) =>
+        nodeTreeEntry(gltf, index, `n${index}`, hasSelectListener)
+    );
 }
 
 // Records the first live node that instantiates each external asset, keyed by the
@@ -1184,20 +1188,20 @@ class UIModel {
 
         this.publishCameras(state, cameraOverride);
         this.publishMorphWeights(state);
-        // Interactivity may live in the root document or in an instantiated external
-        // asset (a wrapper that only embeds an interactive asset), so gather the
-        // graphs across the whole document tree.
-        const interactivityGraphs = [gltf, ...instantiatedDocuments(gltf)]
-            .filter((document) => document.extensions?.KHR_interactivity?.graphs !== undefined)
-            .flatMap((document) =>
-                document.extensions.KHR_interactivity.graphs.map((graph, index) => ({
-                    title: graph.name ?? `Graph ${index}`,
-                    index: index
-                }))
-            );
+        // The graph picker drives the root document's graph, so it lists only the
+        // root's graphs (each with a unique index). Interactivity may also live
+        // only in an instantiated external asset, so `hasInteractivity` checks the
+        // whole document tree while the picker stays empty for those.
+        const selectableGraphs = (gltf.extensions?.KHR_interactivity?.graphs ?? []).map(
+            (graph, index) => ({
+                title: graph.name ?? `Graph ${index}`,
+                index
+            })
+        );
         const hasInteractivity =
-            interactivityGraphs.length > 0 &&
-            state.renderingParameters.enabledExtensions.KHR_interactivity;
+            [gltf, ...instantiatedDocuments(gltf)].some(
+                (document) => document.extensions?.KHR_interactivity?.graphs !== undefined
+            ) && state.renderingParameters.enabledExtensions.KHR_interactivity;
 
         // The texture coordinate channels depend on the sets this asset declares, so a
         // channel chosen for the previous one may no longer exist. Keeping it would leave
@@ -1211,7 +1215,9 @@ class UIModel {
 
         const usedExtensions = [...usedExtensionNames(gltf)];
 
-        const nodeTree = buildNodeTree(gltf);
+        const nodeTree = buildNodeTree(gltf, (node) =>
+            state.graphController.hasSelectListener(node)
+        );
         const assetTree = buildAssetTreeWithFocus(gltf);
 
         let animationDuration = 0;
@@ -1245,8 +1251,9 @@ class UIModel {
                 index: index
             })),
 
-            graphs: hasInteractivity ? interactivityGraphs : [],
+            graphs: hasInteractivity ? selectableGraphs : [],
             customEvents: hasInteractivity ? state.graphController.customEventGroups() : [],
+            hasInteractivity,
 
             // Physics may live in the root document or in any instantiated external asset.
             hasPhysics: [gltf, ...instantiatedDocuments(gltf)].some(

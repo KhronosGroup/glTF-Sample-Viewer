@@ -89,7 +89,9 @@ function TreeRow({ entry, depth, selectedKey, expandedKeys, onToggleExpand, onSe
                 title={entry.name}
                 onClick={() => onSelect(entry)}
                 onDoubleClick={() => {
-                    if (entry.focus) {
+                    // A node with an interactivity select listener keeps its double
+                    // click for selection rather than camera focus.
+                    if (entry.focus && !entry.hasSelectListener) {
                         commands.focusObjectChanged(entry.focus);
                     }
                 }}

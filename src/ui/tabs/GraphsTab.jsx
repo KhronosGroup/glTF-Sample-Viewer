@@ -8,12 +8,11 @@ export function GraphsTab() {
     const selectedGraph = useViewerStore((state) => state.selection.selectedGraph);
     const graphState = useViewerStore((state) => state.selection.graphState);
     const customEvents = useViewerStore((state) => state.published.customEvents);
-
-    const hasGraphs = graphs.length !== 0;
+    const hasInteractivity = useViewerStore((state) => state.published.hasInteractivity);
 
     return (
         <Panel title="Interactivity Graphs">
-            {hasGraphs && (
+            {hasInteractivity && (
                 <PlaybackControls
                     active={graphState}
                     onText="Pause"

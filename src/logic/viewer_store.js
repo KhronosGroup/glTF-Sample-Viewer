@@ -38,6 +38,7 @@ import { createStore } from "zustand/vanilla";
  * @property {string|undefined} uid
  * @property {unknown} focus
  * @property {{type: string, boxes: DetailBox[], extras: unknown}} meta
+ * @property {boolean} [hasSelectListener]
  * @property {SceneTreeNode[]} children
  */
 
@@ -165,6 +166,7 @@ import { createStore } from "zustand/vanilla";
  * @property {number[]} disabledAnimations
  * @property {SelectableEntry[]} graphs
  * @property {CustomEventGroup[]} customEvents
+ * @property {boolean} hasInteractivity
  * @property {boolean} hasPhysics
  * @property {boolean} hasAnimations
  * @property {string|undefined} physicsEngineVersion
@@ -308,6 +310,7 @@ const initialState = {
         disabledAnimations: [],
         graphs: [],
         customEvents: [],
+        hasInteractivity: false,
         hasPhysics: false,
         hasAnimations: false,
         physicsEngineVersion: undefined,
