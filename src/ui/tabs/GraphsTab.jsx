@@ -1,31 +1,7 @@
-import { Pause, Play, Send } from "lucide-react";
-import { useState } from "react";
+import { Pause, Play } from "lucide-react";
 import { commands } from "../../logic/commands.js";
-import { notify } from "../../logic/notifications.js";
 import { updateSelection, useViewerStore } from "../store.js";
-import {
-    Button,
-    Field,
-    Panel,
-    PlaybackControls,
-    Radio,
-    RadioGroup,
-    SectionLabel,
-    Select
-} from "../controls.jsx";
-import { CustomEventInput, defaultValueForType } from "./CustomEventInput.jsx";
-
-function initialValues(event) {
-    if (!event?.values) {
-        return {};
-    }
-    return Object.fromEntries(
-        Object.entries(event.values).map(([key, definition]) => [
-            key,
-            definition.value !== undefined ? definition.value : defaultValueForType(definition.type)
-        ])
-    );
-}
+import { Field, Panel, PlaybackControls, Radio, RadioGroup, SectionLabel } from "../controls.jsx";
 
 export function GraphsTab() {
     const graphs = useViewerStore((state) => state.published.graphs);
@@ -33,28 +9,7 @@ export function GraphsTab() {
     const graphState = useViewerStore((state) => state.selection.graphState);
     const customEvents = useViewerStore((state) => state.published.customEvents);
 
-    const [selectedEventId, setSelectedEventId] = useState(null);
-    const [editedValues, setEditedValues] = useState({ eventId: null, values: {} });
-
-    // The selected event has to survive the asset changing under it, so it is
-    // resolved against the current list rather than corrected in an effect.
-    const currentEvent =
-        customEvents.find((event) => event.id === selectedEventId) ?? customEvents[0];
-    const currentEventId = currentEvent?.id ?? null;
-
-    if (editedValues.eventId !== currentEventId) {
-        setEditedValues({ eventId: currentEventId, values: initialValues(currentEvent) });
-    }
-
     const hasGraphs = graphs.length !== 0;
-
-    const sendCustomEvent = () => {
-        commands.customEventSendClicked({
-            eventId: currentEventId,
-            values: editedValues.values
-        });
-        notify(`Custom event '${currentEventId}' sent successfully!`, "success");
-    };
 
     return (
         <Panel title="Interactivity Graphs">
@@ -95,44 +50,36 @@ export function GraphsTab() {
             {customEvents.length > 0 && (
                 <div className="mt-10 mb-6">
                     <SectionLabel>Custom events</SectionLabel>
-                    <Field>
-                        <Select value={currentEventId ?? ""} onChange={setSelectedEventId}>
-                            {customEvents.map((event) => (
-                                <option key={event.id} value={event.id}>
-                                    {event.id}
-                                </option>
-                            ))}
-                        </Select>
-                    </Field>
-
-                    {currentEvent && (
-                        <form id="customEventForm">
-                            {Object.entries(currentEvent.values ?? {}).map(([name, definition]) => (
-                                <div key={name} className="mt-4">
-                                    <CustomEventInput
-                                        name={name}
-                                        type={definition.type}
-                                        value={editedValues.values[name]}
-                                        onChange={(value) =>
-                                            setEditedValues((current) => ({
-                                                ...current,
-                                                values: { ...current.values, [name]: value }
-                                            }))
-                                        }
-                                    />
+                    {customEvents.map((group) => (
+                        <div key={group.asset ?? "root"} className="mt-4">
+                            {group.asset !== undefined && (
+                                <div className="text-ink-dim mb-2 text-xs font-medium uppercase tracking-wide">
+                                    {group.asset}
                                 </div>
-                            ))}
-                        </form>
-                    )}
-                </div>
-            )}
-
-            {currentEventId && (
-                <div className="mt-8 flex justify-end">
-                    <Button className="w-28" onClick={sendCustomEvent}>
-                        <Send size={16} aria-hidden="true" />
-                        Send
-                    </Button>
+                            )}
+                            <div className="flex flex-col gap-1">
+                                {group.events.map((event) => (
+                                    <button
+                                        key={event.id}
+                                        type="button"
+                                        title={`Dispatch '${event.id}'`}
+                                        onClick={() =>
+                                            commands.customEventSendClicked({
+                                                asset: group.asset,
+                                                eventId: event.id
+                                            })
+                                        }
+                                        className="bg-card hover:bg-card-inner focus-visible:outline-accent flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left transition-colors focus-visible:outline"
+                                    >
+                                        <span className="font-light">{event.name}</span>
+                                        <span className="text-ink-dim shrink-0 rounded-full bg-black/20 px-2 py-0.5 text-xs tabular-nums">
+                                            {event.count}×
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </Panel>

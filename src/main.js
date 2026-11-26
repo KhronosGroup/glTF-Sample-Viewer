@@ -198,6 +198,13 @@ export const initViewer = async (canvas) => {
         console.error(message);
     });
 
+    // Custom-event throw counters change while the graph runs, so the counters in
+    // the Graphs tab are refreshed through this callback rather than a store write
+    // on every frame.
+    state.graphController.onCustomEventsChanged = () => {
+        updatePublished({ customEvents: state.graphController.customEventGroups() });
+    };
+
     const emptyGltf = await resourceLoader.loadGltf(undefined, undefined, false);
 
     const pathProvider = new GltfModelPathProvider(
@@ -728,7 +735,7 @@ export const initViewer = async (canvas) => {
     subscriptions.push(
         setCommand("customEventSendClicked", (eventData) => {
             if (eventData && eventData.eventId) {
-                state.graphController.dispatchEvent(eventData.eventId, { ...eventData.values });
+                state.graphController.dispatchEventOn(eventData.asset, eventData.eventId, {});
             }
         })
     );

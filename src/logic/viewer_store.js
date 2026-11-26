@@ -7,6 +7,17 @@ import { createStore } from "zustand/vanilla";
  */
 
 /**
+ * A custom interactivity event with its throw counter.
+ * @typedef {{ id: string, name: string, count: number }} CustomEventEntry
+ */
+
+/**
+ * The custom events declared by one asset's graph. `asset` is the external
+ * asset's name, or undefined for the root document.
+ * @typedef {{ asset: (string|undefined), events: CustomEventEntry[] }} CustomEventGroup
+ */
+
+/**
  * A collapsible details box in the scene tree details panel (mesh, material,
  * shape, collider, camera, light, ...).
  * @typedef {Object} DetailBox
@@ -153,7 +164,7 @@ import { createStore } from "zustand/vanilla";
  * @property {MorphWeightEntry[]} morphWeights
  * @property {number[]} disabledAnimations
  * @property {SelectableEntry[]} graphs
- * @property {unknown[]} customEvents
+ * @property {CustomEventGroup[]} customEvents
  * @property {boolean} hasPhysics
  * @property {boolean} hasAnimations
  * @property {string|undefined} physicsEngineVersion

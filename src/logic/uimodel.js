@@ -1246,7 +1246,7 @@ class UIModel {
             })),
 
             graphs: hasInteractivity ? interactivityGraphs : [],
-            customEvents: hasInteractivity ? state.graphController.customEvents || [] : [],
+            customEvents: hasInteractivity ? state.graphController.customEventGroups() : [],
 
             // Physics may live in the root document or in any instantiated external asset.
             hasPhysics: [gltf, ...instantiatedDocuments(gltf)].some(
