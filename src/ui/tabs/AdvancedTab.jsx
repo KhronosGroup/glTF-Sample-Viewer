@@ -210,7 +210,7 @@ export function AdvancedTab({
         ));
 
     return (
-        <Panel title="Preferences" icon={SlidersHorizontal}>
+        <Panel title="Settings" icon={SlidersHorizontal}>
             <Field label="Debug Channels">
                 <SelectWithReset
                     data-testid="select-debug-channel"
