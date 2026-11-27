@@ -5,6 +5,7 @@ import {
     Braces,
     Camera,
     CirclePlay,
+    DiagramFlowHorizontal,
     Image,
     ListTree,
     ShieldCheck,
@@ -33,6 +34,7 @@ const TAB_META = [
     { id: "display", label: "Display", icon: Image },
     { id: "validator", label: "Validation", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
+    { id: "graphs", label: "Interactivity", icon: DiagramFlowHorizontal },
     { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
     { id: "credits", label: "Credits", icon: Braces },
     { id: "advanced", label: "Advanced Controls", icon: SlidersHorizontal }
@@ -97,16 +99,19 @@ export function Menu({ visible }) {
     const hasPhysics = useViewerStore((state) => state.published.hasPhysics);
     const hasAnimations = useViewerStore((state) => state.published.hasAnimations);
 
-    // The Animations tab becomes the Graphs tab when the asset carries
-    // KHR_interactivity and the extension is enabled.
-    const showGraphs = hasInteractivity && extensions.interactivity;
+    // The Interactivity tab appears when the asset carries KHR_interactivity and
+    // the extension is enabled; Animations is a separate tab of its own.
+    const showInteractivity = hasInteractivity && extensions.interactivity;
 
     const tabMeta = TAB_META.filter((tab) => {
         if (tab.id === "animations") {
-            return showGraphs || hasAnimations;
+            return hasAnimations;
+        }
+        if (tab.id === "graphs") {
+            return showInteractivity;
         }
         return !tab.needsPhysics || hasPhysics;
-    }).map((tab) => (tab.id === "animations" && showGraphs ? { ...tab, label: "Graphs" } : tab));
+    });
     const { activeTab, select } = useTabState(tabMeta.map((tab) => tab.id));
 
     // Turning IBL off hides the background and remembers the previous choice, so
@@ -158,7 +163,9 @@ export function Menu({ visible }) {
             case "validator":
                 return <ValidatorTab />;
             case "animations":
-                return showGraphs ? <GraphsTab /> : <AnimationsTab />;
+                return <AnimationsTab />;
+            case "graphs":
+                return <GraphsTab />;
             case "credits":
                 return <CreditsTab />;
             case "physics":
