@@ -202,7 +202,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
                                 }
                             />
                             <Upload size={16} aria-hidden="true" />
-                            Browse HDRs ...
+                            Browse HDRs&hellip;
                         </label>
                     </Field>
 
