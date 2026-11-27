@@ -39,8 +39,7 @@ export function deriveLighting(lighting, partial, renderEnvPreference) {
  *
  * Volume is meaningless without either transmission, so turning the last one
  * off also turns volume off (remembering the choice) and turning one back on
- * restores it. This only moves the switch; the renderer is not notified until
- * volume is toggled directly.
+ * restores it.
  *
  * @param {Object} extensions The current `config.extensions` value.
  * @param {Object} partial The user's partial update.

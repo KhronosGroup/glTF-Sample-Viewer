@@ -134,8 +134,7 @@ export function Menu({ visible }) {
     };
 
     // Volume is meaningless without either transmission, so it follows them and
-    // remembers the user's choice. This only moves the switch; the renderer is
-    // not notified until volume is toggled directly.
+    // remembers the user's choice.
     const updateExtensions = (partial) => {
         const { next, preference } = deriveExtensions(extensions, partial, volumePref.current);
         volumePref.current = preference;
