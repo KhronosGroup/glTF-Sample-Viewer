@@ -70,7 +70,7 @@ export function GraphsTab() {
     };
 
     return (
-        <Panel title="Interactivity Graphs">
+        <Panel title="Interactivity">
             {hasInteractivity && (
                 <PlaybackControls
                     active={graphState}

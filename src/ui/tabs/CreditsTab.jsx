@@ -20,7 +20,7 @@ export function CreditsTab() {
     const xmp = useViewerStore((state) => state.published.xmp);
 
     return (
-        <Panel title="Model Credits">
+        <Panel title="Credits">
             {assetThumbnail && (
                 <div className="my-4" data-testid="asset-thumbnail">
                     <p className="text-ink/60 text-sm">Thumbnail</p>
