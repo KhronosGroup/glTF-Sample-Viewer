@@ -343,6 +343,25 @@ export const initViewer = async (canvas) => {
         state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
         state.cameraNodeIndex = undefined;
 
+        // Interactivity may live in the root document or in an instantiated
+        // external asset (e.g. a wrapper that only embeds an interactive asset),
+        // and it does not require a scene, so initialize it outside the scene block.
+        const rootGraphs = state.gltf?.extensions?.KHR_interactivity?.graphs;
+        const hasInteractivity =
+            rootGraphs !== undefined ||
+            [...instantiatedDocuments(state.gltf)].some(
+                (document) => document.extensions?.KHR_interactivity?.graphs !== undefined
+            );
+        if (hasInteractivity) {
+            state.graphController.initializeGraphs(state);
+            if (rootGraphs !== undefined) {
+                state.graphController.loadGraph(state.gltf.extensions.KHR_interactivity.graph ?? 0);
+            }
+            state.graphController.resumeGraph();
+        } else {
+            state.graphController.stopGraphEngine();
+        }
+
         if (state.gltf.scenes.length != 0) {
             if (state.sceneIndex > state.gltf.scenes.length - 1) {
                 state.sceneIndex = 0;
@@ -373,25 +392,6 @@ export const initViewer = async (canvas) => {
             }
             state.animationTimer.clearTimeOverride();
             state.animationTimer.start();
-            // Interactivity may live in the root document or in an instantiated
-            // external asset (e.g. a wrapper that only embeds an interactive asset).
-            const rootGraphs = state.gltf?.extensions?.KHR_interactivity?.graphs;
-            const hasInteractivity =
-                rootGraphs !== undefined ||
-                [...instantiatedDocuments(state.gltf)].some(
-                    (document) => document.extensions?.KHR_interactivity?.graphs !== undefined
-                );
-            if (hasInteractivity) {
-                state.graphController.initializeGraphs(state);
-                if (rootGraphs !== undefined) {
-                    state.graphController.loadGraph(
-                        state.gltf.extensions.KHR_interactivity.graph ?? 0
-                    );
-                }
-                state.graphController.resumeGraph();
-            } else {
-                state.graphController.stopGraphEngine();
-            }
 
             state.physicsController.loadScene(state, state.sceneIndex);
             state.physicsController.resumeSimulation();
