@@ -33,7 +33,7 @@ function initialValues(event) {
     );
 }
 
-export function GraphsTab() {
+export function InteractivityTab() {
     const graphs = useViewerStore((state) => state.published.graphs);
     const selectedGraph = useViewerStore((state) => state.selection.selectedGraph);
     const graphState = useViewerStore((state) => state.selection.graphState);

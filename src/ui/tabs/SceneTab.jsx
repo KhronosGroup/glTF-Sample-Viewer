@@ -376,7 +376,7 @@ function DetailBox({ box, open, onToggle }) {
  * A collapsible tree of the scene's nodes, or of its external assets, switchable
  * with a segmented control. The selected entry's details are shown below the tree.
  */
-export function SceneTreeTab() {
+export function SceneTab() {
     const mode = useViewerStore((state) => state.sceneTree.mode);
     const selectedEntry = useViewerStore((state) => state.sceneTree.selectedEntry);
     const expandedKeys = useViewerStore((state) => state.sceneTree.expandedKeys);

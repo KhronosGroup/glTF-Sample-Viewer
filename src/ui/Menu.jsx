@@ -22,10 +22,10 @@ import { DisplayTab } from "./tabs/DisplayTab.jsx";
 import { ValidationCounter, ValidatorTab } from "./tabs/ValidatorTab.jsx";
 import { CreditsTab } from "./tabs/CreditsTab.jsx";
 import { AnimationsTab } from "./tabs/AnimationsTab.jsx";
-import { GraphsTab } from "./tabs/GraphsTab.jsx";
+import { InteractivityTab } from "./tabs/InteractivityTab.jsx";
 import { PhysicsTab } from "./tabs/PhysicsTab.jsx";
 import { AdvancedTab } from "./tabs/AdvancedTab.jsx";
-import { SceneTreeTab } from "./tabs/SceneTreeTab.jsx";
+import { SceneTab } from "./tabs/SceneTab.jsx";
 
 const TAB_META = [
     { id: "models", label: "Models", icon: Box },
@@ -164,7 +164,7 @@ export function Menu({ visible }) {
             case "camera":
                 return <CameraTab />;
             case "scene":
-                return <SceneTreeTab />;
+                return <SceneTab />;
             case "display":
                 return <DisplayTab lighting={lighting} onLightingChange={updateLighting} />;
             case "validator":
@@ -172,7 +172,7 @@ export function Menu({ visible }) {
             case "animations":
                 return <AnimationsTab />;
             case "interactivity":
-                return <GraphsTab />;
+                return <InteractivityTab />;
             case "credits":
                 return <CreditsTab />;
             case "physics":
