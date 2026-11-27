@@ -745,7 +745,11 @@ export const initViewer = async (canvas) => {
     subscriptions.push(
         setCommand("customEventSendClicked", (eventData) => {
             if (eventData && eventData.eventId) {
-                state.graphController.dispatchEventOn(eventData.asset, eventData.eventId, {});
+                state.graphController.dispatchEventOn(
+                    eventData.asset,
+                    eventData.eventId,
+                    eventData.values ?? {}
+                );
             }
         })
     );

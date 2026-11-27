@@ -7,8 +7,9 @@ import { createStore } from "zustand/vanilla";
  */
 
 /**
- * A custom interactivity event with its throw counter.
- * @typedef {{ id: string, name: string, count: number }} CustomEventEntry
+ * A custom interactivity event with its throw counter and declared argument
+ * definitions (`values`: parameter name -> `{ type, value }`).
+ * @typedef {{ id: string, name: string, count: number, values: (Object|undefined) }} CustomEventEntry
  */
 
 /**

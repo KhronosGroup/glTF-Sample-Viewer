@@ -1,4 +1,4 @@
-import { Field, Input, Switch } from "../controls.jsx";
+import { Input, Switch } from "../controls.jsx";
 
 // These types only differ by how many inputs to lay out and in which direction,
 // so one component covers them all.
@@ -30,49 +30,74 @@ export function defaultValueForType(type) {
     }
 }
 
+// Coerces a numeric field to a valid value once editing finishes: integers are
+// rounded to the nearest whole number, everything else falls back to zero.
+function finalizeNumber(type, raw) {
+    const number = raw === "" ? NaN : Number(raw);
+    if (type === "int") {
+        return Number.isFinite(number) ? Math.round(number) : 0;
+    }
+    return Number.isFinite(number) ? number : 0;
+}
+
 function NumberCell({ className, value, onChange }) {
     return (
         <Input
             className={className}
             type="number"
-            value={value}
-            required
-            onChange={(event) => onChange(Number(event.target.value))}
+            value={value ?? ""}
+            onChange={(event) =>
+                onChange(event.target.value === "" ? null : Number(event.target.value))
+            }
+            onBlur={(event) => onChange(finalizeNumber("float", event.target.value))}
         />
     );
 }
 
 export function CustomEventInput({ name, type, value, onChange }) {
+    // Scalars sit on one row: the label on the left, the control at the end.
     if (type === "bool") {
         return (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
                 <label className="text-sm">{name}</label>
-                <Switch checked={Boolean(value)} onChange={onChange} />
+                <Switch className="mt-0! w-auto!" checked={Boolean(value)} onChange={onChange} />
             </div>
         );
     }
 
-    const label = <label className="mb-2 block text-sm">{name}</label>;
-
-    if (type === "float" || type === "int") {
+    if (type === "int" || type === "float" || type === "ref") {
+        const isRef = type === "ref";
         return (
-            <div>
-                {label}
-                <Field>
-                    <Input
-                        className="w-28"
-                        type={type === "float" ? "number" : "text"}
-                        step={type === "float" ? "any" : undefined}
-                        pattern={type === "int" ? "[\\-]?[0-9]*" : undefined}
-                        value={value ?? ""}
-                        required
-                        onChange={(event) => onChange(Number(event.target.value))}
-                    />
-                </Field>
+            <div className="flex items-center justify-between gap-3">
+                <label className="text-sm">{name}</label>
+                <Input
+                    className="w-28 shrink-0"
+                    type={isRef ? "text" : "number"}
+                    placeholder={isRef ? "null" : undefined}
+                    value={value ?? ""}
+                    onChange={(event) => {
+                        if (isRef) {
+                            onChange(event.target.value);
+                        } else {
+                            const raw = event.target.value;
+                            onChange(raw === "" ? null : Number(raw));
+                        }
+                    }}
+                    onBlur={(event) => {
+                        if (isRef) {
+                            const raw = event.target.value;
+                            onChange(raw === "" ? null : raw);
+                        } else {
+                            onChange(finalizeNumber(type, event.target.value));
+                        }
+                    }}
+                />
             </div>
         );
     }
 
+    // Vectors and matrices: the label above, the cells on the next line.
+    const label = <label className="mb-2 block text-sm">{name}</label>;
     const setAt = (index, next) =>
         onChange(value.map((item, position) => (position === index ? next : item)));
 
@@ -83,13 +108,12 @@ export function CustomEventInput({ name, type, value, onChange }) {
                 {label}
                 <div className="flex gap-2">
                     {value.map((item, index) => (
-                        <div key={index}>
-                            <NumberCell
-                                className="w-16"
-                                value={item}
-                                onChange={(next) => setAt(index, next)}
-                            />
-                        </div>
+                        <NumberCell
+                            key={index}
+                            className="min-w-0 flex-1"
+                            value={item}
+                            onChange={(next) => setAt(index, next)}
+                        />
                     ))}
                 </div>
             </div>
@@ -102,21 +126,20 @@ export function CustomEventInput({ name, type, value, onChange }) {
             <div>
                 {label}
                 <div
-                    className="grid w-max gap-1"
-                    style={{ gridTemplateColumns: `repeat(${matrixSize}, 1fr)` }}
+                    className="grid gap-1"
+                    style={{ gridTemplateColumns: `repeat(${matrixSize}, minmax(0, 1fr))` }}
                 >
                     {Array.from({ length: matrixSize }, (_, column) => (
                         <div key={column} className="flex flex-col gap-1">
                             {Array.from({ length: matrixSize }, (_, row) => {
                                 const index = column * matrixSize + row;
                                 return (
-                                    <div key={row}>
-                                        <NumberCell
-                                            className="w-16"
-                                            value={value[index]}
-                                            onChange={(next) => setAt(index, next)}
-                                        />
-                                    </div>
+                                    <NumberCell
+                                        key={row}
+                                        className="w-full min-w-0"
+                                        value={value[index]}
+                                        onChange={(next) => setAt(index, next)}
+                                    />
                                 );
                             })}
                         </div>
