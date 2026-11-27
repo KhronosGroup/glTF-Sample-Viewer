@@ -35,7 +35,7 @@ const TAB_META = [
     { id: "validator", label: "Validation", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
     { id: "interactivity", label: "Interactivity", icon: DiagramFlowHorizontal },
-    { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
+    { id: "physics", label: "Physics", icon: Atom },
     { id: "credits", label: "Credits", icon: Braces },
     { id: "advanced", label: "Settings", icon: SlidersHorizontal }
 ];
@@ -110,7 +110,10 @@ export function Menu({ visible }) {
         if (tab.id === "interactivity") {
             return showInteractivity;
         }
-        return !tab.needsPhysics || hasPhysics;
+        if (tab.id === "physics") {
+            return hasPhysics;
+        }
+        return true;
     });
     const { activeTab, select } = useTabState(tabMeta.map((tab) => tab.id));
 
