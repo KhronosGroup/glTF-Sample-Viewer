@@ -1,4 +1,4 @@
-import { Pause, Play, StepForward } from "lucide-react";
+import { Atom, Pause, Play, StepForward } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
@@ -17,7 +17,7 @@ export function PhysicsTab({ debug, onDebugChange, colliderShapes, onColliderSha
     const physxLabel = `Nvidia PhysX${physicsEngineVersion !== undefined ? ` ${physicsEngineVersion}` : ""}`;
 
     return (
-        <Panel title="Physics">
+        <Panel title="Physics" icon={Atom}>
             <PlaybackControls
                 active={physicsState}
                 onText="Pause"

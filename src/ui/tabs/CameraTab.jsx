@@ -5,6 +5,7 @@ import {
     ArrowRight,
     ArrowUp,
     ArrowUpDown,
+    Camera,
     Download,
     Keyboard,
     Minus,
@@ -221,7 +222,7 @@ export function CameraTab() {
     };
 
     return (
-        <Panel title="Camera">
+        <Panel title="Camera" icon={Camera}>
             <Field label="Camera Mode">
                 <SegmentedControl
                     label="Camera Mode"

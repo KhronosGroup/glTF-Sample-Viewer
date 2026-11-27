@@ -1,3 +1,4 @@
+import { Braces } from "lucide-react";
 import { useViewerStore } from "../store.js";
 import { JsonTree } from "../JsonTree.jsx";
 import { Panel, Subtitle } from "../controls.jsx";
@@ -20,7 +21,7 @@ export function CreditsTab() {
     const xmp = useViewerStore((state) => state.published.xmp);
 
     return (
-        <Panel title="Credits">
+        <Panel title="Credits" icon={Braces}>
             {assetThumbnail && (
                 <div className="my-4" data-testid="asset-thumbnail">
                     <p className="text-ink/60 text-sm">Thumbnail</p>

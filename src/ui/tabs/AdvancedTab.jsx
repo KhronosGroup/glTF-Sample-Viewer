@@ -1,3 +1,4 @@
+import { SlidersHorizontal } from "lucide-react";
 import { Fragment } from "react";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
@@ -209,7 +210,7 @@ export function AdvancedTab({
         ));
 
     return (
-        <Panel title="Preferences">
+        <Panel title="Preferences" icon={SlidersHorizontal}>
             <Field label="Debug Channels">
                 <SelectWithReset
                     data-testid="select-debug-channel"

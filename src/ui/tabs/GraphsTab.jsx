@@ -1,4 +1,4 @@
-import { ChevronRight, Pause, Play, Send } from "lucide-react";
+import { ChevronRight, DiagramFlowHorizontal, Pause, Play, Send } from "lucide-react";
 import { useState } from "react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
@@ -70,7 +70,7 @@ export function GraphsTab() {
     };
 
     return (
-        <Panel title="Interactivity">
+        <Panel title="Interactivity" icon={DiagramFlowHorizontal}>
             {hasInteractivity && (
                 <PlaybackControls
                     active={graphState}

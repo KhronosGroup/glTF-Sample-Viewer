@@ -817,8 +817,13 @@ export function Input({ className, ...rest }) {
     );
 }
 
-export function Title({ children }) {
-    return <h2 className="mb-8 text-3xl leading-tight font-bold">{children}</h2>;
+export function Title({ icon: Icon, children }) {
+    return (
+        <h2 className="mb-8 flex items-center gap-2.5 text-3xl leading-tight font-bold">
+            {Icon && <Icon size={26} strokeWidth={1.75} aria-hidden="true" />}
+            <span>{children}</span>
+        </h2>
+    );
 }
 
 export function Subtitle({ children }) {
@@ -829,11 +834,11 @@ export function SectionLabel({ className, children }) {
     return <p className={classNames("mt-8 mb-2 font-medium", className)}>{children}</p>;
 }
 
-/** Shared chrome for a tab panel: the heading and the scroll padding. */
-export function Panel({ title, className, children }) {
+/** Shared chrome for a tab panel: the heading (with the tab's icon) and the scroll padding. */
+export function Panel({ title, icon, className, children }) {
     return (
         <div data-testid="panel" className="flex min-h-full flex-col px-5 pt-6 pb-12">
-            <Title>{title}</Title>
+            <Title icon={icon}>{title}</Title>
             <div className={classNames("min-h-0 flex-1", className)}>{children}</div>
         </div>
     );

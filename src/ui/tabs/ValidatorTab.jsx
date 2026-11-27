@@ -79,7 +79,7 @@ export function ValidatorTab() {
         messages.filter((message) => message.severity === severity).length;
 
     return (
-        <Panel title="Validation">
+        <Panel title="Validation" icon={ShieldCheck}>
             {!failed && (
                 <div className="my-6">
                     <StatList

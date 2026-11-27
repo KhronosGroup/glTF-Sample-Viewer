@@ -14,6 +14,7 @@ import {
     Layers,
     Lightbulb,
     Link,
+    ListTree,
     Move3d,
     MousePointerClick,
     PaintBucket,
@@ -436,7 +437,7 @@ export function SceneTreeTab() {
         selectedEntry === undefined ? null : (TYPE_ICONS[selectedEntry.meta.type] ?? Folder);
 
     return (
-        <Panel title="Scene">
+        <Panel title="Scene" icon={ListTree}>
             {hasExternalAssets && (
                 <Field>
                     <SegmentedControl

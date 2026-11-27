@@ -1,4 +1,4 @@
-import { Pause, Play } from "lucide-react";
+import { CirclePlay, Pause, Play } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import { Field, Panel, PlaybackControls, Switch } from "../controls.jsx";
@@ -35,7 +35,7 @@ export function AnimationsTab() {
     };
 
     return (
-        <Panel title="Animations">
+        <Panel title="Animations" icon={CirclePlay}>
             {hasAnimations && (
                 <PlaybackControls
                     active={animationState}

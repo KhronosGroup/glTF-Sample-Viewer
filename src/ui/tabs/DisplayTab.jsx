@@ -1,4 +1,4 @@
-import { Download, Upload } from "lucide-react";
+import { Download, Image, Upload } from "lucide-react";
 import { commands } from "../../logic/commands.js";
 import { updateSelection, useViewerStore } from "../store.js";
 import {
@@ -44,7 +44,7 @@ export function DisplayTab({ lighting, onLightingChange }) {
         lighting;
 
     return (
-        <Panel title="Display">
+        <Panel title="Display" icon={Image}>
             <Field label="Capture Canvas">
                 <Button onClick={() => commands.captureCanvas()}>
                     <Download size={16} aria-hidden="true" />

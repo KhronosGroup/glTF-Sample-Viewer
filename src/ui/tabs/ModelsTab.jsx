@@ -1,4 +1,4 @@
-import { Funnel } from "lucide-react";
+import { Box, Funnel } from "lucide-react";
 import { useState } from "react";
 
 import { commands } from "../../logic/commands.js";
@@ -83,7 +83,7 @@ export function ModelsTab({ selectedVariant, onSelectVariant }) {
     };
 
     return (
-        <Panel title="Models">
+        <Panel title="Models" icon={Box}>
             <Field label="Models">
                 <ThumbnailSelect
                     data-testid="model-select"
