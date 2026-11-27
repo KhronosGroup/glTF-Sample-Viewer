@@ -723,15 +723,17 @@ export function ToggleButton({ pressed, onToggle, className, children, ...rest }
 }
 
 /** A bare icon control: no chrome until hovered or focused. */
-export function IconButton({ onClick, label, className, children }) {
+export function IconButton({ onClick, label, className, disabled = false, children }) {
     return (
         <button
             type="button"
             aria-label={label}
             title={label}
+            disabled={disabled}
             onClick={onClick}
             className={classNames(
                 "group hover:bg-card inline-flex items-center justify-center rounded-md p-1.5 transition-colors",
+                disabled && "cursor-not-allowed opacity-50",
                 FOCUS_RING,
                 className
             )}
@@ -745,9 +747,9 @@ export function IconButton({ onClick, label, className, children }) {
  * A square revert button: the counter-clockwise arrow that resets a value to its
  * default. The arrow tilts a little further counter-clockwise on hover.
  */
-export function RevertButton({ onClick, label, className }) {
+export function RevertButton({ onClick, label, className, disabled = false }) {
     return (
-        <IconButton label={label} onClick={onClick} className={className}>
+        <IconButton label={label} onClick={onClick} className={className} disabled={disabled}>
             <RotateCcw
                 size={16}
                 aria-hidden="true"

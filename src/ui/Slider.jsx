@@ -61,7 +61,8 @@ export function Slider({
     inputPlaceholder,
     inputFormat,
     inputSuffix,
-    inputClassName = "w-18 shrink-0 py-0.5 text-sm"
+    inputClassName = "w-18 shrink-0 py-0.5 text-sm",
+    disabled = false
 }) {
     const trackRef = useRef(null);
     const dragOrigin = useRef(null);
@@ -145,6 +146,9 @@ export function Slider({
     const indeterminate = value === null || value === undefined;
 
     const onKeyDown = (event) => {
+        if (disabled) {
+            return;
+        }
         // Consume Shift so the browser does not extend the text selection to the
         // next element while the slider is being interacted with.
         if (event.key === "Shift") {
@@ -175,6 +179,7 @@ export function Slider({
             className={[
                 "mt-4 touch-none select-none",
                 ticks.length > 0 ? "mb-10" : "mb-4",
+                disabled && "opacity-50",
                 className
             ]
                 .filter(Boolean)
@@ -185,8 +190,11 @@ export function Slider({
             <div className="flex items-center gap-3">
                 <div
                     ref={trackRef}
-                    className={`bg-track relative mx-2 h-1.5 min-w-0 flex-1 rounded-full ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+                    className={`bg-track relative mx-2 h-1.5 min-w-0 flex-1 rounded-full ${disabled ? "cursor-not-allowed" : dragging ? "cursor-grabbing" : "cursor-grab"}`}
                     onPointerDown={(event) => {
+                        if (disabled) {
+                            return;
+                        }
                         event.preventDefault();
                         dragOrigin.current = {
                             clientX: event.clientX,
@@ -232,8 +240,9 @@ export function Slider({
                             ]
                                 .filter(Boolean)
                                 .join(" ")}
-                            tabIndex={0}
+                            tabIndex={disabled ? -1 : 0}
                             role="slider"
+                            aria-disabled={disabled}
                             aria-valuemin={min}
                             aria-valuemax={max}
                             aria-valuenow={indeterminate ? undefined : value}
@@ -253,6 +262,7 @@ export function Slider({
                             type="number"
                             step="any"
                             placeholder={inputPlaceholder}
+                            disabled={disabled}
                             value={inputValue}
                             onFocus={() => setInputDraft(indeterminate ? "" : formatInput(value))}
                             onBlur={() => setInputDraft(null)}
@@ -274,7 +284,11 @@ export function Slider({
                 )}
 
                 {onReset && (
-                    <RevertButton label={resetLabel ?? `Reset ${label}`} onClick={onReset} />
+                    <RevertButton
+                        label={resetLabel ?? `Reset ${label}`}
+                        onClick={onReset}
+                        disabled={disabled}
+                    />
                 )}
             </div>
         </div>

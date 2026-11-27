@@ -263,6 +263,7 @@ export function CameraTab() {
                     formatter={(value) => `${value}°`}
                     onChange={setFov}
                     showInput
+                    disabled={!userCameraActive}
                     onReset={() => updateSelection({ cameraFov: 45 })}
                     resetLabel="Reset FOV"
                 />
@@ -272,6 +273,7 @@ export function CameraTab() {
                 label="Aspect Ratio"
                 toggle={enforceAspectRatio}
                 onToggleChange={(checked) => updateSelection({ enforceAspectRatio: checked })}
+                toggleDisabled={!userCameraActive}
             >
                 <Slider
                     className="my-0!"
@@ -283,6 +285,7 @@ export function CameraTab() {
                     formatter={(value) => value.toFixed(2)}
                     onChange={setAspectRatio}
                     showInput
+                    disabled={!userCameraActive}
                 />
                 <div className="mt-4 grid grid-cols-4 gap-2">
                     {COMMON_ASPECT_RATIOS.map(({ label, value }) => {
@@ -291,8 +294,9 @@ export function CameraTab() {
                             <button
                                 key={label}
                                 type="button"
+                                disabled={!userCameraActive}
                                 onClick={() => updateSelection({ cameraAspectRatio: value })}
-                                className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                                className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                                     active
                                         ? "border-accent bg-accent text-ink-dim"
                                         : "border-ink/60 hover:border-ink"
@@ -327,7 +331,11 @@ export function CameraTab() {
                         <Download size={16} aria-hidden="true" />
                         Export
                     </Button>
-                    <Button onClick={() => fileInputRef.current?.click()}>
+                    <Button
+                        disabled={!userCameraActive}
+                        className={!userCameraActive ? "cursor-not-allowed opacity-50" : ""}
+                        onClick={() => fileInputRef.current?.click()}
+                    >
                         <Upload size={16} aria-hidden="true" />
                         Import
                     </Button>

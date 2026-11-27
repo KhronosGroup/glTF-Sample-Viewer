@@ -835,10 +835,13 @@ export const initViewer = async (canvas) => {
 
     subscriptions.push(
         setCommand("cameraExport", () => {
-            const camera =
-                state.cameraNodeIndex === undefined
-                    ? state.userCamera
-                    : state.gltf.cameras[state.cameraNodeIndex];
+            // `cameraNodeIndex` is a node index, so resolve the camera through the
+            // node's camera reference rather than indexing `cameras` directly.
+            let camera = state.userCamera;
+            if (state.cameraNodeIndex !== undefined) {
+                camera = state.gltf.cameras[state.gltf.nodes[state.cameraNodeIndex].camera];
+                camera.setNode(state.gltf, state.cameraNodeIndex);
+            }
             const gltf = JSON.stringify(camera.getDescription(state.gltf), undefined, 4);
             downloadDataURL(
                 "camera.gltf",
