@@ -1260,6 +1260,7 @@ class UIModel {
                 (document) => document.extensionsUsed?.includes("KHR_physics_rigid_bodies") ?? false
             ),
             hasAnimations: gltf.animations.length > 0,
+            hasNodes: gltf.nodes.length > 0,
 
             xmp:
                 gltf?.extensions?.KHR_xmp_json_ld?.packets[

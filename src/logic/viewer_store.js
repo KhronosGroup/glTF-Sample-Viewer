@@ -170,6 +170,7 @@ import { createStore } from "zustand/vanilla";
  * @property {boolean} hasInteractivity
  * @property {boolean} hasPhysics
  * @property {boolean} hasAnimations
+ * @property {boolean} hasNodes
  * @property {string|undefined} physicsEngineVersion
  * @property {string} assetCopyright
  * @property {string} assetGenerator
@@ -314,6 +315,7 @@ const initialState = {
         hasInteractivity: false,
         hasPhysics: false,
         hasAnimations: false,
+        hasNodes: false,
         physicsEngineVersion: undefined,
         assetCopyright: "",
         assetGenerator: "",

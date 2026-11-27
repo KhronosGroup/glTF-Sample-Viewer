@@ -98,6 +98,7 @@ export function Menu({ visible }) {
     const hasInteractivity = useViewerStore((state) => state.published.hasInteractivity);
     const hasPhysics = useViewerStore((state) => state.published.hasPhysics);
     const hasAnimations = useViewerStore((state) => state.published.hasAnimations);
+    const hasNodes = useViewerStore((state) => state.published.hasNodes);
 
     // The Interactivity tab appears when the asset carries KHR_interactivity and
     // the extension is enabled; Animations is a separate tab of its own.
@@ -112,6 +113,9 @@ export function Menu({ visible }) {
         }
         if (tab.id === "physics") {
             return hasPhysics;
+        }
+        if (tab.id === "scene") {
+            return hasNodes;
         }
         return true;
     });
