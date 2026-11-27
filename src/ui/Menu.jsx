@@ -37,7 +37,7 @@ const TAB_META = [
     { id: "graphs", label: "Interactivity", icon: DiagramFlowHorizontal },
     { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
     { id: "credits", label: "Credits", icon: Braces },
-    { id: "advanced", label: "Advanced Controls", icon: SlidersHorizontal }
+    { id: "advanced", label: "Preferences", icon: SlidersHorizontal }
 ];
 
 /**

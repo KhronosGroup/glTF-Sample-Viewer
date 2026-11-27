@@ -209,7 +209,7 @@ export function AdvancedTab({
         ));
 
     return (
-        <Panel title="Advanced Controls">
+        <Panel title="Preferences">
             <Field label="Debug Channels">
                 <SelectWithReset
                     data-testid="select-debug-channel"
