@@ -34,7 +34,7 @@ const TAB_META = [
     { id: "display", label: "Display", icon: Image },
     { id: "validator", label: "Validation", icon: ShieldCheck },
     { id: "animations", label: "Animations", icon: CirclePlay },
-    { id: "graphs", label: "Interactivity", icon: DiagramFlowHorizontal },
+    { id: "interactivity", label: "Interactivity", icon: DiagramFlowHorizontal },
     { id: "physics", label: "Physics", icon: Atom, needsPhysics: true },
     { id: "credits", label: "Credits", icon: Braces },
     { id: "advanced", label: "Settings", icon: SlidersHorizontal }
@@ -107,7 +107,7 @@ export function Menu({ visible }) {
         if (tab.id === "animations") {
             return hasAnimations;
         }
-        if (tab.id === "graphs") {
+        if (tab.id === "interactivity") {
             return showInteractivity;
         }
         return !tab.needsPhysics || hasPhysics;
@@ -164,7 +164,7 @@ export function Menu({ visible }) {
                 return <ValidatorTab />;
             case "animations":
                 return <AnimationsTab />;
-            case "graphs":
+            case "interactivity":
                 return <GraphsTab />;
             case "credits":
                 return <CreditsTab />;
